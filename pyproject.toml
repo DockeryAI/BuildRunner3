@@ -28,6 +28,7 @@ dependencies = [
     "fastapi>=0.95.0",
     "uvicorn>=0.20.0",
     "click>=8.0.0",
+    "typer>=0.9.0",
     "rich>=13.0.0",
     "pyyaml>=6.0",
     "python-dotenv>=1.0.0",
@@ -36,6 +37,8 @@ dependencies = [
     "PyGithub>=2.0.0",
     "notion-client>=2.0.0",
     "httpx>=0.24.0",
+    "watchdog>=3.0.0",
+    "anthropic>=0.18.0",
 ]
 
 [project.optional-dependencies]
@@ -49,6 +52,9 @@ dev = [
 
 [project.scripts]
 br = "cli.main:cli"
+
+[tool.setuptools.packages.find]
+include = ["cli*", "core*", "api*", "hooks*", "plugins*", "templates*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
