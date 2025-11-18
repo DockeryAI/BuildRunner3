@@ -181,7 +181,7 @@ def init(
             # New project - create CLAUDE.md in project ROOT for Claude Code to auto-read
             planning_path = project_root / "CLAUDE.md"
 
-            planning_content = f"""# 🎯 PLANNING MODE - Opus Extended Thinking Required
+            planning_content = f"""# 🎯 PLANNING MODE - Flexible PRD Workflow
 
 **Project:** {project_name}
 **Path:** {project_root}
@@ -190,243 +190,276 @@ def init(
 
 ---
 
-## ⚠️ CRITICAL: Switch to Opus Model
+## 🎨 WORKFLOW MODE SELECTION
 
-**BEFORE STARTING**, ensure you're using **Claude Opus** for planning mode.
-Opus provides extended thinking and better strategic analysis.
+**FIRST:** Ask user to select their goal using AskUserQuestion tool:
 
-Use `/model opus` or check your current model settings.
-
----
-
-## 🔓 Directory Access
-
-You need access to related projects for API/architecture analysis.
-When accessing directories outside {project_root}, use appropriate permissions.
-
-Related projects you may need:
-- ~/Projects/Synapse (for existing API patterns)
-- ~/Projects/BuildRunner3 (for framework integration)
-
----
-
-## 📋 INCREMENTAL PLANNING WORKFLOW
-
-### STEP 1: Project Description
-**Action:** Ask user to describe their project idea.
-**Prompt:** "Tell me about your project - what do you want to build?"
-
-**Wait for response.**
-
----
-
-### STEP 2: Feature Extraction
-**Action:** Extract and present features from user description.
-
-**Output:**
-```
-EXTRACTED FEATURES:
-1. Feature name - brief description
-2. Feature name - brief description
-...
-```
-
-**Then use AskUserQuestion tool:**
 ```python
 AskUserQuestion(
     questions=[{{
-        "question": "Did I capture all your requirements correctly?",
-        "header": "Features OK?",
+        "question": "What's your primary goal for this project?",
+        "header": "Select Goal",
         "multiSelect": False,
         "options": [
-            {{"label": "Yes, looks good", "description": "Continue to next step"}},
-            {{"label": "No, needs changes", "description": "I'll revise the features"}}
+            {{"label": "🚀 Launch a startup", "description": "Full business + technical strategy"}},
+            {{"label": "💡 Explore an idea", "description": "Quick feature brainstorming only"}},
+            {{"label": "💰 Raise funding", "description": "Business plan + financial projections"}},
+            {{"label": "⚡ Build quickly", "description": "Minimal scope - just MVP features"}},
+            {{"label": "🎯 Custom sections", "description": "Pick which sections to include"}}
         ]
     }}]
 )
 ```
 
-**If "No":** Ask what to add/change, then re-present features.
+**Based on selection, set workflow mode:**
+
+- **🚀 Launch a startup** → FULL MODE (all 11 sections)
+- **💡 Explore an idea** → MINIMAL MODE (3 sections: Overview, Features, Next Steps)
+- **💰 Raise funding** → COMMERCIAL MODE (skip technical implementation)
+- **⚡ Build quickly** → TECHNICAL MODE (skip business strategy)
+- **🎯 Custom sections** → Show checklist to select sections
 
 ---
 
-### STEP 3: Best Practice Suggestions
-**Action:** Research industry best practices and suggest 5-10 additional features.
+## 📋 SECTION LIBRARY (11 Sections)
+
+### BUSINESS SECTIONS (Commercial Strategy)
+1. **Problem & Vision** - Market opportunity, problem statement, vision
+2. **Target Customer** - ICP, personas, TAM/SAM/SOM
+3. **Value Proposition** - Unique value, competitive positioning
+4. **Revenue Model** - Monetization, pricing tiers, LTV/CAC
+5. **Go-to-Market Strategy** - Channels, PLG vs SLG, launch plan
+
+### PRODUCT SECTIONS (What to Build)
+6. **Core Features** - MVP scope, user stories, priorities
+7. **Design Architecture** - UI/UX, wireframes, visual artifacts
+
+### TECHNICAL SECTIONS (How to Build)
+8. **Technical Architecture** - Stack, APIs, data flow, infrastructure
+9. **Implementation Timeline** - Phases, milestones, dependencies
+
+### OPERATIONAL SECTIONS (Success & Risk)
+10. **Success Metrics** - KPIs, north star metric, measurement
+11. **Risk Assessment** - Technical risks, market risks, mitigation
+
+---
+
+## 🔄 INCREMENTAL WORKFLOW (Auto-Fill + Enhance)
+
+### STEP 0: Project Naming (Always First)
+**Action:** Generate 5 project name options based on initial description.
 
 **Output:**
 ```
-SUGGESTED ADDITIONAL FEATURES:
-11. Feature name - why this is valuable
-12. Feature name - why this is valuable
+SUGGESTED PROJECT NAMES:
+1. [Name] - [why it works]
+2. [Name] - [why it works]
 ...
+5. [Name] - [why it works]
 ```
 
-**Then use AskUserQuestion tool:**
+**Use AskUserQuestion:**
 ```python
 AskUserQuestion(
     questions=[{{
-        "question": "Which additional features do you want to include?",
-        "header": "Add Features",
-        "multiSelect": True,
+        "question": "Which name do you prefer?",
+        "header": "Project Name",
+        "multiSelect": False,
         "options": [
-            {{"label": "Feature 11", "description": "[description]"}},
-            {{"label": "Feature 12", "description": "[description]"}},
+            {{"label": "Option 1", "description": "[name]"}},
+            {{"label": "Option 2", "description": "[name]"}},
             ...
+            {{"label": "Custom name", "description": "I'll enter my own"}}
         ]
     }}]
 )
 ```
 
+Update project name in PROJECT_SPEC.md if changed.
+
 ---
 
-### STEP 4: Build Overview Section
-**Action:** Create comprehensive project overview.
+### For Each Section in Selected Mode:
 
-**Output:** Show the Overview section markdown.
+**PATTERN:**
+1. **Auto-Fill** - Generate section content with smart defaults
+2. **Show** - Display the markdown
+3. **Suggest** - Offer 3-5 enhancements to fill gaps
+4. **Approve** - Use AskUserQuestion with buttons
 
-**Then use AskUserQuestion tool:**
+**Approval Buttons (Every Section):**
 ```python
 AskUserQuestion(
     questions=[{{
-        "question": "Does this overview capture your project vision?",
-        "header": "Overview OK?",
+        "question": "How would you like to proceed with [Section Name]?",
+        "header": "[Section] OK?",
         "multiSelect": False,
         "options": [
-            {{"label": "Approve", "description": "Move to next section"}},
-            {{"label": "Edit", "description": "I'll revise it"}},
-            {{"label": "Skip for now", "description": "Come back later"}}
+            {{"label": "✅ Approve as-is", "description": "Save and continue"}},
+            {{"label": "✏️ Edit", "description": "I'll revise this section"}},
+            {{"label": "🎯 Enhance with AI", "description": "Apply suggested improvements"}},
+            {{"label": "⏭️ Skip for now", "description": "Come back later"}},
+            {{"label": "🚫 Skip remaining", "description": "Jump to final review"}}
         ]
     }}]
 )
 ```
 
-**If approved:** Write Overview to {spec_path} using Write tool (creates file if doesn't exist).
+**Actions:**
+- **✅ Approve** → Write/append to {spec_path}
+- **✏️ Edit** → Ask what to change, regenerate, re-present
+- **🎯 Enhance** → Apply suggestions, show enhanced version, re-present
+- **⏭️ Skip** → Mark as "TBD" in spec, move to next
+- **🚫 Skip remaining** → Jump to Step FINAL
 
 ---
 
-### STEP 5: Build Features Section
-**Action:** Create detailed features with priorities, requirements, and acceptance criteria.
+### SECTION DETAILS
 
-**Output:** Show the Features section markdown.
+**SECTION 1: Problem & Vision**
+- Auto-extract problem from description
+- Generate vision statement
+- Auto-estimate market size
+- **Suggest:** Urgency indicators, market trends
 
-**Then use AskUserQuestion tool for approval.**
+**SECTION 2: Target Customer**
+- Auto-identify customer segment
+- Generate 3 user personas
+- **Suggest:** TAM/SAM/SOM, ICP refinement, pain point validation
 
-**If approved:** Append Features to {spec_path} using Edit tool.
+**SECTION 3: Value Proposition**
+- Auto-create value prop canvas
+- Generate "We help [X] do [Y] by [Z]"
+- **Suggest:** Unique differentiators, competitive moats, positioning
+
+**SECTION 4: Revenue Model**
+- Auto-recommend monetization (subscription, usage, etc.)
+- Pre-fill pricing tiers with benchmarks
+- **Suggest:** LTV/CAC targets, upsell paths, pricing experiments
+
+**SECTION 5: Go-to-Market**
+- Auto-select channels based on customer
+- Recommend PLG vs SLG
+- **Suggest:** Launch sequence, growth loops, distribution strategy
+
+**SECTION 6: Core Features (MVP)**
+- Auto-prioritize features into MVP/V2/V3
+- Generate user stories
+- **Suggest:** Feature scoring, effort estimates, dependencies
+
+**SECTION 7: Design Architecture**
+- Define UI/UX approach
+- **Generate visual artifacts** using canvas:
+  - User flow wireframes
+  - Component hierarchy
+  - Design system preview
+- **Suggest:** Component libraries, design patterns
+
+**SECTION 8: Technical Architecture**
+- Auto-recommend stack based on requirements
+- Suggest buy/build/integrate decisions
+- **Suggest:** Architecture patterns, scaling approach, API design
+
+**SECTION 9: Implementation Timeline**
+- Auto-generate 90-day roadmap
+- Identify phases and milestones
+- **Suggest:** Critical path, parallel work streams, quick wins
+
+**SECTION 10: Success Metrics**
+- Auto-populate industry KPIs
+- Set milestone targets (Week 1/Month 1/Quarter 1)
+- **Suggest:** North star metric, health metrics, vanity vs actionable
+
+**SECTION 11: Risk Assessment**
+- Auto-identify top 3 risks
+- Generate mitigation strategies
+- **Suggest:** Validation experiments, pivot triggers, de-risking plan
 
 ---
 
-### STEP 6: Build Technical Architecture
-**Action:** Define stack, APIs, data flow, integrations.
+### STEP FINAL: Review & Launch
 
-**Output:** Show the Technical Architecture section.
-
-**Then use AskUserQuestion tool for approval.**
-
-**If approved:** Append to {spec_path}.
-
----
-
-### STEP 7: Build Design Architecture + Visual Artifacts
-**Action:**
-1. Define UI/UX approach, component library, design patterns
-2. **GENERATE VISUAL ARTIFACTS** using canvas/artifacts feature:
-   - System architecture diagram
-   - Data flow diagram
-   - Component hierarchy diagram
-   - User flow wireframes
-
-**Output:**
-- Show Design Architecture section
-- Show generated diagrams/wireframes
-
-**Then use AskUserQuestion tool for approval.**
-
-**If approved:** Append to {spec_path}.
-
----
-
-### STEP 8: Build Remaining Sections
-**For each section below:**
-1. Show the section markdown
-2. Use AskUserQuestion for approval (Approve/Edit/Skip)
-3. If approved, append to {spec_path}
-
-**Required Sections:**
-- Implementation Timeline (phases, milestones, dependencies)
-- Success Metrics (KPIs, measurement approach)
-- Risk Assessment (technical risks, mitigation strategies)
-- Dependencies (external APIs, libraries, services)
-- Testing Strategy (unit, integration, e2e, load testing)
-- Security & Compliance (data protection, authentication, compliance needs)
-
----
-
-### STEP 9: Final Review
-**Action:** Present complete PROJECT_SPEC.md summary.
+**Action:** Present complete summary.
 
 **Output:**
 ```
 ✅ PROJECT_SPEC.md COMPLETE
 
-Sections:
-- ✅ Overview
-- ✅ Features (X features)
-- ✅ Technical Architecture
-- ✅ Design Architecture (with visual artifacts)
-- ✅ Implementation Timeline
-- ✅ Success Metrics
-- ✅ Risk Assessment
-- ✅ Dependencies
-- ✅ Testing Strategy
-- ✅ Security & Compliance
+Mode: [Selected Mode]
+Sections Completed: [X/11]
+
+✅ Problem & Vision
+✅ Target Customer
+✅ Value Proposition
+⏭️ Revenue Model (skipped)
+✅ Go-to-Market
+✅ Core Features (12 features)
+✅ Design Architecture (with wireframes)
+✅ Technical Architecture
+✅ Implementation Timeline (90-day plan)
+✅ Success Metrics
+⏭️ Risk Assessment (skipped)
 
 File: {spec_path}
 ```
 
-**Then use AskUserQuestion tool:**
+**Use AskUserQuestion:**
 ```python
 AskUserQuestion(
     questions=[{{
         "question": "Ready to start building?",
-        "header": "Start Build?",
+        "header": "Next Step",
         "multiSelect": False,
         "options": [
-            {{"label": "Yes, start now", "description": "Launch br build start"}},
-            {{"label": "No, review first", "description": "I'll review the spec manually"}},
-            {{"label": "Edit something", "description": "Make changes to the spec"}}
+            {{"label": "🚀 Start building now", "description": "Show me the command"}},
+            {{"label": "📝 Review spec first", "description": "I'll read it manually"}},
+            {{"label": "🔄 Fill skipped sections", "description": "Go back to complete"}},
+            {{"label": "✏️ Edit something", "description": "Make changes"}}
         ]
     }}]
 )
 ```
 
-**If "Yes, start now":** Tell user you're ready to run `br build start` but they need to run it manually (you can't execute it from planning mode).
-
-**If "No, review first":** Provide the command:
+**If "🚀 Start building now":**
 ```
-To start building later, run:
+To begin implementation, run:
 cd {project_root}
 br build start
 ```
+
+**If "🔄 Fill skipped sections":** Return to first skipped section.
 
 ---
 
 ## ⛔ CRITICAL RULES
 
-1. **NO CODE UNTIL SPEC COMPLETE** - Do not write any implementation code
-2. **INCREMENTAL UPDATES** - Write/append each section to {spec_path} as it's approved
-3. **USE AskUserQuestion** - Never just ask text questions, use the tool for y/n prompts
-4. **GENERATE VISUAL ARTIFACTS** - Use canvas for diagrams and wireframes
-5. **ALL SECTIONS REQUIRED** - Don't skip any of the 11 sections
-6. **DYNAMIC FEATURE UPDATES** - If user adds features mid-conversation, update the spec immediately
-7. **OPUS EXTENDED THINKING** - Use Opus model for strategic planning analysis
+1. **NO CODE UNTIL SPEC COMPLETE** - Planning mode only
+2. **INCREMENTAL UPDATES** - Write/append to {spec_path} after each approval
+3. **USE AskUserQuestion** - Always use buttons, never plain text questions
+4. **AUTO-FILL EVERYTHING** - Never show empty sections, always pre-populate
+5. **RESPECT SKIPS** - User can skip any section, mark as "TBD" in spec
+6. **DYNAMIC UPDATES** - If user adds features/changes mid-flow, update spec immediately
+7. **GENERATE VISUALS** - Use canvas for diagrams and wireframes when applicable
+
+---
+
+## 🎯 MODE CONFIGURATIONS
+
+**FULL MODE:** All 11 sections
+**MINIMAL MODE:** Sections 6, 9 (Features + Timeline only)
+**COMMERCIAL MODE:** Sections 1-5, 10, 11 (skip technical)
+**TECHNICAL MODE:** Sections 6-9 (skip business)
+**CUSTOM MODE:** User selects from checklist
 
 ---
 
 ## 🚀 Start Now
 
-**Step 1:** Verify you're using Opus model (`/model opus`)
+**Step 1:** Use AskUserQuestion to ask for goal selection (shown above)
 **Step 2:** Ask: "Tell me about your project - what do you want to build?"
-**Step 3:** Follow the workflow above, section by section
+**Step 3:** Auto-fill and present sections based on selected mode
+**Step 4:** Follow approval pattern for each section
+**Step 5:** Generate final summary and next steps
 """
 
             planning_path.write_text(planning_content)
