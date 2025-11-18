@@ -176,8 +176,8 @@ def init(
         # Auto-launch Claude Code planning mode for new projects only
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            # New project - create PLANNING.md for Claude Code to read
-            planning_path = buildrunner_dir / "PLANNING.md"
+            # New project - create CLAUDE.md for Claude Code to auto-read
+            planning_path = buildrunner_dir / "CLAUDE.md"
 
             planning_content = f"""# 🎯 PLANNING MODE - STOP AND READ THIS FIRST
 
