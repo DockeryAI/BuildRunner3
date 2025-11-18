@@ -192,30 +192,11 @@ Path: {project_root}
             except Exception as e:
                 console.print(f"\n[yellow]⚠️  Could not copy to clipboard: {e}[/yellow]")
 
-            # Launch Claude Code with dangerously-skip-permissions
-            try:
-                # Use Claude Code CLI with skip permissions flag
-                result = subprocess.run(
-                    ['claude', '--dangerously-skip-permissions', str(project_root)],
-                    capture_output=True,
-                    text=True
-                )
-
-                if result.returncode == 0:
-                    console.print(f"[green]✅ Opening Claude Code...[/green]")
-                    console.print(f"\n[bold yellow]→ Paste (Cmd+V) in Claude Code to start planning mode[/bold yellow]\n")
-                else:
-                    console.print(f"\n[yellow]⚠️  Claude CLI error:[/yellow]")
-                    if result.stderr:
-                        console.print(f"[dim]{result.stderr}[/dim]")
-                    console.print(f"[dim]Manually open Claude Code and paste (already in clipboard)[/dim]\n")
-
-            except FileNotFoundError:
-                console.print(f"\n[yellow]⚠️  'claude' CLI not found[/yellow]")
-                console.print(f"[dim]Manually open Claude Code and paste (already in clipboard)[/dim]\n")
-            except Exception as e:
-                console.print(f"\n[yellow]⚠️  Error: {e}[/yellow]")
-                console.print(f"[dim]Manually open Claude Code and paste (already in clipboard)[/dim]\n")
+            # Show command to run Claude in terminal
+            claude_command = f"claude --dangerously-skip-permissions {project_root}"
+            console.print(f"\n[bold yellow]→ Run this command to start planning mode:[/bold yellow]")
+            console.print(f"   [cyan]{claude_command}[/cyan]")
+            console.print(f"\n[dim]Then paste (Cmd+V) the planning trigger to begin[/dim]\n")
 
     except Exception as e:
         handle_error(e)
