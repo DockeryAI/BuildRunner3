@@ -11,10 +11,13 @@ import json
 import yaml
 import tempfile
 import subprocess
+import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 from dataclasses import dataclass, asdict
+
+from core.opus_client import OpusClient, OpusAPIError
 
 
 def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
@@ -153,6 +156,16 @@ class PRDWizard:
         self.spec_path = self.project_root / ".buildrunner" / "PROJECT_SPEC.md"
         self.state_path = self.project_root / ".buildrunner" / "spec_state.yaml"
         self.templates_dir = self.project_root / "templates"
+
+        # Initialize Opus client (will fail gracefully if no API key)
+        try:
+            self.opus_client = OpusClient()
+            self.use_opus = True
+        except ValueError:
+            print("\n[yellow]⚠️  ANTHROPIC_API_KEY not found - using template mode[/yellow]")
+            print("[dim]Set ANTHROPIC_API_KEY environment variable to enable Opus AI assistance[/dim]\n")
+            self.opus_client = None
+            self.use_opus = False
 
     def check_existing_spec(self) -> bool:
         """Check if PROJECT_SPEC.md already exists"""
@@ -316,26 +329,133 @@ class PRDWizard:
 
         return templates.get(section_name, "")
 
+    async def opus_discuss_section(self, section_name: str, app_description: str,
+                                   industry: str, use_case: str) -> str:
+        """
+        Interactive discussion with Opus to build section content.
+        Generates multiple options, user selects/refines iteratively.
+        """
+        if not self.use_opus:
+            # Fall back to template
+            return self.get_section_template(section_name)
+
+        print(f"\n🤖 Asking Opus to generate ideas for {section_name}...")
+
+        # Build context-aware prompt
+        prompt = f"""You're helping create a PROJECT_SPEC.md for a {industry} {use_case} application.
+
+App Description: {app_description}
+
+Generate content for the "{section_name}" section. Provide 3 different approaches/options:
+
+Option 1: Minimal viable approach (essential features only)
+Option 2: Balanced approach (practical and comprehensive)
+Option 3: Comprehensive approach (full-featured, future-proof)
+
+For each option, be specific and actionable. Include concrete technical details.
+
+Format your response as:
+
+## Option 1: Minimal
+[content]
+
+## Option 2: Balanced
+[content]
+
+## Option 3: Comprehensive
+[content]"""
+
+        try:
+            message = await self.opus_client.async_client.messages.create(
+                model=self.opus_client.model,
+                max_tokens=4096,
+                messages=[{"role": "user", "content": prompt}]
+            )
+
+            options_text = message.content[0].text
+            print(f"\n✓ Opus generated 3 options\n")
+            print(options_text[:500] + "..." if len(options_text) > 500 else options_text)
+
+            # Let user choose
+            print("\n\nWhich approach do you prefer?")
+            print("  1. Option 1 (Minimal)")
+            print("  2. Option 2 (Balanced)")
+            print("  3. Option 3 (Comprehensive)")
+            print("  4. Combine elements from multiple options")
+            print("  5. Ask Opus to refine based on feedback")
+
+            choice = input("\nChoice (1-5): ").strip()
+
+            if choice in ['1', '2', '3']:
+                # Extract the chosen option
+                option_markers = ["## Option 1:", "## Option 2:", "## Option 3:"]
+                selected_marker = option_markers[int(choice) - 1]
+
+                if selected_marker in options_text:
+                    start = options_text.find(selected_marker)
+                    # Find next option or end
+                    end = len(options_text)
+                    for marker in option_markers:
+                        next_pos = options_text.find(marker, start + len(selected_marker))
+                        if next_pos > start:
+                            end = min(end, next_pos)
+
+                    content = options_text[start:end].replace(selected_marker, "").strip()
+                    print(f"\n✓ Selected Option {choice}")
+                    return content
+                else:
+                    return options_text
+
+            elif choice == '4':
+                print("\nOpening editor to combine/edit the options...")
+                # Write all options to temp file for editing
+                return get_multiline_input(
+                    "Combine the best elements from the options above:",
+                    allow_file=False
+                )
+
+            elif choice == '5':
+                feedback = input("\nWhat would you like Opus to change/add? ")
+                refine_prompt = f"""{options_text}
+
+User feedback: {feedback}
+
+Please refine the options based on this feedback. Provide the improved version."""
+
+                message = await self.opus_client.async_client.messages.create(
+                    model=self.opus_client.model,
+                    max_tokens=4096,
+                    messages=[{"role": "user", "content": refine_prompt}]
+                )
+
+                refined = message.content[0].text
+                print(f"\n✓ Opus refined the content\n")
+                print(refined[:500] + "..." if len(refined) > 500 else refined)
+
+                confirm = input("\nAccept this version? (y/n): ")
+                if confirm.lower() == 'y':
+                    return refined
+                else:
+                    return options_text  # Fall back to original options
+
+            return options_text
+
+        except OpusAPIError as e:
+            print(f"\n⚠️  Opus API error: {e}")
+            print("Falling back to template...")
+            return self.get_section_template(section_name)
+        except Exception as e:
+            print(f"\n⚠️  Unexpected error: {e}")
+            return self.get_section_template(section_name)
+
     def opus_prefill_section(self, section_name: str, app_description: str,
                             industry: str, use_case: str) -> str:
         """
-        Use Opus to pre-fill a section based on app description and context.
-
-        In production, this would call Opus API. For now, returns enhanced template.
+        Wrapper to run async opus_discuss_section synchronously.
         """
-        template = self.get_section_template(section_name)
-
-        # In production: Call Opus with context
-        # prefilled_content = opus_api.generate(
-        #     prompt=f"Fill in this {section_name} for: {app_description}",
-        #     context={'industry': industry, 'use_case': use_case}
-        # )
-
-        # For now, return template with hints
-        prefilled = template.replace('[Brief overview of the product]',
-                                    f'A {industry} {use_case} application: {app_description}')
-
-        return prefilled
+        return asyncio.run(
+            self.opus_discuss_section(section_name, app_description, industry, use_case)
+        )
 
     def run_first_time_wizard(self) -> ProjectSpec:
         """
@@ -381,36 +501,32 @@ class PRDWizard:
         sections = ['product_requirements', 'technical_architecture', 'design_architecture']
 
         for section_name in sections:
-            print(f"\n--- Section: {section_name} ---")
+            print(f"\n{'='*60}")
+            print(f"Section: {section_name.replace('_', ' ').title()}")
+            print(f"{'='*60}")
 
-            # Opus pre-fill
-            prefilled = self.opus_prefill_section(section_name, app_description, industry, use_case)
+            # Interactive Opus discussion (handles option generation, selection, refinement)
+            content = self.opus_prefill_section(section_name, app_description, industry, use_case)
 
-            print(f"\nOpus has pre-filled this section. Options:")
-            print("  1. Accept")
-            print("  2. Request more details")
-            print("  3. Provide custom input")
-            print("  4. Skip for now")
+            # Check if user wants to make final edits
+            print("\n\nFinal review:")
+            print("  1. Accept this content")
+            print("  2. Make manual edits")
+            print("  3. Skip this section for now")
 
-            choice = input("Choice (1-4): ")
+            final_choice = input("\nChoice (1-3): ").strip()
 
-            if choice == '1':
-                content = prefilled
+            if final_choice == '2':
+                print("\nOpening editor for final edits...")
+                content = get_multiline_input("Edit the content:", allow_file=False)
                 completed = True
                 skipped = False
-            elif choice == '2':
-                print("  (In production, would request more from Opus)")
-                content = prefilled + "\n\n[Additional details from Opus]"
-                completed = True
-                skipped = False
-            elif choice == '3':
-                content = get_multiline_input("Enter your content for this section:")
-                completed = True
-                skipped = False
-            else:  # Skip
-                content = prefilled
+            elif final_choice == '3':
                 completed = False
                 skipped = True
+            else:  # Accept
+                completed = True
+                skipped = False
 
             spec.sections.append(SpecSection(
                 name=section_name,
@@ -419,6 +535,8 @@ class PRDWizard:
                 completed=completed,
                 skipped=skipped
             ))
+
+            print(f"✓ {section_name} {'completed' if completed else 'skipped'}")
 
         # Step 5: Design Architecture (done as part of section wizard above)
 
