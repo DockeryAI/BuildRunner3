@@ -6,12 +6,43 @@ with design intelligence, industry profiles, and use case patterns.
 """
 
 import os
+import sys
 import json
 import yaml
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 from dataclasses import dataclass, asdict
+
+
+def get_multiline_input(prompt: str) -> str:
+    """
+    Get multi-line input from user.
+    Handles large pastes properly by reading until empty line.
+
+    Args:
+        prompt: Prompt to display to user
+
+    Returns:
+        Combined multi-line string
+    """
+    print(f"\n{prompt}")
+    print("[dim](Paste your text, then press Enter on an empty line to finish)[/dim]\n")
+
+    lines = []
+    # Flush any buffered input
+    sys.stdin.flush() if hasattr(sys.stdin, 'flush') else None
+
+    while True:
+        try:
+            line = input()
+            if line.strip() == "":  # Empty line signals end
+                break
+            lines.append(line)
+        except EOFError:
+            break
+
+    return "\n".join(lines).strip()
 
 
 class SpecState(Enum):
@@ -267,7 +298,7 @@ class PRDWizard:
 
         # Step 1: Get app idea
         print("Step 1: Describe Your App")
-        app_description = input("What do you want to build? ")
+        app_description = get_multiline_input("What do you want to build?")
 
         # Step 2: Detect industry + use case
         print("\nStep 2: Detecting Industry and Use Case...")
@@ -316,7 +347,7 @@ class PRDWizard:
                 completed = True
                 skipped = False
             elif choice == '3':
-                content = input("  Enter your content: ")
+                content = get_multiline_input("Enter your content for this section:")
                 completed = True
                 skipped = False
             else:  # Skip
@@ -402,7 +433,8 @@ class PRDWizard:
             section = spec.sections[section_idx]
 
             print(f"\nCurrent content:\n{section.content[:200]}...")
-            new_content = input("\nEnter new content (or press Enter to keep): ")
+            print("\nEnter new content (or just press Enter on empty line to keep current):")
+            new_content = get_multiline_input("")
 
             if new_content:
                 section.content = new_content
