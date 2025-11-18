@@ -127,7 +127,9 @@ def init(
 ):
     """Initialize a new BuildRunner project."""
     try:
-        project_root = get_project_root()
+        # Create project directory and set as root
+        project_root = Path.cwd() / project_name
+        project_root.mkdir(parents=True, exist_ok=True)
         buildrunner_dir = project_root / ".buildrunner"
 
         if buildrunner_dir.exists() and not force:
@@ -176,8 +178,8 @@ def init(
         # Auto-launch Claude Code planning mode for new projects only
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            # New project - create CLAUDE.md for Claude Code to auto-read
-            planning_path = buildrunner_dir / "CLAUDE.md"
+            # New project - create CLAUDE.md in project ROOT for Claude Code to auto-read
+            planning_path = project_root / "CLAUDE.md"
 
             planning_content = f"""# 🎯 PLANNING MODE - STOP AND READ THIS FIRST
 
