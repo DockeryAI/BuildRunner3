@@ -25,6 +25,7 @@ from core.governance import get_governance_manager, GovernanceError
 from core.governance_enforcer import get_enforcer, EnforcementError
 from core.architecture_guard import ArchitectureGuard, ArchitectureViolation
 from core.self_service import SelfServiceManager, ServiceRequirement
+from core.prd_wizard import PRDWizard, SpecState
 
 # Import new command groups
 from cli.spec_commands import spec_app, design_app
@@ -174,6 +175,39 @@ def init(
 
         console.print(f"[green]✅ Initialized BuildRunner project: {project_name}[/green]")
         console.print(f"[dim]Location: {buildrunner_dir}[/dim]")
+
+        # Auto-launch wizard for new projects without PROJECT_SPEC.md
+        spec_path = buildrunner_dir / "PROJECT_SPEC.md"
+        if not spec_path.exists():
+            console.print("\n[bold cyan]🧙 Let's create your project specification![/bold cyan]")
+
+            # Ask if user wants to run wizard
+            run_wizard = typer.confirm(
+                "Would you like to start the interactive PROJECT_SPEC wizard?",
+                default=True
+            )
+
+            if run_wizard:
+                console.print("")  # Add spacing
+                try:
+                    wizard = PRDWizard(str(project_root))
+                    spec = wizard.run()
+
+                    console.print("\n[green]✓ PROJECT_SPEC created successfully![/green]")
+                    console.print(f"  Location: {spec_path}")
+                    console.print(f"  Status: {spec.state.value}")
+
+                    # Suggest next steps
+                    console.print("\n[bold]Next steps:[/bold]")
+                    console.print("  1. Run [cyan]br spec sync[/cyan] to generate features.json")
+                    console.print("  2. Run [cyan]br feature list[/cyan] to see your features")
+                    console.print("  3. Run [cyan]br spec confirm[/cyan] when ready to lock the spec")
+
+                except Exception as wizard_error:
+                    console.print(f"\n[yellow]⚠️  Wizard error: {wizard_error}[/yellow]")
+                    console.print("[dim]You can run 'br spec wizard' later to create your spec[/dim]")
+            else:
+                console.print("\n[dim]You can run 'br spec wizard' later to create your PROJECT_SPEC[/dim]")
 
     except Exception as e:
         handle_error(e)
