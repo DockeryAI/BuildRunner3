@@ -179,10 +179,25 @@ def init(
             # New project - copy trigger to clipboard and open Claude Code
             import subprocess
 
-            # Create planning trigger
-            planning_trigger = f"""BUILDRUNNER_PLANNING_MODE
+            # Create planning trigger with full instructions
+            planning_trigger = f"""BUILDRUNNER_PLANNING_MODE - Start interactive PRD building session
+
 Project: {project_name}
 Path: {project_root}
+PROJECT_SPEC will be saved to: {spec_path}
+
+INSTRUCTIONS:
+You are now in PLANNING MODE. Lead an interactive brainstorming session to build a complete PROJECT_SPEC.md:
+
+1. Ask the user to describe their project idea
+2. Extract all features, requirements, and technical details from their description
+3. Show extracted items as numbered lists
+4. Generate additional feature suggestions based on best practices
+5. Let user select features by typing numbers (e.g., "1, 3, 5")
+6. Build PRD sections: Product Requirements, Technical Architecture, Design Architecture
+7. Write the complete PROJECT_SPEC.md file to: {spec_path}
+
+Start by asking: "Tell me about your project - what do you want to build?"
 """
 
             # Copy to clipboard (macOS)
