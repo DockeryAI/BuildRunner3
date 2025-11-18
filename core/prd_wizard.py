@@ -24,6 +24,8 @@ try:
 except ImportError:
     OPUS_AVAILABLE = False
 
+from core.design_system.profile_loader import ProfileLoader, IndustryProfile
+
 
 def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
     """
@@ -162,6 +164,14 @@ class PRDWizard:
         self.state_path = self.project_root / ".buildrunner" / "spec_state.yaml"
         self.templates_dir = self.project_root / "templates"
 
+        # Initialize Synapse profile loader
+        try:
+            self.profile_loader = ProfileLoader()
+            print(f"[dim]✓ Loaded {len(self.profile_loader.list_available())} industry profiles[/dim]")
+        except Exception as e:
+            print(f"[yellow]⚠️  Could not load industry profiles: {e}[/yellow]")
+            self.profile_loader = None
+
         # Check if we should use Claude Code mode (default) or API mode
         api_key = os.getenv("ANTHROPIC_API_KEY")
         use_api_mode = os.getenv("BR_USE_API_MODE", "false").lower() == "true"
@@ -219,48 +229,78 @@ class PRDWizard:
         with open(self.state_path, 'w') as f:
             yaml.dump(data, f, default_flow_style=False)
 
-    def detect_industry_and_use_case(self, app_description: str) -> Tuple[str, str]:
+    def detect_industry_and_use_case(self, app_description: str) -> Tuple[str, str, Optional[IndustryProfile]]:
         """
-        Detect industry and use case from app description.
+        Detect industry and use case from app description using Synapse database.
 
-        This would typically use an LLM or NLP model. For now, uses keyword matching.
-        In production, this would call Opus to analyze the description.
+        Searches the 148+ industry profiles for matches, returns best match.
+        If no match found in database, returns generic categories.
+
+        Returns:
+            Tuple of (industry_id, use_case, profile)
+        """
+        if not self.profile_loader:
+            # Fallback to generic if profile loader not available
+            return 'saas', 'dashboard', None
+
+        app_lower = app_description.lower()
+
+        # Search Synapse database
+        print("\n🔍 Searching 148 industry profiles...")
+        matches = self.profile_loader.search(app_description)
+
+        if matches:
+            # Show top 5 matches
+            print(f"\n✓ Found {len(matches)} matching industries:\n")
+            for i, profile in enumerate(matches[:5], 1):
+                print(f"  {i}. {profile.name} ({profile.category})")
+                if profile.keywords:
+                    print(f"     Keywords: {', '.join(profile.keywords[:5])}")
+                print()
+
+            # Use best match
+            best_match = matches[0]
+            print(f"[cyan]→ Best match: {best_match.name}[/cyan]")
+
+            # Detect use case from keywords
+            use_case = self._detect_use_case(app_description)
+
+            return best_match.id, use_case, best_match
+        else:
+            print("[yellow]⚠️  No exact match found in database[/yellow]")
+            print("[dim]You can manually select from available profiles or research new industry[/dim]")
+
+            # Fallback to generic detection
+            use_case = self._detect_use_case(app_description)
+            return 'saas', use_case, None
+
+    def _detect_use_case(self, app_description: str) -> str:
+        """
+        Detect use case pattern from app description.
+
+        Args:
+            app_description: App description text
+
+        Returns:
+            Use case identifier (dashboard, marketplace, crm, etc.)
         """
         app_lower = app_description.lower()
 
-        # Industry detection
-        industry_keywords = {
-            'healthcare': ['health', 'patient', 'medical', 'hospital', 'clinic', 'doctor'],
-            'fintech': ['finance', 'banking', 'payment', 'trading', 'investment', 'crypto'],
-            'ecommerce': ['shop', 'store', 'product', 'cart', 'checkout', 'retail'],
-            'education': ['learn', 'course', 'student', 'teacher', 'school', 'education'],
-            'saas': ['saas', 'software', 'service', 'platform', 'tool', 'application'],
-            'social': ['social', 'community', 'feed', 'post', 'share', 'follow'],
-            'marketplace': ['marketplace', 'listing', 'seller', 'buyer', 'bid'],
-            'analytics': ['analytics', 'dashboard', 'metrics', 'data', 'insights']
-        }
-
-        industry = 'saas'  # default
-        for ind, keywords in industry_keywords.items():
-            if any(kw in app_lower for kw in keywords):
-                industry = ind
-                break
-
-        # Use case detection
         use_case_keywords = {
-            'dashboard': ['dashboard', 'metrics', 'analytics', 'reports', 'visualize'],
-            'marketplace': ['marketplace', 'listing', 'buy', 'sell', 'vendor'],
-            'crm': ['crm', 'customer', 'contact', 'lead', 'sales'],
-            'analytics': ['analytics', 'data', 'insights', 'charts', 'graphs']
+            'dashboard': ['dashboard', 'metrics', 'analytics', 'reports', 'visualize', 'insights'],
+            'marketplace': ['marketplace', 'listing', 'buy', 'sell', 'vendor', 'buyer', 'seller'],
+            'crm': ['crm', 'customer', 'contact', 'lead', 'sales', 'pipeline'],
+            'analytics': ['analytics', 'data', 'insights', 'charts', 'graphs', 'statistics'],
+            'ecommerce': ['shop', 'store', 'product', 'cart', 'checkout', 'catalog'],
+            'social': ['social', 'community', 'feed', 'post', 'share', 'follow'],
+            'saas-platform': ['platform', 'tool', 'service', 'application', 'software']
         }
 
-        use_case = 'dashboard'  # default
         for uc, keywords in use_case_keywords.items():
             if any(kw in app_lower for kw in keywords):
-                use_case = uc
-                break
+                return uc
 
-        return industry, use_case
+        return 'dashboard'  # default
 
     def get_section_template(self, section_name: str) -> str:
         """Get template content for a section"""
@@ -661,16 +701,28 @@ Example:
         print("Step 1: Describe Your App")
         app_description = get_multiline_input("What do you want to build?")
 
-        # Step 2: Detect industry + use case
+        # Step 2: Detect industry + use case from Synapse database
         print("\nStep 2: Detecting Industry and Use Case...")
-        industry, use_case = self.detect_industry_and_use_case(app_description)
+        industry, use_case, industry_profile = self.detect_industry_and_use_case(app_description)
         print(f"  Detected Industry: {industry}")
         print(f"  Detected Use Case: {use_case}")
 
-        confirm = input("Is this correct? (y/n): ")
+        confirm = input("\nIs this correct? (y/n): ")
         if confirm.lower() != 'y':
-            industry = input("  Enter industry: ")
+            # Show available industries
+            if self.profile_loader:
+                available = self.profile_loader.list_available()
+                print(f"\n[dim]Available industries ({len(available)}):[/dim]")
+                for i, ind_id in enumerate(available[:20], 1):
+                    print(f"  {ind_id}")
+                print(f"  ... and {len(available) - 20} more")
+
+            industry = input("\n  Enter industry ID: ")
             use_case = input("  Enter use case: ")
+
+            # Try to load the profile they selected
+            if self.profile_loader:
+                industry_profile = self.profile_loader.load_profile(industry)
 
         # Create spec object
         spec = ProjectSpec(
@@ -811,6 +863,211 @@ Example:
 
         return spec
 
+    def run_brainstorming_mode(self) -> ProjectSpec:
+        """
+        Brainstorming mode: Fully conversational PRD building with Opus/Claude Code.
+
+        Natural discussion to gather all requirements, make suggestions iteratively,
+        build complete spec through conversation. Then simplified wizard confirms sections.
+        """
+        print("\n" + "="*70)
+        print("  BRAINSTORMING MODE - Conversational PRD Builder")
+        print("="*70)
+        print()
+        print("[cyan]Let's build your PROJECT_SPEC through conversation![/cyan]")
+        print("[dim]I'll ask questions, make suggestions, and we'll build it together.[/dim]\n")
+
+        # Conversational gathering
+        print("Tell me about your project idea:")
+        app_description = get_multiline_input("What do you want to build?")
+
+        # Detect industry
+        print("\n🔍 Let me analyze that...")
+        industry, use_case, industry_profile = self.detect_industry_and_use_case(app_description)
+
+        print(f"\n[cyan]It looks like you're building a {industry} {use_case} application.[/cyan]")
+
+        if industry_profile:
+            print(f"[dim]I found the '{industry_profile.name}' industry profile.[/dim]")
+            if industry_profile.common_pain_points:
+                print(f"\n[yellow]Common pain points in {industry}:[/yellow]")
+                for pain in industry_profile.common_pain_points[:3]:
+                    print(f"  • {pain}")
+                print()
+
+        # Start conversational requirements gathering
+        print("\n" + "-"*70)
+        print("Let's dig deeper. I'll ask some questions to build your PRD.\n")
+
+        conversation_prompts = [
+            {
+                "section": "product_requirements",
+                "questions": [
+                    "Who is your target audience? Be specific about user personas.",
+                    "What's the main problem you're solving for them?",
+                    "What are the 3-5 core features you need for MVP?",
+                    "What's out of scope for v1.0?"
+                ]
+            },
+            {
+                "section": "technical_architecture",
+                "questions": [
+                    "Do you have preferences for tech stack? (or should I suggest based on your needs)",
+                    "Any specific scalability requirements? (users, data volume, regions)",
+                    "What integrations do you need? (payment, auth, APIs, etc.)"
+                ]
+            },
+            {
+                "section": "design_architecture",
+                "questions": [
+                    "What's the desired user experience? (simple/feature-rich, mobile-first/desktop, etc.)",
+                    f"Are there {industry} compliance requirements I should know about?",
+                    "Any accessibility requirements? (WCAG level, specific needs)"
+                ]
+            }
+        ]
+
+        sections_content = {}
+
+        for prompt_set in conversation_prompts:
+            section = prompt_set["section"]
+            print(f"\n{'='*70}")
+            print(f"  {section.replace('_', ' ').title()}")
+            print(f"{'='*70}\n")
+
+            responses = []
+            for question in prompt_set["questions"]:
+                print(f"[cyan]{question}[/cyan]")
+                answer = get_multiline_input("Your answer:")
+                responses.append({"question": question, "answer": answer})
+                print()
+
+            # Generate section content from conversation
+            section_content = self._build_section_from_conversation(
+                section, app_description, industry, use_case, responses, industry_profile
+            )
+
+            sections_content[section] = section_content
+
+        # Build spec object
+        spec = ProjectSpec(
+            state=SpecState.DRAFT,
+            industry=industry,
+            use_case=use_case
+        )
+
+        for section_name, content in sections_content.items():
+            spec.sections.append(SpecSection(
+                name=section_name,
+                title=section_name.replace('_', ' ').title(),
+                content=content,
+                completed=True,
+                skipped=False
+            ))
+
+        # Save spec
+        self.save_spec_state(spec)
+        self.write_spec_to_file(spec)
+
+        print("\n" + "="*70)
+        print("  ✓ PROJECT_SPEC Built from Conversation!")
+        print("="*70)
+        print(f"\nSaved to: {self.spec_path}")
+        print("\n[cyan]Next: Review each section and confirm[/cyan]\n")
+
+        # Run simplified confirmation wizard
+        return self.run_confirmation_wizard(spec)
+
+    def _build_section_from_conversation(
+        self,
+        section: str,
+        app_description: str,
+        industry: str,
+        use_case: str,
+        conversation: List[Dict],
+        industry_profile: Optional[IndustryProfile]
+    ) -> str:
+        """
+        Build section content from conversational responses.
+
+        Args:
+            section: Section name
+            app_description: Original app description
+            industry: Industry ID
+            use_case: Use case pattern
+            conversation: List of Q&A dicts
+            industry_profile: Industry profile if available
+
+        Returns:
+            Formatted section content
+        """
+        content = f"# {section.replace('_', ' ').title()}\n\n"
+
+        # Add conversation responses
+        for qa in conversation:
+            # Extract clean question (remove markdown)
+            question = qa["question"].strip()
+            answer = qa["answer"].strip()
+
+            if answer:
+                # Format as section
+                content += f"## {question}\n\n"
+                content += f"{answer}\n\n"
+
+        # Add industry-specific guidance if available
+        if industry_profile and section == "product_requirements":
+            if industry_profile.common_pain_points:
+                content += "## Additional Considerations\n\n"
+                content += f"Common pain points in {industry}:\n"
+                for pain in industry_profile.common_pain_points:
+                    content += f"- {pain}\n"
+                content += "\n"
+
+        return content
+
+    def run_confirmation_wizard(self, spec: ProjectSpec) -> ProjectSpec:
+        """
+        Simplified confirmation wizard - just review and approve sections.
+
+        Args:
+            spec: ProjectSpec built from brainstorming
+
+        Returns:
+            Updated ProjectSpec
+        """
+        print("\n" + "="*70)
+        print("  CONFIRMATION - Review Your PRD")
+        print("="*70)
+        print()
+
+        for section in spec.sections:
+            print(f"\n{'-'*70}")
+            print(f"Section: {section.title}")
+            print(f"{'-'*70}\n")
+            print(section.content[:500] + "..." if len(section.content) > 500 else section.content)
+            print()
+
+            choice = input("  1. Accept  2. Edit  3. Skip\nChoice (1-3): ").strip()
+
+            if choice == '2':
+                print("\nOpening editor...")
+                edited = get_multiline_input(f"Edit {section.title}:", allow_file=False)
+                section.content = edited
+            elif choice == '3':
+                section.skipped = True
+                section.completed = False
+            else:
+                section.completed = True
+                section.skipped = False
+
+        # Update state and save
+        spec.state = SpecState.REVIEWED
+        self.save_spec_state(spec)
+        self.write_spec_to_file(spec)
+
+        print("\n✓ PROJECT_SPEC confirmed and saved!")
+        return spec
+
     def run(self):
         """Main wizard entry point"""
         if self.check_existing_spec():
@@ -820,11 +1077,11 @@ Example:
                 spec = self.run_existing_spec_mode(spec)
             else:
                 print("Could not load spec state. Starting fresh.")
-                spec = self.run_first_time_wizard()
+                spec = self._choose_and_run_wizard_mode()
         else:
-            spec = self.run_first_time_wizard()
+            spec = self._choose_and_run_wizard_mode()
 
-        # Save state and write file
+        # Save state and write file (might already be saved in brainstorming mode)
         self.save_spec_state(spec)
         self.write_spec_to_file(spec)
 
@@ -832,6 +1089,33 @@ Example:
         print(f"State: {spec.state.value}")
 
         return spec
+
+    def _choose_and_run_wizard_mode(self) -> ProjectSpec:
+        """
+        Let user choose between brainstorming mode and regular wizard.
+
+        Returns:
+            Completed ProjectSpec
+        """
+        print("\n" + "="*70)
+        print("  BuildRunner PROJECT_SPEC Wizard")
+        print("="*70)
+        print()
+        print("Choose your mode:\n")
+        print("  1. [cyan]Brainstorming Mode[/cyan] (Recommended)")
+        print("     Conversational - I'll ask questions and build your PRD through")
+        print("     natural discussion. Great for new projects.\n")
+        print("  2. [dim]Structured Wizard[/dim]")
+        print("     Step-by-step sections with AI suggestions.")
+        print("     Good if you have a clear spec in mind.\n")
+
+        choice = input("Choice (1-2): ").strip()
+
+        if choice == '2':
+            return self.run_first_time_wizard()
+        else:
+            # Default to brainstorming
+            return self.run_brainstorming_mode()
 
 
 # ===== Enhanced Wizard with Real Opus Integration =====
