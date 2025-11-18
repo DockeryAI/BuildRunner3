@@ -192,11 +192,11 @@ Path: {project_root}
             except Exception as e:
                 console.print(f"\n[yellow]⚠️  Could not copy to clipboard: {e}[/yellow]")
 
-            # Launch Claude Code with dangerously-skip-sandbox
+            # Launch Claude Code with dangerously-skip-permissions
             try:
-                # Use Claude Code CLI with skip sandbox flag
+                # Use Claude Code CLI with skip permissions flag
                 result = subprocess.run(
-                    ['claude', '--dangerously-skip-sandbox', str(project_root)],
+                    ['claude', '--dangerously-skip-permissions', str(project_root)],
                     capture_output=True,
                     text=True
                 )
