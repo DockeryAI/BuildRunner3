@@ -192,11 +192,13 @@ Path: {project_root}
             except Exception as e:
                 console.print(f"\n[yellow]⚠️  Could not copy to clipboard: {e}[/yellow]")
 
-            # Show command to run Claude in terminal
-            claude_command = f"claude --dangerously-skip-permissions {project_root}"
-            console.print(f"\n[bold yellow]→ Run this command to start planning mode:[/bold yellow]")
-            console.print(f"   [cyan]{claude_command}[/cyan]")
-            console.print(f"\n[dim]Then paste (Cmd+V) the planning trigger to begin[/dim]\n")
+            # Auto-execute Claude CLI in this terminal
+            console.print(f"\n[green]✅ Starting Claude Code...[/green]")
+            console.print(f"[dim]Paste (Cmd+V) to begin planning mode[/dim]\n")
+
+            # Replace this process with claude CLI
+            import os
+            os.execvp('claude', ['claude', '--dangerously-skip-permissions', str(project_root)])
 
     except Exception as e:
         handle_error(e)
