@@ -1,0 +1,14 @@
+id: hair-salon
+name: Hair Salon
+naics_code: '812112'
+category: Personal Services
+keywords:
+- hair salon
+- hair
+- salon
+- hair stylist
+- hairstylist
+- haircut
+- beauty salon
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,69 @@
+name: healthcare
+description: Healthcare and medical applications
+
+colors:
+  primary: "#0066CC"  # Trust blue
+  secondary: "#00A86B"  # Medical green
+  success: "#00A86B"
+  warning: "#FFB020"
+  error: "#DC3545"
+  alert: "#FF6B6B"  # Urgent red
+  background: "#F8F9FA"  # Clean white
+  text: "#212529"
+
+typography:
+  font_family: "Inter, system-ui, sans-serif"
+  scale:
+    xs: "0.75rem"
+    sm: "0.875rem"
+    base: "1rem"
+    lg: "1.125rem"
+    xl: "1.25rem"
+    "2xl": "1.5rem"
+  weights:
+    normal: "400"
+    medium: "500"
+    semibold: "600"
+    bold: "700"
+
+spacing:
+  xs: "0.25rem"
+  sm: "0.5rem"
+  md: "1rem"
+  lg: "1.5rem"
+  xl: "2rem"
+  "2xl": "3rem"
+
+components:
+  - Button
+  - Input
+  - Card
+  - Table
+  - Alert
+  - Modal
+  - PatientCard
+  - VitalsWidget
+  - MedicationList
+  - AppointmentTimeline
+  - AlertBanner
+
+compliance:
+  - HIPAA
+  - WCAG 2.1 AA
+  - ADA
+  - FDA (if applicable)
+
+trust_signals:
+  - HIPAA compliance badge
+  - Secure data encryption indicator
+  - Patient privacy notice
+  - Medical professional verification
+  - Accreditation logos
+
+accessibility_requirements:
+  - High contrast (4.5:1 minimum)
+  - Large readable fonts (16px minimum body)
+  - Clear focus indicators
+  - Screen reader optimized
+  - Keyboard navigation
+  - Clear medical terminology tooltips

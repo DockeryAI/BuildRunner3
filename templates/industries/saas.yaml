@@ -1,0 +1,68 @@
+name: saas
+description: Software as a Service applications
+
+colors:
+  primary: "#6366F1"  # Modern indigo
+  secondary: "#8B5CF6"  # Purple accent
+  success: "#10B981"
+  warning: "#F59E0B"
+  error: "#EF4444"
+  background: "#FFFFFF"
+  text: "#111827"
+
+typography:
+  font_family: "Inter, system-ui, sans-serif"
+  scale:
+    xs: "0.75rem"
+    sm: "0.875rem"
+    base: "1rem"
+    lg: "1.125rem"
+    xl: "1.25rem"
+    "2xl": "1.5rem"
+    "3xl": "1.875rem"
+  weights:
+    normal: "400"
+    medium: "500"
+    semibold: "600"
+    bold: "700"
+
+spacing:
+  xs: "0.25rem"
+  sm: "0.5rem"
+  md: "1rem"
+  lg: "1.5rem"
+  xl: "2rem"
+
+components:
+  - Button
+  - Input
+  - Card
+  - Table
+  - Dropdown
+  - Modal
+  - Sidebar
+  - Navbar
+  - OnboardingFlow
+  - FeatureDiscovery
+  - AnalyticsDashboard
+  - SettingsPanel
+
+compliance:
+  - GDPR
+  - SOC 2
+  - ISO 27001
+
+trust_signals:
+  - Uptime guarantee
+  - Data backup indicators
+  - Security certifications
+  - Customer testimonials
+  - Integration logos
+
+key_features:
+  - Onboarding flow
+  - Feature discovery
+  - User analytics
+  - Team collaboration
+  - API access
+  - Webhook integrations

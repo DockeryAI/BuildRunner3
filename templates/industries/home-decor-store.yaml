@@ -1,0 +1,11 @@
+id: home-decor-store
+name: Home Decor Store
+naics_code: '442299'
+category: Retail
+keywords:
+- home decor store
+- home
+- decor
+- store
+has_full_profile: false
+source: naics_only

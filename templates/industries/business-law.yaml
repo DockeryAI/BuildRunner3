@@ -1,0 +1,14 @@
+id: business-law
+name: Business Law
+naics_code: '541110'
+category: Professional Services
+keywords:
+- business law
+- business
+- law
+- lawyer
+- attorney
+- legal
+- corporate law
+has_full_profile: false
+source: naics_only

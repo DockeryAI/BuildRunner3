@@ -1,0 +1,10 @@
+id: investment-advisory
+name: Investment Advisory
+naics_code: '523930'
+category: Professional Services
+keywords:
+- investment advisory
+- investment
+- advisory
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,12 @@
+id: furniture-store
+name: Furniture Store
+naics_code: '442110'
+category: Retail
+keywords:
+- furniture store
+- furniture
+- store
+- home furnishings
+- sofa
+has_full_profile: false
+source: naics_only

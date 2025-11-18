@@ -1,0 +1,10 @@
+id: medical-spa
+name: Medical Spa
+naics_code: '812199'
+category: Healthcare
+keywords:
+- medical spa
+- medical
+- spa
+has_full_profile: false
+source: naics_only

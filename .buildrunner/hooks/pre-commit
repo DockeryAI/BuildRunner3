@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""
+BuildRunner 3.0 Pre-Commit Hook
+
+Validates features.json, enforces governance rules, and verifies checksums
+before allowing commits.
+"""
+
+import json
+import sys
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+try:
+    from core.feature_registry import FeatureRegistry
+    from core.governance import GovernanceManager, GovernanceError
+    from core.governance_enforcer import GovernanceEnforcer
+except ImportError as e:
+    print(f"⚠️  Warning: Could not import BuildRunner modules: {e}")
+    print("   Skipping BuildRunner validation")
+    sys.exit(0)
+
+
+def validate_features_json() -> bool:
+    """
+    Validate features.json schema and structure.
+
+    Returns:
+        True if valid, False otherwise
+    """
+    features_file = project_root / ".buildrunner" / "features.json"
+
+    if not features_file.exists():
+        print("⚠️  Warning: features.json not found")
+        return True  # Not an error if file doesn't exist yet
+
+    try:
+        registry = FeatureRegistry(project_root)
+        registry.load()
+        print("✅ features.json valid")
+        return True
+    except Exception as e:
+        print(f"❌ features.json validation failed: {e}")
+        return False
+
+
+def check_governance_checksum() -> bool:
+    """
+    Verify governance.yaml checksum.
+
+    Returns:
+        True if checksum valid, False otherwise
+    """
+    governance_file = project_root / ".buildrunner" / "governance" / "governance.yaml"
+
+    if not governance_file.exists():
+        # No governance file = no problem
+        return True
+
+    try:
+        gm = GovernanceManager(project_root)
+        if gm.checksum_file.exists():
+            if gm.verify_checksum():
+                print("✅ Governance checksum valid")
+                return True
+            else:
+                print("❌ Governance checksum mismatch!")
+                print("   File may have been tampered with.")
+                print("   Use 'br governance reset' if this is intentional.")
+                return False
+        else:
+            print("⚠️  No governance checksum found (will create on save)")
+            return True
+    except Exception as e:
+        print(f"⚠️  Governance check error: {e}")
+        return True  # Don't block on errors
+
+
+def enforce_governance_rules() -> bool:
+    """
+    Enforce governance rules if configured.
+
+    Returns:
+        True if rules pass, False otherwise
+    """
+    try:
+        gm = GovernanceManager(project_root)
+        if not gm.config_file.exists():
+            return True  # No governance = no enforcement
+
+        gm.load(verify_checksum=False)  # Already checked above
+
+        # Check if enforcement is enabled
+        enforcement = gm.config.get('enforcement', {})
+        policy = enforcement.get('policy', 'strict')
+
+        if policy == 'off':
+            print("⚠️  Governance enforcement disabled")
+            return True
+
+        # Run pre-commit checks
+        enforcer = GovernanceEnforcer(gm)
+        passed, failed = enforcer.check_pre_commit()
+
+        if not passed:
+            print(f"❌ Pre-commit checks failed: {', '.join(failed)}")
+            return False
+
+        print("✅ Governance rules passed")
+        return True
+
+    except GovernanceError as e:
+        print(f"❌ Governance enforcement failed: {e}")
+        return False
+    except Exception as e:
+        print(f"⚠️  Governance check error: {e}")
+        return True  # Don't block on unexpected errors
+
+
+def main():
+    """Main pre-commit hook execution."""
+    print("🔍 BuildRunner Pre-Commit Hook")
+    print("─" * 40)
+
+    all_passed = True
+
+    # Run checks
+    if not validate_features_json():
+        all_passed = False
+
+    if not check_governance_checksum():
+        all_passed = False
+
+    if not enforce_governance_rules():
+        all_passed = False
+
+    print("─" * 40)
+
+    if all_passed:
+        print("✅ All pre-commit checks passed")
+        sys.exit(0)
+    else:
+        print("❌ Pre-commit checks failed")
+        print("   Fix the issues above and try again.")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

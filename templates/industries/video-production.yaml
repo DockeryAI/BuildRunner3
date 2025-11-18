@@ -1,0 +1,10 @@
+id: video-production
+name: Video Production
+naics_code: '512110'
+category: Professional Services
+keywords:
+- video production
+- video
+- production
+has_full_profile: false
+source: naics_only

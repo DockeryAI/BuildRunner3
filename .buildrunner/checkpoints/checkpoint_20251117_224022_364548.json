@@ -1,0 +1,14 @@
+{
+  "id": "checkpoint_20251117_224022_364548",
+  "timestamp": "2025-11-17T22:40:22.364557",
+  "phase": "build_4e_start",
+  "tasks_completed": [],
+  "files_created": [],
+  "status": "created",
+  "metadata": {
+    "name": "build_4e_start",
+    "description": "Starting Build 4E: Multi-Model Routing + Telemetry Foundation",
+    "created_by": "cli",
+    "timestamp": "2025-11-17T22:40:22.364539"
+  }
+}

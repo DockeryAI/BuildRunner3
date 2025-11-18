@@ -1,0 +1,14 @@
+id: residential-real-estate
+name: Residential Real Estate
+naics_code: '531210'
+category: Professional Services
+keywords:
+- residential real estate
+- residential
+- real
+- estate
+- realtor
+- real estate agent
+- homes for sale
+has_full_profile: false
+source: naics_only

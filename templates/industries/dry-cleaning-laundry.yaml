@@ -1,0 +1,11 @@
+id: dry-cleaning-laundry
+name: Dry Cleaning/Laundry
+naics_code: '812320'
+category: Personal Services
+keywords:
+- dry cleaning/laundry
+- dry
+- cleaning
+- laundry
+has_full_profile: false
+source: naics_only

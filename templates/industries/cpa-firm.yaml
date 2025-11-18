@@ -1,0 +1,13 @@
+id: cpa-firm
+name: CPA Firm
+naics_code: '541211'
+category: Professional Services
+keywords:
+- cpa firm
+- cpa
+- firm
+- accountant
+- accounting
+- certified public accountant
+has_full_profile: false
+source: naics_only

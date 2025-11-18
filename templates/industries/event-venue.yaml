@@ -1,0 +1,10 @@
+id: event-venue
+name: Event Venue
+naics_code: '531120'
+category: Food Service
+keywords:
+- event venue
+- event
+- venue
+has_full_profile: false
+source: naics_only

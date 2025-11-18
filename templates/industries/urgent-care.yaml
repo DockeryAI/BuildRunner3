@@ -1,0 +1,10 @@
+id: urgent-care
+name: Urgent Care
+naics_code: '621111'
+category: Healthcare
+keywords:
+- urgent care
+- urgent
+- care
+has_full_profile: false
+source: naics_only

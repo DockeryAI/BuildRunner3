@@ -1,0 +1,7 @@
+ai_behavior:
+  auto_suggest_tests: false
+  verbosity: invalid
+  max_retries: -1
+testing:
+  auto_run: true
+  coverage_threshold: 150

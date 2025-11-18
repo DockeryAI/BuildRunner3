@@ -1,0 +1,181 @@
+name: "Manufacturing"
+description: "Industrial manufacturing, supply chain, production systems"
+category: "Industrial"
+
+colors:
+  primary:
+    main: "#1565c0"        # Industrial blue
+    light: "#1976d2"
+    dark: "#0d47a1"
+  secondary:
+    main: "#ff6f00"        # Safety orange
+    light: "#ff8f00"
+    dark: "#e65100"
+  accent:
+    main: "#616161"        # Steel grey
+    light: "#757575"
+    dark: "#424242"
+  neutral:
+    50: "#fafafa"
+    100: "#f5f5f5"
+    200: "#eeeeee"
+    300: "#e0e0e0"
+    400: "#bdbdbd"
+    500: "#9e9e9e"
+    600: "#757575"
+    700: "#616161"
+    800: "#424242"
+    900: "#212121"
+  semantic:
+    success: "#2e7d32"
+    warning: "#f57c00"
+    error: "#c62828"
+    info: "#1976d2"
+  operational:
+    online: "#4caf50"
+    offline: "#9e9e9e"
+    maintenance: "#ff9800"
+    fault: "#f44336"
+
+typography:
+  fonts:
+    primary: "'Roboto', 'Arial', sans-serif"
+    secondary: "'Roboto Condensed', sans-serif"
+    monospace: "'Roboto Mono', 'Courier New', monospace"
+  sizes:
+    xs: "0.75rem"
+    sm: "0.875rem"
+    base: "1rem"
+    lg: "1.125rem"
+    xl: "1.5rem"       # Large for tablet/touch screens
+    "2xl": "2rem"
+    "3xl": "2.5rem"
+    "4xl": "3rem"
+  weights:
+    normal: 400
+    medium: 500
+    semibold: 600
+    bold: 700
+  lineHeights:
+    tight: 1.25
+    normal: 1.5
+    relaxed: 1.75
+
+spacing:
+  scale: [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96]
+  container:
+    padding: "1rem"
+    maxWidth: "1600px"  # Wide for dashboards
+
+borders:
+  radius:
+    none: "0"
+    sm: "0.125rem"
+    base: "0.25rem"
+    md: "0.375rem"
+    lg: "0.5rem"
+    full: "9999px"
+  width:
+    default: "1px"
+    medium: "2px"
+    thick: "3px"
+    status: "4px"
+
+shadows:
+  sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+  base: "0 1px 3px 0 rgba(0, 0, 0, 0.1)"
+  md: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+  lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+
+breakpoints:
+  sm: "640px"
+  md: "768px"
+  lg: "1024px"
+  xl: "1366px"   # Common industrial display
+  "2xl": "1920px"
+
+compliance:
+  standards:
+    - "ISO 9001 (Quality Management)"
+    - "ISO 14001 (Environmental)"
+    - "OSHA Safety Standards"
+    - "FDA (if applicable)"
+    - "Six Sigma / Lean Manufacturing"
+    - "GMP (Good Manufacturing Practice)"
+  requirements:
+    - "Audit trail for all production changes"
+    - "Quality control checkpoints"
+    - "Equipment maintenance logs"
+    - "Safety incident reporting"
+    - "Inventory tracking (raw materials, WIP, finished goods)"
+    - "Compliance documentation"
+    - "Environmental impact tracking"
+  accessibility:
+    - "Touch-friendly for factory floor tablets"
+    - "High contrast for industrial lighting"
+    - "Large touch targets (44px minimum)"
+
+components:
+  buttons:
+    padding: "1rem 1.5rem"
+    fontSize: "1rem"
+    fontWeight: 600
+    borderRadius: "0.25rem"
+    minTouchTarget: "44px"
+  emergencyButton:
+    padding: "1.5rem 2rem"
+    fontSize: "1.25rem"
+    fontWeight: 700
+    backgroundColor: "#f44336"
+    border: "3px solid #c62828"
+  forms:
+    inputPadding: "1rem 1.25rem"
+    inputBorderRadius: "0.25rem"
+    labelFontWeight: 600
+    inputMinHeight: "48px"
+  cards:
+    padding: "1.5rem"
+    borderRadius: "0.5rem"
+    shadow: "md"
+    border: "1px solid #e0e0e0"
+  dashboard:
+    widgetPadding: "1.5rem"
+    widgetBackground: "#ffffff"
+    gridGap: "1.5rem"
+  statusIndicator:
+    size: "1rem"
+    borderRadius: "50%"
+    glow: true
+
+security:
+  level: "high"
+  features:
+    - "Operational technology (OT) security"
+    - "Network segmentation (IT/OT isolation)"
+    - "Role-based access control"
+    - "Equipment access logs"
+    - "Secure SCADA integration"
+    - "Real-time monitoring"
+    - "Supply chain security"
+    - "Physical security integration"
+
+patterns:
+  - "Real-time production dashboard"
+  - "Equipment status monitoring (OEE)"
+  - "Inventory tracking and alerts"
+  - "Maintenance scheduling"
+  - "Quality control workflows"
+  - "Work order management"
+  - "Barcode/QR code scanning"
+  - "Time tracking (labor)"
+  - "Shift handoff reports"
+  - "Supply chain visibility"
+
+notes:
+  - "Ruggedized tablets common on factory floor"
+  - "24/7 operations require shift handoffs"
+  - "Real-time data critical (IoT sensors, PLCs)"
+  - "Minimal downtime tolerance"
+  - "Integration with ERP systems (SAP, Oracle)"
+  - "Offline mode for network outages"
+  - "Print support for work orders and labels"

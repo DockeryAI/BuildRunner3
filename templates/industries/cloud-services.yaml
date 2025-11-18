@@ -1,0 +1,10 @@
+id: cloud-services
+name: Cloud Services
+naics_code: '518210'
+category: Technology
+keywords:
+- cloud services
+- cloud
+- services
+has_full_profile: false
+source: naics_only

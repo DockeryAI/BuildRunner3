@@ -1,0 +1,29 @@
+# BuildRunner 3.0 - Project Behavior Configuration
+# Location: .buildrunner/behavior.yaml
+#
+# Project-specific configuration that overrides global settings.
+# Use this to customize behavior for individual projects.
+
+# Project-specific debug settings
+debug:
+  # Override retry settings for this project
+  auto_retry: true
+  max_retries: 5  # More retries for flaky tests
+
+# Enable error watching for active development
+watch:
+  enabled: true
+  patterns:
+    - '*.log'
+    - 'build.log'
+    - 'test-results/*.xml'
+
+# Project-specific CLI preferences
+cli:
+  use_rich: true
+  show_progress: true
+
+# Relaxed governance for experimental project
+governance:
+  strict_mode: false  # Allow more flexibility
+  auto_generate_status: true

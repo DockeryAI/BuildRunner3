@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+"""
+BuildRunner 3.0 Post-Commit Hook
+
+Auto-generates STATUS.md and updates metrics after successful commits.
+"""
+
+import sys
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+try:
+    from core.feature_registry import FeatureRegistry
+    from core.status_generator import StatusGenerator
+    from core.ai_context import AIContextManager
+except ImportError as e:
+    print(f"⚠️  Warning: Could not import BuildRunner modules: {e}")
+    print("   Skipping post-commit actions")
+    sys.exit(0)
+
+
+def update_metrics() -> bool:
+    """
+    Update project metrics in features.json.
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        registry = FeatureRegistry(project_root)
+        data = registry.load()
+
+        # Metrics are auto-calculated on save
+        registry.save()
+
+        metrics = data.get('metrics', {})
+        print(f"📊 Metrics updated:")
+        print(f"   Complete: {metrics.get('features_complete', 0)}")
+        print(f"   In Progress: {metrics.get('features_in_progress', 0)}")
+        print(f"   Planned: {metrics.get('features_planned', 0)}")
+        print(f"   Completion: {metrics.get('completion_percentage', 0)}%")
+
+        return True
+    except Exception as e:
+        print(f"⚠️  Could not update metrics: {e}")
+        return False
+
+
+def generate_status_md() -> bool:
+    """
+    Auto-generate STATUS.md from features.json.
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        generator = StatusGenerator(project_root)
+        status_file = generator.generate()
+
+        print(f"✅ Generated: {status_file}")
+        return True
+    except Exception as e:
+        print(f"⚠️  Could not generate STATUS.md: {e}")
+        return False
+
+
+def update_ai_context() -> bool:
+    """
+    Update AI context with commit information.
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        ai_context = AIContextManager(project_root)
+
+        # Update current work context
+        import subprocess
+        result = subprocess.run(
+            ['git', 'log', '-1', '--pretty=format:%H %s'],
+            capture_output=True,
+            text=True,
+            cwd=project_root
+        )
+
+        if result.returncode == 0:
+            commit_info = result.stdout.strip()
+            ai_context.update_context(
+                'current-work',
+                f"\n## Recent Commit\n{commit_info}\n",
+                append=True
+            )
+            print(f"✅ Updated AI context")
+            return True
+
+        return False
+    except Exception as e:
+        print(f"⚠️  Could not update AI context: {e}")
+        return False
+
+
+def main():
+    """Main post-commit hook execution."""
+    print("🎉 BuildRunner Post-Commit Hook")
+    print("─" * 40)
+
+    # These are best-effort actions - don't fail the commit
+    update_metrics()
+    generate_status_md()
+    update_ai_context()
+
+    print("─" * 40)
+    print("✅ Post-commit actions complete")
+
+    sys.exit(0)  # Always succeed
+
+
+if __name__ == "__main__":
+    main()

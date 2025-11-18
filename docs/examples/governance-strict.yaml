@@ -1,0 +1,143 @@
+# Strict Governance Configuration Example
+# Use this for production systems with critical quality requirements
+
+project:
+  name: "ProductionProject"
+  version: "1.0.0"
+  governance_version: "1.0"
+  description: "Strict governance for production systems"
+
+workflow:
+  rules:
+    allowed_states:
+      - planned
+      - in_progress
+      - code_review
+      - testing
+      - qa_approved
+      - complete
+      - blocked
+
+    transitions:
+      planned:
+        - in_progress
+        - blocked
+      in_progress:
+        - code_review
+        - blocked
+      code_review:
+        - testing
+        - in_progress  # Back to development if review fails
+      testing:
+        - qa_approved
+        - in_progress  # Back to development if tests fail
+      qa_approved:
+        - complete
+      blocked:
+        - planned
+        - in_progress
+      complete:
+        []  # Terminal state
+
+    branch_patterns:
+      feature: "feature/{feature_id}-{description}"
+      hotfix: "hotfix/{issue_number}-{description}"
+      release: "release/v{version}"
+
+    commit_rules:
+      require_semantic_versioning: true
+      allowed_types:
+        - feat
+        - fix
+        - refactor
+        - test
+        - docs
+        - chore
+        - perf
+        - ci
+      require_feature_id: true
+
+validation:
+  required_checks:
+    - tests_pass
+    - coverage_threshold
+    - lint_pass
+    - security_scan
+    - no_merge_conflicts
+
+  coverage_threshold: 95
+
+  pre_commit:
+    - validate_features_json
+    - check_governance_checksum
+    - run_lint
+    - check_no_debug_statements
+    - check_no_secrets
+
+  pre_push:
+    - run_tests
+    - check_coverage
+    - validate_governance_rules
+    - security_scan
+
+  pre_merge:
+    - all_tests_pass
+    - coverage_above_threshold
+    - no_unresolved_comments
+    - approved_by_two_reviewers
+    - security_scan_pass
+
+enforcement:
+  policy: "strict"
+
+  on_violation:
+    pre_commit: "block"
+    pre_push: "block"
+    dependency: "block"
+    coverage: "block"
+
+  exceptions:
+    allow_emergency_commits: false
+    allow_skip_checks: false
+
+hooks:
+  enabled: true
+
+  active_hooks:
+    - pre-commit
+    - post-commit
+    - pre-push
+    - commit-msg
+
+  pre_commit:
+    validate_schema: true
+    check_checksums: true
+    run_linting: true
+    format_code: true
+    check_secrets: true
+
+  post_commit:
+    regenerate_status: true
+    update_metrics: true
+    notify_team: true
+
+  pre_push:
+    run_tests: true
+    check_coverage: true
+    validate_dependencies: true
+    security_scan: true
+
+reporting:
+  track_violations: true
+  violation_log: ".buildrunner/governance/violations.log"
+  alert_on_governance_change: true
+  generate_compliance_report: true
+
+security:
+  require_checksum: true
+  alert_on_governance_change: true
+  require_signed_commits: true
+
+  authorized_editors:
+    - tech_lead
+    - security_team

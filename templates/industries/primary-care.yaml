@@ -1,0 +1,18 @@
+id: primary-care
+name: Primary Care
+naics_code: '621111'
+category: Healthcare
+keywords:
+- primary care
+- primary
+- care
+- general practice
+- general practitioner
+- gp
+- family medicine
+- family doctor
+- physician
+- doctor
+- clinic
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,10 @@
+id: auto-detailing
+name: Auto Detailing
+naics_code: '811192'
+category: Personal Services
+keywords:
+- auto detailing
+- auto
+- detailing
+has_full_profile: false
+source: naics_only

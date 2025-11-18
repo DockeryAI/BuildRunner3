@@ -1,0 +1,13 @@
+id: residential-construction
+name: Residential Construction
+naics_code: '236115'
+category: Construction
+keywords:
+- residential construction
+- residential
+- construction
+- home builder
+- house construction
+- custom home builder
+has_full_profile: false
+source: naics_only

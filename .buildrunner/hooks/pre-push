@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""
+BuildRunner 3.0 Pre-Push Hook
+
+Checks sync status and validates completeness before allowing push.
+"""
+
+import sys
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+try:
+    from core.feature_registry import FeatureRegistry
+    from core.governance import GovernanceManager
+    from core.governance_enforcer import GovernanceEnforcer
+except ImportError as e:
+    print(f"⚠️  Warning: Could not import BuildRunner modules: {e}")
+    print("   Skipping BuildRunner validation")
+    sys.exit(0)
+
+
+def check_sync_status() -> bool:
+    """
+    Check if project is synchronized.
+
+    Returns:
+        True if synced or sync not configured, False if out of sync
+    """
+    # Placeholder for Supabase sync check (Build 2B)
+    # For now, just return True
+    print("ℹ️  Sync check: Not implemented (Build 2B)")
+    return True
+
+
+def validate_completeness() -> bool:
+    """
+    Validate project completeness before push.
+
+    Returns:
+        True if validation passes, False otherwise
+    """
+    try:
+        registry = FeatureRegistry(project_root)
+        data = registry.load()
+
+        # Check for blocked features
+        features = data.get('features', [])
+        blocked = [f for f in features if f.get('status') == 'blocked']
+
+        if blocked:
+            print("⚠️  Warning: Blocked features detected:")
+            for feature in blocked:
+                print(f"   • {feature.get('name')} ({feature.get('id')})")
+            print("   Consider resolving blockers before pushing.")
+            # Don't fail on warnings, just inform
+
+        # Check for in-progress features
+        in_progress = [f for f in features if f.get('status') == 'in_progress']
+        if in_progress:
+            print(f"ℹ️  {len(in_progress)} feature(s) in progress")
+
+        return True
+    except Exception as e:
+        print(f"⚠️  Completeness check error: {e}")
+        return True  # Don't block on errors
+
+
+def run_governance_checks() -> bool:
+    """
+    Run governance pre-push checks.
+
+    Returns:
+        True if checks pass, False otherwise
+    """
+    try:
+        gm = GovernanceManager(project_root)
+        if not gm.config_file.exists():
+            return True  # No governance = no checks
+
+        gm.load()
+
+        # Check if enforcement is enabled
+        enforcement = gm.config.get('enforcement', {})
+        policy = enforcement.get('policy', 'strict')
+
+        if policy == 'off':
+            print("⚠️  Governance enforcement disabled")
+            return True
+
+        # Run pre-push checks
+        enforcer = GovernanceEnforcer(gm)
+        passed, failed = enforcer.check_pre_push()
+
+        if not passed:
+            print(f"❌ Pre-push checks failed: {', '.join(failed)}")
+            on_violation = enforcement.get('on_violation', {})
+            action = on_violation.get('pre_push', 'block')
+
+            if action == 'block':
+                return False
+            elif action == 'warn':
+                print("⚠️  Warnings only - allowing push")
+                return True
+
+        print("✅ Governance checks passed")
+        return True
+
+    except Exception as e:
+        print(f"⚠️  Governance check error: {e}")
+        return True  # Don't block on unexpected errors
+
+
+def check_status_md_exists() -> bool:
+    """
+    Ensure STATUS.md exists and is up-to-date.
+
+    Returns:
+        True if exists, False otherwise
+    """
+    status_file = project_root / ".buildrunner" / "STATUS.md"
+
+    if not status_file.exists():
+        print("⚠️  Warning: STATUS.md not found")
+        print("   Run 'br generate' to create it")
+        return False
+
+    print("✅ STATUS.md exists")
+    return True
+
+
+def main():
+    """Main pre-push hook execution."""
+    print("🚀 BuildRunner Pre-Push Hook")
+    print("─" * 40)
+
+    all_passed = True
+
+    # Run checks
+    if not check_sync_status():
+        all_passed = False
+
+    if not validate_completeness():
+        all_passed = False
+
+    if not run_governance_checks():
+        all_passed = False
+
+    # This is just a warning, don't fail
+    check_status_md_exists()
+
+    print("─" * 40)
+
+    if all_passed:
+        print("✅ All pre-push checks passed")
+        sys.exit(0)
+    else:
+        print("❌ Pre-push checks failed")
+        print("   Fix the issues above and try again.")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

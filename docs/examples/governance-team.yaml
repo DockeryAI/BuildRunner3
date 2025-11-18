@@ -1,0 +1,156 @@
+# Team Collaboration Governance Configuration
+# Balanced approach for team projects with AI assistance
+
+project:
+  name: "TeamProject"
+  version: "1.0.0"
+  governance_version: "1.0"
+  description: "Team collaboration with AI assistance"
+
+workflow:
+  rules:
+    allowed_states:
+      - planned
+      - in_progress
+      - review
+      - testing
+      - complete
+      - blocked
+
+    transitions:
+      planned:
+        - in_progress
+        - blocked
+      in_progress:
+        - review
+        - testing
+        - blocked
+      review:
+        - testing
+        - in_progress
+      testing:
+        - complete
+        - in_progress
+        - blocked
+      blocked:
+        - planned
+        - in_progress
+      complete:
+        []
+
+    branch_patterns:
+      feature: "build/week{week_number}-{feature_name}"
+      hotfix: "hotfix/{feature_id}-{description}"
+      integration: "integration/week{week_number}"
+
+    commit_rules:
+      require_semantic_versioning: true
+      allowed_types:
+        - feat
+        - fix
+        - refactor
+        - test
+        - docs
+        - chore
+        - style
+      require_feature_id: false
+
+# Feature dependencies for coordinated development
+dependencies:
+  auth-system: []
+  user-management: ["auth-system"]
+  api-endpoints: ["auth-system"]
+  frontend-dashboard: ["api-endpoints", "user-management"]
+  notifications: ["user-management"]
+  analytics: ["api-endpoints"]
+
+validation:
+  required_checks:
+    - tests_pass
+    - coverage_threshold
+    - lint_pass
+
+  coverage_threshold: 85
+
+  pre_commit:
+    - validate_features_json
+    - check_governance_checksum
+    - run_lint
+
+  pre_push:
+    - run_tests
+    - check_coverage
+    - validate_governance_rules
+
+  pre_merge:
+    - all_tests_pass
+    - coverage_above_threshold
+    - no_unresolved_comments
+    - approved_by_reviewer
+
+enforcement:
+  policy: "strict"
+
+  on_violation:
+    pre_commit: "block"
+    pre_push: "block"
+    dependency: "block"
+    coverage: "warn"  # Warn but don't block on coverage
+
+  exceptions:
+    allow_emergency_commits: false
+    allow_skip_checks: false
+
+hooks:
+  enabled: true
+
+  active_hooks:
+    - pre-commit
+    - post-commit
+    - pre-push
+
+  pre_commit:
+    validate_schema: true
+    check_checksums: true
+    run_linting: true
+    format_code: true
+
+  post_commit:
+    regenerate_status: true
+    update_metrics: true
+
+  pre_push:
+    run_tests: true
+    check_coverage: true
+    validate_dependencies: true
+
+reporting:
+  track_violations: true
+  violation_log: ".buildrunner/governance/violations.log"
+
+  metrics:
+    - features_completed
+    - tests_run
+    - coverage_percentage
+    - violations_count
+    - build_time
+    - team_velocity
+
+security:
+  require_checksum: true
+  alert_on_governance_change: true
+
+# AI collaboration settings
+ai_settings:
+  context_management:
+    enabled: true
+    auto_update_claude_md: true
+    track_decisions: true
+
+  slash_commands:
+    enabled: true
+    custom_commands:
+      - /br-todo
+      - /br-context
+      - /br-wtf
+      - /br-commit

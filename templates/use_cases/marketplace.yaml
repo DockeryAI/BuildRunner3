@@ -1,0 +1,61 @@
+name: marketplace
+description: Marketplace and listing platform
+
+layout_patterns:
+  - Top navigation with search
+  - Filter sidebar
+  - Grid layout for listings
+  - Detail view with gallery
+  - Responsive cards
+
+navigation:
+  type: top_bar
+  items:
+    - Home
+    - Categories
+    - Sell
+    - Messages
+    - Account
+  search: prominent
+  cart_icon: true
+
+components:
+  - ProductCard
+  - ProductGrid
+  - FilterSidebar
+  - SearchBar
+  - CategoryNav
+  - ImageGallery
+  - PriceDisplay
+  - RatingStars
+  - ReviewList
+  - AddToCartButton
+  - CheckoutFlow
+
+interaction_patterns:
+  - Quick view on hover
+  - Add to favorites
+  - Share listing
+  - Compare items
+  - Image zoom
+  - Infinite scroll or pagination
+
+trust_elements:
+  - Seller ratings
+  - Verified badges
+  - Customer reviews
+  - Secure payment icons
+  - Money-back guarantee
+  - Return policy
+
+filtering:
+  - Category selection
+  - Price range slider
+  - Condition filter
+  - Location filter
+  - Sort by (price, popularity, newest)
+
+typical_flows:
+  - Browse → Filter → View Details → Add to Cart → Checkout
+  - Search → Results → Compare → Select → Purchase
+  - Create Listing → Upload Photos → Set Price → Publish

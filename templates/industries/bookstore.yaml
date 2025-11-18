@@ -1,0 +1,10 @@
+id: bookstore
+name: Bookstore
+naics_code: '451211'
+category: Retail
+keywords:
+- bookstore
+- books
+- reading
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,11 @@
+id: boutique-clothing-store
+name: Boutique Clothing Store
+naics_code: '448140'
+category: Retail
+keywords:
+- boutique clothing store
+- boutique
+- clothing
+- store
+has_full_profile: false
+source: naics_only

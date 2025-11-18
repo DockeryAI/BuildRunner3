@@ -1,0 +1,138 @@
+# BuildRunner 3.0 Quality Standards
+# These thresholds define "definition of done" for code quality
+
+# Overall quality gate thresholds
+quality_gates:
+  min_overall_score: 7.0           # Minimum overall quality score (0-10)
+  min_test_coverage: 85             # Minimum test coverage percentage
+  max_complexity: 10                # Maximum cyclomatic complexity per function
+  max_function_length: 50           # Maximum lines per function
+  max_file_length: 500              # Maximum lines per file
+
+# Code formatting standards
+format:
+  python:
+    - black                          # Python code formatter
+    - ruff                           # Python linter (replaces flake8, isort, etc)
+  javascript:
+    - prettier                       # JS/TS formatter
+    - eslint                         # JS/TS linter
+
+# Security scanning
+security:
+  enabled: true
+  scanners:
+    - bandit                         # Python SAST scanner
+    - safety                         # Python dependency vulnerability scanner
+    - detect-secrets                 # Secret detection
+  fail_on_high: true                 # Fail build on high-severity issues
+  fail_on_medium: false              # Warning only for medium-severity
+
+# Type checking
+type_checking:
+  python:
+    enabled: false                    # TODO: Enable mypy integration
+    tool: mypy
+    strict_mode: false
+  typescript:
+    enabled: false                    # TODO: Enable if TS is added
+    strict_mode: true
+
+# Category-specific thresholds
+thresholds:
+  structure_score: 6.5               # Code organization and structure
+  security_score: 8.0                # Security practices
+  testing_score: 8.5                 # Test coverage and quality
+  docs_score: 7.0                    # Documentation completeness
+
+# Test coverage requirements
+test_coverage:
+  target: 85                         # Overall target coverage %
+  minimum: 80                        # Absolute minimum (fail below this)
+  per_file_minimum: 70               # Minimum coverage per file
+  exclude_paths:
+    - "*/tests/*"
+    - "*/__pycache__/*"
+    - "*/.venv/*"
+    - "*/migrations/*"
+
+# Complexity limits
+complexity:
+  max_cyclomatic: 10                 # Max complexity per function
+  max_cognitive: 15                  # Max cognitive complexity
+  warn_at: 8                         # Warn if complexity exceeds this
+
+# Documentation requirements
+documentation:
+  require_module_docstrings: true    # All modules must have docstrings
+  require_class_docstrings: true     # All classes must have docstrings
+  require_function_docstrings: true  # All public functions must have docstrings
+  min_docstring_length: 10           # Minimum characters in docstring
+
+# File size limits
+file_limits:
+  max_lines: 500                     # Maximum lines per file
+  max_functions: 30                  # Maximum functions per file
+  max_classes: 10                    # Maximum classes per file
+  warn_at_lines: 400                 # Warn if file exceeds this
+
+# Code smells to detect
+code_smells:
+  detect_duplicates: true            # Detect duplicate code blocks
+  detect_long_parameter_lists: true  # Warn on >5 parameters
+  detect_deep_nesting: true          # Warn on nesting >4 levels
+  detect_magic_numbers: false        # TODO: Enable when ready
+
+# Git commit requirements (for pre-commit hooks)
+commit_standards:
+  require_tests_passing: true        # Tests must pass before commit
+  require_format_check: true         # Code must be formatted
+  require_type_check: false          # TODO: Enable when mypy integrated
+  require_security_scan: true        # Security scan must pass
+
+# CI/CD integration
+ci_cd:
+  fail_build_on_quality_gate: true   # Fail CI if quality gates don't pass
+  post_coverage_report: true         # Post coverage report to PR
+  post_security_report: true         # Post security scan to PR
+
+# Build-specific overrides
+# Can override standards for specific builds
+overrides:
+  build_1a:
+    min_overall_score: 6.5           # More lenient for early builds
+  build_3a:
+    min_overall_score: 7.5           # Stricter for mature builds
+    min_test_coverage: 90
+
+# Exemptions
+# Files/paths exempt from certain checks
+exemptions:
+  test_coverage:
+    - "cli/mcp_server.py"            # MCP server has external dependencies
+    - "core/opus_client.py"          # External API client
+  complexity:
+    - "core/task_decomposer.py"      # Complex business logic acceptable
+  documentation:
+    - "*/migrations/*"               # Migration files don't need docs
+
+# Auto-fix configuration
+auto_fix:
+  enable_formatting: true            # Auto-fix formatting issues
+  enable_import_sorting: true        # Auto-sort imports
+  enable_trailing_whitespace: true   # Remove trailing whitespace
+  enable_line_length: false          # Don't auto-fix line length (may break code)
+
+# Reporting
+reporting:
+  format: markdown                   # Report format (markdown/json/html)
+  include_file_details: true         # Include per-file breakdown
+  include_recommendations: true      # Include actionable recommendations
+  output_dir: ".buildrunner/reports" # Where to save reports
+
+# Metadata
+metadata:
+  version: "1.0"
+  last_updated: "2025-11-17"
+  maintained_by: "BuildRunner Team"
+  description: "Quality standards enforced across all Build Runner development"

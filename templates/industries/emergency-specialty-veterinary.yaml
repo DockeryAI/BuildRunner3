@@ -1,0 +1,11 @@
+id: emergency-specialty-veterinary
+name: Emergency/Specialty Veterinary
+naics_code: '541940'
+category: Healthcare
+keywords:
+- emergency/specialty veterinary
+- emergency
+- specialty
+- veterinary
+has_full_profile: false
+source: naics_only

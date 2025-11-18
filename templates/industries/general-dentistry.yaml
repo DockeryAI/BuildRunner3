@@ -1,0 +1,13 @@
+id: general-dentistry
+name: General Dentistry
+naics_code: '621210'
+category: Healthcare
+keywords:
+- general dentistry
+- general
+- dentistry
+- dentist
+- dental
+- dental care
+has_full_profile: false
+source: naics_only

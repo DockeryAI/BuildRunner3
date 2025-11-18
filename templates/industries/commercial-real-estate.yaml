@@ -1,0 +1,14 @@
+id: commercial-real-estate
+name: Commercial Real Estate
+naics_code: '531210'
+category: Professional Services
+keywords:
+- commercial real estate
+- commercial
+- real
+- estate
+- realtor
+- real estate agent
+- commercial property
+has_full_profile: false
+source: naics_only

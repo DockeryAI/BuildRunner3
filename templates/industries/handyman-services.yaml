@@ -1,0 +1,13 @@
+id: handyman-services
+name: Handyman Services
+naics_code: '811490'
+category: Construction
+keywords:
+- handyman services
+- handyman
+- services
+- home repair
+- odd jobs
+- handyman company
+has_full_profile: false
+source: naics_only

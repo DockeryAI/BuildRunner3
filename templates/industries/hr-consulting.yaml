@@ -1,0 +1,12 @@
+id: hr-consulting
+name: HR Consulting
+naics_code: '541612'
+category: Professional Services
+keywords:
+- hr consulting
+- consulting
+- HR
+- human resources
+- personnel
+has_full_profile: false
+source: naics_only

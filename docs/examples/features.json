@@ -1,0 +1,77 @@
+{
+  "project": "Example Project",
+  "version": "1.0.0",
+  "status": "in_development",
+  "last_updated": "2025-01-15T00:00:00Z",
+  "description": "Example project showing BuildRunner 3.0 feature tracking",
+
+  "features": [
+    {
+      "id": "user-auth",
+      "name": "User Authentication",
+      "status": "complete",
+      "version": "1.0.0",
+      "priority": "critical",
+      "week": 1,
+      "build": "1A",
+      "description": "Implement user registration, login, and session management with JWT tokens."
+    },
+    {
+      "id": "api-endpoints",
+      "name": "REST API Endpoints",
+      "status": "in_progress",
+      "version": "1.0.0",
+      "priority": "critical",
+      "week": 1,
+      "build": "1B",
+      "description": "Create FastAPI endpoints for user management, data CRUD, and admin operations."
+    },
+    {
+      "id": "database-setup",
+      "name": "Database Schema",
+      "status": "complete",
+      "version": "1.0.0",
+      "priority": "critical",
+      "week": 1,
+      "build": "1A",
+      "description": "Design and implement PostgreSQL schema with migrations and seed data."
+    },
+    {
+      "id": "frontend-ui",
+      "name": "Frontend User Interface",
+      "status": "planned",
+      "version": "1.0.0",
+      "priority": "high",
+      "week": 2,
+      "build": "2A",
+      "description": "Build React-based UI with responsive design and dark mode support."
+    },
+    {
+      "id": "testing-suite",
+      "name": "Automated Testing",
+      "status": "planned",
+      "version": "1.0.0",
+      "priority": "high",
+      "week": 2,
+      "build": "2B",
+      "description": "Comprehensive test suite with unit, integration, and e2e tests achieving 90%+ coverage."
+    },
+    {
+      "id": "ci-cd-pipeline",
+      "name": "CI/CD Pipeline",
+      "status": "planned",
+      "version": "1.0.0",
+      "priority": "medium",
+      "week": 3,
+      "build": "3A",
+      "description": "GitHub Actions pipeline for automated testing, building, and deployment."
+    }
+  ],
+
+  "metrics": {
+    "features_complete": 2,
+    "features_in_progress": 1,
+    "features_planned": 3,
+    "completion_percentage": 33
+  }
+}

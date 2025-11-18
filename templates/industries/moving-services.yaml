@@ -1,0 +1,10 @@
+id: moving-services
+name: Moving Services
+naics_code: '484210'
+category: Construction
+keywords:
+- moving services
+- moving
+- services
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,16 @@
+id: plumbing-services
+name: Plumbing Services
+naics_code: '238220'
+category: Construction
+keywords:
+- plumbing services
+- plumbing
+- services
+- plumber
+- drain
+- pipe
+- leak
+- water heater
+- plumbing contractor
+has_full_profile: false
+source: naics_only

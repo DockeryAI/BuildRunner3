@@ -1,0 +1,10 @@
+id: mobile-mechanic
+name: Mobile Mechanic
+naics_code: '811111'
+category: Personal Services
+keywords:
+- mobile mechanic
+- mobile
+- mechanic
+has_full_profile: false
+source: naics_only

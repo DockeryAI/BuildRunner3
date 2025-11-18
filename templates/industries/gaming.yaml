@@ -1,0 +1,195 @@
+name: "Gaming"
+description: "Video games, esports, gaming platforms"
+category: "Entertainment"
+
+colors:
+  primary:
+    main: "#7c3aed"        # Electric purple
+    light: "#a78bfa"
+    dark: "#5b21b6"
+  secondary:
+    main: "#06b6d4"        # Cyan (energy)
+    light: "#22d3ee"
+    dark: "#0891b2"
+  accent:
+    main: "#f59e0b"        # Amber (highlight)
+    light: "#fbbf24"
+    dark: "#d97706"
+  neutral:
+    50: "#fafafa"
+    100: "#18181b"        # Dark mode default
+    200: "#27272a"
+    300: "#3f3f46"
+    400: "#52525b"
+    500: "#71717a"
+    600: "#a1a1aa"
+    700: "#d4d4d8"
+    800: "#e4e4e7"
+    900: "#f4f4f5"
+  semantic:
+    success: "#10b981"
+    warning: "#f59e0b"
+    error: "#ef4444"
+    info: "#3b82f6"
+  special:
+    neon: "#ff00ff"
+    glow: "#00ffff"
+    gold: "#ffd700"
+    legendary: "#ff6b35"
+
+typography:
+  fonts:
+    primary: "'Poppins', 'Helvetica Neue', sans-serif"
+    display: "'Orbitron', 'Rajdhani', sans-serif"  # Futuristic
+    monospace: "'Fira Code', 'Courier New', monospace"
+  sizes:
+    xs: "0.75rem"
+    sm: "0.875rem"
+    base: "1rem"
+    lg: "1.125rem"
+    xl: "1.25rem"
+    "2xl": "1.5rem"
+    "3xl": "2rem"
+    "4xl": "2.5rem"
+    "5xl": "3.5rem"
+  weights:
+    normal: 400
+    medium: 500
+    semibold: 600
+    bold: 700
+    extrabold: 800
+    black: 900
+  lineHeights:
+    tight: 1.1
+    normal: 1.5
+    relaxed: 1.75
+
+spacing:
+  scale: [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128, 160, 192]
+  container:
+    padding: "1rem"
+    maxWidth: "1920px"  # Wide for gaming displays
+
+borders:
+  radius:
+    none: "0"
+    sm: "0.25rem"
+    base: "0.5rem"
+    md: "0.75rem"
+    lg: "1rem"
+    xl: "1.5rem"
+    full: "9999px"
+  width:
+    default: "2px"
+    medium: "3px"
+    thick: "4px"
+    neon: "3px"
+
+shadows:
+  sm: "0 1px 2px 0 rgba(0, 0, 0, 0.3)"
+  base: "0 2px 4px 0 rgba(0, 0, 0, 0.4)"
+  md: "0 4px 8px -1px rgba(0, 0, 0, 0.5)"
+  lg: "0 10px 20px -3px rgba(0, 0, 0, 0.5)"
+  xl: "0 20px 40px -5px rgba(0, 0, 0, 0.6)"
+  neon: "0 0 20px rgba(124, 58, 237, 0.8), 0 0 40px rgba(124, 58, 237, 0.4)"
+  glow: "0 0 10px currentColor, 0 0 20px currentColor"
+
+breakpoints:
+  sm: "640px"
+  md: "768px"
+  lg: "1024px"
+  xl: "1280px"
+  "2xl": "1536px"
+  "3xl": "1920px"  # 1080p
+  "4xl": "2560px"  # 1440p
+
+compliance:
+  standards:
+    - "COPPA (Children's Online Privacy Protection Act)"
+    - "ESRB Rating Guidelines"
+    - "GDPR (international players)"
+    - "Platform Terms (Steam, Epic, Console)"
+    - "Anti-Cheat Integration"
+  requirements:
+    - "Age verification for mature content"
+    - "Parental controls"
+    - "Terms of Service acceptance"
+    - "Privacy policy for player data"
+    - "Fair play and anti-cheat measures"
+    - "Reporting system for toxic behavior"
+    - "Data portability (player progress)"
+  accessibility:
+    - "Colorblind modes"
+    - "Subtitles/captions"
+    - "Remappable controls"
+    - "UI scaling options"
+    - "Audio cues for visual elements"
+
+components:
+  buttons:
+    padding: "0.75rem 2rem"
+    fontSize: "1rem"
+    fontWeight: 700
+    borderRadius: "0.5rem"
+    textTransform: "uppercase"
+    border: "2px solid currentColor"
+    hoverGlow: true
+  heroButton:
+    padding: "1rem 3rem"
+    fontSize: "1.25rem"
+    fontWeight: 800
+    borderRadius: "0.75rem"
+    backgroundColor: "#7c3aed"
+    boxShadow: "neon"
+  forms:
+    inputPadding: "0.875rem 1rem"
+    inputBorderRadius: "0.5rem"
+    inputBackground: "#27272a"
+    inputBorder: "2px solid #3f3f46"
+    labelFontWeight: 600
+  cards:
+    padding: "1.5rem"
+    borderRadius: "1rem"
+    shadow: "lg"
+    border: "2px solid #3f3f46"
+    backgroundColor: "#18181b"
+  leaderboard:
+    rowHeight: "3rem"
+    rankBadgeSize: "2rem"
+    highlightColor: "#7c3aed"
+    goldColor: "#ffd700"
+    silverColor: "#c0c0c0"
+    bronzeColor: "#cd7f32"
+
+security:
+  level: "high"
+  features:
+    - "Account security (2FA)"
+    - "Anti-cheat integration (EasyAntiCheat, BattlEye)"
+    - "DDoS protection"
+    - "Rate limiting for API calls"
+    - "Session management"
+    - "Secure multiplayer communication"
+    - "Ban/suspension system"
+    - "Player reporting and moderation"
+
+patterns:
+  - "Leaderboards with rankings"
+  - "Achievement/trophy system"
+  - "Player profiles with stats"
+  - "Inventory/loadout management"
+  - "Friends list and party system"
+  - "Matchmaking queue"
+  - "In-game chat"
+  - "Store/marketplace for items"
+  - "Battle pass / season progression"
+  - "Daily rewards and quests"
+
+notes:
+  - "Dark mode is default for gaming"
+  - "60+ FPS UI animations expected"
+  - "High contrast for readability during gameplay"
+  - "Controller support essential (console)"
+  - "Low latency critical for competitive games"
+  - "Haptic feedback integration (PS5, Xbox)"
+  - "Cross-platform play considerations"

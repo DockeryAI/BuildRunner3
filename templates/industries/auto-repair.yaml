@@ -1,0 +1,14 @@
+id: auto-repair
+name: Auto Repair
+naics_code: '811111'
+category: Personal Services
+keywords:
+- auto repair
+- auto
+- repair
+- mechanic
+- car repair
+- auto mechanic
+- automotive repair
+has_full_profile: false
+source: naics_only

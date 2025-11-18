@@ -1,0 +1,57 @@
+name: dashboard
+description: Dashboard and analytics interface
+
+layout_patterns:
+  - Sidebar navigation
+  - Top header with search and notifications
+  - Main content area with widgets
+  - Responsive grid system (12-column)
+
+navigation:
+  type: sidebar
+  items:
+    - Home/Overview
+    - Analytics
+    - Reports
+    - Settings
+  position: left
+  collapsible: true
+
+components:
+  - StatCard
+  - LineChart
+  - BarChart
+  - PieChart
+  - DataTable
+  - FilterPanel
+  - DateRangePicker
+  - ExportButton
+  - RefreshButton
+
+data_viz:
+  - Time series charts
+  - KPI cards
+  - Comparison charts
+  - Trend indicators
+  - Real-time updates
+
+interactions:
+  - Drill-down capability
+  - Filter by date range
+  - Export to CSV/PDF
+  - Customizable widgets
+  - Responsive resize
+
+best_practices:
+  - Clear hierarchy of information
+  - Visual grouping of related metrics
+  - Consistent color coding
+  - Loading states for async data
+  - Empty states with guidance
+
+typical_sections:
+  - Overview/Summary
+  - Key Metrics
+  - Recent Activity
+  - Detailed Analytics
+  - Settings/Preferences

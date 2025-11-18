@@ -1,0 +1,56 @@
+name: crm
+description: Customer Relationship Management system
+
+layout_patterns:
+  - Left sidebar navigation
+  - Main content area with tabs
+  - Right panel for activity/notes
+  - List view with detail drawer
+
+navigation:
+  type: sidebar
+  items:
+    - Dashboard
+    - Contacts
+    - Leads
+    - Opportunities
+    - Companies
+    - Tasks
+    - Reports
+  position: left
+
+components:
+  - ContactCard
+  - LeadCard
+  - ActivityTimeline
+  - NotesPanel
+  - TaskList
+  - DataTable
+  - FilterBar
+  - StatusBadge
+  - PhoneDialer
+  - EmailComposer
+
+data_management:
+  - Contact import/export
+  - Bulk operations
+  - Advanced search
+  - Custom fields
+  - Tags and categories
+  - Relationship mapping
+
+workflows:
+  - Lead capture
+  - Lead qualification
+  - Opportunity tracking
+  - Deal pipeline
+  - Task assignment
+  - Follow-up automation
+
+typical_sections:
+  - Contact details
+  - Communication history
+  - Deal pipeline
+  - Activity feed
+  - Notes and documents
+  - Analytics and reports

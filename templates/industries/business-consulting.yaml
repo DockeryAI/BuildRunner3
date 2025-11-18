@@ -1,0 +1,10 @@
+id: business-consulting
+name: Business Consulting
+naics_code: '541611'
+category: Professional Services
+keywords:
+- business consulting
+- business
+- consulting
+has_full_profile: false
+source: naics_only

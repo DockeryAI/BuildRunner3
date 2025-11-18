@@ -1,0 +1,11 @@
+id: home-health-care
+name: Home Health Care
+naics_code: '621610'
+category: Healthcare
+keywords:
+- home health care
+- home
+- health
+- care
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,12 @@
+id: jewelry-store
+name: Jewelry Store
+naics_code: '448310'
+category: Retail
+keywords:
+- jewelry store
+- jewelry
+- store
+- rings
+- watches
+has_full_profile: false
+source: naics_only

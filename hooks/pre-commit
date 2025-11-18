@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""
+Pre-commit hook wrapper
+Calls the actual pre_commit.py module
+"""
+import sys
+from pathlib import Path
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from hooks.pre_commit import main
+
+if __name__ == '__main__':
+    sys.exit(main())

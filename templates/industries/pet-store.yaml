@@ -1,0 +1,10 @@
+id: pet-store
+name: Pet Store
+naics_code: '453910'
+category: Retail
+keywords:
+- pet store
+- pet
+- store
+has_full_profile: false
+source: naics_only

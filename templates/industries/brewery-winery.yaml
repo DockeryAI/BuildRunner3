@@ -1,0 +1,10 @@
+id: brewery-winery
+name: Brewery/Winery
+naics_code: '312120'
+category: Food Service
+keywords:
+- brewery/winery
+- brewery
+- winery
+has_full_profile: false
+source: naics_only

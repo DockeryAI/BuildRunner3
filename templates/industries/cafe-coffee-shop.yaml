@@ -1,0 +1,11 @@
+id: cafe-coffee-shop
+name: Cafe/Coffee Shop
+naics_code: '722515'
+category: Food Service
+keywords:
+- cafe/coffee shop
+- cafe
+- coffee
+- shop
+has_full_profile: false
+source: naics_only

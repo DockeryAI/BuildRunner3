@@ -1,0 +1,11 @@
+id: fast-casual-restaurant
+name: Fast Casual Restaurant
+naics_code: '722513'
+category: Food Service
+keywords:
+- fast casual restaurant
+- fast
+- casual
+- restaurant
+has_full_profile: false
+source: naics_only

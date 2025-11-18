@@ -1,0 +1,39 @@
+name: mern
+description: MongoDB + Express + React + Node.js stack
+
+frontend:
+  framework: React
+  language: JavaScript or TypeScript
+  build_tool: Create React App or Vite
+  styling: Material-UI or Tailwind CSS
+  state_management: Redux or Context API
+  routing: React Router
+
+backend:
+  runtime: Node.js 18+
+  framework: Express.js
+  language: JavaScript or TypeScript
+  orm: Mongoose
+  testing: Jest + Supertest
+
+database:
+  primary: MongoDB
+  hosting: MongoDB Atlas
+  caching: Redis (optional)
+
+api:
+  protocol: REST or GraphQL
+  authentication: JWT tokens
+  authorization: Role-based (RBAC)
+
+deployment:
+  containerization: Docker
+  frontend_hosting: Vercel or Netlify
+  backend_hosting: Heroku or AWS Elastic Beanstalk
+  database_hosting: MongoDB Atlas
+
+development:
+  version_control: Git
+  ci_cd: GitHub Actions
+  code_quality: ESLint, Prettier
+  type_checking: TypeScript (if used)

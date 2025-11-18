@@ -1,0 +1,9 @@
+id: bakery
+name: Bakery
+naics_code: '311811'
+category: Food Service
+keywords:
+- bakery
+- bakery
+has_full_profile: false
+source: naics_only

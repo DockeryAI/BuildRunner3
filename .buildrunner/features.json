@@ -1,0 +1,39 @@
+{
+  "project": "BuildRunner3",
+  "version": "3.0.0",
+  "status": "in_development",
+  "last_updated": "2025-11-17T19:10:44.624934Z",
+  "description": "Git-backed governance system for AI-assisted project development with feature tracking, MCP integration, and AI-native workflow",
+  "features": [],
+  "metrics": {
+    "features_complete": 0,
+    "features_in_progress": 0,
+    "features_planned": 0,
+    "completion_percentage": 0
+  },
+  "enhancements": {
+    "ai_context": {
+      "CLAUDE.md": "Persistent AI memory across sessions",
+      "context_segmentation": "architecture.md, current-work.md, blockers.md, test-results.md",
+      "output_piping": "Pipe command outputs to context"
+    },
+    "slash_commands": [
+      "/br-todo - Generate focused task lists",
+      "/br-worktree - Auto-create worktrees",
+      "/br-test - Run feature tests",
+      "/br-block - Record blockers",
+      "/br-merge - Smart merge with checks",
+      "/br-rollback - Quick rollback",
+      "/br-deps - Show dependencies",
+      "/br-diff - Smart diff between builds",
+      "/br-health - System health check",
+      "/br-prompt - Get build prompts",
+      "/br-context - Load specific context",
+      "/br-learn - Update CLAUDE.md",
+      "/br-wtf - Explain current state",
+      "/br-unfuck - Auto-recovery",
+      "/br-commit - Generate commit messages",
+      "/br-pr - Generate PR descriptions"
+    ]
+  }
+}

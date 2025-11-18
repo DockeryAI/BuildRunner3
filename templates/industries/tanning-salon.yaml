@@ -1,0 +1,10 @@
+id: tanning-salon
+name: Tanning Salon
+naics_code: '812199'
+category: Personal Services
+keywords:
+- tanning salon
+- tanning
+- salon
+has_full_profile: false
+source: naics_only

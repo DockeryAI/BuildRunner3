@@ -1,0 +1,104 @@
+id: restaurant
+name: Restaurant & Food Service
+naics_code: '722'
+power_words:
+- fresh
+- homemade
+- authentic
+- premium
+- quality
+- signature
+- special
+- favorite
+- famous
+- award-winning
+- original
+- tonight
+- today
+- now
+- limited
+- seasonal
+- while it lasts
+- delicious
+- mouthwatering
+- amazing
+- perfect
+- incredible
+- featured
+- exclusive
+- only
+- best
+- new
+- loved
+- popular
+- favorite
+- celebrated
+avoid_words:
+- cheap
+- fast food
+- frozen
+- processed
+- generic
+- average
+- basic
+- standard
+- normal
+- mass-produced
+content_themes:
+- Daily specials and featured dishes
+- Behind-the-scenes kitchen prep
+- Chef stories and expertise
+- Customer favorites and testimonials
+- Seasonal menu updates
+- Ingredient sourcing stories
+- Staff spotlights
+- Special events and reservations
+- Food photography (hero shots)
+- Cooking tips from the chef
+- Holiday menus and catering
+- Happy hour and promotions
+- Community involvement
+- Restaurant atmosphere and ambiance
+common_pain_points:
+- Finding good restaurants nearby
+- Not knowing what to order
+- Long wait times
+- Dietary restrictions/allergies
+- Disappointing food quality
+- Bad service experiences
+- Uncertainty about price/value
+- Parking and location challenges
+common_buying_triggers:
+- Special occasions (birthdays, anniversaries, celebrations)
+- Craving specific cuisine or dish
+- Seeing mouth-watering food photos
+- Date night or romantic evening
+- No time or energy to cook
+- Trying new restaurants and experiences
+- Good reviews or recommendations from friends
+- Special offers or limited-time menus
+- Weekend or holiday dining out
+- Social gatherings with family or friends
+trust_builders:
+- Fresh, quality ingredients
+- Chef expertise and credentials
+- Customer photos and reviews
+- Clean, welcoming atmosphere
+- Consistent food quality
+- Friendly, attentive service
+- Family owned/operated
+- Local sourcing
+- Behind-the-scenes transparency
+audience_characteristics:
+- Looking for experiences, not just food
+- Value atmosphere and service
+- Influenced by photos and reviews
+- Active on Instagram/Facebook
+- Make decisions based on craving/mood
+psychology_profile:
+  primary_triggers:
+  - desire
+  - belonging
+  - trust
+  urgency_level: medium
+  trust_importance: high

@@ -1,0 +1,10 @@
+id: tire-shop
+name: Tire Shop
+naics_code: '441320'
+category: Personal Services
+keywords:
+- tire shop
+- tire
+- shop
+has_full_profile: false
+source: naics_only
