@@ -179,12 +179,57 @@ def init(
         # Auto-launch Claude Code planning mode for new projects
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            console.print(f"\n[green]✅ Initialized: {project_name}[/green]")
-            console.print(f"[dim]Location: {buildrunner_dir}[/dim]\n")
+            console.print(f"\n[bold yellow]→ Next: Run 'br plan {project_name}' to start planning mode with Claude Code[/bold yellow]\n")
 
-            console.print("[bold yellow]→ Continue in Claude Code to start planning mode[/bold yellow]")
-            console.print(f"[dim]   Project: {project_name}[/dim]")
-            console.print(f"[dim]   PRD will be saved to: {spec_path}[/dim]\n")
+    except Exception as e:
+        handle_error(e)
+        raise typer.Exit(1)
+
+
+@app.command()
+def plan(
+    project_name: str = typer.Argument(None, help="Project name (optional if in project directory)")
+):
+    """Start interactive planning mode with Claude Code to create PROJECT_SPEC"""
+    try:
+        # Determine project root
+        if project_name:
+            project_root = Path.cwd() / project_name
+        else:
+            project_root = Path.cwd()
+
+        buildrunner_dir = project_root / ".buildrunner"
+        spec_path = buildrunner_dir / "PROJECT_SPEC.md"
+
+        # Check if project exists
+        if not buildrunner_dir.exists():
+            console.print(f"[red]❌ No BuildRunner project found[/red]")
+            if project_name:
+                console.print(f"[dim]Run 'br init {project_name}' first[/dim]")
+            else:
+                console.print(f"[dim]Run 'br init <project>' first[/dim]")
+            raise typer.Exit(1)
+
+        # Check if spec already exists
+        if spec_path.exists():
+            console.print(f"[yellow]⚠️  PROJECT_SPEC.md already exists[/yellow]")
+            console.print(f"[dim]Location: {spec_path}[/dim]")
+
+            overwrite = typer.confirm("Start new planning session (will overwrite)?", default=False)
+            if not overwrite:
+                console.print("[dim]Planning cancelled[/dim]")
+                raise typer.Exit(0)
+
+        # Output planning trigger
+        console.print("\n" + "="*70)
+        console.print("  🧠 PLANNING MODE")
+        console.print("="*70)
+        console.print()
+        console.print("[bold cyan]→ Go to Claude Code and say:[/bold cyan]")
+        console.print(f'   [yellow]"plan {project_root.name}"[/yellow]\n')
+        console.print("[dim]Claude will lead an interactive brainstorming session to build your PRD.[/dim]\n")
+        console.print(f"[dim]Project: {project_root}[/dim]")
+        console.print(f"[dim]PRD will be saved to: {spec_path}[/dim]\n")
 
     except Exception as e:
         handle_error(e)
