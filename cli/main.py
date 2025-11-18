@@ -173,15 +173,11 @@ def init(
 
             progress.update(task, completed=True)
 
-        console.print(f"[green]✅ Initialized BuildRunner project: {project_name}[/green]")
-        console.print(f"[dim]Location: {buildrunner_dir}[/dim]")
-
         # Auto-launch Claude Code planning mode for new projects only
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            # New project - trigger planning mode in Claude Code
-            console.print(f"\n[bold yellow]🧠 PLANNING_MODE_TRIGGER: {project_name}[/bold yellow]")
-            console.print(f"[dim]→ Paste this terminal output in Claude Code to start planning mode[/dim]\n")
+            # New project - output trigger for Claude Code
+            console.print(f"\n[bold cyan]PLAN:{project_name}[/bold cyan]\n")
 
     except Exception as e:
         handle_error(e)
