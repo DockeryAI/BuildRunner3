@@ -180,8 +180,8 @@ def init(
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
             # New project - trigger planning mode in Claude Code
-            console.print(f"\n[bold yellow]🧠 PLANNING_MODE_START: {project_name}[/bold yellow]")
-            console.print(f"[dim]→ Continue in Claude Code (planning mode will start automatically)[/dim]\n")
+            console.print(f"\n[bold yellow]→ Go to Claude Code and type:[/bold yellow]")
+            console.print(f"   [cyan]{project_name}[/cyan]\n")
 
     except Exception as e:
         handle_error(e)
