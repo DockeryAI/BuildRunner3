@@ -176,40 +176,96 @@ def init(
         # Auto-launch Claude Code planning mode for new projects only
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            # New project - copy trigger to clipboard and open Claude Code
-            import subprocess
+            # New project - create PLANNING.md for Claude Code to read
+            planning_path = buildrunner_dir / "PLANNING.md"
 
-            # Create planning trigger with full instructions
-            planning_trigger = f"""BUILDRUNNER_PLANNING_MODE - Start interactive PRD building session
+            planning_content = f"""# 🎯 PLANNING MODE ACTIVE
 
-Project: {project_name}
-Path: {project_root}
-PROJECT_SPEC will be saved to: {spec_path}
+**Project:** {project_name}
+**Status:** Awaiting PROJECT_SPEC.md creation
+**Path:** {project_root}
 
-INSTRUCTIONS:
-You are now in PLANNING MODE. Lead an interactive brainstorming session to build a complete PROJECT_SPEC.md:
+---
 
-1. Ask the user to describe their project idea
-2. Extract all features, requirements, and technical details from their description
-3. Show extracted items as numbered lists
-4. Generate additional feature suggestions based on best practices
-5. Let user select features by typing numbers (e.g., "1, 3, 5")
-6. Build PRD sections: Product Requirements, Technical Architecture, Design Architecture
-7. Write the complete PROJECT_SPEC.md file to: {spec_path}
+## Your Task
 
-Start by asking: "Tell me about your project - what do you want to build?"
+You are Claude Code in **PLANNING MODE**. Lead an interactive brainstorming session to build a complete PROJECT_SPEC.md for this project.
+
+### Workflow
+
+1. **Ask** the user to describe their project idea in detail
+2. **Extract** all features, requirements, and technical details from their description
+3. **Display** extracted items as numbered lists for review
+4. **Suggest** additional features based on industry best practices
+5. **Confirm** user selects features by typing numbers (e.g., "1, 3, 5" or "all")
+6. **Build** complete PRD with these sections:
+   - Project Overview
+   - Core Features (with descriptions and acceptance criteria)
+   - Technical Architecture (frontend, backend, database, infrastructure)
+   - Design Architecture (design system, components, patterns)
+   - Security & Compliance
+   - Testing Strategy
+7. **Write** the complete PROJECT_SPEC.md to: `{spec_path}`
+8. **Sync** to features.json using BuildRunner MCP tool: `feature_add`
+
+### Output Format
+
+Write PROJECT_SPEC.md in this format:
+
+```markdown
+# PROJECT_SPEC - [Project Name]
+
+## Overview
+[Brief description]
+
+## Core Features
+
+### Feature 1: [Name]
+**Priority:** [Critical/High/Medium/Low]
+**Description:** [What it does]
+
+**Requirements:**
+- Requirement 1
+- Requirement 2
+
+**Acceptance Criteria:**
+- [ ] Criterion 1
+- [ ] Criterion 2
+
+## Technical Architecture
+
+**Frontend:** [Technology stack]
+**Backend:** [Technology stack]
+**Database:** [Technology stack]
+**Infrastructure:** [Deployment approach]
+
+## Design Architecture
+
+**Design System:** [Approach]
+**Key Components:** [List]
+**Patterns:** [Design patterns to use]
+
+## Security & Compliance
+
+[Any security requirements or compliance needs]
+
+## Testing Strategy
+
+[Testing approach]
+```
+
+---
+
+## Start Now
+
+**Begin by asking:** "Tell me about your project - what do you want to build?"
+
+Then have a natural conversation to extract all the details needed to create a complete PROJECT_SPEC.md.
 """
 
-            # Copy to clipboard (macOS)
-            try:
-                subprocess.run(['pbcopy'], input=planning_trigger.encode('utf-8'), check=True)
-                console.print(f"\n[green]✅ Planning trigger copied to clipboard[/green]")
-            except Exception as e:
-                console.print(f"\n[yellow]⚠️  Could not copy to clipboard: {e}[/yellow]")
-
-            # Auto-execute Claude CLI in this terminal
-            console.print(f"\n[green]✅ Starting Claude Code...[/green]")
-            console.print(f"[dim]Paste (Cmd+V) to begin planning mode[/dim]\n")
+            planning_path.write_text(planning_content)
+            console.print(f"\n[green]✅ Created {planning_path}[/green]")
+            console.print(f"[green]✅ Starting Claude Code in planning mode...[/green]\n")
 
             # Replace this process with claude CLI
             import os
