@@ -195,21 +195,27 @@ Path: {project_root}
             # Launch Claude Code with dangerously-skip-sandbox
             try:
                 # Use Claude Code CLI with skip sandbox flag
-                subprocess.Popen(
+                result = subprocess.run(
                     ['claude', '--dangerously-skip-sandbox', str(project_root)],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL
+                    capture_output=True,
+                    text=True
                 )
-                console.print(f"[green]✅ Opening Claude Code...[/green]")
-                console.print(f"\n[bold yellow]→ Paste (Cmd+V) in Claude Code to start planning mode[/bold yellow]\n")
+
+                if result.returncode == 0:
+                    console.print(f"[green]✅ Opening Claude Code...[/green]")
+                    console.print(f"\n[bold yellow]→ Paste (Cmd+V) in Claude Code to start planning mode[/bold yellow]\n")
+                else:
+                    console.print(f"\n[yellow]⚠️  Claude CLI error:[/yellow]")
+                    if result.stderr:
+                        console.print(f"[dim]{result.stderr}[/dim]")
+                    console.print(f"[dim]Manually open Claude Code and paste (already in clipboard)[/dim]\n")
+
             except FileNotFoundError:
                 console.print(f"\n[yellow]⚠️  'claude' CLI not found[/yellow]")
-                console.print(f"[dim]Manually open Claude Code and paste (already in clipboard):[/dim]")
-                console.print(f"\n{planning_trigger}\n")
+                console.print(f"[dim]Manually open Claude Code and paste (already in clipboard)[/dim]\n")
             except Exception as e:
-                console.print(f"\n[yellow]⚠️  Could not launch Claude Code: {e}[/yellow]")
-                console.print(f"[dim]Manually open Claude Code and paste (already in clipboard):[/dim]")
-                console.print(f"\n{planning_trigger}\n")
+                console.print(f"\n[yellow]⚠️  Error: {e}[/yellow]")
+                console.print(f"[dim]Manually open Claude Code and paste (already in clipboard)[/dim]\n")
 
     except Exception as e:
         handle_error(e)
