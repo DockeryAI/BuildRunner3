@@ -15,27 +15,53 @@ from enum import Enum
 from dataclasses import dataclass, asdict
 
 
-def get_multiline_input(prompt: str) -> str:
+def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
     """
     Get multi-line input from user.
     Handles large pastes properly by reading until empty line.
+    Also supports reading from a file path.
 
     Args:
         prompt: Prompt to display to user
+        allow_file: If True, check if input is a file path and read from it
 
     Returns:
         Combined multi-line string
     """
     print(f"\n{prompt}")
-    print("[dim](Paste your text, then press Enter on an empty line to finish)[/dim]\n")
+    if allow_file:
+        print("[dim](Paste text, drag a file, or type. Press Enter on empty line to finish)[/dim]\n")
+    else:
+        print("[dim](Paste your text, then press Enter on an empty line to finish)[/dim]\n")
 
     lines = []
+    first_line = None
+
     # Flush any buffered input
     sys.stdin.flush() if hasattr(sys.stdin, 'flush') else None
 
     while True:
         try:
             line = input()
+
+            # Check if first line is a file path (from drag & drop)
+            if allow_file and first_line is None and line.strip():
+                # Remove potential quotes from dragged file paths
+                potential_path = line.strip().strip("'\"")
+                file_path = Path(potential_path)
+
+                if file_path.exists() and file_path.is_file():
+                    try:
+                        content = file_path.read_text(encoding='utf-8')
+                        print(f"\n[green]✓ Read {len(content)} characters from: {file_path.name}[/green]")
+                        return content.strip()
+                    except Exception as e:
+                        print(f"[yellow]⚠️  Could not read file: {e}[/yellow]")
+                        print("[dim]Treating as regular text input...[/dim]\n")
+
+            if first_line is None:
+                first_line = line
+
             if line.strip() == "":  # Empty line signals end
                 break
             lines.append(line)
