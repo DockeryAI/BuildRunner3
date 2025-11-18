@@ -176,22 +176,23 @@ def init(
         console.print(f"[green]✅ Initialized BuildRunner project: {project_name}[/green]")
         console.print(f"[dim]Location: {buildrunner_dir}[/dim]")
 
-        # Auto-launch wizard for new projects without PROJECT_SPEC.md
+        # Auto-launch brainstorm mode for new projects without PROJECT_SPEC.md
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            console.print("\n[bold cyan]🧙 Let's create your project specification![/bold cyan]")
+            console.print("\n[bold cyan]💭 Let's build your project specification![/bold cyan]")
+            console.print("[dim]Describe your project idea and I'll create your PRD.[/dim]\n")
 
-            # Ask if user wants to run wizard
-            run_wizard = typer.confirm(
-                "Would you like to start the interactive PROJECT_SPEC wizard?",
+            # Ask if user wants to describe project now
+            run_brainstorm = typer.confirm(
+                "Would you like to describe your project now?",
                 default=True
             )
 
-            if run_wizard:
+            if run_brainstorm:
                 console.print("")  # Add spacing
                 try:
                     wizard = PRDWizard(str(project_root))
-                    spec = wizard.run()
+                    spec = wizard.run_simple_brainstorm()
 
                     console.print("\n[green]✓ PROJECT_SPEC created successfully![/green]")
                     console.print(f"  Location: {spec_path}")
@@ -204,10 +205,10 @@ def init(
                     console.print("  3. Run [cyan]br spec confirm[/cyan] when ready to lock the spec")
 
                 except Exception as wizard_error:
-                    console.print(f"\n[yellow]⚠️  Wizard error: {wizard_error}[/yellow]")
-                    console.print("[dim]You can run 'br spec wizard' later to create your spec[/dim]")
+                    console.print(f"\n[yellow]⚠️  Error: {wizard_error}[/yellow]")
+                    console.print("[dim]You can run 'br spec brainstorm' later to create your spec[/dim]")
             else:
-                console.print("\n[dim]You can run 'br spec wizard' later to create your PROJECT_SPEC[/dim]")
+                console.print("\n[dim]You can run 'br spec brainstorm' later to create your PROJECT_SPEC[/dim]")
 
     except Exception as e:
         handle_error(e)

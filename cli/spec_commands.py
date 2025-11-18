@@ -27,6 +27,33 @@ spec_app = typer.Typer(help="PROJECT_SPEC management commands")
 console = Console()
 
 
+@spec_app.command("brainstorm")
+def spec_brainstorm():
+    """Conversational PRD builder - describe your project and get a complete spec"""
+    try:
+        console.print("\n[bold blue]💭 Brainstorming Mode[/bold blue]\n")
+        console.print("[cyan]Describe your project idea in detail, and I'll build your PRD.[/cyan]\n")
+
+        project_root = Path.cwd()
+        wizard = PRDWizard(str(project_root))
+
+        # Run brainstorming mode
+        spec = wizard.run_simple_brainstorm()
+
+        console.print("\n[green]✓ PROJECT_SPEC created successfully![/green]")
+        console.print(f"  Location: {wizard.spec_path}")
+        console.print(f"  Status: {spec.state.value}")
+
+        # Suggest next step
+        console.print("\n[bold]Next steps:[/bold]")
+        console.print("  1. Run [cyan]br spec sync[/cyan] to generate features.json")
+        console.print("  2. Run [cyan]br spec confirm[/cyan] to lock the spec")
+
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+        raise typer.Exit(1)
+
+
 @spec_app.command("wizard")
 def spec_wizard():
     """Start interactive PROJECT_SPEC creation wizard"""

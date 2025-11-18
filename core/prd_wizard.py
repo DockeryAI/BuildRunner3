@@ -27,6 +27,41 @@ except ImportError:
 from core.design_system.profile_loader import ProfileLoader, IndustryProfile
 
 
+def conversational_input(prompt: str) -> str:
+    """
+    Conversational input that properly handles pastes.
+
+    Shows clear instruction: type answer, hit Enter on empty line to finish.
+    This prevents paste fragmentation.
+
+    Args:
+        prompt: Question to ask
+
+    Returns:
+        User's response (single or multi-line)
+    """
+    print(f"\n{prompt}")
+    print("[dim](Type your answer, press Enter on empty line when done)[/dim]")
+
+    lines = []
+
+    while True:
+        try:
+            line = input()
+
+            if not line.strip():
+                # Empty line - end of input
+                break
+
+            lines.append(line)
+
+        except EOFError:
+            break
+
+    result = '\n'.join(lines).strip()
+    return result if result else ""
+
+
 def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
     """
     Get multi-line input from user using text editor.
@@ -877,10 +912,8 @@ Example:
         print("[cyan]Let's build your PROJECT_SPEC through conversation![/cyan]")
         print("[dim]I'll ask questions, make suggestions, and we'll build it together.[/dim]\n")
 
-        # Conversational gathering - simple input, not editor
-        print("Tell me about your project idea:")
-        print("[dim]Just describe it in your own words - I'll ask follow-up questions.[/dim]\n")
-        app_description = input("What do you want to build? ")
+        # Conversational gathering using conversational_input to handle paste properly
+        app_description = conversational_input("Tell me about your project idea:\n[dim]Just describe it in your own words - I'll ask follow-up questions.[/dim]\n\n[cyan]What do you want to build?[/cyan]")
 
         # Detect industry
         print("\n🔍 Let me analyze that...")
@@ -938,8 +971,7 @@ Example:
 
             responses = []
             for question in prompt_set["questions"]:
-                print(f"[cyan]{question}[/cyan]")
-                answer = input("\n→ ")
+                answer = conversational_input(f"[cyan]{question}[/cyan]")
                 responses.append({"question": question, "answer": answer})
                 print()
 
@@ -1068,6 +1100,227 @@ Example:
 
         print("\n✓ PROJECT_SPEC confirmed and saved!")
         return spec
+
+    def run_simple_brainstorm(self) -> ProjectSpec:
+        """
+        Simple brainstorming mode - no fragmentation, no complexity.
+
+        Opens text editor once, user pastes/writes everything, we build the PRD,
+        then simple confirmation.
+        """
+        print("="*70)
+        print("  BRAINSTORMING MODE")
+        print("="*70)
+        print()
+        print("[cyan]I'll open a text editor for you to describe your project.[/cyan]")
+        print("[dim]Write or paste everything about your project idea.[/dim]")
+        print()
+        print("Include:")
+        print("  • What you want to build")
+        print("  • Who it's for (target audience)")
+        print("  • Core features and functionality")
+        print("  • Technical requirements or preferences")
+        print("  • Any specific goals or constraints")
+        print()
+
+        # Get full project description in text editor (no fragmentation!)
+        app_description = get_multiline_input(
+            "Opening text editor for your project description...",
+            allow_file=True
+        )
+
+        if not app_description or len(app_description.strip()) < 50:
+            print("\n[yellow]⚠️  Description too short. Please provide more detail.[/yellow]")
+            print("[dim]Try again with 'br spec brainstorm'[/dim]")
+            raise ValueError("Insufficient project description")
+
+        print(f"\n✓ Got {len(app_description)} characters")
+
+        # Detect industry using Synapse
+        print("\n🔍 Analyzing your project...")
+        industry, use_case, industry_profile = self.detect_industry_and_use_case(app_description)
+
+        print(f"\n[cyan]Industry: {industry}[/cyan]")
+        print(f"[cyan]Use Case: {use_case}[/cyan]")
+
+        if industry_profile:
+            print(f"\n[dim]✓ Found '{industry_profile.name}' profile[/dim]")
+            if industry_profile.common_pain_points:
+                print(f"\n[yellow]Industry insights ({industry}):[/yellow]")
+                for pain in industry_profile.common_pain_points[:3]:
+                    print(f"  • {pain}")
+
+        # Parse description into structured sections
+        print("\n📝 Building your PROJECT_SPEC...")
+
+        sections_content = self._parse_description_into_sections(
+            app_description,
+            industry,
+            use_case,
+            industry_profile
+        )
+
+        # Build spec object
+        spec = ProjectSpec(
+            state=SpecState.DRAFT,
+            industry=industry,
+            use_case=use_case
+        )
+
+        for section_name, content in sections_content.items():
+            spec.sections.append(SpecSection(
+                name=section_name,
+                title=section_name.replace('_', ' ').title(),
+                content=content,
+                completed=True,
+                skipped=False
+            ))
+
+        # Save initial version
+        self.save_spec_state(spec)
+        self.write_spec_to_file(spec)
+
+        print("\n" + "="*70)
+        print("  PRD GENERATED - Review")
+        print("="*70)
+        print()
+        print(f"[green]✓ Created {len(spec.sections)} sections[/green]")
+        print()
+
+        # Simple confirmation - just accept or edit whole thing
+        print("Would you like to:")
+        print("  1. Accept and save")
+        print("  2. Edit in text editor")
+        print("  3. Cancel")
+
+        choice = input("\nChoice (1-3): ").strip()
+
+        if choice == '2':
+            # Let them edit the generated PRD
+            current_content = self._render_spec_for_editing(spec)
+            edited_content = get_multiline_input(
+                "Edit your PROJECT_SPEC...",
+                allow_file=False
+            )
+
+            # Re-parse edited version
+            sections_content = self._parse_description_into_sections(
+                edited_content,
+                industry,
+                use_case,
+                industry_profile
+            )
+
+            spec.sections = []
+            for section_name, content in sections_content.items():
+                spec.sections.append(SpecSection(
+                    name=section_name,
+                    title=section_name.replace('_', ' ').title(),
+                    content=content,
+                    completed=True,
+                    skipped=False
+                ))
+
+        elif choice == '3':
+            print("\n[yellow]Cancelled. Run 'br spec brainstorm' to try again.[/yellow]")
+            raise ValueError("User cancelled")
+
+        # Final save
+        spec.state = SpecState.REVIEWED
+        self.save_spec_state(spec)
+        self.write_spec_to_file(spec)
+
+        print("\n[green]✓ PROJECT_SPEC saved successfully![/green]")
+
+        return spec
+
+    def _parse_description_into_sections(
+        self,
+        description: str,
+        industry: str,
+        use_case: str,
+        industry_profile: Optional[IndustryProfile]
+    ) -> Dict[str, str]:
+        """
+        Parse raw project description into structured PRD sections.
+
+        Extracts key information and formats it into sections:
+        - Product Requirements
+        - Technical Architecture
+        - Design Architecture
+        """
+        sections = {}
+
+        # Product Requirements section
+        product_section = f"""# Product Requirements
+
+## Project Description
+{description}
+
+## Industry Context
+- **Industry:** {industry}
+- **Use Case:** {use_case}
+"""
+
+        if industry_profile and industry_profile.common_pain_points:
+            product_section += "\n## Industry Pain Points\n"
+            for pain in industry_profile.common_pain_points[:5]:
+                product_section += f"- {pain}\n"
+
+        sections['product_requirements'] = product_section
+
+        # Technical Architecture section
+        tech_section = """# Technical Architecture
+
+## Technology Stack
+- To be determined based on project requirements
+- Consider: scalability, team expertise, ecosystem
+
+## Integration Requirements
+- Identify third-party services needed
+- API integrations
+- Authentication/authorization
+
+## Infrastructure
+- Hosting requirements
+- Database needs
+- Caching strategy
+"""
+        sections['technical_architecture'] = tech_section
+
+        # Design Architecture section
+        design_section = f"""# Design Architecture
+
+## User Experience
+- Industry: {industry}
+- Use Case: {use_case}
+"""
+
+        if industry_profile:
+            if industry_profile.common_pain_points:
+                design_section += "\n## Design Considerations\n"
+                for pain in industry_profile.common_pain_points[:3]:
+                    design_section += f"- Address: {pain}\n"
+
+        design_section += """
+## Accessibility
+- WCAG 2.1 Level AA compliance
+- Keyboard navigation
+- Screen reader support
+"""
+
+        sections['design_architecture'] = design_section
+
+        return sections
+
+    def _render_spec_for_editing(self, spec: ProjectSpec) -> str:
+        """Render spec as markdown for editing"""
+        content = f"# {spec.industry.title()} {spec.use_case.title()} Project\n\n"
+
+        for section in spec.sections:
+            content += f"\n---\n\n{section.content}\n"
+
+        return content
 
     def run(self):
         """Main wizard entry point"""
