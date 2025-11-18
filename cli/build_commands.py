@@ -261,6 +261,223 @@ def list_checkpoints():
         raise typer.Exit(1)
 
 
+@build_app.command("start")
+def build_start():
+    """
+    Start automated build from PROJECT_SPEC.md
+
+    Reads PROJECT_SPEC, generates tasks, creates execution plan, and launches Claude Code.
+
+    Example:
+        br build start
+    """
+    try:
+        console.print("\n[bold blue]🚀 Starting Build Orchestration[/bold blue]\n")
+
+        project_root = Path.cwd()
+        spec_path = project_root / ".buildrunner" / "PROJECT_SPEC.md"
+
+        # Check if spec exists
+        if not spec_path.exists():
+            console.print("[red]❌ PROJECT_SPEC.md not found[/red]")
+            console.print("[dim]Run 'br spec wizard' to create it first[/dim]\n")
+            raise typer.Exit(1)
+
+        # Parse spec
+        console.print("[cyan]📋 Parsing PROJECT_SPEC.md...[/cyan]")
+        from core.spec_parser import SpecParser
+        parser = SpecParser(str(project_root))
+        features = parser.parse_spec(str(spec_path))
+        console.print(f"[green]✓ Found {len(features)} features[/green]\n")
+
+        # Decompose into tasks
+        console.print("[cyan]🔨 Decomposing features into tasks...[/cyan]")
+        from core.task_decomposer import TaskDecomposer
+        decomposer = TaskDecomposer()
+
+        all_tasks = []
+        for feature in features:
+            tasks = decomposer.decompose_feature(feature)
+            all_tasks.extend(tasks)
+
+        console.print(f"[green]✓ Generated {len(all_tasks)} atomic tasks[/green]\n")
+
+        # Build dependency graph
+        console.print("[cyan]🔗 Building dependency graph...[/cyan]")
+        from core.dependency_graph import DependencyGraph
+        graph = DependencyGraph()
+        for task in all_tasks:
+            graph.add_task(task)
+
+        # Get execution levels
+        levels = graph.get_execution_levels()
+        console.print(f"[green]✓ {len(levels)} execution levels identified[/green]\n")
+
+        # Create batches
+        console.print("[cyan]📦 Creating task batches...[/cyan]")
+        from core.batch_optimizer import BatchOptimizer
+        optimizer = BatchOptimizer()
+
+        batches = []
+        for level in levels:
+            level_tasks = [graph.get_task(task_id) for task_id in level.tasks]
+            level_batches = optimizer.create_batches(level_tasks)
+            batches.extend(level_batches)
+
+        console.print(f"[green]✓ Created {len(batches)} task batches[/green]\n")
+
+        # Create EXECUTION.md for Claude Code
+        execution_path = project_root / ".buildrunner" / "EXECUTION.md"
+
+        # Build execution content
+        execution_content = f"""# 🚀 EXECUTION MODE ACTIVE
+
+**Project:** {project_root.name}
+**Status:** Build in progress
+**Tasks:** {len(all_tasks)} total
+
+---
+
+## Your Task
+
+You are Claude Code in **EXECUTION MODE**. Execute the tasks below in order, following the batch structure.
+
+### Current Batch: Batch 1 of {len(batches)}
+
+{_format_batch(batches[0], graph)}
+
+### Instructions
+
+1. **Read** each task description carefully
+2. **Implement** the code exactly as specified
+3. **Write** tests for each component
+4. **Verify** acceptance criteria are met
+5. **Use** BuildRunner MCP tools to update status:
+   - `feature_update` - Mark features in_progress/complete
+   - `status_generate` - Generate STATUS.md after each feature
+6. **Report** when batch is complete
+
+### After Completion
+
+When this batch is complete, tell the user:
+"Batch 1 complete. Run `br build next` to continue."
+
+---
+
+## All Batches Overview
+
+{_format_all_batches_summary(batches)}
+
+---
+
+## Quality Standards
+
+- Write tests for all code
+- Follow existing code patterns
+- Update documentation
+- No hardcoded secrets
+- Pass all quality gates
+
+"""
+
+        execution_path.write_text(execution_content)
+        console.print(f"[green]✓ Created {execution_path}[/green]\n")
+
+        # Save orchestration state
+        orch_state = {
+            "batches": [{"id": i, "tasks": [t.id for t in b.tasks]} for i, b in enumerate(batches)],
+            "current_batch": 0,
+            "total_tasks": len(all_tasks),
+            "completed_tasks": 0
+        }
+
+        state_path = project_root / ".buildrunner" / "orchestration_state.json"
+        import json
+        state_path.write_text(json.dumps(orch_state, indent=2))
+
+        # Launch Claude Code
+        console.print("[green]✅ Build orchestration initialized![/green]")
+        console.print("[green]✅ Starting Claude Code in execution mode...[/green]\n")
+
+        # Replace this process with claude CLI
+        import os
+        os.execvp('claude', ['claude', '--dangerously-skip-permissions', str(project_root)])
+
+    except Exception as e:
+        console.print(f"[red]❌ Error starting build: {e}[/red]")
+        import traceback
+        traceback.print_exc()
+        raise typer.Exit(1)
+
+
+def _format_batch(batch, graph):
+    """Format a batch for EXECUTION.md"""
+    content = []
+    for i, task in enumerate(batch.tasks, 1):
+        content.append(f"#### Task {i}: {task.description}")
+        content.append(f"**Estimated Time:** {task.estimated_minutes} minutes")
+        content.append(f"**Files:** {', '.join(task.files_to_modify or ['New file'])}")
+        if task.dependencies:
+            deps = [graph.get_task(dep_id).description for dep_id in task.dependencies]
+            content.append(f"**Dependencies:** {', '.join(deps)}")
+        content.append(f"\n{task.implementation_notes or 'See PROJECT_SPEC.md for details'}\n")
+
+    return "\n".join(content)
+
+
+def _format_all_batches_summary(batches):
+    """Format summary of all batches"""
+    lines = []
+    for i, batch in enumerate(batches, 1):
+        task_count = len(batch.tasks)
+        total_time = sum(t.estimated_minutes for t in batch.tasks)
+        lines.append(f"- **Batch {i}:** {task_count} tasks (~{total_time} min)")
+    return "\n".join(lines)
+
+
+@build_app.command("next")
+def build_next():
+    """
+    Continue to next batch
+
+    Example:
+        br build next
+    """
+    try:
+        project_root = Path.cwd()
+        state_path = project_root / ".buildrunner" / "orchestration_state.json"
+
+        if not state_path.exists():
+            console.print("[red]❌ No active build. Run 'br build start' first.[/red]")
+            raise typer.Exit(1)
+
+        import json
+        state = json.loads(state_path.read_text())
+
+        state["current_batch"] += 1
+
+        if state["current_batch"] >= len(state["batches"]):
+            console.print("\n[green]🎉 All batches complete![/green]\n")
+            console.print("[bold]Next steps:[/bold]")
+            console.print("  1. Run 'br quality check' to verify")
+            console.print("  2. Run 'br status generate' for final report")
+            raise typer.Exit(0)
+
+        # Update EXECUTION.md for next batch
+        console.print(f"\n[bold blue]📦 Loading Batch {state['current_batch'] + 1}...[/bold blue]\n")
+
+        # Save state
+        state_path.write_text(json.dumps(state, indent=2))
+
+        # Launch Claude Code again
+        import os
+        os.execvp('claude', ['claude', '--dangerously-skip-permissions', str(project_root)])
+
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+        raise typer.Exit(1)
+
+
 @build_app.command("status")
 def build_status():
     """
