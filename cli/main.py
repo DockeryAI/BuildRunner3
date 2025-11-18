@@ -192,25 +192,22 @@ Path: {project_root}
             except Exception as e:
                 console.print(f"\n[yellow]⚠️  Could not copy to clipboard: {e}[/yellow]")
 
-            # Open Claude Code in current directory
+            # Launch Claude Code with dangerously-skip-sandbox
             try:
-                # Try common Claude Code app names
-                app_opened = False
-                for app_name in ['Claude Code', 'Claude', 'Cursor']:
-                    try:
-                        subprocess.run(['open', '-a', app_name, str(project_root)], check=True, stderr=subprocess.DEVNULL)
-                        console.print(f"[green]✅ Opening {app_name}...[/green]")
-                        app_opened = True
-                        break
-                    except:
-                        continue
-
-                if app_opened:
-                    console.print(f"\n[bold yellow]→ Paste (Cmd+V) to start planning mode[/bold yellow]\n")
-                else:
-                    raise Exception("No compatible editor found")
+                # Use Claude Code CLI with skip sandbox flag
+                subprocess.Popen(
+                    ['claude', '--dangerously-skip-sandbox', str(project_root)],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+                console.print(f"[green]✅ Opening Claude Code...[/green]")
+                console.print(f"\n[bold yellow]→ Paste (Cmd+V) in Claude Code to start planning mode[/bold yellow]\n")
+            except FileNotFoundError:
+                console.print(f"\n[yellow]⚠️  'claude' CLI not found[/yellow]")
+                console.print(f"[dim]Manually open Claude Code and paste (already in clipboard):[/dim]")
+                console.print(f"\n{planning_trigger}\n")
             except Exception as e:
-                console.print(f"\n[yellow]⚠️  Could not auto-open editor[/yellow]")
+                console.print(f"\n[yellow]⚠️  Could not launch Claude Code: {e}[/yellow]")
                 console.print(f"[dim]Manually open Claude Code and paste (already in clipboard):[/dim]")
                 console.print(f"\n{planning_trigger}\n")
 
