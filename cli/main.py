@@ -181,125 +181,252 @@ def init(
             # New project - create CLAUDE.md in project ROOT for Claude Code to auto-read
             planning_path = project_root / "CLAUDE.md"
 
-            planning_content = f"""# 🎯 PLANNING MODE - STOP AND READ THIS FIRST
+            planning_content = f"""# 🎯 PLANNING MODE - Opus Extended Thinking Required
 
 **Project:** {project_name}
 **Path:** {project_root}
-**OUTPUT FILE:** {spec_path}
+**Spec File:** {spec_path}
+**Mode:** PLANNING (No code, incremental spec updates)
 
 ---
 
-## ⚠️ CRITICAL INSTRUCTIONS - FOLLOW EXACTLY
+## ⚠️ CRITICAL: Switch to Opus Model
 
-You are in **PLANNING MODE**. You MUST NOT write any code, create any files, or start building anything until the PROJECT_SPEC.md is complete.
+**BEFORE STARTING**, ensure you're using **Claude Opus** for planning mode.
+Opus provides extended thinking and better strategic analysis.
 
-### STEP-BY-STEP WORKFLOW (DO NOT SKIP)
-
-**STEP 1: ASK FOR PROJECT DESCRIPTION**
-Start with ONLY this question:
-"Tell me about your project - what do you want to build?"
-
-Wait for user response.
-
-**STEP 2: EXTRACT FEATURES**
-After user describes their idea:
-1. Extract all features mentioned
-2. Show as numbered list:
-   ```
-   EXTRACTED FEATURES:
-   1. Feature name - brief description
-   2. Feature name - brief description
-   ...
-   ```
-3. Ask: "Did I capture everything? Any additions or changes?"
-
-**STEP 3: SUGGEST ADDITIONAL FEATURES**
-After confirmation:
-1. Research best practices for this type of project
-2. Suggest 5-10 additional features:
-   ```
-   SUGGESTED FEATURES:
-   11. Feature name - why this adds value
-   12. Feature name - why this adds value
-   ...
-   ```
-3. Ask: "Which features do you want to include? Type the numbers (e.g., '1, 3, 5, 11, 13' or 'all')"
-
-**STEP 4: BUILD PRD SECTIONS**
-After user selects features:
-1. Create Overview section - show it
-2. Create Features section with priorities - show it
-3. Create Technical Architecture - show it
-4. Create Design Architecture - show it
-5. Ask for approval on each section
-
-**STEP 5: WRITE PROJECT_SPEC.md**
-Only after all sections approved:
-1. Write complete PROJECT_SPEC.md to: {spec_path}
-2. Tell user: "PROJECT_SPEC.md created. Run `br build start` to begin execution."
+Use `/model opus` or check your current model settings.
 
 ---
 
-## ⛔ DO NOT:
-- Write any code before PROJECT_SPEC.md is complete
-- Create any files except PROJECT_SPEC.md
-- Start building immediately
-- Skip the feature selection step
-- Skip the suggestion step
+## 🔓 Directory Access
 
-### Output Format
+You need access to related projects for API/architecture analysis.
+When accessing directories outside {project_root}, use appropriate permissions.
 
-Write PROJECT_SPEC.md in this format:
+Related projects you may need:
+- ~/Projects/Synapse (for existing API patterns)
+- ~/Projects/BuildRunner3 (for framework integration)
 
-```markdown
-# PROJECT_SPEC - [Project Name]
+---
 
-## Overview
-[Brief description]
+## 📋 INCREMENTAL PLANNING WORKFLOW
 
-## Core Features
+### STEP 1: Project Description
+**Action:** Ask user to describe their project idea.
+**Prompt:** "Tell me about your project - what do you want to build?"
 
-### Feature 1: [Name]
-**Priority:** [Critical/High/Medium/Low]
-**Description:** [What it does]
+**Wait for response.**
 
-**Requirements:**
-- Requirement 1
-- Requirement 2
+---
 
-**Acceptance Criteria:**
-- [ ] Criterion 1
-- [ ] Criterion 2
+### STEP 2: Feature Extraction
+**Action:** Extract and present features from user description.
 
-## Technical Architecture
+**Output:**
+```
+EXTRACTED FEATURES:
+1. Feature name - brief description
+2. Feature name - brief description
+...
+```
 
-**Frontend:** [Technology stack]
-**Backend:** [Technology stack]
-**Database:** [Technology stack]
-**Infrastructure:** [Deployment approach]
+**Then use AskUserQuestion tool:**
+```python
+AskUserQuestion(
+    questions=[{{
+        "question": "Did I capture all your requirements correctly?",
+        "header": "Features OK?",
+        "multiSelect": False,
+        "options": [
+            {{"label": "Yes, looks good", "description": "Continue to next step"}},
+            {{"label": "No, needs changes", "description": "I'll revise the features"}}
+        ]
+    }}]
+)
+```
 
-## Design Architecture
+**If "No":** Ask what to add/change, then re-present features.
 
-**Design System:** [Approach]
-**Key Components:** [List]
-**Patterns:** [Design patterns to use]
+---
 
-## Security & Compliance
+### STEP 3: Best Practice Suggestions
+**Action:** Research industry best practices and suggest 5-10 additional features.
 
-[Any security requirements or compliance needs]
+**Output:**
+```
+SUGGESTED ADDITIONAL FEATURES:
+11. Feature name - why this is valuable
+12. Feature name - why this is valuable
+...
+```
 
-## Testing Strategy
-
-[Testing approach]
+**Then use AskUserQuestion tool:**
+```python
+AskUserQuestion(
+    questions=[{{
+        "question": "Which additional features do you want to include?",
+        "header": "Add Features",
+        "multiSelect": True,
+        "options": [
+            {{"label": "Feature 11", "description": "[description]"}},
+            {{"label": "Feature 12", "description": "[description]"}},
+            ...
+        ]
+    }}]
+)
 ```
 
 ---
 
-## Start Now
+### STEP 4: Build Overview Section
+**Action:** Create comprehensive project overview.
 
-**Begin by asking:** "Tell me about your project - what do you want to build?"
+**Output:** Show the Overview section markdown.
 
-Then have a natural conversation to extract all the details needed to create a complete PROJECT_SPEC.md.
+**Then use AskUserQuestion tool:**
+```python
+AskUserQuestion(
+    questions=[{{
+        "question": "Does this overview capture your project vision?",
+        "header": "Overview OK?",
+        "multiSelect": False,
+        "options": [
+            {{"label": "Approve", "description": "Move to next section"}},
+            {{"label": "Edit", "description": "I'll revise it"}},
+            {{"label": "Skip for now", "description": "Come back later"}}
+        ]
+    }}]
+)
+```
+
+**If approved:** Write Overview to {spec_path} using Write tool (creates file if doesn't exist).
+
+---
+
+### STEP 5: Build Features Section
+**Action:** Create detailed features with priorities, requirements, and acceptance criteria.
+
+**Output:** Show the Features section markdown.
+
+**Then use AskUserQuestion tool for approval.**
+
+**If approved:** Append Features to {spec_path} using Edit tool.
+
+---
+
+### STEP 6: Build Technical Architecture
+**Action:** Define stack, APIs, data flow, integrations.
+
+**Output:** Show the Technical Architecture section.
+
+**Then use AskUserQuestion tool for approval.**
+
+**If approved:** Append to {spec_path}.
+
+---
+
+### STEP 7: Build Design Architecture + Visual Artifacts
+**Action:**
+1. Define UI/UX approach, component library, design patterns
+2. **GENERATE VISUAL ARTIFACTS** using canvas/artifacts feature:
+   - System architecture diagram
+   - Data flow diagram
+   - Component hierarchy diagram
+   - User flow wireframes
+
+**Output:**
+- Show Design Architecture section
+- Show generated diagrams/wireframes
+
+**Then use AskUserQuestion tool for approval.**
+
+**If approved:** Append to {spec_path}.
+
+---
+
+### STEP 8: Build Remaining Sections
+**For each section below:**
+1. Show the section markdown
+2. Use AskUserQuestion for approval (Approve/Edit/Skip)
+3. If approved, append to {spec_path}
+
+**Required Sections:**
+- Implementation Timeline (phases, milestones, dependencies)
+- Success Metrics (KPIs, measurement approach)
+- Risk Assessment (technical risks, mitigation strategies)
+- Dependencies (external APIs, libraries, services)
+- Testing Strategy (unit, integration, e2e, load testing)
+- Security & Compliance (data protection, authentication, compliance needs)
+
+---
+
+### STEP 9: Final Review
+**Action:** Present complete PROJECT_SPEC.md summary.
+
+**Output:**
+```
+✅ PROJECT_SPEC.md COMPLETE
+
+Sections:
+- ✅ Overview
+- ✅ Features (X features)
+- ✅ Technical Architecture
+- ✅ Design Architecture (with visual artifacts)
+- ✅ Implementation Timeline
+- ✅ Success Metrics
+- ✅ Risk Assessment
+- ✅ Dependencies
+- ✅ Testing Strategy
+- ✅ Security & Compliance
+
+File: {spec_path}
+```
+
+**Then use AskUserQuestion tool:**
+```python
+AskUserQuestion(
+    questions=[{{
+        "question": "Ready to start building?",
+        "header": "Start Build?",
+        "multiSelect": False,
+        "options": [
+            {{"label": "Yes, start now", "description": "Launch br build start"}},
+            {{"label": "No, review first", "description": "I'll review the spec manually"}},
+            {{"label": "Edit something", "description": "Make changes to the spec"}}
+        ]
+    }}]
+)
+```
+
+**If "Yes, start now":** Tell user you're ready to run `br build start` but they need to run it manually (you can't execute it from planning mode).
+
+**If "No, review first":** Provide the command:
+```
+To start building later, run:
+cd {project_root}
+br build start
+```
+
+---
+
+## ⛔ CRITICAL RULES
+
+1. **NO CODE UNTIL SPEC COMPLETE** - Do not write any implementation code
+2. **INCREMENTAL UPDATES** - Write/append each section to {spec_path} as it's approved
+3. **USE AskUserQuestion** - Never just ask text questions, use the tool for y/n prompts
+4. **GENERATE VISUAL ARTIFACTS** - Use canvas for diagrams and wireframes
+5. **ALL SECTIONS REQUIRED** - Don't skip any of the 11 sections
+6. **DYNAMIC FEATURE UPDATES** - If user adds features mid-conversation, update the spec immediately
+7. **OPUS EXTENDED THINKING** - Use Opus model for strategic planning analysis
+
+---
+
+## 🚀 Start Now
+
+**Step 1:** Verify you're using Opus model (`/model opus`)
+**Step 2:** Ask: "Tell me about your project - what do you want to build?"
+**Step 3:** Follow the workflow above, section by section
 """
 
             planning_path.write_text(planning_content)
