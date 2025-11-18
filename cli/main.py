@@ -176,8 +176,31 @@ def init(
         # Auto-launch Claude Code planning mode for new projects only
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            # New project - output trigger for Claude Code
-            console.print(f"\n[bold cyan]PLAN:{project_name}[/bold cyan]\n")
+            # New project - copy trigger to clipboard and open Claude Code
+            import subprocess
+
+            # Create planning trigger
+            planning_trigger = f"""BUILDRUNNER_PLANNING_MODE
+Project: {project_name}
+Path: {project_root}
+"""
+
+            # Copy to clipboard (macOS)
+            try:
+                subprocess.run(['pbcopy'], input=planning_trigger.encode('utf-8'), check=True)
+                console.print(f"\n[green]✅ Planning trigger copied to clipboard[/green]")
+            except Exception as e:
+                console.print(f"\n[yellow]⚠️  Could not copy to clipboard: {e}[/yellow]")
+
+            # Open Claude Code in current directory
+            try:
+                subprocess.run(['open', '-a', 'Claude', str(project_root)], check=True)
+                console.print(f"[green]✅ Opening Claude Code...[/green]")
+                console.print(f"\n[bold yellow]→ Paste (Cmd+V) in Claude Code to start planning mode[/bold yellow]\n")
+            except Exception as e:
+                console.print(f"\n[yellow]⚠️  Could not open Claude Code: {e}[/yellow]")
+                console.print(f"[dim]Manually open Claude Code and paste:[/dim]")
+                console.print(f"\n{planning_trigger}\n")
 
     except Exception as e:
         handle_error(e)
