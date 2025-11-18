@@ -176,39 +176,31 @@ def init(
         console.print(f"[green]✅ Initialized BuildRunner project: {project_name}[/green]")
         console.print(f"[dim]Location: {buildrunner_dir}[/dim]")
 
-        # Auto-launch brainstorm mode for new projects without PROJECT_SPEC.md
+        # Auto-launch Claude Code planning mode for new projects
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            console.print("\n[bold cyan]💭 Let's build your project specification![/bold cyan]")
-            console.print("[dim]Describe your project idea and I'll create your PRD.[/dim]\n")
+            console.print("\n" + "="*70)
+            console.print("  🚀 PLANNING MODE - Interactive PRD Builder with Claude Code")
+            console.print("="*70)
+            console.print()
+            console.print("[bold cyan]Your project is initialized![/bold cyan]")
+            console.print(f"[dim]Location: {buildrunner_dir}[/dim]\n")
 
-            # Ask if user wants to describe project now
-            run_brainstorm = typer.confirm(
-                "Would you like to describe your project now?",
-                default=True
-            )
+            console.print("[yellow]Next Step: Continue in Claude Code[/yellow]\n")
 
-            if run_brainstorm:
-                console.print("")  # Add spacing
-                try:
-                    wizard = PRDWizard(str(project_root))
-                    spec = wizard.run_simple_brainstorm()
+            console.print("Tell Claude Code:")
+            console.print('  [cyan]"Start planning mode for my project: {}"[/cyan]\n'.format(project_name))
 
-                    console.print("\n[green]✓ PROJECT_SPEC created successfully![/green]")
-                    console.print(f"  Location: {spec_path}")
-                    console.print(f"  Status: {spec.state.value}")
+            console.print("Claude will:")
+            console.print("  1. Ask you to describe your project idea")
+            console.print("  2. Extract features and requirements")
+            console.print("  3. Generate suggestions (you select with numbers)")
+            console.print("  4. Build each PRD section interactively")
+            console.print("  5. Write PROJECT_SPEC.md when complete")
+            console.print("  6. Move to architecture phase\n")
 
-                    # Suggest next steps
-                    console.print("\n[bold]Next steps:[/bold]")
-                    console.print("  1. Run [cyan]br spec sync[/cyan] to generate features.json")
-                    console.print("  2. Run [cyan]br feature list[/cyan] to see your features")
-                    console.print("  3. Run [cyan]br spec confirm[/cyan] when ready to lock the spec")
-
-                except Exception as wizard_error:
-                    console.print(f"\n[yellow]⚠️  Error: {wizard_error}[/yellow]")
-                    console.print("[dim]You can run 'br spec brainstorm' later to create your spec[/dim]")
-            else:
-                console.print("\n[dim]You can run 'br spec brainstorm' later to create your PROJECT_SPEC[/dim]")
+            console.print("[dim]Project root: {}[/dim]".format(project_root))
+            console.print("[dim]Claude will write to: {}[/dim]\n".format(spec_path))
 
     except Exception as e:
         handle_error(e)
