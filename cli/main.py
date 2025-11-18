@@ -179,16 +179,9 @@ def init(
         # Auto-launch Claude Code planning mode for new projects only
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            # New project - show planning instructions
-            console.print("\n" + "="*70)
-            console.print("  🧠 PLANNING MODE")
-            console.print("="*70)
-            console.print()
-            console.print("[bold cyan]→ Go to Claude Code and say:[/bold cyan]")
-            console.print(f'   [yellow]"plan {project_name}"[/yellow]\n')
-            console.print("[dim]Claude will lead an interactive brainstorming session to build your PRD.[/dim]\n")
-            console.print(f"[dim]Project: {project_root}[/dim]")
-            console.print(f"[dim]PRD will be saved to: {spec_path}[/dim]\n")
+            # New project - trigger planning mode in Claude Code
+            console.print(f"\n[bold yellow]🧠 PLANNING_MODE_START: {project_name}[/bold yellow]")
+            console.print(f"[dim]→ Continue in Claude Code (planning mode will start automatically)[/dim]\n")
 
     except Exception as e:
         handle_error(e)
