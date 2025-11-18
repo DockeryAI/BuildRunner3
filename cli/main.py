@@ -179,34 +179,71 @@ def init(
             # New project - create PLANNING.md for Claude Code to read
             planning_path = buildrunner_dir / "PLANNING.md"
 
-            planning_content = f"""# 🎯 PLANNING MODE ACTIVE
+            planning_content = f"""# 🎯 PLANNING MODE - STOP AND READ THIS FIRST
 
 **Project:** {project_name}
-**Status:** Awaiting PROJECT_SPEC.md creation
 **Path:** {project_root}
+**OUTPUT FILE:** {spec_path}
 
 ---
 
-## Your Task
+## ⚠️ CRITICAL INSTRUCTIONS - FOLLOW EXACTLY
 
-You are Claude Code in **PLANNING MODE**. Lead an interactive brainstorming session to build a complete PROJECT_SPEC.md for this project.
+You are in **PLANNING MODE**. You MUST NOT write any code, create any files, or start building anything until the PROJECT_SPEC.md is complete.
 
-### Workflow
+### STEP-BY-STEP WORKFLOW (DO NOT SKIP)
 
-1. **Ask** the user to describe their project idea in detail
-2. **Extract** all features, requirements, and technical details from their description
-3. **Display** extracted items as numbered lists for review
-4. **Suggest** additional features based on industry best practices
-5. **Confirm** user selects features by typing numbers (e.g., "1, 3, 5" or "all")
-6. **Build** complete PRD with these sections:
-   - Project Overview
-   - Core Features (with descriptions and acceptance criteria)
-   - Technical Architecture (frontend, backend, database, infrastructure)
-   - Design Architecture (design system, components, patterns)
-   - Security & Compliance
-   - Testing Strategy
-7. **Write** the complete PROJECT_SPEC.md to: `{spec_path}`
-8. **Sync** to features.json using BuildRunner MCP tool: `feature_add`
+**STEP 1: ASK FOR PROJECT DESCRIPTION**
+Start with ONLY this question:
+"Tell me about your project - what do you want to build?"
+
+Wait for user response.
+
+**STEP 2: EXTRACT FEATURES**
+After user describes their idea:
+1. Extract all features mentioned
+2. Show as numbered list:
+   ```
+   EXTRACTED FEATURES:
+   1. Feature name - brief description
+   2. Feature name - brief description
+   ...
+   ```
+3. Ask: "Did I capture everything? Any additions or changes?"
+
+**STEP 3: SUGGEST ADDITIONAL FEATURES**
+After confirmation:
+1. Research best practices for this type of project
+2. Suggest 5-10 additional features:
+   ```
+   SUGGESTED FEATURES:
+   11. Feature name - why this adds value
+   12. Feature name - why this adds value
+   ...
+   ```
+3. Ask: "Which features do you want to include? Type the numbers (e.g., '1, 3, 5, 11, 13' or 'all')"
+
+**STEP 4: BUILD PRD SECTIONS**
+After user selects features:
+1. Create Overview section - show it
+2. Create Features section with priorities - show it
+3. Create Technical Architecture - show it
+4. Create Design Architecture - show it
+5. Ask for approval on each section
+
+**STEP 5: WRITE PROJECT_SPEC.md**
+Only after all sections approved:
+1. Write complete PROJECT_SPEC.md to: {spec_path}
+2. Tell user: "PROJECT_SPEC.md created. Run `br build start` to begin execution."
+
+---
+
+## ⛔ DO NOT:
+- Write any code before PROJECT_SPEC.md is complete
+- Create any files except PROJECT_SPEC.md
+- Start building immediately
+- Skip the feature selection step
+- Skip the suggestion step
 
 ### Output Format
 
