@@ -176,10 +176,19 @@ def init(
         console.print(f"[green]✅ Initialized BuildRunner project: {project_name}[/green]")
         console.print(f"[dim]Location: {buildrunner_dir}[/dim]")
 
-        # Auto-launch Claude Code planning mode for new projects
+        # Auto-launch Claude Code planning mode for new projects only
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
-            console.print(f"\n[bold yellow]→ Next: Run 'br plan {project_name}' to start planning mode with Claude Code[/bold yellow]\n")
+            # New project - show planning instructions
+            console.print("\n" + "="*70)
+            console.print("  🧠 PLANNING MODE")
+            console.print("="*70)
+            console.print()
+            console.print("[bold cyan]→ Go to Claude Code and say:[/bold cyan]")
+            console.print(f'   [yellow]"plan {project_name}"[/yellow]\n')
+            console.print("[dim]Claude will lead an interactive brainstorming session to build your PRD.[/dim]\n")
+            console.print(f"[dim]Project: {project_root}[/dim]")
+            console.print(f"[dim]PRD will be saved to: {spec_path}[/dim]\n")
 
     except Exception as e:
         handle_error(e)
