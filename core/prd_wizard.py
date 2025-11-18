@@ -17,7 +17,12 @@ from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
 from dataclasses import dataclass, asdict
 
-from core.opus_client import OpusClient, OpusAPIError
+# OpusClient kept for backwards compatibility but not required
+try:
+    from core.opus_client import OpusClient, OpusAPIError
+    OPUS_AVAILABLE = True
+except ImportError:
+    OPUS_AVAILABLE = False
 
 
 def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
@@ -157,15 +162,27 @@ class PRDWizard:
         self.state_path = self.project_root / ".buildrunner" / "spec_state.yaml"
         self.templates_dir = self.project_root / "templates"
 
-        # Initialize Opus client (will fail gracefully if no API key)
-        try:
-            self.opus_client = OpusClient()
-            self.use_opus = True
-        except ValueError:
-            print("\n[yellow]⚠️  ANTHROPIC_API_KEY not found - using template mode[/yellow]")
-            print("[dim]Set ANTHROPIC_API_KEY environment variable to enable Opus AI assistance[/dim]\n")
+        # Check if we should use Claude Code mode (default) or API mode
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        use_api_mode = os.getenv("BR_USE_API_MODE", "false").lower() == "true"
+
+        if use_api_mode and api_key and OPUS_AVAILABLE:
+            # API mode: Make external Opus calls (costs money)
+            try:
+                self.opus_client = OpusClient()
+                self.use_opus_api = True
+                self.use_claude_code = False
+                print("\n[cyan]Using Opus API mode[/cyan]")
+            except:
+                self.use_opus_api = False
+                self.use_claude_code = True
+        else:
+            # Claude Code mode: Generate prompts for user to send to their AI assistant (free)
             self.opus_client = None
-            self.use_opus = False
+            self.use_opus_api = False
+            self.use_claude_code = True
+            print("\n[cyan]🤖 Using Claude Code mode (interactive)[/cyan]")
+            print("[dim]Wizard will generate prompts for you to send to Claude Code[/dim]\n")
 
     def check_existing_spec(self) -> bool:
         """Check if PROJECT_SPEC.md already exists"""
@@ -329,116 +346,283 @@ class PRDWizard:
 
         return templates.get(section_name, "")
 
+    async def claude_code_discuss_section(self, section_name: str, app_description: str,
+                                          industry: str, use_case: str) -> str:
+        """
+        Claude Code mode: Generate prompt for user to send to their AI assistant.
+        User copies prompt, sends to Claude Code, pastes response back.
+        """
+        print(f"\n{'='*70}")
+        print(f"  Section: {section_name.replace('_', ' ').title()}")
+        print(f"{'='*70}\n")
+
+        # Generate comprehensive prompt
+        prompt = f"""I'm building a PROJECT_SPEC for a {industry} {use_case} application.
+
+My description:
+{app_description}
+
+For the "{section_name}" section, please:
+
+1. **Extract** what I already mentioned that relates to {section_name}
+   - List each item as a bullet with details
+   - Be specific about what I said
+
+2. **Suggest** 5-8 additional items I should consider
+   - Format each as: [ID] Title: Description
+   - Include concrete details and why it matters for {industry}
+   - Make them actionable and valuable
+
+3. **Format the response** as:
+   ```
+   ## From Your Description
+   - Item 1: [what you mentioned]
+   - Item 2: [what you mentioned]
+
+   ## Additional Suggestions
+   [1] Suggestion title: Brief description
+       - Detail 1
+       - Detail 2
+       - Why this matters
+
+   [2] Next suggestion...
+   ```
+
+Please be thorough and specific for this {industry} application."""
+
+        # Save prompt to clipboard-friendly file
+        prompt_file = self.project_root / ".buildrunner" / f"prompt_{section_name}.txt"
+        prompt_file.write_text(prompt)
+
+        print("[bold cyan]📋 SEND THIS TO CLAUDE CODE:[/bold cyan]\n")
+        print(f"{'-'*70}")
+        print(prompt)
+        print(f"{'-'*70}\n")
+        print(f"[dim]Prompt also saved to: {prompt_file}[/dim]\n")
+
+        print("[yellow]Instructions:[/yellow]")
+        print("  1. Copy the prompt above")
+        print("  2. Send it to Claude Code")
+        print("  3. Copy Claude's full response")
+        print("  4. Paste it below\n")
+
+        # Wait for user to paste Claude's response
+        print("[cyan]Paste Claude Code's response below (press Ctrl+D when done):[/cyan]\n")
+
+        lines = []
+        try:
+            while True:
+                line = input()
+                lines.append(line)
+        except EOFError:
+            pass
+
+        claude_response = "\n".join(lines).strip()
+
+        if not claude_response:
+            print("\n[yellow]No response provided, using template...[/yellow]")
+            return self.get_section_template(section_name)
+
+        # Parse the response to extract suggestions
+        print("\n[cyan]Which suggestions do you want to include?[/cyan]")
+        print("Enter IDs (comma-separated), 'all', or 'none'")
+        print("Example: 1,3,5\n")
+
+        selection = input("Your selection: ").strip().lower()
+
+        # Build final content
+        final_content = f"# {section_name.replace('_', ' ').title()}\n\n"
+
+        if selection == 'all':
+            final_content += claude_response
+        elif selection == 'none':
+            # Only include "From Your Description" part
+            if "## From Your Description" in claude_response:
+                end_idx = claude_response.find("## Additional Suggestions")
+                if end_idx > 0:
+                    final_content += claude_response[:end_idx].strip()
+                else:
+                    final_content += claude_response
+            else:
+                final_content += claude_response
+        else:
+            # Parse and include only selected items
+            selected_ids = [s.strip() for s in selection.split(',')]
+
+            # Include "From Your Description" section
+            if "## From Your Description" in claude_response:
+                desc_start = claude_response.find("## From Your Description")
+                desc_end = claude_response.find("## Additional Suggestions", desc_start)
+                if desc_end > 0:
+                    final_content += claude_response[desc_start:desc_end].strip() + "\n\n"
+                else:
+                    final_content += claude_response[desc_start:].strip() + "\n\n"
+
+            # Add selected suggestions
+            if "## Additional Suggestions" in claude_response:
+                final_content += "## Additional Items\n\n"
+                suggestions_start = claude_response.find("## Additional Suggestions")
+                suggestions_text = claude_response[suggestions_start:]
+
+                lines = suggestions_text.split('\n')
+                current_suggestion = []
+                include_current = False
+
+                for line in lines:
+                    if line.strip() and line.strip()[0] == '[':
+                        # Save previous if selected
+                        if include_current and current_suggestion:
+                            final_content += '\n'.join(current_suggestion) + '\n\n'
+
+                        # Check if this ID is selected
+                        suggestion_id = line.strip()[1:].split(']')[0]
+                        include_current = suggestion_id in selected_ids
+                        current_suggestion = [line] if include_current else []
+                    elif include_current:
+                        current_suggestion.append(line)
+
+                # Add last suggestion
+                if include_current and current_suggestion:
+                    final_content += '\n'.join(current_suggestion) + '\n\n'
+
+        print(f"\n✓ Built {section_name} content")
+        return final_content
+
     async def opus_discuss_section(self, section_name: str, app_description: str,
                                    industry: str, use_case: str) -> str:
         """
-        Interactive discussion with Opus to build section content.
-        Generates multiple options, user selects/refines iteratively.
+        Interactive discussion with AI to build section content.
+
+        Workflow:
+        1. Extract what's in user's prompt for this section
+        2. Generate additional suggestions
+        3. Let user select which suggestions to include
+        4. Build final content = extracted + selected
         """
-        if not self.use_opus:
+        if self.use_claude_code:
+            # Claude Code mode: Generate prompt for user to send to their AI
+            return await self.claude_code_discuss_section(section_name, app_description, industry, use_case)
+        elif not self.use_opus_api:
             # Fall back to template
             return self.get_section_template(section_name)
 
-        print(f"\n🤖 Asking Opus to generate ideas for {section_name}...")
+        print(f"\n🤖 Analyzing your description for {section_name}...")
 
-        # Build context-aware prompt
-        prompt = f"""You're helping create a PROJECT_SPEC.md for a {industry} {use_case} application.
+        # Step 1: Extract what user already mentioned
+        extract_prompt = f"""You're analyzing a project description for a {industry} {use_case} application.
 
-App Description: {app_description}
+App Description:
+{app_description}
 
-Generate content for the "{section_name}" section. Provide 3 different approaches/options:
+Extract ONLY what the user already mentioned that relates to the "{section_name}" section.
+List each item as a bullet point with details.
 
-Option 1: Minimal viable approach (essential features only)
-Option 2: Balanced approach (practical and comprehensive)
-Option 3: Comprehensive approach (full-featured, future-proof)
+Be specific and concrete. If they didn't mention anything for this section, say "Nothing specified yet."
 
-For each option, be specific and actionable. Include concrete technical details.
-
-Format your response as:
-
-## Option 1: Minimal
-[content]
-
-## Option 2: Balanced
-[content]
-
-## Option 3: Comprehensive
-[content]"""
+Format as:
+## What You Specified:
+- Item 1: [details from their description]
+- Item 2: [details from their description]
+"""
 
         try:
+            # Extract existing requirements
             message = await self.opus_client.async_client.messages.create(
                 model=self.opus_client.model,
-                max_tokens=4096,
-                messages=[{"role": "user", "content": prompt}]
+                max_tokens=2048,
+                messages=[{"role": "user", "content": extract_prompt}]
             )
 
-            options_text = message.content[0].text
-            print(f"\n✓ Opus generated 3 options\n")
-            print(options_text[:500] + "..." if len(options_text) > 500 else options_text)
+            extracted = message.content[0].text
+            print(f"\n✓ Extracted from your description:\n")
+            print(extracted)
+            print(f"\n{'-'*60}")
 
-            # Let user choose
-            print("\n\nWhich approach do you prefer?")
-            print("  1. Option 1 (Minimal)")
-            print("  2. Option 2 (Balanced)")
-            print("  3. Option 3 (Comprehensive)")
-            print("  4. Combine elements from multiple options")
-            print("  5. Ask Opus to refine based on feedback")
+            # Step 2: Generate additional suggestions
+            print(f"\n🤖 Generating additional suggestions...")
 
-            choice = input("\nChoice (1-5): ").strip()
+            suggest_prompt = f"""Based on this {industry} {use_case} application:
 
-            if choice in ['1', '2', '3']:
-                # Extract the chosen option
-                option_markers = ["## Option 1:", "## Option 2:", "## Option 3:"]
-                selected_marker = option_markers[int(choice) - 1]
+{app_description}
 
-                if selected_marker in options_text:
-                    start = options_text.find(selected_marker)
-                    # Find next option or end
-                    end = len(options_text)
-                    for marker in option_markers:
-                        next_pos = options_text.find(marker, start + len(selected_marker))
-                        if next_pos > start:
-                            end = min(end, next_pos)
+What they already specified for {section_name}:
+{extracted}
 
-                    content = options_text[start:end].replace(selected_marker, "").strip()
-                    print(f"\n✓ Selected Option {choice}")
-                    return content
+Suggest 5-8 ADDITIONAL items they should consider for the "{section_name}" section.
+Make them concrete, actionable, and valuable.
+
+Format each suggestion as:
+[ID] Title: Brief description
+    - Specific detail 1
+    - Specific detail 2
+    - Why this matters for {industry}
+
+Example:
+[1] API Rate Limiting: Protect backend resources
+    - Implement token bucket algorithm
+    - 1000 requests/hour for free tier
+    - Prevents abuse and ensures fair usage
+"""
+
+            message = await self.opus_client.async_client.messages.create(
+                model=self.opus_client.model,
+                max_tokens=3072,
+                messages=[{"role": "user", "content": suggest_prompt}]
+            )
+
+            suggestions = message.content[0].text
+            print(f"\n✓ Additional suggestions:\n")
+            print(suggestions)
+
+            # Step 3: Let user select which to include
+            print(f"\n\n{'='*60}")
+            print("Select suggestions to include:")
+            print(f"{'='*60}")
+            print("Enter the IDs of suggestions you want (comma-separated)")
+            print("Examples: '1,3,5' or 'all' or 'none'")
+
+            selection = input("\nYour selection: ").strip().lower()
+
+            # Build final content
+            final_content = f"# {section_name.replace('_', ' ').title()}\n\n"
+            final_content += "## From Your Description\n\n"
+            final_content += extracted.replace("## What You Specified:", "").strip()
+            final_content += "\n\n"
+
+            if selection != 'none':
+                final_content += "## Additional Items\n\n"
+
+                if selection == 'all':
+                    final_content += suggestions
                 else:
-                    return options_text
+                    # Parse selected IDs
+                    selected_ids = [s.strip() for s in selection.split(',')]
 
-            elif choice == '4':
-                print("\nOpening editor to combine/edit the options...")
-                # Write all options to temp file for editing
-                return get_multiline_input(
-                    "Combine the best elements from the options above:",
-                    allow_file=False
-                )
+                    # Extract selected suggestions (simple line-based parsing)
+                    lines = suggestions.split('\n')
+                    current_suggestion = []
+                    include_current = False
 
-            elif choice == '5':
-                feedback = input("\nWhat would you like Opus to change/add? ")
-                refine_prompt = f"""{options_text}
+                    for line in lines:
+                        # Check if line starts with [ID]
+                        if line.strip() and line.strip()[0] == '[':
+                            # Save previous suggestion if it was selected
+                            if include_current and current_suggestion:
+                                final_content += '\n'.join(current_suggestion) + '\n\n'
 
-User feedback: {feedback}
+                            # Check if this ID is selected
+                            suggestion_id = line.strip()[1:].split(']')[0]
+                            include_current = suggestion_id in selected_ids
+                            current_suggestion = [line] if include_current else []
+                        elif include_current:
+                            current_suggestion.append(line)
 
-Please refine the options based on this feedback. Provide the improved version."""
+                    # Add last suggestion if selected
+                    if include_current and current_suggestion:
+                        final_content += '\n'.join(current_suggestion) + '\n\n'
 
-                message = await self.opus_client.async_client.messages.create(
-                    model=self.opus_client.model,
-                    max_tokens=4096,
-                    messages=[{"role": "user", "content": refine_prompt}]
-                )
-
-                refined = message.content[0].text
-                print(f"\n✓ Opus refined the content\n")
-                print(refined[:500] + "..." if len(refined) > 500 else refined)
-
-                confirm = input("\nAccept this version? (y/n): ")
-                if confirm.lower() == 'y':
-                    return refined
-                else:
-                    return options_text  # Fall back to original options
-
-            return options_text
+            print(f"\n✓ Built {section_name} content")
+            return final_content
 
         except OpusAPIError as e:
             print(f"\n⚠️  Opus API error: {e}")
