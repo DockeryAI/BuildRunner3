@@ -9,6 +9,8 @@ import os
 import sys
 import json
 import yaml
+import tempfile
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 from enum import Enum
@@ -17,58 +19,87 @@ from dataclasses import dataclass, asdict
 
 def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
     """
-    Get multi-line input from user.
-    Handles large pastes properly by reading until empty line.
+    Get multi-line input from user using text editor.
+    Opens user's $EDITOR (or nano/vim) for long-form input.
     Also supports reading from a file path.
 
     Args:
         prompt: Prompt to display to user
-        allow_file: If True, check if input is a file path and read from it
+        allow_file: If True, allow dragging a file path
 
     Returns:
         Combined multi-line string
     """
     print(f"\n{prompt}")
+
+    # First, ask if they want to use editor or provide file
     if allow_file:
-        print("[dim](Paste text, drag a file, or type. Press Enter on empty line to finish)[/dim]\n")
-    else:
-        print("[dim](Paste your text, then press Enter on an empty line to finish)[/dim]\n")
+        print("\nOptions:")
+        print("  1. Open text editor (recommended for long text)")
+        print("  2. Drag a file path")
+        print("  3. Type short text inline")
+        choice = input("\nChoice (1-3): ").strip()
 
-    lines = []
-    first_line = None
+        if choice == "2":
+            file_path_str = input("\nDrag file here: ").strip().strip("'\"")
+            file_path = Path(file_path_str)
 
-    # Flush any buffered input
-    sys.stdin.flush() if hasattr(sys.stdin, 'flush') else None
+            if file_path.exists() and file_path.is_file():
+                try:
+                    content = file_path.read_text(encoding='utf-8')
+                    print(f"✓ Read {len(content)} characters from: {file_path.name}")
+                    return content.strip()
+                except Exception as e:
+                    print(f"⚠️  Could not read file: {e}")
+                    print("Opening editor instead...")
+                    choice = "1"
+            else:
+                print(f"⚠️  File not found: {file_path_str}")
+                print("Opening editor instead...")
+                choice = "1"
 
-    while True:
+        if choice == "3":
+            # Short inline input
+            print("\nType your text (press Ctrl+D when done):")
+            lines = []
+            try:
+                while True:
+                    lines.append(input())
+            except EOFError:
+                pass
+            return "\n".join(lines).strip()
+
+    # Default: Open text editor (choice == "1" or no choice given)
+    editor = os.environ.get('EDITOR', os.environ.get('VISUAL', 'nano'))
+
+    # Create temp file with helpful header
+    with tempfile.NamedTemporaryFile(mode='w+', suffix='.txt', delete=False) as tf:
+        tf.write(f"# {prompt}\n")
+        tf.write("# Write your content below (delete this header if you want)\n")
+        tf.write("# Save and close the editor when done\n\n")
+        temp_path = tf.name
+
+    try:
+        # Open editor
+        print(f"\nOpening {editor}... (save and close when done)")
+        subprocess.call([editor, temp_path])
+
+        # Read result
+        with open(temp_path, 'r') as f:
+            content = f.read()
+
+        # Remove comment header lines if present
+        lines = content.split('\n')
+        filtered_lines = [line for line in lines if not line.strip().startswith('#')]
+        result = '\n'.join(filtered_lines).strip()
+
+        return result
+    finally:
+        # Clean up temp file
         try:
-            line = input()
-
-            # Check if first line is a file path (from drag & drop)
-            if allow_file and first_line is None and line.strip():
-                # Remove potential quotes from dragged file paths
-                potential_path = line.strip().strip("'\"")
-                file_path = Path(potential_path)
-
-                if file_path.exists() and file_path.is_file():
-                    try:
-                        content = file_path.read_text(encoding='utf-8')
-                        print(f"\n[green]✓ Read {len(content)} characters from: {file_path.name}[/green]")
-                        return content.strip()
-                    except Exception as e:
-                        print(f"[yellow]⚠️  Could not read file: {e}[/yellow]")
-                        print("[dim]Treating as regular text input...[/dim]\n")
-
-            if first_line is None:
-                first_line = line
-
-            if line.strip() == "":  # Empty line signals end
-                break
-            lines.append(line)
-        except EOFError:
-            break
-
-    return "\n".join(lines).strip()
+            os.unlink(temp_path)
+        except:
+            pass
 
 
 class SpecState(Enum):
