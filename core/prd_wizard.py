@@ -877,9 +877,10 @@ Example:
         print("[cyan]Let's build your PROJECT_SPEC through conversation![/cyan]")
         print("[dim]I'll ask questions, make suggestions, and we'll build it together.[/dim]\n")
 
-        # Conversational gathering
+        # Conversational gathering - simple input, not editor
         print("Tell me about your project idea:")
-        app_description = get_multiline_input("What do you want to build?")
+        print("[dim]Just describe it in your own words - I'll ask follow-up questions.[/dim]\n")
+        app_description = input("What do you want to build? ")
 
         # Detect industry
         print("\n🔍 Let me analyze that...")
@@ -938,7 +939,7 @@ Example:
             responses = []
             for question in prompt_set["questions"]:
                 print(f"[cyan]{question}[/cyan]")
-                answer = get_multiline_input("Your answer:")
+                answer = input("\n→ ")
                 responses.append({"question": question, "answer": answer})
                 print()
 
