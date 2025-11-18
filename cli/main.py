@@ -194,12 +194,24 @@ Path: {project_root}
 
             # Open Claude Code in current directory
             try:
-                subprocess.run(['open', '-a', 'Claude', str(project_root)], check=True)
-                console.print(f"[green]✅ Opening Claude Code...[/green]")
-                console.print(f"\n[bold yellow]→ Paste (Cmd+V) in Claude Code to start planning mode[/bold yellow]\n")
+                # Try common Claude Code app names
+                app_opened = False
+                for app_name in ['Claude Code', 'Claude', 'Cursor']:
+                    try:
+                        subprocess.run(['open', '-a', app_name, str(project_root)], check=True, stderr=subprocess.DEVNULL)
+                        console.print(f"[green]✅ Opening {app_name}...[/green]")
+                        app_opened = True
+                        break
+                    except:
+                        continue
+
+                if app_opened:
+                    console.print(f"\n[bold yellow]→ Paste (Cmd+V) to start planning mode[/bold yellow]\n")
+                else:
+                    raise Exception("No compatible editor found")
             except Exception as e:
-                console.print(f"\n[yellow]⚠️  Could not open Claude Code: {e}[/yellow]")
-                console.print(f"[dim]Manually open Claude Code and paste:[/dim]")
+                console.print(f"\n[yellow]⚠️  Could not auto-open editor[/yellow]")
+                console.print(f"[dim]Manually open Claude Code and paste (already in clipboard):[/dim]")
                 console.print(f"\n{planning_trigger}\n")
 
     except Exception as e:
