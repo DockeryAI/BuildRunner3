@@ -29,6 +29,43 @@ build_app = typer.Typer(help="Build orchestration and checkpoint management")
 console = Console()
 
 
+def convert_to_batch_task(decomp_task):
+    """Convert task_decomposer.Task to batch_optimizer.Task"""
+    from core.batch_optimizer import Task as BatchTask, TaskDomain, TaskComplexity as BatchComplexity
+
+    # Map category to domain
+    category_to_domain = {
+        "implementation": TaskDomain.BACKEND,
+        "testing": TaskDomain.TESTING,
+        "documentation": TaskDomain.DOCUMENTATION,
+    }
+    domain = category_to_domain.get(decomp_task.category, TaskDomain.UNKNOWN)
+
+    # Map complexity string to BatchComplexity enum
+    complexity_map = {
+        "simple": BatchComplexity.SIMPLE,
+        "medium": BatchComplexity.MEDIUM,
+        "complex": BatchComplexity.COMPLEX,
+    }
+    complexity_str = decomp_task.complexity.value if hasattr(decomp_task.complexity, 'value') else str(decomp_task.complexity)
+    complexity = complexity_map.get(complexity_str, BatchComplexity.MEDIUM)
+
+    # Infer file_path from technical details or use placeholder
+    file_path = f"core/{decomp_task.feature_id}/{decomp_task.id}.py"
+
+    return BatchTask(
+        id=decomp_task.id,
+        name=decomp_task.name,
+        description=decomp_task.description,
+        file_path=file_path,
+        estimated_minutes=decomp_task.estimated_minutes,
+        complexity=complexity,
+        domain=domain,
+        dependencies=decomp_task.dependencies,
+        acceptance_criteria=decomp_task.acceptance_criteria,
+    )
+
+
 def get_orchestrator() -> BuildOrchestrator:
     """Get or create build orchestrator"""
     project_root = Path.cwd()
@@ -325,8 +362,9 @@ def build_start():
 
         batches = []
         for level in levels:
-            level_tasks = [task_lookup[task_id] for task_id in level.tasks]
-            level_batches = optimizer.optimize_batches(level_tasks)
+            level_tasks_decomp = [task_lookup[task_id] for task_id in level.tasks]
+            level_tasks_batch = [convert_to_batch_task(t) for t in level_tasks_decomp]
+            level_batches = optimizer.optimize_batches(level_tasks_batch)
             batches.extend(level_batches)
 
         console.print(f"[green]✓ Created {len(batches)} task batches[/green]\n")
@@ -419,13 +457,22 @@ def _format_batch(batch, graph):
     """Format a batch for EXECUTION.md"""
     content = []
     for i, task in enumerate(batch.tasks, 1):
-        content.append(f"#### Task {i}: {task.description}")
+        content.append(f"#### Task {i}: {task.name}")
+        content.append(f"**Description:** {task.description}")
         content.append(f"**Estimated Time:** {task.estimated_minutes} minutes")
-        content.append(f"**Files:** {', '.join(task.files_to_modify or ['New file'])}")
+        content.append(f"**File:** {task.file_path}")
         if task.dependencies:
-            deps = [graph.get_task(dep_id).description for dep_id in task.dependencies]
-            content.append(f"**Dependencies:** {', '.join(deps)}")
-        content.append(f"\n{task.implementation_notes or 'See PROJECT_SPEC.md for details'}\n")
+            deps = []
+            for dep_id in task.dependencies:
+                if dep_id in graph.tasks:
+                    deps.append(graph.tasks[dep_id].get('name', dep_id))
+            if deps:
+                content.append(f"**Dependencies:** {', '.join(deps)}")
+        if task.acceptance_criteria:
+            content.append(f"**Acceptance Criteria:**")
+            for criterion in task.acceptance_criteria:
+                content.append(f"  - {criterion}")
+        content.append("")
 
     return "\n".join(content)
 
