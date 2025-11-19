@@ -1,6 +1,4 @@
-"""
-ATTACH Commands - Retrofit BuildRunner onto existing projects
-"""
+"""BR3 Attach - Retrofit existing projects to BuildRunner 3"""
 
 import typer
 from pathlib import Path
@@ -8,295 +6,272 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
 from rich.table import Table
+from rich import print as rprint
+import logging
 import json
-import time
 
-from core.analyzer import CodebaseAnalyzer, SpecGenerator
-from cli.config_manager import ConfigManager
+from core.retrofit import CodebaseScanner, FeatureExtractor, PRDSynthesizer
+from core.retrofit.version_detector import BRVersionDetector, BRVersion
+from core.migration.v2_parser import V2ProjectParser
+from core.migration.converter import MigrationConverter
+from core.prd.prd_controller import get_prd_controller
+from core.claude_md_generator import ClaudeMdGenerator
 
-attach_app = typer.Typer(help="Attach BuildRunner to existing projects")
+attach_app = typer.Typer(help="Attach BR3 to existing projects")
 console = Console()
+logger = logging.getLogger(__name__)
 
 
-@attach_app.command("analyze")
-def attach_analyze(
-    generate_spec: bool = typer.Option(True, help="Generate PROJECT_SPEC from code"),
-    launch_planning: bool = typer.Option(True, help="Launch Claude Code planning mode")
+@attach_app.command()
+def attach(
+    directory: Path = typer.Argument(
+        None,
+        help="Project directory to attach (defaults to current directory)"
+    ),
+    output: Path = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Output path for PROJECT_SPEC.md (defaults to .buildrunner/PROJECT_SPEC.md)"
+    ),
+    dry_run: bool = typer.Option(
+        False,
+        "--dry-run",
+        help="Preview without writing files"
+    ),
 ):
     """
-    Analyze existing codebase and generate PROJECT_SPEC
+    Attach BuildRunner 3 to an existing project.
 
-    This scans your entire project to:
-    - Detect languages and frameworks
-    - Extract features from code
-    - Find API endpoints
-    - Generate initial PROJECT_SPEC.md
+    Scans the codebase, analyzes structure, extracts features,
+    and generates a PROJECT_SPEC.md that becomes the source of truth.
     """
-    try:
-        project_root = Path.cwd()
-        buildrunner_dir = project_root / ".buildrunner"
+    # Default to current directory
+    if directory is None:
+        directory = Path.cwd()
+    else:
+        directory = Path(directory).resolve()
 
-        console.print("\n[bold blue]🔍 Analyzing Existing Codebase[/bold blue]\n")
+    # Validate directory
+    if not directory.exists():
+        console.print(f"[red]Error: Directory not found: {directory}[/red]")
+        raise typer.Exit(1)
 
-        # Step 1: Analyze codebase
+    if not directory.is_dir():
+        console.print(f"[red]Error: Not a directory: {directory}[/red]")
+        raise typer.Exit(1)
+
+    # Default output path
+    if output is None:
+        output = directory / ".buildrunner" / "PROJECT_SPEC.md"
+
+    # Show welcome message
+    console.print()
+    console.print(Panel.fit(
+        "[bold cyan]BuildRunner 3 - Attach to Existing Project[/bold cyan]\n\n"
+        f"[white]Analyzing codebase at:[/white] [yellow]{directory}[/yellow]",
+        border_style="cyan"
+    ))
+    console.print()
+
+    # Phase 0: Detect BR Version
+    console.print("[bold]Phase 0:[/bold] Detecting BuildRunner version...")
+    detector = BRVersionDetector(directory)
+    version_result = detector.detect()
+
+    console.print(f"  Version: [cyan]{version_result.version.value}[/cyan]")
+    console.print(f"  Confidence: [yellow]{version_result.confidence:.0%}[/yellow]")
+    console.print()
+
+    # Handle legacy BR2 projects - migrate first
+    if version_result.version == BRVersion.BR2:
+        console.print("[yellow]⚠️  BuildRunner 2.0 detected - migrating to BR3 first...[/yellow]")
+        console.print()
+
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console
         ) as progress:
-            task = progress.add_task("Scanning project files...", total=None)
+            migrate_task = progress.add_task("📦 Migrating BR2 → BR3...", total=None)
 
-            analyzer = CodebaseAnalyzer(str(project_root))
-            analysis = analyzer.scan_project()
+            # Parse BR2 project
+            parser = V2ProjectParser(directory)
+            v2_project = parser.parse()
 
-            progress.update(task, completed=True)
+            # Convert to BR3
+            converter = MigrationConverter(v2_project)
+            conversion_result = converter.convert()
 
-        # Show analysis results
-        console.print("\n[bold green]✅ Analysis Complete![/bold green]\n")
+            # Write migrated features.json
+            if not dry_run and conversion_result.success:
+                buildrunner_dir = directory / ".buildrunner"
+                buildrunner_dir.mkdir(exist_ok=True)
 
-        table = Table(title="Project Analysis", show_header=True)
-        table.add_column("Metric", style="cyan")
-        table.add_column("Value", style="green")
+                features_file = buildrunner_dir / "features.json"
+                with open(features_file, 'w') as f:
+                    json.dump(conversion_result.features_json, f, indent=2)
 
-        table.add_row("Files Scanned", str(analysis.file_count))
-        table.add_row("Lines of Code", f"{analysis.lines_of_code:,}")
-        table.add_row("Languages", ", ".join(analysis.languages) or "Not detected")
-        table.add_row("Frameworks", ", ".join(analysis.frameworks) or "None")
-        table.add_row("Architecture", analysis.architecture)
-        table.add_row("Database", analysis.database or "Not detected")
-        table.add_row("Features Found", str(len(analysis.features)))
-        table.add_row("API Endpoints", str(len(analysis.api_endpoints)))
-        table.add_row("Test Coverage", f"{analysis.test_coverage:.1f}%")
+                progress.update(migrate_task, description="✅ BR2 data migrated to features.json")
+            else:
+                progress.update(migrate_task, description="✅ BR2 migration preview (dry-run)")
 
-        console.print(table)
+        console.print()
+        console.print("[green]✅ Migration complete - now scanning codebase for features...[/green]")
+        console.print()
 
-        # Step 2: Create .buildrunner directory
-        console.print("\n[bold blue]📁 Creating BuildRunner Structure[/bold blue]")
-        buildrunner_dir.mkdir(exist_ok=True)
-        (buildrunner_dir / "context").mkdir(exist_ok=True)
-        (buildrunner_dir / "governance").mkdir(exist_ok=True)
-        (buildrunner_dir / "standards").mkdir(exist_ok=True)
-        console.print("[green]✅ .buildrunner/ directory created[/green]")
+    elif version_result.version == BRVersion.BR3:
+        console.print("[green]✅ BuildRunner 3 already attached - updating PRD...[/green]")
+        console.print()
 
-        # Step 3: Initialize features.json
-        features_data = {
-            "project": project_root.name,
-            "version": "1.0.0",
-            "status": "retrofit",
-            "last_updated": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "features": [],
-            "metrics": {
-                "files_analyzed": analysis.file_count,
-                "lines_of_code": analysis.lines_of_code,
-                "features_detected": len(analysis.features),
-                "test_coverage": round(analysis.test_coverage, 1)
-            }
-        }
+    # Phase 1: Scan Codebase
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console
+    ) as progress:
+        # Scan
+        scan_task = progress.add_task("🔍 Scanning codebase...", total=None)
+        scanner = CodebaseScanner(directory)
+        scan_result = scanner.scan()
+        progress.update(scan_task, description="✅ Codebase scan complete")
 
-        features_file = buildrunner_dir / "features.json"
-        with open(features_file, 'w') as f:
-            json.dump(features_data, f, indent=2)
+    # Show scan results
+    _show_scan_results(scan_result)
 
-        console.print("[green]✅ features.json initialized[/green]")
+    # Phase 2: Extract Features
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console
+    ) as progress:
+        extract_task = progress.add_task("🧩 Extracting features...", total=None)
+        extractor = FeatureExtractor()
+        features = extractor.extract_features(scan_result)
+        progress.update(extract_task, description=f"✅ Extracted {len(features)} features")
 
-        # Step 4: Generate PROJECT_SPEC
-        if generate_spec:
-            console.print("\n[bold blue]📝 Generating PROJECT_SPEC[/bold blue]")
+    # Show extracted features
+    _show_features(features)
 
-            generator = SpecGenerator()
-            spec_content = generator.from_existing_code(analysis)
+    # Phase 3: Synthesize PRD
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console
+    ) as progress:
+        synth_task = progress.add_task("📝 Generating PROJECT_SPEC.md...", total=None)
+        synthesizer = PRDSynthesizer()
 
-            spec_path = buildrunner_dir / "PROJECT_SPEC.md"
-            spec_path.write_text(spec_content)
+        if not dry_run:
+            prd = synthesizer.synthesize(scan_result, output)
+            progress.update(synth_task, description="✅ PROJECT_SPEC.md generated")
+        else:
+            prd = synthesizer.synthesize(scan_result, None)
+            progress.update(synth_task, description="✅ PRD preview generated (dry-run)")
 
-            console.print(f"[green]✅ PROJECT_SPEC.md generated[/green]")
-            console.print(f"[dim]   Location: {spec_path}[/dim]")
+    # Phase 4: Generate CLAUDE.md with attach mode instructions
+    claude_md_path = None
+    if not dry_run:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            claude_task = progress.add_task("📋 Generating CLAUDE.md for attach mode...", total=None)
+            generator = ClaudeMdGenerator(directory)
+            claude_md_path = generator.generate_attach_mode(force=True)
+            progress.update(claude_task, description="✅ CLAUDE.md generated with attach instructions")
 
-        # Step 5: Initialize config
-        config_manager = ConfigManager(project_root)
-        config_manager.init_project_config()
-        console.print("[green]✅ Configuration initialized[/green]")
-
-        # Summary
-        console.print("\n[bold green]🎉 BuildRunner Attached Successfully![/bold green]\n")
-
+    # Show summary
+    console.print()
+    if dry_run:
         console.print(Panel(
-            f"""[bold]Next Steps:[/bold]
-
-1. Review the generated PROJECT_SPEC.md:
-   [cyan]cat .buildrunner/PROJECT_SPEC.md[/cyan]
-
-2. Edit and refine as needed:
-   [cyan]br spec wizard[/cyan]
-
-3. Start building:
-   [cyan]br build start[/cyan]
-
-[dim]BuildRunner is now managing your project![/dim]""",
-            title="✅ Retrofit Complete",
+            "[yellow]Dry-run mode - no files written[/yellow]\n\n"
+            f"Would write PROJECT_SPEC.md to:\n[cyan]{output}[/cyan]\n\n"
+            "Run without --dry-run to create the file.",
+            title="🔍 Preview",
+            border_style="yellow"
+        ))
+    else:
+        console.print(Panel(
+            f"[green]✅ BuildRunner 3 attached successfully![/green]\n\n"
+            f"**Files Generated:**\n"
+            f"  • PROJECT_SPEC.md: [cyan]{output}[/cyan]\n"
+            f"  • CLAUDE.md: [cyan]{claude_md_path}[/cyan]\n\n"
+            f"**Next Steps:**\n"
+            f"1. Open Claude Code in this directory\n"
+            f"2. Claude will auto-read CLAUDE.md and know about your existing features\n"
+            f"3. Ask Claude to build new features - it will check PROJECT_SPEC.md first\n"
+            f"4. Features marked [cyan]DISCOVERED[/cyan] = already built, [cyan]PLANNED[/cyan] = ready to build\n\n"
+            f"**CLAUDE.md Instructions:**\n"
+            f"  • Auto-continue mode: Claude builds to 100% without pausing\n"
+            f"  • Codebase awareness: Claude checks PROJECT_SPEC.md before building\n"
+            f"  • Profile active: {generator.profile_manager.get_active_profile() or 'none'}",
+            title="✅ Attach Complete",
             border_style="green"
         ))
 
-        # Optional: Launch planning mode
-        if launch_planning and generate_spec:
-            console.print("\n[bold blue]🚀 Launching Planning Mode for Review[/bold blue]\n")
-
-            # Create CLAUDE.md for planning
-            claude_md_path = project_root / "CLAUDE.md"
-            claude_content = f"""# 🎯 PLANNING MODE - Existing Project Review
-
-**Project:** {project_root.name}
-**Status:** RETROFIT - BuildRunner attached to existing codebase
-**Generated Spec:** {spec_path}
-
----
-
-## ⚠️ CRITICAL: Review Generated PROJECT_SPEC
-
-BuildRunner has analyzed your existing codebase and generated an initial PROJECT_SPEC.md.
-
-### Your Task:
-
-1. **Review** the generated spec at: `{spec_path}`
-2. **Validate** extracted features are accurate
-3. **Add** any missing features or requirements
-4. **Refine** priorities and acceptance criteria
-5. **Approve** or edit each section
-
-### Workflow:
-
-- Read the generated PROJECT_SPEC.md
-- Use the flexible PRD workflow from planning mode
-- Update sections as needed
-- When satisfied, you can use `br build start` to begin implementation
-
----
-
-## 🚀 Start Review
-
-Open and review: {spec_path}
-
-Then use AskUserQuestion to confirm:
-- Does the spec accurately represent your project?
-- Are all major features captured?
-- Are there missing capabilities to add?
-
-Follow the standard planning workflow to refine the spec.
-"""
-
-            claude_md_path.write_text(claude_content)
-            console.print(f"[green]✅ Created {claude_md_path}[/green]")
-            console.print("[green]✅ Launching Claude Code for review...[/green]\n")
-
-            # Launch Claude Code
-            import os
-            os.execvp('claude', ['claude', '--dangerously-skip-permissions', str(project_root)])
-
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-        raise typer.Exit(1)
+    console.print()
 
 
-@attach_app.command("minimal")
-def attach_minimal():
-    """
-    Minimal BuildRunner setup - just add .buildrunner/ structure
+def _show_scan_results(scan_result):
+    """Display scan results in a table"""
+    console.print()
+    console.print("[bold cyan]📊 Scan Results[/bold cyan]")
+    console.print()
 
-    Creates the basic directory structure without code analysis.
-    """
-    try:
-        project_root = Path.cwd()
-        buildrunner_dir = project_root / ".buildrunner"
+    table = Table(show_header=False, box=None, padding=(0, 2))
+    table.add_column("Metric", style="dim")
+    table.add_column("Value", style="bold white")
 
-        console.print("\n[bold blue]📁 Minimal BuildRunner Setup[/bold blue]\n")
+    table.add_row("Files Scanned", str(scan_result.total_files))
+    table.add_row("Lines of Code", f"{scan_result.total_lines:,}")
+    table.add_row("Languages", ", ".join(scan_result.languages))
+    if scan_result.frameworks:
+        table.add_row("Frameworks", ", ".join(scan_result.frameworks))
+    table.add_row("Code Artifacts", str(len(scan_result.artifacts)))
+    table.add_row("Scan Time", f"{scan_result.scan_duration_seconds:.1f}s")
 
-        # Create structure
-        buildrunner_dir.mkdir(exist_ok=True)
-        (buildrunner_dir / "context").mkdir(exist_ok=True)
-        (buildrunner_dir / "governance").mkdir(exist_ok=True)
-        (buildrunner_dir / "standards").mkdir(exist_ok=True)
-
-        # Initialize empty features.json
-        features_data = {
-            "project": project_root.name,
-            "version": "1.0.0",
-            "status": "initialized",
-            "last_updated": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "features": [],
-            "metrics": {
-                "features_complete": 0,
-                "features_in_progress": 0,
-                "features_planned": 0,
-                "completion_percentage": 0
-            }
-        }
-
-        features_file = buildrunner_dir / "features.json"
-        with open(features_file, 'w') as f:
-            json.dump(features_data, f, indent=2)
-
-        console.print("[green]✅ .buildrunner/ structure created[/green]")
-        console.print("[green]✅ features.json initialized[/green]")
-
-        console.print("\n[bold]Next step:[/bold]")
-        console.print("  Run [cyan]br spec wizard[/cyan] to create PROJECT_SPEC.md")
-
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-        raise typer.Exit(1)
+    console.print(table)
+    console.print()
 
 
-@attach_app.command("security")
-def attach_security():
-    """
-    Security-focused integration - add security scanning only
+def _show_features(features):
+    """Display extracted features in a table"""
+    console.print()
+    console.print("[bold cyan]🧩 Extracted Features[/bold cyan]")
+    console.print()
 
-    Sets up pre-commit hooks and runs initial security scan.
-    """
-    try:
-        project_root = Path.cwd()
-        buildrunner_dir = project_root / ".buildrunner"
+    if not features:
+        console.print("[yellow]No features detected[/yellow]")
+        return
 
-        console.print("\n[bold blue]🔒 Security Integration[/bold blue]\n")
+    table = Table(show_header=True, box=None)
+    table.add_column("Feature", style="bold cyan")
+    table.add_column("Artifacts", justify="right", style="white")
+    table.add_column("Files", justify="right", style="white")
+    table.add_column("Priority", style="yellow")
+    table.add_column("Confidence", justify="right")
 
-        # Create minimal structure
-        buildrunner_dir.mkdir(exist_ok=True)
+    for feature in features:
+        # Confidence emoji
+        if feature.confidence >= 0.8:
+            conf_display = "🟢 High"
+        elif feature.confidence >= 0.6:
+            conf_display = "🟡 Med"
+        else:
+            conf_display = "🔴 Low"
 
-        # Setup security hooks
-        console.print("[bold]Installing security hooks...[/bold]")
-        console.print("[yellow]⚠️  Security hooks implementation pending[/yellow]")
-        console.print("[dim]Will be available in BuildRunner 3.1 final release[/dim]")
+        table.add_row(
+            feature.name,
+            str(len(feature.artifacts)),
+            str(len(set(str(a.file_path) for a in feature.artifacts))),
+            feature.priority.title(),
+            conf_display
+        )
 
-        console.print("\n[bold]Next step:[/bold]")
-        console.print("  Run [cyan]br security scan[/cyan] to scan for vulnerabilities")
-
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-        raise typer.Exit(1)
-
-
-@attach_app.command()
-def attach(
-    mode: str = typer.Option("analyze", help="Mode: analyze|minimal|security"),
-):
-    """
-    Attach BuildRunner to existing project (shorthand)
-
-    Modes:
-    - analyze: Full analysis + PROJECT_SPEC generation
-    - minimal: Just create .buildrunner/ structure
-    - security: Security scanning only
-    """
-    if mode == "analyze":
-        attach_analyze()
-    elif mode == "minimal":
-        attach_minimal()
-    elif mode == "security":
-        attach_security()
-    else:
-        console.print(f"[red]❌ Unknown mode: {mode}[/red]")
-        console.print("Valid modes: analyze, minimal, security")
-        raise typer.Exit(1)
+    console.print(table)
+    console.print()
 
 
 if __name__ == "__main__":
