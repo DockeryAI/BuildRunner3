@@ -61,6 +61,15 @@ class ConfigManager:
             'enforce_on_commit': True,
             'verify_checksums': True,
             'strict_mode': True,
+        },
+        'profiles': {
+            'default_profile': None,  # Auto-activate this profile in all projects
+            'auto_activate': True,  # Auto-activate default profile
+        },
+        'build': {
+            'auto_continue': True,  # Never pause for confirmation, build to 100% completion
+            'require_user_approval': False,  # Don't ask for approval between tasks
+            'stop_on_error': True,  # Only stop if there's a critical error
         }
     }
 
