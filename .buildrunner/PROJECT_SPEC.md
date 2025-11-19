@@ -26,7 +26,7 @@ BuildRunner 3.2 adds Claude Code agent integration and visual web UI to the exis
 
 ---
 
-## Core Features - v3.2 Remaining Work
+## Features
 
 ### Feature 1: Claude Agent Bridge (Build 7A)
 **Priority:** Critical
@@ -218,6 +218,21 @@ BuildRunner 3.2 adds Claude Code agent integration and visual web UI to the exis
 - [ ] Settings persist per user
 - [ ] Notifications display
 - [ ] Tests pass (90%+ coverage)
+
+---
+
+## Technical Requirements
+
+- Python 3.11+ for backend services
+- FastAPI for REST API endpoints
+- React + TypeScript for web UI
+- WebSocket support for real-time updates
+- SQLite for telemetry persistence
+- Typer for CLI framework
+- Claude Code agent integration
+- 90%+ test coverage
+- Visual debugging capabilities
+- Multi-agent coordination
 
 ---
 

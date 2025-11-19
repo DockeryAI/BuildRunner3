@@ -18,6 +18,7 @@ from rich.panel import Panel
 from rich import print as rprint
 from typing import Optional
 from datetime import datetime
+from dataclasses import asdict
 
 from core.build_orchestrator import BuildOrchestrator, BuildPhase
 from core.checkpoint_manager import CheckpointManager
@@ -286,8 +287,9 @@ def build_start():
         # Parse spec
         console.print("[cyan]📋 Parsing PROJECT_SPEC.md...[/cyan]")
         from core.spec_parser import SpecParser
-        parser = SpecParser(str(project_root))
-        features = parser.parse_spec(str(spec_path))
+        parser = SpecParser()
+        spec_result = parser.parse_spec(str(spec_path))
+        features = spec_result['features']
         console.print(f"[green]✓ Found {len(features)} features[/green]\n")
 
         # Decompose into tasks
@@ -302,12 +304,15 @@ def build_start():
 
         console.print(f"[green]✓ Generated {len(all_tasks)} atomic tasks[/green]\n")
 
+        # Create task lookup dict (id -> Task object)
+        task_lookup = {task.id: task for task in all_tasks}
+
         # Build dependency graph
         console.print("[cyan]🔗 Building dependency graph...[/cyan]")
         from core.dependency_graph import DependencyGraph
         graph = DependencyGraph()
         for task in all_tasks:
-            graph.add_task(task)
+            graph.add_task(asdict(task))
 
         # Get execution levels
         levels = graph.get_execution_levels()
@@ -320,8 +325,8 @@ def build_start():
 
         batches = []
         for level in levels:
-            level_tasks = [graph.get_task(task_id) for task_id in level.tasks]
-            level_batches = optimizer.create_batches(level_tasks)
+            level_tasks = [task_lookup[task_id] for task_id in level.tasks]
+            level_batches = optimizer.optimize_batches(level_tasks)
             batches.extend(level_batches)
 
         console.print(f"[green]✓ Created {len(batches)} task batches[/green]\n")
