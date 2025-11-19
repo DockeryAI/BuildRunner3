@@ -221,6 +221,53 @@ BuildRunner 3.2 adds Claude Code agent integration and visual web UI to the exis
 
 ---
 
+### Feature 8: Quick PRD Mode (Build 7D)
+**Priority:** Critical
+**Status:** Planned
+**Duration:** 1 day
+
+**Description:** Simplified 4-section PRD workflow as default, with auto-build integration
+
+**Requirements:**
+- Quick mode (4 sections): Problem/Solution, Users, Features, Tech Stack
+- Keep existing Technical mode (11 sections)
+- Auto-build after PRD completion (no manual `br build start`)
+- Simplified brainstorming (3-5 suggestions max)
+- Progressive disclosure (can expand Quick → Standard → Full)
+
+**Implementation:**
+- Update `cli/main.py` planning workflow
+- Add mode selection: Quick (default), Technical, Full, Custom
+- Integrate auto-build trigger after final section
+- Simplify brainstorming prompts for Quick mode
+- Add "Ready to build?" confirmation with auto-execution
+
+**Acceptance Criteria:**
+- [ ] Quick mode default (4 sections)
+- [ ] Auto-build on "Yes" confirmation
+- [ ] Can upgrade Quick → Technical → Full
+- [ ] Technical mode (11 sections) still available
+- [ ] Brainstorming limited to 3-5 suggestions in Quick mode
+- [ ] Tests pass (90%+ coverage)
+
+**Quick Mode Sections:**
+1. **Problem & Solution** - What/Why/How (3-5 bullets)
+2. **Target Users** - Who/Value/Persona
+3. **Core Features** - MVP only (5-7 features max)
+4. **Technical Approach** - Stack/Architecture/Integrations
+
+**After Section 4:**
+```
+"✅ PROJECT_SPEC.md created!
+
+Ready to start building?
+[Yes - Start now] [No - Save and exit] [Add more sections]"
+
+If Yes → Runs `br build start` automatically
+```
+
+---
+
 ## Technical Requirements
 
 - Python 3.11+ for backend services
@@ -264,9 +311,10 @@ BuildRunner 3.2 adds Claude Code agent integration and visual web UI to the exis
 
 **Week 7: Foundation (Current)**
 - ✅ Day 1-2: `br attach` command (COMPLETE)
-- ⏳ Day 3-4: Claude agent bridge
-- ⏳ Day 5-6: Visual UI foundation
-- ⏳ Day 7: Integration → v3.2.0-alpha.1
+- ⏳ Day 3: Quick PRD mode with auto-build
+- ⏳ Day 4-5: Claude agent bridge
+- ⏳ Day 6-7: Visual UI foundation
+- ⏳ Integration → v3.2.0-alpha.1
 
 **Week 8: Intelligence**
 - Agent performance tracking
@@ -330,10 +378,11 @@ br build status # Show progress
 
 ## Next Steps
 
-1. **NOW:** Implement Claude Agent Bridge (Build 7A)
-2. **NEXT:** Visual UI Foundation (Build 7C)
-3. **THEN:** Agent Performance Tracking (Build 8B)
-4. **FINALLY:** Multi-Agent Workflows (Build 9A)
+1. **NOW:** Quick PRD Mode with Auto-Build (Build 7D) - 1 day
+2. **NEXT:** Claude Agent Bridge (Build 7A) - 2 days
+3. **THEN:** Visual UI Foundation (Build 7C) - 3 days
+4. **AFTER:** Agent Performance Tracking (Build 8B) - 2 days
+5. **FINALLY:** Multi-Agent Workflows (Build 9A) - 2 days
 
 ---
 
