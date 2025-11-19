@@ -2,7 +2,7 @@
 
 **Project:** BuildRunner3
 **Status:** Build in progress
-**Tasks:** 7 total
+**Tasks:** 8 total
 
 ---
 
@@ -21,19 +21,19 @@ You are Claude Code in **EXECUTION MODE**. Execute the tasks below in order, fol
   - Component is responsive and accessible
   - User interactions work as expected
 
-#### Task 2: Feature 1: Claude Agent Bridge (Build 7A): Implementation
-**Description:** Implement Feature 1: Claude Agent Bridge (Build 7A)
-**Estimated Time:** 60 minutes
-**File:** core/feature_1_claude_agent_bridge_build_7a/feature_1_claude_agent_bridge_build_7a_task_1.py
+#### Task 2: Feature 8: Quick PRD Mode (Build 7D): Implementation
+**Description:** Implement Feature 8: Quick PRD Mode (Build 7D)
+**Estimated Time:** 90 minutes
+**File:** core/feature_8_quick_prd_mode_build_7d/feature_8_quick_prd_mode_build_7d_task_8.py
 **Acceptance Criteria:**
   - UI components render correctly
   - Component is responsive and accessible
   - User interactions work as expected
 
-#### Task 3: Feature 3: Agent Performance Tracking (Build 8B): Implementation
-**Description:** Implement Feature 3: Agent Performance Tracking (Build 8B)
+#### Task 3: Feature 1: Claude Agent Bridge (Build 7A): Implementation
+**Description:** Implement Feature 1: Claude Agent Bridge (Build 7A)
 **Estimated Time:** 60 minutes
-**File:** core/feature_3_agent_performance_tracking_build_8b/feature_3_agent_performance_tracking_build_8b_task_3.py
+**File:** core/feature_1_claude_agent_bridge_build_7a/feature_1_claude_agent_bridge_build_7a_task_1.py
 **Acceptance Criteria:**
   - UI components render correctly
   - Component is responsive and accessible
@@ -60,9 +60,9 @@ When this batch is complete, tell the user:
 
 ## All Batches Overview
 
-- **Batch 1:** 3 tasks (~210 min)
+- **Batch 1:** 3 tasks (~240 min)
 - **Batch 2:** 3 tasks (~180 min)
-- **Batch 3:** 1 tasks (~60 min)
+- **Batch 3:** 2 tasks (~120 min)
 
 ---
 

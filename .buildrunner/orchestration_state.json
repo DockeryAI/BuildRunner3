@@ -4,26 +4,27 @@
       "id": 0,
       "tasks": [
         "feature_2_visual_web_ui_foundation_build_7c_task_2",
-        "feature_1_claude_agent_bridge_build_7a_task_1",
-        "feature_3_agent_performance_tracking_build_8b_task_3"
+        "feature_8_quick_prd_mode_build_7d_task_8",
+        "feature_1_claude_agent_bridge_build_7a_task_1"
       ]
     },
     {
       "id": 1,
       "tasks": [
+        "feature_3_agent_performance_tracking_build_8b_task_3",
         "feature_4_multi_agent_workflows_build_9a_task_4",
-        "feature_5_ui_analytics_dashboard_build_9b_task_5",
-        "feature_6_production_features_build_10a_task_6"
+        "feature_5_ui_analytics_dashboard_build_9b_task_5"
       ]
     },
     {
       "id": 2,
       "tasks": [
+        "feature_6_production_features_build_10a_task_6",
         "feature_7_ui_authentication_build_10b_task_7"
       ]
     }
   ],
   "current_batch": 0,
-  "total_tasks": 7,
+  "total_tasks": 8,
   "completed_tasks": 0
 }
