@@ -1,0 +1,29 @@
+{
+  "name": "buildrunner",
+  "version": "3.2.0",
+  "description": "BuildRunner 3.2 - Self-orchestrating development platform",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.1",
+    "@types/node": "^20.10.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DockeryAI/BuildRunner3.git"
+  },
+  "keywords": [
+    "ai",
+    "automation",
+    "buildrunner",
+    "claude",
+    "orchestration"
+  ],
+  "author": "BuildRunner Team",
+  "license": "MIT"
+}
