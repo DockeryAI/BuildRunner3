@@ -40,6 +40,12 @@ class PerformanceMetrics:
     avg_cpu_percent: float = 0.0
     avg_memory_mb: float = 0.0
     peak_memory_mb: float = 0.0
+    cpu_percent: float = 0.0  # Alias for avg_cpu_percent
+    memory_mb: float = 0.0     # Alias for avg_memory_mb
+
+    # Active state
+    active_operations: int = 0
+    avg_operation_time_ms: float = 0.0  # Alias for avg_duration_ms
 
     # By operation type
     by_operation: Dict[str, Dict[str, float]] = field(default_factory=dict)
@@ -255,6 +261,53 @@ class PerformanceTracker:
         sorted_ops = sorted(filtered, key=lambda m: m['duration_ms'], reverse=True)
 
         return sorted_ops[:limit]
+
+    def get_current_metrics(self) -> PerformanceMetrics:
+        """
+        Get current performance metrics snapshot.
+
+        Returns:
+            PerformanceMetrics with current system state
+        """
+        import psutil
+
+        # Get system metrics
+        cpu_percent = psutil.cpu_percent(interval=0.1)
+        memory = psutil.virtual_memory()
+        memory_mb = memory.used / (1024 * 1024)
+
+        # Get active operations count
+        active_operations = len(self.active_timers)
+
+        # Get total operations and average time
+        total_operations = len(self.measurements)
+        avg_operation_time_ms = 0.0
+        if self.measurements:
+            recent_measurements = self.measurements[-100:]  # Last 100
+            durations = [m['duration_ms'] for m in recent_measurements]
+            avg_operation_time_ms = sum(durations) / len(durations) if durations else 0.0
+
+        now = datetime.now()
+        return PerformanceMetrics(
+            start_time=now,
+            end_time=now,
+            total_operations=total_operations,
+            avg_duration_ms=avg_operation_time_ms,
+            min_duration_ms=0.0,
+            max_duration_ms=0.0,
+            p50_duration_ms=0.0,
+            p95_duration_ms=0.0,
+            p99_duration_ms=0.0,
+            operations_per_second=0.0,
+            avg_cpu_percent=cpu_percent,
+            avg_memory_mb=memory_mb,
+            peak_memory_mb=memory_mb,
+            cpu_percent=cpu_percent,
+            memory_mb=memory_mb,
+            active_operations=active_operations,
+            avg_operation_time_ms=avg_operation_time_ms,
+            by_operation={},
+        )
 
     def clear_old_measurements(self, days: int = 7):
         """

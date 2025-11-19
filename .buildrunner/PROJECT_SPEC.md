@@ -268,6 +268,53 @@ If Yes → Runs `br build start` automatically
 
 ---
 
+### Feature 9: Continuous Build Execution (Build 11A)
+**Priority:** Critical
+**Status:** Planned
+**Duration:** 1 day
+
+**Description:** Autonomous phase loop for uninterrupted build execution
+
+**Requirements:**
+- Internal phase loop (don't return between phases)
+- Only pause for blockers (credentials, test failures, user flags)
+- Auto-proceed logic (check spec, mark complete, continue)
+- State persistence across phases
+- Single-shot execution (one invocation = full completion)
+
+**Implementation:**
+- Update `core/orchestrator.py` with continuous execution mode
+- Add `core/phase_manager.py` for phase tracking
+- Create blocker detection system
+- Add `.buildrunner/phase_state.json` for persistence
+- Update `cli/build_commands.py` with `--continuous` flag
+
+**Acceptance Criteria:**
+- [ ] Loops through all phases without pausing
+- [ ] Detects and pauses only for blockers
+- [ ] Persists state across execution
+- [ ] Single invocation completes full build
+- [ ] Tests pass (90%+ coverage)
+
+**Phases:**
+1. **Phase 1:** Spec Parsing - Parse PROJECT_SPEC.md
+2. **Phase 2:** Task Decomposition - Generate atomic tasks
+3. **Phase 3:** Dependency Analysis - Build DAG
+4. **Phase 4:** Batch Creation - Optimize task batches
+5. **Phase 5:** Code Generation - Execute batches
+6. **Phase 6:** Test Execution - Run test suite
+7. **Phase 7:** Quality Verification - Run quality checks
+8. **Phase 8:** Documentation - Update docs and status
+
+**Blockers:**
+- Missing credentials (API keys, tokens)
+- Test failures (below threshold)
+- User intervention flags (manual approval required)
+- Compilation errors (syntax, imports)
+- Resource constraints (disk space, memory)
+
+---
+
 ## Technical Requirements
 
 - Python 3.11+ for backend services

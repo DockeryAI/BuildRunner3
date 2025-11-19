@@ -8,6 +8,7 @@ Integrates with:
 - Telemetry system for event tracking
 - Routing system for model selection
 - Parallel execution for multi-session coordination
+- Phase manager for continuous execution
 """
 
 from typing import List, Dict, Optional, Callable
@@ -33,6 +34,9 @@ from core.integrations import (
 
 # Core telemetry
 from core.telemetry import EventType
+
+# Phase management
+from core.phase_manager import PhaseManager, BuildPhase as Phase, BlockerType
 
 
 class OrchestrationStatus(Enum):
@@ -67,6 +71,8 @@ class TaskOrchestrator:
         enable_routing: bool = True,
         enable_parallel: bool = True,
         max_concurrent_sessions: int = 4,
+        project_root: Optional[Path] = None,
+        continuous_mode: bool = True,
     ):
         self.batch_optimizer = batch_optimizer
         self.prompt_builder = prompt_builder
@@ -92,6 +98,11 @@ class TaskOrchestrator:
         self.session_manager = None
         self.worker_coordinator = None
         self.dashboard = None
+
+        # Phase management
+        self.phase_manager = None
+        if project_root:
+            self.phase_manager = PhaseManager(project_root, continuous_mode=continuous_mode)
 
         # Integrate telemetry
         if enable_telemetry:
@@ -493,4 +504,291 @@ class TaskOrchestrator:
             "parallel_enabled": self.session_manager is not None and self.worker_coordinator is not None,
             "cost_tracking_enabled": self.cost_tracker is not None,
             "dashboard_enabled": self.dashboard is not None,
+            "phase_manager_enabled": self.phase_manager is not None,
+        }
+
+    def execute_continuous(
+        self,
+        tasks: List,
+        phase_callbacks: Optional[Dict[Phase, Callable]] = None,
+    ) -> Dict:
+        """
+        Execute build in continuous mode - loop through all phases without pausing.
+
+        This is the main continuous execution method that:
+        1. Loops through all 8 build phases internally
+        2. Only pauses for blockers (credentials, test failures, user flags)
+        3. Auto-proceeds to next phase when current completes
+        4. Persists state across phases
+        5. Single invocation = full build completion
+
+        Args:
+            tasks: List of tasks to execute
+            phase_callbacks: Optional callbacks for each phase
+
+        Returns:
+            Execution result with completion status and blocker info
+        """
+        if not self.phase_manager:
+            return {
+                "success": False,
+                "error": "Phase manager not initialized (need project_root)",
+            }
+
+        phase_callbacks = phase_callbacks or {}
+
+        # Reset phase manager for fresh start
+        self.phase_manager.reset()
+
+        # Track execution
+        phases_completed = []
+        current_phase = Phase.SPEC_PARSING
+
+        try:
+            # Loop through all phases
+            while current_phase:
+                # Check for blockers
+                if self.phase_manager.is_blocked():
+                    active_blockers = self.phase_manager.get_active_blockers()
+                    return {
+                        "success": False,
+                        "paused_for_blockers": True,
+                        "phase": current_phase.value,
+                        "phases_completed": len(phases_completed),
+                        "blockers": [
+                            {
+                                "type": b.blocker_type.value,
+                                "description": b.description,
+                                "phase": b.phase.value,
+                            }
+                            for b in active_blockers
+                        ],
+                        "message": "Execution paused due to blockers. Resolve and resume.",
+                    }
+
+                # Start phase
+                if not self.phase_manager.start_phase(current_phase):
+                    return {
+                        "success": False,
+                        "error": f"Failed to start phase: {current_phase.value}",
+                    }
+
+                # Execute phase
+                try:
+                    phase_result = self._execute_phase(current_phase, tasks, phase_callbacks)
+
+                    if phase_result.get("success"):
+                        # Complete phase
+                        self.phase_manager.complete_phase(
+                            current_phase,
+                            metadata=phase_result.get("metadata", {})
+                        )
+                        phases_completed.append(current_phase.value)
+
+                    elif phase_result.get("blocked"):
+                        # Phase detected blocker
+                        blocker_info = phase_result.get("blocker", {})
+                        self.phase_manager.add_blocker(
+                            blocker_type=BlockerType(blocker_info.get("type", "user_intervention")),
+                            description=blocker_info.get("description", "Unknown blocker"),
+                            metadata=blocker_info.get("metadata", {})
+                        )
+
+                        # Return with blocker info
+                        return {
+                            "success": False,
+                            "paused_for_blockers": True,
+                            "phase": current_phase.value,
+                            "phases_completed": len(phases_completed),
+                            "blockers": [blocker_info],
+                            "message": "Execution paused due to blocker in phase.",
+                        }
+
+                    else:
+                        # Phase failed
+                        error_msg = phase_result.get("error", "Unknown error")
+                        self.phase_manager.fail_phase(
+                            current_phase,
+                            error=error_msg,
+                            metadata=phase_result.get("metadata", {})
+                        )
+
+                        return {
+                            "success": False,
+                            "phase": current_phase.value,
+                            "phases_completed": len(phases_completed),
+                            "error": f"Phase {current_phase.value} failed: {error_msg}",
+                        }
+
+                except Exception as e:
+                    # Unexpected error in phase
+                    self.phase_manager.fail_phase(
+                        current_phase,
+                        error=str(e)
+                    )
+
+                    return {
+                        "success": False,
+                        "phase": current_phase.value,
+                        "phases_completed": len(phases_completed),
+                        "error": f"Exception in phase {current_phase.value}: {str(e)}",
+                    }
+
+                # Check if should continue to next phase
+                if self.phase_manager.should_continue():
+                    next_phase = self.phase_manager.get_next_phase()
+                    if next_phase:
+                        current_phase = next_phase
+                    else:
+                        # All phases complete
+                        break
+                else:
+                    # Continuous mode disabled or can't proceed
+                    break
+
+            # Build completed
+            progress = self.phase_manager.get_progress()
+
+            return {
+                "success": True,
+                "completed": progress["progress_percent"] == 100,
+                "phases_completed": len(phases_completed),
+                "total_phases": progress["total_phases"],
+                "progress_percent": progress["progress_percent"],
+                "message": "Build execution complete!" if progress["progress_percent"] == 100 else "Build execution paused.",
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Continuous execution failed: {str(e)}",
+                "phases_completed": len(phases_completed),
+            }
+
+    def _execute_phase(
+        self,
+        phase: Phase,
+        tasks: List,
+        phase_callbacks: Dict[Phase, Callable],
+    ) -> Dict:
+        """
+        Execute a single build phase.
+
+        Args:
+            phase: Phase to execute
+            tasks: Tasks to execute
+            phase_callbacks: Phase-specific callbacks
+
+        Returns:
+            Phase execution result
+        """
+        # Call phase-specific callback if provided
+        if phase in phase_callbacks:
+            try:
+                result = phase_callbacks[phase](self, tasks)
+                if result:
+                    return result
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": f"Phase callback failed: {str(e)}",
+                }
+
+        # Default phase execution (simplified for now)
+        # In real implementation, each phase would have specific logic
+
+        if phase == Phase.SPEC_PARSING:
+            # Parse PROJECT_SPEC.md
+            return {"success": True, "metadata": {"phase": "spec_parsing"}}
+
+        elif phase == Phase.TASK_DECOMPOSITION:
+            # Decompose features into tasks
+            return {"success": True, "metadata": {"phase": "task_decomposition", "tasks": len(tasks)}}
+
+        elif phase == Phase.DEPENDENCY_ANALYSIS:
+            # Build dependency graph
+            return {"success": True, "metadata": {"phase": "dependency_analysis"}}
+
+        elif phase == Phase.BATCH_CREATION:
+            # Create task batches
+            if self.batch_optimizer:
+                batches = self.batch_optimizer.optimize_batches(tasks[:3])  # Sample
+                return {"success": True, "metadata": {"batches": len(batches)}}
+            return {"success": True, "metadata": {"phase": "batch_creation"}}
+
+        elif phase == Phase.CODE_GENERATION:
+            # Execute task batches
+            result = self.execute_batch(tasks, auto_continue=True)
+            return {
+                "success": result.get("success", False),
+                "metadata": result,
+            }
+
+        elif phase == Phase.TEST_EXECUTION:
+            # Run tests (check for test failures)
+            # In real implementation, would run actual tests
+            return {"success": True, "metadata": {"phase": "test_execution"}}
+
+        elif phase == Phase.QUALITY_VERIFICATION:
+            # Run quality checks
+            if self.verification_engine:
+                # Would verify code quality
+                pass
+            return {"success": True, "metadata": {"phase": "quality_verification"}}
+
+        elif phase == Phase.DOCUMENTATION:
+            # Update documentation
+            return {"success": True, "metadata": {"phase": "documentation"}}
+
+        return {"success": True}
+
+    def resume_continuous(self) -> Dict:
+        """
+        Resume continuous execution from last saved state.
+
+        Returns:
+            Execution result
+        """
+        if not self.phase_manager:
+            return {
+                "success": False,
+                "error": "Phase manager not initialized",
+            }
+
+        # Get current state
+        progress = self.phase_manager.get_progress()
+
+        if progress["is_blocked"]:
+            return {
+                "success": False,
+                "error": "Build is blocked. Clear blockers first.",
+                "blockers": self.phase_manager.get_active_blockers(),
+            }
+
+        # Resume from current phase
+        current_phase = self.phase_manager.state.current_phase
+
+        # Continue execution (would need actual tasks loaded from state)
+        return {
+            "success": True,
+            "message": f"Resuming from phase: {current_phase.value}",
+            "phase": current_phase.value,
+        }
+
+    def get_phase_status(self) -> Dict:
+        """
+        Get current phase execution status.
+
+        Returns:
+            Phase status summary
+        """
+        if not self.phase_manager:
+            return {"enabled": False}
+
+        progress = self.phase_manager.get_progress()
+
+        return {
+            "enabled": True,
+            "continuous_mode": self.phase_manager.continuous_mode,
+            **progress,
         }

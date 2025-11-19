@@ -30,11 +30,12 @@ class Worker:
 
     worker_id: str
     status: WorkerStatus
-    session_id: Optional[str] = None
+    current_session: Optional[str] = None  # Changed from session_id to current_session
     current_task: Optional[str] = None
     tasks_completed: int = 0
     tasks_failed: int = 0
     last_heartbeat: Optional[datetime] = None
+    created_at: datetime = field(default_factory=datetime.now)
     metadata: Dict[str, any] = field(default_factory=dict)
 
 
@@ -44,13 +45,15 @@ class WorkerCoordinator:
     # Worker heartbeat timeout (seconds)
     HEARTBEAT_TIMEOUT = 30
 
-    def __init__(self, max_workers: int = 3):
+    def __init__(self, session_manager=None, max_workers: int = 3):
         """
         Initialize worker coordinator.
 
         Args:
+            session_manager: SessionManager instance (optional)
             max_workers: Maximum number of concurrent workers
         """
+        self.session_manager = session_manager
         self.max_workers = max_workers
         self.workers: Dict[str, Worker] = {}
         self.task_queue: List[Dict[str, any]] = []
@@ -284,7 +287,7 @@ class WorkerCoordinator:
         # Assign to worker
         worker.status = WorkerStatus.BUSY
         worker.current_task = task['task_id']
-        worker.session_id = task.get('session_id')
+        worker.current_session = task.get('session_id')
 
         self.task_assignments[task['task_id']] = worker.worker_id
 
@@ -329,3 +332,21 @@ class WorkerCoordinator:
             'distribution': distribution,
             'workers': worker_stats,
         }
+
+    def get_all_workers(self) -> List[Worker]:
+        """
+        Get all workers.
+
+        Returns:
+            List of all Worker instances
+        """
+        return list(self.workers.values())
+
+    def get_stats(self) -> Dict[str, any]:
+        """
+        Get worker statistics.
+
+        Returns:
+            Statistics dictionary
+        """
+        return self.get_statistics()

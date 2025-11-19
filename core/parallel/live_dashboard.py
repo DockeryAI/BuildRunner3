@@ -42,7 +42,7 @@ class LiveDashboard:
     def __init__(
         self,
         session_manager: SessionManager,
-        worker_coordinator: WorkerCoordinator,
+        worker_coordinator: Optional[WorkerCoordinator] = None,
         config: Optional[DashboardConfig] = None,
     ):
         """
@@ -50,7 +50,7 @@ class LiveDashboard:
 
         Args:
             session_manager: Session manager instance
-            worker_coordinator: Worker coordinator instance
+            worker_coordinator: Worker coordinator instance (optional)
             config: Dashboard configuration
         """
         self.session_manager = session_manager
@@ -334,27 +334,84 @@ class LiveDashboard:
         Returns:
             Summary dictionary
         """
-        load_dist = self.worker_coordinator.get_load_distribution()
         active_sessions = self.session_manager.get_active_sessions()
 
-        return {
-            'timestamp': datetime.now().isoformat(),
-            'workers': {
+        # Get worker stats if coordinator is available
+        workers_data = {}
+        tasks_data = {}
+        if self.worker_coordinator:
+            load_dist = self.worker_coordinator.get_load_distribution()
+            workers_data = {
                 'total': load_dist['total_workers'],
                 'idle': load_dist['idle_workers'],
                 'busy': load_dist['busy_workers'],
                 'offline': load_dist['offline_workers'],
                 'utilization': load_dist['utilization'],
-            },
+            }
+            tasks_data = {
+                'queued': load_dist['queued_tasks'],
+                'completed': load_dist['total_completed'],
+                'failed': load_dist['total_failed'],
+            }
+        else:
+            workers_data = {
+                'total': 0,
+                'idle': 0,
+                'busy': 0,
+                'offline': 0,
+                'utilization': 0.0,
+            }
+            tasks_data = {
+                'queued': 0,
+                'completed': 0,
+                'failed': 0,
+            }
+
+        return {
+            'timestamp': datetime.now().isoformat(),
+            'workers': workers_data,
             'sessions': {
                 'active': len(active_sessions),
                 'total': len(self.session_manager.sessions),
             },
-            'tasks': {
-                'queued': load_dist['queued_tasks'],
-                'completed': load_dist['total_completed'],
-                'failed': load_dist['total_failed'],
-            },
+            'tasks': tasks_data,
+        }
+
+    def get_dashboard_data(self) -> Dict[str, any]:
+        """
+        Get comprehensive dashboard data for API responses.
+
+        Returns:
+            Dashboard data dictionary
+        """
+        sessions = self.session_manager.get_all_sessions()
+        workers = self.worker_coordinator.get_all_workers() if self.worker_coordinator else []
+
+        return {
+            'sessions': [
+                {
+                    'session_id': s.session_id,
+                    'name': s.name,
+                    'status': s.status.value,
+                    'progress_percent': s.progress_percent,
+                    'total_tasks': s.total_tasks,
+                    'completed_tasks': s.completed_tasks,
+                    'failed_tasks': s.failed_tasks,
+                }
+                for s in sessions
+            ],
+            'workers': [
+                {
+                    'worker_id': w.worker_id,
+                    'status': w.status.value,
+                    'current_session': w.current_session,
+                    'tasks_completed': w.tasks_completed,
+                    'tasks_failed': w.tasks_failed,
+                }
+                for w in workers
+            ],
+            'stats': self.get_summary(),
+            'timeline': [],  # Placeholder for timeline data
         }
 
     def print_summary(self) -> None:

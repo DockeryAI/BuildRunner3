@@ -300,14 +300,20 @@ def list_checkpoints():
 
 
 @build_app.command("start")
-def build_start():
+def build_start(
+    continuous: bool = typer.Option(True, "--continuous/--no-continuous", help="Enable continuous phase execution"),
+):
     """
     Start automated build from PROJECT_SPEC.md
 
     Reads PROJECT_SPEC, generates tasks, creates execution plan, and launches Claude Code.
 
+    With --continuous (default), loops through all phases without pausing.
+    Use --no-continuous for traditional phase-by-phase execution.
+
     Example:
-        br build start
+        br build start                  # Continuous mode (default)
+        br build start --no-continuous  # Phase-by-phase mode
     """
     try:
         console.print("\n[bold blue]🚀 Starting Build Orchestration[/bold blue]\n")
@@ -431,12 +437,20 @@ When this batch is complete, tell the user:
             "batches": [{"id": i, "tasks": [t.id for t in b.tasks]} for i, b in enumerate(batches)],
             "current_batch": 0,
             "total_tasks": len(all_tasks),
-            "completed_tasks": 0
+            "completed_tasks": 0,
+            "continuous_mode": continuous
         }
 
         state_path = project_root / ".buildrunner" / "orchestration_state.json"
         import json
         state_path.write_text(json.dumps(orch_state, indent=2))
+
+        # Show mode info
+        if continuous:
+            console.print("[cyan]📡 Continuous mode enabled - will loop through all phases[/cyan]")
+            console.print("[dim]Build will only pause for blockers (credentials, test failures, etc.)[/dim]\n")
+        else:
+            console.print("[cyan]📋 Phase-by-phase mode - will pause between phases[/cyan]\n")
 
         # Launch Claude Code
         console.print("[green]✅ Build orchestration initialized![/green]")
@@ -580,6 +594,116 @@ def build_status():
 
     except Exception as e:
         console.print(f"[red]❌ Error getting build status: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@build_app.command("phase-status")
+def phase_status():
+    """
+    Show continuous build phase status
+
+    Example:
+        br build phase-status
+    """
+    try:
+        console.print("\n[bold blue]🔄 Continuous Build Phase Status[/bold blue]\n")
+
+        project_root = Path.cwd()
+        from core.phase_manager import PhaseManager
+
+        phase_manager = PhaseManager(project_root)
+        progress = phase_manager.get_progress()
+
+        # Phase status table
+        table = Table(title="Phase Execution Progress")
+        table.add_column("Phase", style="cyan")
+        table.add_column("Status", style="green")
+        table.add_column("Duration", justify="right")
+
+        for phase_name, phase_info in progress["phases"].items():
+            status = phase_info["status"]
+            duration = phase_info.get("duration_seconds")
+
+            # Format status with color
+            status_display = status
+            if status == "completed":
+                status_display = f"[green]✓ {status}[/green]"
+            elif status == "in_progress":
+                status_display = f"[yellow]⏳ {status}[/yellow]"
+            elif status == "blocked":
+                status_display = f"[red]🚫 {status}[/red]"
+            elif status == "failed":
+                status_display = f"[red]❌ {status}[/red]"
+
+            duration_str = f"{duration:.1f}s" if duration else "-"
+
+            table.add_row(phase_name, status_display, duration_str)
+
+        console.print(table)
+        console.print()
+
+        # Overall progress
+        console.print(f"[bold]Overall Progress:[/bold]")
+        console.print(f"  Current Phase: {progress['current_phase']}")
+        console.print(f"  Completed: {progress['completed_phases']}/{progress['total_phases']}")
+        console.print(f"  Progress: {progress['progress_percent']:.1f}%")
+        console.print(f"  Continuous Mode: {'✓ Enabled' if progress['continuous_mode'] else '✗ Disabled'}\n")
+
+        # Blockers
+        if progress["is_blocked"]:
+            console.print(f"[red]⚠️  {progress['active_blockers']} active blocker(s)[/red]")
+            blockers = phase_manager.get_active_blockers()
+            for blocker in blockers:
+                console.print(f"  • {blocker.blocker_type.value}: {blocker.description}")
+            console.print()
+            console.print("[dim]Clear blockers with 'br build clear-blocker'[/dim]\n")
+        else:
+            console.print("[green]✓ No active blockers[/green]\n")
+
+    except Exception as e:
+        console.print(f"[red]❌ Error getting phase status: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@build_app.command("clear-blocker")
+def clear_blocker(
+    blocker_type: str = typer.Argument(..., help="Blocker type to clear (e.g., missing_credentials)")
+):
+    """
+    Clear a blocker to resume execution
+
+    Example:
+        br build clear-blocker missing_credentials
+    """
+    try:
+        console.print(f"\n[bold blue]Clearing blocker: {blocker_type}[/bold blue]\n")
+
+        project_root = Path.cwd()
+        from core.phase_manager import PhaseManager, BlockerType
+
+        phase_manager = PhaseManager(project_root)
+
+        # Convert string to BlockerType
+        try:
+            blocker_enum = BlockerType(blocker_type)
+        except ValueError:
+            console.print(f"[red]❌ Invalid blocker type: {blocker_type}[/red]")
+            console.print(f"[dim]Valid types: {', '.join([b.value for b in BlockerType if b != BlockerType.NONE])}[/dim]\n")
+            raise typer.Exit(1)
+
+        # Clear blocker
+        if phase_manager.clear_blocker(blocker_enum):
+            console.print(f"[green]✓ Blocker cleared: {blocker_type}[/green]\n")
+
+            # Show next steps
+            if not phase_manager.is_blocked():
+                console.print("[bold]Next steps:[/bold]")
+                console.print("  Run 'br build resume' to continue execution\n")
+        else:
+            console.print(f"[yellow]No active blocker of type: {blocker_type}[/yellow]\n")
+
+    except Exception as e:
+        console.print(f"[red]❌ Error clearing blocker: {e}[/red]")
         raise typer.Exit(1)
 
 

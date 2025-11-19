@@ -2,12 +2,12 @@
   "project": "BuildRunner3",
   "version": "1.0.0",
   "status": "retrofit",
-  "last_updated": "2025-11-18T18:30:21Z",
+  "last_updated": "2025-11-18T20:21:37.256849Z",
   "features": [],
   "metrics": {
-    "files_analyzed": 590,
-    "lines_of_code": 180993,
-    "features_detected": 104,
-    "test_coverage": 52.0
+    "features_complete": 0,
+    "features_in_progress": 0,
+    "features_planned": 0,
+    "completion_percentage": 0
   }
 }

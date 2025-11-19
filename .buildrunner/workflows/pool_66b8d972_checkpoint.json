@@ -1,0 +1,37 @@
+{
+  "pool_id": "66b8d972",
+  "timestamp": "2025-11-18T19:57:53.821804",
+  "stats": {
+    "total_items": 3,
+    "completed_items": 3,
+    "failed_items": 0,
+    "total_duration_ms": 0.161,
+    "avg_item_duration_ms": 0.007666666666666666
+  },
+  "results": {
+    "a0156ab2": {
+      "item_id": "a0156ab2",
+      "agent_type": "implement",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.006,
+      "error_message": null
+    },
+    "db231725": {
+      "item_id": "db231725",
+      "agent_type": "implement",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.008,
+      "error_message": null
+    },
+    "7db3e843": {
+      "item_id": "7db3e843",
+      "agent_type": "implement",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.009000000000000001,
+      "error_message": null
+    }
+  }
+}

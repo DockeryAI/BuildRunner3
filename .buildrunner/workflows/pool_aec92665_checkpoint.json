@@ -1,0 +1,21 @@
+{
+  "pool_id": "aec92665",
+  "timestamp": "2025-11-18T19:40:41.017689",
+  "stats": {
+    "total_items": 1,
+    "completed_items": 1,
+    "failed_items": 0,
+    "total_duration_ms": 0.21000000000000002,
+    "avg_item_duration_ms": 0.014
+  },
+  "results": {
+    "c1cbdedb": {
+      "item_id": "c1cbdedb",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.014,
+      "error_message": null
+    }
+  }
+}

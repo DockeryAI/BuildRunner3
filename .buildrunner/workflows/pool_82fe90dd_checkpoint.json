@@ -1,0 +1,37 @@
+{
+  "pool_id": "82fe90dd",
+  "timestamp": "2025-11-18T19:39:36.922882",
+  "stats": {
+    "total_items": 3,
+    "completed_items": 3,
+    "failed_items": 0,
+    "total_duration_ms": 0.429,
+    "avg_item_duration_ms": 0.08933333333333333
+  },
+  "results": {
+    "0492deed": {
+      "item_id": "0492deed",
+      "agent_type": "implement",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.005,
+      "error_message": null
+    },
+    "47837f76": {
+      "item_id": "47837f76",
+      "agent_type": "implement",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.007,
+      "error_message": null
+    },
+    "3824ac6c": {
+      "item_id": "3824ac6c",
+      "agent_type": "implement",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.256,
+      "error_message": null
+    }
+  }
+}

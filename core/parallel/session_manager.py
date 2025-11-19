@@ -103,14 +103,16 @@ class Session:
 class SessionManager:
     """Manages multiple concurrent build sessions."""
 
-    def __init__(self, storage_path: Optional[Path] = None):
+    def __init__(self, storage_path: Optional[Path] = None, max_concurrent_sessions: int = 4):
         """
         Initialize session manager.
 
         Args:
             storage_path: Path to store session data
+            max_concurrent_sessions: Maximum number of concurrent sessions
         """
         self.storage_path = storage_path or Path.cwd() / ".buildrunner" / "sessions.json"
+        self.max_concurrent_sessions = max_concurrent_sessions
         self.sessions: Dict[str, Session] = {}
         self._load()
 
@@ -344,6 +346,47 @@ class SessionManager:
             s for s in self.sessions.values()
             if s.status in [SessionStatus.RUNNING, SessionStatus.PAUSED]
         ]
+
+    def get_all_sessions(self) -> List[Session]:
+        """Get all sessions."""
+        return list(self.sessions.values())
+
+    def get_sessions_by_status(self, status: str) -> List[Session]:
+        """
+        Get sessions filtered by status.
+
+        Args:
+            status: Session status to filter by
+
+        Returns:
+            List of matching sessions
+        """
+        try:
+            status_enum = SessionStatus(status)
+            return [s for s in self.sessions.values() if s.status == status_enum]
+        except ValueError:
+            return []
+
+    def get_stats(self) -> Dict[str, int]:
+        """
+        Get session statistics.
+
+        Returns:
+            Dictionary with session counts
+        """
+        total = len(self.sessions)
+        active = len([s for s in self.sessions.values() if s.status == SessionStatus.RUNNING])
+        paused = len([s for s in self.sessions.values() if s.status == SessionStatus.PAUSED])
+        completed = len([s for s in self.sessions.values() if s.status == SessionStatus.COMPLETED])
+        failed = len([s for s in self.sessions.values() if s.status == SessionStatus.FAILED])
+
+        return {
+            "total_sessions": total,
+            "active_sessions": active,
+            "paused_sessions": paused,
+            "completed_sessions": completed,
+            "failed_sessions": failed,
+        }
 
     def cleanup_old_sessions(self, days: int = 7):
         """

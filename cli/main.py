@@ -40,6 +40,7 @@ from cli.routing_commands import routing_app
 from cli.telemetry_commands import telemetry_app
 from cli.parallel_commands import parallel_app
 from cli.attach_commands import attach_app
+from cli.agent_commands import agent_app
 
 
 app = typer.Typer(
@@ -62,6 +63,7 @@ app.add_typer(routing_app, name="routing")
 app.add_typer(telemetry_app, name="telemetry")
 app.add_typer(parallel_app, name="parallel")
 app.add_typer(attach_app, name="attach")
+app.add_typer(agent_app, name="agent")
 
 # Create guard and service command groups
 guard_app = typer.Typer(help="Architecture guard commands")
@@ -183,7 +185,7 @@ def init(
             # New project - create CLAUDE.md in project ROOT for Claude Code to auto-read
             planning_path = project_root / "CLAUDE.md"
 
-            planning_content = f"""# 🎯 PLANNING MODE - Flexible PRD Workflow
+            planning_content = f"""# 🎯 PLANNING MODE - Quick PRD to Build
 
 **Project:** {project_name}
 **Path:** {project_root}
@@ -194,20 +196,19 @@ def init(
 
 ## 🎨 WORKFLOW MODE SELECTION
 
-**FIRST:** Ask user to select their goal using AskUserQuestion tool:
+**FIRST:** Ask user to select their planning mode using AskUserQuestion tool:
 
 ```python
 AskUserQuestion(
     questions=[{{
-        "question": "What's your primary goal for this project?",
-        "header": "Select Goal",
+        "question": "How would you like to plan your project?",
+        "header": "Planning Mode",
         "multiSelect": False,
         "options": [
-            {{"label": "🚀 Launch a startup", "description": "Full business + technical strategy"}},
-            {{"label": "💡 Explore an idea", "description": "Quick feature brainstorming only"}},
-            {{"label": "💰 Raise funding", "description": "Business plan + financial projections"}},
-            {{"label": "⚡ Build quickly", "description": "Minimal scope - just MVP features"}},
-            {{"label": "🎯 Custom sections", "description": "Pick which sections to include"}}
+            {{"label": "⚡ Quick Mode (Default)", "description": "4 sections → Build in 15 min"}},
+            {{"label": "🔧 Technical Mode", "description": "11 sections - Full technical depth"}},
+            {{"label": "🚀 Full Mode", "description": "All 11 sections - Business + technical"}},
+            {{"label": "🎯 Custom Mode", "description": "Pick which sections to include"}}
         ]
     }}]
 )
@@ -215,11 +216,10 @@ AskUserQuestion(
 
 **Based on selection, set workflow mode:**
 
-- **🚀 Launch a startup** → FULL MODE (all 11 sections)
-- **💡 Explore an idea** → MINIMAL MODE (3 sections: Overview, Features, Next Steps)
-- **💰 Raise funding** → COMMERCIAL MODE (skip technical implementation)
-- **⚡ Build quickly** → TECHNICAL MODE (skip business strategy)
-- **🎯 Custom sections** → Show checklist to select sections
+- **⚡ Quick Mode** → QUICK MODE (4 sections: Problem/Solution, Users, Features, Tech) - **DEFAULT**
+- **🔧 Technical Mode** → TECHNICAL MODE (11 sections: full depth)
+- **🚀 Full Mode** → FULL MODE (all 11 sections)
+- **🎯 Custom Mode** → Show checklist to select sections
 
 ---
 
@@ -278,6 +278,64 @@ AskUserQuestion(
 ```
 
 Update project name in PROJECT_SPEC.md if changed.
+
+---
+
+## ⚡ QUICK MODE (DEFAULT) - 4 Sections
+
+**Quick Mode is optimized for speed: Problem → Users → Features → Tech → Build**
+
+### Quick Mode Sections:
+
+**1. Problem & Solution**
+- What problem are you solving? (3-5 bullets)
+- Why does this matter?
+- How will you solve it? (high-level approach)
+- **Brainstorming:** Suggest 3-5 improvements (not 10+)
+
+**2. Target Users**
+- Who will use this? (specific personas)
+- What value does it provide them?
+- Primary user journey
+- **Brainstorming:** Suggest 3-5 user insights
+
+**3. Core Features (MVP Only)**
+- List 5-7 MVP features (NOT 20+ features)
+- Prioritize must-haves only
+- Simple user stories
+- **Brainstorming:** Suggest 3-5 additional features to consider
+
+**4. Technical Approach**
+- Recommended tech stack
+- Architecture pattern (monolith/microservices/etc.)
+- Key integrations needed
+- **Brainstorming:** Suggest 3-5 technical considerations
+
+**AFTER SECTION 4:**
+
+Use AskUserQuestion:
+```python
+AskUserQuestion(
+    questions=[{{
+        "question": "✅ Quick PRD complete! Ready to start building?",
+        "header": "Next Step",
+        "multiSelect": False,
+        "options": [
+            {{"label": "🚀 Yes - Start building now", "description": "Run br build start automatically"}},
+            {{"label": "📝 No - Let me review first", "description": "Save and exit"}},
+            {{"label": "➕ Add more sections", "description": "Expand to Technical or Full mode"}}
+        ]
+    }}]
+)
+```
+
+**If "🚀 Yes - Start building now":**
+1. Save PROJECT_SPEC.md
+2. Execute `br build start` using Bash tool
+3. Tell user: "Build started! BuildRunner is now generating and executing tasks."
+
+**If "➕ Add more sections":**
+- Upgrade to Technical Mode (11 sections) or Full Mode
 
 ---
 
@@ -447,21 +505,47 @@ br build start
 
 ## 🎯 MODE CONFIGURATIONS
 
-**FULL MODE:** All 11 sections
-**MINIMAL MODE:** Sections 6, 9 (Features + Timeline only)
-**COMMERCIAL MODE:** Sections 1-5, 10, 11 (skip technical)
-**TECHNICAL MODE:** Sections 6-9 (skip business)
+**QUICK MODE (DEFAULT):** 4 sections only
+  - Section 1: Problem & Solution (3-5 bullets)
+  - Section 2: Target Users (who/value/persona)
+  - Section 3: Core Features (5-7 MVP features max)
+  - Section 4: Technical Approach (stack/architecture/integrations)
+  - Auto-build trigger after section 4
+
+**TECHNICAL MODE:** All 11 sections (full technical depth)
+  - All sections from Section Library
+  - Deep technical specifications
+  - Architecture diagrams
+  - Implementation timeline
+
+**FULL MODE:** All 11 sections (business + technical)
+  - Complete business strategy
+  - Complete technical architecture
+  - Financial projections
+  - Risk assessment
+
 **CUSTOM MODE:** User selects from checklist
+  - Pick which of the 11 sections to include
+  - Flexible combination
 
 ---
 
 ## 🚀 Start Now
 
-**Step 1:** Use AskUserQuestion to ask for goal selection (shown above)
+**Step 1:** Use AskUserQuestion to ask for planning mode selection (shown above)
 **Step 2:** Ask: "Tell me about your project - what do you want to build?"
 **Step 3:** Auto-fill and present sections based on selected mode
-**Step 4:** Follow approval pattern for each section
-**Step 5:** Generate final summary and next steps
+
+**FOR QUICK MODE (Default):**
+- Section 1: Problem & Solution
+- Section 2: Target Users
+- Section 3: Core Features (5-7 max)
+- Section 4: Technical Approach
+- After section 4: Ask "Ready to build?" → If yes, run `br build start` using Bash tool
+
+**FOR TECHNICAL/FULL MODES:**
+- Follow approval pattern for all 11 sections
+- Generate final summary and next steps
 """
 
             planning_path.write_text(planning_content)

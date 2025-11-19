@@ -1,0 +1,37 @@
+{
+  "pool_id": "78ce4a0a",
+  "timestamp": "2025-11-18T19:40:41.133159",
+  "stats": {
+    "total_items": 3,
+    "completed_items": 3,
+    "failed_items": 0,
+    "total_duration_ms": 0.262,
+    "avg_item_duration_ms": 0.012666666666666666
+  },
+  "results": {
+    "7bc92cce": {
+      "item_id": "7bc92cce",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.006,
+      "error_message": null
+    },
+    "18ebd385": {
+      "item_id": "18ebd385",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.013,
+      "error_message": null
+    },
+    "cf1da75b": {
+      "item_id": "cf1da75b",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.019,
+      "error_message": null
+    }
+  }
+}

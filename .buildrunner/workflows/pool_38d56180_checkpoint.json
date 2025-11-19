@@ -1,0 +1,21 @@
+{
+  "pool_id": "38d56180",
+  "timestamp": "2025-11-18T20:21:36.737809",
+  "stats": {
+    "total_items": 1,
+    "completed_items": 1,
+    "failed_items": 0,
+    "total_duration_ms": 0.207,
+    "avg_item_duration_ms": 0.019
+  },
+  "results": {
+    "1d36edad": {
+      "item_id": "1d36edad",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.019,
+      "error_message": null
+    }
+  }
+}

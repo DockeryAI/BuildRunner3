@@ -1,0 +1,53 @@
+{
+  "pool_id": "781d2f4a",
+  "timestamp": "2025-11-18T19:39:36.811589",
+  "stats": {
+    "total_items": 5,
+    "completed_items": 5,
+    "failed_items": 0,
+    "total_duration_ms": 0.28200000000000003,
+    "avg_item_duration_ms": 0.0092
+  },
+  "results": {
+    "b53fc08c": {
+      "item_id": "b53fc08c",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.006,
+      "error_message": null
+    },
+    "118b2680": {
+      "item_id": "118b2680",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.013,
+      "error_message": null
+    },
+    "96563285": {
+      "item_id": "96563285",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.008,
+      "error_message": null
+    },
+    "7d44a6b2": {
+      "item_id": "7d44a6b2",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.01,
+      "error_message": null
+    },
+    "fc18c6aa": {
+      "item_id": "fc18c6aa",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.009000000000000001,
+      "error_message": null
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "pool_id": "bce90e19",
+  "timestamp": "2025-11-18T19:40:07.241717",
+  "stats": {
+    "total_items": 5,
+    "completed_items": 5,
+    "failed_items": 0,
+    "total_duration_ms": 0.5630000000000001,
+    "avg_item_duration_ms": 0.024399999999999998
+  },
+  "results": {
+    "7850631e": {
+      "item_id": "7850631e",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.015000000000000001,
+      "error_message": null
+    },
+    "7aff974d": {
+      "item_id": "7aff974d",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.041,
+      "error_message": null
+    },
+    "c8e29e73": {
+      "item_id": "c8e29e73",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.026,
+      "error_message": null
+    },
+    "60c7652d": {
+      "item_id": "60c7652d",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.014,
+      "error_message": null
+    },
+    "afbd9053": {
+      "item_id": "afbd9053",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.026,
+      "error_message": null
+    }
+  }
+}

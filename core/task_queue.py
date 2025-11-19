@@ -267,6 +267,8 @@ class TaskQueue:
                 "failed": 0,
                 "in_progress": 0,
                 "pending": 0,
+                "blocked": 0,
+                "skipped": 0,
                 "percent_complete": 0,
             }
 

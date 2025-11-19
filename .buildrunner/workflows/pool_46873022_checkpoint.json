@@ -1,0 +1,21 @@
+{
+  "pool_id": "46873022",
+  "timestamp": "2025-11-18T19:39:36.810721",
+  "stats": {
+    "total_items": 1,
+    "completed_items": 1,
+    "failed_items": 0,
+    "total_duration_ms": 0.185,
+    "avg_item_duration_ms": 0.014
+  },
+  "results": {
+    "b0c2b2ef": {
+      "item_id": "b0c2b2ef",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.014,
+      "error_message": null
+    }
+  }
+}
