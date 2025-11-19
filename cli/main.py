@@ -39,6 +39,7 @@ from cli.security_commands import security_app
 from cli.routing_commands import routing_app
 from cli.telemetry_commands import telemetry_app
 from cli.parallel_commands import parallel_app
+from cli.attach_commands import attach_app
 
 
 app = typer.Typer(
@@ -60,6 +61,7 @@ app.add_typer(security_app, name="security")
 app.add_typer(routing_app, name="routing")
 app.add_typer(telemetry_app, name="telemetry")
 app.add_typer(parallel_app, name="parallel")
+app.add_typer(attach_app, name="attach")
 
 # Create guard and service command groups
 guard_app = typer.Typer(help="Architecture guard commands")
