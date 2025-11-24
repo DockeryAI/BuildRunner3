@@ -1,0 +1,400 @@
+{
+  "framework": {
+    "name": "React",
+    "version": "^18.2.0",
+    "ui_library": null,
+    "styling_system": null
+  },
+  "tokens": {
+    "colors": {},
+    "color_palette": [
+      "#fbbf24",
+      "#c62828",
+      "#ff9800",
+      "#ef5350",
+      "#cbd5e1",
+      "#8b2e2e",
+      "#374151",
+      "#3a2323",
+      "#f9f9f9",
+      "#f2d2d2",
+      "#dbeafe",
+      "#7f1d1d",
+      "#9ca3af",
+      "#5a1d1d",
+      "#4b5563",
+      "#fef3e2",
+      "#8bc34a",
+      "#056",
+      "#059669",
+      "#ffb74d"
+    ],
+    "fonts": {},
+    "font_sizes": {},
+    "font_weights": {},
+    "line_heights": {},
+    "spacing": {},
+    "padding": {},
+    "margin": {},
+    "borders": {},
+    "border_radius": {},
+    "shadows": {},
+    "transitions": {},
+    "animations": {},
+    "breakpoints": {},
+    "z_index": {}
+  },
+  "components": [
+    {
+      "name": "App",
+      "type": "component",
+      "file_path": "ui/src/App.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "main",
+      "type": "component",
+      "file_path": "ui/src/main.tsx",
+      "naming_convention": "camelCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "MermaidDiagram",
+      "type": "component",
+      "file_path": "ui/src/components/MermaidDiagram.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "CommandCenter",
+      "type": "component",
+      "file_path": "ui/src/components/CommandCenter.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "TaskList.test",
+      "type": "component",
+      "file_path": "ui/src/components/TaskList.test.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "Login",
+      "type": "component",
+      "file_path": "ui/src/components/Login.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "Dashboard.test",
+      "type": "component",
+      "file_path": "ui/src/components/Dashboard.test.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "ProjectPicker",
+      "type": "component",
+      "file_path": "ui/src/components/ProjectPicker.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "InteractivePRDBuilder",
+      "type": "component",
+      "file_path": "ui/src/components/InteractivePRDBuilder.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "Dashboard",
+      "type": "component",
+      "file_path": "ui/src/components/Dashboard.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "ProgressSidebar",
+      "type": "sidebar",
+      "file_path": "ui/src/components/ProgressSidebar.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "AgentPool",
+      "type": "component",
+      "file_path": "ui/src/components/AgentPool.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "FeatureProgress",
+      "type": "component",
+      "file_path": "ui/src/components/FeatureProgress.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "LogViewer",
+      "type": "component",
+      "file_path": "ui/src/components/LogViewer.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "TaskList",
+      "type": "component",
+      "file_path": "ui/src/components/TaskList.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "TerminalPanel",
+      "type": "component",
+      "file_path": "ui/src/components/TerminalPanel.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "ComponentProgress",
+      "type": "component",
+      "file_path": "ui/src/components/ComponentProgress.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "ArchitectureCanvas",
+      "type": "component",
+      "file_path": "ui/src/components/ArchitectureCanvas.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "Notifications",
+      "type": "component",
+      "file_path": "ui/src/components/Notifications.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "ProjectInitWizard",
+      "type": "component",
+      "file_path": "ui/src/components/ProjectInitWizard.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "PRDEditor",
+      "type": "component",
+      "file_path": "ui/src/components/PRDEditor.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "PRDMarkdownPreview",
+      "type": "component",
+      "file_path": "ui/src/components/PRDMarkdownPreview.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "SuggestionsPanel",
+      "type": "component",
+      "file_path": "ui/src/components/SuggestionsPanel.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "AttachProjectModal",
+      "type": "modal",
+      "file_path": "ui/src/components/AttachProjectModal.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "TerminalDemo",
+      "type": "component",
+      "file_path": "ui/src/components/TerminalDemo.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "ProjectInitModal",
+      "type": "modal",
+      "file_path": "ui/src/components/ProjectInitModal.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "TelemetryTimeline",
+      "type": "component",
+      "file_path": "ui/src/components/TelemetryTimeline.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "MonacoPRDEditor",
+      "type": "component",
+      "file_path": "ui/src/components/MonacoPRDEditor.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "PRDEditorV2",
+      "type": "component",
+      "file_path": "ui/src/components/PRDEditorV2.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "WorkspaceUI",
+      "type": "component",
+      "file_path": "ui/src/components/WorkspaceUI.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "FeatureCard",
+      "type": "card",
+      "file_path": "ui/src/components/FeatureCard.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "PRDChatInterface",
+      "type": "component",
+      "file_path": "ui/src/components/PRDChatInterface.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "ProgressSidebar.example",
+      "type": "sidebar",
+      "file_path": "ui/src/components/ProgressSidebar.example.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "ProjectView",
+      "type": "component",
+      "file_path": "ui/src/pages/ProjectView.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "BuildMonitor",
+      "type": "component",
+      "file_path": "ui/src/pages/BuildMonitor.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "CSS/SCSS"
+    },
+    {
+      "name": "ComponentNode",
+      "type": "component",
+      "file_path": "ui/src/components/nodes/ComponentNode.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "TrendAnalysis",
+      "type": "component",
+      "file_path": "ui/src/components/Analytics/TrendAnalysis.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "CostBreakdown",
+      "type": "component",
+      "file_path": "ui/src/components/Analytics/CostBreakdown.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "Analytics.test",
+      "type": "component",
+      "file_path": "ui/src/components/Analytics/Analytics.test.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "PerformanceChart",
+      "type": "form",
+      "file_path": "ui/src/components/Analytics/PerformanceChart.tsx",
+      "naming_convention": "PascalCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "index",
+      "type": "component",
+      "file_path": "ui/src/components/index.ts",
+      "naming_convention": "camelCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "index",
+      "type": "component",
+      "file_path": "ui/src/components/Progress/index.ts",
+      "naming_convention": "camelCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    },
+    {
+      "name": "index",
+      "type": "component",
+      "file_path": "ui/src/components/Analytics/index.ts",
+      "naming_convention": "camelCase",
+      "props_pattern": null,
+      "styling_method": "unknown"
+    }
+  ],
+  "naming_conventions": {
+    "component": "PascalCase",
+    "styling": "CSS/SCSS"
+  },
+  "file_structure": {},
+  "design_system_file": null,
+  "confidence": 0.6
+}
