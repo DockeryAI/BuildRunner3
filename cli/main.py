@@ -40,11 +40,14 @@ from cli.security_commands import security_app
 from cli.routing_commands import routing_app
 from cli.telemetry_commands import telemetry_app
 from cli.parallel_commands import parallel_app
-from cli.attach_commands import attach_app
 from cli.agent_commands import agent_app
 from cli.alias_commands import alias_app
 from cli.autodebug_commands import app as autodebug_app
 from cli.profile_commands import app as profile_app
+from cli.project_commands import project_app
+from cli.attach_commands import attach_command
+from cli.doctor_commands import doctor_app
+from cli.github_commands import app as github_app
 
 
 app = typer.Typer(
@@ -66,11 +69,16 @@ app.add_typer(security_app, name="security")
 app.add_typer(routing_app, name="routing")
 app.add_typer(telemetry_app, name="telemetry")
 app.add_typer(parallel_app, name="parallel")
-app.add_typer(attach_app, name="attach")
 app.add_typer(agent_app, name="agent")
 app.add_typer(alias_app, name="alias")
 app.add_typer(autodebug_app, name="autodebug")
 app.add_typer(profile_app, name="profile")
+app.add_typer(project_app, name="project")
+app.add_typer(doctor_app, name="doctor")
+app.add_typer(github_app, name="github")
+
+# Register attach as direct command (not a group)
+app.command(name="attach")(attach_command)
 
 # Create guard and service command groups
 guard_app = typer.Typer(help="Architecture guard commands")
@@ -137,10 +145,12 @@ def init(
     force: bool = typer.Option(False, "--force", "-f", help="Force initialization"),
     no_profile: bool = typer.Option(False, "--no-profile", help="Skip global profile activation")
 ):
-    """Initialize a new BuildRunner project."""
+    """Initialize a new BuildRunner project in ~/Projects with automatic alias creation."""
     try:
-        # Create project directory and set as root
-        project_root = Path.cwd() / project_name
+        # Create project directory in ~/Projects
+        projects_dir = Path.home() / "Projects"
+        projects_dir.mkdir(exist_ok=True)
+        project_root = projects_dir / project_name
         project_root.mkdir(parents=True, exist_ok=True)
         buildrunner_dir = project_root / ".buildrunner"
 
@@ -207,10 +217,108 @@ def init(
             )
 
             console.print(f"\n[green]✅ Created {planning_path}[/green]")
+
+            # Create project alias in ~/.zshrc
+            import subprocess
+            zshrc_path = Path.home() / ".zshrc"
+            alias_cmd = f'alias {project_name}="claude {project_root} --dangerously-skip-permissions"'
+
+            # Check if alias already exists
+            if zshrc_path.exists():
+                zshrc_content = zshrc_path.read_text()
+                if f'alias {project_name}=' not in zshrc_content:
+                    with open(zshrc_path, 'a') as f:
+                        f.write(f'\n{alias_cmd}\n')
+                    console.print(f"[green]✅ Created alias: {project_name}[/green]")
+                else:
+                    console.print(f"[yellow]⚠️  Alias '{project_name}' already exists[/yellow]")
+            else:
+                # Create .zshrc if it doesn't exist
+                with open(zshrc_path, 'w') as f:
+                    f.write(f'{alias_cmd}\n')
+                console.print(f"[green]✅ Created alias: {project_name}[/green]")
+
+            console.print(f"[dim]💡 Use '{project_name}' from anywhere to open this project[/dim]")
+
+            # Copy planning mode trigger to clipboard
+            planning_trigger = f"plan new project: {project_name}"
+            try:
+                import pyperclip
+                pyperclip.copy(planning_trigger)
+                console.print(f"[green]📋 Copied to clipboard: '{planning_trigger}'[/green]")
+                console.print(f"[dim]💡 Paste this in Claude to start planning mode[/dim]")
+            except ImportError:
+                console.print(f"[yellow]⚠️  Install pyperclip for clipboard support: pip install pyperclip[/yellow]")
+                console.print(f"[dim]💡 Type this in Claude: '{planning_trigger}'[/dim]")
+
+            # Check if UI server is running, start if needed
+            import socket
+            import webbrowser
+            import subprocess
+            import os
+
+            def is_port_open(port: int) -> bool:
+                """Check if port is open/in use."""
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    return s.connect_ex(('localhost', port)) == 0
+
+            ui_port = 3001
+            ui_url = f"http://localhost:{ui_port}/project/{project_name}"
+
+            if not is_port_open(ui_port):
+                console.print(f"[yellow]⚠️  UI server not running on port {ui_port}[/yellow]")
+                console.print(f"[dim]Start it manually: cd ~/Projects/BuildRunner3/ui && npm run dev[/dim]")
+                console.print(f"[dim]Or it will start automatically in background (experimental)[/dim]\n")
+
+                # Try to start UI server in background
+                try:
+                    ui_dir = Path.home() / "Projects" / "BuildRunner3" / "ui"
+                    if ui_dir.exists():
+                        # Start UI server detached (doesn't block)
+                        subprocess.Popen(
+                            ["npm", "run", "dev"],
+                            cwd=str(ui_dir),
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                            start_new_session=True
+                        )
+                        console.print(f"[green]✅ Started UI server in background[/green]")
+                        # Wait for server to be ready (poll up to 15 seconds)
+                        console.print(f"[dim]Waiting for UI server to start...[/dim]")
+                        for i in range(15):
+                            time.sleep(1)
+                            if is_port_open(ui_port):
+                                console.print(f"[green]✅ UI server ready[/green]")
+                                break
+                        else:
+                            console.print(f"[yellow]⚠️  UI server taking longer than expected[/yellow]")
+                except Exception as e:
+                    console.print(f"[yellow]⚠️  Could not auto-start UI: {e}[/yellow]")
+
+            # Launch Electron app with project URL
+            try:
+                electron_dir = Path.home() / "Projects" / "BuildRunner3" / "electron"
+                if electron_dir.exists():
+                    # Launch Electron with --url argument
+                    subprocess.Popen(
+                        ["npm", "start", "--", f"--url={ui_url}"],
+                        cwd=str(electron_dir),
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        start_new_session=True
+                    )
+                    console.print(f"[green]🖥️  Launching Electron: {ui_url}[/green]")
+                else:
+                    # Fallback to browser if Electron not found
+                    webbrowser.open(ui_url)
+                    console.print(f"[green]🌐 Opening browser: {ui_url}[/green]")
+            except Exception as e:
+                console.print(f"[yellow]⚠️  Could not launch UI: {e}[/yellow]")
+                console.print(f"[dim]Open manually: {ui_url}[/dim]")
+
             console.print(f"[green]✅ Starting Claude Code in planning mode...[/green]\n")
 
             # Replace this process with claude CLI
-            import os
             os.execvp('claude', ['claude', '--dangerously-skip-permissions', str(project_root)])
 
     except Exception as e:
