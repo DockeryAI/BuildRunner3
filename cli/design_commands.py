@@ -16,6 +16,9 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.design_system.profile_loader import ProfileLoader
+from core.design_system.synapse_db_connector import SynapseDBConnector
+from core.design_system.generator import DesignGenerator
+import json
 
 
 console = Console()
@@ -271,6 +274,161 @@ def generate_config(
 
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@design_app.command("db-list")
+def db_list_industries():
+    """
+    List all industries from Synapse database
+
+    Connects to live Synapse Supabase database and lists all available industries.
+
+    Example:
+        br design db-list
+    """
+    try:
+        connector = SynapseDBConnector()
+        industries = connector.list_all_industries()
+
+        console.print(f"\n[bold]📊 {len(industries)} Industries in Synapse Database:[/bold]\n")
+
+        for i, industry in enumerate(industries, 1):
+            console.print(f"  {i:3d}. {industry}")
+
+        console.print(f"\n[dim]💡 Use 'br design db-profile <name>' to view details[/dim]\n")
+
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+        console.print(f"[yellow]💡 Make sure Synapse credentials are in environment or /Users/byronhudson/Projects/Synapse/.env[/yellow]")
+        raise typer.Exit(1)
+
+
+@design_app.command("db-search")
+def db_search_industries(
+    query: str = typer.Argument(..., help="Search term")
+):
+    """
+    Search industries in Synapse database
+
+    Example:
+        br design db-search health
+        br design db-search "e-commerce"
+    """
+    try:
+        connector = SynapseDBConnector()
+        results = connector.search_industries(query)
+
+        if not results:
+            console.print(f"\n[yellow]No industries found matching '{query}'[/yellow]\n")
+            return
+
+        console.print(f"\n[bold]🔍 Found {len(results)} matches for '{query}':[/bold]\n")
+
+        for result in results:
+            console.print(f"  • {result}")
+
+        console.print(f"\n[dim]💡 Use 'br design db-profile \"{results[0]}\"' to view full profile[/dim]\n")
+
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@design_app.command("db-profile")
+def db_show_profile(
+    industry: str = typer.Argument(..., help="Industry name"),
+    format: str = typer.Option("text", "--format", "-f", help="Output format: text, json, yaml")
+):
+    """
+    Get industry profile from Synapse database
+
+    Example:
+        br design db-profile Healthcare
+        br design db-profile "E-commerce" --format json
+    """
+    try:
+        connector = SynapseDBConnector()
+        profile = connector.get_industry_profile(industry)
+
+        if not profile:
+            console.print(f"\n[red]❌ Industry '{industry}' not found in database[/red]\n")
+            console.print(f"[dim]💡 Use 'br design db-search {industry}' to find similar industries[/dim]\n")
+            raise typer.Exit(1)
+
+        if format == 'json':
+            console.print(json.dumps(profile, indent=2))
+        elif format == 'yaml':
+            import yaml
+            console.print(yaml.dump(profile, default_flow_style=False))
+        else:
+            # Text format
+            console.print(f"\n[bold cyan]Industry Profile: {profile['industry']}[/bold cyan]\n")
+            console.print(f"[bold]NAICS Code:[/bold] {profile.get('naics_code', 'N/A')}")
+            console.print(f"[bold]Category:[/bold] {profile.get('category', 'N/A')}")
+
+            if profile.get('design_psychology'):
+                console.print(f"\n[bold]Design Psychology:[/bold]")
+                psych = profile['design_psychology']
+                for key, value in psych.items():
+                    console.print(f"  {key}: {value}")
+
+            if profile.get('color_scheme'):
+                console.print(f"\n[bold]Color Scheme:[/bold]")
+                colors = profile['color_scheme']
+                for key, value in colors.items():
+                    console.print(f"  {key}: {value}")
+
+            console.print()
+
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@design_app.command("db-generate")
+def db_generate_config(
+    industry: str = typer.Argument(..., help="Industry name"),
+    framework: str = typer.Option("tailwind", "--framework", "-f", help="Framework: tailwind, mui, chakra"),
+    output: Path = typer.Option(None, "--output", "-o", help="Output file (optional)")
+):
+    """
+    Generate design config from Synapse database profile
+
+    Fetches industry profile from Synapse DB and generates framework-specific config.
+
+    Example:
+        br design db-generate Healthcare
+        br design db-generate "E-commerce" --framework tailwind --output ./design/tailwind.config.js
+    """
+    try:
+        # Fetch profile from DB
+        console.print(f"\n[bold]Fetching profile for {industry}...[/bold]")
+        connector = SynapseDBConnector()
+        profile = connector.get_industry_profile(industry)
+
+        if not profile:
+            console.print(f"\n[red]❌ Industry '{industry}' not found in database[/red]\n")
+            raise typer.Exit(1)
+
+        console.print(f"[green]✅ Profile loaded[/green]\n")
+
+        # Generate config
+        console.print(f"[bold]Generating {framework} config...[/bold]")
+        generator = DesignGenerator(framework)
+        config = generator.generate_config(profile)
+
+        # Output
+        if output:
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(config)
+            console.print(f"\n[green]✅ Config saved to {output}[/green]\n")
+        else:
+            console.print("\n[bold]Generated Config:[/bold]\n")
+            console.print(config)
+
+    except Exception as e:
+        console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
 

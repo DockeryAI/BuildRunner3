@@ -1,7 +1,7 @@
 # BuildRunner 4.0 - Visual UI & No-Code Platform
 
 **Version:** 4.0.0
-**Timeline:** 8 weeks (post-v3.1.0 completion)
+**Timeline:** 23-31 weeks (post-v3.1.0 completion)
 **Goal:** Transform BuildRunner from CLI-first to visual-first platform with progressive disclosure for both non-coders and power users
 
 **Key Features:**
@@ -12,6 +12,136 @@
 - 📚 Template marketplace
 - 🤖 AI pair programming interface
 - ⚡ Progressive disclosure (simple → advanced → debug)
+- 🧠 **8 Deferred AI-First Features from V3 (see below)**
+
+---
+
+## V3 Features Deferred to V4
+
+The following 8 advanced features from the original BuildRunner 3.0 BUILD_PLAN.md were **deferred to v4.0** due to their AI-intensive nature and R&D requirements. These will be integrated alongside the visual UI development.
+
+### 1. AI Code Review & Refactoring System
+**Status:** 🔴 Not Implemented in V3
+**Timeline:** 3-4 weeks
+**Description:** Automated code review with intelligent refactoring suggestions
+
+**Scope:**
+- AI-powered code analysis for style, performance, security
+- Automated refactoring proposals with diff preview
+- Style guide enforcement
+- Best practice detection
+- Integration with git workflow
+
+**Priority:** HIGH (Core AI feature)
+
+### 2. Environment & Dependency Intelligence
+**Status:** 🔴 Not Implemented in V3
+**Timeline:** 2-3 weeks
+**Description:** Smart dependency management and environment detection
+
+**Scope:**
+- Auto-detect missing dependencies
+- Version conflict resolution
+- Environment setup automation (venv, node_modules, etc.)
+- Dependency security scanning
+- Lockfile management
+
+**Priority:** HIGH (Developer experience)
+
+### 3. Predictive Intelligence System
+**Status:** 🔴 Not Implemented in V3
+**Timeline:** 4-5 weeks
+**Description:** Machine learning for build time prediction and optimization
+
+**Scope:**
+- Historical build analysis
+- Time-to-completion prediction
+- Resource usage optimization
+- Bottleneck identification
+- Optimization recommendations
+
+**Priority:** MEDIUM (Advanced feature)
+
+### 4. Human-Readable Reporting Suite
+**Status:** 🔴 Not Implemented in V3
+**Timeline:** 2-3 weeks
+**Description:** Beautiful reports for stakeholders (non-technical audiences)
+
+**Scope:**
+- PDF/HTML report generation
+- Executive dashboards
+- Progress visualizations
+- Stakeholder-friendly summaries
+- Team metrics
+
+**Priority:** MEDIUM (Enterprise feature)
+
+### 5. Build Intelligence Enhancements
+**Status:** 🔴 Not Implemented in V3
+**Timeline:** 3-4 weeks
+**Description:** Advanced build optimization and caching
+
+**Scope:**
+- Incremental build system
+- Smart caching strategies
+- Parallel compilation
+- Build artifact management
+- CI/CD optimization
+
+**Priority:** HIGH (Performance critical)
+
+### 6. Natural Language Programming Interface
+**Status:** 🔴 Not Implemented in V3
+**Timeline:** 4-5 weeks
+**Description:** Full natural language to code interface
+
+**Scope:**
+- NL → Code generation
+- Conversational programming
+- AI pair programming interface
+- Context-aware suggestions
+- Multi-turn code refinement
+
+**Priority:** HIGH (Killer feature for V4)
+
+### 7. Learning & Knowledge System
+**Status:** 🔴 Not Implemented in V3
+**Timeline:** 3-4 weeks
+**Description:** System that learns from your codebase and patterns
+
+**Scope:**
+- Pattern recognition from project history
+- Custom recommendations based on team style
+- Team knowledge base
+- Best practice extraction
+- Auto-generated documentation
+
+**Priority:** MEDIUM (Long-term value)
+
+### 8. Proactive Monitoring & Alerts
+**Status:** 🔴 Not Implemented in V3
+**Timeline:** 2-3 weeks
+**Description:** 24/7 monitoring with intelligent alerting
+
+**Scope:**
+- Project health checks
+- Anomaly detection
+- Slack/email/SMS alerts
+- Real-time dashboards
+- Performance regression detection
+
+**Priority:** MEDIUM (Enterprise feature)
+
+**Total Timeline for Deferred Features:** 23-31 weeks
+
+---
+
+## V4 Development Phases
+
+**Phase 1 (Weeks 1-8):** Visual UI & Desktop App (Original Plan)
+**Phase 2 (Weeks 9-16):** AI Code Review + Environment Intelligence + Build Intelligence
+**Phase 3 (Weeks 17-23):** Natural Language Interface + Predictive Intelligence
+**Phase 4 (Weeks 24-31):** Reporting Suite + Learning System + Monitoring
 
 ---
 
