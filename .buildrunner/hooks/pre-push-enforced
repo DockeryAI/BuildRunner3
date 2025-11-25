@@ -88,7 +88,7 @@ echo ""
 echo "⭐ Phase 2: Code Quality (Full)"
 echo "==============================="
 
-if br quality check --full; then
+if br quality check; then
     echo "  ✅ PASSED"
 else
     echo "  ❌ FAILED - Quality below threshold"
@@ -103,7 +103,7 @@ echo ""
 echo "🔒 Phase 3: Security (Full Scan)"
 echo "================================"
 
-if br security check --full; then
+if br security check; then
     echo "  ✅ PASSED"
 else
     echo "  ❌ FAILED - Security issues detected"

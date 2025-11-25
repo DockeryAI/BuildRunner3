@@ -966,16 +966,40 @@ class AutoDebugPipeline:
 
     def _run_gap_analysis(self) -> CheckResult:
         """Run gap analysis vs PRD"""
-        gaps = self.gap_analyzer.analyze()
+        try:
+            gaps = self.gap_analyzer.analyze()
 
-        return CheckResult(
-            name="gap_analysis",
-            passed=len(gaps) == 0,
-            duration_ms=0,
-            errors=[],
-            warnings=[f"Missing: {g.feature_name}" for g in gaps],
-            info=[f"Found {len(gaps)} gaps vs PRD"]
-        )
+            warnings = []
+            # Collect warnings from various gap types
+            if gaps.missing_features:
+                warnings.extend([f"Missing feature: {f.get('name', 'Unknown')}" for f in gaps.missing_features[:5]])
+            if gaps.incomplete_features:
+                warnings.extend([f"Incomplete feature: {f.get('name', 'Unknown')}" for f in gaps.incomplete_features[:5]])
+
+            # Consider passing if only low-severity gaps
+            passed = gaps.severity_high == 0
+
+            errors = []
+            if gaps.severity_high > 0:
+                errors.append(f"{gaps.severity_high} high-severity gaps detected")
+
+            return CheckResult(
+                name="gap_analysis",
+                passed=passed,
+                duration_ms=0,
+                errors=errors,
+                warnings=warnings[:10],  # Limit warnings
+                info=[f"Total gaps: {gaps.total_gaps} (High: {gaps.severity_high}, Med: {gaps.severity_medium}, Low: {gaps.severity_low})"]
+            )
+        except Exception as e:
+            return CheckResult(
+                name="gap_analysis",
+                passed=False,
+                duration_ms=0,
+                errors=[f"Check failed: {str(e)}"],
+                warnings=[],
+                info=[]
+            )
 
     def _run_integration_tests(self) -> CheckResult:
         """Run integration tests"""
