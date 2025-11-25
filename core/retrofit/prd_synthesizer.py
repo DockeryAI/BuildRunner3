@@ -1,3 +1,4 @@
+# PRD Feature: FEAT-PRD-001
 """PRD Synthesizer - generates PROJECT_SPEC.md from extracted features"""
 
 import logging
@@ -238,6 +239,21 @@ class PRDSynthesizer:
 
     def _write_prd_markdown(self, prd: PRD, output_path: Path):
         """Write PRD to PROJECT_SPEC.md format"""
+        # Check if file exists and preserve existing content
+        existing_features = {}
+        if output_path.exists():
+            logger.info(f"Existing PROJECT_SPEC.md found, preserving user-defined features...")
+            try:
+                existing_content = output_path.read_text()
+                # Parse existing features to preserve user-added ones
+                existing_features = self._parse_existing_features(existing_content)
+                # Create backup
+                backup_path = output_path.parent / f"PROJECT_SPEC.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+                backup_path.write_text(existing_content)
+                logger.info(f"Created backup at {backup_path}")
+            except Exception as e:
+                logger.warning(f"Could not parse existing PROJECT_SPEC.md: {e}")
+
         lines = []
         doc_sections = prd.metadata.get("doc_sections", {})
 
@@ -300,52 +316,76 @@ class PRDSynthesizer:
                 lines.append(f"- [ ] {criterion}")
             lines.append("")
 
-        # Features
-        for i, feature in enumerate(prd.features, 1):
-            lines.append(f"## Feature {i}: {feature.name}")
+        # Features (merge existing with scanned)
+        all_features = {}
+
+        # Add existing features first (they take priority)
+        for feat_id, feat_data in existing_features.items():
+            all_features[feat_id] = feat_data
+
+        # Add scanned features that aren't already in existing
+        for feature in prd.features:
+            if feature.id not in all_features:
+                all_features[feature.id] = {
+                    'name': feature.name,
+                    'priority': feature.priority,
+                    'description': feature.description,
+                    'requirements': feature.requirements,
+                    'acceptance_criteria': feature.acceptance_criteria,
+                    'technical_details': feature.technical_details,
+                    'status': feature.status
+                }
+
+        # Write all features
+        for i, (feat_id, feat_data) in enumerate(all_features.items(), 1):
+            lines.append(f"## Feature {i}: {feat_data['name']}")
             lines.append("")
-            lines.append(f"**Priority:** {feature.priority.title()}")
+            lines.append(f"**ID:** {feat_id}")
+            if 'priority' in feat_data:
+                lines.append(f"**Priority:** {feat_data['priority'].title() if isinstance(feat_data['priority'], str) else feat_data['priority']}")
+            if 'status' in feat_data:
+                lines.append(f"**Status:** {feat_data['status']}")
             lines.append("")
 
-            if feature.description:
+            if 'description' in feat_data and feat_data['description']:
                 lines.append("### Description")
                 lines.append("")
-                lines.append(feature.description)
+                lines.append(feat_data['description'])
                 lines.append("")
 
-            if feature.requirements:
+            if 'requirements' in feat_data and feat_data['requirements']:
                 lines.append("### Requirements")
                 lines.append("")
-                for req in feature.requirements:
+                for req in feat_data['requirements']:
                     lines.append(f"- {req}")
                 lines.append("")
 
-            if feature.acceptance_criteria:
+            if 'acceptance_criteria' in feat_data and feat_data['acceptance_criteria']:
                 lines.append("### Acceptance Criteria")
                 lines.append("")
-                for criterion in feature.acceptance_criteria:
+                for criterion in feat_data['acceptance_criteria']:
                     lines.append(f"- [ ] {criterion}")
                 lines.append("")
 
-            if feature.technical_details:
+            if 'technical_details' in feat_data and feat_data['technical_details']:
                 lines.append("### Technical Details")
                 lines.append("")
 
+                tech_details = feat_data['technical_details']
                 # Show key technical details
-                if "files" in feature.technical_details:
-                    lines.append(f"**Files:** {len(feature.technical_details['files'])}")
-                if "artifact_types" in feature.technical_details:
-                    types = feature.technical_details["artifact_types"]
+                if "files" in tech_details:
+                    if isinstance(tech_details['files'], list):
+                        lines.append(f"**Files:** {', '.join(tech_details['files'])}")
+                    else:
+                        lines.append(f"**Files:** {len(tech_details['files'])}")
+                if "artifact_types" in tech_details:
+                    types = tech_details["artifact_types"]
                     lines.append(f"**Components:** {', '.join(types)}")
-                if (
-                    "has_routes" in feature.technical_details
-                    and feature.technical_details["has_routes"]
-                ):
+                if "completed" in tech_details:
+                    lines.append(f"**Completed:** {tech_details['completed']}")
+                if "has_routes" in tech_details and tech_details["has_routes"]:
                     lines.append("**Type:** API Endpoint")
-                if (
-                    "has_tests" in feature.technical_details
-                    and feature.technical_details["has_tests"]
-                ):
+                if "has_tests" in tech_details and tech_details["has_tests"]:
                     lines.append("**Tested:** ✓")
 
                 lines.append("")
@@ -364,3 +404,106 @@ class PRDSynthesizer:
         # Write to file
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text("\n".join(lines))
+
+    def _parse_existing_features(self, content: str) -> Dict:
+        """Parse existing PROJECT_SPEC.md to extract features"""
+        features = {}
+        current_feature = None
+        current_section = None
+        lines = content.split('\n')
+
+        import re
+
+        for line in lines:
+            # Check for feature header (## Feature N: Name or ### FEAT-XXX-NNN: Name)
+            feature_match = re.match(r'^###?\s+(?:Feature\s+\d+:\s+)?(\w+-\w+-\d+):\s+(.+)', line)
+            if not feature_match:
+                # Also check for ## Feature N: Name format with ID on next line
+                feature_match = re.match(r'^##\s+Feature\s+\d+:\s+(.+)', line)
+                if feature_match:
+                    # Look for ID in next few lines
+                    current_feature = {'name': feature_match.group(1).strip()}
+                    current_section = None
+                    continue
+
+            if feature_match:
+                feat_id = feature_match.group(1) if len(feature_match.groups()) == 2 else None
+                feat_name = feature_match.group(2) if len(feature_match.groups()) == 2 else feature_match.group(1)
+
+                if feat_id and feat_id.startswith('FEAT-'):
+                    # Save previous feature if exists
+                    if current_feature and 'id' in current_feature:
+                        features[current_feature['id']] = current_feature
+
+                    current_feature = {
+                        'id': feat_id,
+                        'name': feat_name.strip()
+                    }
+                    current_section = None
+                continue
+
+            if current_feature:
+                # Parse ID line
+                if line.startswith('**ID:**'):
+                    feat_id = line.replace('**ID:**', '').strip()
+                    current_feature['id'] = feat_id
+
+                # Parse Status
+                elif line.startswith('**Status:**'):
+                    current_feature['status'] = line.replace('**Status:**', '').strip()
+
+                # Parse Priority
+                elif line.startswith('**Priority:**'):
+                    current_feature['priority'] = line.replace('**Priority:**', '').strip()
+
+                # Parse Files
+                elif line.startswith('**Files:**'):
+                    files_str = line.replace('**Files:**', '').strip()
+                    # Handle both [file1, file2] format and plain list
+                    if files_str.startswith('[') and files_str.endswith(']'):
+                        files_str = files_str[1:-1]
+                    current_feature.setdefault('technical_details', {})['files'] = [
+                        f.strip() for f in files_str.split(',')
+                    ]
+
+                # Parse Completed percentage
+                elif line.startswith('**Completed:**'):
+                    completed = line.replace('**Completed:**', '').strip()
+                    current_feature.setdefault('technical_details', {})['completed'] = completed
+
+                # Parse sections
+                elif line.startswith('### '):
+                    section_name = line.replace('###', '').strip().lower()
+                    if 'description' in section_name:
+                        current_section = 'description'
+                        current_feature['description'] = ''
+                    elif 'requirement' in section_name:
+                        current_section = 'requirements'
+                        current_feature['requirements'] = []
+                    elif 'acceptance' in section_name:
+                        current_section = 'acceptance_criteria'
+                        current_feature['acceptance_criteria'] = []
+                    elif 'technical' in section_name or 'component' in section_name:
+                        current_section = 'technical_details'
+                        if 'technical_details' not in current_feature:
+                            current_feature['technical_details'] = {}
+
+                # Parse section content
+                elif current_section and line.strip():
+                    if current_section == 'description':
+                        if current_feature['description']:
+                            current_feature['description'] += '\n'
+                        current_feature['description'] += line.strip()
+                    elif current_section == 'requirements' and line.strip().startswith('-'):
+                        current_feature['requirements'].append(line.strip()[1:].strip())
+                    elif current_section == 'acceptance_criteria' and line.strip().startswith('-'):
+                        current_feature['acceptance_criteria'].append(
+                            line.strip().replace('- [ ]', '').replace('- [x]', '').strip()
+                        )
+
+        # Save last feature
+        if current_feature and 'id' in current_feature:
+            features[current_feature['id']] = current_feature
+
+        logger.info(f"Parsed {len(features)} existing features from PROJECT_SPEC.md")
+        return features
