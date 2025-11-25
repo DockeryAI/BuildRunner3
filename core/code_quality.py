@@ -123,6 +123,47 @@ class CodeQualityAnalyzer:
 
         return metrics
 
+    def analyze_files(self, file_paths: List[Path]) -> QualityMetrics:
+        """
+        Analyze specific files.
+
+        Args:
+            file_paths: List of file paths to analyze
+
+        Returns:
+            QualityMetrics object with scores for specified files
+        """
+        # Set files directly instead of discovering
+        self.python_files = []
+        self.test_files = []
+
+        for file_path in file_paths:
+            if not file_path.exists() or file_path.suffix != ".py":
+                continue
+
+            # Categorize as test or regular file
+            parent_name = file_path.parent.name
+            if file_path.stem.startswith("test_") or parent_name == "tests":
+                self.test_files.append(file_path)
+            else:
+                self.python_files.append(file_path)
+
+        metrics = QualityMetrics()
+
+        # Calculate each component (only structure for changed files)
+        # Full security/testing/docs would be too slow for quick checks
+        metrics.structure_score = self.calculate_structure_score(metrics)
+
+        # Set other scores to 100 (not checked for individual files)
+        metrics.security_score = 100.0
+        metrics.testing_score = 100.0
+        metrics.docs_score = 100.0
+
+        # Calculate overall score (mostly structure-based for quick checks)
+        metrics.overall_score = metrics.structure_score
+
+        return metrics
+
     def _discover_files(self):
         """Discover Python files in the project."""
         self.python_files = []

@@ -886,8 +886,10 @@ class AutoDebugPipeline:
 
     def _check_quality_changed(self) -> CheckResult:
         """Run quality checks on changed files only"""
+        from core.code_quality import CodeQualityAnalyzer
+
         context = self.context_detector.detect_from_git()
-        python_files = [str(f) for f in context.python_files]
+        python_files = list(context.python_files)
 
         if not python_files:
             return CheckResult(
@@ -899,19 +901,45 @@ class AutoDebugPipeline:
                 info=["No Python files changed"],
             )
 
-        # Quality checks on individual files not implemented yet
-        # For now, just skip this check
-        # TODO: Implement per-file quality checking using CodeQualityAnalyzer
-        return CheckResult(
-            name="quality_changed",
-            passed=True,
-            duration_ms=0,
-            errors=[],
-            warnings=[],
-            info=[f"Quality check skipped for {len(python_files)} files (not implemented)"],
-            skipped=True,
-            skip_reason="Per-file quality checking not implemented",
-        )
+        # Analyze changed files
+        try:
+            analyzer = CodeQualityAnalyzer(self.project_root)
+            metrics = analyzer.analyze_files(python_files)
+
+            # Check if structure score is acceptable (>= 60 for individual files)
+            MIN_STRUCTURE_SCORE = 60.0
+            passed = metrics.structure_score >= MIN_STRUCTURE_SCORE
+
+            errors = []
+            warnings = []
+            if not passed:
+                errors.append(
+                    f"Structure score {metrics.structure_score:.1f} < {MIN_STRUCTURE_SCORE} for changed files"
+                )
+
+            if metrics.warnings:
+                warnings.extend(metrics.warnings[:5])  # Limit warnings
+
+            return CheckResult(
+                name="quality_changed",
+                passed=passed,
+                duration_ms=0,
+                errors=errors,
+                warnings=warnings,
+                info=[
+                    f"Analyzed {len(python_files)} file(s)",
+                    f"Structure score: {metrics.structure_score:.1f}",
+                ],
+            )
+        except Exception as e:
+            return CheckResult(
+                name="quality_changed",
+                passed=False,
+                duration_ms=0,
+                errors=[f"Quality check failed: {str(e)}"],
+                warnings=[],
+                info=[],
+            )
 
     def _check_quality_full(self) -> CheckResult:
         """Run full quality checks"""
