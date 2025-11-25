@@ -6,6 +6,7 @@ Provides safe, typed interface to git operations.
 
 import subprocess
 import re
+import os
 from pathlib import Path
 from typing import Optional, List, Tuple
 from dataclasses import dataclass
@@ -52,12 +53,14 @@ class GitClient:
 
     def _run(self, *args, check=True, capture_output=True) -> subprocess.CompletedProcess:
         """Run git command"""
+        # Pass current environment to subprocess so BR_GITHUB_PUSH is inherited by hooks
         return subprocess.run(
             ['git'] + list(args),
             cwd=self.repo_path,
             capture_output=capture_output,
             text=True,
-            check=check
+            check=check,
+            env=os.environ.copy()  # Inherit parent environment including BR_GITHUB_PUSH
         )
 
     def current_branch(self) -> str:
