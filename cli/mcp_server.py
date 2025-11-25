@@ -166,6 +166,8 @@ class MCPServer:
             status = kwargs.get('status')
             if status and status != 'planned':
                 self.registry.update_feature(feature_id, status=status)
+                # Get updated feature to return correct status
+                added = self.registry.get_feature(feature_id)
 
             # Note: add_feature and update_feature already save to file
             # No need to call save() again
@@ -274,8 +276,11 @@ class MCPServer:
             if not updates:
                 return {"success": False, "error": "updates is required"}
 
-            self.registry.update_feature(feature_id, **updates)
+            updated = self.registry.update_feature(feature_id, **updates)
             # Note: update_feature already saves to file
+
+            if updated is None:
+                return {"success": False, "error": f"Feature '{feature_id}' not found"}
 
             return {
                 "success": True,

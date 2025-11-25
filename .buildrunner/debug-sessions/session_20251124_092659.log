@@ -1,0 +1,9 @@
+=== DEBUG SESSION: Mon Nov 24 09:26:59 CST 2025 ===
+Project: BuildRunner3
+==================================
+
+=== COMMAND: 09:26:59 ===
+$ echo Test logging system
+--- OUTPUT ---
+Test logging system
+--- EXIT CODE: 0 ---

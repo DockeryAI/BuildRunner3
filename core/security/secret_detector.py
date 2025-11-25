@@ -9,6 +9,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict, Optional, Set
+import fnmatch
 
 from .secret_masker import SecretMasker
 
@@ -91,7 +92,9 @@ class SecretDetector:
         """
         self.project_root = project_root or Path.cwd()
         self.whitelist: Set[str] = set()
+        self.ignore_patterns: List[str] = []
         self._load_whitelist()
+        self._load_securityignore()
 
     def _load_whitelist(self) -> None:
         """Load whitelist of known false positives."""
@@ -108,6 +111,48 @@ class SecretDetector:
             except Exception:
                 pass  # Ignore errors loading whitelist
 
+    def _load_securityignore(self) -> None:
+        """Load .securityignore patterns (gitignore-style)."""
+        securityignore_file = self.project_root / '.securityignore'
+        if securityignore_file.exists():
+            try:
+                content = securityignore_file.read_text()
+                self.ignore_patterns = [
+                    line.strip()
+                    for line in content.splitlines()
+                    if line.strip() and not line.startswith('#')
+                ]
+            except Exception:
+                pass  # Ignore errors loading .securityignore
+
+    def _matches_ignore_pattern(self, file_path: Path) -> bool:
+        """Check if file matches any .securityignore pattern."""
+        # Convert to string relative to project root
+        try:
+            rel_path = file_path.relative_to(self.project_root)
+            rel_path_str = str(rel_path)
+        except ValueError:
+            rel_path_str = str(file_path)
+
+        for pattern in self.ignore_patterns:
+            # Handle directory patterns (ending with /)
+            if pattern.endswith('/'):
+                dir_pattern = pattern.rstrip('/')
+                if any(part == dir_pattern for part in file_path.parts):
+                    return True
+
+            # Handle glob patterns
+            if fnmatch.fnmatch(rel_path_str, pattern):
+                return True
+
+            # Handle ** patterns (match any directory depth)
+            if '**' in pattern:
+                glob_pattern = pattern.replace('**', '*')
+                if fnmatch.fnmatch(rel_path_str, glob_pattern):
+                    return True
+
+        return False
+
     def _is_whitelisted(self, file_path: str, line_number: int, pattern_name: str) -> bool:
         """Check if a match is whitelisted."""
         checks = [
@@ -119,6 +164,10 @@ class SecretDetector:
 
     def _should_scan_file(self, file_path: Path) -> bool:
         """Check if file should be scanned based on extension and exclusions."""
+        # Check .securityignore patterns first
+        if self._matches_ignore_pattern(file_path):
+            return False
+
         # Check if file is in excluded directory
         parts = file_path.parts
         for part in parts:

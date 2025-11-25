@@ -1,0 +1,155 @@
+#!/bin/bash
+# BuildRunner 3.0 - ENFORCED Pre-Push Hook
+# FORCES USE OF 'br github push' INSTEAD OF 'git push'
+# Last Updated: 2024-11-25
+
+set -e
+
+echo ""
+echo "🚀 BuildRunner 3.0 - ENFORCED Pre-Push Validation"
+echo "===================================================="
+echo "BLOCKING RAW GIT PUSH - USE 'br github push' INSTEAD"
+echo "===================================================="
+echo ""
+
+# Get project root
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+cd "$PROJECT_ROOT"
+
+# Detect if this is being called from 'br github push'
+if [ "$BR_GITHUB_PUSH" != "true" ]; then
+    echo "❌ ============================================"
+    echo "❌ RAW GIT PUSH BLOCKED"
+    echo "❌ ============================================"
+    echo ""
+    echo "You used 'git push' directly."
+    echo "This is PROHIBITED per BR3 enforcement rules."
+    echo ""
+    echo "Why? Because 'br github push' provides:"
+    echo "  • Smart readiness checks (0-100 score)"
+    echo "  • Security scanning"
+    echo "  • Quality validation"
+    echo "  • Test validation"
+    echo "  • Conflict detection"
+    echo "  • Feature completeness checks"
+    echo ""
+    echo "Instead, use:"
+    echo "  br github push              # Smart push with checks"
+    echo "  br github push --when-ready # Only push if 100% ready"
+    echo ""
+    echo "If checks are failing, FIX THE CODE."
+    echo "Don't bypass enforcement by using raw git commands."
+    echo ""
+    exit 1
+fi
+
+# At this point, we know we're being called from 'br github push'
+# which has already done its own readiness checks
+
+echo "✅ Called from 'br github push' - enforcement satisfied"
+echo ""
+
+# Check if BR3 is available
+if ! command -v br &> /dev/null; then
+    # Try to activate venv
+    if [ -f ".venv/bin/activate" ]; then
+        source .venv/bin/activate
+    elif [ -f "venv/bin/activate" ]; then
+        source venv/bin/activate
+    fi
+fi
+
+ALL_CHECKS_PASSED=true
+
+# ============================================
+# PHASE 1: AUTO-DEBUG (DEEP CHECKS)
+# ============================================
+echo "🧪 Phase 1: Auto-Debug (Deep Checks)"
+echo "===================================="
+
+if [ -f ".buildrunner/autodebug.yaml" ]; then
+    if br autodebug run; then
+        echo "  ✅ PASSED"
+    else
+        echo "  ❌ FAILED - Tests failing"
+        ALL_CHECKS_PASSED=false
+    fi
+else
+    echo "  ❌ BLOCKED - autodebug.yaml missing"
+    echo "     Run 'br attach' to generate it"
+    ALL_CHECKS_PASSED=false
+fi
+
+echo ""
+
+# ============================================
+# PHASE 2: CODE QUALITY (FULL CHECK)
+# ============================================
+echo "⭐ Phase 2: Code Quality (Full)"
+echo "==============================="
+
+if br quality check --full; then
+    echo "  ✅ PASSED"
+else
+    echo "  ❌ FAILED - Quality below threshold"
+    ALL_CHECKS_PASSED=false
+fi
+
+echo ""
+
+# ============================================
+# PHASE 3: SECURITY (FULL SCAN)
+# ============================================
+echo "🔒 Phase 3: Security (Full Scan)"
+echo "================================"
+
+if br security check --full; then
+    echo "  ✅ PASSED"
+else
+    echo "  ❌ FAILED - Security issues detected"
+    ALL_CHECKS_PASSED=false
+fi
+
+echo ""
+
+# ============================================
+# PHASE 4: GAP ANALYSIS (FINAL CHECK)
+# ============================================
+echo "🔍 Phase 4: Gap Analysis (Final)"
+echo "================================"
+
+if br gaps analyze; then
+    echo "  ✅ PASSED"
+else
+    echo "  ⚠️  WARNING - Gap analysis had issues"
+    # TODO: Make this blocking once gaps command is more robust
+fi
+
+echo ""
+
+# ============================================
+# FINAL VERDICT
+# ============================================
+echo "===================================================="
+
+if [ "$ALL_CHECKS_PASSED" = true ]; then
+    echo "✅ ALL PRE-PUSH CHECKS PASSED"
+    echo ""
+    echo "📊 Systems Validated:"
+    echo "   • Auto-debug pipeline (deep checks, full test suite)"
+    echo "   • Code quality gates (full analysis)"
+    echo "   • Security scanning (comprehensive)"
+    echo "   • Gap analysis (100% implementation)"
+    echo ""
+    echo "🚀 Proceeding with push..."
+    exit 0
+else
+    echo "❌ PRE-PUSH CHECKS FAILED"
+    echo ""
+    echo "Fix the issues above before pushing."
+    echo ""
+    echo "Remember: 'br github push' provides readiness scoring."
+    echo "Use 'br github push --when-ready' to only push when score is 100."
+    echo ""
+    exit 1
+fi

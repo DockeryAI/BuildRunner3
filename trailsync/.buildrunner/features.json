@@ -1,0 +1,13 @@
+{
+  "project": "trailsync",
+  "version": "1.0.0",
+  "status": "in_development",
+  "last_updated": "2025-11-18T21:37:17Z",
+  "features": [],
+  "metrics": {
+    "features_complete": 0,
+    "features_in_progress": 0,
+    "features_planned": 0,
+    "completion_percentage": 0
+  }
+}

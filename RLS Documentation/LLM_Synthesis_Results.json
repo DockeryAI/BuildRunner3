@@ -1,0 +1,30 @@
+{
+  "rootCauses": {
+    "postgrest_cache": 9
+  },
+  "solutions": {
+    "use_auth_uid": 3,
+    "service_role_bypass": 2,
+    "grants_required": 1,
+    "permissive_policies": 4,
+    "ddl_reload": 2,
+    "use_migrations": 3
+  },
+  "criticalPoints": {},
+  "confidenceLevels": [],
+  "supabaseSpecific": {
+    "auth_context": 8
+  },
+  "consensusItems": [
+    {
+      "type": "root_cause",
+      "item": "postgrest_cache",
+      "count": 9
+    },
+    {
+      "type": "solution",
+      "item": "permissive_policies",
+      "count": 4
+    }
+  ]
+}

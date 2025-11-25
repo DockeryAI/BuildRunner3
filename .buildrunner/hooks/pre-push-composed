@@ -1,0 +1,160 @@
+#!/bin/bash
+# BuildRunner 3.0 - Complete Pre-Push Hook
+# Runs comprehensive validation before every push
+# ENFORCEMENT: This hook CANNOT be bypassed with --no-verify per governance rules
+# Last Updated: 2025-11-24
+
+set -e
+
+echo ""
+echo "🚀 BuildRunner 3.0 - Complete Pre-Push Validation"
+echo "=================================================="
+echo ""
+
+# Get project root
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+cd "$PROJECT_ROOT"
+
+# ============================================
+# PHASE 0: CUSTOM PROJECT HOOKS
+# ============================================
+CUSTOM_HOOK=".git/hooks/pre-push.custom"
+
+if [ -f "$CUSTOM_HOOK" ]; then
+    echo "🎯 Phase 0: Custom Project Hooks"
+    echo "================================="
+    echo ""
+
+    if bash "$CUSTOM_HOOK"; then
+        echo "✅ Custom hooks passed"
+    else
+        echo "❌ Custom hooks failed"
+        echo ""
+        echo "Your project-specific pre-push hook failed."
+        exit 1
+    fi
+    echo ""
+fi
+
+# Check if BR3 is available
+if ! command -v br &> /dev/null; then
+    # Try to activate venv
+    if [ -f ".venv/bin/activate" ]; then
+        source .venv/bin/activate
+    elif [ -f "venv/bin/activate" ]; then
+        source venv/bin/activate
+    fi
+    
+    if ! command -v br &> /dev/null; then
+        echo "❌ BuildRunner CLI not available"
+        exit 1
+    fi
+fi
+
+# Track success
+ALL_CHECKS_PASSED=true
+
+run_check() {
+    local name="$1"
+    local command="$2"
+    
+    echo "▶ $name"
+    
+    if eval "$command" > /tmp/br-push-check.log 2>&1; then
+        echo "  ✅ PASSED"
+        return 0
+    else
+        echo "  ❌ FAILED"
+        echo ""
+        cat /tmp/br-push-check.log | head -50
+        echo ""
+        ALL_CHECKS_PASSED=false
+        return 1
+    fi
+}
+
+# ============================================
+# PHASE 1: COMPREHENSIVE AUTO-DEBUG (DEEP)
+# ============================================
+echo "🧪 Phase 1: Comprehensive Testing"
+echo "=================================="
+
+run_check "Auto-Debug Pipeline (Deep Checks)" "br autodebug run"
+
+echo ""
+
+# ============================================
+# PHASE 2: GAP ANALYSIS
+# ============================================
+echo "📊 Phase 2: Completeness Validation"
+echo "===================================="
+
+run_check "Gap Analysis (PRD vs Implementation)" "br gaps analyze"
+
+echo ""
+
+# ============================================
+# PHASE 3: FULL SECURITY SCAN
+# ============================================
+echo "🔒 Phase 3: Complete Security Scan"
+echo "==================================="
+
+run_check "Full Security Scan" "br security scan"
+
+echo ""
+
+# ============================================
+# PHASE 4: QUALITY ANALYSIS (ALL FILES)
+# ============================================
+echo "⭐ Phase 4: Complete Quality Analysis"
+echo "======================================"
+
+run_check "Full Quality Scan" "br quality check"
+
+echo ""
+
+# ============================================
+# PHASE 5: TELEMETRY CHECK
+# ============================================
+echo "📈 Phase 5: Telemetry Status"
+echo "============================"
+
+# Check if telemetry is enabled and show summary
+if command -v br telemetry &> /dev/null; then
+    br telemetry summary --period day 2>/dev/null || echo "  ℹ️  Telemetry not yet active"
+fi
+
+echo ""
+
+# ============================================
+# FINAL VERDICT
+# ============================================
+echo "=================================================="
+
+if [ "$ALL_CHECKS_PASSED" = true ]; then
+    echo "✅ ALL PRE-PUSH CHECKS PASSED"
+    echo ""
+    echo "📊 Complete Validation Summary:"
+    echo "   ✓ Deep testing (full test suite)"
+    echo "   ✓ Gap analysis (completeness check)"
+    echo "   ✓ Security scan (secrets, vulnerabilities)"
+    echo "   ✓ Quality analysis (comprehensive)"
+    echo ""
+    echo "🎉 Code is ready for push!"
+    exit 0
+else
+    echo "❌ PRE-PUSH CHECKS FAILED"
+    echo ""
+    echo "🚫 PUSH BLOCKED by BuildRunner Governance"
+    echo ""
+    echo "Your code must pass all comprehensive checks before push."
+    echo ""
+    echo "📋 What to do:"
+    echo "   1. Review the failures above"
+    echo "   2. Fix the issues"
+    echo "   3. Commit your fixes"
+    echo "   4. Try pushing again"
+    echo ""
+    echo "💡 Remember: Pre-commit runs quick checks, pre-push runs deep validation"
+    exit 1
+fi

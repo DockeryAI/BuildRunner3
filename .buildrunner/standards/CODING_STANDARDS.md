@@ -323,6 +323,87 @@ pytest -v
 
 ## Security Guidelines
 
+### ⚠️ CRITICAL: Row Level Security (RLS)
+
+**NEVER suggest or attempt to disable RLS (Row Level Security):**
+
+- RLS is a database security feature that MUST remain enabled at all times
+- Disabling RLS creates catastrophic security vulnerabilities
+- If queries fail due to RLS policies, FIX THE POLICIES or grant proper permissions
+- NEVER suggest "disable RLS" as a solution or workaround
+- NEVER include code that sets `row_security = OFF`
+- NEVER suggest using `DISABLE ROW LEVEL SECURITY` in SQL
+
+**Examples of FORBIDDEN suggestions:**
+```sql
+-- ❌ NEVER DO THIS
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+SET row_security = OFF;
+```
+
+**Correct approach when RLS issues occur:**
+```sql
+-- ✅ Fix the policy instead
+CREATE POLICY user_isolation ON users
+    USING (user_id = current_user_id());
+
+-- ✅ Or grant proper permissions
+GRANT ALL ON users TO authenticated;
+```
+
+**This rule applies to ALL database systems with RLS capabilities:**
+- PostgreSQL
+- Supabase
+- CockroachDB
+- Any RLS-capable database
+
+**Violation of this rule is a security incident and must be prevented.**
+
+---
+
+### ⚠️ CRITICAL: LLM Model Selection
+
+**NEVER change the LLM model specified for a use case without explicit user permission:**
+
+- If code specifies "use Claude Opus 4" - you use Claude Opus 4
+- If code specifies "use GPT-4" - you use GPT-4
+- If code specifies ANY model - DO NOT suggest alternatives without asking first
+- Model selection is an architectural decision, not a suggestion opportunity
+- The user chose that model for a reason - respect it
+
+**Examples of FORBIDDEN behavior:**
+```python
+# ❌ NEVER DO THIS - changing user's model choice
+# User specified: model="claude-opus-4"
+# You changed to: model="gpt-4-turbo"  # WRONG
+
+# ❌ NEVER suggest "GPT-4 would be better here" without permission
+# ❌ NEVER replace model strings in existing code
+```
+
+**Correct approach:**
+```python
+# ✅ Respect the user's model choice
+if model == "claude-opus-4":
+    # Use exactly what they specified
+    use_claude_opus_4()
+
+# ✅ If you think a different model would be better, ASK FIRST:
+# "I notice you're using Claude Opus 4 for this. Would you like me to
+#  consider GPT-4 Turbo instead for cost optimization?"
+```
+
+**This rule applies to:**
+- OpenRouter API calls
+- Anthropic API calls
+- OpenAI API calls
+- ANY LLM provider configuration
+- Model selection in prompts, configs, or code
+
+**Violation of this rule is a direct override of user intent and is unacceptable.**
+
+---
+
 ### Input Validation
 
 **Always validate user input:**

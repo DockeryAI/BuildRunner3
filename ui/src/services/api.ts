@@ -157,6 +157,38 @@ export const agentsAPI = {
   },
 };
 
+// Project API
+export const projectAPI = {
+  async listProjects(): Promise<any> {
+    const response = await api.get('/api/project/list');
+    return response.data;
+  },
+
+  async attachProject(projectPath: string, dryRun: boolean = false): Promise<any> {
+    const response = await api.post('/api/project/attach', {
+      project_path: projectPath,
+      dry_run: dryRun,
+    });
+    return response.data;
+  },
+
+  async initProject(projectName: string, projectRoot?: string): Promise<any> {
+    const response = await api.post('/api/project/init', {
+      project_name: projectName,
+      project_root: projectRoot,
+    });
+    return response.data;
+  },
+
+  async setAlias(projectPath: string, alias: string): Promise<any> {
+    const response = await api.post('/api/project/alias', {
+      project_path: projectPath,
+      alias: alias,
+    });
+    return response.data;
+  },
+};
+
 // Health check
 export const healthAPI = {
   async check(): Promise<{ status: string; service: string; version: string }> {

@@ -1053,15 +1053,19 @@ def quality_check(
                 console.print(f"  • {suggestion}")
 
         # Check quality gate
-        gate = QualityGate({'overall': threshold})
+        # Use default thresholds but override overall threshold if specified
+        thresholds = QualityGate.DEFAULT_THRESHOLDS.copy()
+        if threshold:
+            thresholds['overall'] = threshold
+        gate = QualityGate(thresholds)
         passed, failures = gate.check(metrics)
 
         if not passed:
             console.print(f"\n[red]❌ Quality gate FAILED (threshold: {threshold})[/red]")
             for failure in failures:
                 console.print(f"  • {failure}")
-            if strict:
-                raise typer.Exit(1)
+            # Always fail when quality gate fails, regardless of strict mode
+            raise typer.Exit(1)
         else:
             console.print(f"\n[green]✅ Quality gate PASSED[/green]")
 

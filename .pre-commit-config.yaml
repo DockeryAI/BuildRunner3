@@ -1,0 +1,123 @@
+# Pre-commit hooks for BuildRunner 3.2
+# Automated quality checks before commits
+
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+  # Python code formatting with Black
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        exclude: ^(migrations/|.git/|.tox/|docs/|tests/fixtures/)
+
+  # Python linting with Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        exclude: ^(migrations/|.git/|.tox/|docs/|tests/fixtures/)
+
+  # Type checking with MyPy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports, --no-strict-optional]
+        additional_dependencies:
+          - types-PyYAML
+          - types-requests
+        exclude: ^(migrations/|.git/|.tox/|docs/|tests/)
+
+  # Check YAML files
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: detect-private-key
+      - id: check-case-conflict
+      - id: check-docstring-first
+
+  # Security checks with Bandit
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: [-ll, --skip, "B101,B601,B602,B607"]
+        exclude: ^(tests/|.git/|.tox/|docs/)
+
+  # Check for secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: ^(.*\.lock|package-lock\.json|.*\.min\.js)$
+
+  # Python docstring coverage
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+      - id: interrogate
+        args: [-vv, --fail-under=50, --ignore-init-method, --ignore-init-module]
+        exclude: ^(tests/|migrations/|.git/)
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: [--fix, --disable, MD013, MD033]
+
+# Configuration
+default_language_version:
+  python: python3.11
+
+# Run hooks on these stages
+default_stages:
+  - commit
+  - push
+
+# Files to exclude globally
+exclude: |
+  (?x)^(
+    .*\.egg-info/.*|
+    \.git/.*|
+    \.mypy_cache/.*|
+    \.pytest_cache/.*|
+    \.ruff_cache/.*|
+    \.tox/.*|
+    \.venv/.*|
+    build/.*|
+    dist/.*|
+    node_modules/.*|
+    venv/.*|
+    __pycache__/.*|
+    .*\.pyc|
+    .*\.pyo|
+    .*\.pyd|
+    \.coverage|
+    htmlcov/.*
+  )$
+
+# Require minimum pre-commit version
+minimum_pre_commit_version: 3.0.0
+
+# Fail fast on first hook failure
+fail_fast: false
+
+# Show diff on failure
+show_diff_on_failure: true

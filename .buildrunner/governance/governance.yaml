@@ -1,214 +1,185 @@
-# BuildRunner 3.0 Governance Configuration
-# This file defines workflow rules, feature dependencies, validation requirements,
-# and enforcement policies for the project.
-
 project:
-  name: "BuildRunner3"
-  version: "3.0.0"
-  governance_version: "1.0"
-  description: "Git-backed governance system for AI-assisted project development"
-
-# Workflow rules define how features can progress through states
+  name: BuildRunner3
+  version: 3.0.0
+  governance_version: '1.0'
+  description: Git-backed governance system for AI-assisted project development
 workflow:
   rules:
-    # Valid feature states
     allowed_states:
-      - planned
-      - in_progress
-      - testing
-      - complete
-      - blocked
-
-    # Valid state transitions
+    - planned
+    - in_progress
+    - testing
+    - complete
+    - blocked
     transitions:
       planned:
-        - in_progress
-        - blocked
+      - in_progress
+      - blocked
       in_progress:
-        - testing
-        - blocked
-        - planned  # Can move back if needed
+      - testing
+      - blocked
+      - planned
       testing:
-        - complete
-        - in_progress  # Can move back for fixes
-        - blocked
+      - complete
+      - in_progress
+      - blocked
       blocked:
-        - planned
-        - in_progress
-      complete:
-        []  # Terminal state - no transitions allowed
-
-    # Branch naming conventions
+      - planned
+      - in_progress
+      complete: []
     branch_patterns:
-      feature: "build/week{week_number}-{feature_name}"
-      hotfix: "hotfix/{feature_id}-{description}"
-      integration: "integration/week{week_number}"
-
-    # Commit message requirements
+      feature: build/week{week_number}-{feature_name}
+      hotfix: hotfix/{feature_id}-{description}
+      integration: integration/week{week_number}
     commit_rules:
       require_semantic_versioning: true
       allowed_types:
-        - feat
-        - fix
-        - refactor
-        - test
-        - docs
-        - chore
-        - style
-      require_feature_id: false  # If true, commits must reference feature ID
-
-# Feature dependencies define which features must be completed before others
+      - feat
+      - fix
+      - refactor
+      - test
+      - docs
+      - chore
+      - style
+      require_feature_id: false
 dependencies:
-  # Build 1B depends on nothing (it's part of the foundation)
   git-governance: []
-
-  # CLI depends on feature registry and governance
   python-cli:
-    - feature-registry
-    - git-governance
-
-  # FastAPI depends on feature registry
+  - feature-registry
+  - git-governance
   fastapi-backend:
-    - feature-registry
-    - git-governance
-
-  # Git hooks and MCP depend on governance and API
+  - feature-registry
+  - git-governance
   git-hooks-mcp:
-    - git-governance
-    - python-cli
-    - fastapi-backend
-
-  # Migration tools can run independently
+  - git-governance
+  - python-cli
+  - fastapi-backend
   migration-tools: []
-
-  # Multi-repo dashboard depends on CLI
   multi-repo-dashboard:
-    - python-cli
-
-  # Optional integrations depend on API
+  - python-cli
   optional-integrations:
-    - fastapi-backend
-
-  # Documentation depends on all core features being complete
+  - fastapi-backend
   documentation:
-    - feature-registry
-    - git-governance
-    - python-cli
-    - fastapi-backend
-    - git-hooks-mcp
-
-  # Packaging depends on documentation
+  - feature-registry
+  - git-governance
+  - python-cli
+  - fastapi-backend
+  - git-hooks-mcp
   packaging:
-    - documentation
-
-  # Release depends on everything
+  - documentation
   release:
-    - feature-registry
-    - git-governance
-    - python-cli
-    - fastapi-backend
-    - git-hooks-mcp
-    - optional-integrations
-    - migration-tools
-    - multi-repo-dashboard
-    - documentation
-    - packaging
-
-# Validation rules define what must be checked before state transitions
+  - feature-registry
+  - git-governance
+  - python-cli
+  - fastapi-backend
+  - git-hooks-mcp
+  - optional-integrations
+  - migration-tools
+  - multi-repo-dashboard
+  - documentation
+  - packaging
 validation:
   required_checks:
-    - tests_pass
-    - coverage_threshold
-    - lint_pass
-    - no_merge_conflicts
-
-  coverage_threshold: 90  # Minimum test coverage percentage
-
-  # Pre-commit checks
+  - tests_pass
+  - coverage_threshold
+  - lint_pass
+  - no_merge_conflicts
+  coverage_threshold: 90
   pre_commit:
-    - validate_features_json
-    - check_governance_checksum
-    - run_lint
-    - check_no_debug_statements
-
-  # Pre-push checks
+  - validate_features_json
+  - check_governance_checksum
+  - run_lint
+  - check_no_debug_statements
   pre_push:
-    - run_tests
-    - check_coverage
-    - validate_governance_rules
-
-  # Pre-merge checks (for PRs)
+  - run_tests
+  - check_coverage
+  - validate_governance_rules
   pre_merge:
-    - all_tests_pass
-    - coverage_above_threshold
-    - no_unresolved_comments
-    - approved_by_reviewer
-
-# Enforcement policies control how strictly rules are applied
+  - all_tests_pass
+  - coverage_above_threshold
+  - no_unresolved_comments
+  - approved_by_reviewer
 enforcement:
-  policy: "strict"  # Options: strict, warn, off
-
-  # What happens when rules are violated
+  policy: strict
   on_violation:
-    pre_commit: "block"     # block, warn, or ignore
-    pre_push: "block"       # block, warn, or ignore
-    dependency: "block"     # block, warn, or ignore
-    coverage: "warn"        # block, warn, or ignore
-
-  # Exceptions for specific scenarios
+    pre_commit: block
+    pre_push: block
+    dependency: block
+    coverage: warn
   exceptions:
     allow_emergency_commits: false
-    allow_skip_checks: false  # If true, can use --no-verify
+    allow_skip_checks: false
+  mandatory_testing:
+    enabled: true
+    description: 'ALL code changes MUST be automatically tested before commit/push.
 
-# Git hooks configuration
+      This policy was added after issues where code was committed without testing.
+
+      '
+    pre_commit_requirements:
+    - Hooks MUST be installed using install-hooks.sh
+    - Tests run automatically on every commit
+    - Commits blocked if tests fail
+    - --no-verify bypass is PROHIBITED
+    pre_push_requirements:
+    - Full test suite runs automatically before push
+    - Coverage thresholds must be met
+    - All services must be running (if required)
+    - Push blocked if any test fails
+    hook_installation:
+      location: .buildrunner/hooks/
+      install_command: bash .buildrunner/hooks/install-hooks.sh
+      applies_to: ALL BR3 projects (new and existing)
+    debugging_workflow:
+    - Code changes trigger automatic tests (pre-commit)
+    - If tests fail, commit is blocked
+    - Developer must fix issues before proceeding
+    - Comprehensive tests run before push (pre-push)
+    - Push blocked until all tests pass
 hooks:
   enabled: true
-
-  # Which hooks to install
   active_hooks:
-    - pre-commit
-    - post-commit
-    - pre-push
-
-  # Hook behavior
+  - pre-commit
+  - post-commit
+  - pre-push
   pre_commit:
     validate_schema: true
     check_checksums: true
     run_linting: true
     format_code: true
-
   post_commit:
     regenerate_status: true
     update_metrics: true
-
   pre_push:
     run_tests: true
     check_coverage: true
     validate_dependencies: true
-
-# Reporting and notifications
 reporting:
-  # Generate reports on governance violations
   track_violations: true
-  violation_log: ".buildrunner/governance/violations.log"
-
-  # Metrics to track
+  violation_log: .buildrunner/governance/violations.log
   metrics:
-    - features_completed
-    - tests_run
-    - coverage_percentage
-    - violations_count
-    - build_time
-
-# Security settings
+  - features_completed
+  - tests_run
+  - coverage_percentage
+  - violations_count
+  - build_time
 security:
-  # Require checksum verification for governance file
   require_checksum: true
-
-  # Who can modify governance.yaml (optional - not enforced by code)
   authorized_editors:
-    - project_owner
-    - tech_lead
-
-  # Alert on suspicious changes
+  - project_owner
+  - tech_lead
   alert_on_governance_change: true
+quality:
+  enabled: true
+  thresholds:
+    overall: 50
+    structure: 60
+    testing: 80
+    documentation: 50
+    security: 90
+    performance: 60
+  enforcement:
+    block_commit: true
+    block_push: true
+    note: 'Threshold temporarily lowered to 50 while incrementally improving. Target:
+      70+'

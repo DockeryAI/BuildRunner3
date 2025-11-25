@@ -1,0 +1,94 @@
+{
+  "timestamp": "2025-11-24T16:48:54.209205",
+  "build_context": "fullstack",
+  "checks_run": [
+    {
+      "name": "imports",
+      "passed": false,
+      "duration_ms": 38.51580619812012,
+      "errors": [
+        "/Users/byronhudson/Projects/BuildRunner3/ui/src/App.tsx:0: Cannot resolve import: react-router-dom",
+        "/Users/byronhudson/Projects/BuildRunner3/ui/src/services/api.ts:0: Cannot resolve import: axios",
+        "/Users/byronhudson/Projects/BuildRunner3/ui/vite.config.ts:0: Cannot resolve import: vite",
+        "/Users/byronhudson/Projects/BuildRunner3/ui/vite.config.ts:0: Cannot resolve import: @vitejs/plugin-react"
+      ],
+      "warnings": [],
+      "info": [],
+      "skipped": false,
+      "skip_reason": ""
+    },
+    {
+      "name": "typescript_quick",
+      "passed": false,
+      "duration_ms": 46.39101028442383,
+      "errors": [],
+      "warnings": [],
+      "info": [
+        "Checked 0 files"
+      ],
+      "skipped": false,
+      "skip_reason": ""
+    },
+    {
+      "name": "syntax",
+      "passed": true,
+      "duration_ms": 58.14218521118164,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "skipped": false,
+      "skip_reason": ""
+    },
+    {
+      "name": "syntax",
+      "passed": true,
+      "duration_ms": 56.83088302612305,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "skipped": false,
+      "skip_reason": ""
+    }
+  ],
+  "overall_success": false,
+  "total_duration_ms": 81.74800872802734,
+  "critical_failures": [
+    {
+      "name": "imports",
+      "passed": false,
+      "duration_ms": 38.51580619812012,
+      "errors": [
+        "/Users/byronhudson/Projects/BuildRunner3/ui/src/App.tsx:0: Cannot resolve import: react-router-dom",
+        "/Users/byronhudson/Projects/BuildRunner3/ui/src/services/api.ts:0: Cannot resolve import: axios",
+        "/Users/byronhudson/Projects/BuildRunner3/ui/vite.config.ts:0: Cannot resolve import: vite",
+        "/Users/byronhudson/Projects/BuildRunner3/ui/vite.config.ts:0: Cannot resolve import: @vitejs/plugin-react"
+      ],
+      "warnings": [],
+      "info": [],
+      "skipped": false,
+      "skip_reason": ""
+    },
+    {
+      "name": "typescript_quick",
+      "passed": false,
+      "duration_ms": 46.39101028442383,
+      "errors": [],
+      "warnings": [],
+      "info": [
+        "Checked 0 files"
+      ],
+      "skipped": false,
+      "skip_reason": ""
+    }
+  ],
+  "suggestions": [
+    "Fix errors before committing"
+  ],
+  "metadata": {
+    "files_changed": 32,
+    "checks_run": 4,
+    "checks_skipped": 0,
+    "total_errors": 4,
+    "total_warnings": 0
+  }
+}

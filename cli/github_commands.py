@@ -202,6 +202,11 @@ def push_smart(
 
         # Do the push
         from core.github.git_client import GitClient
+        import os
+
+        # Set environment variable to signal pre-push hook that we're using br github push
+        os.environ['BR_GITHUB_PUSH'] = 'true'
+
         git = GitClient()
         current = git.current_branch()
 

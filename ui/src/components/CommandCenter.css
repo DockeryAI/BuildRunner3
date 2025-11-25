@@ -1,0 +1,347 @@
+/* CommandCenter Styles */
+
+.command-center {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(to bottom, #0a0e27, #161b3d);
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header {
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid #2563eb;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  margin-top: 5px;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+/* Quick Actions Section */
+.quick-actions {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-actions h3 {
+  margin: 0 0 15px 0;
+  color: #e0e0e0;
+  font-size: 1.1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-group {
+  display: flex;
+  gap: 10px;
+}
+
+.project-input {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.9rem;
+  width: 200px;
+}
+
+.project-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.action-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.init { border-left: 3px solid #10b981; }
+.action-btn.run { border-left: 3px solid #3b82f6; }
+.action-btn.status { border-left: 3px solid #8b5cf6; }
+.action-btn.tasks { border-left: 3px solid #f59e0b; }
+.action-btn.quality { border-left: 3px solid #22c55e; }
+.action-btn.agents { border-left: 3px solid #ec4899; }
+
+/* Planning Prompt Section */
+.planning-prompt {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  border-radius: 8px;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
+  to { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+}
+
+.planning-prompt h4 {
+  margin: 0 0 10px 0;
+  color: #60a5fa;
+  font-size: 1.2rem;
+}
+
+.planning-prompt p {
+  margin: 0 0 15px 0;
+  color: #d1d5db;
+  font-size: 0.95rem;
+}
+
+.plan-btn, .prd-btn {
+  margin-right: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  font-weight: 600;
+}
+
+.plan-btn:hover, .prd-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+}
+
+/* Terminal Container */
+.terminal-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 20px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.terminal-header {
+  padding: 12px 16px;
+  background: #2d2d2d;
+  border-bottom: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.path {
+  color: #6b7280;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+
+.terminal-output {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  font-family: 'Cascadia Code', 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.command-result {
+  margin-bottom: 20px;
+}
+
+.command-line {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.prompt {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.command-text {
+  color: #60a5fa;
+}
+
+.output {
+  margin: 8px 0;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+  color: #d1d5db;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.error {
+  margin: 8px 0;
+  padding: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid #ef4444;
+  border-radius: 4px;
+  color: #fca5a5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fbbf24;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Terminal Input */
+.terminal-input {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #2d2d2d;
+  border-top: 1px solid #444;
+  align-items: center;
+}
+
+.command-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: white;
+  font-family: 'Cascadia Code', 'Courier New', monospace;
+  font-size: 0.9rem;
+}
+
+.command-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.command-input::placeholder {
+  color: #6b7280;
+}
+
+.submit-btn {
+  padding: 8px 20px;
+  background: #3b82f6;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Help Section */
+.help-section {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.help-section h3 {
+  margin: 0 0 15px 0;
+  color: #e0e0e0;
+  font-size: 1.1rem;
+}
+
+.command-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+}
+
+.command-item {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.command-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.command-item code {
+  color: #60a5fa;
+  font-weight: 500;
+  font-family: 'Cascadia Code', 'Courier New', monospace;
+}
+
+/* Scrollbar Styling */
+.terminal-output::-webkit-scrollbar {
+  width: 10px;
+}
+
+.terminal-output::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.terminal-output::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 5px;
+}
+
+.terminal-output::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+}

@@ -24,10 +24,10 @@ def init_temp_project(project_root: Path):
         "status": "development",
         "features": [],
         "metrics": {
-            "total": 0,
-            "completed": 0,
-            "in_progress": 0,
-            "planned": 0
+            "features_complete": 0,
+            "features_in_progress": 0,
+            "features_planned": 0,
+            "completion_percentage": 0
         }
     }
 
@@ -199,7 +199,7 @@ class TestFeatureList:
         # Add several features
         mcp_server.feature_add(name="Feature 1", status="planned")
         mcp_server.feature_add(name="Feature 2", status="in_progress")
-        mcp_server.feature_add(name="Feature 3", status="completed")
+        mcp_server.feature_add(name="Feature 3", status="complete")
 
         response = mcp_server.feature_list()
 
@@ -346,7 +346,7 @@ class TestStatusGet:
         # Add some features
         mcp_server.feature_add(name="F1", status="planned")
         mcp_server.feature_add(name="F2", status="in_progress")
-        mcp_server.feature_add(name="F3", status="completed")
+        mcp_server.feature_add(name="F3", status="complete")
 
         response = mcp_server.status_get()
 
@@ -354,10 +354,10 @@ class TestStatusGet:
         metrics = response['result']['metrics']
 
         # Metrics should be auto-calculated
-        assert 'total' in metrics
-        assert 'completed' in metrics
-        assert 'in_progress' in metrics
-        assert 'planned' in metrics
+        assert 'completion_percentage' in metrics
+        assert 'features_complete' in metrics
+        assert 'features_in_progress' in metrics
+        assert 'features_planned' in metrics
 
 
 class TestStatusGenerate:
@@ -438,10 +438,23 @@ class TestGovernanceValidate:
 
     def test_governance_validate_with_valid_config(self, mcp_server, temp_project_dir):
         """Test validating with valid governance config."""
-        # Create valid governance.yaml
-        gov_file = temp_project_dir / ".buildrunner" / "governance.yaml"
+        # Create valid governance.yaml in the correct location
+        gov_dir = temp_project_dir / ".buildrunner" / "governance"
+        gov_dir.mkdir(parents=True, exist_ok=True)
+        gov_file = gov_dir / "governance.yaml"
         gov_content = """
 version: '1.0'
+project:
+  name: Test Project
+workflow:
+  rules:
+    - pre_commit
+    - pre_push
+validation:
+  enabled: true
+  required_checks:
+    - quality
+    - tests
 quality:
   min_test_coverage: 80
   max_complexity: 15
@@ -545,9 +558,9 @@ class TestE2EWorkflow:
 
         assert status_response['success'] is True
         metrics = status_response['result']['metrics']
-        assert metrics['completed'] == 1
-        assert metrics['in_progress'] == 0
-        assert metrics['planned'] == 0
+        assert metrics['features_complete'] == 1
+        assert metrics['features_in_progress'] == 0
+        assert metrics['features_planned'] == 0
 
     def test_multi_feature_workflow(self, mcp_server):
         """Test workflow with multiple features."""
@@ -800,4 +813,5 @@ class TestEdgeCases:
 
         # Metrics should show all zeros
         metrics = response['result']['metrics']
-        assert metrics['total'] == 0
+        assert metrics['features_complete'] == 0
+        assert metrics['completion_percentage'] == 0

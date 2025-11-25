@@ -20,7 +20,7 @@ class StatusGenerator:
         """
         self.project_root = Path(project_root)
         self.features_file = self.project_root / ".buildrunner" / "features.json"
-        self.status_file = self.project_root / ".buildrunner" / "STATUS.md"
+        self.status_file = self.project_root / "STATUS.md"
 
     def generate(self) -> str:
         """Generate STATUS.md content

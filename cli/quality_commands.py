@@ -176,34 +176,166 @@ def show_score():
         raise typer.Exit(1)
 
 
+@quality_app.command("lint")
+def lint_check(
+    fix: bool = typer.Option(False, "--fix", help="Auto-fix issues where possible"),
+    paths: Optional[str] = typer.Argument(None, help="Paths to check (default: all)")
+):
+    """
+    Run Ruff linter on the codebase
+
+    Example:
+        br quality lint
+        br quality lint --fix
+        br quality lint core/
+    """
+    import subprocess
+
+    try:
+        console.print("\n[bold blue]🧹 Running Ruff Linter...[/bold blue]\n")
+
+        # Default paths if not specified
+        if not paths:
+            paths = "."
+
+        # Build command
+        cmd = ["ruff", "check"]
+        if fix:
+            cmd.append("--fix")
+        cmd.append(paths)
+
+        # Run Ruff
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            console.print("[green]✓ No linting issues found[/green]\n")
+        else:
+            console.print("[yellow]⚠ Linting issues found:[/yellow]\n")
+            if result.stdout:
+                console.print(result.stdout)
+            raise typer.Exit(1)
+
+    except subprocess.CalledProcessError as e:
+        console.print(f"[red]❌ Ruff failed: {e}[/red]")
+        raise typer.Exit(1)
+    except FileNotFoundError:
+        console.print("[red]❌ Ruff not installed. Install with: pip install ruff[/red]")
+        raise typer.Exit(1)
+
+
+@quality_app.command("typecheck")
+def type_check(
+    strict: bool = typer.Option(False, "--strict", help="Enable strict type checking"),
+    paths: Optional[str] = typer.Argument(None, help="Paths to check (default: all)")
+):
+    """
+    Run MyPy type checker
+
+    Example:
+        br quality typecheck
+        br quality typecheck --strict
+        br quality typecheck core/
+    """
+    import subprocess
+
+    try:
+        console.print("\n[bold blue]🎯 Running MyPy Type Checker...[/bold blue]\n")
+
+        # Default paths if not specified
+        if not paths:
+            paths = "."
+
+        # Build command
+        cmd = ["mypy"]
+        if strict:
+            cmd.append("--strict")
+        cmd.append(paths)
+
+        # Run MyPy
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            console.print("[green]✓ No type errors found[/green]\n")
+        else:
+            console.print("[yellow]⚠ Type errors found:[/yellow]\n")
+            if result.stdout:
+                # Parse and display MyPy output nicely
+                for line in result.stdout.splitlines():
+                    if "error:" in line:
+                        console.print(f"[red]{line}[/red]")
+                    elif "note:" in line:
+                        console.print(f"[dim]{line}[/dim]")
+                    else:
+                        console.print(line)
+            raise typer.Exit(1)
+
+    except subprocess.CalledProcessError as e:
+        console.print(f"[red]❌ MyPy failed: {e}[/red]")
+        raise typer.Exit(1)
+    except FileNotFoundError:
+        console.print("[red]❌ MyPy not installed. Install with: pip install mypy[/red]")
+        raise typer.Exit(1)
+
+
 @quality_app.command("fix")
 def auto_fix(
     dry_run: bool = typer.Option(True, "--dry-run/--apply", help="Preview changes without applying")
 ):
     """
-    Auto-fix formatting issues (if available)
+    Auto-fix formatting and linting issues
 
-    Note: Currently shows what would be fixed. Future versions will apply fixes.
+    Uses Black for formatting and Ruff for linting fixes.
 
     Example:
         br quality fix --dry-run
         br quality fix --apply
     """
+    import subprocess
+
     try:
         console.print("\n[bold blue]🔧 Auto-Fix Quality Issues...[/bold blue]\n")
 
         if dry_run:
             console.print("[yellow]DRY RUN MODE - No changes will be made[/yellow]\n")
 
-        console.print("[dim]Auto-fix functionality coming soon![/dim]")
-        console.print("[dim]Currently available formatters:[/dim]")
-        console.print("  • Black (Python formatting)")
-        console.print("  • Ruff (Python linting)")
-        console.print()
-        console.print("[dim]Run manually:[/dim]")
-        console.print("  black .")
-        console.print("  ruff check --fix .\n")
+        # Run Black
+        console.print("[cyan]Running Black formatter...[/cyan]")
+        black_cmd = ["black", "--check" if dry_run else "", "."]
+        black_cmd = [arg for arg in black_cmd if arg]  # Remove empty strings
+        result = subprocess.run(black_cmd, capture_output=True, text=True)
 
+        if result.returncode == 0:
+            if dry_run:
+                console.print("[green]✓ Code is already formatted[/green]")
+            else:
+                console.print("[green]✓ Code formatted successfully[/green]")
+        else:
+            if dry_run:
+                console.print("[yellow]⚠ Files would be reformatted[/yellow]")
+            else:
+                console.print("[green]✓ Files reformatted[/green]")
+
+        # Run Ruff
+        console.print("\n[cyan]Running Ruff linter...[/cyan]")
+        ruff_cmd = ["ruff", "check", "--fix" if not dry_run else "", "."]
+        ruff_cmd = [arg for arg in ruff_cmd if arg]  # Remove empty strings
+        result = subprocess.run(ruff_cmd, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            console.print("[green]✓ No linting issues found[/green]")
+        else:
+            if dry_run:
+                console.print("[yellow]⚠ Issues found that can be fixed[/yellow]")
+                if result.stdout:
+                    console.print(result.stdout)
+            else:
+                console.print("[green]✓ Fixed linting issues[/green]")
+
+        console.print()
+
+    except subprocess.CalledProcessError as e:
+        console.print(f"[red]❌ Command failed: {e}[/red]")
+        raise typer.Exit(1)
     except Exception as e:
         console.print(f"[red]❌ Error during auto-fix: {e}[/red]")
         raise typer.Exit(1)

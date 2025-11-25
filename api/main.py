@@ -29,6 +29,8 @@ from api.test_runner import get_test_runner
 from api.error_watcher import get_error_watcher
 from api.supabase_client import get_supabase_client
 from api.routes.analytics import router as analytics_router
+from api.routes.build import router as build_router
+from api.websocket_handler import router as websocket_router
 
 
 # Project root - because assumptions are fun
@@ -88,6 +90,8 @@ app.add_middleware(
 
 # Include route routers
 app.include_router(analytics_router)
+app.include_router(build_router)
+app.include_router(websocket_router)
 
 
 # Request logging middleware

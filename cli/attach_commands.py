@@ -19,6 +19,7 @@ from core.prd.prd_controller import get_prd_controller
 from core.project_registry import get_project_registry
 from core.shell_integration import get_shell_integration
 from core.design_extractor import DesignExtractor
+from core.enforcement_engine import ConfigGenerator
 
 # Optional import - ClaudeMdGenerator may not exist yet
 try:
@@ -333,6 +334,25 @@ TODO: Document features
 
     # Show design system results
     _show_design_system(design_system)
+
+    # Phase 1.75: Auto-Generate Required Configs (ENFORCEMENT)
+    if not dry_run:
+        console.print()
+        console.print("[bold]🔧 Generating Required BR3 Configs (Enforcement)[/bold]")
+        console.print()
+
+        config_generator = ConfigGenerator(directory)
+        generated = config_generator.generate_all()
+
+        if generated:
+            for item in generated:
+                console.print(f"  ✅ Generated: {item}")
+            console.print()
+            console.print("[green]All required configs auto-generated![/green]")
+        else:
+            console.print("[dim]All configs already exist[/dim]")
+
+        console.print()
 
     # Phase 2: Extract Features
     with Progress(

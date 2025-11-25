@@ -70,6 +70,7 @@ class TaskOrchestrator:
         enable_telemetry: bool = True,
         enable_routing: bool = True,
         enable_parallel: bool = True,
+        enable_autodebug: bool = True,
         max_concurrent_sessions: int = 4,
         project_root: Optional[Path] = None,
         continuous_mode: bool = True,
@@ -103,6 +104,12 @@ class TaskOrchestrator:
         self.phase_manager = None
         if project_root:
             self.phase_manager = PhaseManager(project_root, continuous_mode=continuous_mode)
+
+        # Auto-debug pipeline
+        self.autodebug_pipeline = None
+        if enable_autodebug and project_root:
+            from core.auto_debug import AutoDebugPipeline
+            self.autodebug_pipeline = AutoDebugPipeline(project_root)
 
         # Integrate telemetry
         if enable_telemetry:
@@ -180,6 +187,35 @@ class TaskOrchestrator:
                         break
                 else:
                     self.completed_batches.append(batch)
+
+                    # Run auto-debug after successful batch
+                    if self.autodebug_pipeline:
+                        try:
+                            autodebug_report = self.autodebug_pipeline.run(skip_deep=False)
+                            # Emit autodebug event if telemetry is enabled
+                            if self.event_collector:
+                                from core.telemetry import EventType
+                                self.event_collector.emit(
+                                    EventType.SYSTEM_EVENT,
+                                    message="Auto-debug completed",
+                                    metadata={
+                                        "overall_success": autodebug_report.overall_success,
+                                        "checks_run": len(autodebug_report.checks_run),
+                                        "critical_failures": len(autodebug_report.critical_failures),
+                                        "duration_ms": autodebug_report.total_duration_ms,
+                                    }
+                                )
+                            # Save report
+                            self.autodebug_pipeline.save_report(autodebug_report)
+                        except Exception as e:
+                            # Don't fail the build if auto-debug fails
+                            if self.event_collector:
+                                from core.telemetry import EventType
+                                self.event_collector.emit(
+                                    EventType.ERROR,
+                                    message=f"Auto-debug failed: {str(e)}",
+                                    metadata={"error": str(e)}
+                                )
 
             self.status = OrchestrationStatus.COMPLETED
 

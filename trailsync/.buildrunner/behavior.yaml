@@ -1,0 +1,4 @@
+debug:
+  auto_retry: true
+cli:
+  use_rich: true
