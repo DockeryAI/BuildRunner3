@@ -976,12 +976,14 @@ class AutoDebugPipeline:
             if gaps.incomplete_features:
                 warnings.extend([f"Incomplete feature: {f.get('name', 'Unknown')}" for f in gaps.incomplete_features[:5]])
 
-            # Consider passing if only low-severity gaps
-            passed = gaps.severity_high == 0
+            # Pass unless there are missing or incomplete features
+            # Circular deps and other gap types are informational for now
+            has_feature_gaps = len(gaps.missing_features) > 0 or len(gaps.incomplete_features) > 0
+            passed = not has_feature_gaps
 
             errors = []
-            if gaps.severity_high > 0:
-                errors.append(f"{gaps.severity_high} high-severity gaps detected")
+            if has_feature_gaps:
+                errors.append(f"Missing/incomplete features: {len(gaps.missing_features)} missing, {len(gaps.incomplete_features)} incomplete")
 
             return CheckResult(
                 name="gap_analysis",
