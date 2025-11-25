@@ -1,6 +1,7 @@
 """
 Tests for Code Smell Detector
 """
+
 import pytest
 import ast
 from pathlib import Path
@@ -29,9 +30,9 @@ class TestCodeSmellDetector:
         smells = detector.detect_long_methods(tree, code)
 
         assert len(smells) == 1
-        assert smells[0].smell_type == 'long_method'
-        assert smells[0].severity in ['medium', 'high']
-        assert 'long_method' in smells[0].location
+        assert smells[0].smell_type == "long_method"
+        assert smells[0].severity in ["medium", "high"]
+        assert "long_method" in smells[0].location
 
     def test_detect_very_long_method(self, detector):
         """Test detection of very long methods (high severity)"""
@@ -42,7 +43,7 @@ class TestCodeSmellDetector:
         smells = detector.detect_long_methods(tree, code)
 
         assert len(smells) == 1
-        assert smells[0].severity == 'high'
+        assert smells[0].severity == "high"
 
     def test_no_long_method(self, detector):
         """Test short methods are not flagged"""
@@ -67,8 +68,8 @@ def many_params(a, b, c, d, e, f, g):
         smells = detector.detect_long_parameter_lists(tree)
 
         assert len(smells) == 1
-        assert smells[0].smell_type == 'long_parameter_list'
-        assert smells[0].severity in ['medium', 'high']
+        assert smells[0].smell_type == "long_parameter_list"
+        assert smells[0].severity in ["medium", "high"]
 
     def test_detect_long_parameter_list_exclude_self(self, detector):
         """Test that self/cls parameters are excluded from count"""
@@ -112,7 +113,7 @@ def calculate(x):
         # 3.14159 is magic, 42 is magic (not in allowed list)
         # Detection deduplicates by line, so we get 2 separate detections
         assert len(smells) == 2
-        assert all(s.smell_type == 'magic_number' for s in smells)
+        assert all(s.smell_type == "magic_number" for s in smells)
 
     def test_magic_numbers_allowed(self, detector):
         """Test that common numbers are not flagged"""
@@ -156,9 +157,9 @@ def process():
 
         smells = detector.detect_dead_code(tree, code)
 
-        unused_smells = [s for s in smells if s.smell_type == 'unused_variable']
+        unused_smells = [s for s in smells if s.smell_type == "unused_variable"]
         assert len(unused_smells) == 1
-        assert 'unused_var' in unused_smells[0].location
+        assert "unused_var" in unused_smells[0].location
 
     def test_unused_variable_underscore_prefix(self, detector):
         """Test that variables with _ prefix are not flagged"""
@@ -172,7 +173,7 @@ def process():
         smells = detector.detect_dead_code(tree, code)
 
         # Private variables should not be flagged
-        unused_smells = [s for s in smells if 'private' in s.location]
+        unused_smells = [s for s in smells if "private" in s.location]
         assert len(unused_smells) == 0
 
     def test_detect_unused_import(self, detector):
@@ -188,9 +189,9 @@ def main():
 
         smells = detector.detect_dead_code(tree, code)
 
-        unused_imports = [s for s in smells if s.smell_type == 'unused_import']
+        unused_imports = [s for s in smells if s.smell_type == "unused_import"]
         assert len(unused_imports) == 1
-        assert 'os' in unused_imports[0].location
+        assert "os" in unused_imports[0].location
 
     def test_detect_god_class(self, detector):
         """Test detection of god classes"""
@@ -202,8 +203,8 @@ def main():
         smells = detector.detect_god_classes(tree)
 
         assert len(smells) == 1
-        assert smells[0].smell_type == 'god_class'
-        assert smells[0].severity in ['medium', 'high']
+        assert smells[0].smell_type == "god_class"
+        assert smells[0].severity in ["medium", "high"]
         assert smells[0].metric_value == 25
 
     def test_no_god_class(self, detector):
@@ -241,8 +242,8 @@ def deeply_nested():
         smells = detector.detect_deep_nesting(tree)
 
         assert len(smells) == 1
-        assert smells[0].smell_type == 'deep_nesting'
-        assert smells[0].severity in ['medium', 'high']
+        assert smells[0].smell_type == "deep_nesting"
+        assert smells[0].severity in ["medium", "high"]
 
     def test_no_deep_nesting(self, detector):
         """Test normal nesting is not flagged"""
@@ -272,7 +273,7 @@ def process():
         smells = detector.detect_commented_code(code)
 
         assert len(smells) >= 2  # At least 2 commented code lines
-        assert all(s.smell_type == 'commented_code' for s in smells)
+        assert all(s.smell_type == "commented_code" for s in smells)
 
     def test_normal_comments_not_flagged(self, detector):
         """Test that normal comments are not flagged"""
@@ -297,18 +298,10 @@ def process():
 
     def test_calculate_smell_score_with_issues(self, detector):
         """Test smell score with various issues"""
-        long_methods = [
-            CodeSmell('long_method', 'test', 'high', 'Test', 'Test', 100)
-        ]
-        long_params = [
-            CodeSmell('long_parameter_list', 'test', 'medium', 'Test', 'Test', 8)
-        ]
-        magic_numbers = [
-            CodeSmell('magic_number', 'test', 'low', 'Test', 'Test')
-        ]
-        dead_code = [
-            CodeSmell('unused_variable', 'test', 'low', 'Test', 'Test')
-        ]
+        long_methods = [CodeSmell("long_method", "test", "high", "Test", "Test", 100)]
+        long_params = [CodeSmell("long_parameter_list", "test", "medium", "Test", "Test", 8)]
+        magic_numbers = [CodeSmell("magic_number", "test", "low", "Test", "Test")]
+        dead_code = [CodeSmell("unused_variable", "test", "low", "Test", "Test")]
 
         score = detector.calculate_smell_score(
             long_methods, long_params, magic_numbers, dead_code, [], [], []
@@ -319,46 +312,48 @@ def process():
 
     def test_generate_recommendations_with_smells(self, detector):
         """Test recommendation generation with various smells"""
-        long_methods = [CodeSmell('long_method', 'test', 'high', 'Test', 'Test')]
-        long_params = [CodeSmell('long_parameter_list', 'test', 'medium', 'Test', 'Test')]
+        long_methods = [CodeSmell("long_method", "test", "high", "Test", "Test")]
+        long_params = [CodeSmell("long_parameter_list", "test", "medium", "Test", "Test")]
 
         recommendations = detector.generate_recommendations(
             long_methods, long_params, [], [], [], [], []
         )
 
         assert len(recommendations) >= 2
-        assert any('Refactor' in r and 'long method' in r for r in recommendations)
-        assert any('parameter count' in r for r in recommendations)
+        assert any("Refactor" in r and "long method" in r for r in recommendations)
+        assert any("parameter count" in r for r in recommendations)
 
     def test_generate_recommendations_clean_code(self, detector):
         """Test recommendations for clean code"""
         recommendations = detector.generate_recommendations([], [], [], [], [], [], [])
 
         assert len(recommendations) == 1
-        assert 'clean' in recommendations[0].lower()
+        assert "clean" in recommendations[0].lower()
 
     def test_analyze_file_success(self, detector, tmp_path):
         """Test full file analysis"""
         test_file = tmp_path / "test_smells.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 def simple_function():
     magic = 999
     unused = 42
     return magic
-""")
+"""
+        )
 
         result = detector.analyze_file(str(test_file))
 
-        assert 'long_methods' in result
-        assert 'long_parameter_lists' in result
-        assert 'magic_numbers' in result
-        assert 'dead_code' in result
-        assert 'god_classes' in result
-        assert 'deep_nesting' in result
-        assert 'commented_code' in result
-        assert 'smell_score' in result
-        assert 'recommendations' in result
-        assert 0 <= result['smell_score'] <= 100
+        assert "long_methods" in result
+        assert "long_parameter_lists" in result
+        assert "magic_numbers" in result
+        assert "dead_code" in result
+        assert "god_classes" in result
+        assert "deep_nesting" in result
+        assert "commented_code" in result
+        assert "smell_score" in result
+        assert "recommendations" in result
+        assert 0 <= result["smell_score"] <= 100
 
     def test_analyze_file_not_found(self, detector):
         """Test analysis of non-existent file"""
@@ -373,8 +368,8 @@ def simple_function():
         result = detector.analyze_file(str(test_file))
 
         # Should return error result
-        assert result['smell_score'] == 0
-        assert 'Syntax error' in result['recommendations'][0]
+        assert result["smell_score"] == 0
+        assert "Syntax error" in result["recommendations"][0]
 
     def test_is_constant_definition(self, detector):
         """Test constant definition detection"""
@@ -427,7 +422,8 @@ def complex():
     def test_multiple_smells_in_file(self, detector, tmp_path):
         """Test file with multiple code smells"""
         test_file = tmp_path / "smelly_code.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 import unused_module
 
 def long_params(a, b, c, d, e, f, g, h):
@@ -441,13 +437,14 @@ def long_params(a, b, c, d, e, f, g, h):
                         print("too deep")
     # old_code = "removed"
     return magic
-""")
+"""
+        )
 
         result = detector.analyze_file(str(test_file))
 
         # Should detect multiple types of smells
-        assert len(result['long_parameter_lists']) > 0
-        assert len(result['magic_numbers']) > 0
-        assert len(result['dead_code']) > 0
-        assert len(result['deep_nesting']) > 0
-        assert result['smell_score'] < 100
+        assert len(result["long_parameter_lists"]) > 0
+        assert len(result["magic_numbers"]) > 0
+        assert len(result["dead_code"]) > 0
+        assert len(result["deep_nesting"]) > 0
+        assert result["smell_score"] < 100

@@ -55,7 +55,9 @@ class TestQuickPRDModeCLAUDETemplate:
 
         # Verify brainstorming limits
         assert "3-5" in template, "Should mention 3-5 suggestion limit"
-        assert "not 10+" in template or "NOT 20+" in template, "Should emphasize limited suggestions"
+        assert (
+            "not 10+" in template or "NOT 20+" in template
+        ), "Should emphasize limited suggestions"
 
     def test_quick_mode_has_auto_build_trigger(self):
         """Test that Quick Mode includes auto-build trigger after section 4."""
@@ -63,7 +65,9 @@ class TestQuickPRDModeCLAUDETemplate:
 
         # Verify auto-build trigger
         assert "br build start" in template, "Should mention br build start command"
-        assert "Ready to start building?" in template or "Ready to build?" in template, "Should ask if ready to build"
+        assert (
+            "Ready to start building?" in template or "Ready to build?" in template
+        ), "Should ask if ready to build"
         assert "🚀 Yes - Start building now" in template, "Should have build now option"
 
     def test_technical_mode_still_available(self):
@@ -71,7 +75,9 @@ class TestQuickPRDModeCLAUDETemplate:
         template = self.get_claude_template_content()
 
         # Verify Technical Mode exists
-        assert "Technical Mode" in template or "TECHNICAL MODE" in template, "Should have Technical Mode"
+        assert (
+            "Technical Mode" in template or "TECHNICAL MODE" in template
+        ), "Should have Technical Mode"
         assert "11 sections" in template, "Should mention 11 sections"
 
     def test_mode_selection_has_all_options(self):
@@ -94,8 +100,10 @@ class TestQuickPRDModeCLAUDETemplate:
         # Verify it's associated with Quick Mode
         quick_section_start = template.find("Quick Mode")
         if quick_section_start != -1:
-            quick_section = template[quick_section_start:quick_section_start + 200]
-            assert "(Default)" in quick_section or "DEFAULT" in quick_section, "Default should be near Quick Mode"
+            quick_section = template[quick_section_start : quick_section_start + 200]
+            assert (
+                "(Default)" in quick_section or "DEFAULT" in quick_section
+            ), "Default should be near Quick Mode"
 
     def test_quick_mode_feature_limit(self):
         """Test that Quick Mode limits features to 5-7 MVP features."""
@@ -110,7 +118,9 @@ class TestQuickPRDModeCLAUDETemplate:
         template = self.get_claude_template_content()
 
         # Verify upgrade options
-        assert "Add more sections" in template or "Expand to Technical" in template, "Should allow adding sections"
+        assert (
+            "Add more sections" in template or "Expand to Technical" in template
+        ), "Should allow adding sections"
 
     def test_mode_configurations_section_updated(self):
         """Test that MODE CONFIGURATIONS section includes Quick Mode."""
@@ -155,7 +165,7 @@ class TestQuickPRDModeAcceptanceCriteria:
         # Should have 4 sections
         quick_section_start = template.find("QUICK MODE")
         if quick_section_start != -1:
-            quick_section = template[quick_section_start:quick_section_start + 1000]
+            quick_section = template[quick_section_start : quick_section_start + 1000]
             assert "4 sections" in quick_section, "Should specify 4 sections"
 
     def test_acceptance_auto_build_confirmation(self):

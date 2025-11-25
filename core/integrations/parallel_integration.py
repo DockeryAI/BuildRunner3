@@ -62,9 +62,9 @@ def integrate_parallel(
     orchestrator.dashboard = dashboard
 
     return {
-        'session_manager': session_manager,
-        'worker_coordinator': worker_coordinator,
-        'dashboard': dashboard,
+        "session_manager": session_manager,
+        "worker_coordinator": worker_coordinator,
+        "dashboard": dashboard,
     }
 
 
@@ -149,31 +149,33 @@ def coordinate_parallel_execution(
     session = create_parallel_session(
         session_manager,
         session_name=session_name,
-        metadata={'task_count': len(tasks)},
+        metadata={"task_count": len(tasks)},
     )
 
     # Assign tasks to workers
     assigned_workers = []
     for task in tasks:
-        task_id = task.get('id', str(uuid.uuid4()))
+        task_id = task.get("id", str(uuid.uuid4()))
         worker = assign_task_to_worker(
             worker_coordinator,
             task_id=task_id,
             task_data=task,
             session_id=session.session_id,
         )
-        assigned_workers.append({
-            'task_id': task_id,
-            'worker_id': worker.worker_id,
-            'worker_status': worker.status.value,
-        })
+        assigned_workers.append(
+            {
+                "task_id": task_id,
+                "worker_id": worker.worker_id,
+                "worker_status": worker.status.value,
+            }
+        )
 
     return {
-        'session_id': session.session_id,
-        'session_name': session.name,
-        'task_count': len(tasks),
-        'workers': assigned_workers,
-        'status': session.status.value,
+        "session_id": session.session_id,
+        "session_name": session.name,
+        "task_count": len(tasks),
+        "workers": assigned_workers,
+        "status": session.status.value,
     }
 
 
@@ -195,17 +197,17 @@ def get_session_status(
 
     if not session:
         return {
-            'found': False,
-            'session_id': session_id,
+            "found": False,
+            "session_id": session_id,
         }
 
     return {
-        'found': True,
-        'session_id': session.session_id,
-        'name': session.name,
-        'status': session.status.value,
-        'created_at': session.created_at.isoformat() if hasattr(session, 'created_at') else None,
-        'metadata': session.metadata if hasattr(session, 'metadata') else {},
+        "found": True,
+        "session_id": session.session_id,
+        "name": session.name,
+        "status": session.status.value,
+        "created_at": session.created_at.isoformat() if hasattr(session, "created_at") else None,
+        "metadata": session.metadata if hasattr(session, "metadata") else {},
     }
 
 
@@ -227,16 +229,16 @@ def get_worker_status(
 
     if not worker:
         return {
-            'found': False,
-            'worker_id': worker_id,
+            "found": False,
+            "worker_id": worker_id,
         }
 
     return {
-        'found': True,
-        'worker_id': worker.worker_id,
-        'status': worker.status.value,
-        'current_task': worker.current_task_id if hasattr(worker, 'current_task_id') else None,
-        'tasks_completed': worker.tasks_completed if hasattr(worker, 'tasks_completed') else 0,
+        "found": True,
+        "worker_id": worker.worker_id,
+        "status": worker.status.value,
+        "current_task": worker.current_task_id if hasattr(worker, "current_task_id") else None,
+        "tasks_completed": worker.tasks_completed if hasattr(worker, "tasks_completed") else 0,
     }
 
 
@@ -261,23 +263,23 @@ def get_parallel_summary(
     active_workers = [w for w in workers if w.status == WorkerStatus.BUSY]
 
     return {
-        'total_sessions': len(sessions),
-        'active_sessions': len(active_sessions),
-        'total_workers': len(workers),
-        'active_workers': len(active_workers),
-        'idle_workers': len([w for w in workers if w.status == WorkerStatus.IDLE]),
-        'sessions': [
+        "total_sessions": len(sessions),
+        "active_sessions": len(active_sessions),
+        "total_workers": len(workers),
+        "active_workers": len(active_workers),
+        "idle_workers": len([w for w in workers if w.status == WorkerStatus.IDLE]),
+        "sessions": [
             {
-                'session_id': s.session_id,
-                'name': s.name,
-                'status': s.status.value,
+                "session_id": s.session_id,
+                "name": s.name,
+                "status": s.status.value,
             }
             for s in sessions
         ],
-        'workers': [
+        "workers": [
             {
-                'worker_id': w.worker_id,
-                'status': w.status.value,
+                "worker_id": w.worker_id,
+                "status": w.status.value,
             }
             for w in workers
         ],
@@ -307,14 +309,14 @@ def wait_for_session_completion(
     while True:
         status = get_session_status(session_manager, session_id)
 
-        if not status['found']:
+        if not status["found"]:
             return False, status
 
-        if status['status'] in ['completed', 'failed', 'cancelled']:
+        if status["status"] in ["completed", "failed", "cancelled"]:
             return True, status
 
         if timeout_seconds and (time.time() - start_time) > timeout_seconds:
-            return False, {**status, 'timeout': True}
+            return False, {**status, "timeout": True}
 
         time.sleep(1)
 
@@ -339,8 +341,8 @@ def cancel_session(
     session = session_manager.get_session(session_id)
     if not session:
         return {
-            'success': False,
-            'error': f'Session {session_id} not found',
+            "success": False,
+            "error": f"Session {session_id} not found",
         }
 
     session_manager.cancel_session(session_id)
@@ -354,7 +356,7 @@ def cancel_session(
         stopped_workers.append(worker.worker_id)
 
     return {
-        'success': True,
-        'session_id': session_id,
-        'workers_stopped': len(stopped_workers),
+        "success": True,
+        "session_id": session_id,
+        "workers_stopped": len(stopped_workers),
     }

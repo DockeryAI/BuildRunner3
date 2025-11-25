@@ -19,6 +19,7 @@ from .health import AgentHealthMonitor, HealthStatus
 
 class LoadBalancingStrategy(str, Enum):
     """Load balancing strategy types"""
+
     ROUND_ROBIN = "round_robin"
     LEAST_CONNECTIONS = "least_connections"
     WEIGHTED = "weighted"
@@ -30,6 +31,7 @@ class LoadBalancingStrategy(str, Enum):
 @dataclass
 class AgentCapacity:
     """Capacity information for an agent"""
+
     agent_id: str
     max_connections: int = 100
     current_connections: int = 0
@@ -63,13 +65,14 @@ class AgentCapacity:
             "max_memory_percent": self.max_memory_percent,
             "weight": self.weight,
             "available": self.available,
-            "last_assigned": self.last_assigned.isoformat() if self.last_assigned else None
+            "last_assigned": self.last_assigned.isoformat() if self.last_assigned else None,
         }
 
 
 @dataclass
 class LoadBalancingRequest:
     """Load balancing request"""
+
     request_id: str
     task_type: str
     priority: int = 0
@@ -85,13 +88,14 @@ class LoadBalancingRequest:
             "priority": self.priority,
             "required_capacity": self.required_capacity,
             "affinity_agent_id": self.affinity_agent_id,
-            "deadline": self.deadline.isoformat() if self.deadline else None
+            "deadline": self.deadline.isoformat() if self.deadline else None,
         }
 
 
 @dataclass
 class LoadBalancingDecision:
     """Result of load balancing decision"""
+
     request_id: str
     assigned_agent_id: str
     strategy_used: LoadBalancingStrategy
@@ -109,7 +113,7 @@ class LoadBalancingDecision:
             "timestamp": self.timestamp.isoformat(),
             "confidence_score": self.confidence_score,
             "alternative_agents": self.alternative_agents,
-            "reason": self.reason
+            "reason": self.reason,
         }
 
 
@@ -121,7 +125,7 @@ class BalancingStrategy(ABC):
         self,
         capacities: Dict[str, AgentCapacity],
         health_monitor: Optional[AgentHealthMonitor] = None,
-        request: Optional[LoadBalancingRequest] = None
+        request: Optional[LoadBalancingRequest] = None,
     ) -> Tuple[Optional[str], float]:
         """
         Select best agent for request
@@ -148,7 +152,7 @@ class RoundRobinStrategy(BalancingStrategy):
         self,
         capacities: Dict[str, AgentCapacity],
         health_monitor: Optional[AgentHealthMonitor] = None,
-        request: Optional[LoadBalancingRequest] = None
+        request: Optional[LoadBalancingRequest] = None,
     ) -> Tuple[Optional[str], float]:
         """Select agent using round robin"""
         available = [a for a in capacities.values() if a.available and a.available_connections > 0]
@@ -181,7 +185,7 @@ class LeastConnectionsStrategy(BalancingStrategy):
         self,
         capacities: Dict[str, AgentCapacity],
         health_monitor: Optional[AgentHealthMonitor] = None,
-        request: Optional[LoadBalancingRequest] = None
+        request: Optional[LoadBalancingRequest] = None,
     ) -> Tuple[Optional[str], float]:
         """Select agent with fewest connections"""
         available = [a for a in capacities.values() if a.available and a.available_connections > 0]
@@ -203,7 +207,7 @@ class HealthAwareStrategy(BalancingStrategy):
         self,
         capacities: Dict[str, AgentCapacity],
         health_monitor: Optional[AgentHealthMonitor] = None,
-        request: Optional[LoadBalancingRequest] = None
+        request: Optional[LoadBalancingRequest] = None,
     ) -> Tuple[Optional[str], float]:
         """Select agent considering health status"""
         if not health_monitor:
@@ -253,11 +257,13 @@ class CPUAwareStrategy(BalancingStrategy):
         self,
         capacities: Dict[str, AgentCapacity],
         health_monitor: Optional[AgentHealthMonitor] = None,
-        request: Optional[LoadBalancingRequest] = None
+        request: Optional[LoadBalancingRequest] = None,
     ) -> Tuple[Optional[str], float]:
         """Select agent considering CPU usage"""
         if not health_monitor:
-            return await LeastConnectionsStrategy().select_agent(capacities, health_monitor, request)
+            return await LeastConnectionsStrategy().select_agent(
+                capacities, health_monitor, request
+            )
 
         available = [a for a in capacities.values() if a.available and a.available_connections > 0]
 
@@ -301,7 +307,7 @@ class AgentLoadBalancer:
         self,
         agent_ids: List[str],
         health_monitor: Optional[AgentHealthMonitor] = None,
-        strategy: LoadBalancingStrategy = LoadBalancingStrategy.HEALTH_AWARE
+        strategy: LoadBalancingStrategy = LoadBalancingStrategy.HEALTH_AWARE,
     ):
         """
         Initialize load balancer
@@ -332,10 +338,7 @@ class AgentLoadBalancer:
         self.decisions: List[LoadBalancingDecision] = []
         self.active_requests: Dict[str, str] = {}  # request_id -> agent_id
 
-    async def assign_request(
-        self,
-        request: LoadBalancingRequest
-    ) -> LoadBalancingDecision:
+    async def assign_request(self, request: LoadBalancingRequest) -> LoadBalancingDecision:
         """
         Assign request to best agent
 
@@ -357,7 +360,7 @@ class AgentLoadBalancer:
                     assigned_agent_id=request.affinity_agent_id,
                     strategy_used=self.current_strategy,
                     confidence_score=1.0,
-                    reason="Affinity assignment"
+                    reason="Affinity assignment",
                 )
 
                 self.active_requests[request.request_id] = request.affinity_agent_id
@@ -370,9 +373,7 @@ class AgentLoadBalancer:
             strategy = self.strategies[LoadBalancingStrategy.LEAST_CONNECTIONS]
 
         selected_agent, confidence = await strategy.select_agent(
-            self.capacities,
-            self.health_monitor,
-            request
+            self.capacities, self.health_monitor, request
         )
 
         if not selected_agent:
@@ -381,7 +382,7 @@ class AgentLoadBalancer:
                 assigned_agent_id="",
                 strategy_used=self.current_strategy,
                 confidence_score=0.0,
-                reason="No available agents"
+                reason="No available agents",
             )
 
         # Assign to selected agent
@@ -391,9 +392,14 @@ class AgentLoadBalancer:
 
         # Get alternative agents
         alternatives = [
-            a.agent_id for a in sorted(
-                [cap for cap in self.capacities.values() if cap.agent_id != selected_agent and cap.available],
-                key=lambda x: x.current_connections
+            a.agent_id
+            for a in sorted(
+                [
+                    cap
+                    for cap in self.capacities.values()
+                    if cap.agent_id != selected_agent and cap.available
+                ],
+                key=lambda x: x.current_connections,
             )[:2]
         ]
 
@@ -403,7 +409,7 @@ class AgentLoadBalancer:
             strategy_used=self.current_strategy,
             confidence_score=confidence,
             alternative_agents=alternatives,
-            reason=f"Selected via {self.current_strategy.value}"
+            reason=f"Selected via {self.current_strategy.value}",
         )
 
         self.active_requests[request.request_id] = selected_agent
@@ -415,11 +421,7 @@ class AgentLoadBalancer:
 
         return decision
 
-    async def release_request(
-        self,
-        request_id: str,
-        capacity_used: int = 1
-    ) -> bool:
+    async def release_request(self, request_id: str, capacity_used: int = 1) -> bool:
         """
         Release request and free capacity
 
@@ -451,12 +453,7 @@ class AgentLoadBalancer:
         if strategy in self.strategies:
             self.current_strategy = strategy
 
-    def set_agent_capacity(
-        self,
-        agent_id: str,
-        max_connections: int,
-        weight: float = 1.0
-    ) -> bool:
+    def set_agent_capacity(self, agent_id: str, max_connections: int, weight: float = 1.0) -> bool:
         """
         Set capacity for agent
 
@@ -509,8 +506,11 @@ class AgentLoadBalancer:
 
         return {
             **capacity.to_dict(),
-            "health": self.health_monitor.get_health_status(agent_id).to_dict()
-            if self.health_monitor else None
+            "health": (
+                self.health_monitor.get_health_status(agent_id).to_dict()
+                if self.health_monitor
+                else None
+            ),
         }
 
     def get_load_summary(self) -> Dict:
@@ -525,16 +525,14 @@ class AgentLoadBalancer:
             "strategy": self.current_strategy.value,
             "total_agents": len(self.agent_ids),
             "available_agents": sum(1 for c in self.capacities.values() if c.available),
-            "agents": {
-                aid: self.capacities[aid].to_dict()
-                for aid in self.agent_ids
-            },
+            "agents": {aid: self.capacities[aid].to_dict() for aid in self.agent_ids},
             "total_connections": sum(c.current_connections for c in self.capacities.values()),
             "total_capacity": sum(c.max_connections for c in self.capacities.values()),
             "average_load_percent": (
-                sum(c.capacity_percentage for c in self.capacities.values()) /
-                len(self.agent_ids)
-            ) if self.agent_ids else 0.0
+                (sum(c.capacity_percentage for c in self.capacities.values()) / len(self.agent_ids))
+                if self.agent_ids
+                else 0.0
+            ),
         }
 
     def get_decision_history(self, limit: int = 100) -> List[Dict]:
@@ -560,7 +558,7 @@ class AgentLoadBalancer:
             "timestamp": datetime.now().isoformat(),
             "strategy": self.current_strategy.value,
             "capacities": {aid: self.capacities[aid].to_dict() for aid in self.agent_ids},
-            "load_summary": self.get_load_summary()
+            "load_summary": self.get_load_summary(),
         }
 
         filepath.parent.mkdir(parents=True, exist_ok=True)

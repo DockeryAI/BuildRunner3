@@ -1,6 +1,7 @@
 """
 Tests for completed design system
 """
+
 import pytest
 import yaml
 from pathlib import Path
@@ -206,7 +207,8 @@ class TestTailwindGenerator:
         (tmp_path / "templates" / "use_cases").mkdir(parents=True)
 
         industry_yaml = tmp_path / "templates" / "industries" / "test.yaml"
-        industry_yaml.write_text("""
+        industry_yaml.write_text(
+            """
 name: Test
 colors:
   primary:
@@ -214,14 +216,17 @@ colors:
 typography:
   fonts:
     primary: "Roboto, sans-serif"
-""")
+"""
+        )
 
         use_case_yaml = tmp_path / "templates" / "use_cases" / "test.yaml"
-        use_case_yaml.write_text("""
+        use_case_yaml.write_text(
+            """
 name: Test
 layout:
   structure: "sidebar-main"
-""")
+"""
+        )
 
         config = generator.generate_tailwind_config("test", "test")
 
@@ -244,14 +249,7 @@ layout:
         """Test CSS variable generation"""
         generator = TailwindGenerator(Path("."))
 
-        tokens = {
-            "colors": {
-                "primary": {
-                    "main": "#1976d2",
-                    "light": "#42a5f5"
-                }
-            }
-        }
+        tokens = {"colors": {"primary": {"main": "#1976d2", "light": "#42a5f5"}}}
 
         css = generator.apply_css_variables(tokens)
 
@@ -264,10 +262,7 @@ layout:
 
         tokens = {
             "colors": {"primary": {"main": "#1976d2"}},
-            "typography": {
-                "fonts": {"primary": "Roboto"},
-                "sizes": {"base": "1rem"}
-            }
+            "typography": {"fonts": {"primary": "Roboto"}, "sizes": {"base": "1rem"}},
         }
 
         theme = generator.generate_theme_json(tokens)
@@ -332,10 +327,7 @@ class TestVisualRegression:
         tester = VisualRegressionTester(tmp_path)
 
         # Mock test without playwright
-        screenshots = await tester.capture_baseline(
-            "http://localhost:3000",
-            ["Button", "Card"]
-        )
+        screenshots = await tester.capture_baseline("http://localhost:3000", ["Button", "Card"])
 
         assert "Button" in screenshots
         assert "Card" in screenshots
@@ -346,10 +338,7 @@ class TestVisualRegression:
         tester = VisualRegressionTester(tmp_path)
 
         # Mock test without playwright
-        results = await tester.run_visual_tests(
-            "http://localhost:3000",
-            ["Button", "Card"]
-        )
+        results = await tester.run_visual_tests("http://localhost:3000", ["Button", "Card"])
 
         assert "passed" in results
         assert "failed" in results
@@ -362,7 +351,7 @@ class TestVisualRegression:
         results = {
             "passed": ["Button", "Card"],
             "failed": ["Modal"],
-            "diffs": {"Modal": tmp_path / "diff.png"}
+            "diffs": {"Modal": tmp_path / "diff.png"},
         }
 
         report_path = tester.generate_report(results)
@@ -384,7 +373,8 @@ class TestIntegration:
         (tmp_path / "templates" / "use_cases").mkdir(parents=True)
 
         industry_yaml = tmp_path / "templates" / "industries" / "test.yaml"
-        industry_yaml.write_text("""
+        industry_yaml.write_text(
+            """
 name: Test Industry
 colors:
   primary:
@@ -392,17 +382,20 @@ colors:
 typography:
   fonts:
     primary: "Roboto"
-""")
+"""
+        )
 
         use_case_yaml = tmp_path / "templates" / "use_cases" / "test.yaml"
-        use_case_yaml.write_text("""
+        use_case_yaml.write_text(
+            """
 name: Test Use Case
 layout:
   structure: "grid"
 components:
   grid:
     columns: 3
-""")
+"""
+        )
 
         # Generate Tailwind config
         generator = TailwindGenerator(tmp_path)

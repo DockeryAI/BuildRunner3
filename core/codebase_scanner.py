@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 @dataclass
 class FileInfo:
     """Information about a scanned file"""
+
     path: str
     exists: bool
     line_count: int = 0
@@ -32,6 +33,7 @@ class FileInfo:
 @dataclass
 class EndpointInfo:
     """Information about an API endpoint"""
+
     path: str
     method: str
     file: str
@@ -42,6 +44,7 @@ class EndpointInfo:
 @dataclass
 class ComponentInfo:
     """Information about a UI component"""
+
     name: str
     file: str
     has_tests: bool = False
@@ -86,22 +89,18 @@ class CodebaseScanner:
 
         # Get line count
         try:
-            with open(full_path, 'r', encoding='utf-8') as f:
+            with open(full_path, "r", encoding="utf-8") as f:
                 content = f.read()
                 line_count = len(content.splitlines())
         except Exception:
             return FileInfo(path=file_path, exists=True, line_count=0)
 
         # Parse Python files
-        if file_path.endswith('.py'):
+        if file_path.endswith(".py"):
             return self._scan_python_file(file_path, content)
 
         # For other files, just return basic info
-        return FileInfo(
-            path=file_path,
-            exists=True,
-            line_count=line_count
-        )
+        return FileInfo(path=file_path, exists=True, line_count=line_count)
 
     def scan_files(self, file_paths: List[str]) -> Dict[str, FileInfo]:
         """
@@ -133,11 +132,11 @@ class CodebaseScanner:
 
         # Scan all Python files in api/
         for py_file in api_dir.rglob("*.py"):
-            if py_file.name.startswith('_'):
+            if py_file.name.startswith("_"):
                 continue
 
             try:
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Look for FastAPI route decorators
@@ -152,18 +151,20 @@ class CodebaseScanner:
                         path = match.group(2)
 
                         # Find line number
-                        line_num = content[:match.start()].count('\n') + 1
+                        line_num = content[: match.start()].count("\n") + 1
 
                         # Check if has tests
                         has_tests = self._endpoint_has_tests(path, method)
 
-                        endpoints.append(EndpointInfo(
-                            path=path,
-                            method=method,
-                            file=str(py_file.relative_to(self.project_root)),
-                            line=line_num,
-                            has_tests=has_tests
-                        ))
+                        endpoints.append(
+                            EndpointInfo(
+                                path=path,
+                                method=method,
+                                file=str(py_file.relative_to(self.project_root)),
+                                line=line_num,
+                                has_tests=has_tests,
+                            )
+                        )
 
             except Exception:
                 continue
@@ -193,9 +194,9 @@ class CodebaseScanner:
             True if test file exists
         """
         # Convert file path to test path
-        if file_path.startswith('core/') or file_path.startswith('cli/'):
+        if file_path.startswith("core/") or file_path.startswith("cli/"):
             test_path = f"tests/test_{Path(file_path).name}"
-        elif file_path.startswith('api/'):
+        elif file_path.startswith("api/"):
             test_path = f"tests/test_api_{Path(file_path).stem}.py"
         else:
             test_path = f"tests/test_{Path(file_path).stem}.py"
@@ -239,11 +240,7 @@ class CodebaseScanner:
 
     def _scan_python_file(self, file_path: str, content: str) -> FileInfo:
         """Scan Python file with AST"""
-        info = FileInfo(
-            path=file_path,
-            exists=True,
-            line_count=len(content.splitlines())
-        )
+        info = FileInfo(path=file_path, exists=True, line_count=len(content.splitlines()))
 
         try:
             tree = ast.parse(content)
@@ -294,7 +291,7 @@ class CodebaseScanner:
         # Simple heuristic: check if test files mention the endpoint path
         for test_file in tests_dir.glob("test_api*.py"):
             try:
-                with open(test_file, 'r', encoding='utf-8') as f:
+                with open(test_file, "r", encoding="utf-8") as f:
                     content = f.read()
                     if path in content and method.lower() in content.lower():
                         return True
@@ -313,7 +310,7 @@ class CodebaseScanner:
         dependencies = {}
 
         for py_file in self.project_root.rglob("*.py"):
-            if py_file.is_dir() or py_file.name.startswith('_'):
+            if py_file.is_dir() or py_file.name.startswith("_"):
                 continue
 
             try:

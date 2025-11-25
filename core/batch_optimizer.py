@@ -16,14 +16,16 @@ from pathlib import Path
 
 class TaskComplexity(Enum):
     """Task complexity levels"""
-    SIMPLE = "simple"      # Basic CRUD, simple functions
-    MEDIUM = "medium"      # Business logic, APIs
-    COMPLEX = "complex"    # Algorithms, state machines
+
+    SIMPLE = "simple"  # Basic CRUD, simple functions
+    MEDIUM = "medium"  # Business logic, APIs
+    COMPLEX = "complex"  # Algorithms, state machines
     CRITICAL = "critical"  # Auth, payments, security
 
 
 class TaskDomain(Enum):
     """Task domain categories"""
+
     FRONTEND = "frontend"
     BACKEND = "backend"
     DATABASE = "database"
@@ -36,6 +38,7 @@ class TaskDomain(Enum):
 @dataclass
 class Task:
     """Represents a single atomic task"""
+
     id: str
     name: str
     description: str
@@ -53,6 +56,7 @@ class Task:
 @dataclass
 class TaskBatch:
     """Represents a batch of tasks for execution"""
+
     id: int
     tasks: List[Task]
     total_minutes: int
@@ -73,9 +77,9 @@ class BatchOptimizer:
 
     # Batch size rules by complexity
     BATCH_SIZE_RULES = {
-        TaskComplexity.SIMPLE: 3,    # Simple tasks: 3 per batch
-        TaskComplexity.MEDIUM: 2,    # Medium tasks: 2 per batch
-        TaskComplexity.COMPLEX: 1,   # Complex tasks: 1 per batch
+        TaskComplexity.SIMPLE: 3,  # Simple tasks: 3 per batch
+        TaskComplexity.MEDIUM: 2,  # Medium tasks: 2 per batch
+        TaskComplexity.COMPLEX: 1,  # Complex tasks: 1 per batch
         TaskComplexity.CRITICAL: 1,  # Critical tasks: 1 per batch
     }
 
@@ -178,9 +182,14 @@ class BatchOptimizer:
             max_batch_size = self.BATCH_SIZE_RULES[task.complexity]
 
             # Check if adding this task would violate batch rules
-            if (len(current_batch_tasks) >= max_batch_size or
-                current_batch_time + task.estimated_minutes > self.MAX_BATCH_TIME or
-                (current_batch_tasks and not self._is_coherent_addition(current_batch_tasks, task))):
+            if (
+                len(current_batch_tasks) >= max_batch_size
+                or current_batch_time + task.estimated_minutes > self.MAX_BATCH_TIME
+                or (
+                    current_batch_tasks
+                    and not self._is_coherent_addition(current_batch_tasks, task)
+                )
+            ):
 
                 # Create batch from current tasks
                 if current_batch_tasks:
@@ -251,8 +260,7 @@ class BatchOptimizer:
             TaskComplexity.SIMPLE,
         ]
         batch_complexity = min(
-            (t.complexity for t in tasks),
-            key=lambda c: complexity_order.index(c)
+            (t.complexity for t in tasks), key=lambda c: complexity_order.index(c)
         )
 
         return TaskBatch(
@@ -260,7 +268,7 @@ class BatchOptimizer:
             tasks=tasks,
             total_minutes=total_minutes,
             domain=domain,
-            complexity_level=batch_complexity
+            complexity_level=batch_complexity,
         )
 
     def validate_batch(self, batch: TaskBatch) -> tuple[bool, List[str]]:

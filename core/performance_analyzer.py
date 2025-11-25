@@ -8,6 +8,7 @@ Analyzes code for:
 - Big-O complexity analysis
 - Performance anti-patterns
 """
+
 import ast
 import re
 from typing import Dict, List, Optional, Any
@@ -20,6 +21,7 @@ from radon.metrics import h_visit, mi_visit
 @dataclass
 class ComplexityIssue:
     """Represents a complexity issue"""
+
     issue_type: str
     location: str
     severity: str  # 'high', 'medium', 'low'
@@ -42,11 +44,11 @@ class PerformanceAnalyzer:
 
     # Complexity thresholds
     COMPLEXITY_THRESHOLDS = {
-        'A': (1, 5, 'low'),      # Simple
-        'B': (6, 10, 'low'),     # Well structured
-        'C': (11, 20, 'medium'), # Complex
-        'D': (21, 30, 'high'),   # Too complex
-        'F': (31, 999, 'high')   # Extremely complex
+        "A": (1, 5, "low"),  # Simple
+        "B": (6, 10, "low"),  # Well structured
+        "C": (11, 20, "medium"),  # Complex
+        "D": (21, 30, "high"),  # Too complex
+        "F": (31, 999, "high"),  # Extremely complex
     }
 
     def __init__(self, project_root: Optional[Path] = None):
@@ -113,7 +115,7 @@ class PerformanceAnalyzer:
             "memory_leaks": [vars(i) for i in memory_leaks],
             "big_o_warnings": [vars(i) for i in big_o_warnings],
             "performance_score": performance_score,
-            "recommendations": recommendations
+            "recommendations": recommendations,
         }
 
     def analyze_complexity(self, code: str, filename: str) -> List[ComplexityIssue]:
@@ -135,17 +137,21 @@ class PerformanceAnalyzer:
 
             for result in complexity_results:
                 rank = cc_rank(result.complexity)
-                _, _, severity = self.COMPLEXITY_THRESHOLDS.get(rank, (0, 0, 'low'))
+                _, _, severity = self.COMPLEXITY_THRESHOLDS.get(rank, (0, 0, "low"))
 
-                if rank in ['C', 'D', 'F']:  # Only report complex functions
-                    issues.append(ComplexityIssue(
-                        issue_type='high_complexity',
-                        location=f"{result.name} (line {result.lineno})",
-                        severity=severity,
-                        description=f"Cyclomatic complexity of {result.complexity} (rank {rank})",
-                        metric_value=float(result.complexity),
-                        recommendation=self._get_complexity_recommendation(rank, result.complexity)
-                    ))
+                if rank in ["C", "D", "F"]:  # Only report complex functions
+                    issues.append(
+                        ComplexityIssue(
+                            issue_type="high_complexity",
+                            location=f"{result.name} (line {result.lineno})",
+                            severity=severity,
+                            description=f"Cyclomatic complexity of {result.complexity} (rank {rank})",
+                            metric_value=float(result.complexity),
+                            recommendation=self._get_complexity_recommendation(
+                                rank, result.complexity
+                            ),
+                        )
+                    )
 
         except Exception:
             # Radon analysis failed, skip
@@ -171,13 +177,15 @@ class PerformanceAnalyzer:
                 # Check if loop body contains query-like calls
                 for child in ast.walk(node):
                     if self._is_database_query(child):
-                        issues.append(ComplexityIssue(
-                            issue_type='n_plus_one_query',
-                            location=f"Line {node.lineno}",
-                            severity='high',
-                            description="Potential N+1 query: database query inside loop",
-                            recommendation="Consider using bulk queries or eager loading"
-                        ))
+                        issues.append(
+                            ComplexityIssue(
+                                issue_type="n_plus_one_query",
+                                location=f"Line {node.lineno}",
+                                severity="high",
+                                description="Potential N+1 query: database query inside loop",
+                                recommendation="Consider using bulk queries or eager loading",
+                            )
+                        )
                         break  # One issue per loop
 
         return issues
@@ -203,25 +211,29 @@ class PerformanceAnalyzer:
                     if isinstance(target, ast.Name):
                         # Check if it's a list or dict append/update in a function
                         if self._is_potential_memory_leak(node, tree):
-                            issues.append(ComplexityIssue(
-                                issue_type='memory_leak',
-                                location=f"Line {node.lineno}",
-                                severity='medium',
-                                description="Potential memory leak: growing global collection",
-                                recommendation="Consider clearing collection or using local scope"
-                            ))
+                            issues.append(
+                                ComplexityIssue(
+                                    issue_type="memory_leak",
+                                    location=f"Line {node.lineno}",
+                                    severity="medium",
+                                    description="Potential memory leak: growing global collection",
+                                    recommendation="Consider clearing collection or using local scope",
+                                )
+                            )
 
         # Check for unclosed resources (file handles, connections)
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
                 if self._is_resource_open(node) and not self._has_close_or_with(node, tree):
-                    issues.append(ComplexityIssue(
-                        issue_type='unclosed_resource',
-                        location=f"Line {node.lineno}",
-                        severity='high',
-                        description="Resource opened but not explicitly closed",
-                        recommendation="Use context manager (with statement) for resource management"
-                    ))
+                    issues.append(
+                        ComplexityIssue(
+                            issue_type="unclosed_resource",
+                            location=f"Line {node.lineno}",
+                            severity="high",
+                            description="Resource opened but not explicitly closed",
+                            recommendation="Use context manager (with statement) for resource management",
+                        )
+                    )
 
         return issues
 
@@ -244,13 +256,15 @@ class PerformanceAnalyzer:
 
                 if nested_loops >= 1:
                     complexity = f"O(n^{nested_loops + 1})"
-                    issues.append(ComplexityIssue(
-                        issue_type='high_time_complexity',
-                        location=f"Line {node.lineno}",
-                        severity='medium' if nested_loops == 1 else 'high',
-                        description=f"Nested loops detected: {complexity} time complexity",
-                        recommendation="Consider optimizing with hash maps or better algorithm"
-                    ))
+                    issues.append(
+                        ComplexityIssue(
+                            issue_type="high_time_complexity",
+                            location=f"Line {node.lineno}",
+                            severity="medium" if nested_loops == 1 else "high",
+                            description=f"Nested loops detected: {complexity} time complexity",
+                            recommendation="Consider optimizing with hash maps or better algorithm",
+                        )
+                    )
 
         return issues
 
@@ -259,7 +273,7 @@ class PerformanceAnalyzer:
         complexity_issues: List[ComplexityIssue],
         n_plus_one: List[ComplexityIssue],
         memory_leaks: List[ComplexityIssue],
-        big_o_warnings: List[ComplexityIssue]
+        big_o_warnings: List[ComplexityIssue],
     ) -> int:
         """
         Calculate overall performance score
@@ -276,13 +290,13 @@ class PerformanceAnalyzer:
         score = 100
 
         # Penalties
-        score -= len([i for i in complexity_issues if i.severity == 'high']) * 15
-        score -= len([i for i in complexity_issues if i.severity == 'medium']) * 8
+        score -= len([i for i in complexity_issues if i.severity == "high"]) * 15
+        score -= len([i for i in complexity_issues if i.severity == "medium"]) * 8
         score -= len(n_plus_one) * 20  # N+1 queries are serious
-        score -= len([i for i in memory_leaks if i.severity == 'high']) * 18
-        score -= len([i for i in memory_leaks if i.severity == 'medium']) * 10
-        score -= len([i for i in big_o_warnings if i.severity == 'high']) * 12
-        score -= len([i for i in big_o_warnings if i.severity == 'medium']) * 6
+        score -= len([i for i in memory_leaks if i.severity == "high"]) * 18
+        score -= len([i for i in memory_leaks if i.severity == "medium"]) * 10
+        score -= len([i for i in big_o_warnings if i.severity == "high"]) * 12
+        score -= len([i for i in big_o_warnings if i.severity == "medium"]) * 6
 
         return max(0, min(100, score))
 
@@ -291,14 +305,14 @@ class PerformanceAnalyzer:
         complexity_issues: List[ComplexityIssue],
         n_plus_one: List[ComplexityIssue],
         memory_leaks: List[ComplexityIssue],
-        big_o_warnings: List[ComplexityIssue]
+        big_o_warnings: List[ComplexityIssue],
     ) -> List[str]:
         """Generate actionable recommendations"""
         recommendations = []
 
         # Complexity recommendations
         if complexity_issues:
-            high_complexity = [i for i in complexity_issues if i.severity == 'high']
+            high_complexity = [i for i in complexity_issues if i.severity == "high"]
             if high_complexity:
                 recommendations.append(
                     f"Refactor {len(high_complexity)} function(s) with high cyclomatic complexity"
@@ -312,13 +326,11 @@ class PerformanceAnalyzer:
 
         # Memory leak recommendations
         if memory_leaks:
-            recommendations.append(
-                f"Address {len(memory_leaks)} potential memory leak(s)"
-            )
+            recommendations.append(f"Address {len(memory_leaks)} potential memory leak(s)")
 
         # Big-O recommendations
         if big_o_warnings:
-            high_complexity_algo = [w for w in big_o_warnings if w.severity == 'high']
+            high_complexity_algo = [w for w in big_o_warnings if w.severity == "high"]
             if high_complexity_algo:
                 recommendations.append(
                     f"Optimize {len(high_complexity_algo)} algorithm(s) with poor time complexity"
@@ -337,16 +349,18 @@ class PerformanceAnalyzer:
             "memory_leaks": [],
             "big_o_warnings": [],
             "performance_score": 0,
-            "recommendations": [error_msg]
+            "recommendations": [error_msg],
         }
 
     def _get_complexity_recommendation(self, rank: str, complexity: int) -> str:
         """Get recommendation for complexity level"""
-        if rank == 'F':
+        if rank == "F":
             return f"Extremely complex ({complexity}). Break into smaller functions immediately."
-        elif rank == 'D':
-            return f"Too complex ({complexity}). Consider refactoring into smaller, focused functions."
-        elif rank == 'C':
+        elif rank == "D":
+            return (
+                f"Too complex ({complexity}). Consider refactoring into smaller, focused functions."
+            )
+        elif rank == "C":
             return f"Complex ({complexity}). Look for opportunities to simplify logic."
         return ""
 
@@ -356,9 +370,10 @@ class PerformanceAnalyzer:
             if isinstance(node.func, ast.Attribute):
                 method_name = node.func.attr.lower()
                 # Common ORM/query methods
-                if any(keyword in method_name for keyword in [
-                    'query', 'filter', 'get', 'find', 'select', 'execute', 'fetch'
-                ]):
+                if any(
+                    keyword in method_name
+                    for keyword in ["query", "filter", "get", "find", "select", "execute", "fetch"]
+                ):
                     return True
         return False
 
@@ -374,10 +389,10 @@ class PerformanceAnalyzer:
     def _is_resource_open(self, node: ast.Call) -> bool:
         """Check if call opens a resource"""
         if isinstance(node.func, ast.Name):
-            if node.func.id in ['open', 'connect', 'socket']:
+            if node.func.id in ["open", "connect", "socket"]:
                 return True
         elif isinstance(node.func, ast.Attribute):
-            if node.func.attr in ['open', 'connect', 'create_connection']:
+            if node.func.attr in ["open", "connect", "create_connection"]:
                 return True
         return False
 
@@ -419,30 +434,30 @@ def main():
     print(f"\n=== Performance Analysis for {file_path} ===\n")
     print(f"Performance Score: {result['performance_score']}/100")
 
-    if result['complexity_issues']:
+    if result["complexity_issues"]:
         print("\nComplexity Issues:")
-        for issue in result['complexity_issues']:
+        for issue in result["complexity_issues"]:
             print(f"  - [{issue['severity'].upper()}] {issue['description']}")
             print(f"    Location: {issue['location']}")
 
-    if result['n_plus_one_queries']:
+    if result["n_plus_one_queries"]:
         print("\nN+1 Query Issues:")
-        for issue in result['n_plus_one_queries']:
+        for issue in result["n_plus_one_queries"]:
             print(f"  - {issue['description']}")
             print(f"    Location: {issue['location']}")
 
-    if result['memory_leaks']:
+    if result["memory_leaks"]:
         print("\nMemory Leak Indicators:")
-        for issue in result['memory_leaks']:
+        for issue in result["memory_leaks"]:
             print(f"  - {issue['description']}")
 
-    if result['big_o_warnings']:
+    if result["big_o_warnings"]:
         print("\nBig-O Complexity Warnings:")
-        for issue in result['big_o_warnings']:
+        for issue in result["big_o_warnings"]:
             print(f"  - {issue['description']}")
 
     print("\nRecommendations:")
-    for rec in result['recommendations']:
+    for rec in result["recommendations"]:
         print(f"  - {rec}")
 
 

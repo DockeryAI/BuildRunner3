@@ -10,14 +10,11 @@ from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
 import json
 
-from core.architecture_guard import (
-    ArchitectureGuard,
-    ArchitectureViolation,
-    ArchitectureSpec
-)
+from core.architecture_guard import ArchitectureGuard, ArchitectureViolation, ArchitectureSpec
 
 
 # Fixtures
+
 
 @pytest.fixture
 def sample_spec_content():
@@ -108,6 +105,7 @@ def bad_endpoint():
 
 # Test ArchitectureSpec
 
+
 class TestArchitectureSpec:
     """Test ArchitectureSpec dataclass"""
 
@@ -123,6 +121,7 @@ class TestArchitectureSpec:
 
 # Test Spec Parsing
 
+
 class TestSpecParsing:
     """Test PROJECT_SPEC.md parsing"""
 
@@ -134,8 +133,8 @@ class TestSpecParsing:
         spec = guard.load_spec()
 
         assert spec is not None
-        assert 'backend' in spec.tech_stack
-        assert 'database' in spec.tech_stack
+        assert "backend" in spec.tech_stack
+        assert "database" in spec.tech_stack
 
     def test_load_spec_custom_path(self, guard, tmp_path, sample_spec_content):
         """Load spec from custom path"""
@@ -157,8 +156,8 @@ class TestSpecParsing:
         spec = guard._parse_spec_content(sample_spec_content)
 
         # Tech stack parsing may normalize to lowercase or preserve case
-        assert 'backend' in spec.tech_stack
-        assert 'database' in spec.tech_stack or 'libraries' in spec.tech_stack
+        assert "backend" in spec.tech_stack
+        assert "database" in spec.tech_stack or "libraries" in spec.tech_stack
         # Should have some tech stack entries
         assert len(spec.tech_stack) > 0
 
@@ -166,14 +165,16 @@ class TestSpecParsing:
         """Parse component structure"""
         spec = guard._parse_spec_content(sample_spec_content)
 
-        assert 'expected_structure' in spec.components
-        assert any('core/' in item for item in spec.components['expected_structure'])
+        assert "expected_structure" in spec.components
+        assert any("core/" in item for item in spec.components["expected_structure"])
 
     def test_parse_api_patterns(self, guard, sample_spec_content):
         """Parse API endpoint patterns"""
         spec = guard._parse_spec_content(sample_spec_content)
 
-        assert '/api/v1/features' in spec.api_patterns or any('/api/v1' in p for p in spec.api_patterns)
+        assert "/api/v1/features" in spec.api_patterns or any(
+            "/api/v1" in p for p in spec.api_patterns
+        )
 
     def test_parse_naming_conventions(self, guard, sample_spec_content):
         """Parse naming conventions"""
@@ -184,6 +185,7 @@ class TestSpecParsing:
 
 
 # Test Code Analysis
+
 
 class TestCodeAnalysis:
     """Test codebase analysis"""
@@ -196,11 +198,9 @@ class TestCodeAnalysis:
         (code_dir / "test.py").write_text(sample_python_code)
 
         # Load a basic spec first
-        guard.spec = ArchitectureSpec(
-            tech_stack={'backend': ['fastapi', 'pydantic']}
-        )
+        guard.spec = ArchitectureSpec(tech_stack={"backend": ["fastapi", "pydantic"]})
 
-        violations = guard.analyze_codebase(directories=['core'])
+        violations = guard.analyze_codebase(directories=["core"])
 
         assert len(violations) > 0
         # Should detect unauthorized import, naming violations, etc.
@@ -228,9 +228,7 @@ from typing import List  # Standard library - allowed
         code_dir.mkdir()
         (code_dir / "imports.py").write_text(code)
 
-        guard.spec = ArchitectureSpec(
-            tech_stack={'backend': ['fastapi']}
-        )
+        guard.spec = ArchitectureSpec(tech_stack={"backend": ["fastapi"]})
 
         tree = ast.parse(code)
         guard._check_imports(tree, code_dir / "imports.py")
@@ -238,7 +236,7 @@ from typing import List  # Standard library - allowed
         # Should detect unauthorized import
         violations = [v for v in guard.violations if v.type == "tech_stack"]
         assert len(violations) > 0
-        assert any('unauthorized' in v.description.lower() for v in violations)
+        assert any("unauthorized" in v.description.lower() for v in violations)
 
     def test_check_naming_classes(self, guard, tmp_path):
         """Check class naming conventions"""
@@ -258,7 +256,7 @@ class badClass:  # Incorrect - should start with uppercase
 
         # Should detect naming violation
         violations = [v for v in guard.violations if v.type == "naming"]
-        assert any('badClass' in v.description for v in violations)
+        assert any("badClass" in v.description for v in violations)
 
     def test_check_naming_functions(self, guard, tmp_path):
         """Check function naming conventions"""
@@ -281,8 +279,8 @@ def __init__(self):  # Special method - allowed
 
         violations = [v for v in guard.violations if v.type == "naming"]
         # Should detect BadFunction but not __init__
-        assert any('BadFunction' in v.description for v in violations)
-        assert not any('__init__' in v.description for v in violations)
+        assert any("BadFunction" in v.description for v in violations)
+        assert not any("__init__" in v.description for v in violations)
 
     def test_check_api_patterns(self, guard, tmp_path):
         """Check FastAPI route patterns"""
@@ -302,17 +300,18 @@ def bad_route():
         code_dir.mkdir()
         (code_dir / "routes.py").write_text(code)
 
-        guard.spec = ArchitectureSpec(api_patterns=['/api/v1/'])
+        guard.spec = ArchitectureSpec(api_patterns=["/api/v1/"])
 
         tree = ast.parse(code)
         guard._check_api_patterns(tree, code_dir / "routes.py")
 
         # Should detect route without leading slash
         violations = [v for v in guard.violations if v.type == "api_design"]
-        assert any('missing_slash' in v.description for v in violations)
+        assert any("missing_slash" in v.description for v in violations)
 
 
 # Test Violation Checking
+
 
 class TestViolationChecking:
     """Test specific violation checking methods"""
@@ -325,15 +324,11 @@ class TestViolationChecking:
                 severity="warning",
                 file="test.py",
                 line=1,
-                description="Unauthorized library"
+                description="Unauthorized library",
             ),
             ArchitectureViolation(
-                type="naming",
-                severity="info",
-                file="test.py",
-                line=5,
-                description="Bad naming"
-            )
+                type="naming", severity="info", file="test.py", line=5, description="Bad naming"
+            ),
         ]
 
         tech_violations = guard.check_tech_stack_compliance()
@@ -344,7 +339,7 @@ class TestViolationChecking:
     def test_check_component_structure(self, guard, tmp_path):
         """Check component structure matches spec"""
         guard.spec = ArchitectureSpec(
-            components={'expected_structure': ['core/', 'api/', 'missing_dir/']}
+            components={"expected_structure": ["core/", "api/", "missing_dir/"]}
         )
 
         # Create some but not all directories
@@ -355,7 +350,7 @@ class TestViolationChecking:
         violations = guard.check_component_structure()
 
         # Should detect missing directory
-        assert any('missing_dir' in v.description for v in violations)
+        assert any("missing_dir" in v.description for v in violations)
 
     def test_check_api_design(self, guard):
         """Get API design violations"""
@@ -365,7 +360,7 @@ class TestViolationChecking:
                 severity="warning",
                 file="api.py",
                 line=10,
-                description="Bad route"
+                description="Bad route",
             )
         ]
 
@@ -395,13 +390,11 @@ class TestViolationChecking:
         guard.spec = ArchitectureSpec()
 
         # Add an info violation manually
-        guard.violations.append(ArchitectureViolation(
-            type="naming",
-            severity="info",
-            file="test.py",
-            line=1,
-            description="Info violation"
-        ))
+        guard.violations.append(
+            ArchitectureViolation(
+                type="naming", severity="info", file="test.py", line=1, description="Info violation"
+            )
+        )
 
         violations = guard.detect_violations(strict=False)
 
@@ -410,6 +403,7 @@ class TestViolationChecking:
 
 
 # Test Report Generation
+
 
 class TestReportGeneration:
     """Test violation report generation"""
@@ -432,15 +426,15 @@ class TestReportGeneration:
                 description="Unauthorized library detected",
                 expected="Approved libraries",
                 actual="unauthorized_lib",
-                suggestion="Use approved alternative"
+                suggestion="Use approved alternative",
             ),
             ArchitectureViolation(
                 type="naming",
                 severity="info",
                 file="model.py",
                 line=5,
-                description="Class should use PascalCase"
-            )
+                description="Class should use PascalCase",
+            ),
         ]
 
         report = guard.generate_violation_report(output_format="markdown")
@@ -459,7 +453,7 @@ class TestReportGeneration:
                 severity="warning",
                 file="test.py",
                 line=1,
-                description="Test violation"
+                description="Test violation",
             )
         ]
 
@@ -468,9 +462,9 @@ class TestReportGeneration:
         # Parse JSON to verify format
         data = json.loads(report)
         assert len(data) == 1
-        assert data[0]['type'] == "tech_stack"
-        assert data[0]['severity'] == "warning"
-        assert data[0]['file'] == "test.py"
+        assert data[0]["type"] == "tech_stack"
+        assert data[0]["severity"] == "warning"
+        assert data[0]["file"] == "test.py"
 
     def test_generate_text_report_no_violations(self, guard):
         """Generate text report when no violations"""
@@ -488,7 +482,7 @@ class TestReportGeneration:
                 file="test.py",
                 line=10,
                 description="Unauthorized library",
-                suggestion="Use alternative"
+                suggestion="Use alternative",
             )
         ]
 
@@ -501,6 +495,7 @@ class TestReportGeneration:
 
 
 # Integration Tests
+
 
 class TestArchitectureGuardIntegration:
     """End-to-end integration tests"""
@@ -598,6 +593,6 @@ Functions: camelCase for frontend, snake_case for backend
         spec = guard.load_spec()
 
         # Verify complex parsing
-        assert 'frontend' in spec.tech_stack
-        assert 'backend' in spec.tech_stack
-        assert 'devops' in spec.tech_stack or 'infrastructure' in spec.tech_stack
+        assert "frontend" in spec.tech_stack
+        assert "backend" in spec.tech_stack
+        assert "devops" in spec.tech_stack or "infrastructure" in spec.tech_stack

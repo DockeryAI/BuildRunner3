@@ -54,7 +54,7 @@ class TestRunner:
         return {
             "status": "started",
             "interval": interval,
-            "message": "Background test runner started"
+            "message": "Background test runner started",
         }
 
     async def stop(self):
@@ -70,10 +70,7 @@ class TestRunner:
             except asyncio.CancelledError:
                 pass
 
-        return {
-            "status": "stopped",
-            "message": "Background test runner stopped"
-        }
+        return {"status": "stopped", "message": "Background test runner stopped"}
 
     async def _run_loop(self):
         """Main test runner loop."""
@@ -93,10 +90,9 @@ class TestRunner:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                await self.broadcast_message("error", {
-                    "message": str(e),
-                    "timestamp": datetime.now().isoformat()
-                })
+                await self.broadcast_message(
+                    "error", {"message": str(e), "timestamp": datetime.now().isoformat()}
+                )
                 # Continue despite errors
                 await asyncio.sleep(self.interval)
 
@@ -121,20 +117,19 @@ class TestRunner:
                 "--cov=api",
                 "--cov-report=json",
                 "--json-report",
-                "--json-report-file=/tmp/pytest_report.json"
+                "--json-report-file=/tmp/pytest_report.json",
             ]
 
             # Broadcast progress
-            await self.broadcast_message("progress", {
-                "message": "Running tests...",
-                "command": " ".join(cmd)
-            })
+            await self.broadcast_message(
+                "progress", {"message": "Running tests...", "command": " ".join(cmd)}
+            )
 
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=str(self.project_root)
+                cwd=str(self.project_root),
             )
 
             stdout, stderr = await process.communicate()
@@ -161,7 +156,7 @@ class TestRunner:
                 "duration": duration,
                 "coverage": coverage,
                 "status": "completed" if process.returncode == 0 else "failed",
-                "test_cases": test_results.get("test_cases", [])
+                "test_cases": test_results.get("test_cases", []),
             }
 
             return result
@@ -180,7 +175,7 @@ class TestRunner:
                 "coverage": None,
                 "status": "failed",
                 "error": str(e),
-                "test_cases": []
+                "test_cases": [],
             }
 
     def _parse_pytest_output(self, output: str) -> Dict[str, Any]:
@@ -199,7 +194,7 @@ class TestRunner:
             "failed": 0,
             "skipped": 0,
             "errors": 0,
-            "test_cases": []
+            "test_cases": [],
         }
 
         # Look for pytest summary line
@@ -210,26 +205,28 @@ class TestRunner:
                 for i, part in enumerate(parts):
                     if "passed" in part and i > 0:
                         try:
-                            results["passed"] = int(parts[i-1])
+                            results["passed"] = int(parts[i - 1])
                         except (ValueError, IndexError):
                             pass
                     elif "failed" in part and i > 0:
                         try:
-                            results["failed"] = int(parts[i-1])
+                            results["failed"] = int(parts[i - 1])
                         except (ValueError, IndexError):
                             pass
                     elif "error" in part and i > 0:
                         try:
-                            results["errors"] = int(parts[i-1])
+                            results["errors"] = int(parts[i - 1])
                         except (ValueError, IndexError):
                             pass
                     elif "skipped" in part and i > 0:
                         try:
-                            results["skipped"] = int(parts[i-1])
+                            results["skipped"] = int(parts[i - 1])
                         except (ValueError, IndexError):
                             pass
 
-        results["total"] = results["passed"] + results["failed"] + results["skipped"] + results["errors"]
+        results["total"] = (
+            results["passed"] + results["failed"] + results["skipped"] + results["errors"]
+        )
         return results
 
     def _get_coverage(self) -> Optional[float]:
@@ -272,7 +269,7 @@ class TestRunner:
             "is_running": self.is_running,
             "interval": self.interval,
             "connected_clients": len(self.websocket_clients),
-            "latest_results": self.latest_results
+            "latest_results": self.latest_results,
         }
 
     def add_websocket_client(self, websocket):
@@ -292,11 +289,7 @@ class TestRunner:
             msg_type: Message type
             data: Message data
         """
-        message = {
-            "type": msg_type,
-            "timestamp": datetime.now().isoformat(),
-            "data": data
-        }
+        message = {"type": msg_type, "timestamp": datetime.now().isoformat(), "data": data}
 
         # Remove disconnected clients
         disconnected = []

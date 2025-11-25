@@ -105,14 +105,10 @@ def test_get_errors_with_data(client):
             "traceback": None,
             "file_path": "test.py",
             "line_number": 10,
-            "category": {
-                "type": "syntax",
-                "severity": "high",
-                "confidence": 0.9
-            },
+            "category": {"type": "syntax", "severity": "high", "confidence": 0.9},
             "context": {},
             "suggestions": ["Fix syntax"],
-            "resolved": False
+            "resolved": False,
         },
         {
             "id": "err2",
@@ -121,15 +117,11 @@ def test_get_errors_with_data(client):
             "traceback": None,
             "file_path": "test.py",
             "line_number": 20,
-            "category": {
-                "type": "runtime",
-                "severity": "medium",
-                "confidence": 0.8
-            },
+            "category": {"type": "runtime", "severity": "medium", "confidence": 0.8},
             "context": {},
             "suggestions": ["Check runtime"],
-            "resolved": False
-        }
+            "resolved": False,
+        },
     ]
 
     response = client.get("/debug/errors")
@@ -152,14 +144,10 @@ def test_get_errors_filter_by_category(client):
             "traceback": None,
             "file_path": "test.py",
             "line_number": 10,
-            "category": {
-                "type": "syntax",
-                "severity": "high",
-                "confidence": 0.9
-            },
+            "category": {"type": "syntax", "severity": "high", "confidence": 0.9},
             "context": {},
             "suggestions": [],
-            "resolved": False
+            "resolved": False,
         },
         {
             "id": "err2",
@@ -168,15 +156,11 @@ def test_get_errors_filter_by_category(client):
             "traceback": None,
             "file_path": "test.py",
             "line_number": 20,
-            "category": {
-                "type": "runtime",
-                "severity": "medium",
-                "confidence": 0.8
-            },
+            "category": {"type": "runtime", "severity": "medium", "confidence": 0.8},
             "context": {},
             "suggestions": [],
-            "resolved": False
-        }
+            "resolved": False,
+        },
     ]
 
     response = client.get("/debug/errors?category=syntax")
@@ -198,14 +182,10 @@ def test_get_errors_filter_by_severity(client):
             "traceback": None,
             "file_path": "test.py",
             "line_number": 10,
-            "category": {
-                "type": "syntax",
-                "severity": "critical",
-                "confidence": 0.9
-            },
+            "category": {"type": "syntax", "severity": "critical", "confidence": 0.9},
             "context": {},
             "suggestions": [],
-            "resolved": False
+            "resolved": False,
         },
         {
             "id": "err2",
@@ -214,15 +194,11 @@ def test_get_errors_filter_by_severity(client):
             "traceback": None,
             "file_path": "test.py",
             "line_number": 20,
-            "category": {
-                "type": "runtime",
-                "severity": "low",
-                "confidence": 0.8
-            },
+            "category": {"type": "runtime", "severity": "low", "confidence": 0.8},
             "context": {},
             "suggestions": [],
-            "resolved": False
-        }
+            "resolved": False,
+        },
     ]
 
     response = client.get("/debug/errors?severity=critical")
@@ -243,14 +219,10 @@ def test_get_errors_unresolved_only(client):
             "traceback": None,
             "file_path": "test.py",
             "line_number": 10,
-            "category": {
-                "type": "syntax",
-                "severity": "high",
-                "confidence": 0.9
-            },
+            "category": {"type": "syntax", "severity": "high", "confidence": 0.9},
             "context": {},
             "suggestions": [],
-            "resolved": False
+            "resolved": False,
         },
         {
             "id": "err2",
@@ -259,15 +231,11 @@ def test_get_errors_unresolved_only(client):
             "traceback": None,
             "file_path": "test.py",
             "line_number": 20,
-            "category": {
-                "type": "runtime",
-                "severity": "medium",
-                "confidence": 0.8
-            },
+            "category": {"type": "runtime", "severity": "medium", "confidence": 0.8},
             "context": {},
             "suggestions": [],
-            "resolved": True
-        }
+            "resolved": True,
+        },
     ]
 
     response = client.get("/debug/errors?unresolved_only=true")

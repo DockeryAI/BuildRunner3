@@ -45,7 +45,7 @@ class RLSDocumentationGuide:
             "rls_policy": ["RLS_Encyclopedia", "DEFINITIVE_RLS_FIX"],
             "sql_injection": ["RLS_Troubleshooting", "PROPER_RLS_POLICIES"],
             "postgres": ["RLS_Encyclopedia", "Ultimate_RLS_Fix"],
-            "supabase": ["RLS_CRITICAL_CORRECTIONS", "RLS_Challenge"]
+            "supabase": ["RLS_CRITICAL_CORRECTIONS", "RLS_Challenge"],
         }
 
         # Get relevant docs for this issue
@@ -96,6 +96,7 @@ def inject_rls_awareness():
     # This will be called on attach/init to make BR3 aware of RLS docs
     try:
         from pathlib import Path
+
         project_root = Path.cwd()
 
         guide = RLSDocumentationGuide(project_root)

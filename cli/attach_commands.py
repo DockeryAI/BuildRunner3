@@ -24,6 +24,7 @@ from core.enforcement_engine import ConfigGenerator
 # Optional import - ClaudeMdGenerator may not exist yet
 try:
     from core.claude_md_generator import ClaudeMdGenerator
+
     HAS_CLAUDE_MD = True
 except ImportError:
     HAS_CLAUDE_MD = False
@@ -35,31 +36,19 @@ logger = logging.getLogger(__name__)
 
 def attach_command(
     alias_or_directory: str = typer.Argument(
-        None,
-        help="Project alias (e.g., 'sales') or directory path"
+        None, help="Project alias (e.g., 'sales') or directory path"
     ),
     output: Path = typer.Option(
         None,
         "--output",
         "-o",
-        help="Output path for PROJECT_SPEC.md (defaults to .buildrunner/PROJECT_SPEC.md)"
+        help="Output path for PROJECT_SPEC.md (defaults to .buildrunner/PROJECT_SPEC.md)",
     ),
-    dry_run: bool = typer.Option(
-        False,
-        "--dry-run",
-        help="Preview without writing files"
-    ),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview without writing files"),
     editor: str = typer.Option(
-        "claude",
-        "--editor",
-        "-e",
-        help="Editor preference: claude, cursor, windsurf"
+        "claude", "--editor", "-e", help="Editor preference: claude, cursor, windsurf"
     ),
-    scan: bool = typer.Option(
-        False,
-        "--scan",
-        help="Force codebase scan even if looks like alias"
-    ),
+    scan: bool = typer.Option(False, "--scan", help="Force codebase scan even if looks like alias"),
 ):
     """
     Attach BuildRunner 3 to an existing project.
@@ -108,13 +97,15 @@ def attach_command(
         directory = Path.cwd()
 
         console.print()
-        console.print(Panel.fit(
-            f"[bold cyan]Quick Register: {directory.name}[/bold cyan]\n\n"
-            f"[white]Alias:[/white] [yellow]{alias}[/yellow]\n"
-            f"[white]Directory:[/white] [yellow]{directory}[/yellow]\n"
-            f"[white]Editor:[/white] [yellow]{editor}[/yellow]",
-            border_style="cyan"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold cyan]Quick Register: {directory.name}[/bold cyan]\n\n"
+                f"[white]Alias:[/white] [yellow]{alias}[/yellow]\n"
+                f"[white]Directory:[/white] [yellow]{directory}[/yellow]\n"
+                f"[white]Editor:[/white] [yellow]{editor}[/yellow]",
+                border_style="cyan",
+            )
+        )
         console.print()
 
         # Create .buildrunner if not exists
@@ -156,7 +147,7 @@ TODO: Document features
                 alias=alias,
                 project_path=directory,
                 editor=editor,
-                spec_path=".buildrunner/PROJECT_SPEC.md"
+                spec_path=".buildrunner/PROJECT_SPEC.md",
             )
             console.print(f"✓ Registered '{alias}' in project registry")
         except ValueError as e:
@@ -180,10 +171,9 @@ TODO: Document features
 
         if activation_script:
             import subprocess
+
             result = subprocess.run(
-                ["bash", str(activation_script), str(directory)],
-                capture_output=True,
-                text=True
+                ["bash", str(activation_script), str(directory)], capture_output=True, text=True
             )
 
             if result.returncode == 0:
@@ -208,17 +198,19 @@ TODO: Document features
 
         # Success
         console.print()
-        console.print(Panel(
-            f"[green]✅ Project '{directory.name}' attached successfully![/green]\n\n"
-            f"[white]Shell Alias:[/white]\n"
-            f"  • Type [cyan]{alias}[/cyan] in terminal to launch {editor.title()} Code\n\n"
-            f"[white]Next Steps:[/white]\n"
-            f"1. Reload shell: [cyan]source ~/.zshrc[/cyan]\n"
-            f"2. Launch editor: [cyan]{alias}[/cyan]\n"
-            f"3. Start building!",
-            title="✅ Attach Complete",
-            border_style="green"
-        ))
+        console.print(
+            Panel(
+                f"[green]✅ Project '{directory.name}' attached successfully![/green]\n\n"
+                f"[white]Shell Alias:[/white]\n"
+                f"  • Type [cyan]{alias}[/cyan] in terminal to launch {editor.title()} Code\n\n"
+                f"[white]Next Steps:[/white]\n"
+                f"1. Reload shell: [cyan]source ~/.zshrc[/cyan]\n"
+                f"2. Launch editor: [cyan]{alias}[/cyan]\n"
+                f"3. Start building!",
+                title="✅ Attach Complete",
+                border_style="green",
+            )
+        )
         console.print()
         return
 
@@ -243,11 +235,13 @@ TODO: Document features
 
     # Show welcome message
     console.print()
-    console.print(Panel.fit(
-        "[bold cyan]BuildRunner 3 - Attach to Existing Project[/bold cyan]\n\n"
-        f"[white]Analyzing codebase at:[/white] [yellow]{directory}[/yellow]",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel.fit(
+            "[bold cyan]BuildRunner 3 - Attach to Existing Project[/bold cyan]\n\n"
+            f"[white]Analyzing codebase at:[/white] [yellow]{directory}[/yellow]",
+            border_style="cyan",
+        )
+    )
     console.print()
 
     # Phase 0: Detect BR Version
@@ -265,9 +259,7 @@ TODO: Document features
         console.print()
 
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
             migrate_task = progress.add_task("📦 Migrating BR2 → BR3...", total=None)
 
@@ -285,7 +277,7 @@ TODO: Document features
                 buildrunner_dir.mkdir(exist_ok=True)
 
                 features_file = buildrunner_dir / "features.json"
-                with open(features_file, 'w') as f:
+                with open(features_file, "w") as f:
                     json.dump(conversion_result.features_json, f, indent=2)
 
                 progress.update(migrate_task, description="✅ BR2 data migrated to features.json")
@@ -293,7 +285,9 @@ TODO: Document features
                 progress.update(migrate_task, description="✅ BR2 migration preview (dry-run)")
 
         console.print()
-        console.print("[green]✅ Migration complete - now scanning codebase for features...[/green]")
+        console.print(
+            "[green]✅ Migration complete - now scanning codebase for features...[/green]"
+        )
         console.print()
 
     elif version_result.version == BRVersion.BR3:
@@ -302,9 +296,7 @@ TODO: Document features
 
     # Phase 1: Scan Codebase
     with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
+        SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
     ) as progress:
         # Scan
         scan_task = progress.add_task("🔍 Scanning codebase...", total=None)
@@ -318,9 +310,7 @@ TODO: Document features
     # Phase 1.5: Extract Design System
     design_system = None
     with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
+        SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
     ) as progress:
         design_task = progress.add_task("🎨 Extracting design system...", total=None)
         design_extractor = DesignExtractor(directory)
@@ -328,7 +318,10 @@ TODO: Document features
 
         if not dry_run:
             design_extractor.save()
-            progress.update(design_task, description=f"✅ Design system extracted (confidence: {design_system.confidence:.0%})")
+            progress.update(
+                design_task,
+                description=f"✅ Design system extracted (confidence: {design_system.confidence:.0%})",
+            )
         else:
             progress.update(design_task, description=f"✅ Design system analyzed (dry-run)")
 
@@ -356,9 +349,7 @@ TODO: Document features
 
     # Phase 2: Extract Features
     with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
+        SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
     ) as progress:
         extract_task = progress.add_task("🧩 Extracting features...", total=None)
         extractor = FeatureExtractor()
@@ -370,9 +361,7 @@ TODO: Document features
 
     # Phase 3: Synthesize PRD
     with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
+        SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
     ) as progress:
         synth_task = progress.add_task("📝 Generating PROJECT_SPEC.md...", total=None)
         synthesizer = PRDSynthesizer()
@@ -388,14 +377,16 @@ TODO: Document features
     claude_md_path = None
     if not dry_run and HAS_CLAUDE_MD:
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
-            claude_task = progress.add_task("📋 Generating CLAUDE.md for attach mode...", total=None)
+            claude_task = progress.add_task(
+                "📋 Generating CLAUDE.md for attach mode...", total=None
+            )
             generator = ClaudeMdGenerator(directory)
             claude_md_path = generator.generate_attach_mode(force=True)
-            progress.update(claude_task, description="✅ CLAUDE.md generated with attach instructions")
+            progress.update(
+                claude_task, description="✅ CLAUDE.md generated with attach instructions"
+            )
     elif not dry_run and design_system and design_system.confidence > 0.1:
         # Fallback: Write design system instructions to a separate file
         design_guide_path = directory / ".buildrunner" / "DESIGN_GUIDE.md"
@@ -408,31 +399,35 @@ TODO: Document features
     # Show summary
     console.print()
     if dry_run:
-        console.print(Panel(
-            "[yellow]Dry-run mode - no files written[/yellow]\n\n"
-            f"Would write PROJECT_SPEC.md to:\n[cyan]{output}[/cyan]\n\n"
-            "Run without --dry-run to create the file.",
-            title="🔍 Preview",
-            border_style="yellow"
-        ))
+        console.print(
+            Panel(
+                "[yellow]Dry-run mode - no files written[/yellow]\n\n"
+                f"Would write PROJECT_SPEC.md to:\n[cyan]{output}[/cyan]\n\n"
+                "Run without --dry-run to create the file.",
+                title="🔍 Preview",
+                border_style="yellow",
+            )
+        )
     else:
-        console.print(Panel(
-            f"[green]✅ BuildRunner 3 attached successfully![/green]\n\n"
-            f"**Files Generated:**\n"
-            f"  • PROJECT_SPEC.md: [cyan]{output}[/cyan]\n"
-            f"  • CLAUDE.md: [cyan]{claude_md_path}[/cyan]\n\n"
-            f"**Next Steps:**\n"
-            f"1. Open Claude Code in this directory\n"
-            f"2. Claude will auto-read CLAUDE.md and know about your existing features\n"
-            f"3. Ask Claude to build new features - it will check PROJECT_SPEC.md first\n"
-            f"4. Features marked [cyan]DISCOVERED[/cyan] = already built, [cyan]PLANNED[/cyan] = ready to build\n\n"
-            f"**CLAUDE.md Instructions:**\n"
-            f"  • Auto-continue mode: Claude builds to 100% without pausing\n"
-            f"  • Codebase awareness: Claude checks PROJECT_SPEC.md before building\n"
-            f"  • Profile active: {generator.profile_manager.get_active_profile() or 'none'}",
-            title="✅ Attach Complete",
-            border_style="green"
-        ))
+        console.print(
+            Panel(
+                f"[green]✅ BuildRunner 3 attached successfully![/green]\n\n"
+                f"**Files Generated:**\n"
+                f"  • PROJECT_SPEC.md: [cyan]{output}[/cyan]\n"
+                f"  • CLAUDE.md: [cyan]{claude_md_path}[/cyan]\n\n"
+                f"**Next Steps:**\n"
+                f"1. Open Claude Code in this directory\n"
+                f"2. Claude will auto-read CLAUDE.md and know about your existing features\n"
+                f"3. Ask Claude to build new features - it will check PROJECT_SPEC.md first\n"
+                f"4. Features marked [cyan]DISCOVERED[/cyan] = already built, [cyan]PLANNED[/cyan] = ready to build\n\n"
+                f"**CLAUDE.md Instructions:**\n"
+                f"  • Auto-continue mode: Claude builds to 100% without pausing\n"
+                f"  • Codebase awareness: Claude checks PROJECT_SPEC.md before building\n"
+                f"  • Profile active: {generator.profile_manager.get_active_profile() or 'none'}",
+                title="✅ Attach Complete",
+                border_style="green",
+            )
+        )
 
     console.print()
 
@@ -490,7 +485,7 @@ def _show_features(features):
             str(len(feature.artifacts)),
             str(len(set(str(a.file_path) for a in feature.artifacts))),
             feature.priority.title(),
-            conf_display
+            conf_display,
         )
 
     console.print(table)
@@ -523,10 +518,10 @@ def _show_design_system(design_system):
 
     # Design tokens
     token_count = (
-        len(design_system.tokens.colors) +
-        len(design_system.tokens.fonts) +
-        len(design_system.tokens.font_sizes) +
-        len(design_system.tokens.spacing)
+        len(design_system.tokens.colors)
+        + len(design_system.tokens.fonts)
+        + len(design_system.tokens.font_sizes)
+        + len(design_system.tokens.spacing)
     )
     if token_count > 0:
         token_details = []
@@ -574,4 +569,5 @@ if __name__ == "__main__":
     # Run as standalone script
     import sys
     from typer import run
+
     run(attach_command)

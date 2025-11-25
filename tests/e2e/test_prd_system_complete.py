@@ -35,7 +35,8 @@ class TestCompleteUserFlows:
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
         # Create initial spec
-        spec_path.write_text("""# Test Project
+        spec_path.write_text(
+            """# Test Project
 
 ## Overview
 Test project for E2E testing
@@ -53,7 +54,8 @@ Initial feature for testing
 ### Acceptance Criteria
 - [ ] Criterion 1
 - [ ] Criterion 2
-""")
+"""
+        )
 
         # Initialize system
         task_queue = TaskQueue()
@@ -67,7 +69,7 @@ Initial feature for testing
             "controller": controller,
             "planner": planner,
             "integration": integration,
-            "task_queue": task_queue
+            "task_queue": task_queue,
         }
 
         # Cleanup
@@ -143,7 +145,9 @@ Initial feature for testing
         initial_feature_count = len(sys["controller"].prd.features)
 
         # Edit file
-        new_content = sys["spec_path"].read_text() + """
+        new_content = (
+            sys["spec_path"].read_text()
+            + """
 
 ## Feature 2: New Feature from File Edit
 **Priority:** medium
@@ -155,6 +159,7 @@ This feature was added by editing the file directly
 - Requirement A
 - Requirement B
 """
+        )
         sys["spec_path"].write_text(new_content)
 
         # Wait for detection
@@ -191,13 +196,16 @@ This feature was added by editing the file directly
 
         # Make 3 changes
         for i in range(3):
-            sys["controller"].update_prd({
-                "add_feature": {
-                    "id": f"version-test-{i}",
-                    "name": f"Version Test Feature {i}",
-                    "description": "Testing version control"
-                }
-            }, author="test")
+            sys["controller"].update_prd(
+                {
+                    "add_feature": {
+                        "id": f"version-test-{i}",
+                        "name": f"Version Test Feature {i}",
+                        "description": "Testing version control",
+                    }
+                },
+                author="test",
+            )
 
         # Check version history
         versions = sys["controller"].get_versions()
@@ -245,13 +253,16 @@ This feature was added by editing the file directly
         assert len(completed_task_ids) == 2
 
         # Update PRD
-        sys["controller"].update_prd({
-            "add_feature": {
-                "id": "preservation-test",
-                "name": "Preservation Test Feature",
-                "description": "Testing completed work preservation"
-            }
-        }, author="test")
+        sys["controller"].update_prd(
+            {
+                "add_feature": {
+                    "id": "preservation-test",
+                    "name": "Preservation Test Feature",
+                    "description": "Testing completed work preservation",
+                }
+            },
+            author="test",
+        )
 
         time.sleep(0.5)
 
@@ -288,21 +299,27 @@ This feature was added by editing the file directly
         initial_count = len(sys["controller"].prd.features)
 
         # API update
-        sys["controller"].update_prd({
-            "add_feature": {
-                "id": "api-update",
-                "name": "API Update Feature",
-                "description": "From API"
-            }
-        }, author="api-user")
+        sys["controller"].update_prd(
+            {
+                "add_feature": {
+                    "id": "api-update",
+                    "name": "API Update Feature",
+                    "description": "From API",
+                }
+            },
+            author="api-user",
+        )
 
         # File edit (immediate)
         content = sys["spec_path"].read_text()
-        sys["spec_path"].write_text(content + """
+        sys["spec_path"].write_text(
+            content
+            + """
 
 ## Feature X: File Edit Feature
 **Priority:** low
-""")
+"""
+        )
 
         # Wait for both to process
         time.sleep(2.0)
@@ -352,7 +369,7 @@ class TestMultiClientSync:
             "integration": integration,
             "controller": integration.controller,
             "clients": mock_clients,
-            "broadcasts": broadcasts
+            "broadcasts": broadcasts,
         }
 
         integration.stop()
@@ -371,13 +388,16 @@ class TestMultiClientSync:
         sys = setup_system
 
         # Update PRD
-        sys["controller"].update_prd({
-            "add_feature": {
-                "id": "broadcast-test",
-                "name": "Broadcast Test Feature",
-                "description": "Testing broadcast"
-            }
-        }, author="test")
+        sys["controller"].update_prd(
+            {
+                "add_feature": {
+                    "id": "broadcast-test",
+                    "name": "Broadcast Test Feature",
+                    "description": "Testing broadcast",
+                }
+            },
+            author="test",
+        )
 
         # Wait for async broadcast
         time.sleep(0.5)
@@ -390,7 +410,9 @@ class TestMultiClientSync:
         assert event.event_type.value == "feature_added"
         assert "broadcast-test" in event.affected_features
 
-        print(f"✅ Broadcast: {len(sys['broadcasts'])} events sent to {len(sys['clients'])} clients")
+        print(
+            f"✅ Broadcast: {len(sys['broadcasts'])} events sent to {len(sys['clients'])} clients"
+        )
 
     def test_file_edit_broadcasts_to_clients(self, setup_system):
         """Test: File edit → Detected → Broadcast to clients"""
@@ -398,15 +420,18 @@ class TestMultiClientSync:
 
         # Start file watcher
         from core.prd_file_watcher import start_prd_watcher
+
         watcher = start_prd_watcher(sys["spec_path"])
 
         try:
             # Edit file
-            sys["spec_path"].write_text("""# Test Project
+            sys["spec_path"].write_text(
+                """# Test Project
 
 ## Feature 1: From File
 **Priority:** high
-""")
+"""
+            )
 
             # Wait for detection and broadcast
             timeout = time.time() + 3.0
@@ -419,6 +444,7 @@ class TestMultiClientSync:
 
         finally:
             from core.prd_file_watcher import stop_prd_watcher
+
             stop_prd_watcher()
 
 
@@ -440,7 +466,7 @@ class TestErrorRecovery:
                 "asdfasdfasdf",
                 "!@#$%^&*()",
                 "delete everything",
-                "make it better"
+                "make it better",
             ]
 
             for input_text in invalid_inputs:
@@ -483,20 +509,15 @@ class TestErrorRecovery:
 
 def run_e2e_suite():
     """Run complete E2E test suite"""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("DYNAMIC PRD SYSTEM - END-TO-END TEST SUITE")
-    print("="*80 + "\n")
+    print("=" * 80 + "\n")
 
-    pytest.main([
-        __file__,
-        "-v",
-        "--tb=short",
-        "-s"
-    ])
+    pytest.main([__file__, "-v", "--tb=short", "-s"])
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("E2E TESTS COMPLETE")
-    print("="*80 + "\n")
+    print("=" * 80 + "\n")
 
 
 if __name__ == "__main__":

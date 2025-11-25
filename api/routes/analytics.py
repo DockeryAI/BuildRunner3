@@ -53,8 +53,10 @@ def get_event_collector() -> EventCollector:
 
 # Response Models
 
+
 class AgentPerformanceMetric(BaseModel):
     """Agent performance metric data"""
+
     agent_id: str
     success_rate: float  # 0-100
     total_tasks: int
@@ -70,6 +72,7 @@ class AgentPerformanceMetric(BaseModel):
 
 class CostBreakdownItem(BaseModel):
     """Cost breakdown by agent or model"""
+
     name: str  # Agent name or model name
     cost_usd: float
     percentage: float
@@ -79,6 +82,7 @@ class CostBreakdownItem(BaseModel):
 
 class CostBreakdownResponse(BaseModel):
     """Cost breakdown visualization data"""
+
     total_cost_usd: float
     period: str  # "hour", "day", "week"
     breakdown_by_agent: List[CostBreakdownItem]
@@ -88,6 +92,7 @@ class CostBreakdownResponse(BaseModel):
 
 class SuccessTrendPoint(BaseModel):
     """Single point in success trend data"""
+
     timestamp: str  # ISO format date/time
     success_rate: float  # 0-100
     total_tasks: int
@@ -97,6 +102,7 @@ class SuccessTrendPoint(BaseModel):
 
 class SuccessTrendsResponse(BaseModel):
     """Success rate trends over time"""
+
     period: str  # "hour", "day", "week"
     start_date: str
     end_date: str
@@ -108,6 +114,7 @@ class SuccessTrendsResponse(BaseModel):
 
 class HistoricalComparisonPeriod(BaseModel):
     """Historical data for a comparison period"""
+
     period: str
     success_rate: float
     cost_per_task: float
@@ -117,6 +124,7 @@ class HistoricalComparisonPeriod(BaseModel):
 
 class HistoricalComparisonResponse(BaseModel):
     """Historical comparison data"""
+
     current_period: HistoricalComparisonPeriod
     previous_period: HistoricalComparisonPeriod
     week_ago: HistoricalComparisonPeriod
@@ -126,7 +134,9 @@ class HistoricalComparisonResponse(BaseModel):
 
 
 @router.get("/agent-performance", response_model=List[AgentPerformanceMetric])
-async def get_agent_performance(period: str = Query("day", pattern="^(hour|day|week|all)$")) -> List[AgentPerformanceMetric]:
+async def get_agent_performance(
+    period: str = Query("day", pattern="^(hour|day|week|all)$")
+) -> List[AgentPerformanceMetric]:
     """
     Get agent performance metrics and charts.
 
@@ -161,11 +171,15 @@ async def get_agent_performance(period: str = Query("day", pattern="^(hour|day|w
         return [result]
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve agent performance: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve agent performance: {str(e)}"
+        )
 
 
 @router.get("/cost-breakdown", response_model=CostBreakdownResponse)
-async def get_cost_breakdown(period: str = Query("day", pattern="^(hour|day|week)$")) -> CostBreakdownResponse:
+async def get_cost_breakdown(
+    period: str = Query("day", pattern="^(hour|day|week)$")
+) -> CostBreakdownResponse:
     """
     Get cost breakdown visualization by agent and model.
 
@@ -197,13 +211,19 @@ async def get_cost_breakdown(period: str = Query("day", pattern="^(hour|day|week
         if summary.models_used:
             total_cost = summary.total_cost_usd if summary.total_cost_usd > 0 else 1
             for model_name, count in summary.models_used.items():
-                cost_per_model = (total_cost / len(summary.models_used)) if summary.models_used else 0
+                cost_per_model = (
+                    (total_cost / len(summary.models_used)) if summary.models_used else 0
+                )
                 model_breakdown.append(
                     CostBreakdownItem(
                         name=model_name,
                         cost_usd=cost_per_model,
                         percentage=(cost_per_model / total_cost * 100) if total_cost > 0 else 0,
-                        token_count=summary.total_tokens // len(summary.models_used) if summary.models_used else 0,
+                        token_count=(
+                            summary.total_tokens // len(summary.models_used)
+                            if summary.models_used
+                            else 0
+                        ),
                         task_count=count,
                     )
                 )
@@ -232,7 +252,7 @@ async def get_cost_breakdown(period: str = Query("day", pattern="^(hour|day|week
                     percentage=75.0,
                     token_count=output_tokens,
                     task_count=summary.total_tasks,
-                )
+                ),
             ]
 
         return CostBreakdownResponse(
@@ -249,8 +269,7 @@ async def get_cost_breakdown(period: str = Query("day", pattern="^(hour|day|week
 
 @router.get("/success-trends", response_model=SuccessTrendsResponse)
 async def get_success_trends(
-    period: str = Query("day", pattern="^(hour|day|week)$"),
-    days: int = Query(7, ge=1, le=90)
+    period: str = Query("day", pattern="^(hour|day|week)$"), days: int = Query(7, ge=1, le=90)
 ) -> SuccessTrendsResponse:
     """
     Get success rate trends over time.
@@ -282,9 +301,7 @@ async def get_success_trends(
             day_end = day.replace(hour=23, minute=59, second=59)
 
             daily_summary = analyzer.calculate_summary(
-                period="day",
-                start_time=day_start,
-                end_time=day_end
+                period="day", start_time=day_start, end_time=day_end
             )
 
             success_rate = daily_summary.success_rate
@@ -308,7 +325,7 @@ async def get_success_trends(
         min_success_rate = min(success_rates) if success_rates else 0.0
         max_success_rate = max(success_rates) if success_rates else 0.0
 
-        start_date = (now - timedelta(days=days-1)).strftime("%Y-%m-%d")
+        start_date = (now - timedelta(days=days - 1)).strftime("%Y-%m-%d")
         end_date = now.strftime("%Y-%m-%d")
 
         return SuccessTrendsResponse(
@@ -341,36 +358,28 @@ async def get_historical_comparison() -> HistoricalComparisonResponse:
         current_start = now - timedelta(hours=24)
         current_end = now
         current_summary = analyzer.calculate_summary(
-            period="day",
-            start_time=current_start,
-            end_time=current_end
+            period="day", start_time=current_start, end_time=current_end
         )
 
         # Previous 24 hours
         prev_start = now - timedelta(days=2)
         prev_end = now - timedelta(days=1)
         prev_summary = analyzer.calculate_summary(
-            period="day",
-            start_time=prev_start,
-            end_time=prev_end
+            period="day", start_time=prev_start, end_time=prev_end
         )
 
         # Week ago
         week_ago_start = now - timedelta(days=8)
         week_ago_end = now - timedelta(days=7)
         week_ago_summary = analyzer.calculate_summary(
-            period="day",
-            start_time=week_ago_start,
-            end_time=week_ago_end
+            period="day", start_time=week_ago_start, end_time=week_ago_end
         )
 
         # Month ago
         month_ago_start = now - timedelta(days=31)
         month_ago_end = now - timedelta(days=30)
         month_ago_summary = analyzer.calculate_summary(
-            period="day",
-            start_time=month_ago_start,
-            end_time=month_ago_end
+            period="day", start_time=month_ago_start, end_time=month_ago_end
         )
 
         # Calculate improvements (positive = better)
@@ -417,4 +426,6 @@ async def get_historical_comparison() -> HistoricalComparisonResponse:
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve historical comparison: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve historical comparison: {str(e)}"
+        )

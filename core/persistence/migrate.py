@@ -81,12 +81,10 @@ class MigrationManager:
         Returns:
             Current version number (0 if no migrations applied)
         """
-        result = self.db.query_one(
-            "SELECT MAX(version) as version FROM schema_version"
-        )
+        result = self.db.query_one("SELECT MAX(version) as version FROM schema_version")
 
-        if result and result['version'] is not None:
-            return result['version']
+        if result and result["version"] is not None:
+            return result["version"]
         return 0
 
     def get_applied_migrations(self) -> List[Dict[str, Any]]:
@@ -96,9 +94,7 @@ class MigrationManager:
         Returns:
             List of applied migration records
         """
-        return self.db.query(
-            "SELECT * FROM schema_version ORDER BY version"
-        )
+        return self.db.query("SELECT * FROM schema_version ORDER BY version")
 
     def discover_migrations(self) -> List[Migration]:
         """
@@ -110,7 +106,7 @@ class MigrationManager:
         migrations = []
 
         # Pattern: NNN_description.sql (e.g., 001_initial.sql)
-        pattern = re.compile(r'^(\d{3})_(.+)\.sql$')
+        pattern = re.compile(r"^(\d{3})_(.+)\.sql$")
 
         for file_path in sorted(self.migrations_dir.glob("*.sql")):
             match = pattern.match(file_path.name)
@@ -119,10 +115,10 @@ class MigrationManager:
                 continue
 
             version = int(match.group(1))
-            name = match.group(2).replace('_', ' ').title()
+            name = match.group(2).replace("_", " ").title()
 
             # Read migration SQL
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 sql = f.read()
 
             # Check for rollback SQL (in comments)
@@ -147,25 +143,25 @@ class MigrationManager:
         Returns:
             Rollback SQL if found, None otherwise
         """
-        lines = sql.split('\n')
+        lines = sql.split("\n")
         rollback_lines = []
         in_rollback = False
 
         for line in lines:
-            if '-- ROLLBACK:' in line:
+            if "-- ROLLBACK:" in line:
                 in_rollback = True
                 continue
 
             if in_rollback:
-                if line.strip().startswith('--'):
+                if line.strip().startswith("--"):
                     # Remove comment prefix
-                    rollback_lines.append(line.replace('--', '', 1).strip())
+                    rollback_lines.append(line.replace("--", "", 1).strip())
                 else:
                     # End of rollback block
                     break
 
         if rollback_lines:
-            return '\n'.join(rollback_lines)
+            return "\n".join(rollback_lines)
         return None
 
     def get_pending_migrations(self) -> List[Migration]:
@@ -211,11 +207,15 @@ class MigrationManager:
 
                 # Record in schema_version
                 from datetime import datetime, UTC
-                self.db.insert('schema_version', {
-                    'version': migration.version,
-                    'name': migration.name,
-                    'applied_at': datetime.now(UTC).isoformat()
-                })
+
+                self.db.insert(
+                    "schema_version",
+                    {
+                        "version": migration.version,
+                        "name": migration.name,
+                        "applied_at": datetime.now(UTC).isoformat(),
+                    },
+                )
 
                 applied_count += 1
                 logger.info(f"✓ Applied migration {migration.version}")
@@ -254,7 +254,7 @@ class MigrationManager:
         rolled_back = 0
 
         for record in applied[:steps]:
-            version = record['version']
+            version = record["version"]
             migration = migrations_by_version.get(version)
 
             if not migration:
@@ -272,7 +272,7 @@ class MigrationManager:
                 self.db.run_migration(migration.rollback_sql)
 
                 # Remove from schema_version
-                self.db.delete('schema_version', 'version = ?', (version,))
+                self.db.delete("schema_version", "version = ?", (version,))
 
                 rolled_back += 1
                 logger.info(f"✓ Rolled back migration {version}")
@@ -297,26 +297,16 @@ class MigrationManager:
         applied = self.get_applied_migrations()
 
         return {
-            'current_version': current_version,
-            'total_migrations': len(all_migrations),
-            'applied_migrations': len(applied),
-            'pending_migrations': len(pending),
-            'latest_version': all_migrations[-1].version if all_migrations else 0,
-            'applied': [
-                {
-                    'version': m['version'],
-                    'name': m['name'],
-                    'applied_at': m['applied_at']
-                }
+            "current_version": current_version,
+            "total_migrations": len(all_migrations),
+            "applied_migrations": len(applied),
+            "pending_migrations": len(pending),
+            "latest_version": all_migrations[-1].version if all_migrations else 0,
+            "applied": [
+                {"version": m["version"], "name": m["name"], "applied_at": m["applied_at"]}
                 for m in applied
             ],
-            'pending': [
-                {
-                    'version': m.version,
-                    'name': m.name
-                }
-                for m in pending
-            ]
+            "pending": [{"version": m.version, "name": m.name} for m in pending],
         }
 
     def print_status(self):
@@ -329,14 +319,16 @@ class MigrationManager:
         print(f"Applied:  {status['applied_migrations']} migrations")
         print(f"Pending:  {status['pending_migrations']} migrations")
 
-        if status['applied']:
+        if status["applied"]:
             print("\nApplied Migrations:")
-            for migration in status['applied']:
-                print(f"  ✓ {migration['version']:03d} - {migration['name']} ({migration['applied_at']})")
+            for migration in status["applied"]:
+                print(
+                    f"  ✓ {migration['version']:03d} - {migration['name']} ({migration['applied_at']})"
+                )
 
-        if status['pending']:
+        if status["pending"]:
             print("\nPending Migrations:")
-            for migration in status['pending']:
+            for migration in status["pending"]:
                 print(f"  ○ {migration['version']:03d} - {migration['name']}")
 
         print()

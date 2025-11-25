@@ -15,6 +15,7 @@ try:
     from github.Repository import Repository
     from github.Issue import Issue
     from github.PullRequest import PullRequest
+
     GITHUB_AVAILABLE = True
 except ImportError:
     GITHUB_AVAILABLE = False
@@ -103,7 +104,7 @@ class GitHubPlugin:
                     "status": self._map_issue_state(issue),
                     "priority": self._extract_priority(issue.labels),
                     "github_issue": issue.number,
-                    "github_url": issue.html_url
+                    "github_url": issue.html_url,
                 }
                 features.append(feature)
 
@@ -137,7 +138,7 @@ class GitHubPlugin:
                 "status": self._map_issue_state(issue),
                 "priority": self._extract_priority(issue.labels),
                 "github_issue": issue.number,
-                "github_url": issue.html_url
+                "github_url": issue.html_url,
             }
 
             return feature
@@ -146,7 +147,9 @@ class GitHubPlugin:
             print(f"⚠️  Failed to create feature from issue #{issue_number}: {e}")
             return None
 
-    def update_issue_status(self, issue_number: int, status: str, comment: Optional[str] = None) -> bool:
+    def update_issue_status(
+        self, issue_number: int, status: str, comment: Optional[str] = None
+    ) -> bool:
         """
         Update GitHub issue status based on feature status.
 
@@ -191,11 +194,7 @@ class GitHubPlugin:
             return False
 
     def create_pr(
-        self,
-        title: str,
-        body: str,
-        head_branch: str,
-        base_branch: str = "main"
+        self, title: str, body: str, head_branch: str, base_branch: str = "main"
     ) -> Optional[str]:
         """
         Create a pull request from CLI.
@@ -214,12 +213,7 @@ class GitHubPlugin:
             return None
 
         try:
-            pr = self.repo.create_pull(
-                title=title,
-                body=body,
-                head=head_branch,
-                base=base_branch
-            )
+            pr = self.repo.create_pull(title=title, body=body, head=head_branch, base=base_branch)
 
             print(f"✅ Created PR #{pr.number}: {pr.html_url}")
             return pr.html_url
@@ -229,10 +223,7 @@ class GitHubPlugin:
             return None
 
     def create_pr_from_feature(
-        self,
-        feature: Dict[str, Any],
-        branch: str,
-        base_branch: str = "main"
+        self, feature: Dict[str, Any], branch: str, base_branch: str = "main"
     ) -> Optional[str]:
         """
         Create a PR for a completed feature.
@@ -262,7 +253,7 @@ class GitHubPlugin:
 """
 
         # Link to issue if exists
-        if 'github_issue' in feature:
+        if "github_issue" in feature:
             body += f"\nCloses #{feature['github_issue']}\n"
 
         return self.create_pr(title, body, branch, base_branch)
@@ -305,15 +296,17 @@ class GitHubPlugin:
             result = []
 
             for pr in prs:
-                result.append({
-                    "number": pr.number,
-                    "title": pr.title,
-                    "url": pr.html_url,
-                    "branch": pr.head.ref,
-                    "base": pr.base.ref,
-                    "state": pr.state,
-                    "created_at": pr.created_at.isoformat(),
-                })
+                result.append(
+                    {
+                        "number": pr.number,
+                        "title": pr.title,
+                        "url": pr.html_url,
+                        "branch": pr.head.ref,
+                        "base": pr.base.ref,
+                        "state": pr.state,
+                        "created_at": pr.created_at.isoformat(),
+                    }
+                )
 
             return result
         except Exception as e:
@@ -342,7 +335,7 @@ class GitHubPlugin:
             "critical": "critical",
             "high": "high",
             "medium": "medium",
-            "low": "low"
+            "low": "low",
         }
 
         for label in labels:

@@ -31,7 +31,7 @@ class NAICSEntry:
             "category": self.category,
             "keywords": self.keywords,
             "has_full_profile": self.has_full_profile,
-            "popularity": self.popularity
+            "popularity": self.popularity,
         }
 
 
@@ -72,7 +72,7 @@ class SynapseConnector:
         content = self.naics_file.read_text()
 
         # Extract the array content between COMPLETE_NAICS_CODES: NAICSOption[] = [ ... ];
-        array_pattern = r'export const COMPLETE_NAICS_CODES:\s*NAICSOption\[\]\s*=\s*\[(.*?)\];'
+        array_pattern = r"export const COMPLETE_NAICS_CODES:\s*NAICSOption\[\]\s*=\s*\[(.*?)\];"
         array_match = re.search(array_pattern, content, re.DOTALL)
 
         if not array_match:
@@ -111,7 +111,7 @@ class SynapseConnector:
                 category=category,
                 keywords=keywords,
                 has_full_profile=has_full_profile,
-                popularity=popularity
+                popularity=popularity,
             )
 
             entries.append(entry)
@@ -143,7 +143,7 @@ class SynapseConnector:
 
         # Parse TypeScript profile object
         # Pattern: export const XxxProfile: IndustryProfile = { ... };
-        profile_pattern = r'export const \w+Profile:\s*IndustryProfile\s*=\s*\{(.*?)\};'
+        profile_pattern = r"export const \w+Profile:\s*IndustryProfile\s*=\s*\{(.*?)\};"
         match = re.search(profile_pattern, content, re.DOTALL)
 
         if not match:
@@ -156,50 +156,59 @@ class SynapseConnector:
         # Extract id
         id_match = re.search(r'id:\s*[\'"]([^\'"]+)[\'"]', profile_content)
         if id_match:
-            profile['id'] = id_match.group(1)
+            profile["id"] = id_match.group(1)
 
         # Extract name
         name_match = re.search(r'name:\s*[\'"]([^\'"]+)[\'"]', profile_content)
         if name_match:
-            profile['name'] = name_match.group(1)
+            profile["name"] = name_match.group(1)
 
         # Extract naicsCode
         naics_match = re.search(r'naicsCode:\s*[\'"]([^\'"]+)[\'"]', profile_content)
         if naics_match:
-            profile['naics_code'] = naics_match.group(1)
+            profile["naics_code"] = naics_match.group(1)
 
         # Extract arrays
-        for array_name in ['powerWords', 'avoidWords', 'contentThemes', 'commonPainPoints',
-                          'commonBuyingTriggers', 'trustBuilders', 'audienceCharacteristics']:
-            array_pattern = f'{array_name}:\\s*\\[(.*?)\\]'
+        for array_name in [
+            "powerWords",
+            "avoidWords",
+            "contentThemes",
+            "commonPainPoints",
+            "commonBuyingTriggers",
+            "trustBuilders",
+            "audienceCharacteristics",
+        ]:
+            array_pattern = f"{array_name}:\\s*\\[(.*?)\\]"
             array_match = re.search(array_pattern, profile_content, re.DOTALL)
             if array_match:
                 items = re.findall(r'[\'"]([^\'"]+)[\'"]', array_match.group(1))
-                snake_case_name = ''.join(['_'+c.lower() if c.isupper() else c for c in array_name]).lstrip('_')
+                snake_case_name = "".join(
+                    ["_" + c.lower() if c.isupper() else c for c in array_name]
+                ).lstrip("_")
                 profile[snake_case_name] = items
 
         # Extract psychology profile
-        psych_pattern = r'psychologyProfile:\s*\{(.*?)\}'
+        psych_pattern = r"psychologyProfile:\s*\{(.*?)\}"
         psych_match = re.search(psych_pattern, profile_content, re.DOTALL)
         if psych_match:
             psych_content = psych_match.group(1)
-            profile['psychology_profile'] = {}
+            profile["psychology_profile"] = {}
 
             # Extract primary triggers
-            triggers_match = re.search(r'primaryTriggers:\s*\[(.*?)\]', psych_content)
+            triggers_match = re.search(r"primaryTriggers:\s*\[(.*?)\]", psych_content)
             if triggers_match:
                 triggers = re.findall(r'[\'"]([^\'"]+)[\'"]', triggers_match.group(1))
-                profile['psychology_profile']['primary_triggers'] = triggers
+                profile["psychology_profile"]["primary_triggers"] = triggers
 
             # Extract urgency level
             urgency_match = re.search(r'urgencyLevel:\s*[\'"]([^\'"]+)[\'"]', psych_content)
             if urgency_match:
-                profile['psychology_profile']['urgency_level'] = urgency_match.group(1)
+                profile["psychology_profile"]["urgency_level"] = urgency_match.group(1)
 
             # Extract trust importance
             trust_match = re.search(r'trustImportance:\s*[\'"]([^\'"]+)[\'"]', psych_content)
             if trust_match:
-                profile['psychology_profile']['trust_importance'] = trust_match.group(1)
+                profile["psychology_profile"]["trust_importance"] = trust_match.group(1)
 
         return profile
 
@@ -225,7 +234,14 @@ class SynapseConnector:
         exported = 0
         for entry in entries:
             # Create industry ID from display name (lowercase, replace spaces with -)
-            industry_id = entry.display_name.lower().replace(' ', '-').replace('/', '-').replace('(', '').replace(')', '').replace('&', 'and')
+            industry_id = (
+                entry.display_name.lower()
+                .replace(" ", "-")
+                .replace("/", "-")
+                .replace("(", "")
+                .replace(")", "")
+                .replace("&", "and")
+            )
 
             # Try to load full profile from TypeScript
             full_profile = self.load_profile(industry_id)
@@ -236,19 +252,21 @@ class SynapseConnector:
             else:
                 # Create basic profile from NAICS data
                 yaml_data = {
-                    'id': industry_id,
-                    'name': entry.display_name,
-                    'naics_code': entry.naics_code,
-                    'category': entry.category,
-                    'keywords': entry.keywords,
-                    'has_full_profile': False,  # Mark as basic profile
-                    'source': 'naics_only'
+                    "id": industry_id,
+                    "name": entry.display_name,
+                    "naics_code": entry.naics_code,
+                    "category": entry.category,
+                    "keywords": entry.keywords,
+                    "has_full_profile": False,  # Mark as basic profile
+                    "source": "naics_only",
                 }
 
             # Write to YAML file
             output_file = output_dir / f"{industry_id}.yaml"
-            with open(output_file, 'w') as f:
-                yaml.dump(yaml_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+            with open(output_file, "w") as f:
+                yaml.dump(
+                    yaml_data, f, default_flow_style=False, allow_unicode=True, sort_keys=False
+                )
 
             exported += 1
 
@@ -272,10 +290,7 @@ class SynapseConnector:
         for entry in entries:
             category_counts[entry.category] = category_counts.get(entry.category, 0) + 1
 
-        return {
-            "total": len(entries),
-            "by_category": category_counts
-        }
+        return {"total": len(entries), "by_category": category_counts}
 
 
 def main():
@@ -326,6 +341,7 @@ def main():
     except Exception as e:
         print(f"❌ Error: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return 1
 
@@ -334,4 +350,5 @@ def main():
 
 if __name__ == "__main__":
     import sys
+
     sys.exit(main())

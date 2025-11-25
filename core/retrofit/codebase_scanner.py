@@ -14,15 +14,39 @@ logger = logging.getLogger(__name__)
 
 # Directories to skip
 SKIP_DIRS = {
-    'node_modules', '.git', '__pycache__', '.pytest_cache', '.mypy_cache',
-    'venv', '.venv', 'env', '.env', 'build', 'dist', '.tox', 'htmlcov',
-    '.eggs', '*.egg-info', '.next', 'out', 'coverage', '.nyc_output'
+    "node_modules",
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    "venv",
+    ".venv",
+    "env",
+    ".env",
+    "build",
+    "dist",
+    ".tox",
+    "htmlcov",
+    ".eggs",
+    "*.egg-info",
+    ".next",
+    "out",
+    "coverage",
+    ".nyc_output",
 }
 
 # File patterns to skip
 SKIP_PATTERNS = {
-    '.pyc', '.pyo', '.so', '.dylib', '.dll', '.log', '.lock',
-    'package-lock.json', 'yarn.lock', 'poetry.lock'
+    ".pyc",
+    ".pyo",
+    ".so",
+    ".dylib",
+    ".dll",
+    ".log",
+    ".lock",
+    "package-lock.json",
+    "yarn.lock",
+    "poetry.lock",
 }
 
 
@@ -55,14 +79,29 @@ class PythonAnalyzer(ast.NodeVisitor):
         decorators = [self._get_decorator_name(d) for d in node.decorator_list]
 
         # Check if it's a route
-        is_route = any(d in ['app.get', 'app.post', 'app.put', 'app.delete',
-                             'router.get', 'router.post', 'router.put', 'router.delete',
-                             'route', 'api_route'] for d in decorators)
+        is_route = any(
+            d
+            in [
+                "app.get",
+                "app.post",
+                "app.put",
+                "app.delete",
+                "router.get",
+                "router.post",
+                "router.put",
+                "router.delete",
+                "route",
+                "api_route",
+            ]
+            for d in decorators
+        )
 
         # Check if it's a test
-        is_test = (node.name.startswith('test_') or
-                   self.file_path.name.startswith('test_') or
-                   'test' in str(self.file_path).lower())
+        is_test = (
+            node.name.startswith("test_")
+            or self.file_path.name.startswith("test_")
+            or "test" in str(self.file_path).lower()
+        )
 
         # Determine artifact type
         if is_route:
@@ -87,9 +126,9 @@ class PythonAnalyzer(ast.NodeVisitor):
             decorators=decorators,
             imports=self.imports.copy(),
             metadata={
-                'args': [arg.arg for arg in node.args.args],
-                'is_async': isinstance(node, ast.AsyncFunctionDef),
-            }
+                "args": [arg.arg for arg in node.args.args],
+                "is_async": isinstance(node, ast.AsyncFunctionDef),
+            },
         )
 
         self.artifacts.append(artifact)
@@ -111,8 +150,7 @@ class PythonAnalyzer(ast.NodeVisitor):
         bases = [self._get_name(base) for base in node.bases]
 
         # Determine if it's a model (database model)
-        is_model = any(base in ['Base', 'Model', 'Document', 'BaseModel']
-                       for base in bases)
+        is_model = any(base in ["Base", "Model", "Document", "BaseModel"] for base in bases)
 
         # Create artifact
         artifact = CodeArtifact(
@@ -123,9 +161,9 @@ class PythonAnalyzer(ast.NodeVisitor):
             docstring=docstring,
             decorators=decorators,
             metadata={
-                'bases': bases,
-                'is_model': is_model,
-            }
+                "bases": bases,
+                "is_model": is_model,
+            },
         )
 
         self.artifacts.append(artifact)
@@ -187,7 +225,7 @@ class CodebaseScanner:
         self._detect_frameworks()
 
         # Scan files
-        if 'python' in self.languages:
+        if "python" in self.languages:
             self._scan_python_files()
 
         # More languages can be added here
@@ -204,7 +242,7 @@ class CodebaseScanner:
             artifacts=self.artifacts,
             total_files=self.total_files,
             total_lines=self.total_lines,
-            scan_duration_seconds=duration
+            scan_duration_seconds=duration,
         )
 
         logger.info(f"Scan complete: {result.summary}")
@@ -212,43 +250,43 @@ class CodebaseScanner:
 
     def _detect_languages(self):
         """Detect programming languages in the project"""
-        for ext in ['.py', '.js', '.ts', '.tsx', '.go', '.java', '.rb']:
-            if list(self.project_root.rglob(f'*{ext}')):
-                if ext == '.py':
-                    self.languages.add('python')
-                elif ext in ['.js', '.ts', '.tsx']:
-                    self.languages.add('javascript')
-                elif ext == '.go':
-                    self.languages.add('go')
-                elif ext == '.java':
-                    self.languages.add('java')
-                elif ext == '.rb':
-                    self.languages.add('ruby')
+        for ext in [".py", ".js", ".ts", ".tsx", ".go", ".java", ".rb"]:
+            if list(self.project_root.rglob(f"*{ext}")):
+                if ext == ".py":
+                    self.languages.add("python")
+                elif ext in [".js", ".ts", ".tsx"]:
+                    self.languages.add("javascript")
+                elif ext == ".go":
+                    self.languages.add("go")
+                elif ext == ".java":
+                    self.languages.add("java")
+                elif ext == ".rb":
+                    self.languages.add("ruby")
 
         logger.info(f"Detected languages: {self.languages}")
 
     def _detect_frameworks(self):
         """Detect frameworks used in the project"""
         # Check for framework indicators
-        if (self.project_root / 'requirements.txt').exists():
-            req_text = (self.project_root / 'requirements.txt').read_text()
-            if 'fastapi' in req_text.lower():
-                self.frameworks.add('FastAPI')
-            if 'flask' in req_text.lower():
-                self.frameworks.add('Flask')
-            if 'django' in req_text.lower():
-                self.frameworks.add('Django')
+        if (self.project_root / "requirements.txt").exists():
+            req_text = (self.project_root / "requirements.txt").read_text()
+            if "fastapi" in req_text.lower():
+                self.frameworks.add("FastAPI")
+            if "flask" in req_text.lower():
+                self.frameworks.add("Flask")
+            if "django" in req_text.lower():
+                self.frameworks.add("Django")
 
-        if (self.project_root / 'package.json').exists():
-            pkg_text = (self.project_root / 'package.json').read_text()
-            if 'react' in pkg_text.lower():
-                self.frameworks.add('React')
-            if 'next' in pkg_text.lower():
-                self.frameworks.add('Next.js')
-            if 'express' in pkg_text.lower():
-                self.frameworks.add('Express')
-            if 'vue' in pkg_text.lower():
-                self.frameworks.add('Vue')
+        if (self.project_root / "package.json").exists():
+            pkg_text = (self.project_root / "package.json").read_text()
+            if "react" in pkg_text.lower():
+                self.frameworks.add("React")
+            if "next" in pkg_text.lower():
+                self.frameworks.add("Next.js")
+            if "express" in pkg_text.lower():
+                self.frameworks.add("Express")
+            if "vue" in pkg_text.lower():
+                self.frameworks.add("Vue")
 
         logger.info(f"Detected frameworks: {self.frameworks}")
 
@@ -256,7 +294,7 @@ class CodebaseScanner:
         """Scan all Python files in the project"""
         logger.info("Scanning Python files...")
 
-        for py_file in self._iter_source_files('*.py'):
+        for py_file in self._iter_source_files("*.py"):
             try:
                 self._analyze_python_file(py_file)
             except Exception as e:
@@ -267,7 +305,7 @@ class CodebaseScanner:
     def _analyze_python_file(self, file_path: Path):
         """Analyze a single Python file"""
         try:
-            source = file_path.read_text(encoding='utf-8')
+            source = file_path.read_text(encoding="utf-8")
             self.total_files += 1
             self.total_lines += len(source.splitlines())
 
@@ -297,7 +335,9 @@ class CodebaseScanner:
                 continue
 
             # Skip hidden files
-            if any(part.startswith('.') for part in file_path.parts[len(self.project_root.parts):]):
+            if any(
+                part.startswith(".") for part in file_path.parts[len(self.project_root.parts) :]
+            ):
                 continue
 
             yield file_path

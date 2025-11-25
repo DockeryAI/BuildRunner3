@@ -19,10 +19,10 @@ import re
 class ComplexityLevel(str, Enum):
     """Task complexity levels mapped to model capabilities."""
 
-    SIMPLE = "simple"           # Haiku - straightforward tasks
-    MODERATE = "moderate"       # Sonnet - standard development
-    COMPLEX = "complex"         # Opus - advanced reasoning
-    CRITICAL = "critical"       # Opus - critical/sensitive tasks
+    SIMPLE = "simple"  # Haiku - straightforward tasks
+    MODERATE = "moderate"  # Sonnet - standard development
+    COMPLEX = "complex"  # Opus - advanced reasoning
+    CRITICAL = "critical"  # Opus - critical/sensitive tasks
 
 
 @dataclass
@@ -69,27 +69,56 @@ class ComplexityEstimator:
 
     # Keywords that indicate complexity
     COMPLEX_KEYWORDS = {
-        'architecture', 'refactor', 'redesign', 'migration', 'upgrade',
-        'performance', 'optimization', 'scale', 'distributed', 'concurrent',
-        'security', 'authentication', 'authorization', 'encryption',
-        'database', 'schema', 'migration', 'transaction',
-        'async', 'parallel', 'threading', 'multiprocess',
-        'algorithm', 'optimization', 'complexity', 'efficiency',
+        "architecture",
+        "refactor",
+        "redesign",
+        "migration",
+        "upgrade",
+        "performance",
+        "optimization",
+        "scale",
+        "distributed",
+        "concurrent",
+        "security",
+        "authentication",
+        "authorization",
+        "encryption",
+        "database",
+        "schema",
+        "migration",
+        "transaction",
+        "async",
+        "parallel",
+        "threading",
+        "multiprocess",
+        "algorithm",
+        "optimization",
+        "complexity",
+        "efficiency",
     }
 
     SIMPLE_KEYWORDS = {
-        'typo', 'rename', 'format', 'style', 'comment', 'documentation',
-        'logging', 'print', 'simple', 'trivial', 'minor',
+        "typo",
+        "rename",
+        "format",
+        "style",
+        "comment",
+        "documentation",
+        "logging",
+        "print",
+        "simple",
+        "trivial",
+        "minor",
     }
 
     # Critical task patterns
     CRITICAL_PATTERNS = [
-        r'security.*fix',
-        r'production.*issue',
-        r'critical.*bug',
-        r'data.*loss',
-        r'breach',
-        r'vulnerability',
+        r"security.*fix",
+        r"production.*issue",
+        r"critical.*bug",
+        r"data.*loss",
+        r"breach",
+        r"vulnerability",
     ]
 
     def __init__(self):
@@ -124,10 +153,7 @@ class ComplexityEstimator:
         desc_lower = task_description.lower()
 
         # Check for critical patterns
-        is_critical = any(
-            re.search(pattern, desc_lower)
-            for pattern in self.CRITICAL_PATTERNS
-        )
+        is_critical = any(re.search(pattern, desc_lower) for pattern in self.CRITICAL_PATTERNS)
 
         if is_critical:
             score += 80
@@ -183,11 +209,21 @@ class ComplexityEstimator:
             reasons.append("Moderate context requirement")
 
         # Detect complexity factors
-        has_architecture = any(kw in desc_lower for kw in ['architecture', 'design', 'refactor', 'redesign'])
-        has_security = any(kw in desc_lower for kw in ['security', 'auth', 'encryption', 'credential'])
-        has_performance = any(kw in desc_lower for kw in ['performance', 'optimize', 'slow', 'bottleneck'])
-        has_concurrency = any(kw in desc_lower for kw in ['async', 'concurrent', 'parallel', 'thread'])
-        requires_reasoning = any(kw in desc_lower for kw in ['algorithm', 'complex', 'solve', 'design'])
+        has_architecture = any(
+            kw in desc_lower for kw in ["architecture", "design", "refactor", "redesign"]
+        )
+        has_security = any(
+            kw in desc_lower for kw in ["security", "auth", "encryption", "credential"]
+        )
+        has_performance = any(
+            kw in desc_lower for kw in ["performance", "optimize", "slow", "bottleneck"]
+        )
+        has_concurrency = any(
+            kw in desc_lower for kw in ["async", "concurrent", "parallel", "thread"]
+        )
+        requires_reasoning = any(
+            kw in desc_lower for kw in ["algorithm", "complex", "solve", "design"]
+        )
 
         if has_architecture:
             score += 20
@@ -258,7 +294,7 @@ class ComplexityEstimator:
         for file_path in files:
             try:
                 if file_path.exists():
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    with open(file_path, "r", encoding="utf-8") as f:
                         total += len(f.readlines())
             except Exception:
                 # If we can't read the file, assume moderate size
@@ -276,19 +312,19 @@ class ComplexityEstimator:
         Returns:
             Task type classification
         """
-        if any(kw in description for kw in ['fix', 'bug', 'error', 'issue']):
+        if any(kw in description for kw in ["fix", "bug", "error", "issue"]):
             return "bug_fix"
-        elif any(kw in description for kw in ['refactor', 'cleanup', 'improve']):
+        elif any(kw in description for kw in ["refactor", "cleanup", "improve"]):
             return "refactor"
-        elif any(kw in description for kw in ['test', 'coverage', 'spec']):
+        elif any(kw in description for kw in ["test", "coverage", "spec"]):
             return "testing"
-        elif any(kw in description for kw in ['document', 'comment', 'readme']):
+        elif any(kw in description for kw in ["document", "comment", "readme"]):
             return "documentation"
-        elif any(kw in description for kw in ['add', 'new', 'create', 'implement']):
+        elif any(kw in description for kw in ["add", "new", "create", "implement"]):
             return "new_feature"
-        elif any(kw in description for kw in ['performance', 'optimize', 'speed']):
+        elif any(kw in description for kw in ["performance", "optimize", "speed"]):
             return "optimization"
-        elif any(kw in description for kw in ['security', 'vulnerability', 'auth']):
+        elif any(kw in description for kw in ["security", "vulnerability", "auth"]):
             return "security"
         else:
             return "general"
@@ -302,10 +338,10 @@ class ComplexityEstimator:
         """
         if not self.task_history:
             return {
-                'total_tasks': 0,
-                'avg_score': 0.0,
-                'level_distribution': {},
-                'type_distribution': {},
+                "total_tasks": 0,
+                "avg_score": 0.0,
+                "level_distribution": {},
+                "type_distribution": {},
             }
 
         total = len(self.task_history)
@@ -323,11 +359,11 @@ class ComplexityEstimator:
             type_dist[task.task_type] = type_dist.get(task.task_type, 0) + 1
 
         return {
-            'total_tasks': total,
-            'avg_score': avg_score,
-            'avg_files': sum(t.file_count for t in self.task_history) / total,
-            'avg_lines': sum(t.line_count for t in self.task_history) / total,
-            'level_distribution': level_dist,
-            'type_distribution': type_dist,
-            'total_tokens_estimated': sum(t.estimated_tokens for t in self.task_history),
+            "total_tasks": total,
+            "avg_score": avg_score,
+            "avg_files": sum(t.file_count for t in self.task_history) / total,
+            "avg_lines": sum(t.line_count for t in self.task_history) / total,
+            "level_distribution": level_dist,
+            "type_distribution": type_dist,
+            "total_tokens_estimated": sum(t.estimated_tokens for t in self.task_history),
         }

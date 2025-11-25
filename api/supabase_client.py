@@ -30,6 +30,7 @@ class SupabaseClient:
         if self.enabled:
             try:
                 from supabase import create_client, Client
+
                 self.client: Client = create_client(self.url, self.key)
             except ImportError:
                 print("Warning: supabase package not installed. Database features disabled.")
@@ -115,10 +116,7 @@ class SupabaseClient:
             return False
 
         try:
-            event = {
-                "event_type": event_type,
-                "data": data
-            }
+            event = {"event_type": event_type, "data": data}
             result = self.client.table("events").insert(event).execute()
             return bool(result.data)
         except Exception as e:

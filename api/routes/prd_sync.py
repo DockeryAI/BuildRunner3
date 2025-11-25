@@ -1,4 +1,5 @@
 """PRD Sync API - REST endpoints for PRD management"""
+
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional, Set
@@ -44,7 +45,7 @@ async def get_current_prd():
     try:
         controller = get_prd_controller()
         prd = controller.prd
-        
+
         return {
             "project_name": prd.project_name,
             "version": prd.version,
@@ -58,11 +59,11 @@ async def get_current_prd():
                     "requirements": f.requirements,
                     "acceptance_criteria": f.acceptance_criteria,
                     "technical_details": f.technical_details,
-                    "dependencies": f.dependencies
+                    "dependencies": f.dependencies,
                 }
                 for f in prd.features
             ],
-            "last_updated": prd.last_updated
+            "last_updated": prd.last_updated,
         }
     except Exception as e:
         logger.error(f"Error getting PRD: {e}")
@@ -75,15 +76,15 @@ async def update_prd(request: UpdatePRDRequest):
     try:
         controller = get_prd_controller()
         event = controller.update_prd(request.updates, request.author)
-        
+
         # Broadcast to all WebSocket clients
         await broadcast_prd_update(event)
-        
+
         return {
             "success": True,
             "event_type": event.event_type.value,
             "affected_features": event.affected_features,
-            "timestamp": event.timestamp
+            "timestamp": event.timestamp,
         }
     except Exception as e:
         logger.error(f"Error updating PRD: {e}")
@@ -96,19 +97,19 @@ async def parse_natural_language(request: ParseNLRequest):
     try:
         controller = get_prd_controller()
         updates = controller.parse_natural_language(request.text)
-        
+
         if not updates:
             return {
                 "success": False,
                 "message": "Could not parse natural language input",
-                "updates": {}
+                "updates": {},
             }
-        
+
         return {
             "success": True,
             "message": "Successfully parsed natural language",
             "updates": updates,
-            "preview": _generate_preview(updates, controller.prd)
+            "preview": _generate_preview(updates, controller.prd),
         }
     except Exception as e:
         logger.error(f"Error parsing NL: {e}")
@@ -121,7 +122,7 @@ async def get_versions():
     try:
         controller = get_prd_controller()
         versions = controller.get_versions()
-        
+
         return {
             "versions": [
                 {
@@ -129,7 +130,7 @@ async def get_versions():
                     "timestamp": v.timestamp,
                     "author": v.author,
                     "summary": v.summary,
-                    "feature_count": len(v.prd_snapshot.features)
+                    "feature_count": len(v.prd_snapshot.features),
                 }
                 for i, v in enumerate(versions)
             ]
@@ -145,11 +146,8 @@ async def rollback_version(request: RollbackRequest):
     try:
         controller = get_prd_controller()
         controller.rollback_to_version(request.version_index)
-        
-        return {
-            "success": True,
-            "message": f"Rolled back to version {request.version_index}"
-        }
+
+        return {"success": True, "message": f"Rolled back to version {request.version_index}"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -162,23 +160,20 @@ async def websocket_endpoint(websocket: WebSocket):
     """WebSocket endpoint for real-time PRD updates"""
     await websocket.accept()
     active_connections.add(websocket)
-    
+
     try:
         # Send initial PRD state
         controller = get_prd_controller()
         prd = controller.prd
-        await websocket.send_json({
-            "type": "initial",
-            "prd": prd.to_dict()
-        })
-        
+        await websocket.send_json({"type": "initial", "prd": prd.to_dict()})
+
         # Keep connection alive
         while True:
             data = await websocket.receive_text()
             # Handle ping/pong
             if data == "ping":
                 await websocket.send_text("pong")
-    
+
     except WebSocketDisconnect:
         active_connections.discard(websocket)
         logger.debug("WebSocket client disconnected")
@@ -191,16 +186,16 @@ async def broadcast_prd_update(event: PRDChangeEvent):
     """Broadcast PRD update to all connected WebSocket clients"""
     if not active_connections:
         return
-    
+
     message = {
         "type": "prd_updated",
         "event_type": event.event_type.value,
         "affected_features": event.affected_features,
         "diff": event.diff,
         "timestamp": event.timestamp,
-        "prd": event.full_prd.to_dict()
+        "prd": event.full_prd.to_dict(),
     }
-    
+
     disconnected = set()
     for connection in active_connections:
         try:
@@ -208,7 +203,7 @@ async def broadcast_prd_update(event: PRDChangeEvent):
         except Exception as e:
             logger.error(f"Error broadcasting to client: {e}")
             disconnected.add(connection)
-    
+
     # Clean up disconnected clients
     active_connections.difference_update(disconnected)
 
@@ -216,11 +211,11 @@ async def broadcast_prd_update(event: PRDChangeEvent):
 def _generate_preview(updates: Dict[str, Any], current_prd) -> str:
     """Generate preview text of what will change"""
     preview_lines = []
-    
+
     if "add_feature" in updates:
         feature = updates["add_feature"]
         preview_lines.append(f"➕ Will add feature: {feature['name']}")
-    
+
     if "remove_feature" in updates:
         feature_id = updates["remove_feature"]
         # Find feature name
@@ -228,7 +223,7 @@ def _generate_preview(updates: Dict[str, Any], current_prd) -> str:
             if f.id == feature_id:
                 preview_lines.append(f"➖ Will remove feature: {f.name}")
                 break
-    
+
     if "update_feature" in updates:
         feature_id = updates["update_feature"]["id"]
         changes = updates["update_feature"]["updates"]
@@ -238,5 +233,5 @@ def _generate_preview(updates: Dict[str, Any], current_prd) -> str:
                 for key in changes:
                     preview_lines.append(f"   - Update {key}")
                 break
-    
+
     return "\n".join(preview_lines) if preview_lines else "No changes detected"

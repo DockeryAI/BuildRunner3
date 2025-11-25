@@ -1,6 +1,7 @@
 """
 Tests for CLI Review
 """
+
 import pytest
 import sys
 from pathlib import Path
@@ -29,8 +30,8 @@ class TestCLIReview:
         monkeypatch.chdir(tmp_path)
 
         # Mock subprocess to raise error
-        with patch('subprocess.run') as mock_run:
-            mock_run.side_effect = subprocess.CalledProcessError(1, 'git')
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, "git")
             result = install_hook()
 
         assert result == 1
@@ -40,21 +41,21 @@ class TestCLIReview:
         monkeypatch.chdir(tmp_path)
 
         # Create fake git directory
-        git_dir = tmp_path / '.git'
+        git_dir = tmp_path / ".git"
         git_dir.mkdir()
 
         # Create fake hook source
-        hooks_source_dir = tmp_path / 'hooks'
+        hooks_source_dir = tmp_path / "hooks"
         hooks_source_dir.mkdir()
-        hook_file = hooks_source_dir / 'pre-commit'
+        hook_file = hooks_source_dir / "pre-commit"
         hook_file.write_text("#!/usr/bin/env python3\nprint('test')")
 
         # Mock subprocess to return git dir
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(stdout=str(git_dir))
 
             # Mock Path to return our test hook
-            with patch('pathlib.Path.__truediv__') as mock_path:
+            with patch("pathlib.Path.__truediv__") as mock_path:
                 # This is complex to mock properly, so let's just verify the function runs
                 # without error in a real git repo scenario
                 pass
@@ -75,10 +76,12 @@ class TestCLIReview:
 
         # Create test file
         test_file = tmp_path / "test.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 def simple_function():
     return 42
-""")
+"""
+        )
 
         result = review_file(str(test_file))
         captured = capsys.readouterr()
@@ -96,13 +99,14 @@ class TestPreCommitHook:
         monkeypatch.chdir(tmp_path)
 
         # Import and test
-        sys.path.insert(0, str(Path(__file__).parent.parent / 'hooks'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / "hooks"))
 
         # Mock subprocess
-        with patch('subprocess.run') as mock_run:
-            mock_run.side_effect = subprocess.CalledProcessError(1, 'git')
+        with patch("subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, "git")
 
             from hooks.pre_commit import get_staged_python_files
+
             files = get_staged_python_files()
 
         assert files == []
@@ -111,14 +115,13 @@ class TestPreCommitHook:
         """Test getting staged Python files"""
         monkeypatch.chdir(tmp_path)
 
-        sys.path.insert(0, str(Path(__file__).parent.parent / 'hooks'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / "hooks"))
 
-        with patch('subprocess.run') as mock_run:
-            mock_run.return_value = MagicMock(
-                stdout="file1.py\nfile2.py\nfile3.txt"
-            )
+        with patch("subprocess.run") as mock_run:
+            mock_run.return_value = MagicMock(stdout="file1.py\nfile2.py\nfile3.txt")
 
             from hooks.pre_commit import get_staged_python_files
+
             files = get_staged_python_files()
 
         # Should only return .py files
@@ -128,41 +131,45 @@ class TestPreCommitHook:
 
     def test_analyze_file_basic(self, tmp_path):
         """Test basic file analysis"""
-        sys.path.insert(0, str(Path(__file__).parent.parent / 'hooks'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / "hooks"))
 
         from hooks.pre_commit import analyze_file
 
         # Create test file
         test_file = tmp_path / "test.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 def simple_function():
     return 42
-""")
+"""
+        )
 
         result = analyze_file(str(test_file))
 
-        assert 'file' in result
-        assert 'passed' in result
-        assert 'issues' in result
-        assert result['file'] == str(test_file)
+        assert "file" in result
+        assert "passed" in result
+        assert "issues" in result
+        assert result["file"] == str(test_file)
 
     def test_analyze_file_with_issues(self, tmp_path):
         """Test file analysis with code issues"""
-        sys.path.insert(0, str(Path(__file__).parent.parent / 'hooks'))
+        sys.path.insert(0, str(Path(__file__).parent.parent / "hooks"))
 
         from hooks.pre_commit import analyze_file
 
         # Create test file with issues
         test_file = tmp_path / "bad.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 password = "hardcoded123"
 
 def eval_usage(code):
     eval(code)
-""")
+"""
+        )
 
         result = analyze_file(str(test_file))
 
         # Should fail due to security issues
-        assert result['passed'] is False
-        assert len(result['issues']) > 0
+        assert result["passed"] is False
+        assert len(result["issues"]) > 0

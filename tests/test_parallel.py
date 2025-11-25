@@ -39,13 +39,13 @@ def test_session_creation():
         session = manager.create_session(
             name="Test Build",
             total_tasks=10,
-            metadata={'build': 'test'},
+            metadata={"build": "test"},
         )
 
         assert session.name == "Test Build"
         assert session.total_tasks == 10
         assert session.status == SessionStatus.CREATED
-        assert session.metadata['build'] == 'test'
+        assert session.metadata["build"] == "test"
         assert session.session_id in manager.sessions
 
 
@@ -254,11 +254,11 @@ def test_worker_registration():
     """Test worker registration."""
     coordinator = WorkerCoordinator(max_workers=5)
 
-    worker = coordinator.register_worker(metadata={'name': 'Test Worker'})
+    worker = coordinator.register_worker(metadata={"name": "Test Worker"})
 
     assert worker.worker_id in coordinator.workers
     assert worker.status == WorkerStatus.IDLE
-    assert worker.metadata['name'] == 'Test Worker'
+    assert worker.metadata["name"] == "Test Worker"
     assert worker.last_heartbeat is not None
 
 
@@ -285,7 +285,7 @@ def test_task_assignment():
     # Assign task
     assigned_worker_id = coordinator.assign_task(
         task_id="task-1",
-        task_data={'description': 'Test task'},
+        task_data={"description": "Test task"},
         session_id="session-1",
     )
 
@@ -304,11 +304,11 @@ def test_task_queueing():
     w1 = coordinator.register_worker()
 
     # Assign first task
-    assigned1 = coordinator.assign_task("task-1", {'data': 1})
+    assigned1 = coordinator.assign_task("task-1", {"data": 1})
     assert assigned1 is not None
 
     # Second task should be queued
-    assigned2 = coordinator.assign_task("task-2", {'data': 2})
+    assigned2 = coordinator.assign_task("task-2", {"data": 2})
     assert assigned2 is None
     assert len(coordinator.task_queue) == 1
 
@@ -359,6 +359,7 @@ def test_worker_heartbeat():
 
     # Wait a bit and send heartbeat
     import time
+
     time.sleep(0.1)
     coordinator.heartbeat(worker_id)
 
@@ -409,11 +410,11 @@ def test_load_distribution():
     # Get distribution
     dist = coordinator.get_load_distribution()
 
-    assert dist['total_workers'] == 3
-    assert dist['idle_workers'] == 2  # w1 and w3
-    assert dist['busy_workers'] == 1  # w2
-    assert dist['total_completed'] == 1
-    assert dist['utilization'] == pytest.approx(33.33, rel=0.1)
+    assert dist["total_workers"] == 3
+    assert dist["idle_workers"] == 2  # w1 and w3
+    assert dist["busy_workers"] == 1  # w2
+    assert dist["total_completed"] == 1
+    assert dist["utilization"] == pytest.approx(33.33, rel=0.1)
 
 
 def test_worker_scaling():
@@ -562,12 +563,12 @@ def test_dashboard_summary():
         dashboard = LiveDashboard(session_manager, worker_coordinator)
         summary = dashboard.get_summary()
 
-        assert 'workers' in summary
-        assert 'sessions' in summary
-        assert 'tasks' in summary
-        assert summary['workers']['total'] == 1
-        assert summary['workers']['busy'] == 1
-        assert summary['sessions']['active'] == 1
+        assert "workers" in summary
+        assert "sessions" in summary
+        assert "tasks" in summary
+        assert summary["workers"]["total"] == 1
+        assert summary["workers"]["busy"] == 1
+        assert summary["sessions"]["active"] == 1
 
 
 # ===== Integration Tests =====
@@ -649,8 +650,8 @@ def test_multi_session_coordination():
 
         # Verify load distribution
         dist = worker_coordinator.get_load_distribution()
-        assert dist['busy_workers'] == 4
-        assert dist['utilization'] == 100.0
+        assert dist["busy_workers"] == 4
+        assert dist["utilization"] == 100.0
 
         # Verify active sessions
         active = session_manager.get_active_sessions()

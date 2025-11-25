@@ -18,7 +18,9 @@ class DocumentationAnalyzer:
         # Lazy import to avoid dependency issues if not used
         pass
 
-    async def analyze_for_prd(self, docs: List[DocumentationFile], project_name: str) -> Dict[str, any]:
+    async def analyze_for_prd(
+        self, docs: List[DocumentationFile], project_name: str
+    ) -> Dict[str, any]:
         """
         Analyze documentation files to extract PRD sections
 
@@ -49,7 +51,7 @@ class DocumentationAnalyzer:
 
         for doc in docs:
             # Prioritize README
-            if doc.type == 'readme':
+            if doc.type == "readme":
                 sections.insert(0, f"# {doc.path.name}\n\n{doc.content}\n\n")
             else:
                 sections.append(f"# {doc.path.name}\n\n{doc.content}\n\n")
@@ -73,8 +75,8 @@ class DocumentationAnalyzer:
             # Call AI
             result = await openrouter_client.extract_prd_from_docs(prompt)
 
-            if result and result.get('success'):
-                return result.get('prd_sections', self._empty_prd_sections())
+            if result and result.get("success"):
+                return result.get("prd_sections", self._empty_prd_sections())
             else:
                 logger.warning(f"AI extraction failed: {result.get('error')}")
                 return self._empty_prd_sections()
@@ -123,20 +125,22 @@ If you cannot find specific information for a field, use reasonable defaults bas
     def _empty_prd_sections(self) -> Dict[str, any]:
         """Return empty PRD sections"""
         return {
-            'executive_summary': '',
-            'goals': [],
-            'target_users': '',
-            'user_stories': [],
-            'technical_requirements': {
-                'frontend': '',
-                'backend': '',
-                'database': '',
-                'infrastructure': ''
+            "executive_summary": "",
+            "goals": [],
+            "target_users": "",
+            "user_stories": [],
+            "technical_requirements": {
+                "frontend": "",
+                "backend": "",
+                "database": "",
+                "infrastructure": "",
             },
-            'success_criteria': []
+            "success_criteria": [],
         }
 
-    def sync_analyze_for_prd(self, docs: List[DocumentationFile], project_name: str) -> Dict[str, any]:
+    def sync_analyze_for_prd(
+        self, docs: List[DocumentationFile], project_name: str
+    ) -> Dict[str, any]:
         """
         Synchronous wrapper for analyze_for_prd (for non-async contexts)
 
@@ -155,6 +159,7 @@ If you cannot find specific information for a field, use reasonable defaults bas
             if loop.is_running():
                 # If loop is already running, create a new task
                 import concurrent.futures
+
                 with concurrent.futures.ThreadPoolExecutor() as pool:
                     future = pool.submit(asyncio.run, self.analyze_for_prd(docs, project_name))
                     return future.result()

@@ -127,7 +127,7 @@ class TestAgentChain:
         assert item_id in chain.items
         assert chain.items[item_id].agent_type == AgentType.EXPLORE
         assert chain.items[item_id].task == test_task
-        assert chain.stats['total_items'] == 1
+        assert chain.stats["total_items"] == 1
 
     def test_add_multiple_work_items(self, mock_agent_bridge, test_task):
         """Test adding multiple work items"""
@@ -143,7 +143,7 @@ class TestAgentChain:
             item_ids.append(item_id)
 
         assert len(chain.items) == 3
-        assert chain.stats['total_items'] == 3
+        assert chain.stats["total_items"] == 3
 
     def test_add_item_with_dependencies(self, mock_agent_bridge, test_task):
         """Test adding item with dependencies"""
@@ -292,6 +292,7 @@ class TestAgentChain:
         item_id = chain.add_work_item(AgentType.EXPLORE, test_task, "Explore")
 
         on_complete_calls = []
+
         def on_complete(item):
             on_complete_calls.append(item.item_id)
 
@@ -337,9 +338,9 @@ class TestAgentChain:
 
         results = chain.get_results()
 
-        assert results['status'] == 'completed'
-        assert results['workflow_id'] == chain.workflow_id
-        assert len(results['items']['completed']) == 1
+        assert results["status"] == "completed"
+        assert results["workflow_id"] == chain.workflow_id
+        assert len(results["items"]["completed"]) == 1
 
     def test_stats_calculation(
         self,
@@ -357,11 +358,11 @@ class TestAgentChain:
         chain.execute()
 
         results = chain.get_results()
-        stats = results['stats']
+        stats = results["stats"]
 
-        assert stats['total_items'] == 2
-        assert stats['completed_items'] == 2
-        assert stats['failed_items'] == 0
+        assert stats["total_items"] == 2
+        assert stats["completed_items"] == 2
+        assert stats["failed_items"] == 0
 
     def test_execute_empty_workflow_raises_error(self, mock_agent_bridge):
         """Test that executing empty workflow raises error"""
@@ -412,7 +413,7 @@ class TestParallelAgentPool:
         )
 
         assert item_id in pool.items
-        assert pool.stats['total_items'] == 1
+        assert pool.stats["total_items"] == 1
 
     def test_add_multiple_items(self, mock_agent_bridge, test_task):
         """Test adding multiple items to pool"""
@@ -426,7 +427,7 @@ class TestParallelAgentPool:
             )
 
         assert len(pool.items) == 5
-        assert pool.stats['total_items'] == 5
+        assert pool.stats["total_items"] == 5
 
     def test_max_workers_capped_at_10(self, mock_agent_bridge):
         """Test that max_workers is capped at 10"""
@@ -448,7 +449,7 @@ class TestParallelAgentPool:
         result = pool.execute()
 
         assert result is True
-        assert pool.stats['completed_items'] == 1
+        assert pool.stats["completed_items"] == 1
 
     def test_execute_multiple_items(
         self,
@@ -467,7 +468,7 @@ class TestParallelAgentPool:
         result = pool.execute()
 
         assert result is True
-        assert pool.stats['completed_items'] == 5
+        assert pool.stats["completed_items"] == 5
         assert mock_agent_bridge.dispatch_task.call_count == 5
 
     def test_execute_empty_pool_raises_error(self, mock_agent_bridge):
@@ -525,8 +526,8 @@ class TestParallelAgentPool:
         result = pool.execute()
 
         assert result is False
-        assert pool.stats['completed_items'] == 2
-        assert pool.stats['failed_items'] == 1
+        assert pool.stats["completed_items"] == 2
+        assert pool.stats["failed_items"] == 1
 
     def test_get_results(
         self,
@@ -545,9 +546,9 @@ class TestParallelAgentPool:
 
         results = pool.get_results()
 
-        assert results['pool_id'] == pool.pool_id
-        assert results['total_items'] == 2
-        assert results['completed'] == 2
+        assert results["pool_id"] == pool.pool_id
+        assert results["total_items"] == 2
+        assert results["completed"] == 2
 
     def test_checkpoint_saving(
         self,
@@ -601,8 +602,8 @@ class TestParallelAgentPool:
 
         pool.execute()
 
-        assert pool.stats['total_duration_ms'] > 0
-        assert pool.stats['avg_item_duration_ms'] > 0
+        assert pool.stats["total_duration_ms"] > 0
+        assert pool.stats["avg_item_duration_ms"] > 0
 
 
 # WorkflowTemplates Tests
@@ -681,6 +682,7 @@ class TestAgentWorkItem:
 
         # Add completion time
         import time
+
         time.sleep(0.1)
         item.completed_at = datetime.now()
 
@@ -700,10 +702,10 @@ class TestAgentWorkItem:
 
         item_dict = item.to_dict()
 
-        assert item_dict['item_id'] == "item-1"
-        assert item_dict['agent_type'] == "explore"
-        assert item_dict['task_id'] == test_task.id
-        assert item_dict['status'] == "completed"
+        assert item_dict["item_id"] == "item-1"
+        assert item_dict["agent_type"] == "explore"
+        assert item_dict["task_id"] == test_task.id
+        assert item_dict["status"] == "completed"
 
 
 # Integration Tests
@@ -726,8 +728,8 @@ class TestWorkflowIntegration:
         assert chain.execute()
 
         results = chain.get_results()
-        assert results['status'] == 'completed'
-        assert len(results['items']['completed']) == 2
+        assert results["status"] == "completed"
+        assert len(results["items"]["completed"]) == 2
 
     def test_pool_to_results_pipeline(
         self,
@@ -745,7 +747,7 @@ class TestWorkflowIntegration:
         assert pool.execute()
 
         results = pool.get_results()
-        assert results['completed'] == 3
+        assert results["completed"] == 3
 
     def test_mixed_workflow_execution(
         self,
@@ -771,8 +773,8 @@ class TestWorkflowIntegration:
         chain_results = chain.get_results()
         pool_results = pool.get_results()
 
-        assert chain_results['status'] == 'completed'
-        assert pool_results['completed'] == 3
+        assert chain_results["status"] == "completed"
+        assert pool_results["completed"] == 3
 
     def test_chain_with_circular_dependencies(
         self,

@@ -12,6 +12,7 @@ from pathlib import Path
 
 try:
     from notion_client import Client
+
     NOTION_AVAILABLE = True
 except ImportError:
     NOTION_AVAILABLE = False
@@ -93,7 +94,7 @@ class NotionPlugin:
 
         try:
             # Read STATUS.md
-            with open(status_file, 'r') as f:
+            with open(status_file, "r") as f:
                 content = f.read()
 
             # Parse status content
@@ -110,21 +111,14 @@ class NotionPlugin:
 
             if page_id:
                 # Update existing page
-                self.client.blocks.children.append(
-                    block_id=page_id,
-                    children=blocks
-                )
+                self.client.blocks.children.append(block_id=page_id, children=blocks)
                 print(f"✅ Updated Notion status page")
             else:
                 # Create new page
                 self.client.pages.create(
                     parent={"database_id": self.database_id},
-                    properties={
-                        "title": {
-                            "title": [{"text": {"content": title}}]
-                        }
-                    },
-                    children=blocks
+                    properties={"title": {"title": [{"text": {"content": title}}]}},
+                    children=blocks,
                 )
                 print(f"✅ Created Notion status page")
 
@@ -203,10 +197,10 @@ class NotionPlugin:
 - Created: {datetime.now().strftime('%Y-%m-%d')}
 """
 
-            if 'week' in feature:
+            if "week" in feature:
                 content += f"- Week: {feature['week']}\n"
 
-            if 'build' in feature:
+            if "build" in feature:
                 content += f"- Build: {feature['build']}\n"
 
             blocks = self._markdown_to_blocks(content)
@@ -214,21 +208,15 @@ class NotionPlugin:
             page = self.client.pages.create(
                 parent={"database_id": self.database_id},
                 properties={
-                    "title": {
-                        "title": [{"text": {"content": feature['name']}}]
-                    },
-                    "Status": {
-                        "select": {"name": feature.get('status', 'planned')}
-                    },
-                    "Priority": {
-                        "select": {"name": feature.get('priority', 'medium')}
-                    }
+                    "title": {"title": [{"text": {"content": feature["name"]}}]},
+                    "Status": {"select": {"name": feature.get("status", "planned")}},
+                    "Priority": {"select": {"name": feature.get("priority", "medium")}},
                 },
-                children=blocks
+                children=blocks,
             )
 
             print(f"✅ Created Notion page for {feature['name']}")
-            return page['url']
+            return page["url"]
 
         except Exception as e:
             print(f"⚠️  Failed to create Notion page: {e}")
@@ -236,7 +224,7 @@ class NotionPlugin:
 
     def _sync_doc_file(self, doc_file: Path) -> bool:
         """Sync a single documentation file to Notion"""
-        with open(doc_file, 'r') as f:
+        with open(doc_file, "r") as f:
             content = f.read()
 
         title = doc_file.stem.replace("_", " ").replace("-", " ").title()
@@ -251,24 +239,17 @@ class NotionPlugin:
                 # Update existing
                 # First, delete old content
                 children = self.client.blocks.children.list(block_id=page_id)
-                for block in children.get('results', []):
-                    self.client.blocks.delete(block_id=block['id'])
+                for block in children.get("results", []):
+                    self.client.blocks.delete(block_id=block["id"])
 
                 # Add new content
-                self.client.blocks.children.append(
-                    block_id=page_id,
-                    children=blocks
-                )
+                self.client.blocks.children.append(block_id=page_id, children=blocks)
             else:
                 # Create new
                 self.client.pages.create(
                     parent={"database_id": self.database_id},
-                    properties={
-                        "title": {
-                            "title": [{"text": {"content": title}}]
-                        }
-                    },
-                    children=blocks
+                    properties={"title": {"title": [{"text": {"content": title}}]}},
+                    children=blocks,
                 )
 
             return True
@@ -297,39 +278,41 @@ class NotionPlugin:
 
             # Headers
             if line.startswith("# "):
-                blocks.append({
-                    "object": "block",
-                    "type": "heading_1",
-                    "heading_1": {
-                        "rich_text": [{"text": {"content": line[2:].strip()}}]
+                blocks.append(
+                    {
+                        "object": "block",
+                        "type": "heading_1",
+                        "heading_1": {"rich_text": [{"text": {"content": line[2:].strip()}}]},
                     }
-                })
+                )
             elif line.startswith("## "):
-                blocks.append({
-                    "object": "block",
-                    "type": "heading_2",
-                    "heading_2": {
-                        "rich_text": [{"text": {"content": line[3:].strip()}}]
+                blocks.append(
+                    {
+                        "object": "block",
+                        "type": "heading_2",
+                        "heading_2": {"rich_text": [{"text": {"content": line[3:].strip()}}]},
                     }
-                })
+                )
             elif line.startswith("### "):
-                blocks.append({
-                    "object": "block",
-                    "type": "heading_3",
-                    "heading_3": {
-                        "rich_text": [{"text": {"content": line[4:].strip()}}]
+                blocks.append(
+                    {
+                        "object": "block",
+                        "type": "heading_3",
+                        "heading_3": {"rich_text": [{"text": {"content": line[4:].strip()}}]},
                     }
-                })
+                )
 
             # Bullet lists
             elif line.strip().startswith("- "):
-                blocks.append({
-                    "object": "block",
-                    "type": "bulleted_list_item",
-                    "bulleted_list_item": {
-                        "rich_text": [{"text": {"content": line.strip()[2:]}}]
+                blocks.append(
+                    {
+                        "object": "block",
+                        "type": "bulleted_list_item",
+                        "bulleted_list_item": {
+                            "rich_text": [{"text": {"content": line.strip()[2:]}}]
+                        },
                     }
-                })
+                )
 
             # Code blocks
             elif line.strip().startswith("```"):
@@ -340,24 +323,26 @@ class NotionPlugin:
                     i += 1
 
                 code = "\n".join(code_lines)
-                blocks.append({
-                    "object": "block",
-                    "type": "code",
-                    "code": {
-                        "rich_text": [{"text": {"content": code}}],
-                        "language": "plain text"
+                blocks.append(
+                    {
+                        "object": "block",
+                        "type": "code",
+                        "code": {
+                            "rich_text": [{"text": {"content": code}}],
+                            "language": "plain text",
+                        },
                     }
-                })
+                )
 
             # Regular paragraphs
             else:
-                blocks.append({
-                    "object": "block",
-                    "type": "paragraph",
-                    "paragraph": {
-                        "rich_text": [{"text": {"content": line.strip()}}]
+                blocks.append(
+                    {
+                        "object": "block",
+                        "type": "paragraph",
+                        "paragraph": {"rich_text": [{"text": {"content": line.strip()}}]},
                     }
-                })
+                )
 
             i += 1
 
@@ -368,16 +353,11 @@ class NotionPlugin:
         try:
             results = self.client.databases.query(
                 database_id=self.database_id,
-                filter={
-                    "property": "title",
-                    "title": {
-                        "contains": "Status"
-                    }
-                }
+                filter={"property": "title", "title": {"contains": "Status"}},
             )
 
-            if results.get('results'):
-                return results['results'][0]['id']
+            if results.get("results"):
+                return results["results"][0]["id"]
 
         except Exception:
             pass
@@ -389,16 +369,11 @@ class NotionPlugin:
         try:
             results = self.client.databases.query(
                 database_id=self.database_id,
-                filter={
-                    "property": "title",
-                    "title": {
-                        "equals": title
-                    }
-                }
+                filter={"property": "title", "title": {"equals": title}},
             )
 
-            if results.get('results'):
-                return results['results'][0]['id']
+            if results.get("results"):
+                return results["results"][0]["id"]
 
         except Exception:
             pass

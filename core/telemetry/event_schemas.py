@@ -66,22 +66,22 @@ class Event:
     def to_dict(self) -> Dict[str, Any]:
         """Convert event to dictionary."""
         return {
-            'event_type': self.event_type.value,
-            'timestamp': self.timestamp.isoformat(),
-            'event_id': self.event_id,
-            'session_id': self.session_id,
-            'metadata': self.metadata,
+            "event_type": self.event_type.value,
+            "timestamp": self.timestamp.isoformat(),
+            "event_id": self.event_id,
+            "session_id": self.session_id,
+            "metadata": self.metadata,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Event':
+    def from_dict(cls, data: Dict[str, Any]) -> "Event":
         """Create event from dictionary."""
         return cls(
-            event_type=EventType(data['event_type']),
-            timestamp=datetime.fromisoformat(data['timestamp']),
-            event_id=data.get('event_id', ''),
-            session_id=data.get('session_id', ''),
-            metadata=data.get('metadata', {}),
+            event_type=EventType(data["event_type"]),
+            timestamp=datetime.fromisoformat(data["timestamp"]),
+            event_id=data.get("event_id", ""),
+            session_id=data.get("session_id", ""),
+            metadata=data.get("metadata", {}),
         )
 
 
@@ -111,20 +111,22 @@ class TaskEvent(Event):
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
-        base.update({
-            'task_id': self.task_id,
-            'task_type': self.task_type,
-            'task_description': self.task_description,
-            'complexity_level': self.complexity_level,
-            'model_used': self.model_used,
-            'file_count': self.file_count,
-            'line_count': self.line_count,
-            'duration_ms': self.duration_ms,
-            'tokens_used': self.tokens_used,
-            'cost_usd': self.cost_usd,
-            'success': self.success,
-            'error_message': self.error_message,
-        })
+        base.update(
+            {
+                "task_id": self.task_id,
+                "task_type": self.task_type,
+                "task_description": self.task_description,
+                "complexity_level": self.complexity_level,
+                "model_used": self.model_used,
+                "file_count": self.file_count,
+                "line_count": self.line_count,
+                "duration_ms": self.duration_ms,
+                "tokens_used": self.tokens_used,
+                "cost_usd": self.cost_usd,
+                "success": self.success,
+                "error_message": self.error_message,
+            }
+        )
         return base
 
 
@@ -151,17 +153,19 @@ class BuildEvent(Event):
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
-        base.update({
-            'build_id': self.build_id,
-            'build_phase': self.build_phase,
-            'total_tasks': self.total_tasks,
-            'completed_tasks': self.completed_tasks,
-            'failed_tasks': self.failed_tasks,
-            'duration_ms': self.duration_ms,
-            'total_cost_usd': self.total_cost_usd,
-            'success': self.success,
-            'error_message': self.error_message,
-        })
+        base.update(
+            {
+                "build_id": self.build_id,
+                "build_phase": self.build_phase,
+                "total_tasks": self.total_tasks,
+                "completed_tasks": self.completed_tasks,
+                "failed_tasks": self.failed_tasks,
+                "duration_ms": self.duration_ms,
+                "total_cost_usd": self.total_cost_usd,
+                "success": self.success,
+                "error_message": self.error_message,
+            }
+        )
         return base
 
 
@@ -185,16 +189,18 @@ class ErrorEvent(Event):
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
-        base.update({
-            'error_type': self.error_type,
-            'error_message': self.error_message,
-            'stack_trace': self.stack_trace,
-            'task_id': self.task_id,
-            'component': self.component,
-            'severity': self.severity,
-            'recoverable': self.recoverable,
-            'recovery_action': self.recovery_action,
-        })
+        base.update(
+            {
+                "error_type": self.error_type,
+                "error_message": self.error_message,
+                "stack_trace": self.stack_trace,
+                "task_id": self.task_id,
+                "component": self.component,
+                "severity": self.severity,
+                "recoverable": self.recoverable,
+                "recovery_action": self.recovery_action,
+            }
+        )
         return base
 
 
@@ -218,16 +224,18 @@ class PerformanceEvent(Event):
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
-        base.update({
-            'metric_name': self.metric_name,
-            'metric_value': self.metric_value,
-            'metric_unit': self.metric_unit,
-            'component': self.component,
-            'operation': self.operation,
-            'cpu_percent': self.cpu_percent,
-            'memory_mb': self.memory_mb,
-            'disk_io_mb': self.disk_io_mb,
-        })
+        base.update(
+            {
+                "metric_name": self.metric_name,
+                "metric_value": self.metric_value,
+                "metric_unit": self.metric_unit,
+                "component": self.component,
+                "operation": self.operation,
+                "cpu_percent": self.cpu_percent,
+                "memory_mb": self.memory_mb,
+                "disk_io_mb": self.disk_io_mb,
+            }
+        )
         return base
 
 
@@ -250,13 +258,15 @@ class SecurityEvent(Event):
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
-        base.update({
-            'security_type': self.security_type,
-            'severity': self.severity,
-            'file_path': self.file_path,
-            'line_number': self.line_number,
-            'violation_type': self.violation_type,
-            'blocked': self.blocked,
-            'remediation': self.remediation,
-        })
+        base.update(
+            {
+                "security_type": self.security_type,
+                "severity": self.severity,
+                "file_path": self.file_path,
+                "line_number": self.line_number,
+                "violation_type": self.violation_type,
+                "blocked": self.blocked,
+                "remediation": self.remediation,
+            }
+        )
         return base

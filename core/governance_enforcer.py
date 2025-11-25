@@ -15,6 +15,7 @@ from core.governance import GovernanceManager, GovernanceError
 
 class EnforcementError(Exception):
     """Raised when governance enforcement fails."""
+
     pass
 
 
@@ -54,7 +55,7 @@ class GovernanceEnforcer:
             Tuple of (is_valid: bool, error_message: Optional[str])
         """
         workflow_rules = self.governance.get_workflow_rules()
-        transitions = workflow_rules.get('transitions', {})
+        transitions = workflow_rules.get("transitions", {})
 
         # Check if from_state is valid
         if from_state not in transitions:
@@ -66,7 +67,7 @@ class GovernanceEnforcer:
             return (
                 False,
                 f"Invalid transition from '{from_state}' to '{to_state}'. "
-                f"Allowed transitions: {', '.join(allowed_transitions) if allowed_transitions else 'none'}"
+                f"Allowed transitions: {', '.join(allowed_transitions) if allowed_transitions else 'none'}",
             )
 
         return (True, None)
@@ -86,14 +87,12 @@ class GovernanceEnforcer:
         """
         # Get completed features
         completed_features = set()
-        for feature in features_json.get('features', []):
-            if feature.get('status') == 'complete':
-                completed_features.add(feature.get('id'))
+        for feature in features_json.get("features", []):
+            if feature.get("status") == "complete":
+                completed_features.add(feature.get("id"))
 
         # Check dependencies
-        can_start, missing = self.governance.check_feature_can_start(
-            feature_id, completed_features
-        )
+        can_start, missing = self.governance.check_feature_can_start(feature_id, completed_features)
 
         return (can_start, missing)
 
@@ -108,24 +107,24 @@ class GovernanceEnforcer:
             Tuple of (is_valid: bool, error_message: Optional[str])
         """
         workflow_rules = self.governance.get_workflow_rules()
-        commit_rules = workflow_rules.get('commit_rules', {})
+        commit_rules = workflow_rules.get("commit_rules", {})
 
-        require_semver = commit_rules.get('require_semantic_versioning', False)
-        allowed_types = commit_rules.get('allowed_types', [])
+        require_semver = commit_rules.get("require_semantic_versioning", False)
+        allowed_types = commit_rules.get("allowed_types", [])
 
         if not require_semver:
             return (True, None)  # No validation required
 
         # Parse commit message for semantic versioning
         # Format: <type>[(scope)]: <description>
-        pattern = r'^(\w+)(?:\([^\)]+\))?: .+'
+        pattern = r"^(\w+)(?:\([^\)]+\))?: .+"
         match = re.match(pattern, message)
 
         if not match:
             return (
                 False,
                 f"Commit message must follow semantic versioning format: "
-                f"<type>(scope): <description>"
+                f"<type>(scope): <description>",
             )
 
         commit_type = match.group(1)
@@ -133,7 +132,7 @@ class GovernanceEnforcer:
             return (
                 False,
                 f"Invalid commit type '{commit_type}'. "
-                f"Allowed types: {', '.join(allowed_types)}"
+                f"Allowed types: {', '.join(allowed_types)}",
             )
 
         return (True, None)
@@ -149,7 +148,7 @@ class GovernanceEnforcer:
             Tuple of (is_valid: bool, error_message: Optional[str])
         """
         workflow_rules = self.governance.get_workflow_rules()
-        patterns = workflow_rules.get('branch_patterns', {})
+        patterns = workflow_rules.get("branch_patterns", {})
 
         if not patterns:
             return (True, None)  # No patterns defined
@@ -160,18 +159,18 @@ class GovernanceEnforcer:
             # Convert template to regex
             # Example: "build/week{week_number}-{feature_name}"
             # Becomes: "build/week\d+-[\w-]+"
-            regex_pattern = pattern_template.replace('{week_number}', r'\d+')
-            regex_pattern = regex_pattern.replace('{feature_name}', r'[\w-]+')
-            regex_pattern = regex_pattern.replace('{feature_id}', r'[\w-]+')
-            regex_pattern = regex_pattern.replace('{description}', r'[\w-]+')
+            regex_pattern = pattern_template.replace("{week_number}", r"\d+")
+            regex_pattern = regex_pattern.replace("{feature_name}", r"[\w-]+")
+            regex_pattern = regex_pattern.replace("{feature_id}", r"[\w-]+")
+            regex_pattern = regex_pattern.replace("{description}", r"[\w-]+")
 
-            if re.match(f'^{regex_pattern}$', branch_name):
+            if re.match(f"^{regex_pattern}$", branch_name):
                 return (True, None)
 
         return (
             False,
             f"Branch name '{branch_name}' doesn't match any allowed patterns. "
-            f"Allowed patterns: {', '.join(patterns.values())}"
+            f"Allowed patterns: {', '.join(patterns.values())}",
         )
 
     def check_pre_commit(self) -> Tuple[bool, List[str]]:
@@ -182,24 +181,24 @@ class GovernanceEnforcer:
             Tuple of (all_passed: bool, failed_checks: List[str])
         """
         validation_rules = self.governance.get_validation_rules()
-        pre_commit_checks = validation_rules.get('pre_commit', [])
+        pre_commit_checks = validation_rules.get("pre_commit", [])
 
         failed_checks = []
 
         for check in pre_commit_checks:
-            if check == 'validate_features_json':
+            if check == "validate_features_json":
                 if not self._validate_features_json():
-                    failed_checks.append('validate_features_json')
+                    failed_checks.append("validate_features_json")
 
-            elif check == 'check_governance_checksum':
+            elif check == "check_governance_checksum":
                 if not self.governance.verify_checksum():
-                    failed_checks.append('check_governance_checksum')
+                    failed_checks.append("check_governance_checksum")
 
-            elif check == 'run_lint':
+            elif check == "run_lint":
                 # Placeholder - would integrate with linting tools
                 pass
 
-            elif check == 'check_no_debug_statements':
+            elif check == "check_no_debug_statements":
                 # Placeholder - would scan for debug statements
                 pass
 
@@ -213,30 +212,28 @@ class GovernanceEnforcer:
             Tuple of (all_passed: bool, failed_checks: List[str])
         """
         validation_rules = self.governance.get_validation_rules()
-        pre_push_checks = validation_rules.get('pre_push', [])
+        pre_push_checks = validation_rules.get("pre_push", [])
 
         failed_checks = []
 
         for check in pre_push_checks:
-            if check == 'run_tests':
+            if check == "run_tests":
                 # Placeholder - would run pytest
                 pass
 
-            elif check == 'check_coverage':
+            elif check == "check_coverage":
                 # Placeholder - would check coverage
                 pass
 
-            elif check == 'validate_governance_rules':
+            elif check == "validate_governance_rules":
                 try:
                     self.governance.validate()
                 except GovernanceError:
-                    failed_checks.append('validate_governance_rules')
+                    failed_checks.append("validate_governance_rules")
 
         return (len(failed_checks) == 0, failed_checks)
 
-    def enforce(
-        self, check_type: str, context: Optional[Dict[str, Any]] = None
-    ) -> None:
+    def enforce(self, check_type: str, context: Optional[Dict[str, Any]] = None) -> None:
         """
         Enforce governance rules based on check type.
 
@@ -247,36 +244,36 @@ class GovernanceEnforcer:
         Raises:
             EnforcementError: If enforcement fails and policy is strict.
         """
-        enforcement_config = self.governance.config.get('enforcement', {})
-        policy = enforcement_config.get('policy', 'strict')
-        on_violation = enforcement_config.get('on_violation', {})
+        enforcement_config = self.governance.config.get("enforcement", {})
+        policy = enforcement_config.get("policy", "strict")
+        on_violation = enforcement_config.get("on_violation", {})
 
-        violation_action = on_violation.get(check_type, 'block')
+        violation_action = on_violation.get(check_type, "block")
 
-        if check_type == 'pre_commit':
+        if check_type == "pre_commit":
             passed, failed = self.check_pre_commit()
             if not passed:
                 message = f"Pre-commit checks failed: {', '.join(failed)}"
                 self._handle_violation(message, violation_action)
 
-        elif check_type == 'pre_push':
+        elif check_type == "pre_push":
             passed, failed = self.check_pre_push()
             if not passed:
                 message = f"Pre-push checks failed: {', '.join(failed)}"
                 self._handle_violation(message, violation_action)
 
-        elif check_type == 'state_transition' and context:
-            feature_id = context.get('feature_id')
-            from_state = context.get('from_state')
-            to_state = context.get('to_state')
+        elif check_type == "state_transition" and context:
+            feature_id = context.get("feature_id")
+            from_state = context.get("from_state")
+            to_state = context.get("to_state")
 
             valid, error = self.validate_state_transition(feature_id, from_state, to_state)
             if not valid:
                 self._handle_violation(error, violation_action)
 
-        elif check_type == 'dependency' and context:
-            feature_id = context.get('feature_id')
-            features_json = context.get('features_json')
+        elif check_type == "dependency" and context:
+            feature_id = context.get("feature_id")
+            features_json = context.get("features_json")
 
             valid, missing = self.validate_feature_dependencies(feature_id, features_json)
             if not valid:
@@ -294,9 +291,9 @@ class GovernanceEnforcer:
         Raises:
             EnforcementError: If action is 'block'.
         """
-        if action == 'block':
+        if action == "block":
             raise EnforcementError(f"Governance violation: {message}")
-        elif action == 'warn':
+        elif action == "warn":
             print(f"⚠️  WARNING: {message}")
         # 'ignore' does nothing
 
@@ -313,14 +310,14 @@ class GovernanceEnforcer:
             return False
 
         try:
-            with open(features_file, 'r') as f:
+            with open(features_file, "r") as f:
                 data = json.load(f)
 
             # Basic validation
             if not isinstance(data, dict):
                 return False
 
-            if 'features' not in data:
+            if "features" not in data:
                 return False
 
             return True
@@ -336,26 +333,20 @@ class GovernanceEnforcer:
             Dictionary containing enforcement status and statistics.
         """
         report = {
-            'policy': self.governance.get_enforcement_policy(),
-            'strict_mode': self.governance.is_strict_mode(),
-            'governance_file': str(self.governance.config_file),
-            'checksum_valid': self.governance.verify_checksum(),
-            'hooks_enabled': self.governance.config.get('hooks', {}).get('enabled', False),
+            "policy": self.governance.get_enforcement_policy(),
+            "strict_mode": self.governance.is_strict_mode(),
+            "governance_file": str(self.governance.config_file),
+            "checksum_valid": self.governance.verify_checksum(),
+            "hooks_enabled": self.governance.config.get("hooks", {}).get("enabled", False),
         }
 
         # Check pre-commit status
         pre_commit_passed, pre_commit_failed = self.check_pre_commit()
-        report['pre_commit'] = {
-            'passed': pre_commit_passed,
-            'failed_checks': pre_commit_failed
-        }
+        report["pre_commit"] = {"passed": pre_commit_passed, "failed_checks": pre_commit_failed}
 
         # Check pre-push status
         pre_push_passed, pre_push_failed = self.check_pre_push()
-        report['pre_push'] = {
-            'passed': pre_push_passed,
-            'failed_checks': pre_push_failed
-        }
+        report["pre_push"] = {"passed": pre_push_passed, "failed_checks": pre_push_failed}
 
         return report
 

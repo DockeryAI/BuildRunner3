@@ -29,7 +29,7 @@ def sample_feature():
         "version": "3.0.0",
         "priority": "high",
         "week": 1,
-        "build": "1A"
+        "build": "1A",
     }
 
 
@@ -115,10 +115,7 @@ def test_update_feature(client, sample_feature):
     client.post("/features", json=sample_feature)
 
     # Update feature
-    updates = {
-        "status": "in_progress",
-        "priority": "critical"
-    }
+    updates = {"status": "in_progress", "priority": "critical"}
     response = client.patch(f"/features/{sample_feature['id']}", json=updates)
     assert response.status_code == 200
 
@@ -133,10 +130,7 @@ def test_update_feature(client, sample_feature):
 
 def test_update_nonexistent_feature(client):
     """Test updating a feature that doesn't exist"""
-    response = client.patch(
-        "/features/nonexistent",
-        json={"status": "complete"}
-    )
+    response = client.patch("/features/nonexistent", json={"status": "complete"})
     assert response.status_code == 404
 
 
@@ -220,7 +214,7 @@ def test_create_feature_validation(client):
         "id": "test",
         "name": "",  # Empty name - should fail
         "description": "Test",
-        "status": "planned"
+        "status": "planned",
     }
 
     response = client.post("/features", json=invalid_feature)
@@ -257,18 +251,12 @@ def test_feature_lifecycle(client, sample_feature):
     assert any(f["id"] == sample_feature["id"] for f in features)
 
     # 3. Update to in_progress
-    response = client.patch(
-        f"/features/{sample_feature['id']}",
-        json={"status": "in_progress"}
-    )
+    response = client.patch(f"/features/{sample_feature['id']}", json={"status": "in_progress"})
     assert response.status_code == 200
     assert response.json()["status"] == "in_progress"
 
     # 4. Update to complete
-    response = client.patch(
-        f"/features/{sample_feature['id']}",
-        json={"status": "complete"}
-    )
+    response = client.patch(f"/features/{sample_feature['id']}", json={"status": "complete"})
     assert response.status_code == 200
     assert response.json()["status"] == "complete"
 

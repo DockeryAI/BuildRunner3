@@ -21,6 +21,7 @@ from plugins.slack import SlackPlugin, get_slack_plugin, SLACK_AVAILABLE
 # GitHub Plugin Tests
 # ============================================================================
 
+
 class TestGitHubPlugin:
     """Tests for GitHub plugin"""
 
@@ -45,7 +46,7 @@ class TestGitHubPlugin:
             if GITHUB_AVAILABLE:
                 assert not plugin.is_enabled()
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_github_plugin_initialization_success(self, mock_github):
         """Test successful GitHub plugin initialization"""
         if not GITHUB_AVAILABLE:
@@ -61,7 +62,7 @@ class TestGitHubPlugin:
             assert plugin.is_enabled()
             assert plugin.repo is not None
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_sync_issues_to_features(self, mock_github):
         """Test syncing GitHub issues to features"""
         if not GITHUB_AVAILABLE:
@@ -88,11 +89,11 @@ class TestGitHubPlugin:
             features = plugin.sync_issues_to_features()
 
             assert len(features) == 1
-            assert features[0]['id'] == 'gh-123'
-            assert features[0]['name'] == 'Test Feature'
-            assert features[0]['github_issue'] == 123
+            assert features[0]["id"] == "gh-123"
+            assert features[0]["name"] == "Test Feature"
+            assert features[0]["github_issue"] == 123
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_create_feature_from_issue(self, mock_github):
         """Test creating feature from GitHub issue"""
         if not GITHUB_AVAILABLE:
@@ -121,10 +122,10 @@ class TestGitHubPlugin:
             feature = plugin.create_feature_from_issue(456)
 
             assert feature is not None
-            assert feature['id'] == 'gh-456'
-            assert feature['priority'] == 'high'
+            assert feature["id"] == "gh-456"
+            assert feature["priority"] == "high"
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_update_issue_status(self, mock_github):
         """Test updating GitHub issue status"""
         if not GITHUB_AVAILABLE:
@@ -148,7 +149,7 @@ class TestGitHubPlugin:
             mock_issue.set_labels.assert_called_once()
             mock_issue.create_comment.assert_called_once_with("Working on it")
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_create_pr(self, mock_github):
         """Test creating pull request"""
         if not GITHUB_AVAILABLE:
@@ -172,7 +173,7 @@ class TestGitHubPlugin:
             assert pr_url == "https://github.com/owner/repo/pull/789"
             mock_repo.create_pull.assert_called_once()
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_create_pr_from_feature(self, mock_github):
         """Test creating PR from feature dict"""
         if not GITHUB_AVAILABLE:
@@ -194,7 +195,7 @@ class TestGitHubPlugin:
             "description": "Test description",
             "status": "complete",
             "priority": "high",
-            "github_issue": 123
+            "github_issue": 123,
         }
 
         with patch.dict(os.environ, {"GITHUB_TOKEN": "test_token", "GITHUB_REPO": "owner/repo"}):
@@ -204,9 +205,9 @@ class TestGitHubPlugin:
             assert pr_url is not None
             # Verify PR body contains issue reference
             call_args = mock_repo.create_pull.call_args
-            assert "Closes #123" in call_args[1]['body']
+            assert "Closes #123" in call_args[1]["body"]
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_get_open_prs(self, mock_github):
         """Test getting open pull requests"""
         if not GITHUB_AVAILABLE:
@@ -234,13 +235,14 @@ class TestGitHubPlugin:
             prs = plugin.get_open_prs()
 
             assert len(prs) == 1
-            assert prs[0]['number'] == 1
-            assert prs[0]['title'] == "Test PR"
+            assert prs[0]["number"] == 1
+            assert prs[0]["title"] == "Test PR"
 
 
 # ============================================================================
 # Notion Plugin Tests
 # ============================================================================
+
 
 class TestNotionPlugin:
     """Tests for Notion plugin"""
@@ -266,7 +268,7 @@ class TestNotionPlugin:
             if NOTION_AVAILABLE:
                 assert not plugin.is_enabled()
 
-    @patch('plugins.notion.Client')
+    @patch("plugins.notion.Client")
     def test_notion_plugin_initialization_success(self, mock_client_class):
         """Test successful Notion plugin initialization"""
         if not NOTION_AVAILABLE:
@@ -276,12 +278,14 @@ class TestNotionPlugin:
         mock_client.databases.retrieve.return_value = {"id": "test_db"}
         mock_client_class.return_value = mock_client
 
-        with patch.dict(os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}):
+        with patch.dict(
+            os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}
+        ):
             plugin = NotionPlugin()
             assert plugin.is_enabled()
             assert plugin.client is not None
 
-    @patch('plugins.notion.Client')
+    @patch("plugins.notion.Client")
     def test_push_status(self, mock_client_class):
         """Test pushing STATUS.md to Notion"""
         if not NOTION_AVAILABLE:
@@ -294,12 +298,14 @@ class TestNotionPlugin:
         mock_client_class.return_value = mock_client
 
         # Create temp status file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write("# BuildRunner Status\n\nAll systems go!")
             status_file = Path(f.name)
 
         try:
-            with patch.dict(os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}):
+            with patch.dict(
+                os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}
+            ):
                 plugin = NotionPlugin()
                 result = plugin.push_status(status_file)
 
@@ -308,7 +314,7 @@ class TestNotionPlugin:
         finally:
             status_file.unlink()
 
-    @patch('plugins.notion.Client')
+    @patch("plugins.notion.Client")
     def test_sync_documentation(self, mock_client_class):
         """Test syncing documentation to Notion"""
         if not NOTION_AVAILABLE:
@@ -326,7 +332,9 @@ class TestNotionPlugin:
             (docs_dir / "API.md").write_text("# API Docs\n\nContent here")
             (docs_dir / "README.md").write_text("# README\n\nMore content")
 
-            with patch.dict(os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}):
+            with patch.dict(
+                os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}
+            ):
                 plugin = NotionPlugin()
                 results = plugin.sync_documentation(docs_dir)
 
@@ -334,7 +342,7 @@ class TestNotionPlugin:
                 assert "API.md" in results
                 assert "README.md" in results
 
-    @patch('plugins.notion.Client')
+    @patch("plugins.notion.Client")
     def test_create_feature_page(self, mock_client_class):
         """Test creating Notion page for feature"""
         if not NOTION_AVAILABLE:
@@ -342,7 +350,10 @@ class TestNotionPlugin:
 
         mock_client = Mock()
         mock_client.databases.retrieve.return_value = {"id": "test_db"}
-        mock_client.pages.create.return_value = {"id": "page_id", "url": "https://notion.so/feature"}
+        mock_client.pages.create.return_value = {
+            "id": "page_id",
+            "url": "https://notion.so/feature",
+        }
         mock_client_class.return_value = mock_client
 
         feature = {
@@ -352,10 +363,12 @@ class TestNotionPlugin:
             "priority": "high",
             "version": "1.0.0",
             "week": 1,
-            "build": "1A"
+            "build": "1A",
         }
 
-        with patch.dict(os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}):
+        with patch.dict(
+            os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}
+        ):
             plugin = NotionPlugin()
             url = plugin.create_feature_page(feature)
 
@@ -366,6 +379,7 @@ class TestNotionPlugin:
 # ============================================================================
 # Slack Plugin Tests
 # ============================================================================
+
 
 class TestSlackPlugin:
     """Tests for Slack plugin"""
@@ -384,7 +398,7 @@ class TestSlackPlugin:
             if SLACK_AVAILABLE:
                 assert not plugin.is_enabled()
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_slack_plugin_initialization_success(self, mock_webclient):
         """Test successful Slack plugin initialization"""
         if not SLACK_AVAILABLE:
@@ -394,13 +408,15 @@ class TestSlackPlugin:
         mock_client.auth_test.return_value = {"ok": True}
         mock_webclient.return_value = mock_client
 
-        with patch.dict(os.environ, {"SLACK_BOT_TOKEN": "xoxb-test-token", "SLACK_CHANNEL": "#builds"}):
+        with patch.dict(
+            os.environ, {"SLACK_BOT_TOKEN": "xoxb-test-token", "SLACK_CHANNEL": "#builds"}
+        ):
             plugin = SlackPlugin()
             assert plugin.is_enabled()
             assert plugin.client is not None
             assert plugin.default_channel == "#builds"
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_post_message(self, mock_webclient):
         """Test posting message to Slack"""
         if not SLACK_AVAILABLE:
@@ -418,7 +434,7 @@ class TestSlackPlugin:
             assert result is True
             mock_client.chat_postMessage.assert_called_once()
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_post_build_start(self, mock_webclient):
         """Test posting build start notification"""
         if not SLACK_AVAILABLE:
@@ -435,9 +451,9 @@ class TestSlackPlugin:
 
             assert result is True
             call_args = mock_client.chat_postMessage.call_args
-            assert "Build 2B" in call_args[1]['text']
+            assert "Build 2B" in call_args[1]["text"]
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_post_build_success(self, mock_webclient):
         """Test posting build success notification"""
         if not SLACK_AVAILABLE:
@@ -454,9 +470,9 @@ class TestSlackPlugin:
 
             assert result is True
             call_args = mock_client.chat_postMessage.call_args
-            assert "84" in call_args[1]['text']
+            assert "84" in call_args[1]["text"]
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_post_build_failure(self, mock_webclient):
         """Test posting build failure notification"""
         if not SLACK_AVAILABLE:
@@ -473,9 +489,9 @@ class TestSlackPlugin:
 
             assert result is True
             call_args = mock_client.chat_postMessage.call_args
-            assert "failed" in call_args[1]['text'].lower()
+            assert "failed" in call_args[1]["text"].lower()
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_post_feature_update(self, mock_webclient):
         """Test posting feature status update"""
         if not SLACK_AVAILABLE:
@@ -492,7 +508,7 @@ class TestSlackPlugin:
 
             assert result is True
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_post_daily_standup(self, mock_webclient):
         """Test posting daily standup"""
         if not SLACK_AVAILABLE:
@@ -505,14 +521,14 @@ class TestSlackPlugin:
 
         features = [
             {"name": "Feature 1", "status": "in_progress"},
-            {"name": "Feature 2", "status": "complete"}
+            {"name": "Feature 2", "status": "complete"},
         ]
 
         metrics = {
             "features_complete": 1,
             "features_in_progress": 1,
             "features_planned": 3,
-            "completion_percentage": 20
+            "completion_percentage": 20,
         }
 
         with patch.dict(os.environ, {"SLACK_BOT_TOKEN": "xoxb-test-token"}):
@@ -521,9 +537,9 @@ class TestSlackPlugin:
 
             assert result is True
             call_args = mock_client.chat_postMessage.call_args
-            assert "Feature 1" in str(call_args[1]['blocks'])
+            assert "Feature 1" in str(call_args[1]["blocks"])
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_post_test_results(self, mock_webclient):
         """Test posting test results"""
         if not SLACK_AVAILABLE:
@@ -540,7 +556,7 @@ class TestSlackPlugin:
 
             assert result is True
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_post_deployment(self, mock_webclient):
         """Test posting deployment notification"""
         if not SLACK_AVAILABLE:
@@ -557,14 +573,13 @@ class TestSlackPlugin:
 
             assert result is True
             call_args = mock_client.chat_postMessage.call_args
-            assert "production" in call_args[1]['text']
+            assert "production" in call_args[1]["text"]
 
+    # ============================================================================
+    # Integration Tests
+    # ============================================================================
 
-# ============================================================================
-# Integration Tests
-# ============================================================================
-
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_github_error_handling(self, mock_github):
         """Test GitHub plugin error handling"""
         if not GITHUB_AVAILABLE:
@@ -587,7 +602,7 @@ class TestSlackPlugin:
             assert plugin.create_feature_from_issue(123) is None
             assert plugin.create_pr("test", "body", "branch") is None
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_add_pr_comment(self, mock_github):
         """Test adding comment to PR"""
         if not GITHUB_AVAILABLE:
@@ -608,7 +623,7 @@ class TestSlackPlugin:
             assert result is True
             mock_pr.create_issue_comment.assert_called_once_with("Great work!")
 
-    @patch('plugins.github.Github')
+    @patch("plugins.github.Github")
     def test_update_issue_status_complete(self, mock_github):
         """Test updating issue to complete status closes it"""
         if not GITHUB_AVAILABLE:
@@ -636,10 +651,11 @@ class TestSlackPlugin:
 # Notion Plugin Additional Tests
 # ============================================================================
 
+
 class TestNotionPluginAdvanced:
     """Advanced tests for Notion plugin"""
 
-    @patch('plugins.notion.Client')
+    @patch("plugins.notion.Client")
     def test_push_status_nonexistent_file(self, mock_client_class):
         """Test pushing non-existent STATUS.md"""
         if not NOTION_AVAILABLE:
@@ -649,13 +665,15 @@ class TestNotionPluginAdvanced:
         mock_client.databases.retrieve.return_value = {"id": "test_db"}
         mock_client_class.return_value = mock_client
 
-        with patch.dict(os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}):
+        with patch.dict(
+            os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}
+        ):
             plugin = NotionPlugin()
             result = plugin.push_status(Path("/nonexistent/status.md"))
 
             assert result is False
 
-    @patch('plugins.notion.Client')
+    @patch("plugins.notion.Client")
     def test_sync_documentation_nonexistent_dir(self, mock_client_class):
         """Test syncing non-existent docs directory"""
         if not NOTION_AVAILABLE:
@@ -665,13 +683,15 @@ class TestNotionPluginAdvanced:
         mock_client.databases.retrieve.return_value = {"id": "test_db"}
         mock_client_class.return_value = mock_client
 
-        with patch.dict(os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}):
+        with patch.dict(
+            os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}
+        ):
             plugin = NotionPlugin()
             result = plugin.sync_documentation(Path("/nonexistent"))
 
             assert result == {}
 
-    @patch('plugins.notion.Client')
+    @patch("plugins.notion.Client")
     def test_markdown_conversion(self, mock_client_class):
         """Test markdown to Notion blocks conversion"""
         if not NOTION_AVAILABLE:
@@ -681,7 +701,9 @@ class TestNotionPluginAdvanced:
         mock_client.databases.retrieve.return_value = {"id": "test_db"}
         mock_client_class.return_value = mock_client
 
-        with patch.dict(os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}):
+        with patch.dict(
+            os.environ, {"NOTION_TOKEN": "test_token", "NOTION_DATABASE_ID": "test_db"}
+        ):
             plugin = NotionPlugin()
 
             markdown = """# Header 1
@@ -703,23 +725,24 @@ def hello():
 
             assert len(blocks) > 0
             # Should have headers
-            assert any(b['type'] == 'heading_1' for b in blocks)
-            assert any(b['type'] == 'heading_2' for b in blocks)
-            assert any(b['type'] == 'heading_3' for b in blocks)
+            assert any(b["type"] == "heading_1" for b in blocks)
+            assert any(b["type"] == "heading_2" for b in blocks)
+            assert any(b["type"] == "heading_3" for b in blocks)
             # Should have list items
-            assert any(b['type'] == 'bulleted_list_item' for b in blocks)
+            assert any(b["type"] == "bulleted_list_item" for b in blocks)
             # Should have code block
-            assert any(b['type'] == 'code' for b in blocks)
+            assert any(b["type"] == "code" for b in blocks)
 
 
 # ============================================================================
 # Slack Plugin Additional Tests
 # ============================================================================
 
+
 class TestSlackPluginAdvanced:
     """Advanced tests for Slack plugin"""
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_slack_message_with_blocks(self, mock_webclient):
         """Test posting message with Slack blocks"""
         if not SLACK_AVAILABLE:
@@ -738,9 +761,9 @@ class TestSlackPluginAdvanced:
 
             assert result is True
             call_args = mock_client.chat_postMessage.call_args
-            assert call_args[1]['blocks'] == blocks
+            assert call_args[1]["blocks"] == blocks
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_slack_error_handling(self, mock_webclient):
         """Test Slack plugin error handling"""
         if not SLACK_AVAILABLE:
@@ -757,7 +780,7 @@ class TestSlackPluginAdvanced:
 
             assert result is False
 
-    @patch('plugins.slack.WebClient')
+    @patch("plugins.slack.WebClient")
     def test_daily_standup_no_active_features(self, mock_webclient):
         """Test daily standup with no active features"""
         if not SLACK_AVAILABLE:
@@ -773,7 +796,7 @@ class TestSlackPluginAdvanced:
             "features_complete": 0,
             "features_in_progress": 0,
             "features_planned": 5,
-            "completion_percentage": 0
+            "completion_percentage": 0,
         }
 
         with patch.dict(os.environ, {"SLACK_BOT_TOKEN": "xoxb-test-token"}):
@@ -782,7 +805,7 @@ class TestSlackPluginAdvanced:
 
             assert result is True
             call_args = mock_client.chat_postMessage.call_args
-            assert "No features currently in progress" in str(call_args[1]['blocks'])
+            assert "No features currently in progress" in str(call_args[1]["blocks"])
 
 
 class TestPluginIntegration:

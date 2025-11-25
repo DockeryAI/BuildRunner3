@@ -55,14 +55,14 @@ class Alert:
     def to_dict(self) -> Dict[str, any]:
         """Convert to dictionary."""
         return {
-            'timestamp': self.timestamp.isoformat(),
-            'level': self.level.value,
-            'threshold_name': self.threshold_name,
-            'message': self.message,
-            'metric_name': self.metric_name,
-            'metric_value': self.metric_value,
-            'threshold_value': self.threshold_value,
-            'metadata': self.metadata,
+            "timestamp": self.timestamp.isoformat(),
+            "level": self.level.value,
+            "threshold_name": self.threshold_name,
+            "message": self.message,
+            "metric_name": self.metric_name,
+            "metric_value": self.metric_value,
+            "threshold_value": self.threshold_value,
+            "metadata": self.metadata,
         }
 
 
@@ -170,11 +170,7 @@ class ThresholdMonitor:
                 continue
 
             # Check threshold
-            violated = self._check_threshold(
-                metric_value,
-                threshold.operator,
-                threshold.value
-            )
+            violated = self._check_threshold(metric_value, threshold.operator, threshold.value)
 
             if violated:
                 alert = Alert(
@@ -199,11 +195,7 @@ class ThresholdMonitor:
 
         return raised_alerts
 
-    def _get_metric_value(
-        self,
-        summary: MetricsSummary,
-        metric_name: str
-    ) -> Optional[float]:
+    def _get_metric_value(self, summary: MetricsSummary, metric_name: str) -> Optional[float]:
         """Get metric value from summary."""
         if hasattr(summary, metric_name):
             value = getattr(summary, metric_name)
@@ -211,12 +203,7 @@ class ThresholdMonitor:
                 return float(value)
         return None
 
-    def _check_threshold(
-        self,
-        metric_value: float,
-        operator: str,
-        threshold_value: float
-    ) -> bool:
+    def _check_threshold(self, metric_value: float, operator: str, threshold_value: float) -> bool:
         """Check if metric violates threshold."""
         if operator == "gt":
             return metric_value > threshold_value
@@ -247,10 +234,7 @@ class ThresholdMonitor:
         Args:
             threshold_name: Name of threshold to remove
         """
-        self.thresholds = [
-            t for t in self.thresholds
-            if t.name != threshold_name
-        ]
+        self.thresholds = [t for t in self.thresholds if t.name != threshold_name]
 
     def enable_threshold(self, threshold_name: str):
         """Enable a threshold."""
@@ -312,9 +296,9 @@ class ThresholdMonitor:
         """
         if not self.alerts:
             return {
-                'total_alerts': 0,
-                'alerts_by_level': {},
-                'alerts_by_threshold': {},
+                "total_alerts": 0,
+                "alerts_by_level": {},
+                "alerts_by_threshold": {},
             }
 
         # Count by level
@@ -327,15 +311,14 @@ class ThresholdMonitor:
         # Count by threshold
         by_threshold = {}
         for alert in self.alerts:
-            by_threshold[alert.threshold_name] = \
-                by_threshold.get(alert.threshold_name, 0) + 1
+            by_threshold[alert.threshold_name] = by_threshold.get(alert.threshold_name, 0) + 1
 
         return {
-            'total_alerts': len(self.alerts),
-            'alerts_by_level': by_level,
-            'alerts_by_threshold': by_threshold,
-            'active_thresholds': len([t for t in self.thresholds if t.enabled]),
-            'total_thresholds': len(self.thresholds),
+            "total_alerts": len(self.alerts),
+            "alerts_by_level": by_level,
+            "alerts_by_threshold": by_threshold,
+            "active_thresholds": len([t for t in self.thresholds if t.enabled]),
+            "total_thresholds": len(self.thresholds),
         }
 
     def clear_alerts(self):

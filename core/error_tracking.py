@@ -20,6 +20,7 @@ from datetime import datetime
 try:
     import sentry_sdk
     from sentry_sdk.integrations.logging import LoggingIntegration
+
     SENTRY_AVAILABLE = True
 except ImportError:
     SENTRY_AVAILABLE = False
@@ -50,7 +51,7 @@ class ErrorTracker:
         release: Optional[str] = None,
         sample_rate: float = 1.0,
         traces_sample_rate: float = 0.1,
-        enabled: bool = True
+        enabled: bool = True,
     ):
         """
         Initialize error tracker.
@@ -78,7 +79,9 @@ class ErrorTracker:
         if self.enabled and self.dsn:
             self._initialize_sentry(sample_rate, traces_sample_rate)
         elif self.enabled and not self.dsn:
-            logger.warning("Sentry enabled but no DSN provided. Set SENTRY_DSN environment variable.")
+            logger.warning(
+                "Sentry enabled but no DSN provided. Set SENTRY_DSN environment variable."
+            )
             self.enabled = False
         elif not SENTRY_AVAILABLE:
             logger.info("Sentry SDK not available. Install with: pip install sentry-sdk")
@@ -90,6 +93,7 @@ class ErrorTracker:
             pyproject = self.project_root / "pyproject.toml"
             if pyproject.exists():
                 import tomli
+
                 with open(pyproject, "rb") as f:
                     data = tomli.load(f)
                     version = data.get("project", {}).get("version", "unknown")
@@ -105,7 +109,7 @@ class ErrorTracker:
             # Configure logging integration
             logging_integration = LoggingIntegration(
                 level=logging.INFO,  # Capture info and above as breadcrumbs
-                event_level=logging.ERROR  # Send errors as events
+                event_level=logging.ERROR,  # Send errors as events
             )
 
             sentry_sdk.init(
@@ -137,34 +141,36 @@ class ErrorTracker:
             Modified event or None to drop
         """
         # Add custom tags
-        if 'tags' not in event:
-            event['tags'] = {}
+        if "tags" not in event:
+            event["tags"] = {}
 
         if self.current_phase:
-            event['tags']['phase'] = self.current_phase.value
+            event["tags"]["phase"] = self.current_phase.value
 
         if self.current_task:
-            event['tags']['task'] = self.current_task
+            event["tags"]["task"] = self.current_task
 
         if self.current_agent:
-            event['tags']['agent'] = self.current_agent
+            event["tags"]["agent"] = self.current_agent
 
         # Add build context
-        event['tags']['build_type'] = 'buildrunner'
+        event["tags"]["build_type"] = "buildrunner"
 
         # Filter out sensitive data from contexts
-        if 'contexts' in event:
-            for context_name, context_data in event['contexts'].items():
+        if "contexts" in event:
+            for context_name, context_data in event["contexts"].items():
                 if isinstance(context_data, dict):
                     # Remove any keys that might contain secrets
-                    sensitive_keys = {'password', 'token', 'secret', 'key', 'api_key'}
+                    sensitive_keys = {"password", "token", "secret", "key", "api_key"}
                     for key in list(context_data.keys()):
                         if any(sensitive in key.lower() for sensitive in sensitive_keys):
-                            context_data[key] = '[REDACTED]'
+                            context_data[key] = "[REDACTED]"
 
         return event
 
-    def _before_breadcrumb(self, crumb: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _before_breadcrumb(
+        self, crumb: Dict[str, Any], hint: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """
         Filter/modify breadcrumbs before adding.
 
@@ -177,9 +183,9 @@ class ErrorTracker:
         """
         # Add phase context to breadcrumbs
         if self.current_phase:
-            if 'data' not in crumb:
-                crumb['data'] = {}
-            crumb['data']['phase'] = self.current_phase.value
+            if "data" not in crumb:
+                crumb["data"] = {}
+            crumb["data"]["phase"] = self.current_phase.value
 
         return crumb
 
@@ -187,7 +193,7 @@ class ErrorTracker:
         self,
         phase: Optional[BuildPhase] = None,
         task: Optional[str] = None,
-        agent: Optional[str] = None
+        agent: Optional[str] = None,
     ):
         """
         Set current execution context for error tagging.
@@ -217,10 +223,7 @@ class ErrorTracker:
                     scope.set_tag("agent", self.current_agent)
 
     def capture_exception(
-        self,
-        error: Exception,
-        extra: Optional[Dict[str, Any]] = None,
-        level: str = "error"
+        self, error: Exception, extra: Optional[Dict[str, Any]] = None, level: str = "error"
     ) -> Optional[str]:
         """
         Capture an exception to Sentry.
@@ -258,10 +261,7 @@ class ErrorTracker:
             return None
 
     def capture_message(
-        self,
-        message: str,
-        level: str = "info",
-        extra: Optional[Dict[str, Any]] = None
+        self, message: str, level: str = "info", extra: Optional[Dict[str, Any]] = None
     ) -> Optional[str]:
         """
         Capture a message to Sentry.
@@ -292,11 +292,7 @@ class ErrorTracker:
             logger.error(f"Failed to capture message to Sentry: {e}")
             return None
 
-    def start_transaction(
-        self,
-        name: str,
-        op: str = "task"
-    ) -> Any:
+    def start_transaction(self, name: str, op: str = "task") -> Any:
         """
         Start a performance transaction.
 
@@ -311,10 +307,7 @@ class ErrorTracker:
             return None
 
         try:
-            transaction = sentry_sdk.start_transaction(
-                name=name,
-                op=op
-            )
+            transaction = sentry_sdk.start_transaction(name=name, op=op)
 
             # Add context
             if self.current_phase:
@@ -333,7 +326,7 @@ class ErrorTracker:
         message: str,
         category: str = "default",
         level: str = "info",
-        data: Optional[Dict[str, Any]] = None
+        data: Optional[Dict[str, Any]] = None,
     ):
         """
         Add a breadcrumb for debugging context.
@@ -349,10 +342,7 @@ class ErrorTracker:
 
         try:
             sentry_sdk.add_breadcrumb(
-                message=message,
-                category=category,
-                level=level,
-                data=data or {}
+                message=message, category=category, level=level, data=data or {}
             )
         except Exception as e:
             logger.error(f"Failed to add breadcrumb: {e}")
@@ -384,11 +374,12 @@ def track_errors(phase: Optional[BuildPhase] = None, task: Optional[str] = None)
         def generate_code():
             ...
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs):
             # Get error tracker from kwargs or create minimal one
-            error_tracker = kwargs.pop('error_tracker', None)
+            error_tracker = kwargs.pop("error_tracker", None)
 
             try:
                 # Set context if tracker available
@@ -403,17 +394,14 @@ def track_errors(phase: Optional[BuildPhase] = None, task: Optional[str] = None)
                 if error_tracker:
                     error_tracker.capture_exception(
                         e,
-                        extra={
-                            'function': func.__name__,
-                            'args': str(args),
-                            'kwargs': str(kwargs)
-                        }
+                        extra={"function": func.__name__, "args": str(args), "kwargs": str(kwargs)},
                     )
 
                 # Re-raise
                 raise
 
         return wrapper
+
     return decorator
 
 
@@ -426,10 +414,7 @@ def get_global_tracker() -> Optional[ErrorTracker]:
     return _global_tracker
 
 
-def init_global_tracker(
-    project_root: Path,
-    **kwargs
-) -> ErrorTracker:
+def init_global_tracker(project_root: Path, **kwargs) -> ErrorTracker:
     """
     Initialize global error tracker.
 

@@ -31,7 +31,7 @@ class StatusGenerator:
         if not self.features_file.exists():
             return self._generate_empty_status()
 
-        with open(self.features_file, 'r') as f:
+        with open(self.features_file, "r") as f:
             data = json.load(f)
 
         return self._format_status(data)
@@ -41,7 +41,7 @@ class StatusGenerator:
         content = self.generate()
         self.status_file.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(self.status_file, 'w') as f:
+        with open(self.status_file, "w") as f:
             f.write(content)
 
     def _generate_empty_status(self) -> str:
@@ -66,12 +66,12 @@ Run `br init` to initialize this project.
         Returns:
             Markdown formatted status
         """
-        project = data.get('project', 'Unknown Project')
-        version = data.get('version', '1.0.0')
-        status = data.get('status', 'unknown').replace('_', ' ').title()
-        description = data.get('description', '')
-        metrics = data.get('metrics', {})
-        features = data.get('features', [])
+        project = data.get("project", "Unknown Project")
+        version = data.get("version", "1.0.0")
+        status = data.get("status", "unknown").replace("_", " ").title()
+        description = data.get("description", "")
+        metrics = data.get("metrics", {})
+        features = data.get("features", [])
 
         # Header
         lines = [
@@ -81,74 +81,58 @@ Run `br init` to initialize this project.
             f"**Status:** {status}",
             f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d')}",
             f"**Completion:** {metrics.get('completion_percentage', 0)}%",
-            ""
+            "",
         ]
 
         # Metrics
-        lines.extend([
-            "## Progress",
-            "",
-            f"- ✅ {metrics.get('features_complete', 0)} features complete",
-            f"- 🚧 {metrics.get('features_in_progress', 0)} features in progress",
-            f"- 📋 {metrics.get('features_planned', 0)} features planned",
-            ""
-        ])
+        lines.extend(
+            [
+                "## Progress",
+                "",
+                f"- ✅ {metrics.get('features_complete', 0)} features complete",
+                f"- 🚧 {metrics.get('features_in_progress', 0)} features in progress",
+                f"- 📋 {metrics.get('features_planned', 0)} features planned",
+                "",
+            ]
+        )
 
         # Description
         if description:
-            lines.extend([
-                "## Description",
-                "",
-                description,
-                ""
-            ])
+            lines.extend(["## Description", "", description, ""])
 
         # Group features by status
-        complete_features = [f for f in features if f.get('status') == 'complete']
-        in_progress_features = [f for f in features if f.get('status') == 'in_progress']
-        planned_features = [f for f in features if f.get('status') == 'planned']
+        complete_features = [f for f in features if f.get("status") == "complete"]
+        in_progress_features = [f for f in features if f.get("status") == "in_progress"]
+        planned_features = [f for f in features if f.get("status") == "planned"]
 
         # Complete features
         if complete_features:
-            lines.extend([
-                "---",
-                "",
-                "## ✅ Complete Features",
-                ""
-            ])
+            lines.extend(["---", "", "## ✅ Complete Features", ""])
             for feature in complete_features:
                 lines.extend(self._format_feature(feature))
 
         # In progress features
         if in_progress_features:
-            lines.extend([
-                "---",
-                "",
-                "## 🚧 In Progress Features",
-                ""
-            ])
+            lines.extend(["---", "", "## 🚧 In Progress Features", ""])
             for feature in in_progress_features:
                 lines.extend(self._format_feature(feature))
 
         # Planned features
         if planned_features:
-            lines.extend([
-                "---",
-                "",
-                "## 📋 Planned Features",
-                ""
-            ])
+            lines.extend(["---", "", "## 📋 Planned Features", ""])
             for feature in planned_features:
                 lines.extend(self._format_feature(feature))
 
         # Footer
-        lines.extend([
-            "---",
-            "",
-            f"*Generated from `.buildrunner/features.json` on {datetime.now().isoformat()}*",
-            f"*Generator: `core/status_generator.py`*",
-            ""
-        ])
+        lines.extend(
+            [
+                "---",
+                "",
+                f"*Generated from `.buildrunner/features.json` on {datetime.now().isoformat()}*",
+                f"*Generator: `core/status_generator.py`*",
+                "",
+            ]
+        )
 
         return "\n".join(lines)
 
@@ -161,12 +145,12 @@ Run `br init` to initialize this project.
         Returns:
             List of markdown lines
         """
-        name = feature.get('name', 'Unnamed Feature')
-        feature_id = feature.get('id', '')
-        priority = feature.get('priority', 'medium').upper()
-        description = feature.get('description', '')
-        week = feature.get('week')
-        build = feature.get('build')
+        name = feature.get("name", "Unnamed Feature")
+        feature_id = feature.get("id", "")
+        priority = feature.get("priority", "medium").upper()
+        description = feature.get("description", "")
+        week = feature.get("week")
+        build = feature.get("build")
 
         lines = [
             f"### {name}",

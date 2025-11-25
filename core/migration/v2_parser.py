@@ -21,6 +21,7 @@ class V2Project:
     """
     Represents a parsed BuildRunner 2.0 project
     """
+
     root_path: Path
     hrpo_data: Dict[str, Any] = field(default_factory=dict)
     governance_config: Dict[str, Any] = field(default_factory=dict)
@@ -134,7 +135,7 @@ class V2ProjectParser:
             return
 
         try:
-            with open(hrpo_file, 'r') as f:
+            with open(hrpo_file, "r") as f:
                 project.hrpo_data = json.load(f)
             project.has_hrpo = True
         except json.JSONDecodeError as e:
@@ -156,7 +157,7 @@ class V2ProjectParser:
             return
 
         try:
-            with open(governance_file, 'r') as f:
+            with open(governance_file, "r") as f:
                 project.governance_config = json.load(f)
             project.has_governance = True
         except json.JSONDecodeError as e:
@@ -180,11 +181,9 @@ class V2ProjectParser:
             for feature in features_list:
                 if isinstance(feature, str):
                     # Simple string feature
-                    project.features.append({
-                        "name": feature,
-                        "description": feature,
-                        "status": "unknown"
-                    })
+                    project.features.append(
+                        {"name": feature, "description": feature, "status": "unknown"}
+                    )
                 elif isinstance(feature, dict):
                     # Structured feature
                     project.features.append(feature)
@@ -200,13 +199,15 @@ class V2ProjectParser:
                     step_name = step.get("name", "Unknown Step")
                     done = step.get("done", False)
 
-                    project.features.append({
-                        "name": f"{phase_name}: {step_name}",
-                        "description": f"Step {step.get('id', '?')}: {step_name}",
-                        "status": "completed" if done else "pending",
-                        "phase": phase_name,
-                        "step_id": step.get("id")
-                    })
+                    project.features.append(
+                        {
+                            "name": f"{phase_name}: {step_name}",
+                            "description": f"Step {step.get('id', '?')}: {step_name}",
+                            "status": "completed" if done else "pending",
+                            "phase": phase_name,
+                            "step_id": step.get("id"),
+                        }
+                    )
 
     def _parse_supabase_config(self, project: V2Project):
         """
@@ -219,23 +220,25 @@ class V2ProjectParser:
         possible_locations = [
             self.runner_dir / "supabase.json",
             self.project_path / "supabase" / "config.json",
-            self.project_path / ".env"
+            self.project_path / ".env",
         ]
 
         for config_file in possible_locations:
             if config_file.exists():
                 if config_file.suffix == ".json":
                     try:
-                        with open(config_file, 'r') as f:
+                        with open(config_file, "r") as f:
                             project.supabase_config = json.load(f)
                         project.metadata["supabase_config_source"] = str(config_file)
                         break
                     except Exception as e:
-                        project.warnings.append(f"Error reading Supabase config from {config_file}: {e}")
+                        project.warnings.append(
+                            f"Error reading Supabase config from {config_file}: {e}"
+                        )
                 elif config_file.name == ".env":
                     # Extract Supabase vars from .env
                     try:
-                        with open(config_file, 'r') as f:
+                        with open(config_file, "r") as f:
                             env_content = f.read()
 
                         supabase_vars = {}
@@ -268,7 +271,7 @@ class V2ProjectParser:
                 cwd=self.project_path,
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
 
             if result.returncode == 0:
@@ -294,7 +297,9 @@ class V2ProjectParser:
             project.metadata["name"] = project_info.get("name", "Unknown Project")
             project.metadata["slug"] = project_info.get("slug", "unknown-project")
         elif project.hrpo_data:
-            project.metadata["name"] = project.hrpo_data.get("executive_summary", "Unknown Project")[:50]
+            project.metadata["name"] = project.hrpo_data.get(
+                "executive_summary", "Unknown Project"
+            )[:50]
 
         # Progress info from HRPO
         if project.hrpo_data and "progress" in project.hrpo_data:

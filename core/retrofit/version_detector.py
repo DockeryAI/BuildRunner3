@@ -16,6 +16,7 @@ from enum import Enum
 
 class BRVersion(str, Enum):
     """BuildRunner version enum"""
+
     NONE = "none"
     BR1 = "1.0"
     BR2 = "2.0"
@@ -25,6 +26,7 @@ class BRVersion(str, Enum):
 @dataclass
 class VersionDetectionResult:
     """Result of version detection"""
+
     version: BRVersion
     confidence: float  # 0.0-1.0
     indicators: list[str]
@@ -77,7 +79,7 @@ class BRVersionDetector:
             version=BRVersion.NONE,
             confidence=1.0,
             indicators=["No .buildrunner/ or .runner/ directory found"],
-            legacy_files=[]
+            legacy_files=[],
         )
 
     def _detect_br3(self, buildrunner_dir: Path) -> VersionDetectionResult:
@@ -116,7 +118,7 @@ class BRVersionDetector:
             confidence=confidence,
             indicators=indicators,
             legacy_files=legacy_files,
-            buildrunner_dir=buildrunner_dir
+            buildrunner_dir=buildrunner_dir,
         )
 
     def _detect_br2(self, runner_dir: Path) -> VersionDetectionResult:
@@ -156,7 +158,7 @@ class BRVersionDetector:
             confidence=confidence,
             indicators=indicators,
             legacy_files=legacy_files,
-            buildrunner_dir=runner_dir
+            buildrunner_dir=runner_dir,
         )
 
     def needs_migration(self) -> bool:

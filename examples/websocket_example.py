@@ -39,7 +39,7 @@ from core.build.checkpoint_parser import parse_checkpoint
 app = FastAPI(
     title="BuildRunner WebSocket Example",
     description="Real-time build monitoring via WebSocket",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Add CORS
@@ -76,7 +76,7 @@ async def startup_event():
     file_watcher = await create_file_watcher_with_websocket(
         project_root=str(project_root),
         session_id=session_id,
-        websocket_broadcaster=broadcast_checkpoint_update
+        websocket_broadcaster=broadcast_checkpoint_update,
     )
 
     print(f"👁️  Watching: {project_root}/.buildrunner/")
@@ -117,7 +117,7 @@ async def send_demo_update(session_id: str = "example_session"):
         component_id="demo_component",
         status="in_progress",
         progress=50.0,
-        metadata={"message": "Demo update from API"}
+        metadata={"message": "Demo update from API"},
     )
 
     # Send terminal output
@@ -125,15 +125,12 @@ async def send_demo_update(session_id: str = "example_session"):
         session_id=session_id,
         output="Building component demo_component...\n",
         output_type="stdout",
-        source="demo"
+        source="demo",
     )
 
     # Send build progress
     await broadcast_build_progress(
-        session_id=session_id,
-        total_components=10,
-        completed_components=5,
-        percent=50.0
+        session_id=session_id, total_components=10, completed_components=5, percent=50.0
     )
 
     return {"status": "Updates sent", "session_id": session_id}
@@ -143,9 +140,9 @@ if __name__ == "__main__":
     import uvicorn
 
     # Run server
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("BuildRunner WebSocket Server")
-    print("="*60)
+    print("=" * 60)
     print("\nStarting server on http://localhost:8000")
     print("\nWebSocket endpoints:")
     print("  • ws://localhost:8000/api/build/stream/{session_id}")
@@ -155,11 +152,6 @@ if __name__ == "__main__":
     print("  • GET  /docs      - API documentation")
     print("\nTest with:")
     print("  curl -X POST http://localhost:8000/demo/send-update")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        log_level="info"
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

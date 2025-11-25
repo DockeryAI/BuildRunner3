@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 @dataclass
 class ProjectStatus:
     """Status for a single BuildRunner project"""
+
     name: str
     path: Path
     version: str
@@ -101,7 +102,15 @@ class DashboardScanner:
                             if features_json.exists():
                                 features_files.append(features_json)
                         # Don't recurse into common exclusions
-                        elif item.name not in {".git", "node_modules", ".venv", "venv", "__pycache__", "dist", "build"}:
+                        elif item.name not in {
+                            ".git",
+                            "node_modules",
+                            ".venv",
+                            "venv",
+                            "__pycache__",
+                            "dist",
+                            "build",
+                        }:
                             search_dir(item, depth + 1)
             except PermissionError:
                 pass  # Skip directories we can't access
@@ -112,35 +121,37 @@ class DashboardScanner:
     def _parse_project(self, features_file: Path) -> Optional[ProjectStatus]:
         """Parse a single project from features.json"""
         try:
-            with open(features_file, 'r') as f:
+            with open(features_file, "r") as f:
                 data = json.load(f)
 
             # Extract project info
-            project_name = data.get('project', 'Unknown')
-            version = data.get('version', '0.0.0')
-            status = data.get('status', 'unknown')
-            features = data.get('features', [])
-            metrics = data.get('metrics', {})
-            last_updated_str = data.get('last_updated', datetime.now().isoformat())
+            project_name = data.get("project", "Unknown")
+            version = data.get("version", "0.0.0")
+            status = data.get("status", "unknown")
+            features = data.get("features", [])
+            metrics = data.get("metrics", {})
+            last_updated_str = data.get("last_updated", datetime.now().isoformat())
 
             # Parse last updated
             try:
-                last_updated = datetime.fromisoformat(last_updated_str.replace('Z', '+00:00'))
+                last_updated = datetime.fromisoformat(last_updated_str.replace("Z", "+00:00"))
             except:
                 last_updated = datetime.now()
 
             # Count features by status
             total = len(features)
-            completed = sum(1 for f in features if f.get('status') == 'complete')
-            in_progress = sum(1 for f in features if f.get('status') == 'in_progress')
-            planned = sum(1 for f in features if f.get('status') == 'planned')
+            completed = sum(1 for f in features if f.get("status") == "complete")
+            in_progress = sum(1 for f in features if f.get("status") == "in_progress")
+            planned = sum(1 for f in features if f.get("status") == "planned")
 
-            completion = metrics.get('completion_percentage', 0)
+            completion = metrics.get("completion_percentage", 0)
             if total > 0 and completion == 0:
                 completion = round((completed / total) * 100, 1)
 
             # Get active features (in_progress)
-            active_features = [f.get('name', 'Unknown') for f in features if f.get('status') == 'in_progress']
+            active_features = [
+                f.get("name", "Unknown") for f in features if f.get("status") == "in_progress"
+            ]
 
             # Check for blockers (TODO: could read from .buildrunner/context/blockers.md)
             blockers = []
@@ -157,7 +168,7 @@ class DashboardScanner:
                 completion_percentage=completion,
                 last_updated=last_updated,
                 blockers=blockers,
-                active_features=active_features[:5]  # Limit to 5
+                active_features=active_features[:5],  # Limit to 5
             )
 
         except Exception as e:
@@ -203,16 +214,16 @@ class DashboardViews:
         active_projects = [p for p in self.projects if p.in_progress > 0]
 
         return {
-            'total_projects': total_projects,
-            'total_features': total_features,
-            'total_completed': total_completed,
-            'total_in_progress': total_in_progress,
-            'total_planned': total_planned,
-            'overall_completion': overall_completion,
-            'stale_projects': len(stale_projects),
-            'blocked_projects': len(blocked_projects),
-            'active_projects': len(active_projects),
-            'projects': self.projects
+            "total_projects": total_projects,
+            "total_features": total_features,
+            "total_completed": total_completed,
+            "total_in_progress": total_in_progress,
+            "total_planned": total_planned,
+            "overall_completion": overall_completion,
+            "stale_projects": len(stale_projects),
+            "blocked_projects": len(blocked_projects),
+            "active_projects": len(active_projects),
+            "projects": self.projects,
         }
 
     def get_detail_data(self, project_name: str) -> Optional[Dict[str, Any]]:
@@ -230,14 +241,14 @@ class DashboardViews:
             return None
 
         return {
-            'project': project,
-            'features_by_status': {
-                'completed': project.completed,
-                'in_progress': project.in_progress,
-                'planned': project.planned
+            "project": project,
+            "features_by_status": {
+                "completed": project.completed,
+                "in_progress": project.in_progress,
+                "planned": project.planned,
             },
-            'health': project.health_status,
-            'days_since_update': (datetime.now() - project.last_updated).days
+            "health": project.health_status,
+            "days_since_update": (datetime.now() - project.last_updated).days,
         }
 
     def get_timeline_data(self, days: int = 30) -> List[Dict[str, Any]]:
@@ -255,14 +266,16 @@ class DashboardViews:
 
         for project in self.projects:
             if project.last_updated >= cutoff:
-                timeline.append({
-                    'project': project.name,
-                    'timestamp': project.last_updated,
-                    'event': 'updated',
-                    'completion': project.completion_percentage
-                })
+                timeline.append(
+                    {
+                        "project": project.name,
+                        "timestamp": project.last_updated,
+                        "event": "updated",
+                        "completion": project.completion_percentage,
+                    }
+                )
 
-        return sorted(timeline, key=lambda x: x['timestamp'], reverse=True)
+        return sorted(timeline, key=lambda x: x["timestamp"], reverse=True)
 
     def get_alerts_data(self) -> Dict[str, List[ProjectStatus]]:
         """
@@ -277,10 +290,10 @@ class DashboardViews:
         high_wip = [p for p in self.projects if p.in_progress > 5]  # Too much WIP
 
         return {
-            'stale': stale_projects,
-            'blocked': blocked_projects,
-            'no_progress': no_progress,
-            'high_wip': high_wip
+            "stale": stale_projects,
+            "blocked": blocked_projects,
+            "no_progress": no_progress,
+            "high_wip": high_wip,
         }
 
     def get_summary_stats(self) -> str:

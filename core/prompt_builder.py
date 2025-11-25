@@ -14,6 +14,7 @@ from pathlib import Path
 @dataclass
 class PromptContext:
     """Context information for prompt generation"""
+
     project_spec: Optional[str] = None
     architecture_patterns: List[str] = None
     dependencies: Dict[str, str] = None
@@ -207,10 +208,7 @@ CRITICAL RULES:
 
     def _build_acceptance_section(self, batch) -> str:
         """Build overall acceptance criteria for the batch"""
-        lines = [
-            "ACCEPTANCE CRITERIA FOR THIS BATCH:",
-            ""
-        ]
+        lines = ["ACCEPTANCE CRITERIA FOR THIS BATCH:", ""]
 
         # File creation checks
         for task in batch.tasks:
@@ -223,15 +221,17 @@ CRITICAL RULES:
             lines.append(f"- [ ] Tests created: {test_file}")
 
         # General quality checks
-        lines.extend([
-            "",
-            "QUALITY CHECKS:",
-            "- [ ] All files have comprehensive docstrings",
-            "- [ ] All tests passing",
-            "- [ ] No import errors",
-            "- [ ] Code follows project patterns",
-            f"- [ ] {len(batch.tasks)} tasks completed",
-        ])
+        lines.extend(
+            [
+                "",
+                "QUALITY CHECKS:",
+                "- [ ] All files have comprehensive docstrings",
+                "- [ ] All tests passing",
+                "- [ ] No import errors",
+                "- [ ] Code follows project patterns",
+                f"- [ ] {len(batch.tasks)} tasks completed",
+            ]
+        )
 
         return "\n".join(lines)
 
@@ -305,7 +305,9 @@ DO NOT proceed past this point. Wait for verification."""
 
         return "\n\n".join(trimmed_sections)
 
-    def build_batch_series_prompt(self, batches: List, context: Optional[PromptContext] = None) -> List[str]:
+    def build_batch_series_prompt(
+        self, batches: List, context: Optional[PromptContext] = None
+    ) -> List[str]:
         """
         Generate prompts for a series of batches.
 
@@ -347,18 +349,20 @@ DO NOT proceed past this point. Wait for verification."""
         for task in batch.tasks:
             lines.append(f"- {task.file_path} - {task.name}")
 
-        lines.extend([
-            "",
-            "## Key Patterns:",
-            "- Follow established code patterns from completed files",
-            "- Maintain consistent naming conventions",
-            "- Keep test coverage above 90%",
-            "",
-            "## Next Steps:",
-            "- Continue with next batch",
-            "- Ensure integration with completed files",
-            "- Run full test suite after completion",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Key Patterns:",
+                "- Follow established code patterns from completed files",
+                "- Maintain consistent naming conventions",
+                "- Keep test coverage above 90%",
+                "",
+                "## Next Steps:",
+                "- Continue with next batch",
+                "- Ensure integration with completed files",
+                "- Run full test suite after completion",
+            ]
+        )
 
         return "\n".join(lines)
 

@@ -16,6 +16,7 @@ import json
 @dataclass
 class ServiceRequirement:
     """Represents a detected service dependency"""
+
     service: str  # stripe, aws, supabase, openai, etc.
     required: bool  # Is this service mandatory?
     detected: bool  # Was service usage detected in code?
@@ -27,76 +28,76 @@ class ServiceRequirement:
 
 # Service detection patterns
 SERVICE_PATTERNS = {
-    'stripe': {
-        'import_patterns': [r'import\s+stripe', r'from\s+stripe'],
-        'usage_patterns': [r'stripe\.(api_key|public_key)', r'sk_(?:test|live)_'],
-        'env_vars': ['STRIPE_SECRET_KEY', 'STRIPE_PUBLIC_KEY'],
-        'docs_url': 'https://stripe.com/docs/keys',
-        'setup_instructions': 'Get your API keys from https://dashboard.stripe.com/apikeys'
+    "stripe": {
+        "import_patterns": [r"import\s+stripe", r"from\s+stripe"],
+        "usage_patterns": [r"stripe\.(api_key|public_key)", r"sk_(?:test|live)_"],
+        "env_vars": ["STRIPE_SECRET_KEY", "STRIPE_PUBLIC_KEY"],
+        "docs_url": "https://stripe.com/docs/keys",
+        "setup_instructions": "Get your API keys from https://dashboard.stripe.com/apikeys",
     },
-    'aws': {
-        'import_patterns': [r'import\s+boto3', r'from\s+boto3'],
-        'usage_patterns': [r'boto3\.client', r'boto3\.resource', r'AWS'],
-        'env_vars': ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_REGION'],
-        'docs_url': 'https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html',
-        'setup_instructions': 'Create IAM user and generate access keys in AWS Console'
+    "aws": {
+        "import_patterns": [r"import\s+boto3", r"from\s+boto3"],
+        "usage_patterns": [r"boto3\.client", r"boto3\.resource", r"AWS"],
+        "env_vars": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION"],
+        "docs_url": "https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html",
+        "setup_instructions": "Create IAM user and generate access keys in AWS Console",
     },
-    'supabase': {
-        'import_patterns': [r'from\s+supabase', r'import\s+supabase'],
-        'usage_patterns': [r'supabase\.(url|key)', r'create_client'],
-        'env_vars': ['SUPABASE_URL', 'SUPABASE_KEY'],
-        'docs_url': 'https://supabase.com/docs/guides/api/api-keys',
-        'setup_instructions': 'Get credentials from Supabase project settings'
+    "supabase": {
+        "import_patterns": [r"from\s+supabase", r"import\s+supabase"],
+        "usage_patterns": [r"supabase\.(url|key)", r"create_client"],
+        "env_vars": ["SUPABASE_URL", "SUPABASE_KEY"],
+        "docs_url": "https://supabase.com/docs/guides/api/api-keys",
+        "setup_instructions": "Get credentials from Supabase project settings",
     },
-    'openai': {
-        'import_patterns': [r'import\s+openai', r'from\s+openai'],
-        'usage_patterns': [r'openai\.(api_key|ChatCompletion)', r'sk-\w+'],
-        'env_vars': ['OPENAI_API_KEY'],
-        'docs_url': 'https://platform.openai.com/api-keys',
-        'setup_instructions': 'Create API key at https://platform.openai.com/api-keys'
+    "openai": {
+        "import_patterns": [r"import\s+openai", r"from\s+openai"],
+        "usage_patterns": [r"openai\.(api_key|ChatCompletion)", r"sk-\w+"],
+        "env_vars": ["OPENAI_API_KEY"],
+        "docs_url": "https://platform.openai.com/api-keys",
+        "setup_instructions": "Create API key at https://platform.openai.com/api-keys",
     },
-    'github': {
-        'import_patterns': [r'from\s+github', r'import\s+(?:github|PyGithub)'],
-        'usage_patterns': [r'Github\(', r'github\.(?:token|auth)'],
-        'env_vars': ['GITHUB_TOKEN', 'GITHUB_REPO'],
-        'docs_url': 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token',
-        'setup_instructions': 'Create personal access token in GitHub Settings > Developer settings'
+    "github": {
+        "import_patterns": [r"from\s+github", r"import\s+(?:github|PyGithub)"],
+        "usage_patterns": [r"Github\(", r"github\.(?:token|auth)"],
+        "env_vars": ["GITHUB_TOKEN", "GITHUB_REPO"],
+        "docs_url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token",
+        "setup_instructions": "Create personal access token in GitHub Settings > Developer settings",
     },
-    'notion': {
-        'import_patterns': [r'from\s+notion', r'import\s+notion'],
-        'usage_patterns': [r'notion\.(token|api)', r'NotionClient'],
-        'env_vars': ['NOTION_TOKEN'],
-        'docs_url': 'https://developers.notion.com/docs/authorization',
-        'setup_instructions': 'Create integration at https://www.notion.so/my-integrations'
+    "notion": {
+        "import_patterns": [r"from\s+notion", r"import\s+notion"],
+        "usage_patterns": [r"notion\.(token|api)", r"NotionClient"],
+        "env_vars": ["NOTION_TOKEN"],
+        "docs_url": "https://developers.notion.com/docs/authorization",
+        "setup_instructions": "Create integration at https://www.notion.so/my-integrations",
     },
-    'slack': {
-        'import_patterns': [r'from\s+slack', r'import\s+slack'],
-        'usage_patterns': [r'slack\.(token|webhook)', r'WebClient'],
-        'env_vars': ['SLACK_TOKEN', 'SLACK_WEBHOOK_URL'],
-        'docs_url': 'https://api.slack.com/authentication/token-types',
-        'setup_instructions': 'Create app and get token at https://api.slack.com/apps'
+    "slack": {
+        "import_patterns": [r"from\s+slack", r"import\s+slack"],
+        "usage_patterns": [r"slack\.(token|webhook)", r"WebClient"],
+        "env_vars": ["SLACK_TOKEN", "SLACK_WEBHOOK_URL"],
+        "docs_url": "https://api.slack.com/authentication/token-types",
+        "setup_instructions": "Create app and get token at https://api.slack.com/apps",
     },
-    'sendgrid': {
-        'import_patterns': [r'from\s+sendgrid', r'import\s+sendgrid'],
-        'usage_patterns': [r'sendgrid\.(api_key|SendGridAPIClient)'],
-        'env_vars': ['SENDGRID_API_KEY'],
-        'docs_url': 'https://docs.sendgrid.com/ui/account-and-settings/api-keys',
-        'setup_instructions': 'Create API key in SendGrid Settings > API Keys'
+    "sendgrid": {
+        "import_patterns": [r"from\s+sendgrid", r"import\s+sendgrid"],
+        "usage_patterns": [r"sendgrid\.(api_key|SendGridAPIClient)"],
+        "env_vars": ["SENDGRID_API_KEY"],
+        "docs_url": "https://docs.sendgrid.com/ui/account-and-settings/api-keys",
+        "setup_instructions": "Create API key in SendGrid Settings > API Keys",
     },
-    'twilio': {
-        'import_patterns': [r'from\s+twilio', r'import\s+twilio'],
-        'usage_patterns': [r'twilio\.(account_sid|auth_token)'],
-        'env_vars': ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN'],
-        'docs_url': 'https://www.twilio.com/docs/iam/keys/api-key',
-        'setup_instructions': 'Get credentials from Twilio Console'
+    "twilio": {
+        "import_patterns": [r"from\s+twilio", r"import\s+twilio"],
+        "usage_patterns": [r"twilio\.(account_sid|auth_token)"],
+        "env_vars": ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN"],
+        "docs_url": "https://www.twilio.com/docs/iam/keys/api-key",
+        "setup_instructions": "Get credentials from Twilio Console",
     },
-    'redis': {
-        'import_patterns': [r'import\s+redis', r'from\s+redis'],
-        'usage_patterns': [r'redis\.Redis', r'redis://'],
-        'env_vars': ['REDIS_URL'],
-        'docs_url': 'https://redis.io/docs/getting-started/',
-        'setup_instructions': 'Set up Redis server and get connection URL'
-    }
+    "redis": {
+        "import_patterns": [r"import\s+redis", r"from\s+redis"],
+        "usage_patterns": [r"redis\.Redis", r"redis://"],
+        "env_vars": ["REDIS_URL"],
+        "docs_url": "https://redis.io/docs/getting-started/",
+        "setup_instructions": "Set up Redis server and get connection URL",
+    },
 }
 
 
@@ -119,7 +120,9 @@ class SelfServiceManager:
         self.env_example = self.project_root / ".env.example"
         self.requirements: Dict[str, ServiceRequirement] = {}
 
-    def detect_required_services(self, directories: Optional[List[str]] = None) -> Dict[str, ServiceRequirement]:
+    def detect_required_services(
+        self, directories: Optional[List[str]] = None
+    ) -> Dict[str, ServiceRequirement]:
         """
         Scan codebase to detect required external services.
 
@@ -130,7 +133,7 @@ class SelfServiceManager:
             Dictionary of service name to ServiceRequirement
         """
         if directories is None:
-            directories = ['core', 'api', 'cli', 'plugins']
+            directories = ["core", "api", "cli", "plugins"]
 
         # Initialize requirements
         for service_name in SERVICE_PATTERNS.keys():
@@ -139,7 +142,7 @@ class SelfServiceManager:
                 required=False,
                 detected=False,
                 configured=False,
-                env_vars=SERVICE_PATTERNS[service_name]['env_vars']
+                env_vars=SERVICE_PATTERNS[service_name]["env_vars"],
             )
 
         # Scan files
@@ -148,8 +151,8 @@ class SelfServiceManager:
             if not dir_path.exists():
                 continue
 
-            for py_file in dir_path.rglob('*.py'):
-                if '__pycache__' in str(py_file):
+            for py_file in dir_path.rglob("*.py"):
+                if "__pycache__" in str(py_file):
                     continue
                 self._scan_file(py_file)
 
@@ -167,18 +170,22 @@ class SelfServiceManager:
 
             for service_name, patterns in SERVICE_PATTERNS.items():
                 # Check import patterns
-                for pattern in patterns['import_patterns']:
+                for pattern in patterns["import_patterns"]:
                     if re.search(pattern, content):
                         self.requirements[service_name].detected = True
-                        self.requirements[service_name].detected_in.append(str(file_path.relative_to(self.project_root)))
+                        self.requirements[service_name].detected_in.append(
+                            str(file_path.relative_to(self.project_root))
+                        )
                         break
 
                 # Check usage patterns
                 if not self.requirements[service_name].detected:
-                    for pattern in patterns['usage_patterns']:
+                    for pattern in patterns["usage_patterns"]:
                         if re.search(pattern, content):
                             self.requirements[service_name].detected = True
-                            self.requirements[service_name].detected_in.append(str(file_path.relative_to(self.project_root)))
+                            self.requirements[service_name].detected_in.append(
+                                str(file_path.relative_to(self.project_root))
+                            )
                             break
 
         except Exception:
@@ -196,8 +203,7 @@ class SelfServiceManager:
             if requirement.detected:
                 # Check if all required env vars are present
                 all_configured = all(
-                    var in env_vars or var in os.environ
-                    for var in requirement.env_vars
+                    var in env_vars or var in os.environ for var in requirement.env_vars
                 )
                 requirement.configured = all_configured
                 requirement.required = requirement.detected  # If detected, consider it required
@@ -206,10 +212,10 @@ class SelfServiceManager:
         """Parse .env file into dictionary"""
         env_vars = {}
         try:
-            for line in env_path.read_text().split('\n'):
+            for line in env_path.read_text().split("\n"):
                 line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
                     env_vars[key.strip()] = value.strip()
         except Exception:
             pass
@@ -247,14 +253,14 @@ class SelfServiceManager:
             print(f"📚 Documentation: {patterns['docs_url']}")
             print(f"💡 Instructions: {patterns['setup_instructions']}\n")
 
-            for env_var in patterns['env_vars']:
+            for env_var in patterns["env_vars"]:
                 # Prompt for each variable
                 value = input(f"Enter {env_var}: ").strip()
                 if value:
                     credentials[env_var] = value
         else:
             # Return template
-            for env_var in patterns['env_vars']:
+            for env_var in patterns["env_vars"]:
                 credentials[env_var] = f"your_{service_name}_{env_var.lower()}_here"
 
         return credentials
@@ -275,7 +281,7 @@ class SelfServiceManager:
         template_lines = [
             "# Environment Variables for BuildRunner Project",
             "# Copy this file to .env and fill in your credentials",
-            ""
+            "",
         ]
 
         # Group services
@@ -291,7 +297,7 @@ class SelfServiceManager:
             for env_var in requirement.env_vars:
                 template_lines.append(f"{env_var}=your_{service_name}_{env_var.lower()}_here")
 
-        template = '\n'.join(template_lines)
+        template = "\n".join(template_lines)
 
         # Write to file if path specified
         if output_path:
@@ -301,7 +307,9 @@ class SelfServiceManager:
 
         return template
 
-    def validate_credentials(self, service_name: str, credentials: Optional[Dict[str, str]] = None) -> Tuple[bool, str]:
+    def validate_credentials(
+        self, service_name: str, credentials: Optional[Dict[str, str]] = None
+    ) -> Tuple[bool, str]:
         """
         Validate service credentials by making test API call.
 
@@ -318,14 +326,15 @@ class SelfServiceManager:
         # Load credentials from environment if not provided
         if credentials is None:
             credentials = {}
-            for env_var in SERVICE_PATTERNS[service_name]['env_vars']:
+            for env_var in SERVICE_PATTERNS[service_name]["env_vars"]:
                 value = os.getenv(env_var)
                 if value:
                     credentials[env_var] = value
 
         # Check if all required variables are present
         missing_vars = [
-            var for var in SERVICE_PATTERNS[service_name]['env_vars']
+            var
+            for var in SERVICE_PATTERNS[service_name]["env_vars"]
             if var not in credentials or not credentials[var]
         ]
 
@@ -339,30 +348,32 @@ class SelfServiceManager:
 
         return True, f"{service_name.title()} credentials validated successfully"
 
-    def _validate_credential_format(self, service_name: str, credentials: Dict[str, str]) -> Tuple[bool, str]:
+    def _validate_credential_format(
+        self, service_name: str, credentials: Dict[str, str]
+    ) -> Tuple[bool, str]:
         """Validate credential format without making API calls"""
         # Service-specific format validation
-        if service_name == 'stripe':
-            if 'STRIPE_SECRET_KEY' in credentials:
-                key = credentials['STRIPE_SECRET_KEY']
-                if not (key.startswith('sk_test_') or key.startswith('sk_live_')):
+        if service_name == "stripe":
+            if "STRIPE_SECRET_KEY" in credentials:
+                key = credentials["STRIPE_SECRET_KEY"]
+                if not (key.startswith("sk_test_") or key.startswith("sk_live_")):
                     return False, "Stripe secret key should start with sk_test_ or sk_live_"
 
-        elif service_name == 'aws':
-            if 'AWS_ACCESS_KEY_ID' in credentials:
-                key_id = credentials['AWS_ACCESS_KEY_ID']
+        elif service_name == "aws":
+            if "AWS_ACCESS_KEY_ID" in credentials:
+                key_id = credentials["AWS_ACCESS_KEY_ID"]
                 if len(key_id) != 20:
                     return False, "AWS Access Key ID should be 20 characters"
 
-        elif service_name == 'openai':
-            if 'OPENAI_API_KEY' in credentials:
-                key = credentials['OPENAI_API_KEY']
-                if not key.startswith('sk-'):
+        elif service_name == "openai":
+            if "OPENAI_API_KEY" in credentials:
+                key = credentials["OPENAI_API_KEY"]
+                if not key.startswith("sk-"):
                     return False, "OpenAI API key should start with sk-"
 
-        elif service_name == 'github':
-            if 'GITHUB_TOKEN' in credentials:
-                token = credentials['GITHUB_TOKEN']
+        elif service_name == "github":
+            if "GITHUB_TOKEN" in credentials:
+                token = credentials["GITHUB_TOKEN"]
                 if len(token) < 20:
                     return False, "GitHub token appears to be too short"
 
@@ -415,7 +426,7 @@ class SelfServiceManager:
 
         # Write back to .env
         lines = [f"{key}={value}" for key, value in existing_vars.items()]
-        self.env_file.write_text('\n'.join(lines) + '\n')
+        self.env_file.write_text("\n".join(lines) + "\n")
 
     def get_setup_status(self) -> Dict[str, Any]:
         """
@@ -427,23 +438,23 @@ class SelfServiceManager:
         self.detect_required_services()
 
         status = {
-            'total_services': len([r for r in self.requirements.values() if r.detected]),
-            'configured_services': len([r for r in self.requirements.values() if r.configured]),
-            'missing_services': [],
-            'services': {}
+            "total_services": len([r for r in self.requirements.values() if r.detected]),
+            "configured_services": len([r for r in self.requirements.values() if r.configured]),
+            "missing_services": [],
+            "services": {},
         }
 
         for name, req in self.requirements.items():
             if req.detected:
-                status['services'][name] = {
-                    'configured': req.configured,
-                    'required': req.required,
-                    'env_vars': req.env_vars,
-                    'detected_in': req.detected_in
+                status["services"][name] = {
+                    "configured": req.configured,
+                    "required": req.required,
+                    "env_vars": req.env_vars,
+                    "detected_in": req.detected_in,
                 }
 
                 if not req.configured:
-                    status['missing_services'].append(name)
+                    status["missing_services"].append(name)
 
         return status
 
@@ -456,37 +467,43 @@ class SelfServiceManager:
         """
         status = self.get_setup_status()
 
-        if status['total_services'] == 0:
+        if status["total_services"] == 0:
             return "✅ No external services detected in this project."
 
         report = ["# Service Setup Status\n"]
         report.append(f"**Services Detected:** {status['total_services']}")
-        report.append(f"**Configured:** {status['configured_services']}/{status['total_services']}\n")
+        report.append(
+            f"**Configured:** {status['configured_services']}/{status['total_services']}\n"
+        )
 
-        if status['configured_services'] == status['total_services']:
+        if status["configured_services"] == status["total_services"]:
             report.append("✅ **All services are configured!**\n")
         else:
-            report.append(f"⚠️  **{len(status['missing_services'])} services need configuration:**\n")
-            for service in status['missing_services']:
+            report.append(
+                f"⚠️  **{len(status['missing_services'])} services need configuration:**\n"
+            )
+            for service in status["missing_services"]:
                 report.append(f"- {service.title()}")
 
         report.append("\n## Service Details\n")
 
-        for service_name, service_info in status['services'].items():
-            emoji = "✅" if service_info['configured'] else "⚠️"
+        for service_name, service_info in status["services"].items():
+            emoji = "✅" if service_info["configured"] else "⚠️"
             report.append(f"\n### {emoji} {service_name.title()}")
-            report.append(f"- **Status:** {'Configured' if service_info['configured'] else 'Not configured'}")
+            report.append(
+                f"- **Status:** {'Configured' if service_info['configured'] else 'Not configured'}"
+            )
             report.append(f"- **Required:** {'Yes' if service_info['required'] else 'Optional'}")
             report.append(f"- **Environment Variables:** {', '.join(service_info['env_vars'])}")
 
-            if service_info['detected_in']:
+            if service_info["detected_in"]:
                 report.append(f"- **Detected in:** {', '.join(service_info['detected_in'][:3])}")
-                if len(service_info['detected_in']) > 3:
+                if len(service_info["detected_in"]) > 3:
                     report.append(f"  (and {len(service_info['detected_in']) - 3} more)")
 
-            if not service_info['configured']:
+            if not service_info["configured"]:
                 patterns = SERVICE_PATTERNS[service_name]
                 report.append(f"- **Setup:** Run `br service setup {service_name}`")
                 report.append(f"- **Docs:** {patterns['docs_url']}")
 
-        return '\n'.join(report)
+        return "\n".join(report)

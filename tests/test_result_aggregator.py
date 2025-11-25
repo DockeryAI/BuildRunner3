@@ -202,8 +202,9 @@ class TestMerging:
         """Test that merged output includes errors"""
         result = aggregator.aggregate(mixed_success_responses)
 
-        assert "Module not found" in result.merged_output or \
-               "Module not found" in result.merged_errors
+        assert (
+            "Module not found" in result.merged_output or "Module not found" in result.merged_errors
+        )
 
     def test_merge_files_created(self, aggregator, multiple_agent_responses):
         """Test merging files created"""
@@ -454,8 +455,8 @@ class TestMetricsCalculation:
         result = aggregator.aggregate(multiple_agent_responses)
 
         metrics = result.metrics
-        assert metrics['total_duration_ms'] == 17000.0  # 5000 + 8000 + 4000
-        assert metrics['avg_duration_ms'] > 0
+        assert metrics["total_duration_ms"] == 17000.0  # 5000 + 8000 + 4000
+        assert metrics["avg_duration_ms"] > 0
 
     def test_metrics_token_calculation(
         self,
@@ -466,33 +467,33 @@ class TestMetricsCalculation:
         result = aggregator.aggregate(multiple_agent_responses)
 
         metrics = result.metrics
-        assert metrics['total_tokens'] == 7000  # 2000 + 3500 + 1500
-        assert metrics['avg_tokens'] > 0
+        assert metrics["total_tokens"] == 7000  # 2000 + 3500 + 1500
+        assert metrics["avg_tokens"] > 0
 
     def test_metrics_success_rate(self, aggregator, mixed_success_responses):
         """Test success rate calculation"""
         result = aggregator.aggregate(mixed_success_responses)
 
         metrics = result.metrics
-        assert 'success_rate' in metrics
-        assert metrics['success_rate'] == 50.0  # 1 out of 2 succeeded
+        assert "success_rate" in metrics
+        assert metrics["success_rate"] == 50.0  # 1 out of 2 succeeded
 
     def test_metrics_successful_agents(self, aggregator, mixed_success_responses):
         """Test successful agent count"""
         result = aggregator.aggregate(mixed_success_responses)
 
         metrics = result.metrics
-        assert metrics['successful_agents'] == 1
-        assert metrics['failed_agents'] == 1
+        assert metrics["successful_agents"] == 1
+        assert metrics["failed_agents"] == 1
 
     def test_metrics_with_all_successful(self, aggregator, multiple_agent_responses):
         """Test metrics with all successful responses"""
         result = aggregator.aggregate(multiple_agent_responses)
 
         metrics = result.metrics
-        assert metrics['successful_agents'] == 3
-        assert metrics['failed_agents'] == 0
-        assert metrics['success_rate'] == 100.0
+        assert metrics["successful_agents"] == 3
+        assert metrics["failed_agents"] == 0
+        assert metrics["success_rate"] == 100.0
 
 
 # Sequential Aggregation Tests
@@ -658,9 +659,9 @@ class TestStatistics:
 
         stats = aggregator.get_stats()
 
-        assert stats['aggregations_count'] == 1
-        assert stats['total_results_aggregated'] == 3
-        assert stats['avg_results_per_aggregation'] == 3.0
+        assert stats["aggregations_count"] == 1
+        assert stats["total_results_aggregated"] == 3
+        assert stats["avg_results_per_aggregation"] == 3.0
 
 
 # Result Serialization Tests
@@ -673,10 +674,10 @@ class TestResultSerialization:
 
         result_dict = result.to_dict()
 
-        assert result_dict['aggregation_id'] == result.aggregation_id
-        assert result_dict['result_count'] == 1
-        assert 'metrics' in result_dict
-        assert 'summary' in result_dict
+        assert result_dict["aggregation_id"] == result.aggregation_id
+        assert result_dict["result_count"] == 1
+        assert "metrics" in result_dict
+        assert "summary" in result_dict
 
     def test_result_dict_contains_metadata(self, aggregator, multiple_agent_responses):
         """Test that result dict contains all metadata"""
@@ -684,10 +685,10 @@ class TestResultSerialization:
 
         result_dict = result.to_dict()
 
-        assert 'merged_files_created' in result_dict
-        assert 'merged_files_modified' in result_dict
-        assert 'merged_errors' in result_dict
-        assert 'conflict_resolutions' in result_dict
+        assert "merged_files_created" in result_dict
+        assert "merged_files_modified" in result_dict
+        assert "merged_errors" in result_dict
+        assert "conflict_resolutions" in result_dict
 
 
 # Edge Cases Tests
@@ -699,7 +700,7 @@ class TestEdgeCases:
         result = aggregator.aggregate([single_agent_response])
 
         assert len(result.results) == 1
-        assert result.metrics['successful_agents'] == 1
+        assert result.metrics["successful_agents"] == 1
 
     def test_all_failed_responses(self, aggregator):
         """Test aggregating all failed responses"""
@@ -732,8 +733,8 @@ class TestEdgeCases:
 
         result = aggregator.aggregate(responses)
 
-        assert result.metrics['success_rate'] == 0.0
-        assert result.metrics['failed_agents'] == 2
+        assert result.metrics["success_rate"] == 0.0
+        assert result.metrics["failed_agents"] == 2
 
     def test_many_agent_types(self, aggregator):
         """Test aggregating responses from different agent types"""
@@ -777,8 +778,8 @@ class TestEdgeCases:
 
         result = aggregator.aggregate(responses)
 
-        assert result.metrics['total_duration_ms'] == 0.0
-        assert result.metrics['avg_duration_ms'] == 0.0
+        assert result.metrics["total_duration_ms"] == 0.0
+        assert result.metrics["avg_duration_ms"] == 0.0
 
     def test_very_large_outputs(self, aggregator):
         """Test aggregating responses with large outputs"""

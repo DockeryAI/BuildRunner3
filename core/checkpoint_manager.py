@@ -18,6 +18,7 @@ from enum import Enum
 
 class CheckpointStatus(Enum):
     """Checkpoint status"""
+
     CREATED = "created"
     ACTIVE = "active"
     ROLLED_BACK = "rolled_back"
@@ -26,6 +27,7 @@ class CheckpointStatus(Enum):
 @dataclass
 class Checkpoint:
     """Represents a build state checkpoint"""
+
     id: str
     timestamp: str
     phase: str
@@ -37,13 +39,13 @@ class Checkpoint:
     def to_dict(self) -> Dict:
         """Convert to dictionary"""
         data = asdict(self)
-        data['status'] = self.status.value
+        data["status"] = self.status.value
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'Checkpoint':
+    def from_dict(cls, data: Dict) -> "Checkpoint":
         """Create from dictionary"""
-        data['status'] = CheckpointStatus(data['status'])
+        data["status"] = CheckpointStatus(data["status"])
         return cls(**data)
 
 
@@ -77,7 +79,7 @@ class CheckpointManager:
         phase: str,
         tasks_completed: List[str],
         files_created: List[str],
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> Checkpoint:
         """
         Create a new checkpoint.
@@ -100,7 +102,7 @@ class CheckpointManager:
             tasks_completed=tasks_completed.copy(),
             files_created=files_created.copy(),
             status=CheckpointStatus.CREATED,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Save checkpoint to disk
@@ -206,7 +208,7 @@ class CheckpointManager:
         """Save checkpoint to disk"""
         checkpoint_file = self.checkpoint_dir / f"{checkpoint.id}.json"
 
-        with open(checkpoint_file, 'w') as f:
+        with open(checkpoint_file, "w") as f:
             json.dump(checkpoint.to_dict(), f, indent=2)
 
     def _load_checkpoints(self) -> None:
@@ -218,7 +220,7 @@ class CheckpointManager:
 
         for checkpoint_file in sorted(self.checkpoint_dir.glob("checkpoint_*.json")):
             try:
-                with open(checkpoint_file, 'r') as f:
+                with open(checkpoint_file, "r") as f:
                     data = json.load(f)
                     checkpoint = Checkpoint.from_dict(data)
                     self.checkpoints.append(checkpoint)
@@ -270,5 +272,5 @@ class CheckpointManager:
             "tasks_completed": latest.tasks_completed,
             "files_created": latest.files_created,
             "timestamp": latest.timestamp,
-            "metadata": latest.metadata
+            "metadata": latest.metadata,
         }

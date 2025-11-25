@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 @dataclass
 class Feature:
     """Extracted feature from PRD"""
+
     name: str
     description: str
     priority: str = "medium"
@@ -23,6 +24,7 @@ class Feature:
 @dataclass
 class Phase:
     """Implementation phase from PRD"""
+
     number: int
     name: str
     features: List[str] = field(default_factory=list)
@@ -32,6 +34,7 @@ class Phase:
 @dataclass
 class Credential:
     """API credential or service key"""
+
     service: str
     required: bool = True
     deferred: bool = False
@@ -40,6 +43,7 @@ class Credential:
 @dataclass
 class ParsedSpec:
     """Parsed PROJECT_SPEC data"""
+
     status: Optional[str] = None
     industry: Optional[str] = None
     use_case: Optional[str] = None
@@ -73,39 +77,39 @@ class PRDParser:
         if not self.spec_path.exists():
             raise FileNotFoundError(f"PROJECT_SPEC not found: {self.spec_path}")
 
-        with open(self.spec_path, 'r') as f:
+        with open(self.spec_path, "r") as f:
             content = f.read()
 
         spec = ParsedSpec()
 
         # Parse metadata
-        spec.status = self._extract_metadata(content, 'Status')
-        spec.industry = self._extract_metadata(content, 'Industry')
-        spec.use_case = self._extract_metadata(content, 'Use Case')
-        spec.tech_stack = self._extract_metadata(content, 'Tech Stack')
+        spec.status = self._extract_metadata(content, "Status")
+        spec.industry = self._extract_metadata(content, "Industry")
+        spec.use_case = self._extract_metadata(content, "Use Case")
+        spec.tech_stack = self._extract_metadata(content, "Tech Stack")
 
         # Parse sections
         sections = self._split_sections(content)
         spec.raw_sections = sections
 
         # Extract features from user stories
-        if 'Product Requirements' in sections:
-            spec.features = self._extract_features(sections['Product Requirements'])
+        if "Product Requirements" in sections:
+            spec.features = self._extract_features(sections["Product Requirements"])
 
         # Extract phases from implementation section
-        if 'Technical Architecture' in sections:
-            spec.phases = self._extract_phases(sections['Technical Architecture'])
-            spec.dependencies = self._extract_dependencies(sections['Technical Architecture'])
+        if "Technical Architecture" in sections:
+            spec.phases = self._extract_phases(sections["Technical Architecture"])
+            spec.dependencies = self._extract_dependencies(sections["Technical Architecture"])
 
         # Extract credentials
-        if 'Product Requirements' in sections:
-            spec.credentials = self._extract_credentials(sections['Product Requirements'])
+        if "Product Requirements" in sections:
+            spec.credentials = self._extract_credentials(sections["Product Requirements"])
 
         return spec
 
     def _extract_metadata(self, content: str, key: str) -> Optional[str]:
         """Extract metadata value from header"""
-        pattern = rf'\*\*{key}\*\*:\s*(.+)'
+        pattern = rf"\*\*{key}\*\*:\s*(.+)"
         match = re.search(pattern, content)
         return match.group(1).strip() if match else None
 
@@ -115,12 +119,12 @@ class PRDParser:
         current_section = None
         current_content = []
 
-        for line in content.split('\n'):
+        for line in content.split("\n"):
             # Check if this is a section header (# followed by text)
-            if line.startswith('# ') and not line.startswith('# PROJECT_SPEC'):
+            if line.startswith("# ") and not line.startswith("# PROJECT_SPEC"):
                 # Save previous section
                 if current_section:
-                    sections[current_section] = '\n'.join(current_content)
+                    sections[current_section] = "\n".join(current_content)
 
                 # Start new section
                 current_section = line[2:].strip()
@@ -130,7 +134,7 @@ class PRDParser:
 
         # Save last section
         if current_section:
-            sections[current_section] = '\n'.join(current_content)
+            sections[current_section] = "\n".join(current_content)
 
         return sections
 
@@ -139,7 +143,7 @@ class PRDParser:
         features = []
 
         # Look for user stories pattern
-        story_pattern = r'- As a (.+?), I want (.+?) so that (.+)'
+        story_pattern = r"- As a (.+?), I want (.+?) so that (.+)"
         matches = re.finditer(story_pattern, prd_content)
 
         for i, match in enumerate(matches):
@@ -148,7 +152,7 @@ class PRDParser:
             feature = Feature(
                 name=f"feature_{i+1}",
                 description=f"{goal.strip()} ({benefit.strip()})",
-                priority="high" if i < 3 else "medium"
+                priority="high" if i < 3 else "medium",
             )
             features.append(feature)
 
@@ -159,16 +163,13 @@ class PRDParser:
         phases = []
 
         # Look for phase patterns like "Phase 1:", "Week 1:", etc.
-        phase_pattern = r'(?:Phase|Week)\s+(\d+)(?::|,)\s*(.+?)(?:\n|$)'
+        phase_pattern = r"(?:Phase|Week)\s+(\d+)(?::|,)\s*(.+?)(?:\n|$)"
         matches = re.finditer(phase_pattern, tech_content, re.MULTILINE)
 
         for match in matches:
             number, name = match.groups()
 
-            phase = Phase(
-                number=int(number),
-                name=name.strip()
-            )
+            phase = Phase(number=int(number), name=name.strip())
             phases.append(phase)
 
         return phases
@@ -179,11 +180,11 @@ class PRDParser:
 
         # Common dependency patterns
         dep_patterns = [
-            r'(?:using|with|built on)\s+([A-Z][a-zA-Z0-9]+)',
-            r'([A-Z][a-zA-Z0-9]+)\s+(?:framework|library)',
-            r'- \*\*Frontend\*\*:\s*(.+)',
-            r'- \*\*Backend\*\*:\s*(.+)',
-            r'- \*\*Database\*\*:\s*(.+)'
+            r"(?:using|with|built on)\s+([A-Z][a-zA-Z0-9]+)",
+            r"([A-Z][a-zA-Z0-9]+)\s+(?:framework|library)",
+            r"- \*\*Frontend\*\*:\s*(.+)",
+            r"- \*\*Backend\*\*:\s*(.+)",
+            r"- \*\*Database\*\*:\s*(.+)",
         ]
 
         for pattern in dep_patterns:
@@ -191,7 +192,7 @@ class PRDParser:
             for match in matches:
                 dep = match.group(1).strip()
                 # Clean up common words
-                if dep and len(dep) > 2 and dep.lower() not in ['the', 'and', 'for', 'with']:
+                if dep and len(dep) > 2 and dep.lower() not in ["the", "and", "for", "with"]:
                     dependencies.add(dep)
 
         return dependencies
@@ -201,15 +202,11 @@ class PRDParser:
         credentials = []
 
         # Look for mentions of API keys, services
-        service_keywords = ['API', 'OAuth', 'Auth0', 'Stripe', 'AWS', 'Google', 'Facebook']
+        service_keywords = ["API", "OAuth", "Auth0", "Stripe", "AWS", "Google", "Facebook"]
 
         for keyword in service_keywords:
             if keyword in prd_content:
-                credentials.append(Credential(
-                    service=keyword,
-                    required=True,
-                    deferred=False
-                ))
+                credentials.append(Credential(service=keyword, required=True, deferred=False))
 
         return credentials
 
@@ -224,25 +221,29 @@ class PRDParser:
 
         # Check required metadata
         if not spec.status:
-            issues.setdefault('metadata', []).append("Missing status")
+            issues.setdefault("metadata", []).append("Missing status")
         if not spec.industry:
-            issues.setdefault('metadata', []).append("Missing industry")
+            issues.setdefault("metadata", []).append("Missing industry")
         if not spec.use_case:
-            issues.setdefault('metadata', []).append("Missing use case")
+            issues.setdefault("metadata", []).append("Missing use case")
 
         # Check required sections
-        required_sections = ['Product Requirements', 'Technical Architecture', 'Design Architecture']
+        required_sections = [
+            "Product Requirements",
+            "Technical Architecture",
+            "Design Architecture",
+        ]
         for section in required_sections:
             if section not in spec.raw_sections or not spec.raw_sections[section].strip():
-                issues.setdefault('sections', []).append(f"Missing or empty: {section}")
+                issues.setdefault("sections", []).append(f"Missing or empty: {section}")
 
         # Check features
         if not spec.features:
-            issues.setdefault('features', []).append("No features or user stories found")
+            issues.setdefault("features", []).append("No features or user stories found")
 
         # Check phases
         if not spec.phases:
-            issues.setdefault('phases', []).append("No implementation phases defined")
+            issues.setdefault("phases", []).append("No implementation phases defined")
 
         return issues
 
@@ -254,13 +255,15 @@ class PRDParser:
             Dictionary of change types to list of changes
         """
         if not self.previous_parse:
-            return {'status': ['Initial parse - no previous version']}
+            return {"status": ["Initial parse - no previous version"]}
 
         delta = {}
 
         # Check metadata changes
         if new_spec.status != self.previous_parse.status:
-            delta.setdefault('metadata', []).append(f"Status: {self.previous_parse.status} → {new_spec.status}")
+            delta.setdefault("metadata", []).append(
+                f"Status: {self.previous_parse.status} → {new_spec.status}"
+            )
 
         # Check feature changes
         old_feature_names = {f.name for f in self.previous_parse.features}
@@ -270,20 +273,20 @@ class PRDParser:
         removed_features = old_feature_names - new_feature_names
 
         if added_features:
-            delta.setdefault('features', []).append(f"Added: {', '.join(added_features)}")
+            delta.setdefault("features", []).append(f"Added: {', '.join(added_features)}")
         if removed_features:
-            delta.setdefault('features', []).append(f"Removed: {', '.join(removed_features)}")
+            delta.setdefault("features", []).append(f"Removed: {', '.join(removed_features)}")
 
         # Check phase changes
         if len(new_spec.phases) != len(self.previous_parse.phases):
-            delta.setdefault('phases', []).append(
+            delta.setdefault("phases", []).append(
                 f"Phase count changed: {len(self.previous_parse.phases)} → {len(new_spec.phases)}"
             )
 
         # Store new parse as previous for next delta
         self.previous_parse = new_spec
 
-        return delta if delta else {'status': ['No changes detected']}
+        return delta if delta else {"status": ["No changes detected"]}
 
 
 def main():

@@ -66,7 +66,7 @@ class TestStatusGenerator:
 
         assert generator.status_file.exists()
 
-        with open(generator.status_file, 'r') as f:
+        with open(generator.status_file, "r") as f:
             content = f.read()
 
         assert "Test" in content

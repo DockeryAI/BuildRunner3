@@ -1,6 +1,7 @@
 """
 Tests for AI Code Review System
 """
+
 import pytest
 import asyncio
 from pathlib import Path
@@ -43,7 +44,9 @@ class TestCodeReviewer:
     async def test_review_diff_success(self, reviewer):
         """Test successful diff review"""
         mock_response = Mock()
-        mock_response.content = [Mock(text="""
+        mock_response.content = [
+            Mock(
+                text="""
 SUMMARY: Good changes with minor issues
 
 ISSUES:
@@ -55,9 +58,13 @@ SUGGESTIONS:
 - Add type annotations
 
 SCORE: 75
-""")]
+"""
+            )
+        ]
 
-        with patch.object(reviewer.client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            reviewer.client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             diff = "+  def foo():\n+    print('hello')"
             result = await reviewer.review_diff(diff)
 
@@ -73,7 +80,9 @@ SCORE: 75
         mock_response = Mock()
         mock_response.content = [Mock(text="SUMMARY: Good\nSCORE: 90")]
 
-        with patch.object(reviewer.client.messages, "create", AsyncMock(return_value=mock_response)) as mock_create:
+        with patch.object(
+            reviewer.client.messages, "create", AsyncMock(return_value=mock_response)
+        ) as mock_create:
             diff = "+  def test(): pass"
             context = {"file_path": "test.py", "commit_msg": "Add test"}
 
@@ -88,7 +97,9 @@ SCORE: 75
     @pytest.mark.asyncio
     async def test_review_diff_api_error(self, reviewer):
         """Test diff review with API error"""
-        with patch.object(reviewer.client.messages, "create", AsyncMock(side_effect=Exception("API Error"))):
+        with patch.object(
+            reviewer.client.messages, "create", AsyncMock(side_effect=Exception("API Error"))
+        ):
             diff = "+  def foo(): pass"
 
             with pytest.raises(CodeReviewError, match="Failed to review diff"):
@@ -98,7 +109,9 @@ SCORE: 75
     async def test_analyze_architecture_success(self, reviewer):
         """Test successful architecture analysis"""
         mock_response = Mock()
-        mock_response.content = [Mock(text="""
+        mock_response.content = [
+            Mock(
+                text="""
 COMPLIANCE: YES
 
 VIOLATIONS:
@@ -107,9 +120,13 @@ RECOMMENDATIONS:
 - Consider adding more documentation
 
 ALIGNMENT_SCORE: 95
-""")]
+"""
+            )
+        ]
 
-        with patch.object(reviewer.client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            reviewer.client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             with patch.object(reviewer, "_load_project_spec", return_value="# Spec"):
                 code = "def test(): pass"
                 result = await reviewer.analyze_architecture(code, "test.py")
@@ -123,7 +140,9 @@ ALIGNMENT_SCORE: 95
     async def test_analyze_architecture_violations(self, reviewer):
         """Test architecture analysis with violations"""
         mock_response = Mock()
-        mock_response.content = [Mock(text="""
+        mock_response.content = [
+            Mock(
+                text="""
 COMPLIANCE: NO
 
 VIOLATIONS:
@@ -135,9 +154,13 @@ RECOMMENDATIONS:
 - Add service layer
 
 ALIGNMENT_SCORE: 45
-""")]
+"""
+            )
+        ]
 
-        with patch.object(reviewer.client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            reviewer.client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             with patch.object(reviewer, "_load_project_spec", return_value="# Spec"):
                 code = "db.query('SELECT * FROM users')"
                 result = await reviewer.analyze_architecture(code, "bad.py")
@@ -151,7 +174,9 @@ ALIGNMENT_SCORE: 45
     @pytest.mark.asyncio
     async def test_analyze_architecture_api_error(self, reviewer):
         """Test architecture analysis with API error"""
-        with patch.object(reviewer.client.messages, "create", AsyncMock(side_effect=Exception("API Error"))):
+        with patch.object(
+            reviewer.client.messages, "create", AsyncMock(side_effect=Exception("API Error"))
+        ):
             with patch.object(reviewer, "_load_project_spec", return_value="# Spec"):
                 with pytest.raises(CodeReviewError, match="Failed to analyze architecture"):
                     await reviewer.analyze_architecture("code", "test.py")
@@ -169,7 +194,11 @@ ALIGNMENT_SCORE: 45
         mock_arch_response = Mock()
         mock_arch_response.content = [Mock(text="COMPLIANCE: YES\nALIGNMENT_SCORE: 95")]
 
-        with patch.object(reviewer.client.messages, "create", AsyncMock(side_effect=[mock_review_response, mock_arch_response])):
+        with patch.object(
+            reviewer.client.messages,
+            "create",
+            AsyncMock(side_effect=[mock_review_response, mock_arch_response]),
+        ):
             with patch.object(reviewer, "_get_file_diff", return_value="+  def test(): pass"):
                 with patch.object(reviewer, "_load_project_spec", return_value="# Spec"):
                     result = await reviewer.review_file(str(test_file))
@@ -195,7 +224,9 @@ ALIGNMENT_SCORE: 45
         mock_response = Mock()
         mock_response.content = [Mock(text="SUMMARY: Good\nSCORE: 90")]
 
-        with patch.object(reviewer.client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            reviewer.client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             with patch.object(reviewer, "_get_file_diff", return_value="+  def test(): pass"):
                 result = await reviewer.review_file(str(test_file), check_architecture=False)
 

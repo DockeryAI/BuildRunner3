@@ -142,10 +142,7 @@ class TestSecretMasker:
 
     def test_sanitize_dict_simple(self):
         """Test sanitizing a simple dictionary."""
-        data = {
-            "api_key": "secret123456",
-            "username": "john"
-        }
+        data = {"api_key": "secret123456", "username": "john"}
         result = SecretMasker.sanitize_dict(data)
         assert result["api_key"] == "secr...3456"
         assert result["username"] == "john"
@@ -153,13 +150,8 @@ class TestSecretMasker:
     def test_sanitize_dict_nested(self):
         """Test sanitizing nested dictionaries."""
         data = {
-            "database": {
-                "password": "dbpass123456",
-                "host": "localhost"
-            },
-            "api": {
-                "key": "apikey123456"
-            }
+            "database": {"password": "dbpass123456", "host": "localhost"},
+            "api": {"key": "apikey123456"},
         }
         result = SecretMasker.sanitize_dict(data)
         assert result["database"]["password"] == "dbpa...3456"
@@ -168,19 +160,14 @@ class TestSecretMasker:
 
     def test_sanitize_dict_with_list(self):
         """Test sanitizing dictionary with lists."""
-        data = {
-            "keys": ["key1_secret", "key2_secret"],
-            "names": ["alice", "bob"]
-        }
+        data = {"keys": ["key1_secret", "key2_secret"], "names": ["alice", "bob"]}
         result = SecretMasker.sanitize_dict(data)
         assert isinstance(result["keys"], list)
         assert isinstance(result["names"], list)
 
     def test_sanitize_dict_with_patterns(self):
         """Test sanitizing dict values that match secret patterns."""
-        data = {
-            "config": "sk-proj-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH"
-        }
+        data = {"config": "sk-proj-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH"}
         result = SecretMasker.sanitize_dict(data)
         assert "sk-proj-abc" not in result["config"]
 
@@ -225,7 +212,7 @@ class TestSecretDetector:
 
     def test_scan_file_with_secret(self):
         """Test scanning a file that contains a secret."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("API_KEY = 'sk-proj-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'\n")
             f.write("USERNAME = 'john'\n")
             temp_path = f.name
@@ -244,7 +231,7 @@ class TestSecretDetector:
 
     def test_scan_file_no_secrets(self):
         """Test scanning a file with no secrets."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("USERNAME = 'john'\n")
             f.write("EMAIL = 'john@example.com'\n")
             temp_path = f.name
@@ -264,7 +251,7 @@ class TestSecretDetector:
 
     def test_scan_file_multiple_secrets(self):
         """Test scanning a file with multiple secrets."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("OPENAI_KEY = 'sk-proj-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'\n")
             f.write("NOTION_SECRET = 'ntn_FAKE1234567890EXAMPLETOKEN1234567890FAKE'\n")
             temp_path = f.name
@@ -335,7 +322,9 @@ class TestSecretDetector:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create test file
             file1 = Path(tmpdir) / "test.py"
-            file1.write_text("TEST_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'\n")
+            file1.write_text(
+                "TEST_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'\n"
+            )
 
             # Create whitelist
             whitelist_dir = Path(tmpdir) / ".buildrunner" / "security"
@@ -370,7 +359,7 @@ class TestSecretDetector:
             pattern_name="generic_api_key",
             secret_value="secr...cret",
             column_start=10,
-            column_end=18
+            column_end=18,
         )
 
         result = str(match)
@@ -387,11 +376,13 @@ class TestIntegration:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create file with secrets
             config_file = Path(tmpdir) / "config.py"
-            config_file.write_text("""
+            config_file.write_text(
+                """
 API_KEY = 'sk-proj-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'
 NOTION_KEY = 'ntn_FAKE1234567890EXAMPLETOKEN1234567890FAKE'
 USERNAME = 'john'
-""")
+"""
+            )
 
             # Detect secrets
             detector = SecretDetector(project_root=Path(tmpdir))
@@ -432,7 +423,7 @@ class TestSQLInjectionDetector:
 
     def test_detect_python_string_concat(self):
         """Test detecting Python string concatenation in SQL."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write('query = "SELECT * FROM users WHERE id=" + user_id\n')
             temp_path = f.name
 
@@ -442,14 +433,14 @@ class TestSQLInjectionDetector:
 
             assert len(matches) > 0
             match = matches[0]
-            assert match.vulnerability_type == 'string_concat'
-            assert match.severity == 'high'
+            assert match.vulnerability_type == "string_concat"
+            assert match.severity == "high"
         finally:
             Path(temp_path).unlink()
 
     def test_detect_python_f_string(self):
         """Test detecting Python f-strings in SQL."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write('query = f"SELECT * FROM users WHERE id={user_id}"\n')
             temp_path = f.name
 
@@ -459,14 +450,14 @@ class TestSQLInjectionDetector:
 
             assert len(matches) > 0
             match = matches[0]
-            assert match.vulnerability_type == 'f_string'
-            assert match.severity == 'high'
+            assert match.vulnerability_type == "f_string"
+            assert match.severity == "high"
         finally:
             Path(temp_path).unlink()
 
     def test_detect_python_format(self):
         """Test detecting Python .format() in SQL."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write('query = "SELECT * FROM users WHERE id={}".format(user_id)\n')
             temp_path = f.name
 
@@ -476,14 +467,14 @@ class TestSQLInjectionDetector:
 
             assert len(matches) > 0
             match = matches[0]
-            assert match.vulnerability_type == 'format_string'
-            assert match.severity == 'high'
+            assert match.vulnerability_type == "format_string"
+            assert match.severity == "high"
         finally:
             Path(temp_path).unlink()
 
     def test_detect_python_percent_formatting(self):
         """Test detecting Python % formatting in SQL."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write('query = "SELECT * FROM users WHERE id=%s" % user_id\n')
             temp_path = f.name
 
@@ -493,15 +484,15 @@ class TestSQLInjectionDetector:
 
             assert len(matches) > 0
             match = matches[0]
-            assert match.vulnerability_type == 'percent_formatting'
-            assert match.severity == 'high'
+            assert match.vulnerability_type == "percent_formatting"
+            assert match.severity == "high"
         finally:
             Path(temp_path).unlink()
 
     def test_detect_js_template_literal(self):
         """Test detecting JavaScript template literals in SQL."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f:
-            f.write('const query = `SELECT * FROM users WHERE id=${userId}`;\n')
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=False) as f:
+            f.write("const query = `SELECT * FROM users WHERE id=${userId}`;\n")
             temp_path = f.name
 
         try:
@@ -510,14 +501,14 @@ class TestSQLInjectionDetector:
 
             assert len(matches) > 0
             match = matches[0]
-            assert match.vulnerability_type == 'template_literal'
-            assert match.severity == 'high'
+            assert match.vulnerability_type == "template_literal"
+            assert match.severity == "high"
         finally:
             Path(temp_path).unlink()
 
     def test_detect_js_string_concat(self):
         """Test detecting JavaScript string concatenation in SQL."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.js', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=False) as f:
             f.write('const query = "SELECT * FROM users WHERE id=" + userId;\n')
             temp_path = f.name
 
@@ -527,14 +518,14 @@ class TestSQLInjectionDetector:
 
             assert len(matches) > 0
             match = matches[0]
-            assert match.vulnerability_type == 'string_concat'
-            assert match.severity == 'high'
+            assert match.vulnerability_type == "string_concat"
+            assert match.severity == "high"
         finally:
             Path(temp_path).unlink()
 
     def test_safe_python_code(self):
         """Test that safe Python code doesn't trigger false positives."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write('cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))\n')
             temp_path = f.name
 
@@ -566,18 +557,18 @@ class TestSQLInjectionDetector:
     def test_get_safe_example_python(self):
         """Test getting safe example for Python."""
         detector = SQLInjectionDetector()
-        example = detector.get_safe_example('python')
+        example = detector.get_safe_example("python")
 
-        assert 'parameterized' in example.lower()
-        assert 'execute' in example.lower()
+        assert "parameterized" in example.lower()
+        assert "execute" in example.lower()
 
     def test_get_safe_example_javascript(self):
         """Test getting safe example for JavaScript."""
         detector = SQLInjectionDetector()
-        example = detector.get_safe_example('javascript')
+        example = detector.get_safe_example("javascript")
 
-        assert 'parameterized' in example.lower()
-        assert 'query' in example.lower()
+        assert "parameterized" in example.lower()
+        assert "query" in example.lower()
 
     def test_get_vulnerability_summary(self):
         """Test getting vulnerability summary."""
@@ -593,9 +584,9 @@ class TestSQLInjectionDetector:
             results = detector.scan_directory(tmpdir)
             summary = detector.get_vulnerability_summary(results)
 
-            assert summary['total_count'] == 2
-            assert summary['file_count'] == 2
-            assert summary['severity_breakdown']['high'] == 2
+            assert summary["total_count"] == 2
+            assert summary["file_count"] == 2
+            assert summary["severity_breakdown"]["high"] == 2
 
     def test_sql_injection_match_str(self):
         """Test SQLInjectionMatch string representation."""
@@ -605,7 +596,7 @@ class TestSQLInjectionDetector:
             line_content='query = "SELECT * FROM users WHERE id=" + user_id',
             vulnerability_type="string_concat",
             severity="high",
-            suggestion="Use parameterized queries"
+            suggestion="Use parameterized queries",
         )
 
         result = str(match)
@@ -638,7 +629,7 @@ class TestGitHookManager:
         """Test detecting git directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
             # Initialize git repo
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
 
             manager = GitHookManager(project_root=Path(tmpdir))
             assert manager.is_git_repo() is True
@@ -647,36 +638,36 @@ class TestGitHookManager:
         """Test getting hook path."""
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = GitHookManager(project_root=Path(tmpdir))
-            hook_path = manager.get_hook_path('pre-commit')
+            hook_path = manager.get_hook_path("pre-commit")
 
-            assert 'pre-commit' in str(hook_path)
-            assert '.git/hooks' in str(hook_path)
+            assert "pre-commit" in str(hook_path)
+            assert ".git/hooks" in str(hook_path)
 
     def test_is_hook_installed_false(self):
         """Test detecting when hook is not installed."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
 
             manager = GitHookManager(project_root=Path(tmpdir))
-            assert manager.is_hook_installed('pre-commit') is False
+            assert manager.is_hook_installed("pre-commit") is False
 
     def test_install_hook_success(self):
         """Test successfully installing a hook."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
 
             manager = GitHookManager(project_root=Path(tmpdir))
 
             # Remove any default hooks that git init might have created
-            hook_path = manager.get_hook_path('pre-commit')
+            hook_path = manager.get_hook_path("pre-commit")
             if hook_path.exists():
                 hook_path.unlink()
 
-            success, message = manager.install_hook('pre-commit')
+            success, message = manager.install_hook("pre-commit")
 
             assert success is True
             assert "Installed" in message
-            assert manager.is_hook_installed('pre-commit') is True
+            assert manager.is_hook_installed("pre-commit") is True
 
             # Check hook is executable
             assert os.access(hook_path, os.X_OK)
@@ -685,7 +676,7 @@ class TestGitHookManager:
         """Test installing hook in non-git directory."""
         with tempfile.TemporaryDirectory() as tmpdir:
             manager = GitHookManager(project_root=Path(tmpdir))
-            success, message = manager.install_hook('pre-commit')
+            success, message = manager.install_hook("pre-commit")
 
             assert success is False
             assert "Not a git repository" in message
@@ -693,20 +684,20 @@ class TestGitHookManager:
     def test_install_hook_already_installed(self):
         """Test installing hook when already installed."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
 
             manager = GitHookManager(project_root=Path(tmpdir))
 
             # Remove any default hooks
-            hook_path = manager.get_hook_path('pre-commit')
+            hook_path = manager.get_hook_path("pre-commit")
             if hook_path.exists():
                 hook_path.unlink()
 
             # Install first time
-            manager.install_hook('pre-commit')
+            manager.install_hook("pre-commit")
 
             # Try to install again
-            success, message = manager.install_hook('pre-commit')
+            success, message = manager.install_hook("pre-commit")
 
             assert success is True
             assert "already installed" in message
@@ -714,20 +705,20 @@ class TestGitHookManager:
     def test_install_hook_with_force(self):
         """Test installing hook with force flag."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
 
             manager = GitHookManager(project_root=Path(tmpdir))
 
             # Remove any default hooks
-            hook_path = manager.get_hook_path('pre-commit')
+            hook_path = manager.get_hook_path("pre-commit")
             if hook_path.exists():
                 hook_path.unlink()
 
             # Install first time
-            manager.install_hook('pre-commit')
+            manager.install_hook("pre-commit")
 
             # Install again with force
-            success, message = manager.install_hook('pre-commit', force=True)
+            success, message = manager.install_hook("pre-commit", force=True)
 
             assert success is True
             assert "Installed" in message
@@ -735,36 +726,36 @@ class TestGitHookManager:
     def test_uninstall_hook_success(self):
         """Test successfully uninstalling a hook."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
 
             manager = GitHookManager(project_root=Path(tmpdir))
 
             # Remove any default hooks
-            hook_path = manager.get_hook_path('pre-commit')
+            hook_path = manager.get_hook_path("pre-commit")
             if hook_path.exists():
                 hook_path.unlink()
 
             # Install then uninstall
-            manager.install_hook('pre-commit')
-            success, message = manager.uninstall_hook('pre-commit')
+            manager.install_hook("pre-commit")
+            success, message = manager.uninstall_hook("pre-commit")
 
             assert success is True
             assert "Uninstalled" in message
-            assert manager.is_hook_installed('pre-commit') is False
+            assert manager.is_hook_installed("pre-commit") is False
 
     def test_uninstall_hook_not_installed(self):
         """Test uninstalling when hook not installed."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
 
             manager = GitHookManager(project_root=Path(tmpdir))
 
             # Remove any default hooks
-            hook_path = manager.get_hook_path('pre-commit')
+            hook_path = manager.get_hook_path("pre-commit")
             if hook_path.exists():
                 hook_path.unlink()
 
-            success, message = manager.uninstall_hook('pre-commit')
+            success, message = manager.uninstall_hook("pre-commit")
 
             assert success is True
             assert "not installed" in message
@@ -772,16 +763,16 @@ class TestGitHookManager:
     def test_run_precommit_checks_no_violations(self):
         """Test running pre-commit checks with no issues."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
-            subprocess.run(['git', 'config', 'user.email', 'test@example.com'], cwd=tmpdir)
-            subprocess.run(['git', 'config', 'user.name', 'Test User'], cwd=tmpdir)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmpdir)
+            subprocess.run(["git", "config", "user.name", "Test User"], cwd=tmpdir)
 
             # Create safe file
             safe_file = Path(tmpdir) / "app.py"
             safe_file.write_text("def hello():\n    return 'world'\n")
 
             # Stage file
-            subprocess.run(['git', 'add', 'app.py'], cwd=tmpdir)
+            subprocess.run(["git", "add", "app.py"], cwd=tmpdir)
 
             manager = GitHookManager(project_root=Path(tmpdir))
             result = manager.run_precommit_checks()
@@ -793,16 +784,18 @@ class TestGitHookManager:
     def test_run_precommit_checks_with_secret(self):
         """Test running pre-commit checks with a secret."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
-            subprocess.run(['git', 'config', 'user.email', 'test@example.com'], cwd=tmpdir)
-            subprocess.run(['git', 'config', 'user.name', 'Test User'], cwd=tmpdir)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmpdir)
+            subprocess.run(["git", "config", "user.name", "Test User"], cwd=tmpdir)
 
             # Create file with secret
             secret_file = Path(tmpdir) / "config.py"
-            secret_file.write_text('API_KEY = "sk-proj-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH"\n')
+            secret_file.write_text(
+                'API_KEY = "sk-proj-abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH"\n'
+            )
 
             # Stage file
-            subprocess.run(['git', 'add', 'config.py'], cwd=tmpdir)
+            subprocess.run(["git", "add", "config.py"], cwd=tmpdir)
 
             manager = GitHookManager(project_root=Path(tmpdir))
             result = manager.run_precommit_checks()
@@ -814,16 +807,16 @@ class TestGitHookManager:
     def test_run_precommit_checks_with_sql_injection(self):
         """Test running pre-commit checks with SQL injection."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
-            subprocess.run(['git', 'config', 'user.email', 'test@example.com'], cwd=tmpdir)
-            subprocess.run(['git', 'config', 'user.name', 'Test User'], cwd=tmpdir)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmpdir)
+            subprocess.run(["git", "config", "user.name", "Test User"], cwd=tmpdir)
 
             # Create file with SQL injection
             sql_file = Path(tmpdir) / "app.py"
             sql_file.write_text('query = "SELECT * FROM users WHERE id=" + user_id\n')
 
             # Stage file
-            subprocess.run(['git', 'add', 'app.py'], cwd=tmpdir)
+            subprocess.run(["git", "add", "app.py"], cwd=tmpdir)
 
             manager = GitHookManager(project_root=Path(tmpdir))
             result = manager.run_precommit_checks()
@@ -835,35 +828,31 @@ class TestGitHookManager:
     def test_get_hook_status(self):
         """Test getting hook status."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(['git', 'init'], cwd=tmpdir, capture_output=True)
+            subprocess.run(["git", "init"], cwd=tmpdir, capture_output=True)
 
             manager = GitHookManager(project_root=Path(tmpdir))
 
             # Remove any default hooks
-            hook_path = manager.get_hook_path('pre-commit')
+            hook_path = manager.get_hook_path("pre-commit")
             if hook_path.exists():
                 hook_path.unlink()
 
             status = manager.get_hook_status()
 
-            assert status['is_git_repo'] is True
-            assert 'pre-commit' in status
-            assert status['pre-commit']['installed'] is False
+            assert status["is_git_repo"] is True
+            assert "pre-commit" in status
+            assert status["pre-commit"]["installed"] is False
 
             # Install hook
-            manager.install_hook('pre-commit')
+            manager.install_hook("pre-commit")
             status = manager.get_hook_status()
 
-            assert status['pre-commit']['installed'] is True
+            assert status["pre-commit"]["installed"] is True
 
     def test_hook_result_str(self):
         """Test HookResult string representation."""
         result = HookResult(
-            passed=True,
-            violations=[],
-            warnings=[],
-            duration_ms=150.5,
-            message="All checks passed"
+            passed=True, violations=[], warnings=[], duration_ms=150.5, message="All checks passed"
         )
 
         assert "✅" in str(result)
@@ -876,7 +865,7 @@ class TestGitHookManager:
             violations=[],
             warnings=["Some warning"],
             duration_ms=150.5,
-            message="All checks passed"
+            message="All checks passed",
         )
 
         formatted = format_hook_result(result)
@@ -892,7 +881,7 @@ class TestGitHookManager:
             violations=["Secret detected", "SQL injection found"],
             warnings=[],
             duration_ms=150.5,
-            message="Security checks failed"
+            message="Security checks failed",
         )
 
         formatted = format_hook_result(result)

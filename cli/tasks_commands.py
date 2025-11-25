@@ -51,7 +51,7 @@ def get_task_queue() -> TaskQueue:
                 complexity=task_data.get("complexity", "medium"),
                 domain=task_data.get("domain", "general"),
                 dependencies=task_data.get("dependencies", []),
-                acceptance_criteria=task_data.get("acceptance_criteria", [])
+                acceptance_criteria=task_data.get("acceptance_criteria", []),
             )
             # Restore status
             if task_data.get("status"):
@@ -85,27 +85,17 @@ def save_task_queue(queue: TaskQueue):
     execution_order = queue.execution_order
     progress = queue.get_progress()
 
-    persistence.save_state(
-        tasks=tasks_dict,
-        execution_order=execution_order,
-        progress=progress
-    )
+    persistence.save_state(tasks=tasks_dict, execution_order=execution_order, progress=progress)
 
 
 @tasks_app.command("generate")
 def tasks_generate(
     spec_path: str = typer.Option(
-        None,
-        "--spec",
-        "-s",
-        help="Path to PROJECT_SPEC.md (default: .buildrunner/PROJECT_SPEC.md)"
+        None, "--spec", "-s", help="Path to PROJECT_SPEC.md (default: .buildrunner/PROJECT_SPEC.md)"
     ),
     force: bool = typer.Option(
-        False,
-        "--force",
-        "-f",
-        help="Regenerate tasks even if they already exist"
-    )
+        False, "--force", "-f", help="Regenerate tasks even if they already exist"
+    ),
 ):
     """Generate atomic tasks from PROJECT_SPEC.md"""
     try:
@@ -129,9 +119,7 @@ def tasks_generate(
             raise typer.Exit(1)
 
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
             # Parse spec
             task = progress.add_task("Parsing PROJECT_SPEC...", total=None)
@@ -144,7 +132,7 @@ def tasks_generate(
             decomposer = TaskDecomposer()
             all_tasks = []
 
-            for feature_dict in spec_data['features']:
+            for feature_dict in spec_data["features"]:
                 feature_tasks = decomposer.decompose_feature(feature_dict)
                 all_tasks.extend(feature_tasks)
 
@@ -155,11 +143,13 @@ def tasks_generate(
             graph = DependencyGraph()
 
             for t in all_tasks:
-                graph.add_task({
-                    'id': t.id,
-                    'dependencies': t.dependencies,
-                    'estimated_minutes': t.estimated_minutes
-                })
+                graph.add_task(
+                    {
+                        "id": t.id,
+                        "dependencies": t.dependencies,
+                        "estimated_minutes": t.estimated_minutes,
+                    }
+                )
 
             # Check for circular dependencies
             if graph.has_circular_dependency():
@@ -177,12 +167,12 @@ def tasks_generate(
                     id=t.id,
                     name=t.name,
                     description=t.description,
-                    file_path=getattr(t, 'file_path', ''),
+                    file_path=getattr(t, "file_path", ""),
                     estimated_minutes=t.estimated_minutes,
                     complexity=t.complexity.value,
                     domain=t.category,  # Use category as domain
                     dependencies=t.dependencies,
-                    acceptance_criteria=t.acceptance_criteria
+                    acceptance_criteria=t.acceptance_criteria,
                 )
                 queue.add_task(queued_task)
 
@@ -229,6 +219,7 @@ def tasks_generate(
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
         import traceback
+
         console.print(f"[dim]{traceback.format_exc()}[/dim]")
         raise typer.Exit(1)
 
@@ -239,14 +230,9 @@ def tasks_list(
         None,
         "--status",
         "-s",
-        help="Filter by status (pending, ready, in_progress, completed, failed)"
+        help="Filter by status (pending, ready, in_progress, completed, failed)",
     ),
-    show_all: bool = typer.Option(
-        False,
-        "--all",
-        "-a",
-        help="Show all tasks including completed"
-    )
+    show_all: bool = typer.Option(False, "--all", "-a", help="Show all tasks including completed"),
 ):
     """Show task queue status"""
     try:
@@ -298,7 +284,7 @@ def tasks_list(
                 TaskStatus.COMPLETED: "bright_green",
                 TaskStatus.FAILED: "red",
                 TaskStatus.BLOCKED: "red",
-                TaskStatus.SKIPPED: "dim"
+                TaskStatus.SKIPPED: "dim",
             }
             status_color = status_colors.get(task.status, "white")
 
@@ -314,7 +300,7 @@ def tasks_list(
                 f"[{status_color}]{task.status.value}[/{status_color}]",
                 "-",  # QueuedTask doesn't have priority field
                 f"{task.estimated_minutes}m",
-                deps
+                deps,
             )
 
         console.print(table)
@@ -331,8 +317,8 @@ def tasks_list(
         console.print(f"  Completed: [bright_green]{stats['completed']}[/bright_green]")
         console.print(f"  Failed: [red]{stats['failed']}[/red]")
 
-        if stats['completed'] > 0:
-            completion_rate = (stats['completed'] / stats['total']) * 100
+        if stats["completed"] > 0:
+            completion_rate = (stats["completed"] / stats["total"]) * 100
             console.print(f"\n  Progress: {completion_rate:.1f}%")
 
     except Exception as e:
@@ -341,9 +327,7 @@ def tasks_list(
 
 
 @tasks_app.command("complete")
-def tasks_complete(
-    task_id: str = typer.Argument(..., help="Task ID to mark complete")
-):
+def tasks_complete(task_id: str = typer.Argument(..., help="Task ID to mark complete")):
     """Mark a task as completed"""
     try:
         queue = get_task_queue()
@@ -355,7 +339,9 @@ def tasks_complete(
             # Show newly ready tasks
             ready_tasks = queue.get_ready_tasks()
             if ready_tasks:
-                console.print(f"\n[cyan]💡 {len(ready_tasks)} tasks are now ready to execute[/cyan]")
+                console.print(
+                    f"\n[cyan]💡 {len(ready_tasks)} tasks are now ready to execute[/cyan]"
+                )
         else:
             console.print(f"[red]❌ Task {task_id} not found[/red]")
             raise typer.Exit(1)
@@ -368,7 +354,7 @@ def tasks_complete(
 @tasks_app.command("fail")
 def tasks_fail(
     task_id: str = typer.Argument(..., help="Task ID to mark failed"),
-    error: str = typer.Option("", "--error", "-e", help="Error message")
+    error: str = typer.Option("", "--error", "-e", help="Error message"),
 ):
     """Mark a task as failed"""
     try:
@@ -379,9 +365,13 @@ def tasks_fail(
 
             task = queue.tasks.get(task_id)
             if task and task.status == TaskStatus.FAILED:
-                console.print(f"[red]✗ Task {task_id} marked as failed (max retries exceeded)[/red]")
+                console.print(
+                    f"[red]✗ Task {task_id} marked as failed (max retries exceeded)[/red]"
+                )
             else:
-                console.print(f"[yellow]⚠️  Task {task_id} failed (retry {task.retry_count}/{queue.max_retries})[/yellow]")
+                console.print(
+                    f"[yellow]⚠️  Task {task_id} failed (retry {task.retry_count}/{queue.max_retries})[/yellow]"
+                )
         else:
             console.print(f"[red]❌ Task {task_id} not found[/red]")
             raise typer.Exit(1)

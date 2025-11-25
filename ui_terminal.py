@@ -15,7 +15,17 @@ Requirements:
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical, ScrollableContainer
-from textual.widgets import Header, Footer, Button, Input, Static, Label, TextLog, ListView, ListItem
+from textual.widgets import (
+    Header,
+    Footer,
+    Button,
+    Input,
+    Static,
+    Label,
+    TextLog,
+    ListView,
+    ListItem,
+)
 from textual.binding import Binding
 from textual import events
 from rich.text import Text
@@ -150,7 +160,9 @@ class BuildRunnerTUI(App):
         # Command input at bottom
         with Horizontal(id="command-input"):
             yield Label("Command: ")
-            yield Input(placeholder="Enter any command (br commands or system commands)", id="input")
+            yield Input(
+                placeholder="Enter any command (br commands or system commands)", id="input"
+            )
 
         yield Footer()
 
@@ -161,15 +173,11 @@ class BuildRunnerTUI(App):
                 command,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=str(self.project_path)
+                cwd=str(self.project_path),
             )
             stdout, stderr = await process.communicate()
 
-            return (
-                stdout.decode('utf-8'),
-                stderr.decode('utf-8'),
-                process.returncode or 0
-            )
+            return (stdout.decode("utf-8"), stderr.decode("utf-8"), process.returncode or 0)
         except Exception as e:
             return "", str(e), 1
 
@@ -183,7 +191,8 @@ class BuildRunnerTUI(App):
             if prompt:
                 # Save prompt to temp file
                 import tempfile
-                with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+
+                with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
                     f.write(f"Project: {project_name or 'BuildRunner'}\n\n{prompt}")
                     temp_file = f.name
 
@@ -192,7 +201,7 @@ class BuildRunnerTUI(App):
                     ["claude", "--dangerously-skip-permissions", temp_file],
                     capture_output=True,
                     text=True,
-                    timeout=5
+                    timeout=5,
                 )
                 if result.returncode == 0:
                     output.add_info("✅ Claude CLI launched successfully!")
@@ -202,11 +211,12 @@ class BuildRunnerTUI(App):
 
         # Try to open Claude desktop app (macOS)
         import platform
+
         if platform.system() == "Darwin":
             apps = [
                 "/Applications/Claude.app",
                 "/Applications/Claude Code.app",
-                "~/Applications/Claude.app"
+                "~/Applications/Claude.app",
             ]
 
             for app_path in apps:
@@ -216,7 +226,7 @@ class BuildRunnerTUI(App):
                     output.add_info(f"✅ Opened {os.path.basename(expanded)}")
                     if prompt:
                         # Copy to clipboard
-                        subprocess.run(['pbcopy'], input=prompt.encode(), check=True)
+                        subprocess.run(["pbcopy"], input=prompt.encode(), check=True)
                         output.add_info("📋 Prompt copied to clipboard - paste in Claude!")
                     return
 
@@ -229,7 +239,9 @@ class BuildRunnerTUI(App):
             except:
                 pass
 
-        output.add_output("❌ Could not find Claude. Please install Claude or Claude Code.", is_error=True)
+        output.add_output(
+            "❌ Could not find Claude. Please install Claude or Claude Code.", is_error=True
+        )
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle button clicks"""
@@ -305,7 +317,8 @@ Let's start by defining what this project should do.
     def show_planning_options(self):
         """Show planning options after project init"""
         output = self.query_one("#output", CommandOutput)
-        output.add_info(f"""
+        output.add_info(
+            f"""
 ✨ Project '{self.current_project}' initialized!
 
 Next steps:
@@ -314,7 +327,8 @@ Next steps:
 3. Run 'br run' when ready to build
 
 Claude integration is FULLY WORKING in this terminal UI!
-""")
+"""
+        )
 
     async def action_new_project(self) -> None:
         """Create a new project"""
@@ -340,7 +354,8 @@ Claude integration is FULLY WORKING in this terminal UI!
     def action_help(self) -> None:
         """Show help"""
         output = self.query_one("#output", CommandOutput)
-        output.add_info("""
+        output.add_info(
+            """
 BuildRunner Terminal UI - Help
 
 KEYBOARD SHORTCUTS:
@@ -360,7 +375,8 @@ FEATURES:
 
 Type any command in the input field at the bottom.
 Click buttons for quick actions.
-""")
+"""
+        )
 
 
 if __name__ == "__main__":

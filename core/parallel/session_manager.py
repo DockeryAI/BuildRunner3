@@ -61,42 +61,46 @@ class Session:
     def to_dict(self) -> Dict[str, any]:
         """Convert to dictionary."""
         return {
-            'session_id': self.session_id,
-            'name': self.name,
-            'status': self.status.value,
-            'created_at': self.created_at.isoformat(),
-            'started_at': self.started_at.isoformat() if self.started_at else None,
-            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
-            'total_tasks': self.total_tasks,
-            'completed_tasks': self.completed_tasks,
-            'failed_tasks': self.failed_tasks,
-            'in_progress_tasks': self.in_progress_tasks,
-            'files_locked': list(self.files_locked),
-            'files_modified': list(self.files_modified),
-            'worker_id': self.worker_id,
-            'progress_percent': self.progress_percent,
-            'metadata': self.metadata,
+            "session_id": self.session_id,
+            "name": self.name,
+            "status": self.status.value,
+            "created_at": self.created_at.isoformat(),
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
+            "total_tasks": self.total_tasks,
+            "completed_tasks": self.completed_tasks,
+            "failed_tasks": self.failed_tasks,
+            "in_progress_tasks": self.in_progress_tasks,
+            "files_locked": list(self.files_locked),
+            "files_modified": list(self.files_modified),
+            "worker_id": self.worker_id,
+            "progress_percent": self.progress_percent,
+            "metadata": self.metadata,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, any]) -> 'Session':
+    def from_dict(cls, data: Dict[str, any]) -> "Session":
         """Create from dictionary."""
         return cls(
-            session_id=data['session_id'],
-            name=data['name'],
-            status=SessionStatus(data['status']),
-            created_at=datetime.fromisoformat(data['created_at']),
-            started_at=datetime.fromisoformat(data['started_at']) if data.get('started_at') else None,
-            completed_at=datetime.fromisoformat(data['completed_at']) if data.get('completed_at') else None,
-            total_tasks=data.get('total_tasks', 0),
-            completed_tasks=data.get('completed_tasks', 0),
-            failed_tasks=data.get('failed_tasks', 0),
-            in_progress_tasks=data.get('in_progress_tasks', 0),
-            files_locked=set(data.get('files_locked', [])),
-            files_modified=set(data.get('files_modified', [])),
-            worker_id=data.get('worker_id'),
-            progress_percent=data.get('progress_percent', 0.0),
-            metadata=data.get('metadata', {}),
+            session_id=data["session_id"],
+            name=data["name"],
+            status=SessionStatus(data["status"]),
+            created_at=datetime.fromisoformat(data["created_at"]),
+            started_at=(
+                datetime.fromisoformat(data["started_at"]) if data.get("started_at") else None
+            ),
+            completed_at=(
+                datetime.fromisoformat(data["completed_at"]) if data.get("completed_at") else None
+            ),
+            total_tasks=data.get("total_tasks", 0),
+            completed_tasks=data.get("completed_tasks", 0),
+            failed_tasks=data.get("failed_tasks", 0),
+            in_progress_tasks=data.get("in_progress_tasks", 0),
+            files_locked=set(data.get("files_locked", [])),
+            files_modified=set(data.get("files_modified", [])),
+            worker_id=data.get("worker_id"),
+            progress_percent=data.get("progress_percent", 0.0),
+            metadata=data.get("metadata", {}),
         )
 
 
@@ -343,7 +347,8 @@ class SessionManager:
     def get_active_sessions(self) -> List[Session]:
         """Get all active (running or paused) sessions."""
         return [
-            s for s in self.sessions.values()
+            s
+            for s in self.sessions.values()
             if s.status in [SessionStatus.RUNNING, SessionStatus.PAUSED]
         ]
 
@@ -401,7 +406,11 @@ class SessionManager:
 
         to_delete = []
         for session_id, session in self.sessions.items():
-            if session.status in [SessionStatus.COMPLETED, SessionStatus.FAILED, SessionStatus.CANCELLED]:
+            if session.status in [
+                SessionStatus.COMPLETED,
+                SessionStatus.FAILED,
+                SessionStatus.CANCELLED,
+            ]:
                 if session.completed_at and session.completed_at < cutoff:
                     to_delete.append(session_id)
 
@@ -417,11 +426,11 @@ class SessionManager:
             self.storage_path.parent.mkdir(parents=True, exist_ok=True)
 
             data = {
-                'sessions': [s.to_dict() for s in self.sessions.values()],
-                'version': '1.0',
+                "sessions": [s.to_dict() for s in self.sessions.values()],
+                "version": "1.0",
             }
 
-            with open(self.storage_path, 'w') as f:
+            with open(self.storage_path, "w") as f:
                 json.dump(data, f, indent=2)
 
         except Exception as e:
@@ -433,10 +442,10 @@ class SessionManager:
             return
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path, "r") as f:
                 data = json.load(f)
 
-            for session_data in data.get('sessions', []):
+            for session_data in data.get("sessions", []):
                 session = Session.from_dict(session_data)
                 self.sessions[session.session_id] = session
 

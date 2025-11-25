@@ -32,7 +32,9 @@ def spec_brainstorm():
     """Conversational PRD builder - describe your project and get a complete spec"""
     try:
         console.print("\n[bold blue]💭 Brainstorming Mode[/bold blue]\n")
-        console.print("[cyan]Describe your project idea in detail, and I'll build your PRD.[/cyan]\n")
+        console.print(
+            "[cyan]Describe your project idea in detail, and I'll build your PRD.[/cyan]\n"
+        )
 
         project_root = Path.cwd()
         wizard = PRDWizard(str(project_root))
@@ -99,8 +101,10 @@ def spec_sync():
 
         # Show parallel build opportunities
         parallel_groups = mapper.identify_parallel_builds(features_data)
-        if parallel_groups['parallel']:
-            console.print(f"\n[cyan]💡 {len(parallel_groups['parallel'])} features can be built in parallel[/cyan]")
+        if parallel_groups["parallel"]:
+            console.print(
+                f"\n[cyan]💡 {len(parallel_groups['parallel'])} features can be built in parallel[/cyan]"
+            )
 
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
@@ -203,7 +207,7 @@ design_app = typer.Typer(help="Design system commands")
 @design_app.command("profile")
 def design_profile(
     industry: str = typer.Argument(..., help="Industry (healthcare, fintech, etc.)"),
-    use_case: str = typer.Argument(..., help="Use case (dashboard, marketplace, etc.)")
+    use_case: str = typer.Argument(..., help="Use case (dashboard, marketplace, etc.)"),
 ):
     """Preview merged design profile for industry + use case"""
     try:
@@ -246,7 +250,7 @@ def design_profile(
 @design_app.command("research")
 def design_research(
     industry: str = typer.Argument(None, help="Industry (optional, reads from spec)"),
-    use_case: str = typer.Argument(None, help="Use case (optional, reads from spec)")
+    use_case: str = typer.Argument(None, help="Use case (optional, reads from spec)"),
 ):
     """Research design patterns for project"""
     try:

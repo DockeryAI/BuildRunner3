@@ -374,8 +374,24 @@ class TestTaskQueue:
     def test_get_tasks_by_status(self):
         """Test getting tasks by status"""
         queue = TaskQueue()
-        task1 = QueuedTask(id="task1", name="Test 1", description="Desc", file_path="core/test1.py", estimated_minutes=60, complexity="simple", domain="backend")
-        task2 = QueuedTask(id="task2", name="Test 2", description="Desc", file_path="core/test2.py", estimated_minutes=60, complexity="simple", domain="backend")
+        task1 = QueuedTask(
+            id="task1",
+            name="Test 1",
+            description="Desc",
+            file_path="core/test1.py",
+            estimated_minutes=60,
+            complexity="simple",
+            domain="backend",
+        )
+        task2 = QueuedTask(
+            id="task2",
+            name="Test 2",
+            description="Desc",
+            file_path="core/test2.py",
+            estimated_minutes=60,
+            complexity="simple",
+            domain="backend",
+        )
 
         queue.add_task(task1)
         queue.add_task(task2)
@@ -468,8 +484,24 @@ class TestTaskQueue:
     def test_get_progress(self):
         """Test getting progress statistics"""
         queue = TaskQueue()
-        task1 = QueuedTask(id="task1", name="Test 1", description="Desc", file_path="core/test1.py", estimated_minutes=60, complexity="simple", domain="backend")
-        task2 = QueuedTask(id="task2", name="Test 2", description="Desc", file_path="core/test2.py", estimated_minutes=60, complexity="simple", domain="backend")
+        task1 = QueuedTask(
+            id="task1",
+            name="Test 1",
+            description="Desc",
+            file_path="core/test1.py",
+            estimated_minutes=60,
+            complexity="simple",
+            domain="backend",
+        )
+        task2 = QueuedTask(
+            id="task2",
+            name="Test 2",
+            description="Desc",
+            file_path="core/test2.py",
+            estimated_minutes=60,
+            complexity="simple",
+            domain="backend",
+        )
 
         queue.add_task(task1)
         queue.add_task(task2)
@@ -544,8 +576,24 @@ class TestTaskQueue:
     def test_get_estimated_time_remaining(self):
         """Test estimated time remaining calculation"""
         queue = TaskQueue()
-        task1 = QueuedTask(id="task1", name="Test 1", description="Desc", file_path="core/test1.py", estimated_minutes=60, complexity="simple", domain="backend")
-        task2 = QueuedTask(id="task2", name="Test 2", description="Desc", file_path="core/test2.py", estimated_minutes=90, complexity="simple", domain="backend")
+        task1 = QueuedTask(
+            id="task1",
+            name="Test 1",
+            description="Desc",
+            file_path="core/test1.py",
+            estimated_minutes=60,
+            complexity="simple",
+            domain="backend",
+        )
+        task2 = QueuedTask(
+            id="task2",
+            name="Test 2",
+            description="Desc",
+            file_path="core/test2.py",
+            estimated_minutes=90,
+            complexity="simple",
+            domain="backend",
+        )
 
         queue.add_task(task1)
         queue.add_task(task2)
@@ -561,9 +609,35 @@ class TestTaskQueue:
         queue = TaskQueue()
 
         # Create dependency chain: task1 -> task2 -> task3
-        task1 = QueuedTask(id="task1", name="Task 1", description="Desc", file_path="core/test1.py", estimated_minutes=60, complexity="simple", domain="backend")
-        task2 = QueuedTask(id="task2", name="Task 2", description="Desc", file_path="core/test2.py", estimated_minutes=60, complexity="simple", domain="backend", dependencies=["task1"])
-        task3 = QueuedTask(id="task3", name="Task 3", description="Desc", file_path="core/test3.py", estimated_minutes=60, complexity="simple", domain="backend", dependencies=["task2"])
+        task1 = QueuedTask(
+            id="task1",
+            name="Task 1",
+            description="Desc",
+            file_path="core/test1.py",
+            estimated_minutes=60,
+            complexity="simple",
+            domain="backend",
+        )
+        task2 = QueuedTask(
+            id="task2",
+            name="Task 2",
+            description="Desc",
+            file_path="core/test2.py",
+            estimated_minutes=60,
+            complexity="simple",
+            domain="backend",
+            dependencies=["task1"],
+        )
+        task3 = QueuedTask(
+            id="task3",
+            name="Task 3",
+            description="Desc",
+            file_path="core/test3.py",
+            estimated_minutes=60,
+            complexity="simple",
+            domain="backend",
+            dependencies=["task2"],
+        )
 
         queue.add_task(task1)
         queue.add_task(task2)

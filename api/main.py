@@ -75,7 +75,7 @@ app = FastAPI(
     title="BuildRunner 3.0 API",
     description="Git-backed governance system for AI-assisted project development",
     version="3.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
@@ -115,7 +115,7 @@ async def log_requests(request: Request, call_next):
         "method": request.method,
         "path": request.url.path,
         "status_code": response.status_code,
-        "duration_ms": round(duration * 1000, 2)
+        "duration_ms": round(duration * 1000, 2),
     }
 
     # Log slow requests
@@ -132,24 +132,18 @@ async def log_requests(request: Request, call_next):
 # Core Feature Endpoints
 # ============================================================================
 
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """
     Health check endpoint.
     Returns OK if the API hasn't exploded yet.
     """
-    return HealthResponse(
-        status="ok",
-        timestamp=datetime.now(),
-        version="3.0.0"
-    )
+    return HealthResponse(status="ok", timestamp=datetime.now(), version="3.0.0")
 
 
 @app.get("/features", response_model=List[FeatureModel])
-async def get_features(
-    status: Optional[str] = None,
-    priority: Optional[str] = None
-):
+async def get_features(status: Optional[str] = None, priority: Optional[str] = None):
     """
     Get all features with optional filtering.
 
@@ -192,7 +186,7 @@ async def create_feature(feature: FeatureCreate):
             description=feature.description,
             priority=feature.priority,
             week=feature.week,
-            build=feature.build
+            build=feature.build,
         )
 
         # Sync to Supabase if enabled
@@ -281,7 +275,7 @@ async def get_metrics():
             completed=completed,
             in_progress=in_progress,
             planned=planned,
-            completion_percentage=round((completed / total * 100) if total > 0 else 0, 2)
+            completion_percentage=round((completed / total * 100) if total > 0 else 0, 2),
         )
 
         # Get test metrics if available
@@ -293,7 +287,7 @@ async def get_metrics():
                 passing=latest_results.get("passed", 0),
                 failing=latest_results.get("failed", 0),
                 coverage=latest_results.get("coverage", 0.0),
-                last_run=datetime.fromisoformat(latest_results["timestamp"])
+                last_run=datetime.fromisoformat(latest_results["timestamp"]),
             )
 
         # Get error metrics
@@ -302,14 +296,14 @@ async def get_metrics():
             total_errors=error_summary["total_errors"],
             critical=error_summary["by_severity"].get("critical", 0),
             resolved=len([e for e in error_watcher.errors if e["resolved"]]),
-            average_resolution_time=None  # TODO: track resolution times
+            average_resolution_time=None,  # TODO: track resolution times
         )
 
         return MetricsModel(
             features=feature_metrics,
             tests=test_metrics,
             errors=error_metrics,
-            last_sync=datetime.now()
+            last_sync=datetime.now(),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -335,7 +329,7 @@ async def sync_features():
             success=True,
             message="Features synced successfully",
             synced_features=len(features),
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -361,6 +355,7 @@ async def get_governance():
 # Config Endpoints
 # ============================================================================
 
+
 @app.get("/config", response_model=ConfigModel)
 async def get_config(source: str = "merged"):
     """
@@ -376,28 +371,19 @@ async def get_config(source: str = "merged"):
         if source == "global":
             config = config_service.get_global_config()
             return ConfigModel(
-                global_config=config,
-                project_config={},
-                merged=config,
-                source="global"
+                global_config=config, project_config={}, merged=config, source="global"
             )
         elif source == "project":
             config = config_service.get_project_config()
             return ConfigModel(
-                global_config={},
-                project_config=config,
-                merged=config,
-                source="project"
+                global_config={}, project_config=config, merged=config, source="project"
             )
         else:
             global_cfg = config_service.get_global_config()
             project_cfg = config_service.get_project_config()
             merged = config_service.get_merged_config()
             return ConfigModel(
-                global_config=global_cfg,
-                project_config=project_cfg,
-                merged=merged,
-                source="merged"
+                global_config=global_cfg, project_config=project_cfg, merged=merged, source="merged"
             )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -426,7 +412,7 @@ async def update_config(updates: ConfigUpdate):
             global_config=config_service.get_global_config(),
             project_config=updated,
             merged=config_service.get_merged_config(),
-            source="merged"
+            source="merged",
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -450,6 +436,7 @@ async def get_config_schema():
 # ============================================================================
 # Debug Endpoints
 # ============================================================================
+
 
 @app.get("/debug/status", response_model=SystemStatus)
 async def get_debug_status():
@@ -485,7 +472,7 @@ async def get_debug_status():
             tests_running=test_runner.is_running,
             error_count=error_summary["total_errors"],
             last_sync=datetime.now(),
-            issues=issues
+            issues=issues,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -530,9 +517,7 @@ async def run_test():
 
 @app.get("/debug/errors", response_model=ErrorSummary)
 async def get_errors(
-    category: Optional[str] = None,
-    severity: Optional[str] = None,
-    unresolved_only: bool = False
+    category: Optional[str] = None, severity: Optional[str] = None, unresolved_only: bool = False
 ):
     """
     Get recent errors.
@@ -553,7 +538,7 @@ async def get_errors(
             total_errors=summary["total_errors"],
             by_category=summary["by_category"],
             by_severity=summary["by_severity"],
-            recent_errors=[ErrorModel(**e) for e in errors[-10:]]
+            recent_errors=[ErrorModel(**e) for e in errors[-10:]],
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -575,13 +560,14 @@ async def retry_command(command_id: str, force: bool = False):
     return {
         "command_id": command_id,
         "status": "not_implemented",
-        "message": "Command retry not yet implemented"
+        "message": "Command retry not yet implemented",
     }
 
 
 # ============================================================================
 # Test Runner Endpoints
 # ============================================================================
+
 
 @app.post("/test/start")
 async def start_test_runner(interval: int = 60):
@@ -678,10 +664,4 @@ if __name__ == "__main__":
     import uvicorn
 
     # Run the API
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, log_level="info")

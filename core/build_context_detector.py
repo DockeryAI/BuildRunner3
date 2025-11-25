@@ -14,6 +14,7 @@ import fnmatch
 
 class BuildType(Enum):
     """Type of build detected"""
+
     PYTHON_ONLY = "python"
     TYPESCRIPT_ONLY = "typescript"
     REACT = "react"
@@ -26,6 +27,7 @@ class BuildType(Enum):
 
 class TechStack(Enum):
     """Technologies detected in the build"""
+
     PYTHON = "python"
     TYPESCRIPT = "typescript"
     JAVASCRIPT = "javascript"
@@ -40,6 +42,7 @@ class TechStack(Enum):
 @dataclass
 class BuildContext:
     """Context information about a build"""
+
     build_type: BuildType
     tech_stack: Set[TechStack]
     changed_files: List[Path]
@@ -64,14 +67,14 @@ class BuildContextDetector:
 
     def _load_exclude_patterns(self) -> List[str]:
         """Load exclude patterns from autodebug.yaml"""
-        autodebug_file = self.project_root / '.buildrunner' / 'autodebug.yaml'
+        autodebug_file = self.project_root / ".buildrunner" / "autodebug.yaml"
         if not autodebug_file.exists():
             return []
 
         try:
             with open(autodebug_file) as f:
                 config = yaml.safe_load(f)
-                return config.get('exclude', [])
+                return config.get("exclude", [])
         except Exception:
             return []
 
@@ -85,8 +88,8 @@ class BuildContextDetector:
 
         for pattern in self.exclude_patterns:
             # Handle directory patterns (ending with /**)
-            if pattern.endswith('/**'):
-                dir_pattern = pattern.rstrip('/**')
+            if pattern.endswith("/**"):
+                dir_pattern = pattern.rstrip("/**")
                 if any(part == dir_pattern for part in file_path.parts):
                     return True
 
@@ -95,9 +98,9 @@ class BuildContextDetector:
                 return True
 
             # Handle ** patterns (match any directory depth)
-            if '**' in pattern:
+            if "**" in pattern:
                 # Simplify: just check if any part matches the non-** portion
-                base_pattern = pattern.replace('/**', '').replace('**/', '')
+                base_pattern = pattern.replace("/**", "").replace("**/", "")
                 if base_pattern in file_path.parts:
                     return True
 
@@ -120,14 +123,12 @@ class BuildContextDetector:
                 ["git", "diff", "--name-only", base],
                 cwd=self.project_root,
                 capture_output=True,
-                text=True
+                text=True,
             )
 
             if result.returncode == 0:
                 files = [
-                    self.project_root / f.strip()
-                    for f in result.stdout.split('\n')
-                    if f.strip()
+                    self.project_root / f.strip() for f in result.stdout.split("\n") if f.strip()
                 ]
                 return files
 
@@ -143,17 +144,17 @@ class BuildContextDetector:
         files = [f for f in files if not self._should_exclude(f)]
 
         # Categorize files by type
-        python_files = [f for f in files if f.suffix == '.py']
-        typescript_files = [f for f in files if f.suffix in {'.ts', '.tsx'}]
-        javascript_files = [f for f in files if f.suffix in {'.js', '.jsx'}]
+        python_files = [f for f in files if f.suffix == ".py"]
+        typescript_files = [f for f in files if f.suffix in {".ts", ".tsx"}]
+        javascript_files = [f for f in files if f.suffix in {".js", ".jsx"}]
         test_files = [
-            f for f in files
-            if 'test' in f.name.lower() or f.parts and 'tests' in f.parts
+            f for f in files if "test" in f.name.lower() or f.parts and "tests" in f.parts
         ]
         config_files = [
-            f for f in files
-            if f.suffix in {'.json', '.yaml', '.yml', '.toml', '.ini', '.cfg'}
-            or f.name in {'Dockerfile', 'docker-compose.yml', 'requirements.txt', 'package.json'}
+            f
+            for f in files
+            if f.suffix in {".json", ".yaml", ".yml", ".toml", ".ini", ".cfg"}
+            or f.name in {"Dockerfile", "docker-compose.yml", "requirements.txt", "package.json"}
         ]
 
         # Identify React files
@@ -183,20 +184,18 @@ class BuildContextDetector:
             tech_stack.add(TechStack.REACT)
 
         if test_files:
-            if any(f.suffix == '.py' for f in test_files):
+            if any(f.suffix == ".py" for f in test_files):
                 tech_stack.add(TechStack.PYTEST)
-            if any(f.suffix in {'.ts', '.tsx', '.js', '.jsx'} for f in test_files):
+            if any(f.suffix in {".ts", ".tsx", ".js", ".jsx"} for f in test_files):
                 tech_stack.add(TechStack.JEST)
 
         # Determine build type
         has_backend = bool(python_files) and any(
-            'api' in str(f) or 'core' in str(f) or 'cli' in str(f)
-            for f in python_files
+            "api" in str(f) or "core" in str(f) or "cli" in str(f) for f in python_files
         )
         has_frontend = bool(typescript_files or javascript_files or react_files)
         has_database = any(
-            'models' in str(f) or 'migrations' in str(f) or 'schema' in str(f)
-            for f in files
+            "models" in str(f) or "migrations" in str(f) or "schema" in str(f) for f in files
         )
 
         # Determine primary build type
@@ -212,7 +211,7 @@ class BuildContextDetector:
             build_type = BuildType.DATABASE
         elif config_files and len(config_files) == len(files):
             build_type = BuildType.CONFIG
-        elif all(f.suffix in {'.md', '.txt', '.rst'} for f in files):
+        elif all(f.suffix in {".md", ".txt", ".rst"} for f in files):
             build_type = BuildType.DOCUMENTATION
         else:
             build_type = BuildType.MIXED
@@ -230,22 +229,22 @@ class BuildContextDetector:
             has_frontend_changes=has_frontend,
             has_database_changes=has_database,
             has_test_changes=bool(test_files),
-            project_root=self.project_root
+            project_root=self.project_root,
         )
 
     def _is_react_file(self, file_path: Path) -> bool:
         """Check if file is a React component"""
-        if file_path.suffix not in {'.tsx', '.jsx', '.ts', '.js'}:
+        if file_path.suffix not in {".tsx", ".jsx", ".ts", ".js"}:
             return False
 
         try:
             content = file_path.read_text()
             # Simple heuristic: check for React imports or JSX syntax
             return (
-                'import React' in content or
-                'from "react"' in content or
-                'from \'react\'' in content or
-                '</' in content  # JSX closing tags
+                "import React" in content
+                or 'from "react"' in content
+                or "from 'react'" in content
+                or "</" in content  # JSX closing tags
             )
         except Exception:
             return False
@@ -255,7 +254,7 @@ class BuildContextDetector:
         for f in python_files:
             try:
                 content = f.read_text()
-                if 'from fastapi' in content or 'import fastapi' in content:
+                if "from fastapi" in content or "import fastapi" in content:
                     return True
             except Exception:
                 continue
@@ -266,7 +265,7 @@ class BuildContextDetector:
         for f in python_files:
             try:
                 content = f.read_text()
-                if 'from flask' in content or 'import flask' in content:
+                if "from flask" in content or "import flask" in content:
                     return True
             except Exception:
                 continue
@@ -277,7 +276,7 @@ class BuildContextDetector:
         for f in python_files:
             try:
                 content = f.read_text()
-                if 'from sqlalchemy' in content or 'import sqlalchemy' in content:
+                if "from sqlalchemy" in content or "import sqlalchemy" in content:
                     return True
             except Exception:
                 continue

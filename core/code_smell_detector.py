@@ -11,6 +11,7 @@ Analyzes code for:
 - Deep nesting
 - Commented-out code
 """
+
 import ast
 import re
 from typing import Dict, List, Optional, Set, Any
@@ -22,6 +23,7 @@ from collections import defaultdict
 @dataclass
 class CodeSmell:
     """Represents a detected code smell"""
+
     smell_type: str
     location: str
     severity: str  # 'high', 'medium', 'low'
@@ -106,14 +108,24 @@ class CodeSmellDetector:
 
         # Calculate smell score
         smell_score = self.calculate_smell_score(
-            long_methods, long_params, magic_numbers, dead_code,
-            god_classes, deep_nesting, commented_code
+            long_methods,
+            long_params,
+            magic_numbers,
+            dead_code,
+            god_classes,
+            deep_nesting,
+            commented_code,
         )
 
         # Generate recommendations
         recommendations = self.generate_recommendations(
-            long_methods, long_params, magic_numbers, dead_code,
-            god_classes, deep_nesting, commented_code
+            long_methods,
+            long_params,
+            magic_numbers,
+            dead_code,
+            god_classes,
+            deep_nesting,
+            commented_code,
         )
 
         return {
@@ -125,7 +137,7 @@ class CodeSmellDetector:
             "deep_nesting": [vars(s) for s in deep_nesting],
             "commented_code": [vars(s) for s in commented_code],
             "smell_score": smell_score,
-            "recommendations": recommendations
+            "recommendations": recommendations,
         }
 
     def detect_long_methods(self, tree: ast.AST, code: str) -> List[CodeSmell]:
@@ -140,7 +152,7 @@ class CodeSmellDetector:
             List of long method smells
         """
         smells = []
-        code_lines = code.split('\n')
+        code_lines = code.split("\n")
 
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
@@ -150,15 +162,17 @@ class CodeSmellDetector:
                 method_lines = end_line - start_line
 
                 if method_lines > self.MAX_METHOD_LINES:
-                    severity = 'high' if method_lines > self.MAX_METHOD_LINES * 2 else 'medium'
-                    smells.append(CodeSmell(
-                        smell_type='long_method',
-                        location=f"Function {node.name} (line {node.lineno})",
-                        severity=severity,
-                        description=f"Method is {method_lines} lines long (max: {self.MAX_METHOD_LINES})",
-                        recommendation="Break into smaller, focused functions",
-                        metric_value=float(method_lines)
-                    ))
+                    severity = "high" if method_lines > self.MAX_METHOD_LINES * 2 else "medium"
+                    smells.append(
+                        CodeSmell(
+                            smell_type="long_method",
+                            location=f"Function {node.name} (line {node.lineno})",
+                            severity=severity,
+                            description=f"Method is {method_lines} lines long (max: {self.MAX_METHOD_LINES})",
+                            recommendation="Break into smaller, focused functions",
+                            metric_value=float(method_lines),
+                        )
+                    )
 
         return smells
 
@@ -180,19 +194,21 @@ class CodeSmellDetector:
                 param_count = len(node.args.args)
                 if param_count > 0:
                     first_param = node.args.args[0].arg
-                    if first_param in ['self', 'cls']:
+                    if first_param in ["self", "cls"]:
                         param_count -= 1
 
                 if param_count > self.MAX_PARAMETERS:
-                    severity = 'high' if param_count > self.MAX_PARAMETERS * 2 else 'medium'
-                    smells.append(CodeSmell(
-                        smell_type='long_parameter_list',
-                        location=f"Function {node.name} (line {node.lineno})",
-                        severity=severity,
-                        description=f"Function has {param_count} parameters (max: {self.MAX_PARAMETERS})",
-                        recommendation="Consider using parameter objects or builder pattern",
-                        metric_value=float(param_count)
-                    ))
+                    severity = "high" if param_count > self.MAX_PARAMETERS * 2 else "medium"
+                    smells.append(
+                        CodeSmell(
+                            smell_type="long_parameter_list",
+                            location=f"Function {node.name} (line {node.lineno})",
+                            severity=severity,
+                            description=f"Function has {param_count} parameters (max: {self.MAX_PARAMETERS})",
+                            recommendation="Consider using parameter objects or builder pattern",
+                            metric_value=float(param_count),
+                        )
+                    )
 
         return smells
 
@@ -227,14 +243,16 @@ class CodeSmellDetector:
                     location = f"Line {node.lineno}"
                     if location not in seen_locations:
                         seen_locations.add(location)
-                        smells.append(CodeSmell(
-                            smell_type='magic_number',
-                            location=location,
-                            severity='low',
-                            description=f"Magic number '{node.value}' used in code",
-                            recommendation="Replace with named constant",
-                            metric_value=float(node.value)
-                        ))
+                        smells.append(
+                            CodeSmell(
+                                smell_type="magic_number",
+                                location=location,
+                                severity="low",
+                                description=f"Magic number '{node.value}' used in code",
+                                recommendation="Replace with named constant",
+                                metric_value=float(node.value),
+                            )
+                        )
 
         return smells
 
@@ -268,14 +286,16 @@ class CodeSmellDetector:
         unused_vars = assigned_vars - used_vars
         for var in unused_vars:
             # Skip private variables (likely intentional)
-            if not var.startswith('_'):
-                smells.append(CodeSmell(
-                    smell_type='unused_variable',
-                    location=f"Variable '{var}'",
-                    severity='low',
-                    description=f"Variable '{var}' is assigned but never used",
-                    recommendation="Remove unused variable or use it"
-                ))
+            if not var.startswith("_"):
+                smells.append(
+                    CodeSmell(
+                        smell_type="unused_variable",
+                        location=f"Variable '{var}'",
+                        severity="low",
+                        description=f"Variable '{var}' is assigned but never used",
+                        recommendation="Remove unused variable or use it",
+                    )
+                )
 
         # Detect unused imports
         imported_names = set()
@@ -284,7 +304,7 @@ class CodeSmellDetector:
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    imported_names.add(alias.asname if alias.asname else alias.name.split('.')[0])
+                    imported_names.add(alias.asname if alias.asname else alias.name.split(".")[0])
             elif isinstance(node, ast.ImportFrom):
                 for alias in node.names:
                     imported_names.add(alias.asname if alias.asname else alias.name)
@@ -293,13 +313,15 @@ class CodeSmellDetector:
 
         unused_imports = imported_names - used_names
         for imp in unused_imports:
-            smells.append(CodeSmell(
-                smell_type='unused_import',
-                location=f"Import '{imp}'",
-                severity='low',
-                description=f"Import '{imp}' is not used",
-                recommendation="Remove unused import"
-            ))
+            smells.append(
+                CodeSmell(
+                    smell_type="unused_import",
+                    location=f"Import '{imp}'",
+                    severity="low",
+                    description=f"Import '{imp}' is not used",
+                    recommendation="Remove unused import",
+                )
+            )
 
         return smells
 
@@ -322,15 +344,17 @@ class CodeSmellDetector:
                 method_count = len(methods)
 
                 if method_count > self.MAX_CLASS_METHODS:
-                    severity = 'high' if method_count > self.MAX_CLASS_METHODS * 2 else 'medium'
-                    smells.append(CodeSmell(
-                        smell_type='god_class',
-                        location=f"Class {node.name} (line {node.lineno})",
-                        severity=severity,
-                        description=f"Class has {method_count} methods (max: {self.MAX_CLASS_METHODS})",
-                        recommendation="Split into smaller, focused classes",
-                        metric_value=float(method_count)
-                    ))
+                    severity = "high" if method_count > self.MAX_CLASS_METHODS * 2 else "medium"
+                    smells.append(
+                        CodeSmell(
+                            smell_type="god_class",
+                            location=f"Class {node.name} (line {node.lineno})",
+                            severity=severity,
+                            description=f"Class has {method_count} methods (max: {self.MAX_CLASS_METHODS})",
+                            recommendation="Split into smaller, focused classes",
+                            metric_value=float(method_count),
+                        )
+                    )
 
         return smells
 
@@ -351,15 +375,17 @@ class CodeSmellDetector:
                 max_depth = self._calculate_nesting_depth(node)
 
                 if max_depth > self.MAX_NESTING_DEPTH:
-                    severity = 'high' if max_depth > self.MAX_NESTING_DEPTH * 2 else 'medium'
-                    smells.append(CodeSmell(
-                        smell_type='deep_nesting',
-                        location=f"Function {node.name} (line {node.lineno})",
-                        severity=severity,
-                        description=f"Nesting depth is {max_depth} (max: {self.MAX_NESTING_DEPTH})",
-                        recommendation="Reduce nesting with early returns or extraction",
-                        metric_value=float(max_depth)
-                    ))
+                    severity = "high" if max_depth > self.MAX_NESTING_DEPTH * 2 else "medium"
+                    smells.append(
+                        CodeSmell(
+                            smell_type="deep_nesting",
+                            location=f"Function {node.name} (line {node.lineno})",
+                            severity=severity,
+                            description=f"Nesting depth is {max_depth} (max: {self.MAX_NESTING_DEPTH})",
+                            recommendation="Reduce nesting with early returns or extraction",
+                            metric_value=float(max_depth),
+                        )
+                    )
 
         return smells
 
@@ -374,29 +400,43 @@ class CodeSmellDetector:
             List of commented code smells
         """
         smells = []
-        lines = code.split('\n')
+        lines = code.split("\n")
 
         for i, line in enumerate(lines, 1):
             stripped = line.strip()
 
             # Check if line is a comment
-            if stripped.startswith('#'):
+            if stripped.startswith("#"):
                 # Remove the # and check if it looks like code
                 comment_content = stripped[1:].strip()
 
                 # Heuristics for code: contains =, (), def, class, if, for, etc.
-                code_indicators = ['=', 'def ', 'class ', 'if ', 'for ', 'while ', 'return ', 'import ']
+                code_indicators = [
+                    "=",
+                    "def ",
+                    "class ",
+                    "if ",
+                    "for ",
+                    "while ",
+                    "return ",
+                    "import ",
+                ]
 
                 if any(indicator in comment_content for indicator in code_indicators):
                     # Skip docstrings and normal comments
-                    if not any(word in comment_content.lower() for word in ['note:', 'todo:', 'fixme:', 'hack:']):
-                        smells.append(CodeSmell(
-                            smell_type='commented_code',
-                            location=f"Line {i}",
-                            severity='low',
-                            description="Commented-out code detected",
-                            recommendation="Remove commented code or uncomment if needed"
-                        ))
+                    if not any(
+                        word in comment_content.lower()
+                        for word in ["note:", "todo:", "fixme:", "hack:"]
+                    ):
+                        smells.append(
+                            CodeSmell(
+                                smell_type="commented_code",
+                                location=f"Line {i}",
+                                severity="low",
+                                description="Commented-out code detected",
+                                recommendation="Remove commented code or uncomment if needed",
+                            )
+                        )
 
         return smells
 
@@ -408,7 +448,7 @@ class CodeSmellDetector:
         dead_code: List[CodeSmell],
         god_classes: List[CodeSmell],
         deep_nesting: List[CodeSmell],
-        commented_code: List[CodeSmell]
+        commented_code: List[CodeSmell],
     ) -> int:
         """
         Calculate overall code smell score
@@ -422,16 +462,16 @@ class CodeSmellDetector:
         score = 100
 
         # Penalties
-        score -= len([s for s in long_methods if s.severity == 'high']) * 15
-        score -= len([s for s in long_methods if s.severity == 'medium']) * 8
-        score -= len([s for s in long_params if s.severity == 'high']) * 12
-        score -= len([s for s in long_params if s.severity == 'medium']) * 6
+        score -= len([s for s in long_methods if s.severity == "high"]) * 15
+        score -= len([s for s in long_methods if s.severity == "medium"]) * 8
+        score -= len([s for s in long_params if s.severity == "high"]) * 12
+        score -= len([s for s in long_params if s.severity == "medium"]) * 6
         score -= len(magic_numbers) * 2
         score -= len(dead_code) * 3
-        score -= len([s for s in god_classes if s.severity == 'high']) * 20
-        score -= len([s for s in god_classes if s.severity == 'medium']) * 10
-        score -= len([s for s in deep_nesting if s.severity == 'high']) * 15
-        score -= len([s for s in deep_nesting if s.severity == 'medium']) * 8
+        score -= len([s for s in god_classes if s.severity == "high"]) * 20
+        score -= len([s for s in god_classes if s.severity == "medium"]) * 10
+        score -= len([s for s in deep_nesting if s.severity == "high"]) * 15
+        score -= len([s for s in deep_nesting if s.severity == "medium"]) * 8
         score -= len(commented_code) * 2
 
         return max(0, min(100, score))
@@ -444,7 +484,7 @@ class CodeSmellDetector:
         dead_code: List[CodeSmell],
         god_classes: List[CodeSmell],
         deep_nesting: List[CodeSmell],
-        commented_code: List[CodeSmell]
+        commented_code: List[CodeSmell],
     ) -> List[str]:
         """Generate actionable recommendations"""
         recommendations = []
@@ -455,9 +495,7 @@ class CodeSmellDetector:
             )
 
         if long_params:
-            recommendations.append(
-                f"Reduce parameter count in {len(long_params)} function(s)"
-            )
+            recommendations.append(f"Reduce parameter count in {len(long_params)} function(s)")
 
         if magic_numbers:
             recommendations.append(
@@ -465,19 +503,13 @@ class CodeSmellDetector:
             )
 
         if dead_code:
-            recommendations.append(
-                f"Remove {len(dead_code)} piece(s) of dead code"
-            )
+            recommendations.append(f"Remove {len(dead_code)} piece(s) of dead code")
 
         if god_classes:
-            recommendations.append(
-                f"Split {len(god_classes)} god class(es) into smaller classes"
-            )
+            recommendations.append(f"Split {len(god_classes)} god class(es) into smaller classes")
 
         if deep_nesting:
-            recommendations.append(
-                f"Reduce nesting in {len(deep_nesting)} function(s)"
-            )
+            recommendations.append(f"Reduce nesting in {len(deep_nesting)} function(s)")
 
         if commented_code:
             recommendations.append(
@@ -500,7 +532,7 @@ class CodeSmellDetector:
             "deep_nesting": [],
             "commented_code": [],
             "smell_score": 0,
-            "recommendations": [error_msg]
+            "recommendations": [error_msg],
         }
 
     def _is_constant_definition(self, node: ast.Constant, tree: ast.AST) -> bool:
@@ -542,38 +574,38 @@ def main():
     print(f"\n=== Code Smell Analysis for {file_path} ===\n")
     print(f"Smell Score: {result['smell_score']}/100\n")
 
-    if result['long_methods']:
+    if result["long_methods"]:
         print("Long Methods:")
-        for smell in result['long_methods']:
+        for smell in result["long_methods"]:
             print(f"  - [{smell['severity'].upper()}] {smell['description']}")
             print(f"    Location: {smell['location']}")
 
-    if result['long_parameter_lists']:
+    if result["long_parameter_lists"]:
         print("\nLong Parameter Lists:")
-        for smell in result['long_parameter_lists']:
+        for smell in result["long_parameter_lists"]:
             print(f"  - [{smell['severity'].upper()}] {smell['description']}")
 
-    if result['magic_numbers']:
+    if result["magic_numbers"]:
         print(f"\nMagic Numbers: {len(result['magic_numbers'])} detected")
 
-    if result['dead_code']:
+    if result["dead_code"]:
         print(f"\nDead Code: {len(result['dead_code'])} issue(s)")
 
-    if result['god_classes']:
+    if result["god_classes"]:
         print("\nGod Classes:")
-        for smell in result['god_classes']:
+        for smell in result["god_classes"]:
             print(f"  - [{smell['severity'].upper()}] {smell['description']}")
 
-    if result['deep_nesting']:
+    if result["deep_nesting"]:
         print("\nDeep Nesting:")
-        for smell in result['deep_nesting']:
+        for smell in result["deep_nesting"]:
             print(f"  - [{smell['severity'].upper()}] {smell['description']}")
 
-    if result['commented_code']:
+    if result["commented_code"]:
         print(f"\nCommented Code: {len(result['commented_code'])} occurrence(s)")
 
     print("\nRecommendations:")
-    for rec in result['recommendations']:
+    for rec in result["recommendations"]:
         print(f"  - {rec}")
 
 

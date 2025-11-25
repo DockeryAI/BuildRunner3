@@ -28,7 +28,7 @@ class AIContextManager:
             "architecture": self.context_dir / "architecture.md",
             "current-work": self.context_dir / "current-work.md",
             "blockers": self.context_dir / "blockers.md",
-            "test-results": self.context_dir / "test-results.md"
+            "test-results": self.context_dir / "test-results.md",
         }
 
         self._ensure_structure()
@@ -48,7 +48,7 @@ class AIContextManager:
             self._create_default_claude_md()
 
         # Read existing content
-        with open(self.claude_md, 'r') as f:
+        with open(self.claude_md, "r") as f:
             lines = f.readlines()
 
         # Find and update section
@@ -80,12 +80,14 @@ class AIContextManager:
         final_lines = []
         for line in updated_lines:
             if "*Last Updated:" in line:
-                final_lines.append(f"*Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n")
+                final_lines.append(
+                    f"*Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n"
+                )
             else:
                 final_lines.append(line)
 
         # Write back
-        with open(self.claude_md, 'w') as f:
+        with open(self.claude_md, "w") as f:
             f.writelines(final_lines)
 
     def pipe_output(self, output: str, tag: str):
@@ -103,9 +105,9 @@ class AIContextManager:
             context_file = self.context_files["test-results"]
 
         # Append to context file with timestamp
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        with open(context_file, 'a') as f:
+        with open(context_file, "a") as f:
             f.write(f"\n\n## Output: {tag}\n")
             f.write(f"**Timestamp:** {timestamp}\n\n")
             f.write("```\n")
@@ -129,7 +131,7 @@ class AIContextManager:
 
         # Load CLAUDE.md
         if self.claude_md.exists():
-            with open(self.claude_md, 'r') as f:
+            with open(self.claude_md, "r") as f:
                 context_parts.append("# CLAUDE.md\n")
                 context_parts.append(f.read())
                 context_parts.append("\n---\n")
@@ -139,7 +141,7 @@ class AIContextManager:
             if tag in self.context_files:
                 context_file = self.context_files[tag]
                 if context_file.exists():
-                    with open(context_file, 'r') as f:
+                    with open(context_file, "r") as f:
                         context_parts.append(f"# {tag}.md\n")
                         context_parts.append(f.read())
                         context_parts.append("\n---\n")
@@ -157,12 +159,14 @@ class AIContextManager:
             ValueError: If context_type is invalid
         """
         if context_type not in self.context_files:
-            raise ValueError(f"Invalid context type: {context_type}. "
-                           f"Valid types: {list(self.context_files.keys())}")
+            raise ValueError(
+                f"Invalid context type: {context_type}. "
+                f"Valid types: {list(self.context_files.keys())}"
+            )
 
         context_file = self.context_files[context_type]
 
-        with open(context_file, 'w') as f:
+        with open(context_file, "w") as f:
             f.write(content)
 
     def add_blocker(self, title: str, description: str, issue: Optional[str] = None):
@@ -175,7 +179,7 @@ class AIContextManager:
         """
         blockers_file = self.context_files["blockers"]
 
-        timestamp = datetime.now().strftime('%Y-%m-%d')
+        timestamp = datetime.now().strftime("%Y-%m-%d")
         blocker_entry = f"\n### {title}\n"
         blocker_entry += f"**Date:** {timestamp}\n"
         blocker_entry += f"**Status:** Active\n\n"
@@ -186,7 +190,7 @@ class AIContextManager:
 
         # Insert under "## Active Blockers"
         if blockers_file.exists():
-            with open(blockers_file, 'r') as f:
+            with open(blockers_file, "r") as f:
                 content = f.read()
 
             if "## Active Blockers" in content:
@@ -195,11 +199,11 @@ class AIContextManager:
                 if len(parts) > 1:
                     new_content += "\n" + parts[1]
 
-                with open(blockers_file, 'w') as f:
+                with open(blockers_file, "w") as f:
                     f.write(new_content)
             else:
                 # Append if section doesn't exist
-                with open(blockers_file, 'a') as f:
+                with open(blockers_file, "a") as f:
                     f.write("\n## Active Blockers\n")
                     f.write(blocker_entry)
 
@@ -229,7 +233,9 @@ This file maintains context across AI sessions.
 
 *Last Updated: {datetime}*
 *This file is read/written by AI assistants to maintain project context*
-""".replace("{datetime}", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+""".replace(
+            "{datetime}", datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        )
 
-        with open(self.claude_md, 'w') as f:
+        with open(self.claude_md, "w") as f:
             f.write(default_content)

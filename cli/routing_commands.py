@@ -61,7 +61,9 @@ def estimate_complexity(
     console.print(f"  Score: {complexity.score:.1f}/100")
     console.print(f"  Task Type: {complexity.task_type}")
 
-    console.print(f"\n[bold]Recommended Model:[/bold] [green]{complexity.recommended_model}[/green]")
+    console.print(
+        f"\n[bold]Recommended Model:[/bold] [green]{complexity.recommended_model}[/green]"
+    )
     console.print(f"  Estimated Tokens: {complexity.estimated_tokens:,}")
 
     if complexity.reasons:
@@ -146,7 +148,9 @@ def select_model(
 
 @routing_app.command("costs")
 def show_costs(
-    period: str = typer.Option("day", "--period", "-p", help="Time period (hour/day/week/month/all)"),
+    period: str = typer.Option(
+        "day", "--period", "-p", help="Time period (hour/day/week/month/all)"
+    ),
     export: Optional[str] = typer.Option(None, "--export", help="Export to CSV file"),
 ):
     """
@@ -167,7 +171,9 @@ def show_costs(
         return
 
     # Summary panel
-    console.print(f"[bold]Period:[/bold] {summary.start_date.strftime('%Y-%m-%d %H:%M')} to {summary.end_date.strftime('%Y-%m-%d %H:%M')}")
+    console.print(
+        f"[bold]Period:[/bold] {summary.start_date.strftime('%Y-%m-%d %H:%M')} to {summary.end_date.strftime('%Y-%m-%d %H:%M')}"
+    )
     console.print(f"\n[bold]Overall:[/bold]")
     console.print(f"  Total Requests: {summary.total_requests:,}")
     console.print(f"  Total Cost: [yellow]${summary.total_cost:.4f}[/yellow]")
@@ -185,7 +191,9 @@ def show_costs(
     # Cost by task type
     if summary.cost_by_task_type:
         console.print(f"\n[bold]Cost by Task Type:[/bold]")
-        for task_type, cost in sorted(summary.cost_by_task_type.items(), key=lambda x: x[1], reverse=True):
+        for task_type, cost in sorted(
+            summary.cost_by_task_type.items(), key=lambda x: x[1], reverse=True
+        ):
             console.print(f"  {task_type}: ${cost:.4f}")
 
     console.print(f"\n[bold]Most Expensive Model:[/bold] {summary.most_expensive_model}")

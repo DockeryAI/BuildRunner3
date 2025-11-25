@@ -16,6 +16,7 @@ import json
 @dataclass
 class ArchitectureViolation:
     """Represents a violation of architectural specifications"""
+
     type: str  # tech_stack, component_structure, api_design, naming
     severity: str  # critical, warning, info
     file: str
@@ -29,6 +30,7 @@ class ArchitectureViolation:
 @dataclass
 class ArchitectureSpec:
     """Parsed architecture specification from PROJECT_SPEC.md"""
+
     tech_stack: Dict[str, List[str]] = field(default_factory=dict)
     components: Dict[str, Any] = field(default_factory=dict)
     api_patterns: List[str] = field(default_factory=list)
@@ -74,7 +76,7 @@ class ArchitectureGuard:
             # Try alternate locations
             for alt_path in [
                 self.project_root / "docs" / "PROJECT_SPEC.md",
-                self.project_root / ".buildrunner" / "PROJECT_SPEC.md"
+                self.project_root / ".buildrunner" / "PROJECT_SPEC.md",
             ]:
                 if alt_path.exists():
                     spec_file = alt_path
@@ -93,9 +95,7 @@ class ArchitectureGuard:
 
         # Extract tech stack section
         tech_stack_match = re.search(
-            r'## Tech Stack\n(.*?)(?=\n##|\Z)',
-            content,
-            re.DOTALL | re.IGNORECASE
+            r"## Tech Stack\n(.*?)(?=\n##|\Z)", content, re.DOTALL | re.IGNORECASE
         )
         if tech_stack_match:
             tech_stack_text = tech_stack_match.group(1)
@@ -103,27 +103,25 @@ class ArchitectureGuard:
 
         # Extract components/architecture section
         arch_match = re.search(
-            r'## (?:Architecture|Components|Structure)\n(.*?)(?=\n##|\Z)',
+            r"## (?:Architecture|Components|Structure)\n(.*?)(?=\n##|\Z)",
             content,
-            re.DOTALL | re.IGNORECASE
+            re.DOTALL | re.IGNORECASE,
         )
         if arch_match:
             spec.components = self._parse_components(arch_match.group(1))
 
         # Extract API patterns
         api_match = re.search(
-            r'## API (?:Design|Patterns|Endpoints)\n(.*?)(?=\n##|\Z)',
+            r"## API (?:Design|Patterns|Endpoints)\n(.*?)(?=\n##|\Z)",
             content,
-            re.DOTALL | re.IGNORECASE
+            re.DOTALL | re.IGNORECASE,
         )
         if api_match:
             spec.api_patterns = self._parse_api_patterns(api_match.group(1))
 
         # Extract naming conventions
         naming_match = re.search(
-            r'## Naming Conventions?\n(.*?)(?=\n##|\Z)',
-            content,
-            re.DOTALL | re.IGNORECASE
+            r"## Naming Conventions?\n(.*?)(?=\n##|\Z)", content, re.DOTALL | re.IGNORECASE
         )
         if naming_match:
             spec.naming_conventions = self._parse_naming_conventions(naming_match.group(1))
@@ -133,32 +131,32 @@ class ArchitectureGuard:
     def _parse_tech_stack(self, text: str) -> Dict[str, List[str]]:
         """Parse tech stack from markdown"""
         tech_stack = {
-            'frontend': [],
-            'backend': [],
-            'database': [],
-            'infrastructure': [],
-            'libraries': []
+            "frontend": [],
+            "backend": [],
+            "database": [],
+            "infrastructure": [],
+            "libraries": [],
         }
 
         # Find libraries/frameworks mentioned
-        lines = text.split('\n')
-        current_category = 'libraries'
+        lines = text.split("\n")
+        current_category = "libraries"
 
         for line in lines:
             line = line.strip()
 
             # Check for category headers
-            if 'frontend' in line.lower():
-                current_category = 'frontend'
-            elif 'backend' in line.lower():
-                current_category = 'backend'
-            elif 'database' in line.lower():
-                current_category = 'database'
-            elif 'infrastructure' in line.lower():
-                current_category = 'infrastructure'
+            if "frontend" in line.lower():
+                current_category = "frontend"
+            elif "backend" in line.lower():
+                current_category = "backend"
+            elif "database" in line.lower():
+                current_category = "database"
+            elif "infrastructure" in line.lower():
+                current_category = "infrastructure"
 
             # Extract library names from bullet points or code blocks
-            lib_match = re.search(r'[-*]\s*(?:`)?(\w+(?:-\w+)*)(?:`)?', line)
+            lib_match = re.search(r"[-*]\s*(?:`)?(\w+(?:-\w+)*)(?:`)?", line)
             if lib_match:
                 lib_name = lib_match.group(1).lower()
                 if lib_name not in tech_stack[current_category]:
@@ -171,20 +169,21 @@ class ArchitectureGuard:
         components = {}
 
         # Look for directory structure in code blocks
-        code_block_match = re.search(r'```(?:bash|text|)?\n(.*?)```', text, re.DOTALL)
+        code_block_match = re.search(r"```(?:bash|text|)?\n(.*?)```", text, re.DOTALL)
         if code_block_match:
             structure_text = code_block_match.group(1)
-            components['expected_structure'] = [
-                line.strip() for line in structure_text.split('\n')
-                if line.strip() and not line.strip().startswith('#')
+            components["expected_structure"] = [
+                line.strip()
+                for line in structure_text.split("\n")
+                if line.strip() and not line.strip().startswith("#")
             ]
 
         # Look for component descriptions
-        component_pattern = r'[-*]\s*`?([\w/]+)`?:?\s*(.*)'
+        component_pattern = r"[-*]\s*`?([\w/]+)`?:?\s*(.*)"
         for match in re.finditer(component_pattern, text):
             comp_name = match.group(1)
             comp_desc = match.group(2)
-            if '/' in comp_name:
+            if "/" in comp_name:
                 components[comp_name] = comp_desc
 
         return components
@@ -194,12 +193,12 @@ class ArchitectureGuard:
         patterns = []
 
         # Find endpoint patterns
-        endpoint_pattern = r'(?:GET|POST|PUT|DELETE|PATCH)\s+(/\S+)'
+        endpoint_pattern = r"(?:GET|POST|PUT|DELETE|PATCH)\s+(/\S+)"
         for match in re.finditer(endpoint_pattern, text):
             patterns.append(match.group(1))
 
         # Also look for route patterns in code blocks
-        code_block_match = re.search(r'```(?:python|)?\n(.*?)```', text, re.DOTALL)
+        code_block_match = re.search(r"```(?:python|)?\n(.*?)```", text, re.DOTALL)
         if code_block_match:
             code = code_block_match.group(1)
             for match in re.finditer(r'@app\.(?:get|post|put|delete|patch)\("([^"]+)"', code):
@@ -213,11 +212,11 @@ class ArchitectureGuard:
 
         # Common naming patterns
         patterns = {
-            'files': r'files?:\s*`?(\w+)`?',
-            'classes': r'classes?:\s*`?(\w+)`?',
-            'functions': r'functions?:\s*`?(\w+)`?',
-            'variables': r'variables?:\s*`?(\w+)`?',
-            'constants': r'constants?:\s*`?(\w+)`?',
+            "files": r"files?:\s*`?(\w+)`?",
+            "classes": r"classes?:\s*`?(\w+)`?",
+            "functions": r"functions?:\s*`?(\w+)`?",
+            "variables": r"variables?:\s*`?(\w+)`?",
+            "constants": r"constants?:\s*`?(\w+)`?",
         }
 
         for key, pattern in patterns.items():
@@ -227,7 +226,9 @@ class ArchitectureGuard:
 
         return conventions
 
-    def analyze_codebase(self, directories: Optional[List[str]] = None) -> List[ArchitectureViolation]:
+    def analyze_codebase(
+        self, directories: Optional[List[str]] = None
+    ) -> List[ArchitectureViolation]:
         """
         Scan codebase for architectural violations.
 
@@ -240,15 +241,15 @@ class ArchitectureGuard:
         self.violations = []
 
         if directories is None:
-            directories = ['core', 'api', 'cli', 'plugins']
+            directories = ["core", "api", "cli", "plugins"]
 
         for dir_name in directories:
             dir_path = self.project_root / dir_name
             if not dir_path.exists():
                 continue
 
-            for py_file in dir_path.rglob('*.py'):
-                if '__pycache__' in str(py_file):
+            for py_file in dir_path.rglob("*.py"):
+                if "__pycache__" in str(py_file):
                     continue
                 self._analyze_file(py_file)
 
@@ -267,17 +268,19 @@ class ArchitectureGuard:
             self._check_naming(tree, file_path)
 
             # Check for FastAPI route patterns if API file
-            if 'api' in str(file_path):
+            if "api" in str(file_path):
                 self._check_api_patterns(tree, file_path)
 
         except SyntaxError as e:
-            self.violations.append(ArchitectureViolation(
-                type="syntax_error",
-                severity="critical",
-                file=str(file_path.relative_to(self.project_root)),
-                line=e.lineno,
-                description=f"Syntax error: {e.msg}"
-            ))
+            self.violations.append(
+                ArchitectureViolation(
+                    type="syntax_error",
+                    severity="critical",
+                    file=str(file_path.relative_to(self.project_root)),
+                    line=e.lineno,
+                    description=f"Syntax error: {e.msg}",
+                )
+            )
         except Exception as e:
             # Gracefully handle other parsing errors
             pass
@@ -292,9 +295,26 @@ class ArchitectureGuard:
             allowed_libs.update(libs)
 
         # Also allow standard library and common utilities
-        allowed_libs.update(['os', 'sys', 'json', 'pathlib', 'typing', 'dataclasses',
-                            'datetime', 're', 'ast', 'collections', 'itertools',
-                            'functools', 'asyncio', 'unittest', 'pytest', 'click'])
+        allowed_libs.update(
+            [
+                "os",
+                "sys",
+                "json",
+                "pathlib",
+                "typing",
+                "dataclasses",
+                "datetime",
+                "re",
+                "ast",
+                "collections",
+                "itertools",
+                "functools",
+                "asyncio",
+                "unittest",
+                "pytest",
+                "click",
+            ]
+        )
 
         for node in ast.walk(tree):
             if isinstance(node, (ast.Import, ast.ImportFrom)):
@@ -307,23 +327,27 @@ class ArchitectureGuard:
     def _check_library(self, lib_name: str, lineno: int, file_path: Path, allowed_libs: Set[str]):
         """Check if a library is allowed"""
         # Get root package name
-        root_lib = lib_name.split('.')[0]
+        root_lib = lib_name.split(".")[0]
 
         # Skip local imports
-        if root_lib in ['core', 'api', 'cli', 'plugins', 'tests']:
+        if root_lib in ["core", "api", "cli", "plugins", "tests"]:
             return
 
-        if root_lib not in allowed_libs and not any(allowed in lib_name for allowed in allowed_libs):
-            self.violations.append(ArchitectureViolation(
-                type="tech_stack",
-                severity="warning",
-                file=str(file_path.relative_to(self.project_root)),
-                line=lineno,
-                description=f"Unauthorized library '{lib_name}' not in tech stack specification",
-                expected="Libraries from approved tech stack",
-                actual=lib_name,
-                suggestion=f"Consider using approved alternatives or add '{root_lib}' to PROJECT_SPEC"
-            ))
+        if root_lib not in allowed_libs and not any(
+            allowed in lib_name for allowed in allowed_libs
+        ):
+            self.violations.append(
+                ArchitectureViolation(
+                    type="tech_stack",
+                    severity="warning",
+                    file=str(file_path.relative_to(self.project_root)),
+                    line=lineno,
+                    description=f"Unauthorized library '{lib_name}' not in tech stack specification",
+                    expected="Libraries from approved tech stack",
+                    actual=lib_name,
+                    suggestion=f"Consider using approved alternatives or add '{root_lib}' to PROJECT_SPEC",
+                )
+            )
 
     def _check_naming(self, tree: ast.AST, file_path: Path):
         """Check naming conventions"""
@@ -331,30 +355,34 @@ class ArchitectureGuard:
             if isinstance(node, ast.ClassDef):
                 # Classes should be PascalCase
                 if not node.name[0].isupper():
-                    self.violations.append(ArchitectureViolation(
-                        type="naming",
-                        severity="info",
-                        file=str(file_path.relative_to(self.project_root)),
-                        line=node.lineno,
-                        description=f"Class '{node.name}' should use PascalCase",
-                        expected="PascalCase",
-                        actual=node.name
-                    ))
-
-            elif isinstance(node, ast.FunctionDef):
-                # Functions should be snake_case
-                if not node.name.islower() and '_' not in node.name:
-                    # Skip special methods
-                    if not (node.name.startswith('__') and node.name.endswith('__')):
-                        self.violations.append(ArchitectureViolation(
+                    self.violations.append(
+                        ArchitectureViolation(
                             type="naming",
                             severity="info",
                             file=str(file_path.relative_to(self.project_root)),
                             line=node.lineno,
-                            description=f"Function '{node.name}' should use snake_case",
-                            expected="snake_case",
-                            actual=node.name
-                        ))
+                            description=f"Class '{node.name}' should use PascalCase",
+                            expected="PascalCase",
+                            actual=node.name,
+                        )
+                    )
+
+            elif isinstance(node, ast.FunctionDef):
+                # Functions should be snake_case
+                if not node.name.islower() and "_" not in node.name:
+                    # Skip special methods
+                    if not (node.name.startswith("__") and node.name.endswith("__")):
+                        self.violations.append(
+                            ArchitectureViolation(
+                                type="naming",
+                                severity="info",
+                                file=str(file_path.relative_to(self.project_root)),
+                                line=node.lineno,
+                                description=f"Function '{node.name}' should use snake_case",
+                                expected="snake_case",
+                                actual=node.name,
+                            )
+                        )
 
     def _check_api_patterns(self, tree: ast.AST, file_path: Path):
         """Check FastAPI route patterns"""
@@ -366,8 +394,13 @@ class ArchitectureGuard:
                 # Look for FastAPI route decorators
                 for decorator in node.decorator_list:
                     if isinstance(decorator, ast.Call):
-                        if hasattr(decorator.func, 'attr') and decorator.func.attr in \
-                           ['get', 'post', 'put', 'delete', 'patch']:
+                        if hasattr(decorator.func, "attr") and decorator.func.attr in [
+                            "get",
+                            "post",
+                            "put",
+                            "delete",
+                            "patch",
+                        ]:
                             # Extract route path
                             if decorator.args and isinstance(decorator.args[0], ast.Constant):
                                 route_path = decorator.args[0].value
@@ -376,16 +409,18 @@ class ArchitectureGuard:
     def _validate_route_pattern(self, route_path: str, lineno: int, file_path: Path):
         """Validate route path against specified patterns"""
         # Check if route follows RESTful patterns
-        if not route_path.startswith('/'):
-            self.violations.append(ArchitectureViolation(
-                type="api_design",
-                severity="warning",
-                file=str(file_path.relative_to(self.project_root)),
-                line=lineno,
-                description=f"Route '{route_path}' should start with '/'",
-                expected="Routes starting with '/'",
-                actual=route_path
-            ))
+        if not route_path.startswith("/"):
+            self.violations.append(
+                ArchitectureViolation(
+                    type="api_design",
+                    severity="warning",
+                    file=str(file_path.relative_to(self.project_root)),
+                    line=lineno,
+                    description=f"Route '{route_path}' should start with '/'",
+                    expected="Routes starting with '/'",
+                    actual=route_path,
+                )
+            )
 
     def check_tech_stack_compliance(self) -> List[ArchitectureViolation]:
         """
@@ -406,11 +441,11 @@ class ArchitectureGuard:
         """
         violations = []
 
-        if 'expected_structure' in self.spec.components:
+        if "expected_structure" in self.spec.components:
             expected_dirs = []
-            for item in self.spec.components['expected_structure']:
+            for item in self.spec.components["expected_structure"]:
                 # Extract directory names from structure
-                match = re.search(r'(\w+)/', item)
+                match = re.search(r"(\w+)/", item)
                 if match:
                     expected_dirs.append(match.group(1))
 
@@ -418,15 +453,17 @@ class ArchitectureGuard:
             for dir_name in expected_dirs:
                 dir_path = self.project_root / dir_name
                 if not dir_path.exists():
-                    violations.append(ArchitectureViolation(
-                        type="component_structure",
-                        severity="warning",
-                        file=str(self.project_root),
-                        line=None,
-                        description=f"Expected directory '{dir_name}' not found",
-                        expected=dir_name,
-                        actual="missing"
-                    ))
+                    violations.append(
+                        ArchitectureViolation(
+                            type="component_structure",
+                            severity="warning",
+                            file=str(self.project_root),
+                            line=None,
+                            description=f"Expected directory '{dir_name}' not found",
+                            expected=dir_name,
+                            actual="missing",
+                        )
+                    )
 
         return violations
 
@@ -473,19 +510,22 @@ class ArchitectureGuard:
             Formatted violation report
         """
         if output_format == "json":
-            return json.dumps([
-                {
-                    'type': v.type,
-                    'severity': v.severity,
-                    'file': v.file,
-                    'line': v.line,
-                    'description': v.description,
-                    'expected': v.expected,
-                    'actual': v.actual,
-                    'suggestion': v.suggestion
-                }
-                for v in self.violations
-            ], indent=2)
+            return json.dumps(
+                [
+                    {
+                        "type": v.type,
+                        "severity": v.severity,
+                        "file": v.file,
+                        "line": v.line,
+                        "description": v.description,
+                        "expected": v.expected,
+                        "actual": v.actual,
+                        "suggestion": v.suggestion,
+                    }
+                    for v in self.violations
+                ],
+                indent=2,
+            )
 
         elif output_format == "markdown":
             return self._generate_markdown_report()
@@ -502,11 +542,11 @@ class ArchitectureGuard:
         report.append(f"**Total Violations:** {len(self.violations)}\n")
 
         # Group by severity
-        by_severity = {'critical': [], 'warning': [], 'info': []}
+        by_severity = {"critical": [], "warning": [], "info": []}
         for v in self.violations:
             by_severity[v.severity].append(v)
 
-        for severity in ['critical', 'warning', 'info']:
+        for severity in ["critical", "warning", "info"]:
             violations = by_severity[severity]
             if not violations:
                 continue
@@ -528,7 +568,7 @@ class ArchitectureGuard:
                 if v.suggestion:
                     report.append(f"- **Suggestion:** {v.suggestion}\n")
 
-        return '\n'.join(report)
+        return "\n".join(report)
 
     def _generate_text_report(self) -> str:
         """Generate plain text report"""
@@ -544,4 +584,4 @@ class ArchitectureGuard:
             if v.suggestion:
                 report.append(f"   Suggestion: {v.suggestion}")
 
-        return '\n'.join(report)
+        return "\n".join(report)

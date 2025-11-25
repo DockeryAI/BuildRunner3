@@ -29,7 +29,9 @@ console = Console()
 def migrate_from_v2(
     project_path: str = typer.Argument(..., help="Path to BuildRunner 2.0 project"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Validate without making changes"),
-    backup: bool = typer.Option(True, "--backup/--no-backup", help="Create backup before migration"),
+    backup: bool = typer.Option(
+        True, "--backup/--no-backup", help="Create backup before migration"
+    ),
     force: bool = typer.Option(False, "--force", help="Override validation warnings"),
     output_dir: Optional[str] = typer.Option(None, "--output", help="Custom output directory"),
 ):
@@ -47,10 +49,9 @@ def migrate_from_v2(
         br migrate from-v2 /path/to/v2/project --dry-run
         br migrate from-v2 /path/to/v2/project --no-backup --force
     """
-    console.print(Panel.fit(
-        "[bold cyan]BuildRunner Migration: v2.0 → v3.0[/bold cyan]",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel.fit("[bold cyan]BuildRunner Migration: v2.0 → v3.0[/bold cyan]", border_style="cyan")
+    )
 
     project_path = Path(project_path).resolve()
 
@@ -136,9 +137,7 @@ def migrate_from_v2(
     console.print("\n[bold]Phase 5:[/bold] Validating converted data...")
 
     post_validation = validator.validate_post_migration(
-        v2_project,
-        conversion.features_json,
-        conversion.governance_yaml
+        v2_project, conversion.features_json, conversion.governance_yaml
     )
 
     console.print(validator.format_validation_result(post_validation, "Post-Migration Validation"))
@@ -155,7 +154,7 @@ def migrate_from_v2(
 
         # Write features.json
         features_file = output_path / "features.json"
-        with open(features_file, 'w') as f:
+        with open(features_file, "w") as f:
             json.dump(conversion.features_json, f, indent=2)
         console.print(f"✓ Created: {features_file}")
 
@@ -164,13 +163,13 @@ def migrate_from_v2(
         buildrunner_dir.mkdir(exist_ok=True)
 
         governance_file = buildrunner_dir / "governance.yaml"
-        with open(governance_file, 'w') as f:
+        with open(governance_file, "w") as f:
             yaml.dump(conversion.governance_yaml, f, default_flow_style=False)
         console.print(f"✓ Created: {governance_file}")
 
         # Write migration metadata
         metadata_file = buildrunner_dir / "migration_metadata.json"
-        with open(metadata_file, 'w') as f:
+        with open(metadata_file, "w") as f:
             json.dump(conversion.metadata, f, indent=2)
         console.print(f"✓ Created: {metadata_file}")
 
@@ -194,13 +193,15 @@ def migrate_from_v2(
                     console.print(f"  {error}")
 
         # Success!
-        console.print(Panel.fit(
-            "[bold green]✅ Migration Complete![/bold green]\n\n"
-            f"Features migrated: {len(conversion.features_json['features'])}\n"
-            f"Project: {conversion.metadata.get('project_name', 'Unknown')}\n"
-            f"Version: {conversion.metadata.get('target_version', '3.0')}",
-            border_style="green"
-        ))
+        console.print(
+            Panel.fit(
+                "[bold green]✅ Migration Complete![/bold green]\n\n"
+                f"Features migrated: {len(conversion.features_json['features'])}\n"
+                f"Project: {conversion.metadata.get('project_name', 'Unknown')}\n"
+                f"Version: {conversion.metadata.get('target_version', '3.0')}",
+                border_style="green",
+            )
+        )
 
         # Show next steps
         console.print("\n[bold]Next steps:[/bold]")
@@ -230,10 +231,7 @@ def rollback_migration(
         br migrate rollback /path/to/project
         br migrate rollback /path/to/project --tag pre-migration-v2.0-20251117
     """
-    console.print(Panel.fit(
-        "[bold yellow]Migration Rollback[/bold yellow]",
-        border_style="yellow"
-    ))
+    console.print(Panel.fit("[bold yellow]Migration Rollback[/bold yellow]", border_style="yellow"))
 
     project_path = Path(project_path).resolve()
 
@@ -272,10 +270,7 @@ def migration_status(
     """
     project_path = Path(project_path).resolve()
 
-    console.print(Panel.fit(
-        "[bold cyan]Migration Status Check[/bold cyan]",
-        border_style="cyan"
-    ))
+    console.print(Panel.fit("[bold cyan]Migration Status Check[/bold cyan]", border_style="cyan"))
 
     # Check for v2.0 indicators
     has_v2 = (project_path / ".runner" / "hrpo.json").exists()
@@ -295,7 +290,9 @@ def migration_status(
     table.add_column("v3.0", style="green")
 
     table.add_row("Features", "✓" if has_v2 else "✗", "✓" if has_v3_features else "✗")
-    table.add_row("Governance", "✓" if has_v2_governance else "✗", "✓" if has_v3_governance else "✗")
+    table.add_row(
+        "Governance", "✓" if has_v2_governance else "✗", "✓" if has_v3_governance else "✗"
+    )
     table.add_row("Migration metadata", "—", "✓" if has_migration_metadata else "✗")
 
     console.print(table)
@@ -309,7 +306,9 @@ def migration_status(
         console.print("\n[bold yellow]BuildRunner 2.0 project[/bold yellow]")
         console.print("Run 'br migrate from-v2 .' to migrate to 3.0")
     elif has_v2 and has_v3_features:
-        console.print("\n[bold yellow]⚠️  Mixed state - both v2.0 and v3.0 files exist[/bold yellow]")
+        console.print(
+            "\n[bold yellow]⚠️  Mixed state - both v2.0 and v3.0 files exist[/bold yellow]"
+        )
         console.print("Migration may be incomplete or rolled back")
     else:
         console.print("\n[bold red]❌ Unknown project state[/bold red]")

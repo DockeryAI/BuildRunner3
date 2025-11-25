@@ -7,13 +7,13 @@ from .models import CodeArtifact, ExtractedFeature, ScanResult
 from .version_detector import BRVersionDetector, BRVersion, VersionDetectionResult
 
 __all__ = [
-    'CodebaseScanner',
-    'FeatureExtractor',
-    'PRDSynthesizer',
-    'CodeArtifact',
-    'ExtractedFeature',
-    'ScanResult',
-    'BRVersionDetector',
-    'BRVersion',
-    'VersionDetectionResult',
+    "CodebaseScanner",
+    "FeatureExtractor",
+    "PRDSynthesizer",
+    "CodeArtifact",
+    "ExtractedFeature",
+    "ScanResult",
+    "BRVersionDetector",
+    "BRVersion",
+    "VersionDetectionResult",
 ]

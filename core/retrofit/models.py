@@ -8,12 +8,13 @@ from enum import Enum
 
 class ArtifactType(str, Enum):
     """Type of code artifact"""
+
     FUNCTION = "function"
     CLASS = "class"
     METHOD = "method"
-    ROUTE = "route"          # API endpoint
-    COMPONENT = "component"   # UI component
-    MODEL = "model"          # Database model
+    ROUTE = "route"  # API endpoint
+    COMPONENT = "component"  # UI component
+    MODEL = "model"  # Database model
     TEST = "test"
     MODULE = "module"
 
@@ -21,6 +22,7 @@ class ArtifactType(str, Enum):
 @dataclass
 class CodeArtifact:
     """Represents a single code artifact (function, class, route, etc.)"""
+
     type: ArtifactType
     name: str
     file_path: Path
@@ -36,13 +38,14 @@ class CodeArtifact:
         """Get description from docstring or name"""
         if self.docstring:
             # Get first line of docstring
-            return self.docstring.split('\n')[0].strip()
+            return self.docstring.split("\n")[0].strip()
         return f"{self.type.value}: {self.name}"
 
 
 @dataclass
 class ExtractedFeature:
     """A feature extracted from codebase analysis"""
+
     id: str
     name: str
     description: str
@@ -68,6 +71,7 @@ class ExtractedFeature:
 @dataclass
 class ScanResult:
     """Result of scanning a codebase"""
+
     project_root: Path
     project_name: str
     languages: List[str] = field(default_factory=list)

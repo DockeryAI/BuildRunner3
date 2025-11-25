@@ -55,7 +55,7 @@ class TestFeatureRegistry:
             description="A test feature",
             priority="high",
             week=1,
-            build="1A"
+            build="1A",
         )
 
         assert feature["id"] == "test-feature"
@@ -97,10 +97,7 @@ class TestFeatureRegistry:
         """Test updating feature properties"""
         registry.add_feature("test", "Test", "Description")
         updated = registry.update_feature(
-            "test",
-            name="Updated Name",
-            description="Updated Description",
-            status="in_progress"
+            "test", name="Updated Name", description="Updated Description", status="in_progress"
         )
 
         assert updated["name"] == "Updated Name"

@@ -31,7 +31,11 @@ console = Console()
 
 def convert_to_batch_task(decomp_task):
     """Convert task_decomposer.Task to batch_optimizer.Task"""
-    from core.batch_optimizer import Task as BatchTask, TaskDomain, TaskComplexity as BatchComplexity
+    from core.batch_optimizer import (
+        Task as BatchTask,
+        TaskDomain,
+        TaskComplexity as BatchComplexity,
+    )
 
     # Map category to domain
     category_to_domain = {
@@ -47,7 +51,11 @@ def convert_to_batch_task(decomp_task):
         "medium": BatchComplexity.MEDIUM,
         "complex": BatchComplexity.COMPLEX,
     }
-    complexity_str = decomp_task.complexity.value if hasattr(decomp_task.complexity, 'value') else str(decomp_task.complexity)
+    complexity_str = (
+        decomp_task.complexity.value
+        if hasattr(decomp_task.complexity, "value")
+        else str(decomp_task.complexity)
+    )
     complexity = complexity_map.get(complexity_str, BatchComplexity.MEDIUM)
 
     # Infer file_path from technical details or use placeholder
@@ -76,7 +84,7 @@ def get_orchestrator() -> BuildOrchestrator:
 @build_app.command("checkpoint")
 def create_checkpoint(
     name: str = typer.Argument(..., help="Checkpoint name"),
-    message: Optional[str] = typer.Option(None, "--message", "-m", help="Checkpoint description")
+    message: Optional[str] = typer.Option(None, "--message", "-m", help="Checkpoint description"),
 ):
     """
     Create a named checkpoint of current build state
@@ -94,14 +102,11 @@ def create_checkpoint(
             "name": name,
             "description": message or f"Checkpoint: {name}",
             "created_by": "cli",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         # Create checkpoint
-        checkpoint_id = orchestrator.create_checkpoint(
-            phase=name,
-            metadata=metadata
-        )
+        checkpoint_id = orchestrator.create_checkpoint(phase=name, metadata=metadata)
 
         # Get progress info
         progress = orchestrator.get_build_progress()
@@ -131,7 +136,9 @@ def rollback_checkpoint(
         br build rollback checkpoint_20251117_142530_123456
     """
     try:
-        console.print(f"\n[bold yellow]⚠️  Rolling back to checkpoint: {checkpoint_id}[/bold yellow]\n")
+        console.print(
+            f"\n[bold yellow]⚠️  Rolling back to checkpoint: {checkpoint_id}[/bold yellow]\n"
+        )
 
         orchestrator = get_orchestrator()
         checkpoint_manager = CheckpointManager(Path.cwd())
@@ -152,7 +159,9 @@ def rollback_checkpoint(
         console.print(f"  Files at checkpoint: {len(checkpoint.files_created)}\n")
 
         if files_to_remove:
-            console.print(f"[yellow]⚠️  Files created after this checkpoint (will need manual cleanup):[/yellow]")
+            console.print(
+                f"[yellow]⚠️  Files created after this checkpoint (will need manual cleanup):[/yellow]"
+            )
             for file in files_to_remove[:5]:
                 console.print(f"    • {file}")
             if len(files_to_remove) > 5:
@@ -177,7 +186,9 @@ def rollback_checkpoint(
             console.print(f"  Tasks restored: {len(checkpoint.tasks_completed)}\n")
 
             if files_to_remove:
-                console.print("[yellow]⚠️  Note: Files created after checkpoint still exist on disk[/yellow]")
+                console.print(
+                    "[yellow]⚠️  Note: Files created after checkpoint still exist on disk[/yellow]"
+                )
                 console.print("[dim]You may need to manually remove them[/dim]\n")
         else:
             console.print(f"[red]❌ Rollback failed[/red]")
@@ -190,7 +201,9 @@ def rollback_checkpoint(
 
 @build_app.command("resume")
 def resume_from_checkpoint(
-    checkpoint_id: Optional[str] = typer.Argument(None, help="Checkpoint ID to resume from (latest if not specified)")
+    checkpoint_id: Optional[str] = typer.Argument(
+        None, help="Checkpoint ID to resume from (latest if not specified)"
+    )
 ):
     """
     Resume build from a checkpoint
@@ -237,7 +250,9 @@ def resume_from_checkpoint(
                 console.print(f"  {len(ready_tasks)} tasks ready to execute")
                 console.print(f"[dim]Run 'br run auto' to continue[/dim]\n")
             else:
-                console.print(f"[yellow]No ready tasks. Build may be complete or blocked.[/yellow]\n")
+                console.print(
+                    f"[yellow]No ready tasks. Build may be complete or blocked.[/yellow]\n"
+                )
         else:
             console.print(f"[red]❌ Resume failed[/red]")
             raise typer.Exit(1)
@@ -288,7 +303,7 @@ def list_checkpoints():
                 time_str,
                 str(len(cp.tasks_completed)),
                 str(len(cp.files_created)),
-                cp.status.value
+                cp.status.value,
             )
 
         console.print(table)
@@ -301,7 +316,9 @@ def list_checkpoints():
 
 @build_app.command("start")
 def build_start(
-    continuous: bool = typer.Option(True, "--continuous/--no-continuous", help="Enable continuous phase execution"),
+    continuous: bool = typer.Option(
+        True, "--continuous/--no-continuous", help="Enable continuous phase execution"
+    ),
 ):
     """
     Start automated build from PROJECT_SPEC.md
@@ -330,14 +347,16 @@ def build_start(
         # Parse spec
         console.print("[cyan]📋 Parsing PROJECT_SPEC.md...[/cyan]")
         from core.spec_parser import SpecParser
+
         parser = SpecParser()
         spec_result = parser.parse_spec(str(spec_path))
-        features = spec_result['features']
+        features = spec_result["features"]
         console.print(f"[green]✓ Found {len(features)} features[/green]\n")
 
         # Decompose into tasks
         console.print("[cyan]🔨 Decomposing features into tasks...[/cyan]")
         from core.task_decomposer import TaskDecomposer
+
         decomposer = TaskDecomposer()
 
         all_tasks = []
@@ -353,6 +372,7 @@ def build_start(
         # Build dependency graph
         console.print("[cyan]🔗 Building dependency graph...[/cyan]")
         from core.dependency_graph import DependencyGraph
+
         graph = DependencyGraph()
         for task in all_tasks:
             graph.add_task(asdict(task))
@@ -364,6 +384,7 @@ def build_start(
         # Create batches
         console.print("[cyan]📦 Creating task batches...[/cyan]")
         from core.batch_optimizer import BatchOptimizer
+
         optimizer = BatchOptimizer()
 
         batches = []
@@ -438,17 +459,20 @@ When this batch is complete, tell the user:
             "current_batch": 0,
             "total_tasks": len(all_tasks),
             "completed_tasks": 0,
-            "continuous_mode": continuous
+            "continuous_mode": continuous,
         }
 
         state_path = project_root / ".buildrunner" / "orchestration_state.json"
         import json
+
         state_path.write_text(json.dumps(orch_state, indent=2))
 
         # Show mode info
         if continuous:
             console.print("[cyan]📡 Continuous mode enabled - will loop through all phases[/cyan]")
-            console.print("[dim]Build will only pause for blockers (credentials, test failures, etc.)[/dim]\n")
+            console.print(
+                "[dim]Build will only pause for blockers (credentials, test failures, etc.)[/dim]\n"
+            )
         else:
             console.print("[cyan]📋 Phase-by-phase mode - will pause between phases[/cyan]\n")
 
@@ -458,11 +482,13 @@ When this batch is complete, tell the user:
 
         # Replace this process with claude CLI
         import os
-        os.execvp('claude', ['claude', '--dangerously-skip-permissions', str(project_root)])
+
+        os.execvp("claude", ["claude", "--dangerously-skip-permissions", str(project_root)])
 
     except Exception as e:
         console.print(f"[red]❌ Error starting build: {e}[/red]")
         import traceback
+
         traceback.print_exc()
         raise typer.Exit(1)
 
@@ -479,7 +505,7 @@ def _format_batch(batch, graph):
             deps = []
             for dep_id in task.dependencies:
                 if dep_id in graph.tasks:
-                    deps.append(graph.tasks[dep_id].get('name', dep_id))
+                    deps.append(graph.tasks[dep_id].get("name", dep_id))
             if deps:
                 content.append(f"**Dependencies:** {', '.join(deps)}")
         if task.acceptance_criteria:
@@ -518,6 +544,7 @@ def build_next():
             raise typer.Exit(1)
 
         import json
+
         state = json.loads(state_path.read_text())
 
         state["current_batch"] += 1
@@ -530,14 +557,17 @@ def build_next():
             raise typer.Exit(0)
 
         # Update EXECUTION.md for next batch
-        console.print(f"\n[bold blue]📦 Loading Batch {state['current_batch'] + 1}...[/bold blue]\n")
+        console.print(
+            f"\n[bold blue]📦 Loading Batch {state['current_batch'] + 1}...[/bold blue]\n"
+        )
 
         # Save state
         state_path.write_text(json.dumps(state, indent=2))
 
         # Launch Claude Code again
         import os
-        os.execvp('claude', ['claude', '--dangerously-skip-permissions', str(project_root)])
+
+        os.execvp("claude", ["claude", "--dangerously-skip-permissions", str(project_root)])
 
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
@@ -559,7 +589,7 @@ def build_status():
         progress = orchestrator.get_build_progress()
 
         # Build state panel
-        if progress['phase'] == 'not_started':
+        if progress["phase"] == "not_started":
             console.print("[yellow]Build not started[/yellow]\n")
             console.print("[dim]Run 'br run auto' to start orchestrated build[/dim]\n")
             return
@@ -569,22 +599,22 @@ def build_status():
         table.add_column("Metric", style="cyan")
         table.add_column("Value", style="green", justify="right")
 
-        table.add_row("Phase", progress['phase'])
-        table.add_row("Status", progress['status'])
+        table.add_row("Phase", progress["phase"])
+        table.add_row("Status", progress["status"])
         table.add_row("Progress", f"{progress['progress_percent']:.1f}%")
         table.add_row("Tasks Completed", f"{progress['tasks_completed']}/{progress['tasks_total']}")
-        table.add_row("Tasks In Progress", str(progress['tasks_in_progress']))
-        table.add_row("Tasks Pending", str(progress['tasks_pending']))
-        table.add_row("Files Created", str(progress['files_created']))
+        table.add_row("Tasks In Progress", str(progress["tasks_in_progress"]))
+        table.add_row("Tasks Pending", str(progress["tasks_pending"]))
+        table.add_row("Files Created", str(progress["files_created"]))
 
-        if progress.get('checkpoint_id'):
-            table.add_row("Latest Checkpoint", progress['checkpoint_id'][-20:])
+        if progress.get("checkpoint_id"):
+            table.add_row("Latest Checkpoint", progress["checkpoint_id"][-20:])
 
         console.print(table)
         console.print()
 
         # Recommendations
-        if progress['progress_percent'] < 100:
+        if progress["progress_percent"] < 100:
             console.print("[bold]Next actions:[/bold]")
             console.print("  • Run 'br run auto' to continue orchestration")
             console.print("  • Run 'br build checkpoint <name>' to save current state")
@@ -647,7 +677,9 @@ def phase_status():
         console.print(f"  Current Phase: {progress['current_phase']}")
         console.print(f"  Completed: {progress['completed_phases']}/{progress['total_phases']}")
         console.print(f"  Progress: {progress['progress_percent']:.1f}%")
-        console.print(f"  Continuous Mode: {'✓ Enabled' if progress['continuous_mode'] else '✗ Disabled'}\n")
+        console.print(
+            f"  Continuous Mode: {'✓ Enabled' if progress['continuous_mode'] else '✗ Disabled'}\n"
+        )
 
         # Blockers
         if progress["is_blocked"]:
@@ -667,7 +699,9 @@ def phase_status():
 
 @build_app.command("clear-blocker")
 def clear_blocker(
-    blocker_type: str = typer.Argument(..., help="Blocker type to clear (e.g., missing_credentials)")
+    blocker_type: str = typer.Argument(
+        ..., help="Blocker type to clear (e.g., missing_credentials)"
+    )
 ):
     """
     Clear a blocker to resume execution
@@ -688,7 +722,9 @@ def clear_blocker(
             blocker_enum = BlockerType(blocker_type)
         except ValueError:
             console.print(f"[red]❌ Invalid blocker type: {blocker_type}[/red]")
-            console.print(f"[dim]Valid types: {', '.join([b.value for b in BlockerType if b != BlockerType.NONE])}[/dim]\n")
+            console.print(
+                f"[dim]Valid types: {', '.join([b.value for b in BlockerType if b != BlockerType.NONE])}[/dim]\n"
+            )
             raise typer.Exit(1)
 
         # Clear blocker
@@ -732,27 +768,27 @@ def analyze_dependencies():
         console.print(f"  Critical path tasks: {len(analysis['critical_path'])}\n")
 
         # Parallel opportunities
-        if analysis['parallelizable_tasks']:
+        if analysis["parallelizable_tasks"]:
             console.print("[bold]Parallel Execution Opportunities:[/bold]")
-            for opp in analysis['parallelizable_tasks']:
+            for opp in analysis["parallelizable_tasks"]:
                 console.print(f"  Level {opp['level']}: {opp['count']} tasks can run in parallel")
             console.print()
         else:
             console.print("[yellow]No parallel execution opportunities found[/yellow]\n")
 
         # Critical path
-        if analysis['critical_path']:
+        if analysis["critical_path"]:
             console.print("[bold]Critical Path:[/bold]")
-            for task_id in analysis['critical_path'][:10]:
+            for task_id in analysis["critical_path"][:10]:
                 console.print(f"  → {task_id}")
-            if len(analysis['critical_path']) > 10:
+            if len(analysis["critical_path"]) > 10:
                 console.print(f"  ... and {len(analysis['critical_path']) - 10} more")
             console.print()
 
         # Execution levels detail
         if typer.confirm("\nShow detailed execution levels?", default=False):
             console.print("\n[bold]Execution Levels:[/bold]")
-            for level in analysis['execution_levels']:
+            for level in analysis["execution_levels"]:
                 console.print(f"\n  Level {level.level} ({level.estimated_minutes} min):")
                 for task_id in level.tasks:
                     console.print(f"    • {task_id}")

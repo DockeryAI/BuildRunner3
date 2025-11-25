@@ -20,6 +20,7 @@ from .git_client import GitClient
 @dataclass
 class BranchInfo:
     """Branch information"""
+
     name: str
     is_current: bool
     is_feature: bool
@@ -41,23 +42,24 @@ class BranchManager:
         """
         self.repo_path = repo_path or Path.cwd()
         self.git = GitClient(self.repo_path)
-        self.buildrunner_dir = self.repo_path / '.buildrunner'
+        self.buildrunner_dir = self.repo_path / ".buildrunner"
 
     def _load_governance(self) -> Dict:
         """Load governance rules"""
-        gov_file = self.buildrunner_dir / 'governance' / 'governance.yaml'
+        gov_file = self.buildrunner_dir / "governance" / "governance.yaml"
         if not gov_file.exists():
             return {}
 
         import yaml
+
         with open(gov_file) as f:
             return yaml.safe_load(f)
 
-    def _get_branch_pattern(self, branch_type: str = 'feature') -> str:
+    def _get_branch_pattern(self, branch_type: str = "feature") -> str:
         """Get branch naming pattern from governance"""
         gov = self._load_governance()
-        patterns = gov.get('workflow', {}).get('branch_patterns', {})
-        return patterns.get(branch_type, 'build/week{week_number}-{feature_name}')
+        patterns = gov.get("workflow", {}).get("branch_patterns", {})
+        return patterns.get(branch_type, "build/week{week_number}-{feature_name}")
 
     def _calculate_week_number(self) -> int:
         """
@@ -65,28 +67,29 @@ class BranchManager:
 
         Uses project start date from PROJECT_SPEC or defaults to week 1
         """
-        spec_file = self.buildrunner_dir / 'PROJECT_SPEC.md'
+        spec_file = self.buildrunner_dir / "PROJECT_SPEC.md"
         if spec_file.exists():
             content = spec_file.read_text()
             # Try to find project start date in spec
             import re
-            match = re.search(r'Start Date:\s*(\d{4}-\d{2}-\d{2})', content)
+
+            match = re.search(r"Start Date:\s*(\d{4}-\d{2}-\d{2})", content)
             if match:
-                start_date = datetime.strptime(match.group(1), '%Y-%m-%d').date()
+                start_date = datetime.strptime(match.group(1), "%Y-%m-%d").date()
                 today = date.today()
                 days = (today - start_date).days
                 week = (days // 7) + 1
                 return max(1, week)
 
         # Default: check features.json for last week used
-        features_file = self.buildrunner_dir / 'features.json'
+        features_file = self.buildrunner_dir / "features.json"
         if features_file.exists():
             with open(features_file) as f:
                 data = json.load(f)
                 # Look for highest week number in completed features
                 max_week = 0
-                for feature in data.get('features', []):
-                    if feature.get('status') == 'complete':
+                for feature in data.get("features", []):
+                    if feature.get("status") == "complete":
                         max_week = max(max_week, 1)
                 return max_week + 1
 
@@ -97,7 +100,7 @@ class BranchManager:
         import re
 
         # Match: build/week{N}-{feature} or build/week{N}/{feature}
-        match = re.match(r'build/week(\d+)[/-](.+)', branch)
+        match = re.match(r"build/week(\d+)[/-](.+)", branch)
         if match:
             week = int(match.group(1))
             feature = match.group(2)
@@ -108,7 +111,7 @@ class BranchManager:
                 week_number=week,
                 feature_name=feature,
                 is_mergeable=False,  # Will be calculated
-                issues=[]
+                issues=[],
             )
 
         # Not a feature branch
@@ -119,14 +122,11 @@ class BranchManager:
             week_number=None,
             feature_name=None,
             is_mergeable=False,
-            issues=[]
+            issues=[],
         )
 
     def create_branch(
-        self,
-        feature_name: str,
-        week: Optional[int] = None,
-        checkout: bool = True
+        self, feature_name: str, week: Optional[int] = None, checkout: bool = True
     ) -> str:
         """
         Create feature branch with correct naming
@@ -140,15 +140,15 @@ class BranchManager:
             Created branch name
         """
         # Slugify feature name
-        slug = feature_name.lower().replace(' ', '-').replace('_', '-')
-        slug = ''.join(c for c in slug if c.isalnum() or c == '-')
+        slug = feature_name.lower().replace(" ", "-").replace("_", "-")
+        slug = "".join(c for c in slug if c.isalnum() or c == "-")
 
         # Calculate week number
         if week is None:
             week = self._calculate_week_number()
 
         # Generate branch name
-        pattern = self._get_branch_pattern('feature')
+        pattern = self._get_branch_pattern("feature")
         branch_name = pattern.format(week_number=week, feature_name=slug, name=slug)
 
         # Create branch
@@ -189,6 +189,7 @@ class BranchManager:
         # Check if tests pass (if autodebug available)
         try:
             from core.auto_debug import AutoDebugPipeline
+
             pipeline = AutoDebugPipeline(self.repo_path)
             report = pipeline.run(skip_deep=True)
             if not report.overall_success:
@@ -198,15 +199,15 @@ class BranchManager:
             pass
 
         # Check if behind main
-        is_behind, count = self.git.is_behind('origin/main')
+        is_behind, count = self.git.is_behind("origin/main")
         if is_behind:
             issues.append(f"Branch is {count} commits behind origin/main")
 
         # Check for merge conflicts
         current = self.git.current_branch()
-        if current != 'main':
+        if current != "main":
             try:
-                has_conflicts, files = self.git.has_conflicts_with('origin/main')
+                has_conflicts, files = self.git.has_conflicts_with("origin/main")
                 if has_conflicts:
                     issues.append(f"Merge conflicts in {len(files)} files")
             except Exception:
@@ -218,13 +219,12 @@ class BranchManager:
             issues.append("Uncommitted changes")
 
         # Check features.json for incomplete features
-        features_file = self.buildrunner_dir / 'features.json'
+        features_file = self.buildrunner_dir / "features.json"
         if features_file.exists():
             with open(features_file) as f:
                 data = json.load(f)
                 incomplete = [
-                    f for f in data.get('features', [])
-                    if f.get('status') == 'in_progress'
+                    f for f in data.get("features", []) if f.get("status") == "in_progress"
                 ]
                 if incomplete:
                     issues.append(f"{len(incomplete)} features in progress (not complete)")
@@ -243,18 +243,19 @@ class BranchManager:
         """
         # Get list of merged branches
         import subprocess
+
         result = subprocess.run(
-            ['git', 'branch', '--merged', 'main'],
+            ["git", "branch", "--merged", "main"],
             cwd=self.repo_path,
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
 
         merged = []
         for line in result.stdout.splitlines():
-            branch = line.strip().lstrip('* ').strip()
-            if branch and branch != 'main' and not branch.startswith('('):
+            branch = line.strip().lstrip("* ").strip()
+            if branch and branch != "main" and not branch.startswith("("):
                 merged.append(branch)
 
         # Delete branches
@@ -280,8 +281,7 @@ class BranchManager:
         # Find matching branch
         branches = self.list_feature_branches()
         matching = [
-            b for b in branches
-            if b.feature_name and feature_name.lower() in b.feature_name.lower()
+            b for b in branches if b.feature_name and feature_name.lower() in b.feature_name.lower()
         ]
 
         if not matching:
@@ -289,8 +289,7 @@ class BranchManager:
 
         if len(matching) > 1:
             raise ValueError(
-                f"Multiple branches match '{feature_name}': "
-                f"{[b.name for b in matching]}"
+                f"Multiple branches match '{feature_name}': " f"{[b.name for b in matching]}"
             )
 
         branch = matching[0].name
@@ -313,11 +312,11 @@ class BranchManager:
         """
         import re
 
-        pattern = self._get_branch_pattern('feature')
+        pattern = self._get_branch_pattern("feature")
         # Convert pattern to regex
-        regex = pattern.replace('{week_number}', r'\d+').replace('{feature_name}', r'[a-z0-9-]+')
+        regex = pattern.replace("{week_number}", r"\d+").replace("{feature_name}", r"[a-z0-9-]+")
 
-        if re.match(f'^{regex}$', name):
+        if re.match(f"^{regex}$", name):
             return True, None
 
         return False, f"Branch name must match pattern: {pattern}"

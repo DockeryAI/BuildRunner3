@@ -76,17 +76,17 @@ class CodeQualityAnalyzer:
 
     # Weights for overall score calculation
     WEIGHTS = {
-        'structure': 0.25,
-        'security': 0.30,
-        'testing': 0.25,
-        'docs': 0.20,
+        "structure": 0.25,
+        "security": 0.30,
+        "testing": 0.25,
+        "docs": 0.20,
     }
 
     # Complexity thresholds
     COMPLEXITY_THRESHOLDS = {
-        'low': 5,
-        'medium': 10,
-        'high': 15,
+        "low": 5,
+        "medium": 10,
+        "high": 15,
     }
 
     def __init__(self, project_root: Path):
@@ -129,16 +129,16 @@ class CodeQualityAnalyzer:
         self.test_files = []
 
         # Exclude common non-source directories
-        exclude_dirs = {'.venv', 'venv', '__pycache__', '.git', 'node_modules', '.pytest_cache'}
+        exclude_dirs = {".venv", "venv", "__pycache__", ".git", "node_modules", ".pytest_cache"}
 
-        for py_file in self.project_root.rglob('*.py'):
+        for py_file in self.project_root.rglob("*.py"):
             # Skip if in excluded directory
             if any(excluded in py_file.parts for excluded in exclude_dirs):
                 continue
 
             # Only check direct parent folder name 'tests' or filename starting with 'test_'
             parent_name = py_file.parent.name
-            if py_file.stem.startswith('test_') or parent_name == 'tests':
+            if py_file.stem.startswith("test_") or parent_name == "tests":
                 self.test_files.append(py_file)
             else:
                 self.python_files.append(py_file)
@@ -163,11 +163,11 @@ class CodeQualityAnalyzer:
 
         # Analyze complexity
         complexities = []
-        type_hint_counts = {'with': 0, 'without': 0}
+        type_hint_counts = {"with": 0, "without": 0}
 
         for py_file in self.python_files:
             try:
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     code = f.read()
 
                 # Parse AST
@@ -180,14 +180,13 @@ class CodeQualityAnalyzer:
                         complexities.append(complexity)
 
                         # Check type hints
-                        has_hints = (
-                            node.returns is not None or
-                            any(arg.annotation is not None for arg in node.args.args)
+                        has_hints = node.returns is not None or any(
+                            arg.annotation is not None for arg in node.args.args
                         )
                         if has_hints:
-                            type_hint_counts['with'] += 1
+                            type_hint_counts["with"] += 1
                         else:
-                            type_hint_counts['without'] += 1
+                            type_hint_counts["without"] += 1
 
             except Exception as e:
                 metrics.warnings.append(f"Failed to analyze {py_file}: {str(e)}")
@@ -197,9 +196,9 @@ class CodeQualityAnalyzer:
             metrics.avg_complexity = sum(complexities) / len(complexities)
 
         # Calculate type hint coverage
-        total_functions = type_hint_counts['with'] + type_hint_counts['without']
+        total_functions = type_hint_counts["with"] + type_hint_counts["without"]
         if total_functions > 0:
-            metrics.type_hint_coverage = (type_hint_counts['with'] / total_functions) * 100
+            metrics.type_hint_coverage = (type_hint_counts["with"] / total_functions) * 100
 
         # Check formatting compliance
         metrics.formatting_compliance = self._check_formatting()
@@ -210,9 +209,9 @@ class CodeQualityAnalyzer:
 
         # Combine scores
         structure_score = (
-            complexity_score * 0.4 +
-            metrics.type_hint_coverage * 0.3 +
-            metrics.formatting_compliance * 0.3
+            complexity_score * 0.4
+            + metrics.type_hint_coverage * 0.3
+            + metrics.formatting_compliance * 0.3
         )
 
         return min(100.0, max(0.0, structure_score))
@@ -256,9 +255,9 @@ class CodeQualityAnalyzer:
         try:
             # Check if black is available
             result = subprocess.run(
-                ['black', '--check', '--quiet', str(self.project_root)],
+                ["black", "--check", "--quiet", str(self.project_root)],
                 capture_output=True,
-                timeout=30
+                timeout=30,
             )
 
             # black returns 0 if all files are formatted correctly
@@ -311,9 +310,9 @@ class CodeQualityAnalyzer:
             sql_risks = smart_sql_detector.detect_real_risks(self.project_root)
 
             for risk in sql_risks:
-                if risk.severity == 'high':
+                if risk.severity == "high":
                     metrics.vulnerabilities_high += 1
-                elif risk.severity == 'medium':
+                elif risk.severity == "medium":
                     metrics.vulnerabilities_medium += 1
                 else:
                     metrics.vulnerabilities_low += 1
@@ -329,22 +328,23 @@ class CodeQualityAnalyzer:
         # Additional: Bandit scanner
         try:
             result = subprocess.run(
-                ['bandit', '-r', str(self.project_root), '-f', 'json', '-q'],
+                ["bandit", "-r", str(self.project_root), "-f", "json", "-q"],
                 capture_output=True,
                 text=True,
-                timeout=60
+                timeout=60,
             )
 
             if result.stdout:
                 import json
+
                 report = json.loads(result.stdout)
 
                 # Count vulnerabilities by severity
-                for issue in report.get('results', []):
-                    severity = issue.get('issue_severity', 'LOW').upper()
-                    if severity == 'HIGH':
+                for issue in report.get("results", []):
+                    severity = issue.get("issue_severity", "LOW").upper()
+                    if severity == "HIGH":
                         metrics.vulnerabilities_high += 1
-                    elif severity == 'MEDIUM':
+                    elif severity == "MEDIUM":
                         metrics.vulnerabilities_medium += 1
                     else:
                         metrics.vulnerabilities_low += 1
@@ -355,9 +355,9 @@ class CodeQualityAnalyzer:
         # Calculate security score
         # Penalize high-severity issues more (Tier 1 checks are critical)
         penalty = (
-            metrics.vulnerabilities_high * 20 +
-            metrics.vulnerabilities_medium * 10 +
-            metrics.vulnerabilities_low * 5
+            metrics.vulnerabilities_high * 20
+            + metrics.vulnerabilities_medium * 10
+            + metrics.vulnerabilities_low * 5
         )
 
         security_score = max(0, 100 - penalty)
@@ -385,17 +385,18 @@ class CodeQualityAnalyzer:
             Testing score (0-100)
         """
         # Check for coverage report
-        coverage_file = self.project_root / 'coverage.json'
+        coverage_file = self.project_root / "coverage.json"
 
         if coverage_file.exists():
             try:
                 import json
+
                 with open(coverage_file) as f:
                     coverage_data = json.load(f)
 
                 # Extract coverage percentage
-                totals = coverage_data.get('totals', {})
-                metrics.test_coverage = totals.get('percent_covered', 0.0)
+                totals = coverage_data.get("totals", {})
+                metrics.test_coverage = totals.get("percent_covered", 0.0)
 
             except Exception as e:
                 metrics.warnings.append(f"Failed to read coverage data: {str(e)}")
@@ -403,14 +404,14 @@ class CodeQualityAnalyzer:
         # Count tests and assertions
         for test_file in self.test_files:
             try:
-                with open(test_file, 'r', encoding='utf-8') as f:
+                with open(test_file, "r", encoding="utf-8") as f:
                     code = f.read()
 
                 tree = ast.parse(code)
 
                 for node in ast.walk(tree):
                     # Count test functions
-                    if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'):
+                    if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
                         metrics.test_count += 1
 
                     # Count assertions
@@ -431,10 +432,12 @@ class CodeQualityAnalyzer:
         test_score = min(100, (metrics.test_count / max(1, len(self.python_files))) * 100)
 
         # Combine scores
-        testing_score = (coverage_score * 0.7 + test_score * 0.3)
+        testing_score = coverage_score * 0.7 + test_score * 0.3
 
         if metrics.test_coverage < 80:
-            metrics.suggestions.append(f"Test coverage is {metrics.test_coverage:.1f}% (target: 80%+)")
+            metrics.suggestions.append(
+                f"Test coverage is {metrics.test_coverage:.1f}% (target: 80%+)"
+            )
 
         return min(100.0, max(0.0, testing_score))
 
@@ -453,22 +456,22 @@ class CodeQualityAnalyzer:
         Returns:
             Documentation score (0-100)
         """
-        docstring_counts = {'with': 0, 'without': 0}
+        docstring_counts = {"with": 0, "without": 0}
         total_lines = 0
         comment_lines = 0
 
         for py_file in self.python_files:
             try:
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     code = f.read()
-                    lines = code.split('\n')
+                    lines = code.split("\n")
 
                 total_lines += len(lines)
 
                 # Count comment lines
                 for line in lines:
                     stripped = line.strip()
-                    if stripped.startswith('#'):
+                    if stripped.startswith("#"):
                         comment_lines += 1
 
                 # Parse AST for docstrings
@@ -478,24 +481,24 @@ class CodeQualityAnalyzer:
                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                         docstring = ast.get_docstring(node)
                         if docstring:
-                            docstring_counts['with'] += 1
+                            docstring_counts["with"] += 1
                         else:
-                            docstring_counts['without'] += 1
+                            docstring_counts["without"] += 1
 
             except Exception as e:
                 metrics.warnings.append(f"Failed to analyze docs in {py_file}: {str(e)}")
 
         # Calculate docstring coverage
-        total_documented = docstring_counts['with'] + docstring_counts['without']
+        total_documented = docstring_counts["with"] + docstring_counts["without"]
         if total_documented > 0:
-            metrics.docstring_coverage = (docstring_counts['with'] / total_documented) * 100
+            metrics.docstring_coverage = (docstring_counts["with"] / total_documented) * 100
 
         # Calculate comment ratio
         if total_lines > 0:
             metrics.comment_ratio = (comment_lines / total_lines) * 100
 
         # Check README
-        readme_path = self.project_root / 'README.md'
+        readme_path = self.project_root / "README.md"
         if readme_path.exists():
             try:
                 readme_content = readme_path.read_text()
@@ -509,13 +512,15 @@ class CodeQualityAnalyzer:
 
         # Calculate docs score
         docs_score = (
-            metrics.docstring_coverage * 0.5 +
-            min(20, metrics.comment_ratio * 2) * 0.2 +  # Cap comment contribution
-            metrics.readme_score * 0.3
+            metrics.docstring_coverage * 0.5
+            + min(20, metrics.comment_ratio * 2) * 0.2  # Cap comment contribution
+            + metrics.readme_score * 0.3
         )
 
         if metrics.docstring_coverage < 70:
-            metrics.suggestions.append(f"Docstring coverage is {metrics.docstring_coverage:.1f}% (target: 70%+)")
+            metrics.suggestions.append(
+                f"Docstring coverage is {metrics.docstring_coverage:.1f}% (target: 70%+)"
+            )
 
         return min(100.0, max(0.0, docs_score))
 
@@ -530,10 +535,10 @@ class CodeQualityAnalyzer:
             Overall quality score (0-100)
         """
         overall = (
-            metrics.structure_score * self.WEIGHTS['structure'] +
-            metrics.security_score * self.WEIGHTS['security'] +
-            metrics.testing_score * self.WEIGHTS['testing'] +
-            metrics.docs_score * self.WEIGHTS['docs']
+            metrics.structure_score * self.WEIGHTS["structure"]
+            + metrics.security_score * self.WEIGHTS["security"]
+            + metrics.testing_score * self.WEIGHTS["testing"]
+            + metrics.docs_score * self.WEIGHTS["docs"]
         )
 
         return min(100.0, max(0.0, overall))
@@ -543,11 +548,11 @@ class QualityGate:
     """Enforces quality thresholds."""
 
     DEFAULT_THRESHOLDS = {
-        'overall': 50.0,  # Temporarily lowered, target 70+
-        'structure': 73.0,  # Current BR3 score, incrementally improve to 75+
-        'security': 90.0,
-        'testing': 80.0,
-        'docs': 70.0,
+        "overall": 50.0,  # Temporarily lowered, target 70+
+        "structure": 73.0,  # Current BR3 score, incrementally improve to 75+
+        "security": 90.0,
+        "testing": 80.0,
+        "docs": 70.0,
     }
 
     def __init__(self, thresholds: Optional[Dict[str, float]] = None):
@@ -572,28 +577,28 @@ class QualityGate:
         failures = []
 
         # Check overall score
-        if metrics.overall_score < self.thresholds['overall']:
+        if metrics.overall_score < self.thresholds["overall"]:
             failures.append(
                 f"Overall score {metrics.overall_score:.1f} < {self.thresholds['overall']}"
             )
 
         # Check component scores
-        if metrics.structure_score < self.thresholds['structure']:
+        if metrics.structure_score < self.thresholds["structure"]:
             failures.append(
                 f"Structure score {metrics.structure_score:.1f} < {self.thresholds['structure']}"
             )
 
-        if metrics.security_score < self.thresholds['security']:
+        if metrics.security_score < self.thresholds["security"]:
             failures.append(
                 f"Security score {metrics.security_score:.1f} < {self.thresholds['security']}"
             )
 
-        if metrics.testing_score < self.thresholds['testing']:
+        if metrics.testing_score < self.thresholds["testing"]:
             failures.append(
                 f"Testing score {metrics.testing_score:.1f} < {self.thresholds['testing']}"
             )
 
-        if metrics.docs_score < self.thresholds['docs']:
+        if metrics.docs_score < self.thresholds["docs"]:
             failures.append(
                 f"Documentation score {metrics.docs_score:.1f} < {self.thresholds['docs']}"
             )
@@ -615,9 +620,12 @@ class QualityGate:
         passed, failures = self.check(metrics)
 
         if not passed and strict:
-            raise QualityGateError(f"Quality gate failed:\n" + "\n".join(f"  - {f}" for f in failures))
+            raise QualityGateError(
+                f"Quality gate failed:\n" + "\n".join(f"  - {f}" for f in failures)
+            )
 
 
 class QualityGateError(Exception):
     """Raised when quality gate enforcement fails."""
+
     pass

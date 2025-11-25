@@ -97,11 +97,11 @@ class FileRotator:
         Returns:
             Path to compressed file
         """
-        compressed_path = file_path.with_suffix(file_path.suffix + '.gz')
+        compressed_path = file_path.with_suffix(file_path.suffix + ".gz")
 
         try:
-            with open(file_path, 'rb') as f_in:
-                with gzip.open(compressed_path, 'wb') as f_out:
+            with open(file_path, "rb") as f_in:
+                with gzip.open(compressed_path, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
 
             # Remove original file after compression
@@ -196,14 +196,14 @@ class FileRotator:
 
         if output_path is None:
             # Remove .gz extension
-            if compressed_path.suffix == '.gz':
-                output_path = compressed_path.with_suffix('')
+            if compressed_path.suffix == ".gz":
+                output_path = compressed_path.with_suffix("")
             else:
-                output_path = compressed_path.with_suffix('.decompressed')
+                output_path = compressed_path.with_suffix(".decompressed")
 
         try:
-            with gzip.open(compressed_path, 'rb') as f_in:
-                with open(output_path, 'wb') as f_out:
+            with gzip.open(compressed_path, "rb") as f_in:
+                with open(output_path, "wb") as f_out:
                     shutil.copyfileobj(f_in, f_out)
 
             logger.info(f"Decompressed file: {compressed_path} -> {output_path}")

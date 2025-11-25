@@ -60,15 +60,15 @@ class GapAnalyzer:
 
     # Patterns for detecting incomplete code
     TODO_PATTERNS = [
-        r'#\s*TODO[:\s]+(.*)',
-        r'#\s*FIXME[:\s]+(.*)',
-        r'#\s*XXX[:\s]+(.*)',
-        r'#\s*HACK[:\s]+(.*)',
+        r"#\s*TODO[:\s]+(.*)",
+        r"#\s*FIXME[:\s]+(.*)",
+        r"#\s*XXX[:\s]+(.*)",
+        r"#\s*HACK[:\s]+(.*)",
     ]
 
     STUB_PATTERNS = [
-        r'raise\s+NotImplementedError',
-        r'return\s+NotImplemented',
+        r"raise\s+NotImplementedError",
+        r"return\s+NotImplemented",
     ]
 
     def __init__(self, project_root: Path):
@@ -102,26 +102,26 @@ class GapAnalyzer:
 
         # Calculate totals
         analysis.total_gaps = (
-            len(analysis.missing_features) +
-            len(analysis.incomplete_features) +
-            analysis.todo_count +
-            analysis.stub_count +
-            len(analysis.missing_dependencies) +
-            len(analysis.spec_violations) +
-            analysis.security_gap_count
+            len(analysis.missing_features)
+            + len(analysis.incomplete_features)
+            + analysis.todo_count
+            + analysis.stub_count
+            + len(analysis.missing_dependencies)
+            + len(analysis.spec_violations)
+            + analysis.security_gap_count
         )
 
         # Calculate severity (security gaps are ALWAYS high severity)
         analysis.severity_high = (
-            len(analysis.missing_features) +
-            analysis.stub_count +
-            len(analysis.circular_dependencies) +
-            analysis.security_gap_count
+            len(analysis.missing_features)
+            + analysis.stub_count
+            + len(analysis.circular_dependencies)
+            + analysis.security_gap_count
         )
         analysis.severity_medium = (
-            len(analysis.incomplete_features) +
-            len(analysis.missing_dependencies) +
-            len(analysis.spec_violations)
+            len(analysis.incomplete_features)
+            + len(analysis.missing_dependencies)
+            + len(analysis.spec_violations)
         )
         analysis.severity_low = analysis.todo_count
 
@@ -132,9 +132,9 @@ class GapAnalyzer:
         self.python_files = []
 
         # Exclude common non-source directories
-        exclude_dirs = {'.venv', 'venv', '__pycache__', '.git', 'node_modules', '.pytest_cache'}
+        exclude_dirs = {".venv", "venv", "__pycache__", ".git", "node_modules", ".pytest_cache"}
 
-        for py_file in self.project_root.rglob('*.py'):
+        for py_file in self.project_root.rglob("*.py"):
             # Skip if in excluded directory
             if any(excluded in py_file.parts for excluded in exclude_dirs):
                 continue
@@ -163,43 +163,49 @@ class GapAnalyzer:
             with open(features_file) as f:
                 features_data = json.load(f)
 
-            for feature in features_data.get('features', []):
-                status = feature.get('status', 'unknown').lower()
-                feature_id = feature.get('id', 'unknown')
-                feature_name = feature.get('name', 'Unknown Feature')
+            for feature in features_data.get("features", []):
+                status = feature.get("status", "unknown").lower()
+                feature_id = feature.get("id", "unknown")
+                feature_name = feature.get("name", "Unknown Feature")
 
-                if status == 'planned':
-                    analysis.missing_features.append({
-                        'id': feature_id,
-                        'name': feature_name,
-                        'reason': 'Not started (status: planned)'
-                    })
-                elif status == 'in_progress':
-                    analysis.incomplete_features.append({
-                        'id': feature_id,
-                        'name': feature_name,
-                        'reason': 'In progress (not completed)'
-                    })
-                elif status == 'blocked':
-                    analysis.blocked_features.append({
-                        'id': feature_id,
-                        'name': feature_name,
-                        'reason': 'Blocked',
-                        'severity': 'high'
-                    })
+                if status == "planned":
+                    analysis.missing_features.append(
+                        {
+                            "id": feature_id,
+                            "name": feature_name,
+                            "reason": "Not started (status: planned)",
+                        }
+                    )
+                elif status == "in_progress":
+                    analysis.incomplete_features.append(
+                        {
+                            "id": feature_id,
+                            "name": feature_name,
+                            "reason": "In progress (not completed)",
+                        }
+                    )
+                elif status == "blocked":
+                    analysis.blocked_features.append(
+                        {
+                            "id": feature_id,
+                            "name": feature_name,
+                            "reason": "Blocked",
+                            "severity": "high",
+                        }
+                    )
 
         except json.JSONDecodeError as e:
-            analysis.spec_violations.append({
-                'file': str(features_file),
-                'issue': f"Invalid JSON: {str(e)}",
-                'severity': 'high'
-            })
+            analysis.spec_violations.append(
+                {"file": str(features_file), "issue": f"Invalid JSON: {str(e)}", "severity": "high"}
+            )
         except Exception as e:
-            analysis.spec_violations.append({
-                'file': str(features_file),
-                'issue': f"Error reading features: {str(e)}",
-                'severity': 'medium'
-            })
+            analysis.spec_violations.append(
+                {
+                    "file": str(features_file),
+                    "issue": f"Error reading features: {str(e)}",
+                    "severity": "medium",
+                }
+            )
 
     def analyze_spec(self, spec_path: Optional[Path], analysis: GapAnalysis):
         """
@@ -226,13 +232,13 @@ class GapAnalyzer:
 
             # Extract components from spec
             # Look for API endpoints
-            api_endpoints = re.findall(r'`((?:GET|POST|PUT|DELETE|PATCH)\s+/[^\`]+)`', spec_content)
+            api_endpoints = re.findall(r"`((?:GET|POST|PUT|DELETE|PATCH)\s+/[^\`]+)`", spec_content)
 
             # Look for database tables
-            db_tables = re.findall(r'(?:table|TABLE):\s*`?(\w+)`?', spec_content)
+            db_tables = re.findall(r"(?:table|TABLE):\s*`?(\w+)`?", spec_content)
 
             # Look for required files/modules
-            required_files = re.findall(r'(?:file|module):\s*`([^`]+)`', spec_content)
+            required_files = re.findall(r"(?:file|module):\s*`([^`]+)`", spec_content)
 
             # Check if components exist
             for endpoint in api_endpoints:
@@ -256,11 +262,13 @@ class GapAnalyzer:
                     analysis.missing_components.append(f"File: {required_file}")
 
         except Exception as e:
-            analysis.spec_violations.append({
-                'file': str(spec_path),
-                'issue': f"Error analyzing spec: {str(e)}",
-                'severity': 'low'
-            })
+            analysis.spec_violations.append(
+                {
+                    "file": str(spec_path),
+                    "issue": f"Error analyzing spec: {str(e)}",
+                    "severity": "low",
+                }
+            )
 
     def detect_incomplete_implementations(self, analysis: GapAnalysis):
         """
@@ -276,10 +284,13 @@ class GapAnalyzer:
             analysis: GapAnalysis object to populate
         """
         for py_file in self.python_files:
+            # Skip test files for stub detection (they contain test fixtures)
+            is_test_file = "test" in py_file.parts or py_file.name.startswith("test_")
+
             try:
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
-                    lines = content.split('\n')
+                    lines = content.split("\n")
 
                 # Detect TODOs
                 for i, line in enumerate(lines, 1):
@@ -287,38 +298,53 @@ class GapAnalyzer:
                         match = re.search(pattern, line, re.IGNORECASE)
                         if match:
                             analysis.todo_count += 1
-                            analysis.todos.append({
-                                'file': str(py_file.relative_to(self.project_root)),
-                                'line': i,
-                                'text': match.group(1).strip() if match.lastindex else line.strip()
-                            })
+                            analysis.todos.append(
+                                {
+                                    "file": str(py_file.relative_to(self.project_root)),
+                                    "line": i,
+                                    "text": (
+                                        match.group(1).strip() if match.lastindex else line.strip()
+                                    ),
+                                }
+                            )
 
                 # Parse AST for stubs and pass statements
                 try:
                     tree = ast.parse(content)
 
                     for node in ast.walk(tree):
-                        # Detect NotImplementedError
-                        if isinstance(node, ast.Raise):
-                            if isinstance(node.exc, ast.Name) and node.exc.id == 'NotImplementedError':
+                        # Detect NotImplementedError (skip in test files)
+                        if isinstance(node, ast.Raise) and not is_test_file:
+                            if (
+                                isinstance(node.exc, ast.Name)
+                                and node.exc.id == "NotImplementedError"
+                            ):
                                 analysis.stub_count += 1
-                                analysis.stubs.append({
-                                    'file': str(py_file.relative_to(self.project_root)),
-                                    'line': node.lineno,
-                                    'type': 'NotImplementedError'
-                                })
+                                analysis.stubs.append(
+                                    {
+                                        "file": str(py_file.relative_to(self.project_root)),
+                                        "line": node.lineno,
+                                        "type": "NotImplementedError",
+                                    }
+                                )
 
-                        # Detect functions with only pass
+                        # Detect functions with only pass (skip in test files)
                         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                             # Check if function body is only pass statement
-                            if len(node.body) == 1 and isinstance(node.body[0], ast.Pass):
+                            if (
+                                not is_test_file
+                                and len(node.body) == 1
+                                and isinstance(node.body[0], ast.Pass)
+                            ):
                                 analysis.stub_count += 1
-                                analysis.stubs.append({
-                                    'file': str(py_file.relative_to(self.project_root)),
-                                    'line': node.lineno,
-                                    'type': 'empty function',
-                                    'name': node.name
-                                })
+                                analysis.stubs.append(
+                                    {
+                                        "file": str(py_file.relative_to(self.project_root)),
+                                        "line": node.lineno,
+                                        "type": "empty function",
+                                        "name": node.name,
+                                    }
+                                )
 
                             # Count pass statements
                             for child in ast.walk(node):
@@ -327,18 +353,22 @@ class GapAnalyzer:
 
                 except SyntaxError:
                     # Syntax error in file - could be incomplete code
-                    analysis.spec_violations.append({
-                        'file': str(py_file.relative_to(self.project_root)),
-                        'issue': 'Syntax error (incomplete code?)',
-                        'severity': 'high'
-                    })
+                    analysis.spec_violations.append(
+                        {
+                            "file": str(py_file.relative_to(self.project_root)),
+                            "issue": "Syntax error (incomplete code?)",
+                            "severity": "high",
+                        }
+                    )
 
             except Exception as e:
-                analysis.spec_violations.append({
-                    'file': str(py_file.relative_to(self.project_root)),
-                    'issue': f"Error analyzing file: {str(e)}",
-                    'severity': 'low'
-                })
+                analysis.spec_violations.append(
+                    {
+                        "file": str(py_file.relative_to(self.project_root)),
+                        "issue": f"Error analyzing file: {str(e)}",
+                        "severity": "low",
+                    }
+                )
 
     def analyze_dependencies(self, analysis: GapAnalysis):
         """
@@ -357,7 +387,7 @@ class GapAnalyzer:
 
         for py_file in self.python_files:
             try:
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 tree = ast.parse(content)
@@ -366,13 +396,13 @@ class GapAnalyzer:
                 for node in ast.walk(tree):
                     if isinstance(node, ast.Import):
                         for alias in node.names:
-                            module = alias.name.split('.')[0]
+                            module = alias.name.split(".")[0]
                             file_imports.add(module)
                             all_imports.add(module)
 
                     elif isinstance(node, ast.ImportFrom):
                         if node.module:
-                            module = node.module.split('.')[0]
+                            module = node.module.split(".")[0]
                             file_imports.add(module)
                             all_imports.add(module)
 
@@ -403,9 +433,11 @@ class GapAnalyzer:
                 continue
 
             # Skip local imports (modules in project)
-            if any((self.project_root / f"{module}.py").exists() or
-                   (self.project_root / module).is_dir()
-                   for _ in [None]):  # Just execute once
+            if any(
+                (self.project_root / f"{module}.py").exists()
+                or (self.project_root / module).is_dir()
+                for _ in [None]
+            ):  # Just execute once
                 continue
 
             # Check if in requirements (empty content means all are missing)
@@ -420,35 +452,115 @@ class GapAnalyzer:
         """Get set of Python stdlib module names."""
         # Common stdlib modules (not exhaustive)
         return {
-            'abc', 'ast', 'asyncio', 'base64', 'collections', 'dataclasses',
-            'datetime', 'functools', 'hashlib', 'http', 'inspect', 'io',
-            'itertools', 'json', 'logging', 'math', 'os', 'pathlib', 'pickle',
-            're', 'shutil', 'subprocess', 'sys', 'tempfile', 'time', 'typing',
-            'unittest', 'uuid', 'warnings', 'yaml'
+            "abc",
+            "ast",
+            "asyncio",
+            "base64",
+            "collections",
+            "dataclasses",
+            "datetime",
+            "functools",
+            "hashlib",
+            "http",
+            "inspect",
+            "io",
+            "itertools",
+            "json",
+            "logging",
+            "math",
+            "os",
+            "pathlib",
+            "pickle",
+            "re",
+            "shutil",
+            "subprocess",
+            "sys",
+            "tempfile",
+            "time",
+            "typing",
+            "unittest",
+            "uuid",
+            "warnings",
+            "yaml",
         }
 
     def _detect_circular_deps(self, imports: Dict[str, Set[str]], analysis: GapAnalysis):
         """
-        Detect circular dependencies (simplified).
+        Detect circular dependencies using proper graph traversal.
 
         Args:
             imports: Map of file -> imports
             analysis: GapAnalysis object to populate
         """
-        # This is a simplified version - full detection requires graph analysis
-        # For now, just detect obvious mutual imports
+        # Build module dependency graph
+        # Map each file to the local modules it imports
+        graph: Dict[str, Set[str]] = {}
 
-        files = list(imports.keys())
-        for i, file1 in enumerate(files):
-            for file2 in files[i+1:]:
-                # Extract module names from file paths
-                mod1 = file1.replace('/', '.').replace('.py', '')
-                mod2 = file2.replace('/', '.').replace('.py', '')
+        # Get all local modules (files in this project)
+        local_modules = set()
+        for file_path in imports.keys():
+            # Convert file path to module name: core/security/secret_detector.py -> core.security.secret_detector
+            module_name = file_path.replace("/", ".").replace(".py", "")
+            local_modules.add(module_name)
+            # Also add parent modules
+            parts = module_name.split(".")
+            for i in range(1, len(parts)):
+                local_modules.add(".".join(parts[:i]))
 
-                # Check for mutual imports
-                if any(mod2.startswith(imp) for imp in imports.get(file1, set())):
-                    if any(mod1.startswith(imp) for imp in imports.get(file2, set())):
-                        analysis.circular_dependencies.append([file1, file2])
+        # Build dependency graph between local modules only
+        for file_path, file_imports in imports.items():
+            source_module = file_path.replace("/", ".").replace(".py", "")
+            graph[source_module] = set()
+
+            for imported_module in file_imports:
+                # Check if this is a local module import
+                # Match exact module name or any child module
+                for local_mod in local_modules:
+                    if local_mod == imported_module or local_mod.startswith(imported_module + "."):
+                        # Only add edge if it's not importing itself or parent package
+                        if source_module != local_mod and not source_module.startswith(
+                            local_mod + "."
+                        ):
+                            graph[source_module].add(local_mod)
+
+        # Find cycles using DFS
+        def find_cycle(
+            node: str, visited: Set[str], rec_stack: Set[str], path: List[str]
+        ) -> Optional[List[str]]:
+            """Find a cycle in the graph starting from node."""
+            visited.add(node)
+            rec_stack.add(node)
+            path.append(node)
+
+            for neighbor in graph.get(node, set()):
+                if neighbor not in visited:
+                    cycle = find_cycle(neighbor, visited, rec_stack, path[:])
+                    if cycle:
+                        return cycle
+                elif neighbor in rec_stack:
+                    # Found cycle
+                    cycle_start = path.index(neighbor)
+                    return path[cycle_start:] + [neighbor]
+
+            rec_stack.remove(node)
+            return None
+
+        # Find all cycles
+        visited: Set[str] = set()
+        found_cycles: Set[tuple] = set()  # Use set to avoid duplicates
+
+        for node in graph.keys():
+            if node not in visited:
+                cycle = find_cycle(node, visited, set(), [])
+                if cycle and len(cycle) > 1:
+                    # Normalize cycle representation (start with lexically smallest)
+                    min_idx = cycle.index(min(cycle[:-1]))  # Exclude last element (duplicate)
+                    normalized = tuple(cycle[min_idx:-1] + cycle[:min_idx])
+                    found_cycles.add(normalized)
+
+        # Convert to list format expected by analysis
+        for cycle in found_cycles:
+            analysis.circular_dependencies.append(list(cycle))
 
     def detect_security_gaps(self, analysis: GapAnalysis):
         """
@@ -468,21 +580,25 @@ class GapAnalyzer:
 
             for file_path, matches in secret_results.items():
                 for match in matches:
-                    analysis.exposed_secrets.append({
-                        'file': match.file_path,
-                        'line': match.line_number,
-                        'type': match.pattern_name,
-                        'value': match.secret_value,  # Already masked
-                        'severity': 'high'
-                    })
+                    analysis.exposed_secrets.append(
+                        {
+                            "file": match.file_path,
+                            "line": match.line_number,
+                            "type": match.pattern_name,
+                            "value": match.secret_value,  # Already masked
+                            "severity": "high",
+                        }
+                    )
                     analysis.security_gap_count += 1
 
         except Exception as e:
-            analysis.spec_violations.append({
-                'file': 'security scan',
-                'issue': f"Secret detection failed: {str(e)}",
-                'severity': 'medium'
-            })
+            analysis.spec_violations.append(
+                {
+                    "file": "security scan",
+                    "issue": f"Secret detection failed: {str(e)}",
+                    "severity": "medium",
+                }
+            )
 
         # Detect SQL injection risks
         try:
@@ -492,26 +608,30 @@ class GapAnalyzer:
             for file_path, matches in sql_results.items():
                 for match in matches:
                     # Determine severity - treat high/medium SQL issues as high severity gaps
-                    severity = 'high' if match.severity in ['high', 'medium'] else 'medium'
+                    severity = "high" if match.severity in ["high", "medium"] else "medium"
 
-                    analysis.sql_injection_risks.append({
-                        'file': file_path,
-                        'line': match.line_number,
-                        'type': match.vulnerability_type,
-                        'severity': severity,
-                        'suggestion': match.suggestion
-                    })
+                    analysis.sql_injection_risks.append(
+                        {
+                            "file": file_path,
+                            "line": match.line_number,
+                            "type": match.vulnerability_type,
+                            "severity": severity,
+                            "suggestion": match.suggestion,
+                        }
+                    )
 
                     # Only count high/medium SQL issues in security gap count
-                    if severity == 'high':
+                    if severity == "high":
                         analysis.security_gap_count += 1
 
         except Exception as e:
-            analysis.spec_violations.append({
-                'file': 'security scan',
-                'issue': f"SQL injection detection failed: {str(e)}",
-                'severity': 'medium'
-            })
+            analysis.spec_violations.append(
+                {
+                    "file": "security scan",
+                    "issue": f"SQL injection detection failed: {str(e)}",
+                    "severity": "medium",
+                }
+            )
 
     def generate_gap_report(self, analysis: GapAnalysis) -> str:
         """
@@ -575,7 +695,7 @@ class GapAnalyzer:
             if analysis.stubs:
                 lines.append(f"### Stubs/NotImplemented ({analysis.stub_count})")
                 for stub in analysis.stubs[:10]:
-                    name = stub.get('name', stub.get('type'))
+                    name = stub.get("name", stub.get("type"))
                     lines.append(f"- `{stub['file']}:{stub['line']}` - {name}")
                 if analysis.stub_count > 10:
                     lines.append(f"- ... and {analysis.stub_count - 10} more")
@@ -606,8 +726,10 @@ class GapAnalyzer:
             if analysis.sql_injection_risks:
                 lines.append(f"### SQL Injection Risks ({len(analysis.sql_injection_risks)})")
                 lines.append("")
-                high_risks = [r for r in analysis.sql_injection_risks if r['severity'] == 'high']
-                medium_risks = [r for r in analysis.sql_injection_risks if r['severity'] == 'medium']
+                high_risks = [r for r in analysis.sql_injection_risks if r["severity"] == "high"]
+                medium_risks = [
+                    r for r in analysis.sql_injection_risks if r["severity"] == "medium"
+                ]
 
                 if high_risks:
                     lines.append("**High Severity:**")

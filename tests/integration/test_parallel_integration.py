@@ -1,6 +1,7 @@
 """
 Integration tests for parallel execution system
 """
+
 import pytest
 from core.orchestrator import TaskOrchestrator
 from core.integrations.parallel_integration import (
@@ -48,38 +49,38 @@ class TestParallelIntegration:
     def test_execute_parallel_creates_session(self, orchestrator):
         """Test that executing tasks in parallel creates a session"""
         tasks = [
-            {'id': 'task1', 'name': 'Task 1', 'description': 'Test'},
-            {'id': 'task2', 'name': 'Task 2', 'description': 'Test'},
+            {"id": "task1", "name": "Task 1", "description": "Test"},
+            {"id": "task2", "name": "Task 2", "description": "Test"},
         ]
 
         result = orchestrator.execute_parallel(tasks, session_name="test_session")
 
-        assert result['success'] is True
-        assert 'session_id' in result
-        assert result['session_name'] == "test_session"
-        assert result['task_count'] == 2
+        assert result["success"] is True
+        assert "session_id" in result
+        assert result["session_name"] == "test_session"
+        assert result["task_count"] == 2
 
     def test_execute_parallel_without_support_fails(self, orchestrator_without_parallel):
         """Test that parallel execution fails when not enabled"""
-        tasks = [{'id': 'task1', 'name': 'Task', 'description': 'Test'}]
+        tasks = [{"id": "task1", "name": "Task", "description": "Test"}]
 
         result = orchestrator_without_parallel.execute_parallel(tasks)
 
-        assert result['success'] is False
-        assert 'error' in result
-        assert 'not enabled' in result['error'].lower()
+        assert result["success"] is False
+        assert "error" in result
+        assert "not enabled" in result["error"].lower()
 
     def test_create_parallel_session(self, orchestrator):
         """Test creating a parallel session"""
         session = create_parallel_session(
             orchestrator.session_manager,
             session_name="test_session",
-            metadata={'test': 'data'},
+            metadata={"test": "data"},
         )
 
         assert session is not None
-        assert hasattr(session, 'session_id')
-        assert hasattr(session, 'name')
+        assert hasattr(session, "session_id")
+        assert hasattr(session, "name")
 
     def test_get_session_status(self, orchestrator):
         """Test getting session status"""
@@ -95,9 +96,9 @@ class TestParallelIntegration:
             session.session_id,
         )
 
-        assert status['found'] is True
-        assert status['session_id'] == session.session_id
-        assert 'status' in status
+        assert status["found"] is True
+        assert status["session_id"] == session.session_id
+        assert "status" in status
 
     def test_get_parallel_summary(self, orchestrator):
         """Test getting parallel execution summary"""
@@ -110,6 +111,6 @@ class TestParallelIntegration:
             orchestrator.worker_coordinator,
         )
 
-        assert 'total_sessions' in summary
-        assert 'total_workers' in summary
-        assert summary['total_sessions'] >= 2
+        assert "total_sessions" in summary
+        assert "total_workers" in summary
+        assert summary["total_sessions"] >= 2

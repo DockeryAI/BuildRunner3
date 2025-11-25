@@ -31,10 +31,7 @@ class OpenRouterClient:
             Dict with parsed PRD structure
         """
         if not self.api_key:
-            return {
-                "success": False,
-                "error": "OpenRouter API key not configured"
-            }
+            return {"success": False, "error": "OpenRouter API key not configured"}
 
         prompt = f"""Parse this project description into a structured PRD.
         
@@ -83,24 +80,19 @@ Return ONLY valid JSON, no other text."""
                     OPENROUTER_API_URL,
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "model": OPENROUTER_MODEL,
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": prompt
-                            }
-                        ],
-                        "temperature": 0.5
-                    }
+                        "messages": [{"role": "user", "content": prompt}],
+                        "temperature": 0.5,
+                    },
                 )
 
                 if response.status_code != 200:
                     return {
                         "success": False,
-                        "error": f"OpenRouter API error: {response.status_code}"
+                        "error": f"OpenRouter API error: {response.status_code}",
                     }
 
                 result = response.json()
@@ -118,23 +110,17 @@ Return ONLY valid JSON, no other text."""
 
                 prd_data = json.loads(content)
 
-                return {
-                    "success": True,
-                    "prd": prd_data
-                }
+                return {"success": True, "prd": prd_data}
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     async def generate_feature_suggestions(
         self,
         project_context: Dict,
         section: str,
         subsection: Optional[str] = None,
-        custom_request: Optional[str] = None
+        custom_request: Optional[str] = None,
     ) -> Dict:
         """
         Generate AI suggestions for a specific PRD section
@@ -148,10 +134,7 @@ Return ONLY valid JSON, no other text."""
             Dict with suggestions
         """
         if not self.api_key:
-            return {
-                "success": False,
-                "error": "OpenRouter API key not configured"
-            }
+            return {"success": False, "error": "OpenRouter API key not configured"}
 
         # Handle overview section with subsections
         if section == "overview":
@@ -159,11 +142,13 @@ Return ONLY valid JSON, no other text."""
                 "name": "Suggest improvements or alternatives for the project name that are memorable, clear, and align with the project goals",
                 "summary": "Suggest improvements or key points to include in the executive summary to make it more compelling",
                 "goals": "Suggest additional goals and objectives that would strengthen this project's mission",
-                "users": "Suggest additional target user segments or pain points to address"
+                "users": "Suggest additional target user segments or pain points to address",
             }
 
             if subsection:
-                base_prompt = subsection_prompts.get(subsection, "Suggest improvements for this overview field")
+                base_prompt = subsection_prompts.get(
+                    subsection, "Suggest improvements for this overview field"
+                )
                 # Include subsection in prompt for tagged responses
                 prompt = f"""Given this project context:
 
@@ -217,7 +202,7 @@ Return ONLY valid JSON."""
                 "features": "Suggest additional features that would enhance this project",
                 "user_stories": "Suggest additional user stories for this project",
                 "tech_requirements": "Suggest technical requirements for this project",
-                "success_criteria": "Suggest success criteria for measuring this project"
+                "success_criteria": "Suggest success criteria for measuring this project",
             }
 
             base_prompt = section_prompts.get(section, "Suggest improvements")
@@ -250,24 +235,19 @@ Return ONLY valid JSON."""
                     OPENROUTER_API_URL,
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "model": OPENROUTER_MODEL,
-                        "messages": [
-                            {
-                                "role": "user",
-                                "content": prompt
-                            }
-                        ],
-                        "temperature": 0.7
-                    }
+                        "messages": [{"role": "user", "content": prompt}],
+                        "temperature": 0.7,
+                    },
                 )
 
                 if response.status_code != 200:
                     return {
                         "success": False,
-                        "error": f"OpenRouter API error: {response.status_code}"
+                        "error": f"OpenRouter API error: {response.status_code}",
                     }
 
                 result = response.json()
@@ -285,13 +265,7 @@ Return ONLY valid JSON."""
 
                 suggestions_data = json.loads(content)
 
-                return {
-                    "success": True,
-                    "suggestions": suggestions_data.get("suggestions", [])
-                }
+                return {"success": True, "suggestions": suggestions_data.get("suggestions", [])}
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}

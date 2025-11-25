@@ -13,6 +13,7 @@ from enum import Enum
 
 class ErrorSeverity(Enum):
     """Severity of TypeScript error"""
+
     ERROR = "error"
     WARNING = "warning"
     INFO = "info"
@@ -21,6 +22,7 @@ class ErrorSeverity(Enum):
 @dataclass
 class TypeScriptError:
     """Represents a TypeScript compilation error"""
+
     file: str
     line: int
     column: int
@@ -32,6 +34,7 @@ class TypeScriptError:
 @dataclass
 class TypeScriptCheckResult:
     """Result of TypeScript check"""
+
     success: bool
     errors: List[TypeScriptError]
     warnings: List[TypeScriptError]
@@ -56,11 +59,7 @@ class TypeScriptChecker:
 
         # Check global tsc
         try:
-            result = subprocess.run(
-                ["which", "tsc"],
-                capture_output=True,
-                text=True
-            )
+            result = subprocess.run(["which", "tsc"], capture_output=True, text=True)
             if result.returncode == 0:
                 return Path(result.stdout.strip())
         except Exception:
@@ -69,10 +68,7 @@ class TypeScriptChecker:
         return None
 
     def check(
-        self,
-        files: Optional[List[Path]] = None,
-        incremental: bool = True,
-        strict: bool = False
+        self, files: Optional[List[Path]] = None, incremental: bool = True, strict: bool = False
     ) -> TypeScriptCheckResult:
         """
         Run TypeScript compiler check
@@ -84,14 +80,11 @@ class TypeScriptChecker:
         """
         if not self.tsc_path:
             return TypeScriptCheckResult(
-                success=False,
-                errors=[],
-                warnings=[],
-                duration_ms=0,
-                files_checked=0
+                success=False, errors=[], warnings=[], duration_ms=0, files_checked=0
             )
 
         import time
+
         start = time.time()
 
         # Build tsc command
@@ -109,12 +102,7 @@ class TypeScriptChecker:
 
         # Run tsc
         try:
-            result = subprocess.run(
-                cmd,
-                cwd=self.project_root,
-                capture_output=True,
-                text=True
-            )
+            result = subprocess.run(cmd, cwd=self.project_root, capture_output=True, text=True)
 
             duration_ms = (time.time() - start) * 1000
 
@@ -128,23 +116,25 @@ class TypeScriptChecker:
                 errors=errors,
                 warnings=warnings,
                 duration_ms=duration_ms,
-                files_checked=files_checked
+                files_checked=files_checked,
             )
 
         except Exception as e:
             return TypeScriptCheckResult(
                 success=False,
-                errors=[TypeScriptError(
-                    file="",
-                    line=0,
-                    column=0,
-                    message=f"Failed to run TypeScript check: {str(e)}",
-                    code="INTERNAL",
-                    severity=ErrorSeverity.ERROR
-                )],
+                errors=[
+                    TypeScriptError(
+                        file="",
+                        line=0,
+                        column=0,
+                        message=f"Failed to run TypeScript check: {str(e)}",
+                        code="INTERNAL",
+                        severity=ErrorSeverity.ERROR,
+                    )
+                ],
                 warnings=[],
                 duration_ms=(time.time() - start) * 1000,
-                files_checked=0
+                files_checked=0,
             )
 
     def check_imports(self, files: List[Path]) -> List[TypeScriptError]:
@@ -161,14 +151,16 @@ class TypeScriptChecker:
 
                 for import_path in imports:
                     if not self._resolve_import(file, import_path):
-                        errors.append(TypeScriptError(
-                            file=str(file),
-                            line=0,
-                            column=0,
-                            message=f"Cannot resolve import: {import_path}",
-                            code="TS2307",
-                            severity=ErrorSeverity.ERROR
-                        ))
+                        errors.append(
+                            TypeScriptError(
+                                file=str(file),
+                                line=0,
+                                column=0,
+                                message=f"Cannot resolve import: {import_path}",
+                                code="TS2307",
+                                severity=ErrorSeverity.ERROR,
+                            )
+                        )
             except Exception:
                 continue
 
@@ -178,8 +170,7 @@ class TypeScriptChecker:
         """Calculate percentage of code with proper type annotations"""
         # This is a simplified version
         # Could integrate with type-coverage tool for accurate results
-        ts_files = list(self.project_root.rglob("*.ts")) + \
-                   list(self.project_root.rglob("*.tsx"))
+        ts_files = list(self.project_root.rglob("*.ts")) + list(self.project_root.rglob("*.tsx"))
 
         if not ts_files:
             return 0.0
@@ -189,15 +180,15 @@ class TypeScriptChecker:
 
         for file in ts_files:
             # Skip node_modules
-            if 'node_modules' in str(file):
+            if "node_modules" in str(file):
                 continue
 
             try:
                 content = file.read_text()
-                lines = content.split('\n')
+                lines = content.split("\n")
                 total_lines += len(lines)
-                any_count += content.count(': any')
-                any_count += content.count('<any>')
+                any_count += content.count(": any")
+                any_count += content.count("<any>")
             except Exception:
                 continue
 
@@ -212,24 +203,24 @@ class TypeScriptChecker:
         errors = []
         warnings = []
 
-        for line in output.split('\n'):
+        for line in output.split("\n"):
             if not line.strip():
                 continue
 
             # Parse format: path/to/file.ts(line,col): error TS1234: message
-            if '): error TS' in line or '): warning TS' in line:
+            if "): error TS" in line or "): warning TS" in line:
                 try:
                     # Extract file path and position
-                    file_part, rest = line.split('): ', 1)
-                    file_path, position = file_part.rsplit('(', 1)
-                    line_num, col_num = map(int, position.split(','))
+                    file_part, rest = line.split("): ", 1)
+                    file_path, position = file_part.rsplit("(", 1)
+                    line_num, col_num = map(int, position.split(","))
 
                     # Extract severity, code, and message
-                    if 'error TS' in rest:
-                        severity_part, message = rest.split(': ', 1)
+                    if "error TS" in rest:
+                        severity_part, message = rest.split(": ", 1)
                         severity = ErrorSeverity.ERROR
                     else:
-                        severity_part, message = rest.split(': ', 1)
+                        severity_part, message = rest.split(": ", 1)
                         severity = ErrorSeverity.WARNING
 
                     code = severity_part.split()[-1]  # Extract TS code
@@ -240,7 +231,7 @@ class TypeScriptChecker:
                         column=col_num,
                         message=message.strip(),
                         code=code,
-                        severity=severity
+                        severity=severity,
                     )
 
                     if severity == ErrorSeverity.ERROR:
@@ -275,12 +266,12 @@ class TypeScriptChecker:
     def _resolve_import(self, source_file: Path, import_path: str) -> bool:
         """Check if import path can be resolved"""
         # Relative imports
-        if import_path.startswith('.'):
+        if import_path.startswith("."):
             base_dir = source_file.parent
             target = (base_dir / import_path).resolve()
 
             # Try various extensions
-            for ext in ['', '.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.tsx']:
+            for ext in ["", ".ts", ".tsx", ".js", ".jsx", "/index.ts", "/index.tsx"]:
                 if (target.parent / (target.name + ext)).exists():
                     return True
 
@@ -294,8 +285,18 @@ class TypeScriptChecker:
 
         # Check if it's a built-in Node module
         builtin_modules = {
-            'fs', 'path', 'http', 'https', 'crypto', 'os', 'util',
-            'stream', 'events', 'buffer', 'url', 'querystring'
+            "fs",
+            "path",
+            "http",
+            "https",
+            "crypto",
+            "os",
+            "util",
+            "stream",
+            "events",
+            "buffer",
+            "url",
+            "querystring",
         }
         if import_path in builtin_modules:
             return True
@@ -304,10 +305,9 @@ class TypeScriptChecker:
 
     def _count_ts_files(self) -> int:
         """Count total TypeScript files in project"""
-        ts_files = list(self.project_root.rglob("*.ts")) + \
-                   list(self.project_root.rglob("*.tsx"))
+        ts_files = list(self.project_root.rglob("*.ts")) + list(self.project_root.rglob("*.tsx"))
 
         # Filter out node_modules
-        ts_files = [f for f in ts_files if 'node_modules' not in str(f)]
+        ts_files = [f for f in ts_files if "node_modules" not in str(f)]
 
         return len(ts_files)

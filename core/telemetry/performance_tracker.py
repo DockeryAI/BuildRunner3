@@ -41,7 +41,7 @@ class PerformanceMetrics:
     avg_memory_mb: float = 0.0
     peak_memory_mb: float = 0.0
     cpu_percent: float = 0.0  # Alias for avg_cpu_percent
-    memory_mb: float = 0.0     # Alias for avg_memory_mb
+    memory_mb: float = 0.0  # Alias for avg_memory_mb
 
     # Active state
     active_operations: int = 0
@@ -128,12 +128,12 @@ class PerformanceTracker:
             metadata: Additional metadata
         """
         measurement = {
-            'timestamp': datetime.now().isoformat(),
-            'operation_type': operation_type,
-            'duration_ms': duration_ms,
-            'cpu_percent': cpu_percent,
-            'memory_mb': memory_mb,
-            'metadata': metadata or {},
+            "timestamp": datetime.now().isoformat(),
+            "operation_type": operation_type,
+            "duration_ms": duration_ms,
+            "cpu_percent": cpu_percent,
+            "memory_mb": memory_mb,
+            "metadata": metadata or {},
         }
 
         self.measurements.append(measurement)
@@ -163,11 +163,11 @@ class PerformanceTracker:
         # Filter measurements
         filtered = []
         for m in self.measurements:
-            timestamp = datetime.fromisoformat(m['timestamp'])
+            timestamp = datetime.fromisoformat(m["timestamp"])
             if timestamp < start_time:
                 continue
 
-            if operation_type and m['operation_type'] != operation_type:
+            if operation_type and m["operation_type"] != operation_type:
                 continue
 
             filtered.append(m)
@@ -176,9 +176,9 @@ class PerformanceTracker:
             return PerformanceMetrics(start_time=start_time, end_time=now)
 
         # Calculate metrics
-        durations = [m['duration_ms'] for m in filtered]
-        cpu_values = [m['cpu_percent'] for m in filtered if m['cpu_percent'] > 0]
-        memory_values = [m['memory_mb'] for m in filtered if m['memory_mb'] > 0]
+        durations = [m["duration_ms"] for m in filtered]
+        cpu_values = [m["cpu_percent"] for m in filtered if m["cpu_percent"] > 0]
+        memory_values = [m["memory_mb"] for m in filtered if m["memory_mb"] > 0]
 
         sorted_durations = sorted(durations)
         total_operations = len(filtered)
@@ -207,17 +207,17 @@ class PerformanceTracker:
 
         # By operation type
         by_operation = {}
-        operation_types = set(m['operation_type'] for m in filtered)
+        operation_types = set(m["operation_type"] for m in filtered)
 
         for op_type in operation_types:
-            op_measurements = [m for m in filtered if m['operation_type'] == op_type]
-            op_durations = [m['duration_ms'] for m in op_measurements]
+            op_measurements = [m for m in filtered if m["operation_type"] == op_type]
+            op_durations = [m["duration_ms"] for m in op_measurements]
 
             by_operation[op_type] = {
-                'count': len(op_measurements),
-                'avg_duration_ms': sum(op_durations) / len(op_durations),
-                'min_duration_ms': min(op_durations),
-                'max_duration_ms': max(op_durations),
+                "count": len(op_measurements),
+                "avg_duration_ms": sum(op_durations) / len(op_durations),
+                "min_duration_ms": min(op_durations),
+                "max_duration_ms": max(op_durations),
             }
 
         return PerformanceMetrics(
@@ -255,10 +255,10 @@ class PerformanceTracker:
         filtered = self.measurements
 
         if operation_type:
-            filtered = [m for m in filtered if m['operation_type'] == operation_type]
+            filtered = [m for m in filtered if m["operation_type"] == operation_type]
 
         # Sort by duration (slowest first)
-        sorted_ops = sorted(filtered, key=lambda m: m['duration_ms'], reverse=True)
+        sorted_ops = sorted(filtered, key=lambda m: m["duration_ms"], reverse=True)
 
         return sorted_ops[:limit]
 
@@ -284,7 +284,7 @@ class PerformanceTracker:
         avg_operation_time_ms = 0.0
         if self.measurements:
             recent_measurements = self.measurements[-100:]  # Last 100
-            durations = [m['duration_ms'] for m in recent_measurements]
+            durations = [m["duration_ms"] for m in recent_measurements]
             avg_operation_time_ms = sum(durations) / len(durations) if durations else 0.0
 
         now = datetime.now()
@@ -321,8 +321,7 @@ class PerformanceTracker:
         cutoff = datetime.now() - timedelta(days=days)
 
         self.measurements = [
-            m for m in self.measurements
-            if datetime.fromisoformat(m['timestamp']) >= cutoff
+            m for m in self.measurements if datetime.fromisoformat(m["timestamp"]) >= cutoff
         ]
 
         self._save()
@@ -333,11 +332,11 @@ class PerformanceTracker:
             self.storage_path.parent.mkdir(parents=True, exist_ok=True)
 
             data = {
-                'measurements': self.measurements,
-                'version': '1.0',
+                "measurements": self.measurements,
+                "version": "1.0",
             }
 
-            with open(self.storage_path, 'w') as f:
+            with open(self.storage_path, "w") as f:
                 json.dump(data, f, indent=2)
 
         except Exception as e:
@@ -349,10 +348,10 @@ class PerformanceTracker:
             return
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path, "r") as f:
                 data = json.load(f)
 
-            self.measurements = data.get('measurements', [])
+            self.measurements = data.get("measurements", [])
 
         except Exception as e:
             print(f"Warning: Failed to load performance data: {e}")

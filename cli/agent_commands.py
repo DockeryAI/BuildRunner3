@@ -135,9 +135,7 @@ def agent_run(
                         for file in response.files_created[:5]:
                             console.print(f"    - {file}")
                         if len(response.files_created) > 5:
-                            console.print(
-                                f"    ... and {len(response.files_created) - 5} more"
-                            )
+                            console.print(f"    ... and {len(response.files_created) - 5} more")
 
                     if response.errors:
                         console.print(f"  [red]Errors:[/red]")
@@ -148,12 +146,18 @@ def agent_run(
 
                     console.print(f"\n[cyan]Output:[/cyan]")
                     # Show first 500 chars of output
-                    output = response.output[:500] + "..." if len(response.output) > 500 else response.output
+                    output = (
+                        response.output[:500] + "..."
+                        if len(response.output) > 500
+                        else response.output
+                    )
                     console.print(output)
 
                 # Suggest next steps
                 console.print(f"\n[bold]Next steps:[/bold]")
-                console.print(f"  - Run [cyan]br agent status {assignment.assignment_id}[/cyan] to check status")
+                console.print(
+                    f"  - Run [cyan]br agent status {assignment.assignment_id}[/cyan] to check status"
+                )
                 console.print(f"  - Run [cyan]br agent stats[/cyan] to view agent statistics")
 
             except Exception as e:
@@ -168,8 +172,7 @@ def agent_run(
 @agent_app.command("status")
 def agent_status(
     assignment_id: Optional[str] = typer.Argument(
-        None,
-        help="Assignment ID (optional, shows latest if not provided)"
+        None, help="Assignment ID (optional, shows latest if not provided)"
     ),
 ):
     """Check status of an agent assignment"""
@@ -187,9 +190,7 @@ def agent_status(
         else:
             assignment = bridge.get_assignment(assignment_id)
             if not assignment:
-                console.print(
-                    f"[red]❌ Assignment not found: {assignment_id}[/red]"
-                )
+                console.print(f"[red]❌ Assignment not found: {assignment_id}[/red]")
                 raise typer.Exit(1)
 
         # Display assignment details
@@ -247,7 +248,11 @@ def agent_status(
 
             if response.output:
                 console.print(f"\n[bold]Output (first 1000 chars):[/bold]")
-                output = response.output[:1000] + "..." if len(response.output) > 1000 else response.output
+                output = (
+                    response.output[:1000] + "..."
+                    if len(response.output) > 1000
+                    else response.output
+                )
                 console.print(Panel(output, border_style="cyan"))
 
     except Exception as e:
@@ -269,40 +274,37 @@ def agent_stats():
         summary_table.add_column(style="cyan", no_wrap=True)
         summary_table.add_column(style="white")
 
-        summary_table.add_row("Total Dispatched", str(stats['total_dispatched']))
-        summary_table.add_row("Total Completed", str(stats['total_completed']))
-        summary_table.add_row("Total Failed", str(stats['total_failed']))
-        summary_table.add_row("Total Retries", str(stats['total_retries']))
+        summary_table.add_row("Total Dispatched", str(stats["total_dispatched"]))
+        summary_table.add_row("Total Completed", str(stats["total_completed"]))
+        summary_table.add_row("Total Failed", str(stats["total_failed"]))
+        summary_table.add_row("Total Retries", str(stats["total_retries"]))
 
-        success_rate = stats['success_rate']
+        success_rate = stats["success_rate"]
         rate_color = "green" if success_rate >= 0.9 else "yellow" if success_rate >= 0.7 else "red"
-        summary_table.add_row(
-            "Success Rate",
-            f"[{rate_color}]{success_rate:.1%}[/{rate_color}]"
-        )
+        summary_table.add_row("Success Rate", f"[{rate_color}]{success_rate:.1%}[/{rate_color}]")
 
         console.print(summary_table)
 
         # By agent type
-        if stats['by_agent_type']:
+        if stats["by_agent_type"]:
             console.print(f"\n[bold]By Agent Type:[/bold]")
             agent_table = Table(show_header=True)
             agent_table.add_column("Agent Type", style="cyan")
             agent_table.add_column("Count", justify="right", style="white")
 
-            for agent_type, count in sorted(stats['by_agent_type'].items()):
+            for agent_type, count in sorted(stats["by_agent_type"].items()):
                 agent_table.add_row(agent_type.upper(), str(count))
 
             console.print(agent_table)
 
         # By status
-        if stats['by_status']:
+        if stats["by_status"]:
             console.print(f"\n[bold]By Status:[/bold]")
             status_table = Table(show_header=True)
             status_table.add_column("Status", style="cyan")
             status_table.add_column("Count", justify="right", style="white")
 
-            for status, count in sorted(stats['by_status'].items()):
+            for status, count in sorted(stats["by_status"].items()):
                 status_table.add_row(status, str(count))
 
             console.print(status_table)
@@ -318,11 +320,7 @@ def agent_stats():
             recent_table.add_column("Status", style="white")
 
             for assignment in reversed(assignments):
-                status = (
-                    assignment.response.status.value
-                    if assignment.response
-                    else "pending"
-                )
+                status = assignment.response.status.value if assignment.response else "pending"
                 recent_table.add_row(
                     assignment.assignment_id,
                     assignment.task_id,
@@ -366,16 +364,8 @@ def agent_list(
         table.add_column("Duration", justify="right", style="white")
 
         for assignment in reversed(assignments):
-            status = (
-                assignment.response.status.value
-                if assignment.response
-                else "pending"
-            )
-            duration = (
-                f"{assignment.duration_ms():.0f}ms"
-                if assignment.duration_ms()
-                else "-"
-            )
+            status = assignment.response.status.value if assignment.response else "pending"
+            duration = f"{assignment.duration_ms():.0f}ms" if assignment.duration_ms() else "-"
             created = assignment.created_at.strftime("%H:%M:%S")
 
             table.add_row(
@@ -403,13 +393,9 @@ def agent_cancel(
         bridge = get_agent_bridge()
 
         if bridge.cancel_assignment(assignment_id):
-            console.print(
-                f"[green]✓ Assignment cancelled: {assignment_id}[/green]"
-            )
+            console.print(f"[green]✓ Assignment cancelled: {assignment_id}[/green]")
         else:
-            console.print(
-                f"[red]❌ Assignment not found: {assignment_id}[/red]"
-            )
+            console.print(f"[red]❌ Assignment not found: {assignment_id}[/red]")
             raise typer.Exit(1)
 
     except Exception as e:
@@ -433,9 +419,7 @@ def agent_retry(
         assignment = bridge.get_assignment(assignment_id)
 
         if not assignment:
-            console.print(
-                f"[red]❌ Assignment not found: {assignment_id}[/red]"
-            )
+            console.print(f"[red]❌ Assignment not found: {assignment_id}[/red]")
             raise typer.Exit(1)
 
         console.print(

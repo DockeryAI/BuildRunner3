@@ -59,21 +59,22 @@ class TelemetryManager:
                 return
 
             # Create resource with service information
-            resource = Resource.create({
-                "service.name": service_name,
-                "service.version": version,
-                "deployment.environment": environment,
-                "service.namespace": "buildrunner",
-                "host.name": os.uname().nodename,
-            })
+            resource = Resource.create(
+                {
+                    "service.name": service_name,
+                    "service.version": version,
+                    "deployment.environment": environment,
+                    "service.namespace": "buildrunner",
+                    "host.name": os.uname().nodename,
+                }
+            )
 
             # Setup trace provider
             trace_provider = TracerProvider(resource=resource)
 
             # Configure OTLP exporter for traces
             otlp_trace_exporter = trace_exporter.OTLPSpanExporter(
-                endpoint="localhost:4317",
-                insecure=True
+                endpoint="localhost:4317", insecure=True
             )
 
             # Add span processor
@@ -86,19 +87,15 @@ class TelemetryManager:
 
             # Setup metrics provider
             otlp_metrics_exporter = metrics_exporter.OTLPMetricExporter(
-                endpoint="localhost:4317",
-                insecure=True
+                endpoint="localhost:4317", insecure=True
             )
 
             metric_reader = PeriodicExportingMetricReader(
                 exporter=otlp_metrics_exporter,
-                export_interval_millis=10000  # Export every 10 seconds
+                export_interval_millis=10000,  # Export every 10 seconds
             )
 
-            meter_provider = MeterProvider(
-                resource=resource,
-                metric_readers=[metric_reader]
-            )
+            meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
 
             # Set global meter provider
             metrics.set_meter_provider(meter_provider)
@@ -127,36 +124,26 @@ class TelemetryManager:
 
         # Task metrics
         self.task_counter = self.meter.create_counter(
-            name="buildrunner.tasks.total",
-            description="Total number of tasks executed",
-            unit="1"
+            name="buildrunner.tasks.total", description="Total number of tasks executed", unit="1"
         )
 
         self.task_duration = self.meter.create_histogram(
-            name="buildrunner.task.duration",
-            description="Task execution duration",
-            unit="ms"
+            name="buildrunner.task.duration", description="Task execution duration", unit="ms"
         )
 
         # Error tracking
         self.error_counter = self.meter.create_counter(
-            name="buildrunner.errors.total",
-            description="Total number of errors",
-            unit="1"
+            name="buildrunner.errors.total", description="Total number of errors", unit="1"
         )
 
         # LLM metrics
         self.token_usage = self.meter.create_counter(
-            name="buildrunner.llm.tokens",
-            description="LLM token usage",
-            unit="tokens"
+            name="buildrunner.llm.tokens", description="LLM token usage", unit="tokens"
         )
 
         # API metrics
         self.api_latency = self.meter.create_histogram(
-            name="buildrunner.api.latency",
-            description="API endpoint latency",
-            unit="ms"
+            name="buildrunner.api.latency", description="API endpoint latency", unit="ms"
         )
 
     @contextmanager
@@ -179,6 +166,7 @@ class TelemetryManager:
 
     def trace_task(self, task_type: str):
         """Decorator to trace task execution"""
+
         def decorator(func: Callable) -> Callable:
             @wraps(func)
             def wrapper(*args, **kwargs):
@@ -192,7 +180,7 @@ class TelemetryManager:
                     attributes={
                         "task.type": task_type,
                         "task.name": func.__name__,
-                    }
+                    },
                 ) as span:
                     try:
                         result = func(*args, **kwargs)
@@ -212,15 +200,19 @@ class TelemetryManager:
                             self.task_counter.add(1, {"task.type": task_type, "status": "error"})
 
                         if self.error_counter:
-                            self.error_counter.add(1, {"task.type": task_type, "error.type": type(e).__name__})
+                            self.error_counter.add(
+                                1, {"task.type": task_type, "error.type": type(e).__name__}
+                            )
 
                         raise
 
             return wrapper
+
         return decorator
 
     def trace_api(self, endpoint: str):
         """Decorator to trace API endpoints"""
+
         def decorator(func: Callable) -> Callable:
             @wraps(func)
             async def async_wrapper(*args, **kwargs):
@@ -234,7 +226,7 @@ class TelemetryManager:
                     attributes={
                         "http.route": endpoint,
                         "http.method": kwargs.get("request", {}).get("method", "GET"),
-                    }
+                    },
                 ) as span:
                     try:
                         result = await func(*args, **kwargs)
@@ -248,7 +240,9 @@ class TelemetryManager:
 
                     except Exception as e:
                         if self.error_counter:
-                            self.error_counter.add(1, {"endpoint": endpoint, "error.type": type(e).__name__})
+                            self.error_counter.add(
+                                1, {"endpoint": endpoint, "error.type": type(e).__name__}
+                            )
                         raise
 
             @wraps(func)
@@ -262,7 +256,7 @@ class TelemetryManager:
                     f"api.{endpoint}",
                     attributes={
                         "http.route": endpoint,
-                    }
+                    },
                 ) as span:
                     try:
                         result = func(*args, **kwargs)
@@ -276,18 +270,23 @@ class TelemetryManager:
 
                     except Exception as e:
                         if self.error_counter:
-                            self.error_counter.add(1, {"endpoint": endpoint, "error.type": type(e).__name__})
+                            self.error_counter.add(
+                                1, {"endpoint": endpoint, "error.type": type(e).__name__}
+                            )
                         raise
 
             # Return appropriate wrapper based on function type
             import asyncio
+
             if asyncio.iscoroutinefunction(func):
                 return async_wrapper
             return sync_wrapper
 
         return decorator
 
-    def record_llm_usage(self, model: str, input_tokens: int, output_tokens: int, latency_ms: float):
+    def record_llm_usage(
+        self, model: str, input_tokens: int, output_tokens: int, latency_ms: float
+    ):
         """Record LLM token usage and performance"""
         if not self.initialized:
             return
@@ -304,16 +303,16 @@ class TelemetryManager:
             self.token_usage.add(input_tokens, {"model": model, "token.type": "input"})
             self.token_usage.add(output_tokens, {"model": model, "token.type": "output"})
 
-    def record_custom_metric(self, name: str, value: float, attributes: Optional[Dict[str, Any]] = None):
+    def record_custom_metric(
+        self, name: str, value: float, attributes: Optional[Dict[str, Any]] = None
+    ):
         """Record a custom metric"""
         if not self.meter:
             return
 
         # Create a gauge for the custom metric
         gauge = self.meter.create_gauge(
-            name=f"buildrunner.custom.{name}",
-            description=f"Custom metric: {name}",
-            unit="1"
+            name=f"buildrunner.custom.{name}", description=f"Custom metric: {name}", unit="1"
         )
 
         gauge.set(value, attributes or {})

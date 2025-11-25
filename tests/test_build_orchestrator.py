@@ -31,7 +31,7 @@ def sample_queue():
         estimated_minutes=60,
         complexity="medium",
         domain="backend",
-        dependencies=[]
+        dependencies=[],
     )
 
     task2 = QueuedTask(
@@ -42,7 +42,7 @@ def sample_queue():
         estimated_minutes=90,
         complexity="medium",
         domain="backend",
-        dependencies=["task1"]
+        dependencies=["task1"],
     )
 
     task3 = QueuedTask(
@@ -53,7 +53,7 @@ def sample_queue():
         estimated_minutes=30,
         complexity="simple",
         domain="testing",
-        dependencies=["task1"]
+        dependencies=["task1"],
     )
 
     queue.add_task(task1)
@@ -72,7 +72,7 @@ class TestCheckpointManager:
             phase="test_phase",
             tasks_completed=["task1", "task2"],
             files_created=["file1.py", "file2.py"],
-            metadata={"test": "value"}
+            metadata={"test": "value"},
         )
 
         assert checkpoint is not None
@@ -85,11 +85,7 @@ class TestCheckpointManager:
         """Test getting checkpoint by ID"""
         manager = CheckpointManager(temp_project)
 
-        checkpoint = manager.create_checkpoint(
-            phase="test",
-            tasks_completed=[],
-            files_created=[]
-        )
+        checkpoint = manager.create_checkpoint(phase="test", tasks_completed=[], files_created=[])
 
         retrieved = manager.get_checkpoint(checkpoint.id)
         assert retrieved is not None
@@ -121,7 +117,9 @@ class TestCheckpointManager:
         manager = CheckpointManager(temp_project)
 
         checkpoint1 = manager.create_checkpoint("phase1", ["task1"], ["file1.py"])
-        checkpoint2 = manager.create_checkpoint("phase2", ["task1", "task2"], ["file1.py", "file2.py"])
+        checkpoint2 = manager.create_checkpoint(
+            "phase2", ["task1", "task2"], ["file1.py", "file2.py"]
+        )
 
         success = manager.rollback(checkpoint1.id)
         assert success is True
@@ -150,7 +148,7 @@ class TestCheckpointManager:
             phase="test_phase",
             tasks_completed=["task1"],
             files_created=["file1.py"],
-            metadata={"key": "value"}
+            metadata={"key": "value"},
         )
 
         resume_state = manager.get_resume_state()
@@ -186,10 +184,7 @@ class TestBuildOrchestrator:
         """Test creating checkpoint through orchestrator"""
         orchestrator = BuildOrchestrator(temp_project, sample_queue)
 
-        checkpoint_id = orchestrator.create_checkpoint(
-            phase="batch_1",
-            metadata={"batch": 1}
-        )
+        checkpoint_id = orchestrator.create_checkpoint(phase="batch_1", metadata={"batch": 1})
 
         assert checkpoint_id is not None
         assert orchestrator.current_state is not None

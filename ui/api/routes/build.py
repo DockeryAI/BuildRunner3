@@ -23,15 +23,8 @@ from pydantic import BaseModel, Field
 # Add parent directory to path to import from core
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from core.build.project_initializer import (
-    project_initializer,
-    ProjectInitError
-)
-from core.build.session_manager import (
-    session_manager,
-    SessionStatus,
-    BuildSessionError
-)
+from core.build.project_initializer import project_initializer, ProjectInitError
+from core.build.session_manager import session_manager, SessionStatus, BuildSessionError
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -44,23 +37,22 @@ router = APIRouter(prefix="/api/build", tags=["build"])
 # Request/Response Models
 # ============================================================================
 
+
 class ProjectInitRequest(BaseModel):
     """Request model for project initialization"""
+
     alias: str = Field(
         ...,
         min_length=1,
         max_length=50,
         pattern=r"^[a-zA-Z0-9-_]+$",
-        description="Short name for the project (alphanumeric, dash, underscore)"
+        description="Short name for the project (alphanumeric, dash, underscore)",
     )
     project_path: str = Field(
-        ...,
-        min_length=1,
-        description="Absolute path where project should be created"
+        ..., min_length=1, description="Absolute path where project should be created"
     )
     prd_data: Optional[Dict[str, Any]] = Field(
-        None,
-        description="PRD data to generate PROJECT_SPEC.md"
+        None, description="PRD data to generate PROJECT_SPEC.md"
     )
 
     class Config:
@@ -74,21 +66,22 @@ class ProjectInitRequest(BaseModel):
                     "features": [
                         {
                             "name": "User Authentication",
-                            "description": "Login and registration with JWT"
+                            "description": "Login and registration with JWT",
                         },
                         {
                             "name": "Task Management",
-                            "description": "Create, edit, and delete tasks"
-                        }
+                            "description": "Create, edit, and delete tasks",
+                        },
                     ],
-                    "tech_stack": ["Python", "FastAPI", "React", "PostgreSQL"]
-                }
+                    "tech_stack": ["Python", "FastAPI", "React", "PostgreSQL"],
+                },
             }
         }
 
 
 class ProjectInitResponse(BaseModel):
     """Response model for project initialization"""
+
     success: bool
     message: str
     project_path: str
@@ -99,28 +92,19 @@ class ProjectInitResponse(BaseModel):
 
 class BuildStartRequest(BaseModel):
     """Request model for starting a build session"""
-    project_alias: str = Field(
-        ...,
-        min_length=1,
-        description="Project alias"
-    )
-    project_path: str = Field(
-        ...,
-        min_length=1,
-        description="Absolute path to project directory"
-    )
+
+    project_alias: str = Field(..., min_length=1, description="Project alias")
+    project_path: str = Field(..., min_length=1, description="Absolute path to project directory")
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "project_alias": "myapp",
-                "project_path": "/Users/username/projects/myapp"
-            }
+            "example": {"project_alias": "myapp", "project_path": "/Users/username/projects/myapp"}
         }
 
 
 class BuildStartResponse(BaseModel):
     """Response model for starting a build session"""
+
     session_id: str
     status: str
     created_at: str
@@ -128,6 +112,7 @@ class BuildStartResponse(BaseModel):
 
 class SessionStatusResponse(BaseModel):
     """Response model for session status"""
+
     session_id: str
     project_alias: str
     project_path: str
@@ -154,15 +139,13 @@ class SessionStatusResponse(BaseModel):
 
 class BuildActionRequest(BaseModel):
     """Request model for build actions (pause/resume/cancel)"""
-    session_id: str = Field(
-        ...,
-        min_length=1,
-        description="Session identifier"
-    )
+
+    session_id: str = Field(..., min_length=1, description="Session identifier")
 
 
 class BuildActionResponse(BaseModel):
     """Response model for build actions"""
+
     success: bool
     message: str
     session_id: str
@@ -171,6 +154,7 @@ class BuildActionResponse(BaseModel):
 
 class SessionStatsResponse(BaseModel):
     """Response model for session statistics"""
+
     total_sessions: int
     active: int
     completed: int
@@ -180,12 +164,14 @@ class SessionStatsResponse(BaseModel):
 
 class CleanupResponse(BaseModel):
     """Response model for cleanup operations"""
+
     deleted_count: int
 
 
 # ============================================================================
 # Endpoints
 # ============================================================================
+
 
 @router.post(
     "/init",
@@ -201,7 +187,7 @@ class CleanupResponse(BaseModel):
     - PROJECT_SPEC.md from PRD data (if provided)
     - README.md and .gitignore
     - Registers project alias for easy access
-    """
+    """,
 )
 async def initialize_project(request: ProjectInitRequest):
     """
@@ -224,9 +210,7 @@ async def initialize_project(request: ProjectInitRequest):
         logger.info(f"Initializing project: {request.alias} at {request.project_path}")
 
         result = project_initializer.create_project_structure(
-            alias=request.alias,
-            path=request.project_path,
-            prd_data=request.prd_data
+            alias=request.alias, path=request.project_path, prd_data=request.prd_data
         )
 
         logger.info(f"Project initialized successfully: {request.alias}")
@@ -234,15 +218,12 @@ async def initialize_project(request: ProjectInitRequest):
 
     except ProjectInitError as e:
         logger.error(f"Project initialization failed: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logger.error(f"Unexpected error during project initialization: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Project initialization failed: {str(e)}"
+            detail=f"Project initialization failed: {str(e)}",
         )
 
 
@@ -258,7 +239,7 @@ async def initialize_project(request: ProjectInitRequest):
     and features throughout the build lifecycle.
 
     File watcher is automatically started to monitor build artifacts.
-    """
+    """,
 )
 async def start_build_session(request: BuildStartRequest):
     """
@@ -281,8 +262,7 @@ async def start_build_session(request: BuildStartRequest):
         logger.info(f"Starting build session for: {request.project_alias}")
 
         session = session_manager.create_session(
-            project_alias=request.project_alias,
-            project_path=request.project_path
+            project_alias=request.project_alias, project_path=request.project_path
         )
 
         # Set status to initializing
@@ -295,20 +275,17 @@ async def start_build_session(request: BuildStartRequest):
         return BuildStartResponse(
             session_id=session.session_id,
             status=session.status.value,
-            created_at=session.created_at.isoformat()
+            created_at=session.created_at.isoformat(),
         )
 
     except BuildSessionError as e:
         logger.error(f"Build session creation failed: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         logger.error(f"Unexpected error starting build session: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to start build session: {str(e)}"
+            detail=f"Failed to start build session: {str(e)}",
         )
 
 
@@ -325,7 +302,7 @@ async def start_build_session(request: BuildStartRequest):
     - Component and feature status
     - Execution time and estimates
     - Any errors encountered
-    """
+    """,
 )
 async def get_build_status(session_id: str):
     """
@@ -347,8 +324,7 @@ async def get_build_status(session_id: str):
     if not session:
         logger.warning(f"Session not found: {session_id}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session not found: {session_id}"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Session not found: {session_id}"
         )
 
     return SessionStatusResponse(**session.to_dict())
@@ -362,7 +338,7 @@ async def get_build_status(session_id: str):
     Pause a running build session, allowing it to be resumed later.
 
     Only sessions in RUNNING status can be paused.
-    """
+    """,
 )
 async def pause_build(request: BuildActionRequest):
     """
@@ -388,13 +364,13 @@ async def pause_build(request: BuildActionRequest):
             logger.warning(f"Session not found for pause: {request.session_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Session not found: {request.session_id}"
+                detail=f"Session not found: {request.session_id}",
             )
         else:
             logger.warning(f"Cannot pause session in {session.status.value} state")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot pause session in {session.status.value} state"
+                detail=f"Cannot pause session in {session.status.value} state",
             )
 
     session = session_manager.get_session(request.session_id)
@@ -404,7 +380,7 @@ async def pause_build(request: BuildActionRequest):
         success=True,
         message="Build session paused successfully",
         session_id=request.session_id,
-        status=session.status.value
+        status=session.status.value,
     )
 
 
@@ -416,7 +392,7 @@ async def pause_build(request: BuildActionRequest):
     Resume execution of a previously paused build session.
 
     Only sessions in PAUSED status can be resumed.
-    """
+    """,
 )
 async def resume_build(request: BuildActionRequest):
     """
@@ -442,13 +418,13 @@ async def resume_build(request: BuildActionRequest):
             logger.warning(f"Session not found for resume: {request.session_id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Session not found: {request.session_id}"
+                detail=f"Session not found: {request.session_id}",
             )
         else:
             logger.warning(f"Cannot resume session in {session.status.value} state")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot resume session in {session.status.value} state"
+                detail=f"Cannot resume session in {session.status.value} state",
             )
 
     session = session_manager.get_session(request.session_id)
@@ -458,7 +434,7 @@ async def resume_build(request: BuildActionRequest):
         success=True,
         message="Build session resumed successfully",
         session_id=request.session_id,
-        status=session.status.value
+        status=session.status.value,
     )
 
 
@@ -470,7 +446,7 @@ async def resume_build(request: BuildActionRequest):
     Cancel a build session, marking it as cancelled.
 
     Can be called on sessions in any status.
-    """
+    """,
 )
 async def cancel_build(request: BuildActionRequest):
     """
@@ -492,8 +468,7 @@ async def cancel_build(request: BuildActionRequest):
     if not success:
         logger.warning(f"Session not found for cancel: {request.session_id}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session not found: {request.session_id}"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Session not found: {request.session_id}"
         )
 
     session = session_manager.get_session(request.session_id)
@@ -503,7 +478,7 @@ async def cancel_build(request: BuildActionRequest):
         success=True,
         message="Build session cancelled successfully",
         session_id=request.session_id,
-        status=session.status.value
+        status=session.status.value,
     )
 
 
@@ -518,19 +493,13 @@ async def cancel_build(request: BuildActionRequest):
     - Project alias
     - Status (idle, initializing, running, paused, completed, failed, cancelled)
     - Limit number of results
-    """
+    """,
 )
 async def list_sessions(
-    status: Optional[str] = Query(
-        None,
-        description="Filter by status"
-    ),
+    status: Optional[str] = Query(None, description="Filter by status"),
     limit: Optional[int] = Query(
-        None,
-        ge=1,
-        le=100,
-        description="Maximum number of sessions to return"
-    )
+        None, ge=1, le=100, description="Maximum number of sessions to return"
+    ),
 ):
     """
     List build sessions.
@@ -560,13 +529,10 @@ async def list_sessions(
     Retrieve the active (running or paused) session for a specific project.
 
     Returns null if no active session exists for the project.
-    """
+    """,
 )
 async def get_active_sessions(
-    alias: Optional[str] = Query(
-        None,
-        description="Filter by project alias"
-    )
+    alias: Optional[str] = Query(None, description="Filter by project alias")
 ):
     """
     Get active build session for a project.
@@ -600,7 +566,7 @@ async def get_active_sessions(
     - Total number of sessions
     - Count by status
     - Active session count
-    """
+    """,
 )
 async def get_session_stats():
     """
@@ -621,7 +587,7 @@ async def get_session_stats():
         active=stats.get("active_sessions", 0),
         completed=by_status.get("completed", 0),
         failed=by_status.get("failed", 0),
-        by_status=by_status
+        by_status=by_status,
     )
 
 
@@ -633,7 +599,7 @@ async def get_session_stats():
     Remove a session from memory.
 
     Returns success status indicating if session was deleted.
-    """
+    """,
 )
 async def delete_session(session_id: str):
     """
@@ -655,8 +621,7 @@ async def delete_session(session_id: str):
     if not success:
         logger.warning(f"Session not found for deletion: {session_id}")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session not found: {session_id}"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Session not found: {session_id}"
         )
 
     logger.info(f"Session deleted: {session_id}")
@@ -672,14 +637,11 @@ async def delete_session(session_id: str):
 
     Default: Remove sessions older than 24 hours
     Range: 1 to 168 hours (7 days)
-    """
+    """,
 )
 async def cleanup_sessions(
     older_than_days: int = Query(
-        1,
-        ge=0,
-        le=7,
-        description="Remove sessions older than this many days"
+        1, ge=0, le=7, description="Remove sessions older than this many days"
     )
 ):
     """

@@ -45,13 +45,13 @@ def mock_bridge():
     """Create mock agent bridge"""
     bridge = MagicMock()
     bridge.get_stats.return_value = {
-        'total_dispatched': 10,
-        'total_completed': 9,
-        'total_failed': 1,
-        'total_retries': 2,
-        'success_rate': 0.9,
-        'by_agent_type': {'implement': 5, 'test': 3, 'review': 2},
-        'by_status': {'completed': 9, 'failed': 1},
+        "total_dispatched": 10,
+        "total_completed": 9,
+        "total_failed": 1,
+        "total_retries": 2,
+        "success_rate": 0.9,
+        "by_agent_type": {"implement": 5, "test": 3, "review": 2},
+        "by_status": {"completed": 9, "failed": 1},
     }
 
     # Create sample assignments
@@ -82,8 +82,8 @@ def mock_bridge():
 class TestAgentRun:
     """Test br agent run command"""
 
-    @patch('cli.agent_commands.get_agent_bridge')
-    @patch('cli.agent_commands.TaskQueue')
+    @patch("cli.agent_commands.get_agent_bridge")
+    @patch("cli.agent_commands.TaskQueue")
     def test_agent_run_success(self, mock_task_queue_class, mock_get_bridge, sample_task):
         """Test successful agent run"""
         # Setup mocks
@@ -117,10 +117,12 @@ class TestAgentRun:
 
         assert result.exit_code == 0
         output_lower = result.stdout.lower()
-        assert "dispatched" in output_lower or "success" in output_lower or "task id" in output_lower
+        assert (
+            "dispatched" in output_lower or "success" in output_lower or "task id" in output_lower
+        )
 
-    @patch('cli.agent_commands.get_agent_bridge')
-    @patch('cli.agent_commands.TaskQueue')
+    @patch("cli.agent_commands.get_agent_bridge")
+    @patch("cli.agent_commands.TaskQueue")
     def test_agent_run_invalid_type(self, mock_task_queue_class, mock_get_bridge):
         """Test agent run with invalid agent type"""
         result = runner.invoke(
@@ -131,8 +133,8 @@ class TestAgentRun:
         assert result.exit_code == 1
         assert "invalid agent type" in result.stdout.lower()
 
-    @patch('cli.agent_commands.get_agent_bridge')
-    @patch('cli.agent_commands.TaskQueue')
+    @patch("cli.agent_commands.get_agent_bridge")
+    @patch("cli.agent_commands.TaskQueue")
     def test_agent_run_task_not_found(self, mock_task_queue_class, mock_get_bridge):
         """Test agent run when task not found"""
         mock_bridge = MagicMock()
@@ -150,8 +152,8 @@ class TestAgentRun:
         assert result.exit_code == 1
         assert "not found" in result.stdout.lower()
 
-    @patch('cli.agent_commands.get_agent_bridge')
-    @patch('cli.agent_commands.TaskQueue')
+    @patch("cli.agent_commands.get_agent_bridge")
+    @patch("cli.agent_commands.TaskQueue")
     def test_agent_run_with_prompt(self, mock_task_queue_class, mock_get_bridge, sample_task):
         """Test agent run with custom prompt"""
         mock_bridge = MagicMock()
@@ -191,8 +193,8 @@ class TestAgentRun:
 
         assert result.exit_code == 0
 
-    @patch('cli.agent_commands.get_agent_bridge')
-    @patch('cli.agent_commands.TaskQueue')
+    @patch("cli.agent_commands.get_agent_bridge")
+    @patch("cli.agent_commands.TaskQueue")
     def test_agent_run_with_context(self, mock_task_queue_class, mock_get_bridge, sample_task):
         """Test agent run with context"""
         mock_bridge = MagicMock()
@@ -236,7 +238,7 @@ class TestAgentRun:
 class TestAgentStatus:
     """Test br agent status command"""
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_status_with_id(self, mock_get_bridge, mock_bridge):
         """Test agent status with specific ID"""
         mock_get_bridge.return_value = mock_bridge
@@ -250,7 +252,7 @@ class TestAgentStatus:
         assert "assign-001" in result.stdout
         assert "Status" in result.stdout
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_status_no_id(self, mock_get_bridge, mock_bridge):
         """Test agent status without ID (shows latest)"""
         mock_get_bridge.return_value = mock_bridge
@@ -262,7 +264,7 @@ class TestAgentStatus:
 
         assert result.exit_code == 0
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_status_not_found(self, mock_get_bridge):
         """Test agent status for non-existent assignment"""
         mock_bridge = MagicMock()
@@ -282,7 +284,7 @@ class TestAgentStatus:
 class TestAgentStats:
     """Test br agent stats command"""
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_stats(self, mock_get_bridge, mock_bridge):
         """Test agent stats command"""
         mock_get_bridge.return_value = mock_bridge
@@ -297,7 +299,7 @@ class TestAgentStats:
         assert "10" in result.stdout  # total_dispatched
         assert "0.9" in result.stdout or "90" in result.stdout  # success_rate
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_stats_shows_by_type(self, mock_get_bridge, mock_bridge):
         """Test that stats shows breakdown by agent type"""
         mock_get_bridge.return_value = mock_bridge
@@ -315,7 +317,7 @@ class TestAgentStats:
 class TestAgentList:
     """Test br agent list command"""
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_list(self, mock_get_bridge, mock_bridge):
         """Test agent list command"""
         mock_get_bridge.return_value = mock_bridge
@@ -329,7 +331,7 @@ class TestAgentList:
         assert "assign-001" in result.stdout
         assert "recent" in result.stdout.lower() or "assignments" in result.stdout.lower()
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_list_with_limit(self, mock_get_bridge, mock_bridge):
         """Test agent list with limit"""
         mock_get_bridge.return_value = mock_bridge
@@ -342,7 +344,7 @@ class TestAgentList:
         assert result.exit_code == 0
         mock_bridge.list_assignments.assert_called_with(limit=5)
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_list_empty(self, mock_get_bridge):
         """Test agent list when empty"""
         mock_bridge = MagicMock()
@@ -361,7 +363,7 @@ class TestAgentList:
 class TestAgentCancel:
     """Test br agent cancel command"""
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_cancel_success(self, mock_get_bridge):
         """Test successful agent cancellation"""
         mock_bridge = MagicMock()
@@ -376,7 +378,7 @@ class TestAgentCancel:
         assert result.exit_code == 0
         assert "cancelled" in result.stdout.lower()
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_cancel_not_found(self, mock_get_bridge):
         """Test cancelling non-existent assignment"""
         mock_bridge = MagicMock()
@@ -395,8 +397,8 @@ class TestAgentCancel:
 class TestAgentRetry:
     """Test br agent retry command"""
 
-    @patch('cli.agent_commands.get_agent_bridge')
-    @patch('cli.agent_commands.TaskQueue')
+    @patch("cli.agent_commands.get_agent_bridge")
+    @patch("cli.agent_commands.TaskQueue")
     def test_agent_retry_success(self, mock_task_queue_class, mock_get_bridge, sample_task):
         """Test successful agent retry"""
         mock_bridge = MagicMock()
@@ -438,7 +440,7 @@ class TestAgentRetry:
         assert result.exit_code == 0
         assert "retried" in result.stdout.lower()
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_retry_not_found(self, mock_get_bridge):
         """Test retrying non-existent assignment"""
         mock_bridge = MagicMock()
@@ -453,8 +455,8 @@ class TestAgentRetry:
         assert result.exit_code == 1
         assert "not found" in result.stdout.lower()
 
-    @patch('cli.agent_commands.get_agent_bridge')
-    @patch('cli.agent_commands.TaskQueue')
+    @patch("cli.agent_commands.get_agent_bridge")
+    @patch("cli.agent_commands.TaskQueue")
     def test_agent_retry_with_prompt(self, mock_task_queue_class, mock_get_bridge, sample_task):
         """Test agent retry with custom prompt"""
         mock_bridge = MagicMock()
@@ -485,19 +487,19 @@ class TestAgentRetry:
 class TestAgentCommandsEdgeCases:
     """Test edge cases and error conditions"""
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_stats_no_data(self, mock_get_bridge):
         """Test stats when no data available"""
         mock_bridge = MagicMock()
         mock_get_bridge.return_value = mock_bridge
         mock_bridge.get_stats.return_value = {
-            'total_dispatched': 0,
-            'total_completed': 0,
-            'total_failed': 0,
-            'total_retries': 0,
-            'success_rate': 0,
-            'by_agent_type': {},
-            'by_status': {},
+            "total_dispatched": 0,
+            "total_completed": 0,
+            "total_failed": 0,
+            "total_retries": 0,
+            "success_rate": 0,
+            "by_agent_type": {},
+            "by_status": {},
         }
         mock_bridge.list_assignments.return_value = []
 
@@ -508,13 +510,13 @@ class TestAgentCommandsEdgeCases:
 
         assert result.exit_code == 0
 
-    @patch('cli.agent_commands.get_agent_bridge')
+    @patch("cli.agent_commands.get_agent_bridge")
     def test_agent_run_with_all_options(self, mock_get_bridge):
         """Test agent run with all available options"""
         mock_bridge = MagicMock()
         mock_get_bridge.return_value = mock_bridge
 
-        with patch('cli.agent_commands.TaskQueue') as mock_task_queue_class:
+        with patch("cli.agent_commands.TaskQueue") as mock_task_queue_class:
             task_queue = MagicMock()
             mock_task_queue_class.return_value = task_queue
 

@@ -1,6 +1,7 @@
 """
 Visual regression testing with Playwright
 """
+
 import asyncio
 from pathlib import Path
 from typing import List, Dict, Any
@@ -21,11 +22,7 @@ class VisualRegressionTester:
         self.current_dir.mkdir(parents=True, exist_ok=True)
         self.diff_dir.mkdir(parents=True, exist_ok=True)
 
-    async def capture_baseline(
-        self,
-        url: str,
-        components: List[str]
-    ) -> Dict[str, Path]:
+    async def capture_baseline(self, url: str, components: List[str]) -> Dict[str, Path]:
         """
         Capture baseline screenshots
 
@@ -66,11 +63,7 @@ class VisualRegressionTester:
 
         return screenshots
 
-    async def run_visual_tests(
-        self,
-        url: str,
-        components: List[str]
-    ) -> Dict[str, Any]:
+    async def run_visual_tests(self, url: str, components: List[str]) -> Dict[str, Any]:
         """
         Run visual regression tests
 
@@ -94,11 +87,7 @@ class VisualRegressionTester:
             # Return mock results if playwright not installed
             for component in components:
                 passed.append(component)
-            return {
-                "passed": passed,
-                "failed": failed,
-                "diffs": diffs
-            }
+            return {"passed": passed, "failed": failed, "diffs": diffs}
 
         async with async_playwright() as p:
             browser = await p.chromium.launch()
@@ -120,11 +109,7 @@ class VisualRegressionTester:
                     continue
 
                 # Detect differences
-                has_diff = await self.detect_differences(
-                    baseline_path,
-                    current_path,
-                    component
-                )
+                has_diff = await self.detect_differences(baseline_path, current_path, component)
 
                 if has_diff:
                     failed.append(component)
@@ -134,17 +119,10 @@ class VisualRegressionTester:
 
             await browser.close()
 
-        return {
-            "passed": passed,
-            "failed": failed,
-            "diffs": diffs
-        }
+        return {"passed": passed, "failed": failed, "diffs": diffs}
 
     async def detect_differences(
-        self,
-        baseline_path: Path,
-        current_path: Path,
-        component: str
+        self, baseline_path: Path, current_path: Path, component: str
     ) -> bool:
         """
         Detect pixel differences between images

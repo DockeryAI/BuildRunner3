@@ -35,26 +35,30 @@ class PRDMapper:
         features_data = {
             "version": "3.0.0",
             "project": {
-                "name": f"{spec.industry}_{spec.use_case}_app" if spec.industry and spec.use_case else "project",
+                "name": (
+                    f"{spec.industry}_{spec.use_case}_app"
+                    if spec.industry and spec.use_case
+                    else "project"
+                ),
                 "industry": spec.industry,
                 "use_case": spec.use_case,
                 "tech_stack": spec.tech_stack,
                 "status": spec.status,
-                "last_updated": datetime.now().isoformat()
+                "last_updated": datetime.now().isoformat(),
             },
-            "features": []
+            "features": [],
         }
 
         # Convert parsed features to feature entries
         for feature in spec.features:
             feature_entry = {
                 "id": feature.name,
-                "name": feature.name.replace('_', ' ').title(),
+                "name": feature.name.replace("_", " ").title(),
                 "description": feature.description,
                 "priority": feature.priority,
                 "status": "planned",
                 "dependencies": feature.dependencies,
-                "tasks": self._generate_tasks_for_feature(feature)
+                "tasks": self._generate_tasks_for_feature(feature),
             }
             features_data["features"].append(feature_entry)
 
@@ -66,7 +70,7 @@ class PRDMapper:
                 "name": phase.name,
                 "features": phase.features,
                 "duration": phase.duration,
-                "status": "pending"
+                "status": "pending",
             }
             features_data["phases"].append(phase_entry)
 
@@ -81,26 +85,26 @@ class PRDMapper:
                 "id": f"{feature.name}_design",
                 "name": "Design component/feature",
                 "status": "pending",
-                "dependencies": []
+                "dependencies": [],
             },
             {
                 "id": f"{feature.name}_implement",
                 "name": "Implement core functionality",
                 "status": "pending",
-                "dependencies": [f"{feature.name}_design"]
+                "dependencies": [f"{feature.name}_design"],
             },
             {
                 "id": f"{feature.name}_test",
                 "name": "Write tests",
                 "status": "pending",
-                "dependencies": [f"{feature.name}_implement"]
+                "dependencies": [f"{feature.name}_implement"],
             },
             {
                 "id": f"{feature.name}_integrate",
                 "name": "Integrate with system",
                 "status": "pending",
-                "dependencies": [f"{feature.name}_test"]
-            }
+                "dependencies": [f"{feature.name}_test"],
+            },
         ]
 
         return tasks
@@ -109,7 +113,7 @@ class PRDMapper:
         """Save features.json to disk"""
         self.features_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(self.features_path, 'w') as f:
+        with open(self.features_path, "w") as f:
             json.dump(features_data, f, indent=2)
 
     def load_features_json(self) -> Optional[Dict]:
@@ -117,7 +121,7 @@ class PRDMapper:
         if not self.features_path.exists():
             return None
 
-        with open(self.features_path, 'r') as f:
+        with open(self.features_path, "r") as f:
             return json.load(f)
 
     def sync_spec_to_features(self) -> Dict:
@@ -161,13 +165,13 @@ class PRDMapper:
 
         Analyzes dependency graph and returns groupings.
         """
-        features = features_data.get('features', [])
+        features = features_data.get("features", [])
 
         # Build dependency graph
         dependency_graph = {}
         for feature in features:
-            feature_id = feature['id']
-            dependencies = feature.get('dependencies', [])
+            feature_id = feature["id"]
+            dependencies = feature.get("dependencies", [])
             dependency_graph[feature_id] = dependencies
 
         # Identify independent features (no dependencies)
@@ -179,10 +183,7 @@ class PRDMapper:
             if deps:
                 sequential.append(fid)
 
-        parallel_groups = {
-            "parallel": independent,
-            "sequential": sequential
-        }
+        parallel_groups = {"parallel": independent, "sequential": sequential}
 
         return parallel_groups
 
@@ -197,23 +198,27 @@ class PRDMapper:
         build_plan = []
 
         # Add parallel builds first
-        if parallel_groups['parallel']:
-            build_plan.append({
-                "step": 1,
-                "type": "parallel",
-                "features": parallel_groups['parallel'],
-                "description": "These features can be built in parallel"
-            })
+        if parallel_groups["parallel"]:
+            build_plan.append(
+                {
+                    "step": 1,
+                    "type": "parallel",
+                    "features": parallel_groups["parallel"],
+                    "description": "These features can be built in parallel",
+                }
+            )
 
         # Add sequential builds
-        if parallel_groups['sequential']:
-            for i, feature_id in enumerate(parallel_groups['sequential']):
-                build_plan.append({
-                    "step": len(build_plan) + 1,
-                    "type": "sequential",
-                    "features": [feature_id],
-                    "description": f"Build {feature_id} (depends on previous steps)"
-                })
+        if parallel_groups["sequential"]:
+            for i, feature_id in enumerate(parallel_groups["sequential"]):
+                build_plan.append(
+                    {
+                        "step": len(build_plan) + 1,
+                        "type": "sequential",
+                        "features": [feature_id],
+                        "description": f"Build {feature_id} (depends on previous steps)",
+                    }
+                )
 
         return build_plan
 

@@ -1,6 +1,7 @@
 """
 Integration tests for routing system
 """
+
 import pytest
 from core.orchestrator import TaskOrchestrator
 from core.routing import ComplexityLevel
@@ -41,13 +42,13 @@ class TestRoutingIntegration:
     def test_execute_batch_selects_model(self, orchestrator):
         """Test that executing a batch selects appropriate model"""
         tasks = [
-            {'id': 'task1', 'name': 'Simple Task', 'description': 'A simple CRUD operation'},
+            {"id": "task1", "name": "Simple Task", "description": "A simple CRUD operation"},
         ]
 
         result = orchestrator.execute_batch(tasks)
 
-        assert result['success'] is True
-        assert 'model' in result or result.get('batches_completed', 0) > 0
+        assert result["success"] is True
+        assert "model" in result or result.get("batches_completed", 0) > 0
 
     def test_estimate_task_complexity_simple_task(self, orchestrator):
         """Test complexity estimation for simple tasks"""
@@ -59,8 +60,8 @@ class TestRoutingIntegration:
         )
 
         assert complexity is not None
-        assert hasattr(complexity, 'level')
-        assert hasattr(complexity, 'score')
+        assert hasattr(complexity, "level")
+        assert hasattr(complexity, "score")
 
     def test_estimate_task_complexity_complex_task(self, orchestrator):
         """Test complexity estimation for complex tasks"""
@@ -84,6 +85,7 @@ class TestRoutingIntegration:
         """Test model selection based on complexity"""
         # Simple complexity
         from core.routing import TaskComplexity
+
         simple_complexity = TaskComplexity(level=ComplexityLevel.SIMPLE, score=0.2)
 
         selection = select_model_for_task(
@@ -92,14 +94,19 @@ class TestRoutingIntegration:
         )
 
         assert selection is not None
-        assert hasattr(selection, 'model_name')
-        assert hasattr(selection, 'tier')
+        assert hasattr(selection, "model_name")
+        assert hasattr(selection, "tier")
 
     def test_get_routing_recommendations(self, orchestrator):
         """Test getting routing recommendations for multiple tasks"""
         tasks = [
-            {'id': 'task1', 'description': 'Simple CRUD', 'files': [], 'requirements': []},
-            {'id': 'task2', 'description': 'Complex algorithm', 'files': ['algo.py'], 'requirements': ['Optimize performance']},
+            {"id": "task1", "description": "Simple CRUD", "files": [], "requirements": []},
+            {
+                "id": "task2",
+                "description": "Complex algorithm",
+                "files": ["algo.py"],
+                "requirements": ["Optimize performance"],
+            },
         ]
 
         recommendations = get_routing_recommendations(
@@ -110,15 +117,15 @@ class TestRoutingIntegration:
 
         assert len(recommendations) == 2
         for rec in recommendations:
-            assert 'task_id' in rec
-            assert 'complexity_level' in rec
-            assert 'selected_model' in rec
+            assert "task_id" in rec
+            assert "complexity_level" in rec
+            assert "selected_model" in rec
 
     def test_optimize_batch_routing(self, orchestrator):
         """Test batch routing optimization"""
         tasks = [
-            {'id': 'task1', 'description': 'Simple task', 'files': [], 'requirements': []},
-            {'id': 'task2', 'description': 'Another simple task', 'files': [], 'requirements': []},
+            {"id": "task1", "description": "Simple task", "files": [], "requirements": []},
+            {"id": "task2", "description": "Another simple task", "files": [], "requirements": []},
         ]
 
         result = optimize_batch_routing(
@@ -127,7 +134,7 @@ class TestRoutingIntegration:
             tasks,
         )
 
-        assert 'recommendations' in result
-        assert 'by_tier' in result
-        assert 'total_estimated_cost' in result
-        assert len(result['recommendations']) == 2
+        assert "recommendations" in result
+        assert "by_tier" in result
+        assert "total_estimated_cost" in result
+        assert len(result["recommendations"]) == 2

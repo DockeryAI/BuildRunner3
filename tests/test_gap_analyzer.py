@@ -35,7 +35,7 @@ class TestGapAnalysis:
         analysis = GapAnalysis(
             todo_count=5,
             stub_count=3,
-            missing_features=[{'id': 'feat-1', 'name': 'Feature 1', 'reason': 'Not started'}]
+            missing_features=[{"id": "feat-1", "name": "Feature 1", "reason": "Not started"}],
         )
 
         assert analysis.todo_count == 5
@@ -59,7 +59,7 @@ class TestGapAnalyzer:
                 {"id": "feat-1", "name": "Complete Feature", "status": "complete"},
                 {"id": "feat-2", "name": "In Progress Feature", "status": "in_progress"},
                 {"id": "feat-3", "name": "Planned Feature", "status": "planned"},
-                {"id": "feat-4", "name": "Blocked Feature", "status": "blocked"}
+                {"id": "feat-4", "name": "Blocked Feature", "status": "blocked"},
             ]
         }
         features_file = buildrunner_dir / "features.json"
@@ -67,7 +67,8 @@ class TestGapAnalyzer:
 
         # Create Python files with TODOs and stubs
         main_file = tmp_path / "main.py"
-        main_file.write_text('''
+        main_file.write_text(
+            """
 # TODO: Implement this function
 def incomplete_function():
     # FIXME: This is broken
@@ -77,7 +78,8 @@ def stub_function():
     raise NotImplementedError
 
 import requests
-''')
+"""
+        )
 
         # Create requirements file
         req_file = tmp_path / "requirements.txt"
@@ -111,9 +113,9 @@ import requests
         assert len(analysis.incomplete_features) == 1  # in_progress
         assert len(analysis.blocked_features) == 1  # blocked
 
-        assert analysis.missing_features[0]['id'] == 'feat-3'
-        assert analysis.incomplete_features[0]['id'] == 'feat-2'
-        assert analysis.blocked_features[0]['id'] == 'feat-4'
+        assert analysis.missing_features[0]["id"] == "feat-3"
+        assert analysis.incomplete_features[0]["id"] == "feat-2"
+        assert analysis.blocked_features[0]["id"] == "feat-4"
 
     def test_analyze_features_no_file(self, tmp_path):
         """Test feature analysis when features.json missing."""
@@ -160,12 +162,14 @@ import requests
     def test_detect_todo_patterns(self, tmp_path):
         """Test detection of different TODO patterns."""
         py_file = tmp_path / "test.py"
-        py_file.write_text('''
+        py_file.write_text(
+            """
 # TODO: Fix this
 # FIXME: Broken code
 # XXX: Hack alert
 # HACK: Temporary workaround
-''')
+"""
+        )
 
         analyzer = GapAnalyzer(tmp_path)
         analyzer._discover_files()
@@ -178,13 +182,15 @@ import requests
     def test_detect_stubs(self, tmp_path):
         """Test detection of stub implementations."""
         py_file = tmp_path / "test.py"
-        py_file.write_text('''
+        py_file.write_text(
+            """
 def stub_raise():
     raise NotImplementedError
 
 def empty_function():
     pass
-''')
+"""
+        )
 
         analyzer = GapAnalyzer(tmp_path)
         analyzer._discover_files()
@@ -207,7 +213,7 @@ def empty_function():
         analyzer.analyze_dependencies(analysis)
 
         # Should find missing dependency (requests not in requirements)
-        assert 'requests' in analysis.missing_dependencies
+        assert "requests" in analysis.missing_dependencies
 
     def test_analyze_dependencies_no_requirements(self, tmp_path):
         """Test dependency analysis without requirements file."""
@@ -221,7 +227,7 @@ def empty_function():
         analyzer.analyze_dependencies(analysis)
 
         # Should still detect missing deps
-        assert 'requests' in analysis.missing_dependencies
+        assert "requests" in analysis.missing_dependencies
 
     def test_get_stdlib_modules(self, sample_project):
         """Test stdlib module detection."""
@@ -229,16 +235,17 @@ def empty_function():
 
         stdlib = analyzer._get_stdlib_modules()
 
-        assert 'os' in stdlib
-        assert 'sys' in stdlib
-        assert 'json' in stdlib
-        assert 'pathlib' in stdlib
+        assert "os" in stdlib
+        assert "sys" in stdlib
+        assert "json" in stdlib
+        assert "pathlib" in stdlib
 
     def test_analyze_spec(self, tmp_path):
         """Test spec analysis."""
         # Create PROJECT_SPEC.md
         spec_file = tmp_path / "PROJECT_SPEC.md"
-        spec_file.write_text('''
+        spec_file.write_text(
+            """
 # Project Spec
 
 ## API Endpoints
@@ -251,7 +258,8 @@ def empty_function():
 
 ## Required Files
 - file: `core/models.py`
-''')
+"""
+        )
 
         analyzer = GapAnalyzer(tmp_path)
         analysis = GapAnalysis()
@@ -346,10 +354,7 @@ class TestCircularDependencyDetection:
         analyzer = GapAnalyzer(tmp_path)
 
         # Simulate imports map
-        imports = {
-            'module_a.py': {'module_b'},
-            'module_b.py': {'module_a'}
-        }
+        imports = {"module_a.py": {"module_b"}, "module_b.py": {"module_a"}}
 
         analysis = GapAnalysis()
         analyzer._detect_circular_deps(imports, analysis)
@@ -396,13 +401,13 @@ class TestEdgeCases:
         analyzer._discover_files()
 
         # Should not include venv files
-        venv_files = [f for f in analyzer.python_files if '.venv' in str(f)]
+        venv_files = [f for f in analyzer.python_files if ".venv" in str(f)]
         assert len(venv_files) == 0
 
     def test_unicode_content(self, tmp_path):
         """Test handling of files with Unicode content."""
         py_file = tmp_path / "unicode.py"
-        py_file.write_text("# TODO: 测试 Unicode 支持", encoding='utf-8')
+        py_file.write_text("# TODO: 测试 Unicode 支持", encoding="utf-8")
 
         analyzer = GapAnalyzer(tmp_path)
         analyzer._discover_files()

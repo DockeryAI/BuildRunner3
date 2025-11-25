@@ -13,7 +13,7 @@ from .rate_limiter import (
     rate_limit,
     apply_rate_limit_config,
     get_rate_limit_store,
-    RATE_LIMIT_CONFIG
+    RATE_LIMIT_CONFIG,
 )
 
 __all__ = [
@@ -21,5 +21,5 @@ __all__ = [
     "rate_limit",
     "apply_rate_limit_config",
     "get_rate_limit_store",
-    "RATE_LIMIT_CONFIG"
+    "RATE_LIMIT_CONFIG",
 ]

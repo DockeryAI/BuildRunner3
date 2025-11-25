@@ -19,6 +19,7 @@ import json
 
 class BuildPhase(Enum):
     """Build execution phases"""
+
     SPEC_PARSING = "spec_parsing"
     TASK_DECOMPOSITION = "task_decomposition"
     DEPENDENCY_ANALYSIS = "dependency_analysis"
@@ -32,6 +33,7 @@ class BuildPhase(Enum):
 
 class PhaseStatus(Enum):
     """Phase execution status"""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -41,6 +43,7 @@ class PhaseStatus(Enum):
 
 class BlockerType(Enum):
     """Types of blockers that pause execution"""
+
     MISSING_CREDENTIALS = "missing_credentials"
     TEST_FAILURES = "test_failures"
     USER_INTERVENTION = "user_intervention"
@@ -52,6 +55,7 @@ class BlockerType(Enum):
 @dataclass
 class Blocker:
     """Represents a blocker that pauses execution"""
+
     blocker_type: BlockerType
     phase: BuildPhase
     description: str
@@ -62,6 +66,7 @@ class Blocker:
 @dataclass
 class PhaseState:
     """State of a single build phase"""
+
     phase: BuildPhase
     status: PhaseStatus
     started_at: Optional[str] = None
@@ -74,6 +79,7 @@ class PhaseState:
 @dataclass
 class BuildState:
     """Complete build state across all phases"""
+
     current_phase: BuildPhase = BuildPhase.SPEC_PARSING
     phases: Dict[str, PhaseState] = field(default_factory=dict)
     active_blockers: List[Blocker] = field(default_factory=list)
@@ -133,47 +139,47 @@ class PhaseManager:
 
                 # Reconstruct state with enums
                 phases = {}
-                for phase_name, phase_data in data.get('phases', {}).items():
+                for phase_name, phase_data in data.get("phases", {}).items():
                     blockers = [
                         Blocker(
-                            blocker_type=BlockerType(b['blocker_type']),
-                            phase=BuildPhase(b['phase']),
-                            description=b['description'],
-                            detected_at=b.get('detected_at', datetime.now().isoformat()),
-                            metadata=b.get('metadata', {})
+                            blocker_type=BlockerType(b["blocker_type"]),
+                            phase=BuildPhase(b["phase"]),
+                            description=b["description"],
+                            detected_at=b.get("detected_at", datetime.now().isoformat()),
+                            metadata=b.get("metadata", {}),
                         )
-                        for b in phase_data.get('blockers', [])
+                        for b in phase_data.get("blockers", [])
                     ]
 
                     phases[phase_name] = PhaseState(
-                        phase=BuildPhase(phase_data['phase']),
-                        status=PhaseStatus(phase_data['status']),
-                        started_at=phase_data.get('started_at'),
-                        completed_at=phase_data.get('completed_at'),
-                        duration_seconds=phase_data.get('duration_seconds'),
-                        metadata=phase_data.get('metadata', {}),
-                        blockers=blockers
+                        phase=BuildPhase(phase_data["phase"]),
+                        status=PhaseStatus(phase_data["status"]),
+                        started_at=phase_data.get("started_at"),
+                        completed_at=phase_data.get("completed_at"),
+                        duration_seconds=phase_data.get("duration_seconds"),
+                        metadata=phase_data.get("metadata", {}),
+                        blockers=blockers,
                     )
 
                 active_blockers = [
                     Blocker(
-                        blocker_type=BlockerType(b['blocker_type']),
-                        phase=BuildPhase(b['phase']),
-                        description=b['description'],
-                        detected_at=b.get('detected_at', datetime.now().isoformat()),
-                        metadata=b.get('metadata', {})
+                        blocker_type=BlockerType(b["blocker_type"]),
+                        phase=BuildPhase(b["phase"]),
+                        description=b["description"],
+                        detected_at=b.get("detected_at", datetime.now().isoformat()),
+                        metadata=b.get("metadata", {}),
                     )
-                    for b in data.get('active_blockers', [])
+                    for b in data.get("active_blockers", [])
                 ]
 
                 return BuildState(
-                    current_phase=BuildPhase(data['current_phase']),
+                    current_phase=BuildPhase(data["current_phase"]),
                     phases=phases,
                     active_blockers=active_blockers,
-                    started_at=data.get('started_at'),
-                    completed_at=data.get('completed_at'),
-                    continuous_mode=data.get('continuous_mode', True),
-                    metadata=data.get('metadata', {})
+                    started_at=data.get("started_at"),
+                    completed_at=data.get("completed_at"),
+                    continuous_mode=data.get("continuous_mode", True),
+                    metadata=data.get("metadata", {}),
                 )
             except Exception as e:
                 print(f"Warning: Failed to load state: {e}, creating new state")
@@ -183,10 +189,7 @@ class PhaseManager:
 
         # Initialize all phases
         for phase in self.phase_order:
-            state.phases[phase.value] = PhaseState(
-                phase=phase,
-                status=PhaseStatus.PENDING
-            )
+            state.phases[phase.value] = PhaseState(phase=phase, status=PhaseStatus.PENDING)
 
         return state
 
@@ -196,42 +199,42 @@ class PhaseManager:
 
         # Convert to serializable dict
         data = {
-            'current_phase': self.state.current_phase.value,
-            'phases': {
+            "current_phase": self.state.current_phase.value,
+            "phases": {
                 name: {
-                    'phase': ps.phase.value,
-                    'status': ps.status.value,
-                    'started_at': ps.started_at,
-                    'completed_at': ps.completed_at,
-                    'duration_seconds': ps.duration_seconds,
-                    'metadata': ps.metadata,
-                    'blockers': [
+                    "phase": ps.phase.value,
+                    "status": ps.status.value,
+                    "started_at": ps.started_at,
+                    "completed_at": ps.completed_at,
+                    "duration_seconds": ps.duration_seconds,
+                    "metadata": ps.metadata,
+                    "blockers": [
                         {
-                            'blocker_type': b.blocker_type.value,
-                            'phase': b.phase.value,
-                            'description': b.description,
-                            'detected_at': b.detected_at,
-                            'metadata': b.metadata
+                            "blocker_type": b.blocker_type.value,
+                            "phase": b.phase.value,
+                            "description": b.description,
+                            "detected_at": b.detected_at,
+                            "metadata": b.metadata,
                         }
                         for b in ps.blockers
-                    ]
+                    ],
                 }
                 for name, ps in self.state.phases.items()
             },
-            'active_blockers': [
+            "active_blockers": [
                 {
-                    'blocker_type': b.blocker_type.value,
-                    'phase': b.phase.value,
-                    'description': b.description,
-                    'detected_at': b.detected_at,
-                    'metadata': b.metadata
+                    "blocker_type": b.blocker_type.value,
+                    "phase": b.phase.value,
+                    "description": b.description,
+                    "detected_at": b.detected_at,
+                    "metadata": b.metadata,
                 }
                 for b in self.state.active_blockers
             ],
-            'started_at': self.state.started_at,
-            'completed_at': self.state.completed_at,
-            'continuous_mode': self.state.continuous_mode,
-            'metadata': self.state.metadata
+            "started_at": self.state.started_at,
+            "completed_at": self.state.completed_at,
+            "continuous_mode": self.state.continuous_mode,
+            "metadata": self.state.metadata,
         }
 
         self.state_file.write_text(json.dumps(data, indent=2))
@@ -298,7 +301,9 @@ class PhaseManager:
         self._save_state()
         return True
 
-    def fail_phase(self, phase: BuildPhase, error: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
+    def fail_phase(
+        self, phase: BuildPhase, error: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> bool:
         """
         Mark a phase as failed.
 
@@ -315,7 +320,7 @@ class PhaseManager:
             return False
 
         phase_state.status = PhaseStatus.FAILED
-        phase_state.metadata['error'] = error
+        phase_state.metadata["error"] = error
 
         if metadata:
             phase_state.metadata.update(metadata)
@@ -323,8 +328,9 @@ class PhaseManager:
         self._save_state()
         return True
 
-    def add_blocker(self, blocker_type: BlockerType, description: str,
-                    metadata: Optional[Dict[str, Any]] = None) -> Blocker:
+    def add_blocker(
+        self, blocker_type: BlockerType, description: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> Blocker:
         """
         Add a blocker to the current phase.
 
@@ -340,7 +346,7 @@ class PhaseManager:
             blocker_type=blocker_type,
             phase=self.state.current_phase,
             description=description,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         # Add to active blockers
@@ -368,8 +374,7 @@ class PhaseManager:
         # Filter out blockers of this type
         original_count = len(self.state.active_blockers)
         self.state.active_blockers = [
-            b for b in self.state.active_blockers
-            if b.blocker_type != blocker_type
+            b for b in self.state.active_blockers if b.blocker_type != blocker_type
         ]
 
         # Resume phase if no more blockers
@@ -440,27 +445,23 @@ class PhaseManager:
         """
         total_phases = len(self.phase_order)
         completed_phases = sum(
-            1 for ps in self.state.phases.values()
-            if ps.status == PhaseStatus.COMPLETED
+            1 for ps in self.state.phases.values() if ps.status == PhaseStatus.COMPLETED
         )
 
         progress_percent = (completed_phases / total_phases) * 100 if total_phases > 0 else 0
 
         return {
-            'current_phase': self.state.current_phase.value,
-            'total_phases': total_phases,
-            'completed_phases': completed_phases,
-            'progress_percent': progress_percent,
-            'is_blocked': self.is_blocked(),
-            'active_blockers': len(self.state.active_blockers),
-            'continuous_mode': self.continuous_mode,
-            'phases': {
-                name: {
-                    'status': ps.status.value,
-                    'duration_seconds': ps.duration_seconds
-                }
+            "current_phase": self.state.current_phase.value,
+            "total_phases": total_phases,
+            "completed_phases": completed_phases,
+            "progress_percent": progress_percent,
+            "is_blocked": self.is_blocked(),
+            "active_blockers": len(self.state.active_blockers),
+            "continuous_mode": self.continuous_mode,
+            "phases": {
+                name: {"status": ps.status.value, "duration_seconds": ps.duration_seconds}
                 for name, ps in self.state.phases.items()
-            }
+            },
         }
 
     def reset(self):
@@ -469,10 +470,7 @@ class PhaseManager:
 
         # Initialize all phases
         for phase in self.phase_order:
-            self.state.phases[phase.value] = PhaseState(
-                phase=phase,
-                status=PhaseStatus.PENDING
-            )
+            self.state.phases[phase.value] = PhaseState(phase=phase, status=PhaseStatus.PENDING)
 
         self._save_state()
 

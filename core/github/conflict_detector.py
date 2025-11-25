@@ -12,6 +12,7 @@ from .git_client import GitClient
 @dataclass
 class ConflictInfo:
     """Conflict information"""
+
     has_conflicts: bool
     conflicting_files: List[str]
     commits_behind: int
@@ -25,7 +26,7 @@ class ConflictDetector:
         self.repo_path = repo_path or Path.cwd()
         self.git = GitClient(self.repo_path)
 
-    def check_conflicts(self, target_branch: str = 'origin/main') -> ConflictInfo:
+    def check_conflicts(self, target_branch: str = "origin/main") -> ConflictInfo:
         """
         Check if merging target branch would cause conflicts
 
@@ -43,10 +44,7 @@ class ConflictDetector:
 
         if not is_behind:
             return ConflictInfo(
-                has_conflicts=False,
-                conflicting_files=[],
-                commits_behind=0,
-                can_auto_resolve=True
+                has_conflicts=False, conflicting_files=[], commits_behind=0, can_auto_resolve=True
             )
 
         # Check for conflicts
@@ -56,7 +54,7 @@ class ConflictDetector:
             has_conflicts=has_conflicts,
             conflicting_files=files,
             commits_behind=count,
-            can_auto_resolve=not has_conflicts
+            can_auto_resolve=not has_conflicts,
         )
 
     def sync_with_main(self, rebase: bool = True) -> Tuple[bool, str]:
@@ -70,7 +68,7 @@ class ConflictDetector:
             (success, message)
         """
         current = self.git.current_branch()
-        if current == 'main':
+        if current == "main":
             return False, "Already on main branch"
 
         # Check for conflicts first
@@ -79,29 +77,31 @@ class ConflictDetector:
             return False, f"Would cause conflicts in {len(info.conflicting_files)} files"
 
         # Fetch latest
-        self.git.fetch('origin', 'main')
+        self.git.fetch("origin", "main")
 
         try:
             if rebase:
                 # Rebase on main
                 import subprocess
+
                 result = subprocess.run(
-                    ['git', 'rebase', 'origin/main'],
+                    ["git", "rebase", "origin/main"],
                     cwd=self.repo_path,
                     capture_output=True,
                     text=True,
-                    check=True
+                    check=True,
                 )
                 return True, f"Rebased {info.commits_behind} commits from main"
             else:
                 # Merge main
                 import subprocess
+
                 result = subprocess.run(
-                    ['git', 'merge', 'origin/main'],
+                    ["git", "merge", "origin/main"],
                     cwd=self.repo_path,
                     capture_output=True,
                     text=True,
-                    check=True
+                    check=True,
                 )
                 return True, f"Merged {info.commits_behind} commits from main"
         except subprocess.CalledProcessError as e:

@@ -4,6 +4,7 @@ Real Anthropic Opus API client for PRD generation
 Provides intelligent PROJECT_SPEC generation, requirements analysis,
 design token creation, and spec validation using Claude Opus.
 """
+
 import os
 import json
 import asyncio
@@ -13,6 +14,7 @@ from anthropic import Anthropic, AsyncAnthropic
 
 class OpusAPIError(Exception):
     """Opus API error"""
+
     pass
 
 
@@ -26,6 +28,7 @@ def with_retry(max_retries: int = 3):
     Returns:
         Decorated async function with retry capability
     """
+
     def decorator(func):
         async def wrapper(*args, **kwargs):
             for attempt in range(max_retries):
@@ -36,9 +39,11 @@ def with_retry(max_retries: int = 3):
                         # Last attempt failed, re-raise
                         raise
                     # Exponential backoff: 2^attempt seconds
-                    await asyncio.sleep(2 ** attempt)
+                    await asyncio.sleep(2**attempt)
                     continue
+
         return wrapper
+
     return decorator
 
 
@@ -65,12 +70,7 @@ class OpusClient:
         self.max_tokens = 4096
 
     @with_retry(max_retries=3)
-    async def pre_fill_spec(
-        self,
-        industry: str,
-        use_case: str,
-        user_input: Dict[str, str]
-    ) -> str:
+    async def pre_fill_spec(self, industry: str, use_case: str, user_input: Dict[str, str]) -> str:
         """
         Pre-fill PROJECT_SPEC.md using Opus
 
@@ -91,7 +91,7 @@ class OpusClient:
             message = await self.async_client.messages.create(
                 model=self.model,
                 max_tokens=self.max_tokens,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             return message.content[0].text
@@ -138,9 +138,7 @@ Respond in JSON format with the following structure:
 
         try:
             message = await self.async_client.messages.create(
-                model=self.model,
-                max_tokens=2048,
-                messages=[{"role": "user", "content": prompt}]
+                model=self.model, max_tokens=2048, messages=[{"role": "user", "content": prompt}]
             )
 
             response_text = message.content[0].text
@@ -151,11 +149,7 @@ Respond in JSON format with the following structure:
             raise OpusAPIError(f"Requirements analysis failed: {e}")
 
     @with_retry(max_retries=3)
-    async def generate_design_tokens(
-        self,
-        industry: str,
-        use_case: str
-    ) -> Dict[str, Any]:
+    async def generate_design_tokens(self, industry: str, use_case: str) -> Dict[str, Any]:
         """
         Generate design system tokens for industry + use case
 
@@ -207,9 +201,7 @@ Example structure:
 
         try:
             message = await self.async_client.messages.create(
-                model=self.model,
-                max_tokens=2048,
-                messages=[{"role": "user", "content": prompt}]
+                model=self.model, max_tokens=2048, messages=[{"role": "user", "content": prompt}]
             )
 
             response_text = message.content[0].text
@@ -258,9 +250,7 @@ Respond in JSON format with:
 
         try:
             message = await self.async_client.messages.create(
-                model=self.model,
-                max_tokens=1024,
-                messages=[{"role": "user", "content": prompt}]
+                model=self.model, max_tokens=1024, messages=[{"role": "user", "content": prompt}]
             )
 
             response_text = message.content[0].text
@@ -270,12 +260,7 @@ Respond in JSON format with:
         except Exception as e:
             raise OpusAPIError(f"Spec validation failed: {e}")
 
-    def _build_spec_prompt(
-        self,
-        industry: str,
-        use_case: str,
-        user_input: Dict[str, str]
-    ) -> str:
+    def _build_spec_prompt(self, industry: str, use_case: str, user_input: Dict[str, str]) -> str:
         """
         Build prompt for PROJECT_SPEC generation
 

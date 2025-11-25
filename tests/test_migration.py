@@ -35,53 +35,32 @@ def temp_v2_project():
             "executive_summary": "Test Project",
             "value_proposition": "Testing migration",
             "intended_audience": ["Developers"],
-            "features": [
-                "Feature 1",
-                "Feature 2",
-                {"name": "Feature 3", "status": "done"}
-            ],
+            "features": ["Feature 1", "Feature 2", {"name": "Feature 3", "status": "done"}],
             "build_plan": {
                 "phases": [
                     {
                         "name": "Phase 1",
                         "steps": [
                             {"id": 1, "name": "Step 1", "done": True},
-                            {"id": 2, "name": "Step 2", "done": False}
-                        ]
+                            {"id": 2, "name": "Step 2", "done": False},
+                        ],
                     }
                 ]
             },
-            "progress": {
-                "steps_completed": 1,
-                "total_steps": 2,
-                "percent_complete": 50.0
-            }
+            "progress": {"steps_completed": 1, "total_steps": 2, "percent_complete": 50.0},
         }
 
-        with open(runner_dir / "hrpo.json", 'w') as f:
+        with open(runner_dir / "hrpo.json", "w") as f:
             json.dump(hrpo, f)
 
         # Create governance file
         governance = {
-            "project": {
-                "name": "Test Project",
-                "slug": "test-project"
-            },
-            "policies": {
-                "stage_framework": True,
-                "auto_completion_stamp": True
-            },
-            "versioning": {
-                "semver": {
-                    "enabled": True,
-                    "rules": {
-                        "breaking_change": "MAJOR"
-                    }
-                }
-            }
+            "project": {"name": "Test Project", "slug": "test-project"},
+            "policies": {"stage_framework": True, "auto_completion_stamp": True},
+            "versioning": {"semver": {"enabled": True, "rules": {"breaking_change": "MAJOR"}}},
         }
 
-        with open(runner_dir / "governance.json", 'w') as f:
+        with open(runner_dir / "governance.json", "w") as f:
             json.dump(governance, f)
 
         yield project_root
@@ -94,10 +73,25 @@ def temp_v2_project_with_git(temp_v2_project):
 
     # Initialize git repo
     subprocess.run(["git", "init"], cwd=temp_v2_project, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.name", "Test User"], cwd=temp_v2_project, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=temp_v2_project, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.name", "Test User"],
+        cwd=temp_v2_project,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"],
+        cwd=temp_v2_project,
+        check=True,
+        capture_output=True,
+    )
     subprocess.run(["git", "add", "."], cwd=temp_v2_project, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-m", "Initial commit"], cwd=temp_v2_project, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "commit", "-m", "Initial commit"],
+        cwd=temp_v2_project,
+        check=True,
+        capture_output=True,
+    )
 
     yield temp_v2_project
 
@@ -160,7 +154,7 @@ class TestV2ProjectParser:
         """Test parsing project with corrupt HRPO file"""
         # Corrupt the HRPO file
         hrpo_file = temp_v2_project / ".runner" / "hrpo.json"
-        with open(hrpo_file, 'w') as f:
+        with open(hrpo_file, "w") as f:
             f.write("{ invalid json }")
 
         parser = V2ProjectParser(temp_v2_project)
@@ -303,9 +297,7 @@ class TestMigrationValidator:
 
         validator = MigrationValidator(temp_v2_project)
         result = validator.validate_post_migration(
-            project,
-            conversion.features_json,
-            conversion.governance_yaml
+            project, conversion.features_json, conversion.governance_yaml
         )
 
         assert result.passed
@@ -320,9 +312,7 @@ class TestMigrationValidator:
 
         validator = MigrationValidator(temp_v2_project)
         result = validator.validate_post_migration(
-            project,
-            conversion.features_json,
-            conversion.governance_yaml
+            project, conversion.features_json, conversion.governance_yaml
         )
 
         # Should have warnings if counts differ
@@ -374,13 +364,13 @@ class TestEdgeCases:
         """Test handling large number of features"""
         # Add many features to HRPO
         hrpo_file = temp_v2_project / ".runner" / "hrpo.json"
-        with open(hrpo_file, 'r') as f:
+        with open(hrpo_file, "r") as f:
             hrpo = json.load(f)
 
         # Add 100 features
         hrpo["features"] = [f"Feature {i}" for i in range(100)]
 
-        with open(hrpo_file, 'w') as f:
+        with open(hrpo_file, "w") as f:
             json.dump(hrpo, f)
 
         parser = V2ProjectParser(temp_v2_project)
@@ -407,13 +397,13 @@ class TestEdgeCases:
     def test_empty_features_list(self, temp_v2_project):
         """Test project with empty features list"""
         hrpo_file = temp_v2_project / ".runner" / "hrpo.json"
-        with open(hrpo_file, 'r') as f:
+        with open(hrpo_file, "r") as f:
             hrpo = json.load(f)
 
         hrpo["features"] = []
         del hrpo["build_plan"]
 
-        with open(hrpo_file, 'w') as f:
+        with open(hrpo_file, "w") as f:
             json.dump(hrpo, f)
 
         parser = V2ProjectParser(temp_v2_project)
@@ -454,15 +444,13 @@ class TestIntegration:
 
         # Step 5: Post-validation
         post_validation = validator.validate_post_migration(
-            project,
-            conversion.features_json,
-            conversion.governance_yaml
+            project, conversion.features_json, conversion.governance_yaml
         )
         assert post_validation.passed
 
         # Step 6: Write files
         features_file = temp_v2_project_with_git / "features.json"
-        with open(features_file, 'w') as f:
+        with open(features_file, "w") as f:
             json.dump(conversion.features_json, f)
 
         assert features_file.exists()

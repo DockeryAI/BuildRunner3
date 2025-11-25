@@ -33,7 +33,7 @@ class ProjectManager:
             if project_path.exists():
                 return {
                     "success": False,
-                    "error": f"Project '{project_name}' already exists at {project_path}"
+                    "error": f"Project '{project_name}' already exists at {project_path}",
                 }
 
             # Create project directory
@@ -96,9 +96,7 @@ Created with BuildRunner 3.2
             venv_path = project_path / ".venv"
             try:
                 subprocess.run(
-                    ["python3", "-m", "venv", str(venv_path)],
-                    check=True,
-                    capture_output=True
+                    ["python3", "-m", "venv", str(venv_path)], check=True, capture_output=True
                 )
             except subprocess.CalledProcessError as e:
                 print(f"Warning: Failed to create venv: {e}")
@@ -112,7 +110,7 @@ Created with BuildRunner 3.2
                         [str(pip_path), "install", "buildrunner"],
                         check=True,
                         capture_output=True,
-                        timeout=30
+                        timeout=30,
                     )
                 except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
                     # If PyPI install fails, try installing from local source
@@ -122,7 +120,7 @@ Created with BuildRunner 3.2
                             [str(pip_path), "install", "-e", str(buildrunner_src)],
                             check=True,
                             capture_output=True,
-                            timeout=30
+                            timeout=30,
                         )
                     except Exception as e:
                         print(f"Warning: Failed to install buildrunner: {e}")
@@ -131,14 +129,11 @@ Created with BuildRunner 3.2
                 "success": True,
                 "project_name": project_name,
                 "project_path": str(project_path),
-                "message": f"Project '{project_name}' created successfully"
+                "message": f"Project '{project_name}' created successfully",
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     def list_projects(self) -> Dict:
         """List all projects in the project root"""
@@ -146,22 +141,17 @@ Created with BuildRunner 3.2
             projects = []
 
             if not self.project_root.exists():
-                return {
-                    "success": True,
-                    "projects": [],
-                    "root": str(self.project_root),
-                    "count": 0
-                }
+                return {"success": True, "projects": [], "root": str(self.project_root), "count": 0}
 
             for item in self.project_root.iterdir():
-                if item.is_dir() and not item.name.startswith('.'):
+                if item.is_dir() and not item.name.startswith("."):
                     project_info = {
                         "name": item.name,
                         "path": str(item),
                         "has_venv": (item / ".venv").exists(),
-                        "has_buildrunner": (item / "PROJECT_SPEC.md").exists() or
-                                         (item / ".buildrunner").exists(),
-                        "created": item.stat().st_ctime
+                        "has_buildrunner": (item / "PROJECT_SPEC.md").exists()
+                        or (item / ".buildrunner").exists(),
+                        "created": item.stat().st_ctime,
                     }
                     projects.append(project_info)
 
@@ -172,13 +162,8 @@ Created with BuildRunner 3.2
                 "success": True,
                 "projects": projects,
                 "root": str(self.project_root),
-                "count": len(projects)
+                "count": len(projects),
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "error": str(e),
-                "projects": [],
-                "count": 0
-            }
+            return {"success": False, "error": str(e), "projects": [], "count": 0}

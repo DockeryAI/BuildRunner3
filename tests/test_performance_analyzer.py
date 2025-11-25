@@ -1,6 +1,7 @@
 """
 Tests for Performance Analyzer
 """
+
 import pytest
 import ast
 from pathlib import Path
@@ -61,8 +62,8 @@ def complex_function(x, y, z, a, b):
 
         # Complex function should have issues
         assert len(issues) > 0
-        assert issues[0].issue_type == 'high_complexity'
-        assert issues[0].severity in ['medium', 'high']
+        assert issues[0].issue_type == "high_complexity"
+        assert issues[0].severity in ["medium", "high"]
 
     def test_detect_n_plus_one_query(self, analyzer):
         """Test N+1 query detection"""
@@ -76,9 +77,9 @@ def get_user_posts(users):
         issues = analyzer.detect_n_plus_one_queries(tree)
 
         assert len(issues) == 1
-        assert issues[0].issue_type == 'n_plus_one_query'
-        assert issues[0].severity == 'high'
-        assert 'bulk' in issues[0].recommendation.lower()
+        assert issues[0].issue_type == "n_plus_one_query"
+        assert issues[0].severity == "high"
+        assert "bulk" in issues[0].recommendation.lower()
 
     def test_detect_n_plus_one_no_query_in_loop(self, analyzer):
         """Test N+1 detection with no queries in loop"""
@@ -104,9 +105,9 @@ def read_file(path):
         issues = analyzer.detect_memory_leaks(tree, code)
 
         # Should detect unclosed resource
-        unclosed_issues = [i for i in issues if i.issue_type == 'unclosed_resource']
+        unclosed_issues = [i for i in issues if i.issue_type == "unclosed_resource"]
         assert len(unclosed_issues) > 0
-        assert unclosed_issues[0].severity == 'high'
+        assert unclosed_issues[0].severity == "high"
 
     def test_detect_memory_leak_with_context_manager(self, analyzer):
         """Test no memory leak with context manager"""
@@ -120,7 +121,7 @@ def read_file(path):
         issues = analyzer.detect_memory_leaks(tree, code)
 
         # Context manager properly closes resource
-        unclosed_issues = [i for i in issues if i.issue_type == 'unclosed_resource']
+        unclosed_issues = [i for i in issues if i.issue_type == "unclosed_resource"]
         assert len(unclosed_issues) == 0
 
     def test_analyze_big_o_nested_loops(self, analyzer):
@@ -136,7 +137,7 @@ def nested_loop(items):
 
         # Outer loop has 1 nested loop inside
         assert len(issues) >= 1
-        assert any(issue.issue_type == 'high_time_complexity' for issue in issues)
+        assert any(issue.issue_type == "high_time_complexity" for issue in issues)
 
     def test_analyze_big_o_triple_nested_loops(self, analyzer):
         """Test Big-O analysis for triple nested loops"""
@@ -152,7 +153,7 @@ def triple_nested(items):
 
         # Should detect at least one high complexity issue
         assert len(issues) >= 1
-        high_complexity_issues = [i for i in issues if i.severity == 'high']
+        high_complexity_issues = [i for i in issues if i.severity == "high"]
         assert len(high_complexity_issues) > 0
 
     def test_analyze_big_o_single_loop(self, analyzer):
@@ -176,15 +177,11 @@ def single_loop(items):
     def test_calculate_performance_score_with_issues(self, analyzer):
         """Test performance score with various issues"""
         complexity_issues = [
-            ComplexityIssue('high_complexity', 'test', 'high', 'Test', 50),
-            ComplexityIssue('high_complexity', 'test', 'medium', 'Test', 15)
+            ComplexityIssue("high_complexity", "test", "high", "Test", 50),
+            ComplexityIssue("high_complexity", "test", "medium", "Test", 15),
         ]
-        n_plus_one = [
-            ComplexityIssue('n_plus_one', 'test', 'high', 'Test')
-        ]
-        memory_leaks = [
-            ComplexityIssue('memory_leak', 'test', 'medium', 'Test')
-        ]
+        n_plus_one = [ComplexityIssue("n_plus_one", "test", "high", "Test")]
+        memory_leaks = [ComplexityIssue("memory_leak", "test", "medium", "Test")]
         big_o_warnings = []
 
         score = analyzer.calculate_performance_score(
@@ -196,56 +193,50 @@ def single_loop(items):
 
     def test_generate_recommendations_with_complexity(self, analyzer):
         """Test recommendation generation with complexity issues"""
-        complexity_issues = [
-            ComplexityIssue('high_complexity', 'test', 'high', 'Test', 50)
-        ]
+        complexity_issues = [ComplexityIssue("high_complexity", "test", "high", "Test", 50)]
 
-        recommendations = analyzer.generate_recommendations(
-            complexity_issues, [], [], []
-        )
+        recommendations = analyzer.generate_recommendations(complexity_issues, [], [], [])
 
         assert len(recommendations) > 0
-        assert any('Refactor' in r and 'complexity' in r for r in recommendations)
+        assert any("Refactor" in r and "complexity" in r for r in recommendations)
 
     def test_generate_recommendations_with_n_plus_one(self, analyzer):
         """Test recommendations for N+1 queries"""
-        n_plus_one = [
-            ComplexityIssue('n_plus_one', 'test', 'high', 'Test')
-        ]
+        n_plus_one = [ComplexityIssue("n_plus_one", "test", "high", "Test")]
 
-        recommendations = analyzer.generate_recommendations(
-            [], n_plus_one, [], []
-        )
+        recommendations = analyzer.generate_recommendations([], n_plus_one, [], [])
 
-        assert any('N+1' in r or 'bulk' in r for r in recommendations)
+        assert any("N+1" in r or "bulk" in r for r in recommendations)
 
     def test_generate_recommendations_good_code(self, analyzer):
         """Test recommendations for good code"""
         recommendations = analyzer.generate_recommendations([], [], [], [])
 
-        assert any('good performance' in r for r in recommendations)
+        assert any("good performance" in r for r in recommendations)
 
     def test_analyze_file_success(self, analyzer, tmp_path):
         """Test full file analysis"""
         test_file = tmp_path / "test.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 def simple_function(x):
     return x + 1
 
 def another_function(y):
     result = y * 2
     return result
-""")
+"""
+        )
 
         result = analyzer.analyze_file(str(test_file))
 
-        assert 'complexity_issues' in result
-        assert 'n_plus_one_queries' in result
-        assert 'memory_leaks' in result
-        assert 'big_o_warnings' in result
-        assert 'performance_score' in result
-        assert 'recommendations' in result
-        assert 0 <= result['performance_score'] <= 100
+        assert "complexity_issues" in result
+        assert "n_plus_one_queries" in result
+        assert "memory_leaks" in result
+        assert "big_o_warnings" in result
+        assert "performance_score" in result
+        assert "recommendations" in result
+        assert 0 <= result["performance_score"] <= 100
 
     def test_analyze_file_not_found(self, analyzer):
         """Test analysis of non-existent file"""
@@ -260,8 +251,8 @@ def another_function(y):
         result = analyzer.analyze_file(str(test_file))
 
         # Should return error result
-        assert result['performance_score'] == 0
-        assert 'Syntax error' in result['recommendations'][0]
+        assert result["performance_score"] == 0
+        assert "Syntax error" in result["recommendations"][0]
 
     def test_is_database_query_query_method(self, analyzer):
         """Test database query detection"""
@@ -352,16 +343,16 @@ for i in range(10):
 
     def test_get_complexity_recommendation_rank_f(self, analyzer):
         """Test complexity recommendation for rank F"""
-        rec = analyzer._get_complexity_recommendation('F', 50)
-        assert 'Extremely complex' in rec
-        assert 'immediately' in rec.lower()
+        rec = analyzer._get_complexity_recommendation("F", 50)
+        assert "Extremely complex" in rec
+        assert "immediately" in rec.lower()
 
     def test_get_complexity_recommendation_rank_d(self, analyzer):
         """Test complexity recommendation for rank D"""
-        rec = analyzer._get_complexity_recommendation('D', 25)
-        assert 'Too complex' in rec
+        rec = analyzer._get_complexity_recommendation("D", 25)
+        assert "Too complex" in rec
 
     def test_get_complexity_recommendation_rank_c(self, analyzer):
         """Test complexity recommendation for rank C"""
-        rec = analyzer._get_complexity_recommendation('C', 15)
-        assert 'Complex' in rec
+        rec = analyzer._get_complexity_recommendation("C", 15)
+        assert "Complex" in rec

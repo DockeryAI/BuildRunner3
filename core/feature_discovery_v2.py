@@ -21,6 +21,7 @@ from collections import defaultdict
 @dataclass
 class CodeArtifact:
     """A code artifact (function, class, endpoint, etc.)"""
+
     name: str
     type: str  # 'function', 'class', 'endpoint', 'component', 'model'
     file_path: str
@@ -33,6 +34,7 @@ class CodeArtifact:
 @dataclass
 class DiscoveredFeature:
     """Enhanced feature with grouping and confidence"""
+
     id: str
     title: str
     description: str
@@ -65,21 +67,21 @@ class EnhancedFeatureDiscovery:
 
         # Feature name mappings (technical → readable)
         self.name_mappings = {
-            'auth': 'Authentication',
-            'user': 'User Management',
-            'prd': 'PRD Management',
-            'api': 'API',
-            'cli': 'Command Line Interface',
-            'ui': 'User Interface',
-            'db': 'Database',
-            'build': 'Build System',
-            'test': 'Testing',
-            'orchestrator': 'Task Orchestration',
-            'agent': 'Agent System',
-            'telemetry': 'Telemetry & Analytics',
-            'routing': 'Routing',
-            'security': 'Security',
-            'parallel': 'Parallel Execution',
+            "auth": "Authentication",
+            "user": "User Management",
+            "prd": "PRD Management",
+            "api": "API",
+            "cli": "Command Line Interface",
+            "ui": "User Interface",
+            "db": "Database",
+            "build": "Build System",
+            "test": "Testing",
+            "orchestrator": "Task Orchestration",
+            "agent": "Agent System",
+            "telemetry": "Telemetry & Analytics",
+            "routing": "Routing",
+            "security": "Security",
+            "parallel": "Parallel Execution",
         }
 
     def discover_all(self) -> List[DiscoveredFeature]:
@@ -130,16 +132,29 @@ class EnhancedFeatureDiscovery:
         md_files = list(self.project_root.rglob("*.md"))
 
         # Skip common non-feature documentation
-        skip_patterns = ['node_modules', '.venv', 'venv', 'CHANGELOG', 'LICENSE', 'CONTRIBUTING']
+        skip_patterns = ["node_modules", ".venv", "venv", "CHANGELOG", "LICENSE", "CONTRIBUTING"]
 
         # Prioritize these file patterns (real feature documentation)
-        priority_patterns = ['mvp', 'overview', 'roadmap', 'feature', 'prd', 'spec', 'project_spec']
+        priority_patterns = ["mvp", "overview", "roadmap", "feature", "prd", "spec", "project_spec"]
 
         # Deprioritize these (implementation/debug docs)
         low_priority_patterns = [
-            'implementation', 'handoff', 'debug', 'test', 'gap_analysis',
-            'session', 'summary', 'guide', 'readme', 'quickstart', 'integration',
-            'complete', 'report', 'migration', 'fix', 'checkpoint'
+            "implementation",
+            "handoff",
+            "debug",
+            "test",
+            "gap_analysis",
+            "session",
+            "summary",
+            "guide",
+            "readme",
+            "quickstart",
+            "integration",
+            "complete",
+            "report",
+            "migration",
+            "fix",
+            "checkpoint",
         ]
 
         # Sort files: priority files first, then others
@@ -162,7 +177,7 @@ class EnhancedFeatureDiscovery:
         # Process priority files first
         for md_file in priority_files + other_files:
             try:
-                with open(md_file, 'r', encoding='utf-8') as f:
+                with open(md_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Extract features from this file
@@ -183,9 +198,9 @@ class EnhancedFeatureDiscovery:
 
         # Limit to reasonable number of features (max 50)
         # Priority: implemented features first, then planned
-        implemented = [f for f in unique_features if f.status == 'implemented']
-        planned = [f for f in unique_features if f.status == 'planned']
-        in_progress = [f for f in unique_features if f.status == 'in_progress']
+        implemented = [f for f in unique_features if f.status == "implemented"]
+        planned = [f for f in unique_features if f.status == "planned"]
+        in_progress = [f for f in unique_features if f.status == "in_progress"]
 
         # Return up to 50 features, balanced between implemented and planned
         result = []
@@ -211,32 +226,102 @@ class EnhancedFeatureDiscovery:
 
         # Blacklist of common non-feature bold text
         non_feature_words = {
-            'note', 'warning', 'important', 'example', 'usage', 'tip', 'info',
-            'changed', 'result', 'solution', 'after', 'before', 'features',
-            'columns', 'files', 'rationale', 'impact', 'contents', 'analysis',
-            'status', 'legend', 'summary', 'what', 'why', 'how', 'when', 'where',
-            'services', 'ui', 'infrastructure', 'database', 'api', 'deployment',
-            'testing', 'documentation', 'configuration', 'setup', 'installation',
-            'prerequisites', 'requirements', 'dependencies', 'credits', 'license',
-            'authors', 'contributors', 'changelog', 'release', 'version',
-            'verification', 'validation', 'claims', 'actual', 'expected', 'output',
-            'input', 'parameters', 'arguments', 'returns', 'errors', 'exceptions',
-            'issues', 'bugs', 'fixes', 'updates', 'improvements', 'enhancements',
-            'this means', 'this adds', 'review the comprehensive report',
-            'implement immediate quick wins', 'deploy edge functions',
-            'start content calendar', 'follow the roadmap', 'next focus',
-            'brand perception gap', 'competitive intelligence', 'customer understanding',
-            'search visibility', 'strong areas', 'weak areas', 'available but not wired',
-            'new files', 'modified files', 'directories created', 'reference files',
+            "note",
+            "warning",
+            "important",
+            "example",
+            "usage",
+            "tip",
+            "info",
+            "changed",
+            "result",
+            "solution",
+            "after",
+            "before",
+            "features",
+            "columns",
+            "files",
+            "rationale",
+            "impact",
+            "contents",
+            "analysis",
+            "status",
+            "legend",
+            "summary",
+            "what",
+            "why",
+            "how",
+            "when",
+            "where",
+            "services",
+            "ui",
+            "infrastructure",
+            "database",
+            "api",
+            "deployment",
+            "testing",
+            "documentation",
+            "configuration",
+            "setup",
+            "installation",
+            "prerequisites",
+            "requirements",
+            "dependencies",
+            "credits",
+            "license",
+            "authors",
+            "contributors",
+            "changelog",
+            "release",
+            "version",
+            "verification",
+            "validation",
+            "claims",
+            "actual",
+            "expected",
+            "output",
+            "input",
+            "parameters",
+            "arguments",
+            "returns",
+            "errors",
+            "exceptions",
+            "issues",
+            "bugs",
+            "fixes",
+            "updates",
+            "improvements",
+            "enhancements",
+            "this means",
+            "this adds",
+            "review the comprehensive report",
+            "implement immediate quick wins",
+            "deploy edge functions",
+            "start content calendar",
+            "follow the roadmap",
+            "next focus",
+            "brand perception gap",
+            "competitive intelligence",
+            "customer understanding",
+            "search visibility",
+            "strong areas",
+            "weak areas",
+            "available but not wired",
+            "new files",
+            "modified files",
+            "directories created",
+            "reference files",
         }
 
         # Pattern for numbered list items with bold feature names
         # More strict: requires number prefix like "1. **Feature** - desc"
-        pattern_numbered = r'(?:^|\n)\s*\d+\.\s*\*\*([^*]+)\*\*\s*[-–—]\s*(.+?)(?=\n|$)'
+        pattern_numbered = r"(?:^|\n)\s*\d+\.\s*\*\*([^*]+)\*\*\s*[-–—]\s*(.+?)(?=\n|$)"
 
         # Pattern with status emoji (these are clearly features)
         # Matches: "✅ **Feature Name** - Description" in MVP_OVERVIEW style
-        pattern_emoji = r'(?:^|\n)\s*\d*\.?\s*([✅❌⏳🔄])\s*\*\*([^*]+)\*\*\s*[-–—]\s*(.+?)(?=\n|$)'
+        pattern_emoji = (
+            r"(?:^|\n)\s*\d*\.?\s*([✅❌⏳🔄])\s*\*\*([^*]+)\*\*\s*[-–—]\s*(.+?)(?=\n|$)"
+        )
 
         # Find emoji-prefixed features first (highest confidence)
         for match in re.finditer(pattern_emoji, content):
@@ -249,18 +334,18 @@ class EnhancedFeatureDiscovery:
                 continue
 
             # Skip if title looks like a status label
-            if title.endswith(':') or len(title) < 3:
+            if title.endswith(":") or len(title) < 3:
                 continue
 
             # Determine status from emoji
-            if emoji == '✅':
-                status = 'implemented'
-            elif emoji == '❌':
-                status = 'planned'
-            elif emoji in ['⏳', '🔄']:
-                status = 'in_progress'
+            if emoji == "✅":
+                status = "implemented"
+            elif emoji == "❌":
+                status = "planned"
+            elif emoji in ["⏳", "🔄"]:
+                status = "in_progress"
             else:
-                status = 'implemented'
+                status = "implemented"
 
             # Infer group from context near this feature
             group = self._infer_group_from_context(content, title, default_group)
@@ -275,7 +360,7 @@ class EnhancedFeatureDiscovery:
                 confidence=0.95,  # High confidence - from documentation
                 group=group,
                 acceptance_criteria=[],
-                technical_details={'source_file': file_path, 'source': 'documentation'}
+                technical_details={"source_file": file_path, "source": "documentation"},
             )
             features.append(feature)
 
@@ -293,11 +378,11 @@ class EnhancedFeatureDiscovery:
                 continue
 
             # Skip if title looks like a status/section label
-            if title.endswith(':') or len(title) < 3:
+            if title.endswith(":") or len(title) < 3:
                 continue
 
             # Skip titles that are clearly not features
-            if any(word in title.lower() for word in ['step', 'fix', 'bug', 'issue', 'error']):
+            if any(word in title.lower() for word in ["step", "fix", "bug", "issue", "error"]):
                 continue
 
             # Infer status from context
@@ -316,7 +401,7 @@ class EnhancedFeatureDiscovery:
                 confidence=0.85,  # Good confidence - from numbered list
                 group=group,
                 acceptance_criteria=[],
-                technical_details={'source_file': file_path, 'source': 'documentation'}
+                technical_details={"source_file": file_path, "source": "documentation"},
             )
             features.append(feature)
 
@@ -328,19 +413,19 @@ class EnhancedFeatureDiscovery:
 
         # Map common file patterns to groups
         group_mappings = {
-            'mvp': 'MVP Features',
-            'overview': 'Core Features',
-            'roadmap': 'Roadmap',
-            'phase_1': 'Phase 1',
-            'phase_2': 'Phase 2',
-            'phase_3': 'Phase 3',
-            'implementation': 'Implementation',
-            'mirror': 'Mirror Diagnostics',
-            'content': 'Content Generation',
-            'calendar': 'Calendar & Scheduling',
-            'brand': 'Brand Intelligence',
-            'competitive': 'Competitive Analysis',
-            'design': 'Design Studio',
+            "mvp": "MVP Features",
+            "overview": "Core Features",
+            "roadmap": "Roadmap",
+            "phase_1": "Phase 1",
+            "phase_2": "Phase 2",
+            "phase_3": "Phase 3",
+            "implementation": "Implementation",
+            "mirror": "Mirror Diagnostics",
+            "content": "Content Generation",
+            "calendar": "Calendar & Scheduling",
+            "brand": "Brand Intelligence",
+            "competitive": "Competitive Analysis",
+            "design": "Design Studio",
         }
 
         for pattern, group_name in group_mappings.items():
@@ -363,7 +448,7 @@ class EnhancedFeatureDiscovery:
         context_before = content[:title_pos]
 
         # Find the last ## or ### header before this feature
-        header_pattern = r'##\s+([^\n]+)'
+        header_pattern = r"##\s+([^\n]+)"
         headers = list(re.finditer(header_pattern, context_before))
 
         if headers:
@@ -371,20 +456,20 @@ class EnhancedFeatureDiscovery:
 
             # Map common header patterns to groups
             header_mappings = {
-                'mvp': 'MVP Features',
-                'phase 1': 'MVP Features',
-                'phase 2': 'Phase 2 - Future',
-                'phase 3': 'Phase 3 - Future',
-                'content': 'Content Generation',
-                'calendar': 'Calendar & Scheduling',
-                'brand': 'Brand Intelligence',
-                'mirror': 'Mirror Diagnostics',
-                'intelligence': 'Brand Intelligence',
-                'scheduling': 'Calendar & Scheduling',
-                'competitive': 'Competitive Analysis',
-                'design': 'Design Studio',
-                'template': 'Templates & Visual',
-                'analytics': 'Analytics & Reporting',
+                "mvp": "MVP Features",
+                "phase 1": "MVP Features",
+                "phase 2": "Phase 2 - Future",
+                "phase 3": "Phase 3 - Future",
+                "content": "Content Generation",
+                "calendar": "Calendar & Scheduling",
+                "brand": "Brand Intelligence",
+                "mirror": "Mirror Diagnostics",
+                "intelligence": "Brand Intelligence",
+                "scheduling": "Calendar & Scheduling",
+                "competitive": "Competitive Analysis",
+                "design": "Design Studio",
+                "template": "Templates & Visual",
+                "analytics": "Analytics & Reporting",
             }
 
             last_header_lower = last_header.lower()
@@ -394,7 +479,7 @@ class EnhancedFeatureDiscovery:
 
             # If header doesn't match patterns, use it directly (cleaned up)
             if len(last_header) < 40:  # Reasonable header length
-                return last_header.replace('✅', '').replace('❌', '').strip()
+                return last_header.replace("✅", "").replace("❌", "").strip()
 
         return default_group
 
@@ -406,33 +491,49 @@ class EnhancedFeatureDiscovery:
         # Look for context clues near the title
         title_pos = content_lower.find(title_lower)
         if title_pos == -1:
-            return 'implemented'
+            return "implemented"
 
         # Check 200 chars before title for context
         context_start = max(0, title_pos - 200)
-        context = content_lower[context_start:title_pos + len(title) + 200]
+        context = content_lower[context_start : title_pos + len(title) + 200]
 
         # Context indicators for planned/not implemented
         planned_indicators = [
-            'not in mvp', 'phase 2', 'phase 3', 'coming soon', 'planned',
-            'not yet', 'future', 'roadmap', 'todo', 'backlog', '❌'
+            "not in mvp",
+            "phase 2",
+            "phase 3",
+            "coming soon",
+            "planned",
+            "not yet",
+            "future",
+            "roadmap",
+            "todo",
+            "backlog",
+            "❌",
         ]
 
         # Context indicators for implemented
         implemented_indicators = [
-            'in the mvp', 'what you have', 'implemented', 'complete',
-            'available', 'current', '✅', 'done', 'shipped'
+            "in the mvp",
+            "what you have",
+            "implemented",
+            "complete",
+            "available",
+            "current",
+            "✅",
+            "done",
+            "shipped",
         ]
 
         for indicator in planned_indicators:
             if indicator in context:
-                return 'planned'
+                return "planned"
 
         for indicator in implemented_indicators:
             if indicator in context:
-                return 'implemented'
+                return "implemented"
 
-        return 'implemented'  # Default
+        return "implemented"  # Default
 
     def _infer_priority_from_context(self, content: str, title: str) -> str:
         """Infer feature priority from surrounding context"""
@@ -442,23 +543,23 @@ class EnhancedFeatureDiscovery:
         # Check for priority indicators
         title_pos = content_lower.find(title_lower)
         if title_pos == -1:
-            return 'medium'
+            return "medium"
 
         context_start = max(0, title_pos - 300)
-        context = content_lower[context_start:title_pos + len(title) + 100]
+        context = content_lower[context_start : title_pos + len(title) + 100]
 
-        high_priority = ['critical', 'essential', 'core', 'must have', 'p0', 'p1', 'high priority']
-        low_priority = ['nice to have', 'optional', 'low priority', 'p3', 'stretch']
+        high_priority = ["critical", "essential", "core", "must have", "p0", "p1", "high priority"]
+        low_priority = ["nice to have", "optional", "low priority", "p3", "stretch"]
 
         for indicator in high_priority:
             if indicator in context:
-                return 'high'
+                return "high"
 
         for indicator in low_priority:
             if indicator in context:
-                return 'low'
+                return "low"
 
-        return 'medium'
+        return "medium"
 
     def _extract_artifacts_from_python(self):
         """Extract code artifacts from Python files using AST"""
@@ -466,11 +567,14 @@ class EnhancedFeatureDiscovery:
 
         for py_file in python_files:
             # Skip tests, migrations, and virtual envs
-            if any(skip in str(py_file) for skip in ['test_', '__pycache__', '.venv', 'venv', 'migrations']):
+            if any(
+                skip in str(py_file)
+                for skip in ["test_", "__pycache__", ".venv", "venv", "migrations"]
+            ):
                 continue
 
             try:
-                with open(py_file, 'r', encoding='utf-8') as f:
+                with open(py_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 tree = ast.parse(content)
@@ -495,11 +599,23 @@ class EnhancedFeatureDiscovery:
         decorators = [self._get_decorator_name(d) for d in node.decorator_list]
 
         # Detect endpoint decorators
-        is_endpoint = any(d in ['app.get', 'app.post', 'app.put', 'app.delete', 'app.route',
-                               'router.get', 'router.post', 'router.put', 'router.delete']
-                         for d in decorators)
+        is_endpoint = any(
+            d
+            in [
+                "app.get",
+                "app.post",
+                "app.put",
+                "app.delete",
+                "app.route",
+                "router.get",
+                "router.post",
+                "router.put",
+                "router.delete",
+            ]
+            for d in decorators
+        )
 
-        artifact_type = 'endpoint' if is_endpoint else 'function'
+        artifact_type = "endpoint" if is_endpoint else "function"
 
         artifact = CodeArtifact(
             name=node.name,
@@ -507,7 +623,7 @@ class EnhancedFeatureDiscovery:
             file_path=file_path,
             line_number=node.lineno,
             docstring=ast.get_docstring(node) or "",
-            decorators=decorators
+            decorators=decorators,
         )
 
         self.artifacts.append(artifact)
@@ -516,11 +632,22 @@ class EnhancedFeatureDiscovery:
         """Extract async function artifact"""
         decorators = [self._get_decorator_name(d) for d in node.decorator_list]
 
-        is_endpoint = any(d in ['app.get', 'app.post', 'app.put', 'app.delete',
-                               'router.get', 'router.post', 'router.put', 'router.delete']
-                         for d in decorators)
+        is_endpoint = any(
+            d
+            in [
+                "app.get",
+                "app.post",
+                "app.put",
+                "app.delete",
+                "router.get",
+                "router.post",
+                "router.put",
+                "router.delete",
+            ]
+            for d in decorators
+        )
 
-        artifact_type = 'endpoint' if is_endpoint else 'function'
+        artifact_type = "endpoint" if is_endpoint else "function"
 
         artifact = CodeArtifact(
             name=node.name,
@@ -528,7 +655,7 @@ class EnhancedFeatureDiscovery:
             file_path=file_path,
             line_number=node.lineno,
             docstring=ast.get_docstring(node) or "",
-            decorators=decorators
+            decorators=decorators,
         )
 
         self.artifacts.append(artifact)
@@ -537,18 +664,18 @@ class EnhancedFeatureDiscovery:
         """Extract class artifact"""
         # Detect model classes (inherit from BaseModel, Base, etc.)
         is_model = any(
-            isinstance(base, ast.Name) and base.id in ['BaseModel', 'Base', 'Model']
+            isinstance(base, ast.Name) and base.id in ["BaseModel", "Base", "Model"]
             for base in node.bases
         )
 
-        artifact_type = 'model' if is_model else 'class'
+        artifact_type = "model" if is_model else "class"
 
         artifact = CodeArtifact(
             name=node.name,
             type=artifact_type,
             file_path=file_path,
             line_number=node.lineno,
-            docstring=ast.get_docstring(node) or ""
+            docstring=ast.get_docstring(node) or "",
         )
 
         self.artifacts.append(artifact)
@@ -570,16 +697,19 @@ class EnhancedFeatureDiscovery:
         """Extract code artifacts from TypeScript/JavaScript files using regex"""
         # Find all TS/JS files, excluding node_modules
         ts_files = []
-        for ext in ['*.ts', '*.tsx', '*.js', '*.jsx']:
+        for ext in ["*.ts", "*.tsx", "*.js", "*.jsx"]:
             ts_files.extend(self.project_root.rglob(ext))
 
         for ts_file in ts_files:
             # Skip node_modules, dist, build folders
-            if any(skip in str(ts_file) for skip in ['node_modules', 'dist', 'build', '.next', '__tests__']):
+            if any(
+                skip in str(ts_file)
+                for skip in ["node_modules", "dist", "build", ".next", "__tests__"]
+            ):
                 continue
 
             try:
-                with open(ts_file, 'r', encoding='utf-8') as f:
+                with open(ts_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 relative_path = str(ts_file.relative_to(self.project_root))
@@ -587,10 +717,10 @@ class EnhancedFeatureDiscovery:
                 # Extract React components (function and class)
                 # Pattern: export function ComponentName or export const ComponentName =
                 component_patterns = [
-                    r'export\s+(?:default\s+)?function\s+([A-Z][a-zA-Z0-9]*)',
-                    r'export\s+(?:const|let)\s+([A-Z][a-zA-Z0-9]*)\s*[=:]',
-                    r'export\s+(?:default\s+)?class\s+([A-Z][a-zA-Z0-9]*)',
-                    r'const\s+([A-Z][a-zA-Z0-9]*)\s*:\s*(?:React\.)?FC',
+                    r"export\s+(?:default\s+)?function\s+([A-Z][a-zA-Z0-9]*)",
+                    r"export\s+(?:const|let)\s+([A-Z][a-zA-Z0-9]*)\s*[=:]",
+                    r"export\s+(?:default\s+)?class\s+([A-Z][a-zA-Z0-9]*)",
+                    r"const\s+([A-Z][a-zA-Z0-9]*)\s*:\s*(?:React\.)?FC",
                 ]
 
                 for pattern in component_patterns:
@@ -599,87 +729,91 @@ class EnhancedFeatureDiscovery:
                         # Check if it's likely a component (starts with uppercase, has JSX nearby)
                         artifact = CodeArtifact(
                             name=name,
-                            type='component',
+                            type="component",
                             file_path=relative_path,
-                            line_number=content[:match.start()].count('\n') + 1
+                            line_number=content[: match.start()].count("\n") + 1,
                         )
                         self.artifacts.append(artifact)
 
                 # Extract regular functions
-                func_pattern = r'(?:export\s+)?(?:async\s+)?function\s+([a-z][a-zA-Z0-9]*)\s*\('
+                func_pattern = r"(?:export\s+)?(?:async\s+)?function\s+([a-z][a-zA-Z0-9]*)\s*\("
                 for match in re.finditer(func_pattern, content):
                     name = match.group(1)
                     artifact = CodeArtifact(
                         name=name,
-                        type='function',
+                        type="function",
                         file_path=relative_path,
-                        line_number=content[:match.start()].count('\n') + 1
+                        line_number=content[: match.start()].count("\n") + 1,
                     )
                     self.artifacts.append(artifact)
 
                 # Extract arrow function exports
-                arrow_pattern = r'export\s+const\s+([a-z][a-zA-Z0-9]*)\s*=\s*(?:async\s+)?\('
+                arrow_pattern = r"export\s+const\s+([a-z][a-zA-Z0-9]*)\s*=\s*(?:async\s+)?\("
                 for match in re.finditer(arrow_pattern, content):
                     name = match.group(1)
                     artifact = CodeArtifact(
                         name=name,
-                        type='function',
+                        type="function",
                         file_path=relative_path,
-                        line_number=content[:match.start()].count('\n') + 1
+                        line_number=content[: match.start()].count("\n") + 1,
                     )
                     self.artifacts.append(artifact)
 
                 # Extract classes
-                class_pattern = r'(?:export\s+)?class\s+([a-zA-Z][a-zA-Z0-9]*)'
+                class_pattern = r"(?:export\s+)?class\s+([a-zA-Z][a-zA-Z0-9]*)"
                 for match in re.finditer(class_pattern, content):
                     name = match.group(1)
                     if not name[0].isupper():
                         continue
                     artifact = CodeArtifact(
                         name=name,
-                        type='class',
+                        type="class",
                         file_path=relative_path,
-                        line_number=content[:match.start()].count('\n') + 1
+                        line_number=content[: match.start()].count("\n") + 1,
                     )
                     self.artifacts.append(artifact)
 
                 # Extract interfaces and types
-                interface_pattern = r'(?:export\s+)?interface\s+([A-Z][a-zA-Z0-9]*)'
+                interface_pattern = r"(?:export\s+)?interface\s+([A-Z][a-zA-Z0-9]*)"
                 for match in re.finditer(interface_pattern, content):
                     name = match.group(1)
                     artifact = CodeArtifact(
                         name=name,
-                        type='model',
+                        type="model",
                         file_path=relative_path,
-                        line_number=content[:match.start()].count('\n') + 1
+                        line_number=content[: match.start()].count("\n") + 1,
                     )
                     self.artifacts.append(artifact)
 
-                type_pattern = r'(?:export\s+)?type\s+([A-Z][a-zA-Z0-9]*)\s*='
+                type_pattern = r"(?:export\s+)?type\s+([A-Z][a-zA-Z0-9]*)\s*="
                 for match in re.finditer(type_pattern, content):
                     name = match.group(1)
                     artifact = CodeArtifact(
                         name=name,
-                        type='model',
+                        type="model",
                         file_path=relative_path,
-                        line_number=content[:match.start()].count('\n') + 1
+                        line_number=content[: match.start()].count("\n") + 1,
                     )
                     self.artifacts.append(artifact)
 
                 # Extract API routes (Next.js, Express patterns)
                 route_patterns = [
                     r'(?:app|router)\.(get|post|put|delete|patch)\s*\(\s*[\'"]([^\'"]+)',
-                    r'export\s+(?:async\s+)?function\s+(GET|POST|PUT|DELETE|PATCH)\s*\(',
+                    r"export\s+(?:async\s+)?function\s+(GET|POST|PUT|DELETE|PATCH)\s*\(",
                 ]
 
                 for pattern in route_patterns:
                     for match in re.finditer(pattern, content):
-                        name = match.group(1) if len(match.groups()) == 1 else f"{match.group(1)}:{match.group(2)}"
+                        name = (
+                            match.group(1)
+                            if len(match.groups()) == 1
+                            else f"{match.group(1)}:{match.group(2)}"
+                        )
                         artifact = CodeArtifact(
                             name=name,
-                            type='endpoint',
+                            type="endpoint",
                             file_path=relative_path,
-                            line_number=content[:match.start()].count('\n') + 1
+                            line_number=content[: match.start()].count("\n") + 1,
                         )
                         self.artifacts.append(artifact)
 
@@ -716,7 +850,7 @@ class EnhancedFeatureDiscovery:
         # 3. First part of filename (user_service.py → user)
 
         if len(path_parts) >= 2:
-            if path_parts[0] in ['api', 'core', 'cli']:
+            if path_parts[0] in ["api", "core", "cli"]:
                 # Use second part (api/routes → routes, core/agents → agents)
                 if len(path_parts) > 2:
                     return path_parts[1]
@@ -727,7 +861,9 @@ class EnhancedFeatureDiscovery:
 
         return Path(artifact.file_path).stem
 
-    def _create_feature_from_group(self, feature_key: str, artifacts: List[CodeArtifact]) -> DiscoveredFeature:
+    def _create_feature_from_group(
+        self, feature_key: str, artifacts: List[CodeArtifact]
+    ) -> DiscoveredFeature:
         """Create a feature from grouped artifacts"""
         # Generate readable feature name
         feature_title = self._generate_feature_name(feature_key, artifacts)
@@ -736,11 +872,11 @@ class EnhancedFeatureDiscovery:
         description = self._generate_feature_description(artifacts)
 
         # Extract endpoints
-        endpoints = [a.name for a in artifacts if a.type == 'endpoint']
+        endpoints = [a.name for a in artifacts if a.type == "endpoint"]
 
         # Extract classes and functions
-        classes = [a.name for a in artifacts if a.type in ['class', 'model']]
-        functions = [a.name for a in artifacts if a.type == 'function']
+        classes = [a.name for a in artifacts if a.type in ["class", "model"]]
+        functions = [a.name for a in artifacts if a.type == "function"]
 
         # Determine priority based on artifact count
         priority = self._calculate_priority(artifacts)
@@ -761,12 +897,12 @@ class EnhancedFeatureDiscovery:
             artifacts=artifacts,
             acceptance_criteria=acceptance_criteria,
             technical_details={
-                'endpoints': endpoints,
-                'classes': classes,
-                'functions': functions,
-                'file_count': len(set(a.file_path for a in artifacts)),
-                'artifact_count': len(artifacts)
-            }
+                "endpoints": endpoints,
+                "classes": classes,
+                "functions": functions,
+                "file_count": len(set(a.file_path for a in artifacts)),
+                "artifact_count": len(artifacts),
+            },
         )
 
         return feature
@@ -785,12 +921,13 @@ class EnhancedFeatureDiscovery:
             words = []
             for artifact in artifacts:
                 # Extract words from camelCase or snake_case
-                artifact_words = re.findall(r'[A-Z][a-z]+|[a-z]+', artifact.name)
+                artifact_words = re.findall(r"[A-Z][a-z]+|[a-z]+", artifact.name)
                 words.extend(artifact_words)
 
             if words:
                 # Find most common word
                 from collections import Counter
+
                 common_word = Counter(w.lower() for w in words).most_common(1)[0][0]
 
                 # Check if it's in mappings
@@ -801,7 +938,7 @@ class EnhancedFeatureDiscovery:
                 return common_word.title() + " System"
 
         # Fallback: Clean up feature key
-        return feature_key.replace('_', ' ').title()
+        return feature_key.replace("_", " ").title()
 
     def _generate_feature_description(self, artifacts: List[CodeArtifact]) -> str:
         """Generate feature description from artifacts"""
@@ -809,13 +946,13 @@ class EnhancedFeatureDiscovery:
         for artifact in artifacts:
             if artifact.docstring:
                 # Use first line of docstring
-                first_line = artifact.docstring.split('\n')[0].strip()
+                first_line = artifact.docstring.split("\n")[0].strip()
                 if len(first_line) > 20:
                     return first_line
 
         # Generate from artifact types
-        endpoint_count = sum(1 for a in artifacts if a.type == 'endpoint')
-        class_count = sum(1 for a in artifacts if a.type in ['class', 'model'])
+        endpoint_count = sum(1 for a in artifacts if a.type == "endpoint")
+        class_count = sum(1 for a in artifacts if a.type in ["class", "model"])
 
         if endpoint_count > 0:
             return f"Provides {endpoint_count} API endpoints for managing operations"
@@ -832,8 +969,8 @@ class EnhancedFeatureDiscovery:
         # - In core directories
 
         artifact_count = len(artifacts)
-        has_endpoints = any(a.type == 'endpoint' for a in artifacts)
-        in_core = any('core' in a.file_path or 'api' in a.file_path for a in artifacts)
+        has_endpoints = any(a.type == "endpoint" for a in artifacts)
+        in_core = any("core" in a.file_path or "api" in a.file_path for a in artifacts)
 
         if artifact_count > 10 or (has_endpoints and in_core):
             return "high"
@@ -847,12 +984,12 @@ class EnhancedFeatureDiscovery:
         criteria = []
 
         # From endpoints
-        endpoints = [a for a in artifacts if a.type == 'endpoint']
+        endpoints = [a for a in artifacts if a.type == "endpoint"]
         if endpoints:
             criteria.append(f"All {len(endpoints)} endpoints should respond correctly")
 
         # From classes
-        classes = [a for a in artifacts if a.type in ['class', 'model']]
+        classes = [a for a in artifacts if a.type in ["class", "model"]]
         if classes:
             criteria.append(f"All {len(classes)} classes should be properly initialized")
 
@@ -860,9 +997,9 @@ class EnhancedFeatureDiscovery:
         for artifact in artifacts[:3]:  # Top 3
             if artifact.docstring:
                 # Extract any "should" or "must" statements
-                for line in artifact.docstring.split('\n'):
+                for line in artifact.docstring.split("\n"):
                     line = line.strip()
-                    if 'should' in line.lower() or 'must' in line.lower():
+                    if "should" in line.lower() or "must" in line.lower():
                         criteria.append(line)
                         if len(criteria) >= 5:
                             break
@@ -873,11 +1010,13 @@ class EnhancedFeatureDiscovery:
         """Enhance feature descriptions with additional context"""
         for feature in self.features:
             # Add implementation status
-            if feature.technical_details.get('endpoints'):
-                feature.description += f"\n\nProvides {len(feature.technical_details['endpoints'])} API endpoints."
+            if feature.technical_details.get("endpoints"):
+                feature.description += (
+                    f"\n\nProvides {len(feature.technical_details['endpoints'])} API endpoints."
+                )
 
             # Add file count
-            file_count = feature.technical_details.get('file_count', 0)
+            file_count = feature.technical_details.get("file_count", 0)
             if file_count > 1:
                 feature.description += f" Implemented across {file_count} files."
 
@@ -898,12 +1037,12 @@ class EnhancedFeatureDiscovery:
             if len(feature.artifacts) >= 3:
                 score += 0.1
 
-            if feature.technical_details.get('endpoints'):
+            if feature.technical_details.get("endpoints"):
                 score += 0.2
 
             # Check for test files
             for artifact in feature.artifacts:
-                if 'test' in artifact.file_path:
+                if "test" in artifact.file_path:
                     score += 0.1
                     break
 
@@ -925,14 +1064,14 @@ def export_to_prd_format(features: List[DiscoveredFeature], project_name: str) -
 
     for i, feature in enumerate(features, 1):
         prd_feature = {
-            'id': feature.id or f"feature-{i}",
-            'title': feature.title,
-            'description': feature.description,
-            'priority': feature.priority,
-            'status': feature.status,
-            'version': f"v{feature.version}",
-            'group': feature.group,  # Add group for organization
-            'acceptance_criteria': '\n'.join(f"- [ ] {c}" for c in feature.acceptance_criteria)
+            "id": feature.id or f"feature-{i}",
+            "title": feature.title,
+            "description": feature.description,
+            "priority": feature.priority,
+            "status": feature.status,
+            "version": f"v{feature.version}",
+            "group": feature.group,  # Add group for organization
+            "acceptance_criteria": "\n".join(f"- [ ] {c}" for c in feature.acceptance_criteria),
         }
         prd_features.append(prd_feature)
 
@@ -941,17 +1080,17 @@ def export_to_prd_format(features: List[DiscoveredFeature], project_name: str) -
     group_counts = {g: sum(1 for f in features if f.group == g) for g in all_groups}
 
     return {
-        'project_name': project_name,
-        'features': prd_features,
-        'overview': {
-            'executive_summary': f"Automatically discovered {len(features)} features from codebase.",
-            'goals': 'Feature inventory generated from code analysis',
-            'target_users': ''
+        "project_name": project_name,
+        "features": prd_features,
+        "overview": {
+            "executive_summary": f"Automatically discovered {len(features)} features from codebase.",
+            "goals": "Feature inventory generated from code analysis",
+            "target_users": "",
         },
-        'technical_requirements': {},
-        'success_criteria': [],
-        'metadata': {
-            'groups': sorted(all_groups),  # List of all unique groups
-            'group_counts': group_counts  # Count of features per group
-        }
+        "technical_requirements": {},
+        "success_criteria": [],
+        "metadata": {
+            "groups": sorted(all_groups),  # List of all unique groups
+            "group_counts": group_counts,  # Count of features per group
+        },
     }

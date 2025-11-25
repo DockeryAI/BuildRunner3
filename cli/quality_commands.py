@@ -25,7 +25,9 @@ console = Console()
 @quality_app.command("check")
 def quality_check(
     strict: bool = typer.Option(False, "--strict", help="Enforce strict quality standards"),
-    min_score: Optional[float] = typer.Option(None, "--min-score", help="Minimum required quality score (0-10)")
+    min_score: Optional[float] = typer.Option(
+        None, "--min-score", help="Minimum required quality score (0-10)"
+    ),
 ):
     """
     Run quality gates on codebase
@@ -73,7 +75,9 @@ def quality_check(
                 console.print(f"[red]❌ Quality gates failed: {e}[/red]\n")
                 raise typer.Exit(1)
         elif min_score and metrics.overall_score < min_score:
-            console.print(f"[red]❌ Quality score {metrics.overall_score:.1f} below minimum {min_score}[/red]\n")
+            console.print(
+                f"[red]❌ Quality score {metrics.overall_score:.1f} below minimum {min_score}[/red]\n"
+            )
             raise typer.Exit(1)
         elif not passed:
             console.print("[yellow]⚠️  Some quality checks failed[/yellow]\n")
@@ -86,6 +90,7 @@ def quality_check(
     except Exception as e:
         console.print(f"[red]❌ Error during quality check: {e}[/red]")
         import traceback
+
         console.print(f"[dim]{traceback.format_exc()}[/dim]")
         raise typer.Exit(1)
 
@@ -93,7 +98,7 @@ def quality_check(
 @quality_app.command("report")
 def quality_report(
     output_file: Optional[str] = typer.Option(None, "--output", "-o", help="Save report to file"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed breakdown")
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed breakdown"),
 ):
     """
     Generate detailed quality report
@@ -158,11 +163,13 @@ def show_score():
             color = "red"
             rating = "Needs Improvement"
 
-        console.print(Panel(
-            f"[bold {color}]{score:.1f}/10[/bold {color}] - {rating}",
-            title="Overall Quality Score",
-            border_style=color
-        ))
+        console.print(
+            Panel(
+                f"[bold {color}]{score:.1f}/10[/bold {color}] - {rating}",
+                title="Overall Quality Score",
+                border_style=color,
+            )
+        )
 
         # Quick breakdown
         console.print("\n[bold]Score Breakdown:[/bold]")
@@ -179,7 +186,7 @@ def show_score():
 @quality_app.command("lint")
 def lint_check(
     fix: bool = typer.Option(False, "--fix", help="Auto-fix issues where possible"),
-    paths: Optional[str] = typer.Argument(None, help="Paths to check (default: all)")
+    paths: Optional[str] = typer.Argument(None, help="Paths to check (default: all)"),
 ):
     """
     Run Ruff linter on the codebase
@@ -226,7 +233,7 @@ def lint_check(
 @quality_app.command("typecheck")
 def type_check(
     strict: bool = typer.Option(False, "--strict", help="Enable strict type checking"),
-    paths: Optional[str] = typer.Argument(None, help="Paths to check (default: all)")
+    paths: Optional[str] = typer.Argument(None, help="Paths to check (default: all)"),
 ):
     """
     Run MyPy type checker
@@ -343,6 +350,7 @@ def auto_fix(
 
 # Helper functions
 
+
 def _display_quality_metrics(metrics, analyzer, verbose=False):
     """Display quality metrics in a formatted table"""
 
@@ -366,11 +374,17 @@ def _display_quality_metrics(metrics, analyzer, verbose=False):
         else:
             return "[red]✗[/red]"
 
-    table.add_row("Structure & Organization", f"{structure_score:.1f}/10", get_status(structure_score))
+    table.add_row(
+        "Structure & Organization", f"{structure_score:.1f}/10", get_status(structure_score)
+    )
     table.add_row("Security", f"{security_score:.1f}/10", get_status(security_score))
     table.add_row("Testing", f"{testing_score:.1f}/10", get_status(testing_score))
     table.add_row("Documentation", f"{docs_score:.1f}/10", get_status(docs_score))
-    table.add_row("[bold]Overall[/bold]", f"[bold]{metrics.overall_score:.1f}/10[/bold]", get_status(metrics.overall_score))
+    table.add_row(
+        "[bold]Overall[/bold]",
+        f"[bold]{metrics.overall_score:.1f}/10[/bold]",
+        get_status(metrics.overall_score),
+    )
 
     console.print(table)
 
@@ -393,7 +407,7 @@ def _display_quality_metrics(metrics, analyzer, verbose=False):
 
 def _save_quality_report(metrics, analyzer, output_path: Path):
     """Save quality report to markdown file"""
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         f.write("# Code Quality Report\n\n")
         f.write(f"**Project:** {Path.cwd().name}\n\n")
 
@@ -401,7 +415,9 @@ def _save_quality_report(metrics, analyzer, output_path: Path):
         f.write(f"**{metrics.overall_score:.1f}/10**\n\n")
 
         f.write("## Score Breakdown\n\n")
-        f.write(f"- Structure & Organization: {analyzer.calculate_structure_score(metrics):.1f}/10\n")
+        f.write(
+            f"- Structure & Organization: {analyzer.calculate_structure_score(metrics):.1f}/10\n"
+        )
         f.write(f"- Security: {analyzer.calculate_security_score(metrics):.1f}/10\n")
         f.write(f"- Testing: {analyzer.calculate_testing_score(metrics):.1f}/10\n")
         f.write(f"- Documentation: {analyzer.calculate_docs_score(metrics):.1f}/10\n\n")

@@ -58,6 +58,7 @@ class DesignTokens:
 @dataclass
 class ComponentPattern:
     """Detected component pattern"""
+
     name: str
     type: str  # 'button', 'card', 'modal', etc.
     file_path: str
@@ -69,6 +70,7 @@ class ComponentPattern:
 @dataclass
 class UIFramework:
     """Detected UI framework"""
+
     name: str  # 'React', 'Vue', 'Angular', 'Svelte'
     version: Optional[str] = None
     ui_library: Optional[str] = None  # 'Material-UI', 'Chakra', 'Ant Design', etc.
@@ -78,6 +80,7 @@ class UIFramework:
 @dataclass
 class DesignSystem:
     """Complete design system extracted from project"""
+
     framework: Optional[UIFramework] = None
     tokens: DesignTokens = field(default_factory=DesignTokens)
     components: List[ComponentPattern] = field(default_factory=list)
@@ -89,13 +92,13 @@ class DesignSystem:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dict for JSON serialization"""
         return {
-            'framework': asdict(self.framework) if self.framework else None,
-            'tokens': asdict(self.tokens),
-            'components': [asdict(c) for c in self.components],
-            'naming_conventions': self.naming_conventions,
-            'file_structure': self.file_structure,
-            'design_system_file': self.design_system_file,
-            'confidence': self.confidence
+            "framework": asdict(self.framework) if self.framework else None,
+            "tokens": asdict(self.tokens),
+            "components": [asdict(c) for c in self.components],
+            "naming_conventions": self.naming_conventions,
+            "file_structure": self.file_structure,
+            "design_system_file": self.design_system_file,
+            "confidence": self.confidence,
         }
 
 
@@ -149,48 +152,48 @@ class DesignExtractor:
                     with open(pkg_path) as f:
                         pkg = json.load(f)
 
-                    deps = {**pkg.get('dependencies', {}), **pkg.get('devDependencies', {})}
+                    deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
 
                     # Detect framework
                     framework_name = None
                     version = None
 
-                    if 'react' in deps:
-                        framework_name = 'React'
-                        version = deps['react']
-                    elif 'vue' in deps:
-                        framework_name = 'Vue'
-                        version = deps['vue']
-                    elif '@angular/core' in deps:
-                        framework_name = 'Angular'
-                        version = deps['@angular/core']
-                    elif 'svelte' in deps:
-                        framework_name = 'Svelte'
-                        version = deps['svelte']
+                    if "react" in deps:
+                        framework_name = "React"
+                        version = deps["react"]
+                    elif "vue" in deps:
+                        framework_name = "Vue"
+                        version = deps["vue"]
+                    elif "@angular/core" in deps:
+                        framework_name = "Angular"
+                        version = deps["@angular/core"]
+                    elif "svelte" in deps:
+                        framework_name = "Svelte"
+                        version = deps["svelte"]
 
                     # Detect UI library
                     ui_library = None
-                    if '@mui/material' in deps or '@material-ui/core' in deps:
-                        ui_library = 'Material-UI'
-                    elif '@chakra-ui/react' in deps:
-                        ui_library = 'Chakra UI'
-                    elif 'antd' in deps:
-                        ui_library = 'Ant Design'
-                    elif '@headlessui/react' in deps:
-                        ui_library = 'Headless UI'
-                    elif '@radix-ui/react-dialog' in deps:
-                        ui_library = 'Radix UI'
+                    if "@mui/material" in deps or "@material-ui/core" in deps:
+                        ui_library = "Material-UI"
+                    elif "@chakra-ui/react" in deps:
+                        ui_library = "Chakra UI"
+                    elif "antd" in deps:
+                        ui_library = "Ant Design"
+                    elif "@headlessui/react" in deps:
+                        ui_library = "Headless UI"
+                    elif "@radix-ui/react-dialog" in deps:
+                        ui_library = "Radix UI"
 
                     # Detect styling system
                     styling_system = None
-                    if 'tailwindcss' in deps:
-                        styling_system = 'Tailwind CSS'
-                    elif 'styled-components' in deps:
-                        styling_system = 'Styled Components'
-                    elif '@emotion/react' in deps or '@emotion/styled' in deps:
-                        styling_system = 'Emotion'
-                    elif 'sass' in deps or 'node-sass' in deps:
-                        styling_system = 'SASS/SCSS'
+                    if "tailwindcss" in deps:
+                        styling_system = "Tailwind CSS"
+                    elif "styled-components" in deps:
+                        styling_system = "Styled Components"
+                    elif "@emotion/react" in deps or "@emotion/styled" in deps:
+                        styling_system = "Emotion"
+                    elif "sass" in deps or "node-sass" in deps:
+                        styling_system = "SASS/SCSS"
 
                     if framework_name:
                         logger.info(f"Detected {framework_name} {version}")
@@ -203,7 +206,7 @@ class DesignExtractor:
                             name=framework_name,
                             version=version,
                             ui_library=ui_library,
-                            styling_system=styling_system
+                            styling_system=styling_system,
                         )
 
                 except Exception as e:
@@ -221,42 +224,50 @@ class DesignExtractor:
 
         for css_file in css_files:
             # Skip node_modules and build directories
-            if 'node_modules' in str(css_file) or 'dist' in str(css_file) or 'build' in str(css_file):
+            if (
+                "node_modules" in str(css_file)
+                or "dist" in str(css_file)
+                or "build" in str(css_file)
+            ):
                 continue
 
             try:
                 content = css_file.read_text()
 
                 # Extract CSS variables (--var-name: value)
-                var_pattern = r'--([a-zA-Z0-9-]+):\s*([^;]+);'
+                var_pattern = r"--([a-zA-Z0-9-]+):\s*([^;]+);"
                 for match in re.finditer(var_pattern, content):
                     var_name, var_value = match.groups()
                     var_value = var_value.strip()
 
                     # Categorize by type
-                    if 'color' in var_name or var_value.startswith('#') or var_value.startswith('rgb'):
+                    if (
+                        "color" in var_name
+                        or var_value.startswith("#")
+                        or var_value.startswith("rgb")
+                    ):
                         self.design_system.tokens.colors[var_name] = var_value
-                    elif 'font-size' in var_name or var_name.startswith('text-'):
+                    elif "font-size" in var_name or var_name.startswith("text-"):
                         self.design_system.tokens.font_sizes[var_name] = var_value
-                    elif 'font-family' in var_name or 'font' in var_name:
+                    elif "font-family" in var_name or "font" in var_name:
                         self.design_system.tokens.fonts[var_name] = var_value
-                    elif 'spacing' in var_name or 'space' in var_name:
+                    elif "spacing" in var_name or "space" in var_name:
                         self.design_system.tokens.spacing[var_name] = var_value
-                    elif 'padding' in var_name:
+                    elif "padding" in var_name:
                         self.design_system.tokens.padding[var_name] = var_value
-                    elif 'margin' in var_name:
+                    elif "margin" in var_name:
                         self.design_system.tokens.margin[var_name] = var_value
-                    elif 'border-radius' in var_name or 'radius' in var_name:
+                    elif "border-radius" in var_name or "radius" in var_name:
                         self.design_system.tokens.border_radius[var_name] = var_value
-                    elif 'shadow' in var_name:
+                    elif "shadow" in var_name:
                         self.design_system.tokens.shadows[var_name] = var_value
-                    elif 'transition' in var_name:
+                    elif "transition" in var_name:
                         self.design_system.tokens.transitions[var_name] = var_value
-                    elif 'z-index' in var_name or 'z' == var_name[0]:
+                    elif "z-index" in var_name or "z" == var_name[0]:
                         self.design_system.tokens.z_index[var_name] = var_value
 
                 # Extract color hex values from file
-                hex_colors = re.findall(r'#[0-9A-Fa-f]{3,8}', content)
+                hex_colors = re.findall(r"#[0-9A-Fa-f]{3,8}", content)
                 for color in hex_colors:
                     if color not in self.design_system.tokens.color_palette:
                         self.design_system.tokens.color_palette.append(color)
@@ -265,10 +276,14 @@ class DesignExtractor:
                 logger.debug(f"Error extracting from {css_file}: {e}")
 
         # Deduplicate color palette
-        self.design_system.tokens.color_palette = list(set(self.design_system.tokens.color_palette))[:20]
+        self.design_system.tokens.color_palette = list(
+            set(self.design_system.tokens.color_palette)
+        )[:20]
 
-        logger.info(f"Extracted {len(self.design_system.tokens.colors)} color tokens, "
-                   f"{len(self.design_system.tokens.font_sizes)} font sizes")
+        logger.info(
+            f"Extracted {len(self.design_system.tokens.colors)} color tokens, "
+            f"{len(self.design_system.tokens.font_sizes)} font sizes"
+        )
 
     def _extract_tailwind_config(self):
         """Extract design tokens from Tailwind config"""
@@ -291,7 +306,7 @@ class DesignExtractor:
                             # Parse key-value pairs
                             pairs = re.findall(r"(\w+):\s*['\"]([^'\"]+)['\"]", match)
                             for key, value in pairs:
-                                self.design_system.tokens.colors[f'tailwind-{key}'] = value
+                                self.design_system.tokens.colors[f"tailwind-{key}"] = value
 
                     # Extract font families
                     font_pattern = r"fontFamily:\s*{([^}]+)}"
@@ -300,10 +315,10 @@ class DesignExtractor:
                         for match in font_matches:
                             pairs = re.findall(r"(\w+):\s*\[([^\]]+)\]", match)
                             for key, value in pairs:
-                                self.design_system.tokens.fonts[f'font-{key}'] = value
+                                self.design_system.tokens.fonts[f"font-{key}"] = value
 
                     logger.info(f"Extracted Tailwind config from {config_file}")
-                    self.design_system.naming_conventions['styling'] = 'Tailwind utility classes'
+                    self.design_system.naming_conventions["styling"] = "Tailwind utility classes"
 
                 except Exception as e:
                     logger.debug(f"Error parsing Tailwind config: {e}")
@@ -316,13 +331,13 @@ class DesignExtractor:
             "**/*.jsx",
             "**/*.vue",
             "**/components/**/*.ts",
-            "**/components/**/*.js"
+            "**/components/**/*.js",
         ]
 
         for pattern in component_patterns:
             for file_path in self.project_root.glob(pattern):
                 # Skip node_modules
-                if 'node_modules' in str(file_path):
+                if "node_modules" in str(file_path):
                     continue
 
                 try:
@@ -338,13 +353,15 @@ class DesignExtractor:
                     # Detect styling method
                     styling_method = self._detect_styling_method(content, file_path)
 
-                    self.design_system.components.append(ComponentPattern(
-                        name=component_name,
-                        type=component_type,
-                        file_path=str(file_path.relative_to(self.project_root)),
-                        naming_convention=naming_convention,
-                        styling_method=styling_method
-                    ))
+                    self.design_system.components.append(
+                        ComponentPattern(
+                            name=component_name,
+                            type=component_type,
+                            file_path=str(file_path.relative_to(self.project_root)),
+                            naming_convention=naming_convention,
+                            styling_method=styling_method,
+                        )
+                    )
 
                     # Stop after 50 components to avoid over-processing
                     if len(self.design_system.components) >= 50:
@@ -363,63 +380,65 @@ class DesignExtractor:
         name_lower = name.lower()
 
         # Common component types
-        if 'button' in name_lower:
-            return 'button'
-        elif 'card' in name_lower:
-            return 'card'
-        elif 'modal' in name_lower or 'dialog' in name_lower:
-            return 'modal'
-        elif 'input' in name_lower or 'field' in name_lower:
-            return 'input'
-        elif 'form' in name_lower:
-            return 'form'
-        elif 'nav' in name_lower or 'menu' in name_lower:
-            return 'navigation'
-        elif 'header' in name_lower:
-            return 'header'
-        elif 'footer' in name_lower:
-            return 'footer'
-        elif 'layout' in name_lower:
-            return 'layout'
-        elif 'sidebar' in name_lower:
-            return 'sidebar'
+        if "button" in name_lower:
+            return "button"
+        elif "card" in name_lower:
+            return "card"
+        elif "modal" in name_lower or "dialog" in name_lower:
+            return "modal"
+        elif "input" in name_lower or "field" in name_lower:
+            return "input"
+        elif "form" in name_lower:
+            return "form"
+        elif "nav" in name_lower or "menu" in name_lower:
+            return "navigation"
+        elif "header" in name_lower:
+            return "header"
+        elif "footer" in name_lower:
+            return "footer"
+        elif "layout" in name_lower:
+            return "layout"
+        elif "sidebar" in name_lower:
+            return "sidebar"
         else:
-            return 'component'
+            return "component"
 
     def _detect_naming_convention(self, name: str) -> str:
         """Detect naming convention"""
-        if name[0].isupper() and '_' not in name and '-' not in name:
-            return 'PascalCase'
-        elif name[0].islower() and '_' not in name and '-' not in name:
-            return 'camelCase'
-        elif '-' in name:
-            return 'kebab-case'
-        elif '_' in name:
-            return 'snake_case'
+        if name[0].isupper() and "_" not in name and "-" not in name:
+            return "PascalCase"
+        elif name[0].islower() and "_" not in name and "-" not in name:
+            return "camelCase"
+        elif "-" in name:
+            return "kebab-case"
+        elif "_" in name:
+            return "snake_case"
         else:
-            return 'unknown'
+            return "unknown"
 
     def _detect_styling_method(self, content: str, file_path: Path) -> str:
         """Detect how component is styled"""
         # Check for companion CSS file
-        css_path = file_path.with_suffix('.css')
-        scss_path = file_path.with_suffix('.scss')
+        css_path = file_path.with_suffix(".css")
+        scss_path = file_path.with_suffix(".scss")
         module_path = file_path.parent / f"{file_path.stem}.module.css"
 
         if module_path.exists():
-            return 'CSS Modules'
+            return "CSS Modules"
         elif css_path.exists() or scss_path.exists():
-            return 'CSS/SCSS'
-        elif 'styled-components' in content or 'styled.' in content:
-            return 'Styled Components'
-        elif '@emotion' in content or 'css`' in content:
-            return 'Emotion'
-        elif 'className=' in content and ('tw-' in content or 'bg-' in content or 'text-' in content):
-            return 'Tailwind CSS'
-        elif 'sx={{' in content or 'sx={' in content:
-            return 'MUI sx prop'
+            return "CSS/SCSS"
+        elif "styled-components" in content or "styled." in content:
+            return "Styled Components"
+        elif "@emotion" in content or "css`" in content:
+            return "Emotion"
+        elif "className=" in content and (
+            "tw-" in content or "bg-" in content or "text-" in content
+        ):
+            return "Tailwind CSS"
+        elif "sx={{" in content or "sx={" in content:
+            return "MUI sx prop"
         else:
-            return 'unknown'
+            return "unknown"
 
     def _detect_naming_conventions(self):
         """Analyze naming conventions across components"""
@@ -433,16 +452,18 @@ class DesignExtractor:
         for comp in self.design_system.components:
             conventions[comp.naming_convention] = conventions.get(comp.naming_convention, 0) + 1
             if comp.styling_method:
-                styling_methods[comp.styling_method] = styling_methods.get(comp.styling_method, 0) + 1
+                styling_methods[comp.styling_method] = (
+                    styling_methods.get(comp.styling_method, 0) + 1
+                )
 
         # Most common convention
         if conventions:
             most_common = max(conventions.items(), key=lambda x: x[1])
-            self.design_system.naming_conventions['component'] = most_common[0]
+            self.design_system.naming_conventions["component"] = most_common[0]
 
         if styling_methods:
             most_common_styling = max(styling_methods.items(), key=lambda x: x[1])
-            self.design_system.naming_conventions['styling'] = most_common_styling[0]
+            self.design_system.naming_conventions["styling"] = most_common_styling[0]
 
     def _find_design_system_files(self):
         """Find design system or theme files"""
@@ -455,15 +476,17 @@ class DesignExtractor:
             "tokens.js",
             "design-tokens.ts",
             "design-tokens.json",
-            "theme.json"
+            "theme.json",
         ]
 
         for design_file in design_files:
             matches = list(self.project_root.glob(f"**/{design_file}"))
-            matches = [m for m in matches if 'node_modules' not in str(m)]
+            matches = [m for m in matches if "node_modules" not in str(m)]
 
             if matches:
-                self.design_system.design_system_file = str(matches[0].relative_to(self.project_root))
+                self.design_system.design_system_file = str(
+                    matches[0].relative_to(self.project_root)
+                )
                 logger.info(f"Found design system file: {self.design_system.design_system_file}")
                 break
 
@@ -522,7 +545,7 @@ class DesignExtractor:
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(self.design_system.to_dict(), f, indent=2)
 
         logger.info(f"Saved design system to {output_path}")
@@ -543,19 +566,19 @@ class DesignExtractor:
             # Reconstruct design system
             design_system = DesignSystem()
 
-            if data.get('framework'):
-                design_system.framework = UIFramework(**data['framework'])
+            if data.get("framework"):
+                design_system.framework = UIFramework(**data["framework"])
 
-            if data.get('tokens'):
-                design_system.tokens = DesignTokens(**data['tokens'])
+            if data.get("tokens"):
+                design_system.tokens = DesignTokens(**data["tokens"])
 
-            if data.get('components'):
-                design_system.components = [ComponentPattern(**c) for c in data['components']]
+            if data.get("components"):
+                design_system.components = [ComponentPattern(**c) for c in data["components"]]
 
-            design_system.naming_conventions = data.get('naming_conventions', {})
-            design_system.file_structure = data.get('file_structure', {})
-            design_system.design_system_file = data.get('design_system_file')
-            design_system.confidence = data.get('confidence', 0.0)
+            design_system.naming_conventions = data.get("naming_conventions", {})
+            design_system.file_structure = data.get("file_structure", {})
+            design_system.design_system_file = data.get("design_system_file")
+            design_system.confidence = data.get("confidence", 0.0)
 
             return design_system
 
@@ -569,7 +592,9 @@ class DesignExtractor:
 
         instructions.append("# Design System & Style Guide")
         instructions.append("")
-        instructions.append("**CRITICAL:** All UI components MUST match the existing design system.")
+        instructions.append(
+            "**CRITICAL:** All UI components MUST match the existing design system."
+        )
         instructions.append("")
 
         if self.design_system.framework:
@@ -605,13 +630,17 @@ class DesignExtractor:
 
         if self.design_system.components:
             instructions.append("## Component Patterns")
-            instructions.append(f"- Total components analyzed: {len(self.design_system.components)}")
+            instructions.append(
+                f"- Total components analyzed: {len(self.design_system.components)}"
+            )
 
             # Show common styling method
             styling_counts = {}
             for comp in self.design_system.components:
                 if comp.styling_method:
-                    styling_counts[comp.styling_method] = styling_counts.get(comp.styling_method, 0) + 1
+                    styling_counts[comp.styling_method] = (
+                        styling_counts.get(comp.styling_method, 0) + 1
+                    )
 
             if styling_counts:
                 most_common = max(styling_counts.items(), key=lambda x: x[1])

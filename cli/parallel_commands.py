@@ -61,7 +61,7 @@ def start_session(
 
             for i in range(workers):
                 worker = worker_coordinator.register_worker(
-                    metadata={'index': i, 'session': session.session_id}
+                    metadata={"index": i, "session": session.session_id}
                 )
                 progress.update(task, advance=1)
                 console.print(f"  ✓ Worker {i+1}/{workers}: {worker.worker_id[:8]}")
@@ -190,7 +190,9 @@ def list_sessions(
                 status_filter = SessionStatus(status.lower())
             except ValueError:
                 console.print(f"[red]Invalid status: {status}[/red]")
-                console.print("Valid statuses: created, running, paused, completed, failed, cancelled")
+                console.print(
+                    "Valid statuses: created, running, paused, completed, failed, cancelled"
+                )
                 raise typer.Exit(1)
 
         # Get sessions
@@ -235,7 +237,7 @@ def list_sessions(
                 tasks_text += f" ({session.failed_tasks}✗)"
 
             # Created date
-            created_text = session.created_at.strftime('%Y-%m-%d %H:%M')
+            created_text = session.created_at.strftime("%Y-%m-%d %H:%M")
 
             table.add_row(
                 session.session_id[:12],
@@ -269,7 +271,9 @@ def pause_session(
             raise typer.Exit(1)
 
         if session.status != SessionStatus.RUNNING:
-            console.print(f"[yellow]Session is not running (status: {session.status.value})[/yellow]")
+            console.print(
+                f"[yellow]Session is not running (status: {session.status.value})[/yellow]"
+            )
             return
 
         session_manager.pause_session(session_id)
@@ -295,7 +299,9 @@ def resume_session(
             raise typer.Exit(1)
 
         if session.status != SessionStatus.PAUSED:
-            console.print(f"[yellow]Session is not paused (status: {session.status.value})[/yellow]")
+            console.print(
+                f"[yellow]Session is not paused (status: {session.status.value})[/yellow]"
+            )
             return
 
         session_manager.start_session(session_id, worker_id=worker_id)
@@ -320,8 +326,14 @@ def cancel_session(
             console.print(f"[red]Session not found: {session_id}[/red]")
             raise typer.Exit(1)
 
-        if session.status in [SessionStatus.COMPLETED, SessionStatus.FAILED, SessionStatus.CANCELLED]:
-            console.print(f"[yellow]Session already finished (status: {session.status.value})[/yellow]")
+        if session.status in [
+            SessionStatus.COMPLETED,
+            SessionStatus.FAILED,
+            SessionStatus.CANCELLED,
+        ]:
+            console.print(
+                f"[yellow]Session already finished (status: {session.status.value})[/yellow]"
+            )
             return
 
         if not force:
@@ -424,6 +436,7 @@ def list_workers(
 
             # Last heartbeat
             from datetime import datetime
+
             if worker.last_heartbeat:
                 time_ago = (datetime.now() - worker.last_heartbeat).total_seconds()
                 if time_ago < 10:
@@ -490,12 +503,17 @@ def cleanup_sessions(
         session_manager = SessionManager()
 
         from datetime import datetime, timedelta
+
         cutoff = datetime.now() - timedelta(days=days)
 
         # Find sessions to delete
         to_delete = []
         for session_id, session in session_manager.sessions.items():
-            if session.status in [SessionStatus.COMPLETED, SessionStatus.FAILED, SessionStatus.CANCELLED]:
+            if session.status in [
+                SessionStatus.COMPLETED,
+                SessionStatus.FAILED,
+                SessionStatus.CANCELLED,
+            ]:
                 if session.completed_at and session.completed_at < cutoff:
                     to_delete.append((session_id, session))
 
@@ -505,7 +523,9 @@ def cleanup_sessions(
 
         console.print(f"\n[bold]Sessions to delete (older than {days} days):[/bold]\n")
         for session_id, session in to_delete:
-            console.print(f"  • {session.name} ({session.status.value}) - {session.completed_at.strftime('%Y-%m-%d')}")
+            console.print(
+                f"  • {session.name} ({session.status.value}) - {session.completed_at.strftime('%Y-%m-%d')}"
+            )
 
         console.print(f"\nTotal: {len(to_delete)} session(s)")
 

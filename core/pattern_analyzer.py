@@ -9,6 +9,7 @@ Analyzes code for common design patterns and architectural best practices:
 - Layer violations
 - Separation of concerns
 """
+
 import ast
 import re
 from typing import Dict, List, Optional, Set, Any
@@ -19,6 +20,7 @@ from dataclasses import dataclass, field
 @dataclass
 class PatternMatch:
     """Represents a detected pattern"""
+
     pattern_type: str
     confidence: float  # 0.0 - 1.0
     location: str
@@ -29,6 +31,7 @@ class PatternMatch:
 @dataclass
 class LayerViolation:
     """Represents a layer violation"""
+
     from_layer: str
     to_layer: str
     location: str
@@ -49,11 +52,11 @@ class PatternAnalyzer:
 
     # Layer hierarchy (higher layers can depend on lower layers only)
     LAYER_HIERARCHY = {
-        'presentation': 4,  # UI/Views
-        'controller': 3,    # Controllers
-        'service': 2,       # Business logic
-        'repository': 1,    # Data access
-        'model': 0          # Data models
+        "presentation": 4,  # UI/Views
+        "controller": 3,  # Controllers
+        "service": 2,  # Business logic
+        "repository": 1,  # Data access
+        "model": 0,  # Data models
     }
 
     def __init__(self, project_root: Optional[Path] = None):
@@ -93,7 +96,7 @@ class PatternAnalyzer:
                 "patterns": [],
                 "violations": [],
                 "separation_score": 0,
-                "recommendations": [f"Failed to parse file: {e}"]
+                "recommendations": [f"Failed to parse file: {e}"],
             }
 
         # Detect patterns
@@ -112,7 +115,7 @@ class PatternAnalyzer:
             "patterns": [vars(p) for p in patterns],
             "violations": [vars(v) for v in violations],
             "separation_score": separation_score,
-            "recommendations": recommendations
+            "recommendations": recommendations,
         }
 
     def detect_patterns(self, tree: ast.AST, code: str) -> List[PatternMatch]:
@@ -170,21 +173,22 @@ class PatternAnalyzer:
                     imported_layer = self._determine_layer_from_import(module)
 
                     if imported_layer and self._is_layer_violation(current_layer, imported_layer):
-                        violations.append(LayerViolation(
-                            from_layer=current_layer,
-                            to_layer=imported_layer,
-                            location=f"{file_path.name}:line {node.lineno}",
-                            description=f"Layer '{current_layer}' should not import from '{imported_layer}'",
-                            severity=self._calculate_violation_severity(current_layer, imported_layer)
-                        ))
+                        violations.append(
+                            LayerViolation(
+                                from_layer=current_layer,
+                                to_layer=imported_layer,
+                                location=f"{file_path.name}:line {node.lineno}",
+                                description=f"Layer '{current_layer}' should not import from '{imported_layer}'",
+                                severity=self._calculate_violation_severity(
+                                    current_layer, imported_layer
+                                ),
+                            )
+                        )
 
         return violations
 
     def calculate_separation_score(
-        self,
-        tree: ast.AST,
-        patterns: List[PatternMatch],
-        violations: List[LayerViolation]
+        self, tree: ast.AST, patterns: List[PatternMatch], violations: List[LayerViolation]
     ) -> int:
         """
         Calculate separation of concerns score
@@ -200,9 +204,9 @@ class PatternAnalyzer:
         score = 100
 
         # Penalty for violations
-        high_severity_count = sum(1 for v in violations if v.severity == 'high')
-        medium_severity_count = sum(1 for v in violations if v.severity == 'medium')
-        low_severity_count = sum(1 for v in violations if v.severity == 'low')
+        high_severity_count = sum(1 for v in violations if v.severity == "high")
+        medium_severity_count = sum(1 for v in violations if v.severity == "medium")
+        low_severity_count = sum(1 for v in violations if v.severity == "low")
 
         score -= high_severity_count * 20
         score -= medium_severity_count * 10
@@ -226,10 +230,7 @@ class PatternAnalyzer:
         return max(0, min(100, score))
 
     def generate_recommendations(
-        self,
-        patterns: List[PatternMatch],
-        violations: List[LayerViolation],
-        score: int
+        self, patterns: List[PatternMatch], violations: List[LayerViolation], score: int
     ) -> List[str]:
         """
         Generate recommendations based on analysis
@@ -250,19 +251,20 @@ class PatternAnalyzer:
                 f"Fix {len(violations)} layer violation(s) to improve architecture"
             )
 
-            high_severity = [v for v in violations if v.severity == 'high']
+            high_severity = [v for v in violations if v.severity == "high"]
             if high_severity:
                 recommendations.append(
                     f"Address {len(high_severity)} high-severity layer violation(s) immediately"
                 )
 
         # Recommendations for patterns
-        if not any(p.pattern_type == 'Repository' for p in patterns):
+        if not any(p.pattern_type == "Repository" for p in patterns):
             # Check if this looks like it should use repository pattern
-            if any('query' in str(p.location).lower() or 'db' in str(p.location).lower() for p in patterns):
-                recommendations.append(
-                    "Consider using Repository pattern for data access"
-                )
+            if any(
+                "query" in str(p.location).lower() or "db" in str(p.location).lower()
+                for p in patterns
+            ):
+                recommendations.append("Consider using Repository pattern for data access")
 
         # Recommendations based on score
         if score < 50:
@@ -270,9 +272,7 @@ class PatternAnalyzer:
                 "Code has significant separation of concerns issues - consider refactoring"
             )
         elif score < 70:
-            recommendations.append(
-                "Code could benefit from better separation of concerns"
-            )
+            recommendations.append("Code could benefit from better separation of concerns")
 
         if not recommendations:
             recommendations.append("Code follows good architectural practices")
@@ -288,40 +288,48 @@ class PatternAnalyzer:
                 class_name = node.name.lower()
 
                 # Check for Model
-                if 'model' in class_name or any(
-                    base.id.endswith('Model') for base in node.bases if isinstance(base, ast.Name)
+                if "model" in class_name or any(
+                    base.id.endswith("Model") for base in node.bases if isinstance(base, ast.Name)
                 ):
-                    patterns.append(PatternMatch(
-                        pattern_type='MVC-Model',
-                        confidence=0.8,
-                        location=f"Class {node.name}",
-                        description="Model class detected",
-                        evidence=[f"Class name: {node.name}"]
-                    ))
+                    patterns.append(
+                        PatternMatch(
+                            pattern_type="MVC-Model",
+                            confidence=0.8,
+                            location=f"Class {node.name}",
+                            description="Model class detected",
+                            evidence=[f"Class name: {node.name}"],
+                        )
+                    )
 
                 # Check for View
-                if 'view' in class_name or any(
-                    base.id.endswith('View') for base in node.bases if isinstance(base, ast.Name)
+                if "view" in class_name or any(
+                    base.id.endswith("View") for base in node.bases if isinstance(base, ast.Name)
                 ):
-                    patterns.append(PatternMatch(
-                        pattern_type='MVC-View',
-                        confidence=0.8,
-                        location=f"Class {node.name}",
-                        description="View class detected",
-                        evidence=[f"Class name: {node.name}"]
-                    ))
+                    patterns.append(
+                        PatternMatch(
+                            pattern_type="MVC-View",
+                            confidence=0.8,
+                            location=f"Class {node.name}",
+                            description="View class detected",
+                            evidence=[f"Class name: {node.name}"],
+                        )
+                    )
 
                 # Check for Controller
-                if 'controller' in class_name or any(
-                    base.id.endswith('Controller') for base in node.bases if isinstance(base, ast.Name)
+                if "controller" in class_name or any(
+                    base.id.endswith("Controller")
+                    for base in node.bases
+                    if isinstance(base, ast.Name)
                 ):
-                    patterns.append(PatternMatch(
-                        pattern_type='MVC-Controller',
-                        confidence=0.9,
-                        location=f"Class {node.name}",
-                        description="Controller class detected",
-                        evidence=[f"Class name: {node.name}"]
-                    ))
+                    patterns.append(
+                        PatternMatch(
+                            pattern_type="MVC-Controller",
+                            confidence=0.9,
+                            location=f"Class {node.name}",
+                            description="Controller class detected",
+                            evidence=[f"Class name: {node.name}"],
+                        )
+                    )
 
         return patterns
 
@@ -333,14 +341,20 @@ class PatternAnalyzer:
             if isinstance(node, ast.ClassDef):
                 class_name = node.name.lower()
 
-                if 'repository' in class_name or any(
-                    base.id.endswith('Repository') for base in node.bases if isinstance(base, ast.Name)
+                if "repository" in class_name or any(
+                    base.id.endswith("Repository")
+                    for base in node.bases
+                    if isinstance(base, ast.Name)
                 ):
                     # Check for data access methods
                     methods = [m.name for m in node.body if isinstance(m, ast.FunctionDef)]
                     data_access_methods = [
-                        m for m in methods
-                        if any(keyword in m.lower() for keyword in ['find', 'get', 'save', 'delete', 'update', 'query'])
+                        m
+                        for m in methods
+                        if any(
+                            keyword in m.lower()
+                            for keyword in ["find", "get", "save", "delete", "update", "query"]
+                        )
                     ]
 
                     if data_access_methods:
@@ -348,16 +362,18 @@ class PatternAnalyzer:
                     else:
                         confidence = 0.6
 
-                    patterns.append(PatternMatch(
-                        pattern_type='Repository',
-                        confidence=confidence,
-                        location=f"Class {node.name}",
-                        description="Repository pattern detected",
-                        evidence=[
-                            f"Class name: {node.name}",
-                            f"Data access methods: {', '.join(data_access_methods)}"
-                        ]
-                    ))
+                    patterns.append(
+                        PatternMatch(
+                            pattern_type="Repository",
+                            confidence=confidence,
+                            location=f"Class {node.name}",
+                            description="Repository pattern detected",
+                            evidence=[
+                                f"Class name: {node.name}",
+                                f"Data access methods: {', '.join(data_access_methods)}",
+                            ],
+                        )
+                    )
 
         return patterns
 
@@ -369,34 +385,42 @@ class PatternAnalyzer:
             if isinstance(node, ast.ClassDef):
                 class_name = node.name.lower()
 
-                if 'factory' in class_name:
+                if "factory" in class_name:
                     # Check for create methods
                     methods = [m.name for m in node.body if isinstance(m, ast.FunctionDef)]
-                    create_methods = [m for m in methods if 'create' in m.lower()]
+                    create_methods = [m for m in methods if "create" in m.lower()]
 
                     confidence = 0.9 if create_methods else 0.6
 
-                    patterns.append(PatternMatch(
-                        pattern_type='Factory',
-                        confidence=confidence,
-                        location=f"Class {node.name}",
-                        description="Factory pattern detected",
-                        evidence=[
-                            f"Class name: {node.name}",
-                            f"Create methods: {', '.join(create_methods)}" if create_methods else "Factory naming convention"
-                        ]
-                    ))
+                    patterns.append(
+                        PatternMatch(
+                            pattern_type="Factory",
+                            confidence=confidence,
+                            location=f"Class {node.name}",
+                            description="Factory pattern detected",
+                            evidence=[
+                                f"Class name: {node.name}",
+                                (
+                                    f"Create methods: {', '.join(create_methods)}"
+                                    if create_methods
+                                    else "Factory naming convention"
+                                ),
+                            ],
+                        )
+                    )
 
             elif isinstance(node, ast.FunctionDef):
                 # Check for factory functions
-                if 'create_' in node.name.lower() or 'make_' in node.name.lower():
-                    patterns.append(PatternMatch(
-                        pattern_type='Factory',
-                        confidence=0.7,
-                        location=f"Function {node.name}",
-                        description="Factory function detected",
-                        evidence=[f"Function name: {node.name}"]
-                    ))
+                if "create_" in node.name.lower() or "make_" in node.name.lower():
+                    patterns.append(
+                        PatternMatch(
+                            pattern_type="Factory",
+                            confidence=0.7,
+                            location=f"Function {node.name}",
+                            description="Factory function detected",
+                            evidence=[f"Function name: {node.name}"],
+                        )
+                    )
 
         return patterns
 
@@ -408,29 +432,32 @@ class PatternAnalyzer:
             if isinstance(node, ast.ClassDef):
                 # Check for __new__ method override (classic singleton)
                 has_new = any(
-                    isinstance(m, ast.FunctionDef) and m.name == '__new__'
-                    for m in node.body
+                    isinstance(m, ast.FunctionDef) and m.name == "__new__" for m in node.body
                 )
 
                 # Check for _instance class variable
                 has_instance_var = any(
-                    isinstance(m, ast.Assign) and
-                    any(isinstance(t, ast.Name) and t.id.startswith('_instance') for t in m.targets)
+                    isinstance(m, ast.Assign)
+                    and any(
+                        isinstance(t, ast.Name) and t.id.startswith("_instance") for t in m.targets
+                    )
                     for m in node.body
                 )
 
                 if has_new or has_instance_var:
                     confidence = 0.9 if has_new else 0.7
 
-                    patterns.append(PatternMatch(
-                        pattern_type='Singleton',
-                        confidence=confidence,
-                        location=f"Class {node.name}",
-                        description="Singleton pattern detected",
-                        evidence=[
-                            "__new__ method override" if has_new else "_instance class variable"
-                        ]
-                    ))
+                    patterns.append(
+                        PatternMatch(
+                            pattern_type="Singleton",
+                            confidence=confidence,
+                            location=f"Class {node.name}",
+                            description="Singleton pattern detected",
+                            evidence=[
+                                "__new__ method override" if has_new else "_instance class variable"
+                            ],
+                        )
+                    )
 
         return patterns
 
@@ -438,16 +465,16 @@ class PatternAnalyzer:
         """Determine the architectural layer from file path"""
         path_str = str(file_path).lower()
 
-        if 'view' in path_str or 'template' in path_str or 'ui' in path_str:
-            return 'presentation'
-        elif 'controller' in path_str:
-            return 'controller'
-        elif 'service' in path_str or 'business' in path_str:
-            return 'service'
-        elif 'repository' in path_str or 'dao' in path_str:
-            return 'repository'
-        elif 'model' in path_str or 'entity' in path_str:
-            return 'model'
+        if "view" in path_str or "template" in path_str or "ui" in path_str:
+            return "presentation"
+        elif "controller" in path_str:
+            return "controller"
+        elif "service" in path_str or "business" in path_str:
+            return "service"
+        elif "repository" in path_str or "dao" in path_str:
+            return "repository"
+        elif "model" in path_str or "entity" in path_str:
+            return "model"
 
         return None
 
@@ -455,16 +482,16 @@ class PatternAnalyzer:
         """Determine layer from import statement"""
         module_lower = module.lower()
 
-        if 'view' in module_lower or 'template' in module_lower:
-            return 'presentation'
-        elif 'controller' in module_lower:
-            return 'controller'
-        elif 'service' in module_lower:
-            return 'service'
-        elif 'repository' in module_lower or 'dao' in module_lower:
-            return 'repository'
-        elif 'model' in module_lower or 'entity' in module_lower:
-            return 'model'
+        if "view" in module_lower or "template" in module_lower:
+            return "presentation"
+        elif "controller" in module_lower:
+            return "controller"
+        elif "service" in module_lower:
+            return "service"
+        elif "repository" in module_lower or "dao" in module_lower:
+            return "repository"
+        elif "model" in module_lower or "entity" in module_lower:
+            return "model"
 
         return None
 
@@ -484,11 +511,11 @@ class PatternAnalyzer:
         level_diff = to_level - from_level
 
         if level_diff >= 3:
-            return 'high'
+            return "high"
         elif level_diff >= 2:
-            return 'medium'
+            return "medium"
         else:
-            return 'low'
+            return "low"
 
     def _get_imported_modules(self, node: ast.AST) -> List[str]:
         """Extract imported module names from import statement"""
@@ -519,21 +546,21 @@ def main():
     print(f"\n=== Pattern Analysis for {file_path} ===\n")
     print(f"Separation Score: {result['separation_score']}/100")
 
-    if result['patterns']:
+    if result["patterns"]:
         print("\nDetected Patterns:")
-        for pattern in result['patterns']:
+        for pattern in result["patterns"]:
             print(f"  - {pattern['pattern_type']}: {pattern['description']}")
             print(f"    Confidence: {pattern['confidence']:.0%}")
 
-    if result['violations']:
+    if result["violations"]:
         print("\nLayer Violations:")
-        for violation in result['violations']:
+        for violation in result["violations"]:
             print(f"  - [{violation['severity'].upper()}] {violation['description']}")
             print(f"    Location: {violation['location']}")
 
-    if result['recommendations']:
+    if result["recommendations"]:
         print("\nRecommendations:")
-        for rec in result['recommendations']:
+        for rec in result["recommendations"]:
             print(f"  - {rec}")
 
 

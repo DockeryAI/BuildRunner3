@@ -86,7 +86,7 @@ def test_metrics_with_data(client):
             "description": "For testing metrics",
             "status": "complete",
             "version": "3.0.0",
-            "priority": "high"
+            "priority": "high",
         },
         {
             "id": "metric-test-2",
@@ -94,8 +94,8 @@ def test_metrics_with_data(client):
             "description": "For testing metrics",
             "status": "in_progress",
             "version": "3.0.0",
-            "priority": "medium"
-        }
+            "priority": "medium",
+        },
     ]
 
     created = []
@@ -144,7 +144,7 @@ def test_feature_priority_filtering(client):
         "description": "Testing priority filter",
         "status": "planned",
         "version": "3.0.0",
-        "priority": "critical"
+        "priority": "critical",
     }
 
     client.post("/features", json=feature)
@@ -191,14 +191,17 @@ def test_multiple_feature_operations(client):
     feature_id = "multi-op-test"
 
     # Create
-    response = client.post("/features", json={
-        "id": feature_id,
-        "name": "Multi Op Test",
-        "description": "Testing multiple operations",
-        "status": "planned",
-        "version": "3.0.0",
-        "priority": "low"
-    })
+    response = client.post(
+        "/features",
+        json={
+            "id": feature_id,
+            "name": "Multi Op Test",
+            "description": "Testing multiple operations",
+            "status": "planned",
+            "version": "3.0.0",
+            "priority": "low",
+        },
+    )
     assert response.status_code == 201
 
     # Update status to in_progress
@@ -233,6 +236,7 @@ def test_health_endpoint_details(client):
 
     # Verify timestamp is recent
     from datetime import datetime
+
     timestamp = datetime.fromisoformat(data["timestamp"])
     assert timestamp is not None
 

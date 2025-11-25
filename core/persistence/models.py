@@ -21,7 +21,7 @@ class CostEntry:
     id: Optional[int] = None
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'CostEntry':
+    def from_dict(cls, data: dict) -> "CostEntry":
         """Create CostEntry from dictionary"""
         return cls(**data)
 
@@ -29,8 +29,8 @@ class CostEntry:
         """Convert to dictionary for database storage"""
         data = asdict(self)
         # Remove id if None (for inserts)
-        if data.get('id') is None:
-            data.pop('id', None)
+        if data.get("id") is None:
+            data.pop("id", None)
         return data
 
     @staticmethod
@@ -40,8 +40,8 @@ class CostEntry:
         output_tokens: int,
         cost_usd: float,
         task_id: Optional[str] = None,
-        session_id: Optional[str] = None
-    ) -> 'CostEntry':
+        session_id: Optional[str] = None,
+    ) -> "CostEntry":
         """
         Create new cost entry with current timestamp
 
@@ -63,7 +63,7 @@ class CostEntry:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             cost_usd=cost_usd,
-            session_id=session_id
+            session_id=session_id,
         )
 
 
@@ -82,7 +82,7 @@ class MetricEntry:
     id: Optional[int] = None
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'MetricEntry':
+    def from_dict(cls, data: dict) -> "MetricEntry":
         """Create MetricEntry from dictionary"""
         return cls(**data)
 
@@ -90,8 +90,8 @@ class MetricEntry:
         """Convert to dictionary for database storage"""
         data = asdict(self)
         # Remove id if None (for inserts)
-        if data.get('id') is None:
-            data.pop('id', None)
+        if data.get("id") is None:
+            data.pop("id", None)
         return data
 
     @property

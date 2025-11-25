@@ -1,6 +1,7 @@
 """
 Tests for completed PRD wizard with Opus integration
 """
+
 import pytest
 import json
 from pathlib import Path
@@ -37,11 +38,11 @@ class TestOpusClient:
         mock_response = Mock()
         mock_response.content = [Mock(text="# PROJECT_SPEC\n\nTest content")]
 
-        with patch.object(opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             result = await opus_client.pre_fill_spec(
-                industry="Healthcare",
-                use_case="Dashboard",
-                user_input={"project_name": "Test"}
+                industry="Healthcare", use_case="Dashboard", user_input={"project_name": "Test"}
             )
 
             assert "PROJECT_SPEC" in result
@@ -51,9 +52,13 @@ class TestOpusClient:
     async def test_analyze_requirements(self, opus_client):
         """Test requirements analysis"""
         mock_response = Mock()
-        mock_response.content = [Mock(text='{"features": [], "architecture": {}, "tech_stack": []}')]
+        mock_response.content = [
+            Mock(text='{"features": [], "architecture": {}, "tech_stack": []}')
+        ]
 
-        with patch.object(opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             result = await opus_client.analyze_requirements("Build a dashboard")
 
             assert "features" in result
@@ -63,9 +68,11 @@ class TestOpusClient:
     async def test_analyze_requirements_invalid_json(self, opus_client):
         """Test requirements analysis with invalid JSON response"""
         mock_response = Mock()
-        mock_response.content = [Mock(text='invalid json')]
+        mock_response.content = [Mock(text="invalid json")]
 
-        with patch.object(opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             with pytest.raises(OpusAPIError, match="Failed to parse JSON"):
                 await opus_client.analyze_requirements("Build a dashboard")
 
@@ -75,7 +82,9 @@ class TestOpusClient:
         mock_response = Mock()
         mock_response.content = [Mock(text='{"colors": {}, "typography": {}}')]
 
-        with patch.object(opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             result = await opus_client.generate_design_tokens("Healthcare", "Dashboard")
 
             assert "colors" in result
@@ -85,9 +94,11 @@ class TestOpusClient:
     async def test_generate_design_tokens_invalid_json(self, opus_client):
         """Test design token generation with invalid JSON"""
         mock_response = Mock()
-        mock_response.content = [Mock(text='not json')]
+        mock_response.content = [Mock(text="not json")]
 
-        with patch.object(opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             with pytest.raises(OpusAPIError, match="Failed to parse design tokens JSON"):
                 await opus_client.generate_design_tokens("Healthcare", "Dashboard")
 
@@ -95,9 +106,13 @@ class TestOpusClient:
     async def test_validate_spec(self, opus_client):
         """Test spec validation"""
         mock_response = Mock()
-        mock_response.content = [Mock(text='{"valid": true, "missing_sections": [], "suggestions": [], "score": 95}')]
+        mock_response.content = [
+            Mock(text='{"valid": true, "missing_sections": [], "suggestions": [], "score": 95}')
+        ]
 
-        with patch.object(opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             result = await opus_client.validate_spec("# Test Spec")
 
             assert result["valid"] is True
@@ -108,9 +123,11 @@ class TestOpusClient:
     async def test_validate_spec_invalid_json(self, opus_client):
         """Test spec validation with invalid JSON"""
         mock_response = Mock()
-        mock_response.content = [Mock(text='bad json')]
+        mock_response.content = [Mock(text="bad json")]
 
-        with patch.object(opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)):
+        with patch.object(
+            opus_client.async_client.messages, "create", AsyncMock(return_value=mock_response)
+        ):
             with pytest.raises(OpusAPIError, match="Failed to parse validation JSON"):
                 await opus_client.validate_spec("# Test Spec")
 
@@ -131,11 +148,21 @@ class TestModelSwitcher:
 
         # Create features
         features = project / ".buildrunner" / "features.json"
-        features.write_text(json.dumps({
-            "features": [
-                {"id": "1", "name": "Feature 1", "description": "Test feature description", "status": "pending", "dependencies": []}
-            ]
-        }))
+        features.write_text(
+            json.dumps(
+                {
+                    "features": [
+                        {
+                            "id": "1",
+                            "name": "Feature 1",
+                            "description": "Test feature description",
+                            "status": "pending",
+                            "dependencies": [],
+                        }
+                    ]
+                }
+            )
+        )
 
         return project
 
@@ -146,7 +173,7 @@ class TestModelSwitcher:
         package = switcher.create_handoff_package(
             spec_path=temp_project / ".buildrunner" / "PROJECT_SPEC.md",
             features_path=temp_project / ".buildrunner" / "features.json",
-            context={"constraints": ["Use TypeScript"]}
+            context={"constraints": ["Use TypeScript"]},
         )
 
         assert package["version"] == "1.0"
@@ -164,7 +191,7 @@ class TestModelSwitcher:
             switcher.create_handoff_package(
                 spec_path=temp_project / ".buildrunner" / "NONEXISTENT.md",
                 features_path=temp_project / ".buildrunner" / "features.json",
-                context={}
+                context={},
             )
 
     def test_compress_context(self, temp_project):
@@ -172,7 +199,17 @@ class TestModelSwitcher:
         switcher = ModelSwitcher(temp_project)
 
         spec = "# Test\n\n" + ("x" * 5000)  # Long spec
-        features = {"features": [{"id": "1", "name": "F1", "description": "x" * 500, "status": "pending", "dependencies": []}]}
+        features = {
+            "features": [
+                {
+                    "id": "1",
+                    "name": "F1",
+                    "description": "x" * 500,
+                    "status": "pending",
+                    "dependencies": [],
+                }
+            ]
+        }
         context = {"constraints": ["Constraint 1"]}
 
         compressed = switcher.compress_context(spec, features, context)
@@ -187,10 +224,18 @@ class TestModelSwitcher:
 
         compressed = {
             "spec_summary": "Test project",
-            "features": [{"id": "1", "name": "F1", "description": "Test", "status": "pending", "dependencies": []}],
+            "features": [
+                {
+                    "id": "1",
+                    "name": "F1",
+                    "description": "Test",
+                    "status": "pending",
+                    "dependencies": [],
+                }
+            ],
             "architecture": {"frontend": "React"},
             "constraints": ["TypeScript"],
-            "next_steps": ["Implement F1"]
+            "next_steps": ["Implement F1"],
         }
 
         prompt = switcher.generate_sonnet_prompt(compressed)
@@ -212,7 +257,7 @@ class TestModelSwitcher:
             "spec_summary": "Test",
             "features": [{"id": "1"}],
             "architecture": {},
-            "next_steps": ["Step 1"]
+            "next_steps": ["Step 1"],
         }
 
         assert switcher.validate_handoff(package) is True
@@ -238,7 +283,7 @@ class TestModelSwitcher:
             "spec_summary": "Test",
             "features": [],  # Empty
             "architecture": {},
-            "next_steps": ["Step 1"]
+            "next_steps": ["Step 1"],
         }
 
         with pytest.raises(ValueError, match="has no features"):
@@ -252,7 +297,7 @@ class TestModelSwitcher:
         package = switcher.create_handoff_package(
             spec_path=temp_project / ".buildrunner" / "PROJECT_SPEC.md",
             features_path=temp_project / ".buildrunner" / "features.json",
-            context={}
+            context={},
         )
 
         # Load it
@@ -277,7 +322,7 @@ class TestPlanningMode:
         result = detect_planning_mode(
             user_prompt="Create a new healthcare dashboard",
             project_state={"has_spec": False, "has_features": False, "features": []},
-            conversation_history=[]
+            conversation_history=[],
         )
 
         assert result["use_opus"] is True
@@ -289,7 +334,7 @@ class TestPlanningMode:
         result = detect_planning_mode(
             user_prompt="Help me design the architecture for this feature",
             project_state={"has_spec": True, "has_features": True, "features": []},
-            conversation_history=[]
+            conversation_history=[],
         )
 
         assert result["use_opus"] is True
@@ -300,7 +345,7 @@ class TestPlanningMode:
         result = detect_planning_mode(
             user_prompt="Implement the user authentication feature",
             project_state={"has_spec": True, "has_features": True, "features": []},
-            conversation_history=[]
+            conversation_history=[],
         )
 
         assert result["use_opus"] is False
@@ -310,8 +355,12 @@ class TestPlanningMode:
         """Test ambiguous request defaults to Sonnet for existing project"""
         result = detect_planning_mode(
             user_prompt="Tell me about this project",
-            project_state={"has_spec": True, "has_features": True, "features": [{"id": "1", "name": "Feature"}]},
-            conversation_history=[]
+            project_state={
+                "has_spec": True,
+                "has_features": True,
+                "features": [{"id": "1", "name": "Feature"}],
+            },
+            conversation_history=[],
         )
 
         assert result["use_opus"] is False
@@ -322,12 +371,9 @@ class TestPlanningMode:
         # Create project with spec and features
         (tmp_path / ".buildrunner").mkdir()
         (tmp_path / ".buildrunner" / "PROJECT_SPEC.md").write_text("# Spec")
-        (tmp_path / ".buildrunner" / "features.json").write_text(json.dumps({
-            "features": [
-                {"status": "completed"},
-                {"status": "pending"}
-            ]
-        }))
+        (tmp_path / ".buildrunner" / "features.json").write_text(
+            json.dumps({"features": [{"status": "completed"}, {"status": "pending"}]})
+        )
 
         state = get_project_state(tmp_path)
 
@@ -360,7 +406,7 @@ class TestPRDWizard:
                 mock_switcher = MockSwitcher.return_value
                 mock_switcher.create_handoff_package.return_value = {
                     "timestamp": "20250101_120000",
-                    "version": "1.0"
+                    "version": "1.0",
                 }
 
                 with patch("pathlib.Path.cwd", return_value=tmp_path):

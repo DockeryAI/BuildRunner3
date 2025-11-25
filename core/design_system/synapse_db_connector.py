@@ -27,12 +27,12 @@ class SynapseDBConnector:
             supabase_key: Supabase service role key (or set SUPABASE_SERVICE_ROLE_KEY env var)
         """
         # Try to load from environment first
-        self.url = supabase_url or os.getenv('SUPABASE_URL')
-        self.key = supabase_key or os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+        self.url = supabase_url or os.getenv("SUPABASE_URL")
+        self.key = supabase_key or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
         # If not in environment, try to load from Synapse .env file
         if not self.url or not self.key:
-            synapse_env = Path.home() / 'Projects' / 'Synapse' / '.env'
+            synapse_env = Path.home() / "Projects" / "Synapse" / ".env"
             if synapse_env.exists():
                 self._load_from_env_file(synapse_env)
 
@@ -46,11 +46,10 @@ class SynapseDBConnector:
         # Lazy import supabase to avoid dependency issues
         try:
             from supabase import create_client, Client
+
             self.client: Client = create_client(self.url, self.key)
         except ImportError:
-            raise ImportError(
-                "supabase-py not installed. Install with: pip install supabase"
-            )
+            raise ImportError("supabase-py not installed. Install with: pip install supabase")
 
     def _load_from_env_file(self, env_path: Path):
         """Load credentials from .env file"""
@@ -58,10 +57,10 @@ class SynapseDBConnector:
             with open(env_path) as f:
                 for line in f:
                     line = line.strip()
-                    if line.startswith('SUPABASE_URL='):
-                        self.url = line.split('=', 1)[1].strip()
-                    elif line.startswith('SUPABASE_SERVICE_ROLE_KEY='):
-                        self.key = line.split('=', 1)[1].strip()
+                    if line.startswith("SUPABASE_URL="):
+                        self.url = line.split("=", 1)[1].strip()
+                    elif line.startswith("SUPABASE_SERVICE_ROLE_KEY="):
+                        self.key = line.split("=", 1)[1].strip()
         except Exception as e:
             print(f"Warning: Could not load from {env_path}: {e}")
 
@@ -77,21 +76,25 @@ class SynapseDBConnector:
         """
         try:
             # Try exact match first
-            result = self.client.table('industry_profiles')\
-                .select('*')\
-                .eq('industry_name', industry_name)\
-                .limit(1)\
+            result = (
+                self.client.table("industry_profiles")
+                .select("*")
+                .eq("industry_name", industry_name)
+                .limit(1)
                 .execute()
+            )
 
             if result.data:
                 return self._transform_to_br3_format(result.data[0])
 
             # Try case-insensitive search
-            result = self.client.table('industry_profiles')\
-                .select('*')\
-                .ilike('industry_name', industry_name)\
-                .limit(1)\
+            result = (
+                self.client.table("industry_profiles")
+                .select("*")
+                .ilike("industry_name", industry_name)
+                .limit(1)
                 .execute()
+            )
 
             if result.data:
                 return self._transform_to_br3_format(result.data[0])
@@ -110,11 +113,9 @@ class SynapseDBConnector:
             Sorted list of industry names
         """
         try:
-            result = self.client.table('industry_profiles')\
-                .select('industry_name')\
-                .execute()
+            result = self.client.table("industry_profiles").select("industry_name").execute()
 
-            industries = [row['industry_name'] for row in result.data]
+            industries = [row["industry_name"] for row in result.data]
             return sorted(industries)
 
         except Exception as e:
@@ -132,12 +133,14 @@ class SynapseDBConnector:
             List of matching industry names
         """
         try:
-            result = self.client.table('industry_profiles')\
-                .select('industry_name')\
-                .ilike('industry_name', f'%{query}%')\
+            result = (
+                self.client.table("industry_profiles")
+                .select("industry_name")
+                .ilike("industry_name", f"%{query}%")
                 .execute()
+            )
 
-            return [row['industry_name'] for row in result.data]
+            return [row["industry_name"] for row in result.data]
 
         except Exception as e:
             print(f"Error searching industries: {e}")
@@ -146,9 +149,7 @@ class SynapseDBConnector:
     def get_profile_count(self) -> int:
         """Get total number of industry profiles"""
         try:
-            result = self.client.table('industry_profiles')\
-                .select('id', count='exact')\
-                .execute()
+            result = self.client.table("industry_profiles").select("id", count="exact").execute()
 
             return result.count or 0
 
@@ -167,38 +168,32 @@ class SynapseDBConnector:
         - typography_rules → typography
         """
         return {
-            'industry': synapse_data.get('industry_name'),
-            'naics_code': synapse_data.get('naics_code'),
-            'category': synapse_data.get('category'),
-
+            "industry": synapse_data.get("industry_name"),
+            "naics_code": synapse_data.get("naics_code"),
+            "category": synapse_data.get("category"),
             # Design & psychology
-            'design_psychology': synapse_data.get('psychology_data', {}),
-            'ui_patterns': synapse_data.get('design_patterns', {}),
-            'color_scheme': synapse_data.get('color_psychology', {}),
-            'typography': synapse_data.get('typography_rules', {}),
-
+            "design_psychology": synapse_data.get("psychology_data", {}),
+            "ui_patterns": synapse_data.get("design_patterns", {}),
+            "color_scheme": synapse_data.get("color_psychology", {}),
+            "typography": synapse_data.get("typography_rules", {}),
             # Content
-            'power_words': synapse_data.get('power_words', []),
-            'avoid_words': synapse_data.get('avoid_words', []),
-            'content_themes': synapse_data.get('content_themes', []),
-
+            "power_words": synapse_data.get("power_words", []),
+            "avoid_words": synapse_data.get("avoid_words", []),
+            "content_themes": synapse_data.get("content_themes", []),
             # Target audience
-            'target_audience': synapse_data.get('target_demographics', {}),
-            'audience_characteristics': synapse_data.get('audience_characteristics', []),
-
+            "target_audience": synapse_data.get("target_demographics", {}),
+            "audience_characteristics": synapse_data.get("audience_characteristics", []),
             # Trust & conversion
-            'trust_signals': synapse_data.get('trust_factors', []),
-            'trust_builders': synapse_data.get('trust_builders', []),
-            'conversion_patterns': synapse_data.get('conversion_psychology', {}),
-            'buying_triggers': synapse_data.get('common_buying_triggers', []),
-
+            "trust_signals": synapse_data.get("trust_factors", []),
+            "trust_builders": synapse_data.get("trust_builders", []),
+            "conversion_patterns": synapse_data.get("conversion_psychology", {}),
+            "buying_triggers": synapse_data.get("common_buying_triggers", []),
             # Pain points & benefits
-            'pain_points': synapse_data.get('common_pain_points', []),
-
+            "pain_points": synapse_data.get("common_pain_points", []),
             # Metadata
-            'source': 'synapse_db',
-            'synapse_id': synapse_data.get('id'),
-            'has_full_profile': True
+            "source": "synapse_db",
+            "synapse_id": synapse_data.get("id"),
+            "has_full_profile": True,
         }
 
 
@@ -232,7 +227,7 @@ def main():
 
         # Test search
         print("Testing search for 'health'...")
-        results = connector.search_industries('health')
+        results = connector.search_industries("health")
         print(f"✅ Found {len(results)} matches:")
         for industry in results:
             print(f"  • {industry}")
@@ -259,6 +254,7 @@ def main():
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         return 1
 
@@ -267,4 +263,5 @@ def main():
 
 if __name__ == "__main__":
     import sys
+
     sys.exit(main())

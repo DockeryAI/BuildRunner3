@@ -12,15 +12,17 @@ from enum import Enum
 
 class SchedulingStrategy(Enum):
     """Task scheduling strategies"""
+
     PRIORITY_FIRST = "priority_first"  # Highest priority first
     SHORTEST_FIRST = "shortest_first"  # Shortest duration first
-    CRITICAL_PATH = "critical_path"    # Critical path method
+    CRITICAL_PATH = "critical_path"  # Critical path method
     DEPENDENCY_FIRST = "dependency_first"  # Tasks that unblock most others
 
 
 @dataclass
 class ScheduledTask:
     """Task with scheduling metadata"""
+
     task_id: str
     priority_score: float
     estimated_minutes: int
@@ -122,7 +124,7 @@ class PriorityScheduler:
 
         for task in tasks:
             dependents_count = len(dependents_map.get(task.id, []))
-            base_priority = getattr(task, 'priority', 5)  # Default priority 5
+            base_priority = getattr(task, "priority", 5)  # Default priority 5
 
             score = self.calculate_priority(
                 task_id=task.id,
@@ -130,17 +132,19 @@ class PriorityScheduler:
                 dependencies_count=len(task.dependencies),
                 dependents_count=dependents_count,
                 estimated_minutes=task.estimated_minutes,
-                is_critical_path=getattr(task, 'critical_path', False),
+                is_critical_path=getattr(task, "critical_path", False),
             )
 
-            scheduled_tasks.append(ScheduledTask(
-                task_id=task.id,
-                priority_score=score,
-                estimated_minutes=task.estimated_minutes,
-                dependencies_count=len(task.dependencies),
-                dependents_count=dependents_count,
-                critical_path=getattr(task, 'critical_path', False),
-            ))
+            scheduled_tasks.append(
+                ScheduledTask(
+                    task_id=task.id,
+                    priority_score=score,
+                    estimated_minutes=task.estimated_minutes,
+                    dependencies_count=len(task.dependencies),
+                    dependents_count=dependents_count,
+                    critical_path=getattr(task, "critical_path", False),
+                )
+            )
 
         # Sort by priority score (highest first)
         scheduled_tasks.sort(key=lambda x: x.priority_score, reverse=True)

@@ -16,7 +16,7 @@ from typing import Dict
 import logging
 
 # Load environment variables from .env file
-env_path = Path(__file__).parent.parent / '.env'
+env_path = Path(__file__).parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 print(f"Loaded .env from: {env_path}")
 print(f"OpenRouter API Key present: {bool(os.getenv('OPENROUTER_API_KEY'))}")

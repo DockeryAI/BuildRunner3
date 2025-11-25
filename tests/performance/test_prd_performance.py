@@ -38,11 +38,13 @@ class TestPRDControllerPerformance:
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
         # Create initial spec
-        spec_path.write_text("""# Test Project
+        spec_path.write_text(
+            """# Test Project
 
 ## Feature 1: Initial Feature
 **Priority:** high
-""")
+"""
+        )
 
         yield spec_path
 
@@ -57,13 +59,16 @@ class TestPRDControllerPerformance:
 
         # Measure write time
         start = time.time()
-        controller.update_prd({
-            "add_feature": {
-                "id": "test-feature",
-                "name": "Performance Test Feature",
-                "description": "Testing file write speed"
-            }
-        }, author="test")
+        controller.update_prd(
+            {
+                "add_feature": {
+                    "id": "test-feature",
+                    "name": "Performance Test Feature",
+                    "description": "Testing file write speed",
+                }
+            },
+            author="test",
+        )
         duration = (time.time() - start) * 1000  # Convert to ms
 
         assert duration < 100, f"File write took {duration:.1f}ms (target: <100ms)"
@@ -84,13 +89,16 @@ class TestPRDControllerPerformance:
 
         # Measure event emission time
         start = time.time()
-        controller.update_prd({
-            "add_feature": {
-                "id": "test-feature-2",
-                "name": "Event Test Feature",
-                "description": "Testing event speed"
-            }
-        }, author="test")
+        controller.update_prd(
+            {
+                "add_feature": {
+                    "id": "test-feature-2",
+                    "name": "Event Test Feature",
+                    "description": "Testing event speed",
+                }
+            },
+            author="test",
+        )
 
         assert event_received_at is not None
         duration = (event_received_at - start) * 1000
@@ -109,6 +117,7 @@ class TestPRDControllerPerformance:
         def make_listener(idx):
             def listener(event):
                 received_counts.append(idx)
+
             return listener
 
         for i in range(100):
@@ -116,13 +125,16 @@ class TestPRDControllerPerformance:
 
         # Measure with 100 subscribers
         start = time.time()
-        controller.update_prd({
-            "add_feature": {
-                "id": "test-feature-100",
-                "name": "100 Subscriber Test",
-                "description": "Testing subscriber scalability"
-            }
-        }, author="test")
+        controller.update_prd(
+            {
+                "add_feature": {
+                    "id": "test-feature-100",
+                    "name": "100 Subscriber Test",
+                    "description": "Testing subscriber scalability",
+                }
+            },
+            author="test",
+        )
         duration = (time.time() - start) * 1000
 
         # All 100 subscribers should receive event
@@ -139,13 +151,16 @@ class TestPRDControllerPerformance:
 
         def concurrent_update(feature_num):
             try:
-                controller.update_prd({
-                    "add_feature": {
-                        "id": f"concurrent-{feature_num}",
-                        "name": f"Concurrent Feature {feature_num}",
-                        "description": "Concurrency test"
-                    }
-                }, author=f"user-{feature_num}")
+                controller.update_prd(
+                    {
+                        "add_feature": {
+                            "id": f"concurrent-{feature_num}",
+                            "name": f"Concurrent Feature {feature_num}",
+                            "description": "Concurrency test",
+                        }
+                    },
+                    author=f"user-{feature_num}",
+                )
                 return True
             except Exception as e:
                 print(f"Concurrent update {feature_num} failed: {e}")
@@ -182,8 +197,9 @@ class TestAdaptivePlannerPerformance:
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
         # Create spec with multiple features
-        features_text = "\n\n".join([
-            f"""## Feature {i}: Feature {i}
+        features_text = "\n\n".join(
+            [
+                f"""## Feature {i}: Feature {i}
 **Priority:** medium
 
 ### Description
@@ -196,13 +212,17 @@ Test feature {i}
 ### Acceptance Criteria
 - [ ] Criterion 1
 - [ ] Criterion 2
-""" for i in range(1, 11)  # 10 features
-        ])
+"""
+                for i in range(1, 11)  # 10 features
+            ]
+        )
 
-        spec_path.write_text(f"""# Test Project
+        spec_path.write_text(
+            f"""# Test Project
 
 {features_text}
-""")
+"""
+        )
 
         task_queue = TaskQueue()
         planner = AdaptivePlanner(temp_dir, task_queue)
@@ -224,25 +244,31 @@ Test feature {i}
         start = time.time()
 
         # Add 1 feature
-        controller.update_prd({
-            "add_feature": {
-                "id": "new-feature-1",
-                "name": "New Feature 1",
-                "description": "Performance test feature"
-            }
-        }, author="test")
+        controller.update_prd(
+            {
+                "add_feature": {
+                    "id": "new-feature-1",
+                    "name": "New Feature 1",
+                    "description": "Performance test feature",
+                }
+            },
+            author="test",
+        )
 
         # Wait for regeneration to complete
         time.sleep(0.5)  # Allow async regeneration
 
         # Add 1 more feature
-        controller.update_prd({
-            "add_feature": {
-                "id": "new-feature-2",
-                "name": "New Feature 2",
-                "description": "Performance test feature 2"
-            }
-        }, author="test")
+        controller.update_prd(
+            {
+                "add_feature": {
+                    "id": "new-feature-2",
+                    "name": "New Feature 2",
+                    "description": "Performance test feature 2",
+                }
+            },
+            author="test",
+        )
 
         time.sleep(0.5)  # Allow async regeneration
 
@@ -265,13 +291,16 @@ Test feature {i}
 
         # Add 5 features
         for i in range(5):
-            controller.update_prd({
-                "add_feature": {
-                    "id": f"batch-feature-{i}",
-                    "name": f"Batch Feature {i}",
-                    "description": f"Batch test feature {i}"
-                }
-            }, author="test")
+            controller.update_prd(
+                {
+                    "add_feature": {
+                        "id": f"batch-feature-{i}",
+                        "name": f"Batch Feature {i}",
+                        "description": f"Batch test feature {i}",
+                    }
+                },
+                author="test",
+            )
             time.sleep(0.1)
 
         time.sleep(1.0)  # Allow final regeneration
@@ -299,13 +328,16 @@ Test feature {i}
 
         # Now modify a feature
         controller = PRDController(spec_path)
-        controller.update_prd({
-            "add_feature": {
-                "id": "verify-preservation",
-                "name": "Verify Completed Preservation",
-                "description": "Test completed work protection"
-            }
-        }, author="test")
+        controller.update_prd(
+            {
+                "add_feature": {
+                    "id": "verify-preservation",
+                    "name": "Verify Completed Preservation",
+                    "description": "Test completed work protection",
+                }
+            },
+            author="test",
+        )
 
         time.sleep(1.0)
 
@@ -371,13 +403,16 @@ class TestScalabilityPerformance:
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
         # Create PRD with 50 features
-        features_text = "\n\n".join([
-            f"""## Feature {i}: Feature {i}
+        features_text = "\n\n".join(
+            [
+                f"""## Feature {i}: Feature {i}
 **Priority:** medium
 ### Description
 Feature {i} description
-""" for i in range(1, 51)
-        ])
+"""
+                for i in range(1, 51)
+            ]
+        )
 
         spec_path.write_text(f"""# Large Project\n\n{features_text}""")
 
@@ -391,13 +426,16 @@ Feature {i} description
 
             # Test update performance with large PRD
             update_start = time.time()
-            controller.update_prd({
-                "add_feature": {
-                    "id": "feature-51",
-                    "name": "Feature 51",
-                    "description": "Testing scalability"
-                }
-            }, author="test")
+            controller.update_prd(
+                {
+                    "add_feature": {
+                        "id": "feature-51",
+                        "name": "Feature 51",
+                        "description": "Testing scalability",
+                    }
+                },
+                author="test",
+            )
             update_time = (time.time() - update_start) * 1000
 
             assert update_time < 200, f"Update with 50 features took {update_time:.0f}ms"
@@ -414,12 +452,7 @@ Feature {i} description
         # Add 500 tasks
         start = time.time()
         for i in range(500):
-            task_queue.add_task(
-                f"task-{i}",
-                f"Task {i}",
-                estimated_minutes=30,
-                dependencies=[]
-            )
+            task_queue.add_task(f"task-{i}", f"Task {i}", estimated_minutes=30, dependencies=[])
         add_time = (time.time() - start) * 1000
 
         assert len(task_queue.tasks) == 500
@@ -445,12 +478,7 @@ class TestAPIPerformance:
         import requests
 
         url = "http://localhost:8080/api/prd/update"
-        payload = {
-            "updates": {
-                "project_name": "Performance Test"
-            },
-            "author": "test"
-        }
+        payload = {"updates": {"project_name": "Performance Test"}, "author": "test"}
 
         # Warm up
         requests.post(url, json=payload)
@@ -489,15 +517,16 @@ class TestAPIPerformance:
 
         # Start receiving in background
         import threading
+
         receive_thread = threading.Thread(target=receive_broadcast)
         receive_thread.start()
 
         # Trigger update
         start = time.time()
-        requests.post("http://localhost:8080/api/prd/update", json={
-            "updates": {"project_name": "WS Test"},
-            "author": "test"
-        })
+        requests.post(
+            "http://localhost:8080/api/prd/update",
+            json={"updates": {"project_name": "WS Test"}, "author": "test"},
+        )
 
         receive_thread.join(timeout=2.0)
 
@@ -513,20 +542,15 @@ class TestAPIPerformance:
 
 def run_performance_suite():
     """Run complete performance test suite and generate report"""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("DYNAMIC PRD SYSTEM - PERFORMANCE VALIDATION SUITE")
-    print("="*80 + "\n")
+    print("=" * 80 + "\n")
 
-    pytest.main([
-        __file__,
-        "-v",
-        "--tb=short",
-        "-s"  # Show print statements
-    ])
+    pytest.main([__file__, "-v", "--tb=short", "-s"])  # Show print statements
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("PERFORMANCE VALIDATION COMPLETE")
-    print("="*80 + "\n")
+    print("=" * 80 + "\n")
 
 
 if __name__ == "__main__":

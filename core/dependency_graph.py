@@ -13,6 +13,7 @@ Features:
 - Parallel execution opportunities
 - Critical path analysis
 """
+
 from typing import Dict, List, Set, Optional, Tuple
 from dataclasses import dataclass, field
 from collections import defaultdict, deque
@@ -21,17 +22,20 @@ from enum import Enum
 
 class GraphError(Exception):
     """Base exception for graph-related errors"""
+
     pass
 
 
 class CircularDependencyError(GraphError):
     """Raised when circular dependency is detected"""
+
     pass
 
 
 @dataclass
 class ExecutionLevel:
     """Represents a level in the execution plan"""
+
     level: int
     tasks: List[str] = field(default_factory=list)
     estimated_minutes: int = 0
@@ -63,7 +67,7 @@ class DependencyGraph:
         Args:
             task: Task dict with id, dependencies, estimated_minutes
         """
-        task_id = task['id']
+        task_id = task["id"]
         self.tasks[task_id] = task
 
         # Initialize in-degree
@@ -71,7 +75,7 @@ class DependencyGraph:
             self.in_degree[task_id] = 0
 
         # Add edges for dependencies
-        dependencies = task.get('dependencies', [])
+        dependencies = task.get("dependencies", [])
         for dep_id in dependencies:
             # Add edge from dependency to task
             self.adjacency_list[dep_id].append(task_id)
@@ -204,7 +208,8 @@ class DependencyGraph:
         while len(processed) < len(self.tasks):
             # Find tasks with no remaining dependencies
             level_tasks = [
-                task_id for task_id, degree in in_degree_copy.items()
+                task_id
+                for task_id, degree in in_degree_copy.items()
                 if degree == 0 and task_id not in processed
             ]
 
@@ -215,14 +220,12 @@ class DependencyGraph:
             # Calculate total estimated time for level (max of tasks, since parallel)
             max_duration = 0
             for task_id in level_tasks:
-                task_duration = self.tasks[task_id].get('estimated_minutes', 0)
+                task_duration = self.tasks[task_id].get("estimated_minutes", 0)
                 max_duration = max(max_duration, task_duration)
 
             # Create execution level
             level = ExecutionLevel(
-                level=current_level,
-                tasks=level_tasks,
-                estimated_minutes=max_duration
+                level=current_level, tasks=level_tasks, estimated_minutes=max_duration
             )
             levels.append(level)
 
@@ -348,7 +351,7 @@ class DependencyGraph:
         predecessor = {task_id: None for task_id in self.tasks}
 
         for task_id in topo_order:
-            task_duration = self.tasks[task_id].get('estimated_minutes', 0)
+            task_duration = self.tasks[task_id].get("estimated_minutes", 0)
 
             # Check all dependencies
             for dep_id in self.reverse_adjacency[task_id]:
@@ -414,7 +417,7 @@ class DependencyGraph:
         missing = []
 
         for task_id, task in self.tasks.items():
-            dependencies = task.get('dependencies', [])
+            dependencies = task.get("dependencies", [])
             for dep_id in dependencies:
                 if dep_id not in self.tasks:
                     missing.append(f"{task_id} -> {dep_id}")

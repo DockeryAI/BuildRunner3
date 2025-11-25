@@ -17,13 +17,7 @@ from pathlib import Path
 from unittest.mock import Mock, MagicMock
 
 from core.adaptive_planner import AdaptivePlanner, RegenerationResult
-from core.prd.prd_controller import (
-    PRDController,
-    PRDChangeEvent,
-    ChangeType,
-    PRD,
-    PRDFeature
-)
+from core.prd.prd_controller import PRDController, PRDChangeEvent, ChangeType, PRD, PRDFeature
 from core.task_queue import TaskQueue, Task, TaskStatus
 from core.dependency_graph import DependencyGraph
 
@@ -46,7 +40,7 @@ class TestAdaptivePlannerInitialization:
             "temp_dir": temp_dir,
             "planner": planner,
             "task_queue": task_queue,
-            "controller": controller
+            "controller": controller,
         }
 
         shutil.rmtree(temp_dir)
@@ -66,10 +60,7 @@ class TestAdaptivePlannerInitialization:
 
         # Check that planner's on_prd_change is in listeners
         listeners = controller._listeners
-        assert any(
-            listener.__name__ == "on_prd_change"
-            for listener in listeners
-        )
+        assert any(listener.__name__ == "on_prd_change" for listener in listeners)
 
 
 class TestEventDrivenRegeneration:
@@ -82,7 +73,8 @@ class TestEventDrivenRegeneration:
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
         # Create spec with features
-        spec_path.write_text("""# Test Project
+        spec_path.write_text(
+            """# Test Project
 
 ## Feature 1: Feature One
 **Priority:** high
@@ -95,7 +87,8 @@ Feature one description
 
 ### Acceptance Criteria
 - [ ] Criterion 1
-""")
+"""
+        )
 
         task_queue = TaskQueue()
         controller = PRDController(spec_path)
@@ -105,7 +98,7 @@ Feature one description
             "temp_dir": temp_dir,
             "planner": planner,
             "task_queue": task_queue,
-            "controller": controller
+            "controller": controller,
         }
 
         shutil.rmtree(temp_dir)
@@ -128,18 +121,15 @@ Feature one description
                 tasks_preserved=0,
                 tasks_updated=0,
                 affected_features=[],
-                ready_tasks=[]
+                ready_tasks=[],
             )
 
         planner.regenerate_tasks = track_regenerate
 
         # Trigger PRD change
-        controller.update_prd({
-            "add_feature": {
-                "id": "new-feature",
-                "name": "New Feature"
-            }
-        }, author="test")
+        controller.update_prd(
+            {"add_feature": {"id": "new-feature", "name": "New Feature"}}, author="test"
+        )
 
         # Should have called regenerate
         assert len(called) > 0
@@ -163,9 +153,7 @@ Feature one description
 
         trigger_time = time.time()
 
-        controller.update_prd({
-            "add_feature": {"id": "test", "name": "Test"}
-        }, author="test")
+        controller.update_prd({"add_feature": {"id": "test", "name": "Test"}}, author="test")
 
         # Allow some time for event propagation
         time.sleep(0.2)
@@ -184,7 +172,8 @@ class TestDifferentialTaskGeneration:
         temp_dir = Path(tempfile.mkdtemp())
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
-        spec_path.write_text("""# Test Project
+        spec_path.write_text(
+            """# Test Project
 
 ## Feature 1: Feature One
 **Priority:** high
@@ -209,7 +198,8 @@ Feature two
 
 ### Acceptance Criteria
 - [ ] Criterion 2
-""")
+"""
+        )
 
         task_queue = TaskQueue()
         controller = PRDController(spec_path)
@@ -219,7 +209,7 @@ Feature two
             "temp_dir": temp_dir,
             "planner": planner,
             "task_queue": task_queue,
-            "controller": controller
+            "controller": controller,
         }
 
         shutil.rmtree(temp_dir)
@@ -248,7 +238,7 @@ Feature two
             event_type=ChangeType.FEATURE_UPDATED,
             affected_features=["feature-1"],
             full_prd=controller.prd,
-            diff={}
+            diff={},
         )
 
         affected = planner._identify_affected_tasks(event)
@@ -266,15 +256,14 @@ Feature two
         initial_tasks = len(planner.task_queue.tasks)
 
         # Update only one feature
-        controller.update_prd({
-            "update_feature": {
-                "id": "feature-1",
-                "updates": {"description": "Updated"}
-            }
-        }, author="test")
+        controller.update_prd(
+            {"update_feature": {"id": "feature-1", "updates": {"description": "Updated"}}},
+            author="test",
+        )
 
         # Allow regeneration
         import time
+
         time.sleep(0.5)
 
         # Tasks should change but not double
@@ -291,7 +280,8 @@ class TestCompletedWorkProtection:
         temp_dir = Path(tempfile.mkdtemp())
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
-        spec_path.write_text("""# Test Project
+        spec_path.write_text(
+            """# Test Project
 
 ## Feature 1: Feature One
 **Priority:** high
@@ -304,7 +294,8 @@ Feature one
 
 ### Acceptance Criteria
 - [ ] Criterion 1
-""")
+"""
+        )
 
         task_queue = TaskQueue()
         controller = PRDController(spec_path)
@@ -314,7 +305,7 @@ Feature one
             "temp_dir": temp_dir,
             "planner": planner,
             "task_queue": task_queue,
-            "controller": controller
+            "controller": controller,
         }
 
         shutil.rmtree(temp_dir)
@@ -340,7 +331,7 @@ Feature one
 
         assert "t1" in to_preserve  # Completed
         assert "t2" in to_preserve  # In progress
-        assert "t3" in to_regen     # Pending
+        assert "t3" in to_regen  # Pending
 
     def test_completed_tasks_preserved_on_update(self, setup):
         """Test completed tasks are preserved when PRD updates"""
@@ -357,14 +348,12 @@ Feature one
             task_queue.complete_task(completed_task_id)
 
             # Update PRD
-            controller.update_prd({
-                "add_feature": {
-                    "id": "new-feature",
-                    "name": "New Feature"
-                }
-            }, author="test")
+            controller.update_prd(
+                {"add_feature": {"id": "new-feature", "name": "New Feature"}}, author="test"
+            )
 
             import time
+
             time.sleep(0.5)
 
             # Completed task should still exist and be completed
@@ -385,11 +374,10 @@ Feature one
 
         if feature_1_tasks:
             # Remove feature
-            controller.update_prd({
-                "remove_feature": "feature-1"
-            }, author="test")
+            controller.update_prd({"remove_feature": "feature-1"}, author="test")
 
             import time
+
             time.sleep(0.5)
 
             # Tasks should be removed from queue (not marked cancelled in this implementation)
@@ -415,7 +403,7 @@ class TestDependencyGraphUpdates:
             "temp_dir": temp_dir,
             "planner": planner,
             "task_queue": task_queue,
-            "controller": controller
+            "controller": controller,
         }
 
         shutil.rmtree(temp_dir)
@@ -451,7 +439,8 @@ class TestFeatureTaskMapping:
         temp_dir = Path(tempfile.mkdtemp())
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
-        spec_path.write_text("""# Test Project
+        spec_path.write_text(
+            """# Test Project
 
 ## Feature 1: Feature One
 **Priority:** high
@@ -464,7 +453,8 @@ Feature one
 
 ### Acceptance Criteria
 - [ ] Criterion 1
-""")
+"""
+        )
 
         task_queue = TaskQueue()
         controller = PRDController(spec_path)
@@ -474,7 +464,7 @@ Feature one
             "temp_dir": temp_dir,
             "planner": planner,
             "task_queue": task_queue,
-            "controller": controller
+            "controller": controller,
         }
 
         shutil.rmtree(temp_dir)
@@ -499,14 +489,12 @@ Feature one
         initial_features = set(planner._feature_task_map.keys())
 
         # Add new feature
-        controller.update_prd({
-            "add_feature": {
-                "id": "new-feature",
-                "name": "New Feature"
-            }
-        }, author="test")
+        controller.update_prd(
+            {"add_feature": {"id": "new-feature", "name": "New Feature"}}, author="test"
+        )
 
         import time
+
         time.sleep(0.5)
 
         # Map should have new feature

@@ -488,6 +488,7 @@ class TestJWTManager:
 
         # Create token with 0 hour expiration (immediately expired)
         import time
+
         time.sleep(0.1)
 
         token = manager.create_token(
@@ -743,8 +744,7 @@ class TestAuthenticationManager:
         )
 
         updated_user = manager.update_user_settings(
-            user.user_id,
-            {"theme": "dark", "notifications_enabled": False}
+            user.user_id, {"theme": "dark", "notifications_enabled": False}
         )
 
         assert updated_user.settings.theme == "dark"

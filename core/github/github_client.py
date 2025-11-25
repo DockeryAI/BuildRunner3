@@ -13,6 +13,7 @@ from dataclasses import dataclass
 @dataclass
 class PullRequest:
     """Pull request information"""
+
     number: int
     title: str
     body: str
@@ -25,6 +26,7 @@ class PullRequest:
 @dataclass
 class Release:
     """Release information"""
+
     tag_name: str
     name: str
     body: str
@@ -36,7 +38,9 @@ class Release:
 class GitHubClient:
     """Safe wrapper around GitHub API"""
 
-    def __init__(self, token: Optional[str] = None, owner: Optional[str] = None, repo: Optional[str] = None):
+    def __init__(
+        self, token: Optional[str] = None, owner: Optional[str] = None, repo: Optional[str] = None
+    ):
         """
         Initialize GitHub client
 
@@ -45,16 +49,14 @@ class GitHubClient:
             owner: Repository owner
             repo: Repository name
         """
-        self.token = token or os.getenv('GITHUB_TOKEN')
+        self.token = token or os.getenv("GITHUB_TOKEN")
         if not self.token:
             # Try to use gh CLI authentication
             import subprocess
+
             try:
                 result = subprocess.run(
-                    ['gh', 'auth', 'token'],
-                    capture_output=True,
-                    text=True,
-                    check=True
+                    ["gh", "auth", "token"], capture_output=True, text=True, check=True
                 )
                 self.token = result.stdout.strip()
             except (subprocess.CalledProcessError, FileNotFoundError):
@@ -70,15 +72,14 @@ class GitHubClient:
         if self._github is None:
             try:
                 from github import Github
+
                 if self.token:
                     self._github = Github(self.token)
                 else:
                     # Use without authentication (rate limited)
                     self._github = Github()
             except ImportError:
-                raise ImportError(
-                    "PyGithub not installed. Install with: pip install PyGithub"
-                )
+                raise ImportError("PyGithub not installed. Install with: pip install PyGithub")
         return self._github
 
     def _get_repo(self):
@@ -97,12 +98,7 @@ class GitHubClient:
         self._repo = None  # Reset cached repo
 
     def create_pull_request(
-        self,
-        title: str,
-        body: str,
-        head: str,
-        base: str = 'main',
-        draft: bool = False
+        self, title: str, body: str, head: str, base: str = "main", draft: bool = False
     ) -> PullRequest:
         """
         Create pull request
@@ -118,13 +114,7 @@ class GitHubClient:
             PullRequest object
         """
         repo = self._get_repo()
-        pr = repo.create_pull(
-            title=title,
-            body=body,
-            head=head,
-            base=base,
-            draft=draft
-        )
+        pr = repo.create_pull(title=title, body=body, head=head, base=base, draft=draft)
 
         return PullRequest(
             number=pr.number,
@@ -133,10 +123,10 @@ class GitHubClient:
             state=pr.state,
             url=pr.html_url,
             head_ref=pr.head.ref,
-            base_ref=pr.base.ref
+            base_ref=pr.base.ref,
         )
 
-    def list_pull_requests(self, state: str = 'open') -> List[PullRequest]:
+    def list_pull_requests(self, state: str = "open") -> List[PullRequest]:
         """List pull requests"""
         repo = self._get_repo()
         prs = repo.get_pulls(state=state)
@@ -149,12 +139,12 @@ class GitHubClient:
                 state=pr.state,
                 url=pr.html_url,
                 head_ref=pr.head.ref,
-                base_ref=pr.base.ref
+                base_ref=pr.base.ref,
             )
             for pr in prs
         ]
 
-    def merge_pull_request(self, number: int, merge_method: str = 'merge') -> bool:
+    def merge_pull_request(self, number: int, merge_method: str = "merge") -> bool:
         """
         Merge pull request
 
@@ -171,12 +161,7 @@ class GitHubClient:
         return result.merged
 
     def create_release(
-        self,
-        tag: str,
-        name: str,
-        body: str,
-        draft: bool = False,
-        prerelease: bool = False
+        self, tag: str, name: str, body: str, draft: bool = False, prerelease: bool = False
     ) -> Release:
         """
         Create GitHub release
@@ -193,11 +178,7 @@ class GitHubClient:
         """
         repo = self._get_repo()
         release = repo.create_git_release(
-            tag=tag,
-            name=name,
-            message=body,
-            draft=draft,
-            prerelease=prerelease
+            tag=tag, name=name, message=body, draft=draft, prerelease=prerelease
         )
 
         return Release(
@@ -206,7 +187,7 @@ class GitHubClient:
             body=release.body,
             draft=release.draft,
             prerelease=release.prerelease,
-            url=release.html_url
+            url=release.html_url,
         )
 
     def list_releases(self) -> List[Release]:
@@ -221,7 +202,7 @@ class GitHubClient:
                 body=r.body,
                 draft=r.draft,
                 prerelease=r.prerelease,
-                url=r.html_url
+                url=r.html_url,
             )
             for r in releases
         ]
@@ -231,7 +212,7 @@ class GitHubClient:
         title: str,
         body: str,
         labels: Optional[List[str]] = None,
-        assignees: Optional[List[str]] = None
+        assignees: Optional[List[str]] = None,
     ) -> int:
         """
         Create GitHub issue
@@ -241,10 +222,7 @@ class GitHubClient:
         """
         repo = self._get_repo()
         issue = repo.create_issue(
-            title=title,
-            body=body,
-            labels=labels or [],
-            assignees=assignees or []
+            title=title, body=body, labels=labels or [], assignees=assignees or []
         )
         return issue.number
 
@@ -252,14 +230,14 @@ class GitHubClient:
         """Close issue"""
         repo = self._get_repo()
         issue = repo.get_issue(number)
-        issue.edit(state='closed')
+        issue.edit(state="closed")
 
     def setup_branch_protection(
         self,
-        branch: str = 'main',
+        branch: str = "main",
         require_reviews: int = 1,
         require_status_checks: bool = True,
-        status_checks: Optional[List[str]] = None
+        status_checks: Optional[List[str]] = None,
     ) -> None:
         """
         Setup branch protection rules
@@ -280,16 +258,13 @@ class GitHubClient:
             require_code_owner_reviews=False,
             required_linear_history=True,
             allow_force_pushes=False,
-            allow_deletions=False
+            allow_deletions=False,
         )
 
         if require_status_checks and status_checks:
-            branch_obj.edit_required_status_checks(
-                strict=True,
-                contexts=status_checks
-            )
+            branch_obj.edit_required_status_checks(strict=True, contexts=status_checks)
 
-    def get_branch_protection_status(self, branch: str = 'main') -> Dict[str, Any]:
+    def get_branch_protection_status(self, branch: str = "main") -> Dict[str, Any]:
         """Get branch protection status"""
         repo = self._get_repo()
         try:
@@ -297,13 +272,23 @@ class GitHubClient:
             protection = branch_obj.get_protection()
 
             return {
-                'protected': True,
-                'required_reviews': protection.required_pull_request_reviews.required_approving_review_count if protection.required_pull_request_reviews else 0,
-                'enforce_admins': protection.enforce_admins.enabled if protection.enforce_admins else False,
-                'required_status_checks': [c for c in protection.required_status_checks.contexts] if protection.required_status_checks else []
+                "protected": True,
+                "required_reviews": (
+                    protection.required_pull_request_reviews.required_approving_review_count
+                    if protection.required_pull_request_reviews
+                    else 0
+                ),
+                "enforce_admins": (
+                    protection.enforce_admins.enabled if protection.enforce_admins else False
+                ),
+                "required_status_checks": (
+                    [c for c in protection.required_status_checks.contexts]
+                    if protection.required_status_checks
+                    else []
+                ),
             }
         except Exception:
-            return {'protected': False}
+            return {"protected": False}
 
     def is_authenticated(self) -> bool:
         """Check if client is authenticated"""

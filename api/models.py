@@ -12,8 +12,10 @@ from pydantic import BaseModel, Field, ConfigDict
 
 # Feature Models
 
+
 class FeatureBase(BaseModel):
     """Base feature model - because we love inheritance"""
+
     name: str = Field(..., min_length=1, max_length=200)
     description: str = Field(..., min_length=1)
     status: Literal["planned", "in_progress", "complete"] = "planned"
@@ -25,11 +27,13 @@ class FeatureBase(BaseModel):
 
 class FeatureCreate(FeatureBase):
     """Model for creating a new feature - optimism in code form"""
+
     id: str = Field(..., pattern=r"^[a-z0-9-]+$")
 
 
 class FeatureUpdate(BaseModel):
     """Model for updating an existing feature - aka admitting mistakes"""
+
     name: Optional[str] = None
     description: Optional[str] = None
     status: Optional[Literal["planned", "in_progress", "complete"]] = None
@@ -41,6 +45,7 @@ class FeatureUpdate(BaseModel):
 
 class FeatureModel(FeatureBase):
     """Complete feature model with metadata"""
+
     id: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -53,8 +58,10 @@ class FeatureModel(FeatureBase):
 
 # Config Models
 
+
 class ConfigSchema(BaseModel):
     """Schema for behavior.yaml configuration"""
+
     ai_behavior: Dict[str, Any] = Field(default_factory=dict)
     auto_commit: Dict[str, Any] = Field(default_factory=dict)
     testing: Dict[str, Any] = Field(default_factory=dict)
@@ -63,6 +70,7 @@ class ConfigSchema(BaseModel):
 
 class ConfigModel(BaseModel):
     """Merged configuration model"""
+
     global_config: Dict[str, Any] = Field(default_factory=dict)
     project_config: Dict[str, Any] = Field(default_factory=dict)
     merged: Dict[str, Any] = Field(default_factory=dict)
@@ -71,6 +79,7 @@ class ConfigModel(BaseModel):
 
 class ConfigUpdate(BaseModel):
     """Model for updating project config"""
+
     ai_behavior: Optional[Dict[str, Any]] = None
     auto_commit: Optional[Dict[str, Any]] = None
     testing: Optional[Dict[str, Any]] = None
@@ -79,8 +88,10 @@ class ConfigUpdate(BaseModel):
 
 # Error Models
 
+
 class ErrorCategory(BaseModel):
     """Error classification - because knowing what broke is half the battle"""
+
     type: Literal["syntax", "runtime", "test", "import", "type", "network", "unknown"]
     severity: Literal["critical", "high", "medium", "low"]
     confidence: float = Field(..., ge=0.0, le=1.0)
@@ -88,6 +99,7 @@ class ErrorCategory(BaseModel):
 
 class ErrorModel(BaseModel):
     """Complete error model with context and suggestions"""
+
     id: str
     timestamp: datetime
     message: str
@@ -102,6 +114,7 @@ class ErrorModel(BaseModel):
 
 class ErrorSummary(BaseModel):
     """Summary of recent errors - the hall of shame"""
+
     total_errors: int
     by_category: Dict[str, int]
     by_severity: Dict[str, int]
@@ -110,8 +123,10 @@ class ErrorSummary(BaseModel):
 
 # Test Models
 
+
 class TestCase(BaseModel):
     """Individual test case result"""
+
     name: str
     status: Literal["passed", "failed", "skipped", "error"]
     duration: float
@@ -121,6 +136,7 @@ class TestCase(BaseModel):
 
 class TestResultModel(BaseModel):
     """Complete test run results"""
+
     id: str
     timestamp: datetime
     total: int
@@ -136,6 +152,7 @@ class TestResultModel(BaseModel):
 
 class TestStreamMessage(BaseModel):
     """WebSocket message for test streaming"""
+
     type: Literal["start", "progress", "result", "error", "complete"]
     timestamp: datetime
     data: Dict[str, Any]
@@ -143,8 +160,10 @@ class TestStreamMessage(BaseModel):
 
 # Metrics Models
 
+
 class FeatureMetrics(BaseModel):
     """Feature completion metrics"""
+
     total: int
     completed: int
     in_progress: int
@@ -154,6 +173,7 @@ class FeatureMetrics(BaseModel):
 
 class TestMetrics(BaseModel):
     """Testing metrics"""
+
     total_tests: int
     passing: int
     failing: int
@@ -163,6 +183,7 @@ class TestMetrics(BaseModel):
 
 class ErrorMetrics(BaseModel):
     """Error tracking metrics"""
+
     total_errors: int
     critical: int
     resolved: int
@@ -171,6 +192,7 @@ class ErrorMetrics(BaseModel):
 
 class MetricsModel(BaseModel):
     """Complete system metrics"""
+
     features: FeatureMetrics
     tests: Optional[TestMetrics] = None
     errors: Optional[ErrorMetrics] = None
@@ -179,8 +201,10 @@ class MetricsModel(BaseModel):
 
 # Debug Models
 
+
 class SystemStatus(BaseModel):
     """System health and diagnostics"""
+
     status: Literal["healthy", "degraded", "critical"]
     uptime: float
     version: str
@@ -193,6 +217,7 @@ class SystemStatus(BaseModel):
 
 class Blocker(BaseModel):
     """Development blocker"""
+
     id: str
     title: str
     description: str
@@ -205,14 +230,17 @@ class Blocker(BaseModel):
 
 class CommandRetry(BaseModel):
     """Command retry request"""
+
     command_id: str
     force: bool = False
 
 
 # Response Models
 
+
 class HealthResponse(BaseModel):
     """Health check response - lies we tell ourselves"""
+
     status: str
     timestamp: datetime
     version: str
@@ -220,6 +248,7 @@ class HealthResponse(BaseModel):
 
 class SyncResponse(BaseModel):
     """Sync operation response"""
+
     success: bool
     message: str
     synced_features: int
@@ -228,6 +257,7 @@ class SyncResponse(BaseModel):
 
 class ApiResponse(BaseModel):
     """Generic API response wrapper"""
+
     success: bool
     message: str
     data: Optional[Any] = None

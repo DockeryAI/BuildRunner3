@@ -31,15 +31,24 @@ def dashboard():
 
 
 @dashboard.command()
-@click.option('--path', '-p', type=click.Path(exists=True), default=None,
-              help='Root directory to scan for projects (default: current directory)')
-@click.option('--watch', '-w', is_flag=True,
-              help='Auto-refresh dashboard every 30 seconds')
-@click.option('--view', '-v', type=click.Choice(['overview', 'alerts', 'timeline']),
-              default='overview',
-              help='Dashboard view to display')
-@click.option('--detail', '-d', type=str, default=None,
-              help='Show detailed view for specific project')
+@click.option(
+    "--path",
+    "-p",
+    type=click.Path(exists=True),
+    default=None,
+    help="Root directory to scan for projects (default: current directory)",
+)
+@click.option("--watch", "-w", is_flag=True, help="Auto-refresh dashboard every 30 seconds")
+@click.option(
+    "--view",
+    "-v",
+    type=click.Choice(["overview", "alerts", "timeline"]),
+    default="overview",
+    help="Dashboard view to display",
+)
+@click.option(
+    "--detail", "-d", type=str, default=None, help="Show detailed view for specific project"
+)
 def show(path: Optional[str], watch: bool, view: str, detail: Optional[str]):
     """
     Show multi-repo dashboard.
@@ -84,7 +93,7 @@ def _generate_dashboard(root_path: Path, view: str, detail: Optional[str]) -> Pa
             f"Searched in: {root_path}\n"
             "Hint: Make sure projects have .buildrunner/features.json",
             title="📊 BuildRunner Dashboard",
-            border_style="yellow"
+            border_style="yellow",
         )
 
     views = DashboardViews(projects)
@@ -92,9 +101,9 @@ def _generate_dashboard(root_path: Path, view: str, detail: Optional[str]) -> Pa
     # Generate requested view
     if detail:
         content = _render_detail_view(views, detail)
-    elif view == 'alerts':
+    elif view == "alerts":
         content = _render_alerts_view(views)
-    elif view == 'timeline':
+    elif view == "timeline":
         content = _render_timeline_view(views)
     else:  # overview
         content = _render_overview(views)
@@ -103,7 +112,7 @@ def _generate_dashboard(root_path: Path, view: str, detail: Optional[str]) -> Pa
         content,
         title="📊 BuildRunner Multi-Repo Dashboard",
         border_style="blue",
-        subtitle=f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}"
+        subtitle=f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
     )
 
 
@@ -135,9 +144,13 @@ def _render_overview(views: DashboardViews) -> Table:
     table.add_column("Health", justify="center")
     table.add_column("Last Updated", justify="right")
 
-    for project in overview['projects']:
+    for project in overview["projects"]:
         # Status emoji
-        status_emoji = "✅" if project.completion_percentage == 100 else "🔨" if project.in_progress > 0 else "📋"
+        status_emoji = (
+            "✅"
+            if project.completion_percentage == 100
+            else "🔨" if project.in_progress > 0 else "📋"
+        )
 
         # Progress bar
         progress_text = f"{project.completion_percentage}%"
@@ -182,7 +195,7 @@ def _render_overview(views: DashboardViews) -> Table:
             features_text,
             active_text,
             health_display,
-            updated
+            updated,
         )
 
     # Combine summary and table
@@ -200,7 +213,7 @@ def _render_detail_view(views: DashboardViews, project_name: str) -> str:
     if not detail:
         return f"[red]Project '{project_name}' not found[/red]"
 
-    project = detail['project']
+    project = detail["project"]
 
     # Build detail output
     output = f"""[bold cyan]{project.name}[/bold cyan]
@@ -242,36 +255,24 @@ def _render_alerts_view(views: DashboardViews) -> Table:
     table.add_column("Details", style="white")
 
     # Stale projects
-    for project in alerts['stale']:
+    for project in alerts["stale"]:
         days = (time.time() - project.last_updated.timestamp()) / 86400
-        table.add_row(
-            "🕐 Stale",
-            project.name,
-            f"No activity for {int(days)} days"
-        )
+        table.add_row("🕐 Stale", project.name, f"No activity for {int(days)} days")
 
     # Blocked projects
-    for project in alerts['blocked']:
-        table.add_row(
-            "🚫 Blocked",
-            project.name,
-            f"{len(project.blockers)} blocker(s)"
-        )
+    for project in alerts["blocked"]:
+        table.add_row("🚫 Blocked", project.name, f"{len(project.blockers)} blocker(s)")
 
     # No progress
-    for project in alerts['no_progress']:
+    for project in alerts["no_progress"]:
         table.add_row(
-            "⏸️  No Progress",
-            project.name,
-            f"{project.planned} features planned, 0 in progress"
+            "⏸️  No Progress", project.name, f"{project.planned} features planned, 0 in progress"
         )
 
     # High WIP
-    for project in alerts['high_wip']:
+    for project in alerts["high_wip"]:
         table.add_row(
-            "⚠️  High WIP",
-            project.name,
-            f"{project.in_progress} features in progress (>5)"
+            "⚠️  High WIP", project.name, f"{project.in_progress} features in progress (>5)"
         )
 
     if table.row_count == 0:
@@ -284,20 +285,17 @@ def _render_timeline_view(views: DashboardViews) -> Table:
     """Render timeline view"""
     timeline = views.get_timeline_data(days=30)
 
-    table = Table(title="📅 Recent Activity (Last 30 Days)", show_header=True, header_style="bold cyan")
+    table = Table(
+        title="📅 Recent Activity (Last 30 Days)", show_header=True, header_style="bold cyan"
+    )
     table.add_column("Date", style="cyan", no_wrap=True)
     table.add_column("Project", style="white")
     table.add_column("Event", style="green")
     table.add_column("Progress", justify="right")
 
     for event in timeline[:20]:  # Limit to 20 most recent
-        date_str = event['timestamp'].strftime("%Y-%m-%d %H:%M")
-        table.add_row(
-            date_str,
-            event['project'],
-            event['event'],
-            f"{event['completion']}%"
-        )
+        date_str = event["timestamp"].strftime("%Y-%m-%d %H:%M")
+        table.add_row(date_str, event["project"], event["event"], f"{event['completion']}%")
 
     if table.row_count == 0:
         return "[yellow]No recent activity in the last 30 days[/yellow]"

@@ -17,9 +17,7 @@ console = Console()
 
 
 @app.command("activate")
-def activate_profile(
-    name: str = typer.Argument(..., help="Profile name to activate")
-):
+def activate_profile(name: str = typer.Argument(..., help="Profile name to activate")):
     """
     Activate a personality profile for this session.
 
@@ -35,13 +33,19 @@ def activate_profile(
         claude_md = manager.activate_profile(name)
 
         profile_path = manager.get_profile_path(name)
-        source = "project-specific" if profile_path.parent == manager.project_personalities_dir else "global"
+        source = (
+            "project-specific"
+            if profile_path.parent == manager.project_personalities_dir
+            else "global"
+        )
 
         console.print(f"\n[bold green]✓[/bold green] Profile '[cyan]{name}[/cyan]' activated!")
         console.print(f"[dim]Source: {source}[/dim]")
         console.print(f"[dim]Written to: {claude_md}[/dim]\n")
 
-        console.print("[yellow]Note:[/yellow] The profile will take effect on the next Claude Code request.")
+        console.print(
+            "[yellow]Note:[/yellow] The profile will take effect on the next Claude Code request."
+        )
         console.print("[dim]To deactivate: br profile deactivate[/dim]\n")
 
     except ProfileError as e:
@@ -112,9 +116,7 @@ def list_profiles():
 
 
 @app.command("show")
-def show_profile(
-    name: str = typer.Argument(..., help="Profile name to display")
-):
+def show_profile(name: str = typer.Argument(..., help="Profile name to display")):
     """
     Display the content of a profile.
 
@@ -124,13 +126,19 @@ def show_profile(
         manager = ProfileManager()
         content = manager.read_profile(name)
         profile_path = manager.get_profile_path(name)
-        source = "project-specific" if profile_path.parent == manager.project_personalities_dir else "global"
+        source = (
+            "project-specific"
+            if profile_path.parent == manager.project_personalities_dir
+            else "global"
+        )
 
-        console.print(Panel(
-            f"[cyan]{name}[/cyan] ({source})\n[dim]{profile_path}[/dim]",
-            title="Profile",
-            border_style="cyan"
-        ))
+        console.print(
+            Panel(
+                f"[cyan]{name}[/cyan] ({source})\n[dim]{profile_path}[/dim]",
+                title="Profile",
+                border_style="cyan",
+            )
+        )
         console.print()
         console.print(content)
         console.print()
@@ -156,16 +164,22 @@ def profile_status():
         return
 
     profile_path = manager.get_profile_path(active)
-    source = "project-specific" if profile_path and profile_path.parent == manager.project_personalities_dir else "global"
+    source = (
+        "project-specific"
+        if profile_path and profile_path.parent == manager.project_personalities_dir
+        else "global"
+    )
 
-    console.print(Panel(
-        f"[bold green]●[/bold green] [cyan]{active}[/cyan]\n"
-        f"[dim]Source: {source}[/dim]\n"
-        f"[dim]File: {profile_path}[/dim]\n"
-        f"[dim]Active in: {manager.claude_md}[/dim]",
-        title="Active Profile",
-        border_style="green"
-    ))
+    console.print(
+        Panel(
+            f"[bold green]●[/bold green] [cyan]{active}[/cyan]\n"
+            f"[dim]Source: {source}[/dim]\n"
+            f"[dim]File: {profile_path}[/dim]\n"
+            f"[dim]Active in: {manager.claude_md}[/dim]",
+            title="Active Profile",
+            border_style="green",
+        )
+    )
     console.print()
 
 
@@ -173,7 +187,7 @@ def profile_status():
 def copy_profile(
     name: str = typer.Argument(..., help="Profile name to copy"),
     from_source: str = typer.Option("global", "--from", help="Copy from 'global' or 'project'"),
-    overwrite: bool = typer.Option(False, "--overwrite", help="Overwrite if exists")
+    overwrite: bool = typer.Option(False, "--overwrite", help="Overwrite if exists"),
 ):
     """
     Copy a profile between project and global locations.
@@ -200,7 +214,7 @@ def copy_profile(
 def create_profile(
     name: str = typer.Argument(..., help="Profile name"),
     scope: str = typer.Option("project", "--scope", help="Create in 'project' or 'global'"),
-    template: str = typer.Option(None, "--template", help="Base on existing profile")
+    template: str = typer.Option(None, "--template", help="Base on existing profile"),
 ):
     """
     Create a new personality profile.
@@ -281,9 +295,9 @@ def init_personalities(
             console.print(f"  • {path}")
 
         console.print(f"\n[yellow]Next steps:[/yellow]")
-        if scope in ['project', 'both']:
+        if scope in ["project", "both"]:
             console.print(f"  1. Add personality files to: {manager.project_personalities_dir}")
-        if scope in ['global', 'both']:
+        if scope in ["global", "both"]:
             console.print(f"  2. Add global personalities to: {manager.global_personalities_dir}")
         console.print(f"  3. Activate a profile: br profile activate <name>\n")
 
@@ -293,9 +307,7 @@ def init_personalities(
 
 
 @app.command("set-default")
-def set_default_profile(
-    name: str = typer.Argument(..., help="Profile to set as global default")
-):
+def set_default_profile(name: str = typer.Argument(..., help="Profile to set as global default")):
     """
     Set global default profile for ALL projects.
 
@@ -308,17 +320,17 @@ def set_default_profile(
     """
     try:
         # Validate profile exists
-        if name.lower() != 'none':
+        if name.lower() != "none":
             manager = ProfileManager()
             manager.read_profile(name)  # Will raise if not found
 
         # Store in global config
         config = get_config_manager()
-        if name.lower() == 'none':
-            config.set('profiles.default_profile', None, scope='global')
+        if name.lower() == "none":
+            config.set("profiles.default_profile", None, scope="global")
             console.print(f"\n[bold green]✓[/bold green] Cleared global default profile\n")
         else:
-            config.set('profiles.default_profile', name, scope='global')
+            config.set("profiles.default_profile", name, scope="global")
             console.print(f"\n[bold green]✓[/bold green] Set global default: [cyan]{name}[/cyan]")
             console.print(f"[dim]Will auto-activate in all new projects[/dim]\n")
 
@@ -333,7 +345,7 @@ def get_default_profile():
     Show the current global default profile.
     """
     config = get_config_manager()
-    default = config.get('profiles.default_profile')
+    default = config.get("profiles.default_profile")
 
     if default:
         console.print(f"\n[bold]Global Default:[/bold] [cyan]{default}[/cyan]")

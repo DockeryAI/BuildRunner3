@@ -182,13 +182,13 @@ Please review and adjust as needed.
         # Group features by type
         feature_types = {}
         for feature in analysis.features:
-            ftype = feature.get('type', 'general')
+            ftype = feature.get("type", "general")
             feature_types[ftype] = feature_types.get(ftype, 0) + 1
 
         for ftype, count in feature_types.items():
             capabilities.append(f"- {count} {ftype} feature(s)")
 
-        return '\n'.join(capabilities) if capabilities else "- Core application functionality"
+        return "\n".join(capabilities) if capabilities else "- Core application functionality"
 
     def _generate_features(self, analysis: AnalysisResult) -> str:
         """Generate features section"""
@@ -211,11 +211,12 @@ Please review and adjust as needed.
 
         features_text = []
         for i, feature in enumerate(analysis.features[:10], 1):  # Limit to top 10
-            name = feature.get('name', f'Feature {i}')
-            ftype = feature.get('type', 'general')
-            file_loc = feature.get('file', 'Unknown')
+            name = feature.get("name", f"Feature {i}")
+            ftype = feature.get("type", "general")
+            file_loc = feature.get("file", "Unknown")
 
-            features_text.append(f"""### Feature {i}: {name}
+            features_text.append(
+                f"""### Feature {i}: {name}
 **Priority:** High
 **Type:** {ftype}
 **Location:** `{file_loc}`
@@ -231,9 +232,10 @@ Please review and adjust as needed.
 - [ ] Feature works as expected
 - [ ] Tests cover main scenarios
 - [ ] Documentation exists
-""")
+"""
+            )
 
-        return '\n'.join(features_text)
+        return "\n".join(features_text)
 
     def _generate_structure(self, analysis: AnalysisResult) -> str:
         """Generate project structure overview"""
@@ -242,12 +244,12 @@ Please review and adjust as needed.
 
         try:
             for item in sorted(root.iterdir()):
-                if item.is_dir() and not item.name.startswith('.'):
+                if item.is_dir() and not item.name.startswith("."):
                     structure.append(f"{item.name}/")
         except:
             structure.append("(Project structure)")
 
-        return '\n'.join(structure[:15])  # Show top 15 directories
+        return "\n".join(structure[:15])  # Show top 15 directories
 
     def _generate_dependencies(self, analysis: AnalysisResult) -> str:
         """Generate dependencies section"""
@@ -262,7 +264,7 @@ Please review and adjust as needed.
             if len(packages) > 10:
                 deps_text.append(f"- ... and {len(packages) - 10} more")
 
-        return '\n'.join(deps_text)
+        return "\n".join(deps_text)
 
     def _generate_api_endpoints(self, analysis: AnalysisResult) -> str:
         """Generate API endpoints section"""
@@ -271,20 +273,20 @@ Please review and adjust as needed.
 
         endpoints_text = ["**Detected Endpoints:**\n"]
         for endpoint in analysis.api_endpoints[:20]:  # Limit to 20
-            method = endpoint.get('method', 'GET')
-            path = endpoint.get('path', '/')
-            file_loc = endpoint.get('file', 'Unknown')
+            method = endpoint.get("method", "GET")
+            path = endpoint.get("path", "/")
+            file_loc = endpoint.get("file", "Unknown")
             endpoints_text.append(f"- `{method} {path}` - `{file_loc}`")
 
         if len(analysis.api_endpoints) > 20:
             endpoints_text.append(f"\n... and {len(analysis.api_endpoints) - 20} more endpoints")
 
-        return '\n'.join(endpoints_text)
+        return "\n".join(endpoints_text)
 
     def _count_test_files(self, analysis: AnalysisResult) -> int:
         """Count test files"""
         test_count = 0
         for feature in analysis.features:
-            if 'test' in feature.get('file', '').lower():
+            if "test" in feature.get("file", "").lower():
                 test_count += 1
         return test_count

@@ -1,6 +1,7 @@
 """
 Tests for Security Scanner
 """
+
 import pytest
 import ast
 from pathlib import Path
@@ -31,9 +32,9 @@ def get_user(username):
         issues = scanner.detect_sql_injection(tree, code)
 
         assert len(issues) == 1
-        assert issues[0].issue_type == 'sql_injection'
-        assert issues[0].severity == 'critical'
-        assert issues[0].cwe_id == 'CWE-89'
+        assert issues[0].issue_type == "sql_injection"
+        assert issues[0].severity == "critical"
+        assert issues[0].cwe_id == "CWE-89"
 
     def test_detect_sql_injection_safe_query(self, scanner):
         """Test that parameterized queries are not flagged"""
@@ -60,9 +61,9 @@ def run_command(user_input):
         issues = scanner.detect_command_injection(tree, code)
 
         assert len(issues) == 1
-        assert issues[0].issue_type == 'command_injection'
-        assert issues[0].severity == 'critical'
-        assert 'shell=True' in issues[0].description
+        assert issues[0].issue_type == "command_injection"
+        assert issues[0].severity == "critical"
+        assert "shell=True" in issues[0].description
 
     def test_detect_command_injection_string_formatting(self, scanner):
         """Test detection of command injection with string formatting"""
@@ -76,8 +77,8 @@ def run_command(filename):
         issues = scanner.detect_command_injection(tree, code)
 
         assert len(issues) == 1
-        assert issues[0].issue_type == 'command_injection'
-        assert issues[0].severity == 'high'
+        assert issues[0].issue_type == "command_injection"
+        assert issues[0].severity == "high"
 
     def test_detect_command_injection_safe(self, scanner):
         """Test that safe command execution is not flagged"""
@@ -103,8 +104,8 @@ db_password = "admin"
         issues = scanner.detect_hardcoded_secrets(code)
 
         assert len(issues) == 2
-        assert all(i.issue_type == 'hardcoded_secret' for i in issues)
-        assert all(i.severity == 'critical' for i in issues)
+        assert all(i.issue_type == "hardcoded_secret" for i in issues)
+        assert all(i.severity == "critical" for i in issues)
 
     def test_detect_hardcoded_api_key(self, scanner):
         """Test detection of hardcoded API key"""
@@ -116,7 +117,7 @@ API_KEY = "secret-key-here"
         issues = scanner.detect_hardcoded_secrets(code)
 
         assert len(issues) == 2
-        assert all('api' in i.description.lower() for i in issues)
+        assert all("api" in i.description.lower() for i in issues)
 
     def test_hardcoded_secrets_skip_placeholders(self, scanner):
         """Test that placeholder values are not flagged"""
@@ -143,9 +144,9 @@ def process(user_input):
         issues = scanner.detect_eval_usage(tree)
 
         assert len(issues) == 1
-        assert issues[0].issue_type == 'dangerous_function'
-        assert issues[0].severity == 'critical'
-        assert 'eval' in issues[0].description
+        assert issues[0].issue_type == "dangerous_function"
+        assert issues[0].severity == "critical"
+        assert "eval" in issues[0].description
 
     def test_detect_exec_usage(self, scanner):
         """Test detection of exec usage"""
@@ -158,7 +159,7 @@ def process(code_string):
         issues = scanner.detect_eval_usage(tree)
 
         assert len(issues) == 1
-        assert 'exec' in issues[0].description
+        assert "exec" in issues[0].description
 
     def test_detect_compile_usage(self, scanner):
         """Test detection of compile usage"""
@@ -171,7 +172,7 @@ def process(code_string):
         issues = scanner.detect_eval_usage(tree)
 
         assert len(issues) == 1
-        assert 'compile' in issues[0].description
+        assert "compile" in issues[0].description
 
     def test_detect_insecure_random(self, scanner):
         """Test detection of insecure random usage"""
@@ -185,9 +186,9 @@ def generate_token():
         issues = scanner.detect_insecure_random(tree)
 
         assert len(issues) == 1
-        assert issues[0].issue_type == 'insecure_random'
-        assert issues[0].severity == 'medium'
-        assert 'secrets' in issues[0].recommendation
+        assert issues[0].issue_type == "insecure_random"
+        assert issues[0].severity == "medium"
+        assert "secrets" in issues[0].recommendation
 
     def test_detect_path_traversal(self, scanner):
         """Test detection of path traversal vulnerability"""
@@ -201,9 +202,9 @@ def read_file(filename):
         issues = scanner.detect_path_traversal(tree, code)
 
         assert len(issues) == 1
-        assert issues[0].issue_type == 'path_traversal'
-        assert issues[0].severity == 'high'
-        assert issues[0].cwe_id == 'CWE-22'
+        assert issues[0].issue_type == "path_traversal"
+        assert issues[0].severity == "high"
+        assert issues[0].cwe_id == "CWE-22"
 
     def test_path_traversal_safe_path(self, scanner):
         """Test that static paths are not flagged"""
@@ -231,9 +232,9 @@ def hash_password(password):
         issues = scanner.detect_weak_crypto(tree, code)
 
         assert len(issues) == 1
-        assert issues[0].issue_type == 'weak_crypto'
-        assert issues[0].severity == 'medium'
-        assert 'md5' in issues[0].description.lower()
+        assert issues[0].issue_type == "weak_crypto"
+        assert issues[0].severity == "medium"
+        assert "md5" in issues[0].description.lower()
 
     def test_detect_weak_crypto_sha1(self, scanner):
         """Test detection of weak SHA1 usage"""
@@ -247,7 +248,7 @@ def hash_data(data):
         issues = scanner.detect_weak_crypto(tree, code)
 
         assert len(issues) == 1
-        assert 'sha1' in issues[0].description.lower()
+        assert "sha1" in issues[0].description.lower()
 
     def test_strong_crypto_not_flagged(self, scanner):
         """Test that strong crypto algorithms are not flagged"""
@@ -271,10 +272,10 @@ def hash_password(password):
     def test_calculate_security_score_critical_issues(self, scanner):
         """Test security score with critical issues"""
         sql_injection = [
-            SecurityIssue('sql_injection', 'test', 'critical', 'Test', 'Test', 'CWE-89')
+            SecurityIssue("sql_injection", "test", "critical", "Test", "Test", "CWE-89")
         ]
         hardcoded_secrets = [
-            SecurityIssue('hardcoded_secret', 'test', 'critical', 'Test', 'Test', 'CWE-798')
+            SecurityIssue("hardcoded_secret", "test", "critical", "Test", "Test", "CWE-798")
         ]
 
         score = scanner.calculate_security_score(
@@ -286,13 +287,13 @@ def hash_password(password):
 
     def test_calculate_security_score_all_issues(self, scanner):
         """Test security score with all types of issues"""
-        sql = [SecurityIssue('sql_injection', 'test', 'critical', 'Test', 'Test')]
-        cmd = [SecurityIssue('command_injection', 'test', 'critical', 'Test', 'Test')]
-        secrets = [SecurityIssue('hardcoded_secret', 'test', 'critical', 'Test', 'Test')]
-        eval_use = [SecurityIssue('dangerous_function', 'test', 'critical', 'Test', 'Test')]
-        path = [SecurityIssue('path_traversal', 'test', 'high', 'Test', 'Test')]
-        random_use = [SecurityIssue('insecure_random', 'test', 'medium', 'Test', 'Test')]
-        crypto = [SecurityIssue('weak_crypto', 'test', 'medium', 'Test', 'Test')]
+        sql = [SecurityIssue("sql_injection", "test", "critical", "Test", "Test")]
+        cmd = [SecurityIssue("command_injection", "test", "critical", "Test", "Test")]
+        secrets = [SecurityIssue("hardcoded_secret", "test", "critical", "Test", "Test")]
+        eval_use = [SecurityIssue("dangerous_function", "test", "critical", "Test", "Test")]
+        path = [SecurityIssue("path_traversal", "test", "high", "Test", "Test")]
+        random_use = [SecurityIssue("insecure_random", "test", "medium", "Test", "Test")]
+        crypto = [SecurityIssue("weak_crypto", "test", "medium", "Test", "Test")]
 
         score = scanner.calculate_security_score(
             sql, cmd, secrets, eval_use, random_use, path, crypto
@@ -303,51 +304,51 @@ def hash_password(password):
 
     def test_generate_recommendations_with_critical_issues(self, scanner):
         """Test recommendation generation with critical issues"""
-        sql = [SecurityIssue('sql_injection', 'test', 'critical', 'Test', 'Test')]
-        secrets = [SecurityIssue('hardcoded_secret', 'test', 'critical', 'Test', 'Test')]
+        sql = [SecurityIssue("sql_injection", "test", "critical", "Test", "Test")]
+        secrets = [SecurityIssue("hardcoded_secret", "test", "critical", "Test", "Test")]
 
-        recommendations = scanner.generate_recommendations(
-            sql, [], secrets, [], [], [], []
-        )
+        recommendations = scanner.generate_recommendations(sql, [], secrets, [], [], [], [])
 
         assert len(recommendations) >= 2
-        assert any('CRITICAL' in r and 'SQL injection' in r for r in recommendations)
-        assert any('CRITICAL' in r and 'secret' in r for r in recommendations)
+        assert any("CRITICAL" in r and "SQL injection" in r for r in recommendations)
+        assert any("CRITICAL" in r and "secret" in r for r in recommendations)
 
     def test_generate_recommendations_no_issues(self, scanner):
         """Test recommendations with no issues"""
         recommendations = scanner.generate_recommendations([], [], [], [], [], [], [])
 
         assert len(recommendations) == 1
-        assert 'No critical security issues' in recommendations[0]
+        assert "No critical security issues" in recommendations[0]
 
     def test_analyze_file_success(self, scanner, tmp_path):
         """Test full file analysis"""
         test_file = tmp_path / "test_security.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 import hashlib
 password = "test123"
 
 def hash_data(data):
     return hashlib.md5(data.encode()).hexdigest()
-""")
+"""
+        )
 
         result = scanner.analyze_file(str(test_file))
 
-        assert 'sql_injection' in result
-        assert 'command_injection' in result
-        assert 'hardcoded_secrets' in result
-        assert 'eval_usage' in result
-        assert 'insecure_random' in result
-        assert 'path_traversal' in result
-        assert 'weak_crypto' in result
-        assert 'security_score' in result
-        assert 'recommendations' in result
-        assert 0 <= result['security_score'] <= 100
+        assert "sql_injection" in result
+        assert "command_injection" in result
+        assert "hardcoded_secrets" in result
+        assert "eval_usage" in result
+        assert "insecure_random" in result
+        assert "path_traversal" in result
+        assert "weak_crypto" in result
+        assert "security_score" in result
+        assert "recommendations" in result
+        assert 0 <= result["security_score"] <= 100
 
         # Should detect hardcoded password and weak crypto
-        assert len(result['hardcoded_secrets']) > 0
-        assert len(result['weak_crypto']) > 0
+        assert len(result["hardcoded_secrets"]) > 0
+        assert len(result["weak_crypto"]) > 0
 
     def test_analyze_file_not_found(self, scanner):
         """Test analysis of non-existent file"""
@@ -362,8 +363,8 @@ def hash_data(data):
         result = scanner.analyze_file(str(test_file))
 
         # Should return error result
-        assert result['security_score'] == 0
-        assert 'Syntax error' in result['recommendations'][0]
+        assert result["security_score"] == 0
+        assert "Syntax error" in result["recommendations"][0]
 
     def test_is_sql_call(self, scanner):
         """Test SQL call detection"""
@@ -425,7 +426,8 @@ def hash_data(data):
     def test_multiple_vulnerabilities(self, scanner, tmp_path):
         """Test file with multiple security vulnerabilities"""
         test_file = tmp_path / "vulnerable.py"
-        test_file.write_text("""
+        test_file.write_text(
+            """
 import subprocess
 import hashlib
 
@@ -440,13 +442,14 @@ def hash_password(pwd):
 
 def execute_code(code):
     eval(code)
-""")
+"""
+        )
 
         result = scanner.analyze_file(str(test_file))
 
         # Should detect multiple types of vulnerabilities
-        assert len(result['hardcoded_secrets']) >= 2
-        assert len(result['command_injection']) >= 1
-        assert len(result['weak_crypto']) >= 1
-        assert len(result['eval_usage']) >= 1
-        assert result['security_score'] < 50  # Low score due to multiple issues
+        assert len(result["hardcoded_secrets"]) >= 2
+        assert len(result["command_injection"]) >= 1
+        assert len(result["weak_crypto"]) >= 1
+        assert len(result["eval_usage"]) >= 1
+        assert result["security_score"] < 50  # Low score due to multiple issues

@@ -200,10 +200,7 @@ class CostTracker:
                 end_date = now
 
         # Filter entries
-        filtered = [
-            e for e in self.entries
-            if start_date <= e.timestamp <= end_date
-        ]
+        filtered = [e for e in self.entries if start_date <= e.timestamp <= end_date]
 
         if not filtered:
             return CostSummary(
@@ -229,14 +226,19 @@ class CostTracker:
         # Cost by task type
         cost_by_task_type: Dict[str, float] = {}
         for entry in filtered:
-            cost_by_task_type[entry.task_type] = \
+            cost_by_task_type[entry.task_type] = (
                 cost_by_task_type.get(entry.task_type, 0.0) + entry.total_cost
+            )
 
         # Find most expensive and most used
-        most_expensive_model = max(cost_by_model.keys(), key=lambda k: cost_by_model[k]) \
-            if cost_by_model else ""
-        most_used_model = max(requests_by_model.keys(), key=lambda k: requests_by_model[k]) \
-            if requests_by_model else ""
+        most_expensive_model = (
+            max(cost_by_model.keys(), key=lambda k: cost_by_model[k]) if cost_by_model else ""
+        )
+        most_used_model = (
+            max(requests_by_model.keys(), key=lambda k: requests_by_model[k])
+            if requests_by_model
+            else ""
+        )
 
         return CostSummary(
             period=period,
@@ -283,9 +285,11 @@ class CostTracker:
         """Initialize database schema if needed."""
         if not self.db.table_exists("cost_entries"):
             # Read and run migration
-            migration_path = Path(__file__).parent.parent / "persistence" / "migrations" / "001_initial.sql"
+            migration_path = (
+                Path(__file__).parent.parent / "persistence" / "migrations" / "001_initial.sql"
+            )
             if migration_path.exists():
-                with open(migration_path, 'r') as f:
+                with open(migration_path, "r") as f:
                     migration_sql = f.read()
                 self.db.run_migration(migration_sql)
                 logger.info("Cost tracking database schema initialized")
@@ -295,12 +299,16 @@ class CostTracker:
         if self.budget_daily:
             daily_summary = self.get_summary(period="day")
             if daily_summary.total_cost > self.budget_daily:
-                print(f"⚠️  Daily budget exceeded: ${daily_summary.total_cost:.4f} / ${self.budget_daily:.2f}")
+                print(
+                    f"⚠️  Daily budget exceeded: ${daily_summary.total_cost:.4f} / ${self.budget_daily:.2f}"
+                )
 
         if self.budget_monthly:
             monthly_summary = self.get_summary(period="month")
             if monthly_summary.total_cost > self.budget_monthly:
-                print(f"⚠️  Monthly budget exceeded: ${monthly_summary.total_cost:.2f} / ${self.budget_monthly:.2f}")
+                print(
+                    f"⚠️  Monthly budget exceeded: ${monthly_summary.total_cost:.2f} / ${self.budget_monthly:.2f}"
+                )
 
     def _save(self):
         """Save cost entries to database."""
@@ -309,15 +317,15 @@ class CostTracker:
             if self.entries:
                 entry = self.entries[-1]
                 data = {
-                    'timestamp': entry.timestamp.isoformat(),
-                    'task_id': entry.task_id,
-                    'model_name': entry.model,
-                    'input_tokens': entry.input_tokens,
-                    'output_tokens': entry.output_tokens,
-                    'cost_usd': entry.total_cost,
-                    'session_id': None,  # Could be added later
+                    "timestamp": entry.timestamp.isoformat(),
+                    "task_id": entry.task_id,
+                    "model_name": entry.model,
+                    "input_tokens": entry.input_tokens,
+                    "output_tokens": entry.output_tokens,
+                    "cost_usd": entry.total_cost,
+                    "session_id": None,  # Could be added later
                 }
-                self.db.insert('cost_entries', data)
+                self.db.insert("cost_entries", data)
                 logger.debug(f"Saved cost entry: {entry.model} - ${entry.total_cost:.6f}")
 
         except Exception as e:
@@ -337,16 +345,16 @@ class CostTracker:
             # Note: Database has limited fields, so we reconstruct with defaults
             self.entries = [
                 CostEntry(
-                    timestamp=datetime.fromisoformat(row['timestamp']),
-                    model=row['model_name'],
-                    task_id=row['task_id'] or '',
-                    task_type='unknown',  # Not stored in simplified schema
-                    input_tokens=row['input_tokens'],
-                    output_tokens=row['output_tokens'],
-                    total_tokens=row['input_tokens'] + row['output_tokens'],
+                    timestamp=datetime.fromisoformat(row["timestamp"]),
+                    model=row["model_name"],
+                    task_id=row["task_id"] or "",
+                    task_type="unknown",  # Not stored in simplified schema
+                    input_tokens=row["input_tokens"],
+                    output_tokens=row["output_tokens"],
+                    total_tokens=row["input_tokens"] + row["output_tokens"],
                     input_cost=0.0,  # Not stored separately
                     output_cost=0.0,  # Not stored separately
-                    total_cost=row['cost_usd'],
+                    total_cost=row["cost_usd"],
                     success=True,  # Assume success if stored
                     error=None,
                     duration_ms=0.0,  # Not tracked in simplified schema
@@ -369,31 +377,44 @@ class CostTracker:
         """
         import csv
 
-        with open(output_path, 'w', newline='') as f:
+        with open(output_path, "w", newline="") as f:
             writer = csv.writer(f)
 
             # Header
-            writer.writerow([
-                'Timestamp', 'Model', 'Task ID', 'Task Type',
-                'Input Tokens', 'Output Tokens', 'Total Tokens',
-                'Input Cost', 'Output Cost', 'Total Cost',
-                'Success', 'Error', 'Duration (ms)',
-            ])
+            writer.writerow(
+                [
+                    "Timestamp",
+                    "Model",
+                    "Task ID",
+                    "Task Type",
+                    "Input Tokens",
+                    "Output Tokens",
+                    "Total Tokens",
+                    "Input Cost",
+                    "Output Cost",
+                    "Total Cost",
+                    "Success",
+                    "Error",
+                    "Duration (ms)",
+                ]
+            )
 
             # Data
             for entry in self.entries:
-                writer.writerow([
-                    entry.timestamp.isoformat(),
-                    entry.model,
-                    entry.task_id,
-                    entry.task_type,
-                    entry.input_tokens,
-                    entry.output_tokens,
-                    entry.total_tokens,
-                    f"{entry.input_cost:.6f}",
-                    f"{entry.output_cost:.6f}",
-                    f"{entry.total_cost:.6f}",
-                    entry.success,
-                    entry.error or "",
-                    f"{entry.duration_ms:.2f}",
-                ])
+                writer.writerow(
+                    [
+                        entry.timestamp.isoformat(),
+                        entry.model,
+                        entry.task_id,
+                        entry.task_type,
+                        entry.input_tokens,
+                        entry.output_tokens,
+                        entry.total_tokens,
+                        f"{entry.input_cost:.6f}",
+                        f"{entry.output_cost:.6f}",
+                        f"{entry.total_cost:.6f}",
+                        entry.success,
+                        entry.error or "",
+                        f"{entry.duration_ms:.2f}",
+                    ]
+                )

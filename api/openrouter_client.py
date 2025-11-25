@@ -2,6 +2,7 @@
 OpenRouter API Client
 Integrates with OpenRouter for AI model access (Claude Opus)
 """
+
 import os
 import json
 import httpx
@@ -27,7 +28,7 @@ class OpenRouterClient:
         messages: List[Dict[str, str]],
         model: str = OPUS_MODEL,
         temperature: float = 0.7,
-        max_tokens: int = 4000
+        max_tokens: int = 4000,
     ) -> Dict:
         """
         Send a chat completion request to OpenRouter
@@ -42,10 +43,7 @@ class OpenRouterClient:
             Dict with response content and metadata
         """
         if not self.api_key:
-            return {
-                'success': False,
-                'error': 'OpenRouter API key not configured'
-            }
+            return {"success": False, "error": "OpenRouter API key not configured"}
 
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
@@ -55,39 +53,36 @@ class OpenRouterClient:
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
                         "HTTP-Referer": "https://buildrunner.dev",
-                        "X-Title": "BuildRunner 3"
+                        "X-Title": "BuildRunner 3",
                     },
                     json={
                         "model": model,
                         "messages": messages,
                         "temperature": temperature,
-                        "max_tokens": max_tokens
-                    }
+                        "max_tokens": max_tokens,
+                    },
                 )
 
                 response.raise_for_status()
                 data = response.json()
 
                 return {
-                    'success': True,
-                    'content': data['choices'][0]['message']['content'],
-                    'model': data['model'],
-                    'usage': data.get('usage', {})
+                    "success": True,
+                    "content": data["choices"][0]["message"]["content"],
+                    "model": data["model"],
+                    "usage": data.get("usage", {}),
                 }
 
         except httpx.HTTPStatusError as e:
             logger.error(f"OpenRouter API error: {e.response.text}")
             return {
-                'success': False,
-                'error': f'API error: {e.response.status_code}',
-                'details': e.response.text
+                "success": False,
+                "error": f"API error: {e.response.status_code}",
+                "details": e.response.text,
             }
         except Exception as e:
             logger.error(f"OpenRouter request failed: {e}")
-            return {
-                'success': False,
-                'error': str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     async def parse_project_description(self, description: str) -> Dict:
         """
@@ -133,44 +128,40 @@ Return your response in this EXACT JSON format:
 
 Keep descriptions concise but clear. Focus on what matters most."""
 
-        messages = [
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+        messages = [{"role": "user", "content": prompt}]
 
         result = await self.chat_completion(messages, temperature=0.5)
 
-        if not result['success']:
+        if not result["success"]:
             return result
 
         try:
             # Parse JSON from response
             import json
-            content = result['content']
+
+            content = result["content"]
 
             # Try to extract JSON from markdown code blocks if present
-            if '```json' in content:
-                content = content.split('```json')[1].split('```')[0].strip()
-            elif '```' in content:
-                content = content.split('```')[1].split('```')[0].strip()
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
 
             parsed_data = json.loads(content)
 
             return {
-                'success': True,
-                'prd': parsed_data,
-                'model': result['model'],
-                'usage': result['usage']
+                "success": True,
+                "prd": parsed_data,
+                "model": result["model"],
+                "usage": result["usage"],
             }
 
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response: {e}")
             return {
-                'success': False,
-                'error': 'Failed to parse response as JSON',
-                'raw_response': result.get('content', '')
+                "success": False,
+                "error": "Failed to parse response as JSON",
+                "raw_response": result.get("content", ""),
             }
 
     async def generate_feature_suggestions(
@@ -178,7 +169,7 @@ Keep descriptions concise but clear. Focus on what matters most."""
         project_context: Dict,
         section: str,
         subsection: Optional[str] = None,
-        custom_request: Optional[str] = None
+        custom_request: Optional[str] = None,
     ) -> Dict:
         """
         Generate AI-powered feature suggestions for a PRD section
@@ -198,11 +189,13 @@ Keep descriptions concise but clear. Focus on what matters most."""
                 "name": "Suggest improvements or alternatives for the project name that are memorable, clear, and align with the project goals",
                 "summary": "Suggest improvements or key points to include in the executive summary to make it more compelling",
                 "goals": "Suggest additional goals and objectives that would strengthen this project's mission",
-                "users": "Suggest additional target user segments or pain points to address"
+                "users": "Suggest additional target user segments or pain points to address",
             }
 
             if subsection:
-                base_prompt = subsection_prompts.get(subsection, "Suggest improvements for this overview field")
+                base_prompt = subsection_prompts.get(
+                    subsection, "Suggest improvements for this overview field"
+                )
                 # Include subsection in prompt for tagged responses
                 prompt = f"""Given this project context:
 
@@ -346,32 +339,32 @@ Return ONLY valid JSON."""
 
         result = await self.chat_completion(messages, temperature=0.7)
 
-        if not result['success']:
+        if not result["success"]:
             return result
 
         try:
-            content = result['content']
+            content = result["content"]
 
             # Extract JSON
-            if '```json' in content:
-                content = content.split('```json')[1].split('```')[0].strip()
-            elif '```' in content:
-                content = content.split('```')[1].split('```')[0].strip()
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
 
             parsed_data = json.loads(content)
 
             return {
-                'success': True,
-                'suggestions': parsed_data.get('suggestions', []),
-                'model': result['model']
+                "success": True,
+                "suggestions": parsed_data.get("suggestions", []),
+                "model": result["model"],
             }
 
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse suggestions JSON: {e}")
             return {
-                'success': False,
-                'error': 'Failed to parse suggestions',
-                'raw_response': result.get('content', '')
+                "success": False,
+                "error": "Failed to parse suggestions",
+                "raw_response": result.get("content", ""),
             }
 
     async def extract_prd_from_docs(self, prompt: str) -> Dict:
@@ -388,33 +381,33 @@ Return ONLY valid JSON."""
 
         result = await self.chat_completion(messages, temperature=0.3, max_tokens=2000)
 
-        if not result['success']:
+        if not result["success"]:
             return result
 
         try:
-            content = result['content']
+            content = result["content"]
 
             # Extract JSON
-            if '```json' in content:
-                content = content.split('```json')[1].split('```')[0].strip()
-            elif '```' in content:
-                content = content.split('```')[1].split('```')[0].strip()
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
+            elif "```" in content:
+                content = content.split("```")[1].split("```")[0].strip()
 
             parsed_data = json.loads(content)
 
             return {
-                'success': True,
-                'prd_sections': parsed_data,
-                'model': result['model'],
-                'usage': result.get('usage', {})
+                "success": True,
+                "prd_sections": parsed_data,
+                "model": result["model"],
+                "usage": result.get("usage", {}),
             }
 
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse PRD extraction JSON: {e}")
             return {
-                'success': False,
-                'error': 'Failed to parse PRD sections',
-                'raw_response': result.get('content', '')
+                "success": False,
+                "error": "Failed to parse PRD sections",
+                "raw_response": result.get("content", ""),
             }
 
 

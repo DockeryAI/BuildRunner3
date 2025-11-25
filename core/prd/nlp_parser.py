@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 # Try to import spaCy, fall back to regex if not available
 try:
     import spacy
+
     SPACY_AVAILABLE = True
 except ImportError:
     SPACY_AVAILABLE = False
@@ -39,7 +40,9 @@ class NLPParser:
                 self.nlp = spacy.load("en_core_web_sm")
                 logger.info("spaCy model loaded successfully")
             except OSError:
-                logger.warning("spaCy model 'en_core_web_sm' not found. Install with: python -m spacy download en_core_web_sm")
+                logger.warning(
+                    "spaCy model 'en_core_web_sm' not found. Install with: python -m spacy download en_core_web_sm"
+                )
                 SPACY_AVAILABLE = False
 
     def parse(self, text: str, current_features: List[Dict] = None) -> Dict[str, Any]:
@@ -82,7 +85,7 @@ class NLPParser:
             "add": ["add", "create", "new"],
             "remove": ["remove", "delete", "drop"],
             "update": ["update", "modify", "change", "edit"],
-            "rename": ["rename", "call"]
+            "rename": ["rename", "call"],
         }
 
         for token in doc:
@@ -106,7 +109,9 @@ class NLPParser:
                 if len(parts) > 1:
                     feature_name = parts[1].strip()
                     # Remove common words
-                    feature_name = re.sub(r'\b(feature|a|an|the)\b', '', feature_name, flags=re.IGNORECASE).strip()
+                    feature_name = re.sub(
+                        r"\b(feature|a|an|the)\b", "", feature_name, flags=re.IGNORECASE
+                    ).strip()
                     break
 
         if not feature_name:
@@ -117,15 +122,15 @@ class NLPParser:
 
         if feature_name:
             # Generate feature ID
-            feature_id = feature_name.lower().replace(' ', '-')
-            feature_id = re.sub(r'[^a-z0-9-]', '', feature_id)
+            feature_id = feature_name.lower().replace(" ", "-")
+            feature_id = re.sub(r"[^a-z0-9-]", "", feature_id)
 
             return {
                 "add_feature": {
                     "id": f"feature-{feature_id}",
                     "name": feature_name.title(),
                     "description": f"Feature: {feature_name}",
-                    "priority": "medium"
+                    "priority": "medium",
                 }
             }
 
@@ -139,16 +144,20 @@ class NLPParser:
         for ent in doc.ents:
             # Check if entity matches a feature
             for feature in current_features:
-                if (ent.text.lower() in feature.get("id", "").lower() or
-                    ent.text.lower() in feature.get("name", "").lower()):
+                if (
+                    ent.text.lower() in feature.get("id", "").lower()
+                    or ent.text.lower() in feature.get("name", "").lower()
+                ):
                     return {"remove_feature": feature["id"]}
 
         # Fallback: check noun chunks
         for chunk in doc.noun_chunks:
             chunk_text = chunk.text.lower()
             for feature in current_features:
-                if (chunk_text in feature.get("id", "").lower() or
-                    chunk_text in feature.get("name", "").lower()):
+                if (
+                    chunk_text in feature.get("id", "").lower()
+                    or chunk_text in feature.get("name", "").lower()
+                ):
                     return {"remove_feature": feature["id"]}
 
         return {}
@@ -172,8 +181,10 @@ class NLPParser:
 
             # Extract feature from before_to
             for feature in current_features:
-                if (feature.get("id", "").lower() in before_to or
-                    feature.get("name", "").lower() in before_to):
+                if (
+                    feature.get("id", "").lower() in before_to
+                    or feature.get("name", "").lower() in before_to
+                ):
                     feature_ref = feature["id"]
                     break
 
@@ -191,16 +202,13 @@ class NLPParser:
                 update_field = "description"
 
         if feature_ref and new_value:
-            return {
-                "update_feature": {
-                    "id": feature_ref,
-                    "updates": {update_field: new_value}
-                }
-            }
+            return {"update_feature": {"id": feature_ref, "updates": {update_field: new_value}}}
 
         return {}
 
-    def _parse_rename_with_spacy(self, doc, current_features: List[Dict], original_text: str) -> Dict[str, Any]:
+    def _parse_rename_with_spacy(
+        self, doc, current_features: List[Dict], original_text: str
+    ) -> Dict[str, Any]:
         """Parse rename command"""
         # Pattern: "rename <old> to <new>"
 
@@ -211,12 +219,14 @@ class NLPParser:
 
             # Find feature
             for feature in current_features:
-                if (old_ref in feature.get("id", "").lower() or
-                    old_ref in feature.get("name", "").lower()):
+                if (
+                    old_ref in feature.get("id", "").lower()
+                    or old_ref in feature.get("name", "").lower()
+                ):
                     return {
                         "update_feature": {
                             "id": feature["id"],
-                            "updates": {"name": new_name.title()}
+                            "updates": {"name": new_name.title()},
                         }
                     }
 
@@ -231,43 +241,47 @@ class NLPParser:
         text_lower = text.lower().strip()
 
         # Add feature pattern
-        add_match = re.match(r'add\s+(?:feature\s+)?(.+)', text_lower)
+        add_match = re.match(r"add\s+(?:feature\s+)?(.+)", text_lower)
         if add_match:
             feature_name = add_match.group(1).strip()
-            feature_id = feature_name.replace(' ', '-')
-            feature_id = re.sub(r'[^a-z0-9-]', '', feature_id)
+            feature_id = feature_name.replace(" ", "-")
+            feature_id = re.sub(r"[^a-z0-9-]", "", feature_id)
 
             return {
                 "add_feature": {
                     "id": f"feature-{feature_id}",
                     "name": feature_name.title(),
                     "description": f"Feature: {feature_name}",
-                    "priority": "medium"
+                    "priority": "medium",
                 }
             }
 
         # Remove feature pattern
-        remove_match = re.match(r'remove\s+(?:feature\s+)?(.+)', text_lower)
+        remove_match = re.match(r"remove\s+(?:feature\s+)?(.+)", text_lower)
         if remove_match:
             feature_ref = remove_match.group(1).strip()
             for feature in current_features:
-                if (feature.get("id", "") == feature_ref or
-                    feature.get("name", "").lower() == feature_ref):
+                if (
+                    feature.get("id", "") == feature_ref
+                    or feature.get("name", "").lower() == feature_ref
+                ):
                     return {"remove_feature": feature["id"]}
 
         # Update feature pattern (simplified)
-        update_match = re.match(r'update\s+(?:feature\s+)?(\S+)\s+to\s+(.+)', text_lower)
+        update_match = re.match(r"update\s+(?:feature\s+)?(\S+)\s+to\s+(.+)", text_lower)
         if update_match:
             feature_ref = update_match.group(1).strip()
             new_desc = update_match.group(2).strip()
 
             for feature in current_features:
-                if (feature.get("id", "") == feature_ref or
-                    feature.get("name", "").lower() == feature_ref):
+                if (
+                    feature.get("id", "") == feature_ref
+                    or feature.get("name", "").lower() == feature_ref
+                ):
                     return {
                         "update_feature": {
                             "id": feature["id"],
-                            "updates": {"description": new_desc}
+                            "updates": {"description": new_desc},
                         }
                     }
 

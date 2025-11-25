@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DocumentationFile:
     """Represents a documentation file"""
+
     path: Path
     type: str  # 'readme', 'changelog', 'contributing', 'docs', 'other'
     content: str
@@ -22,11 +23,11 @@ class DocumentationScanner:
 
     # Common documentation files
     DOC_PATTERNS = {
-        'readme': ['README.md', 'README.txt', 'README', 'readme.md'],
-        'changelog': ['CHANGELOG.md', 'CHANGELOG.txt', 'CHANGELOG', 'HISTORY.md'],
-        'contributing': ['CONTRIBUTING.md', 'CONTRIBUTE.md'],
-        'license': ['LICENSE.md', 'LICENSE.txt', 'LICENSE'],
-        'docs': ['docs/**/*.md', 'doc/**/*.md', 'documentation/**/*.md'],
+        "readme": ["README.md", "README.txt", "README", "readme.md"],
+        "changelog": ["CHANGELOG.md", "CHANGELOG.txt", "CHANGELOG", "HISTORY.md"],
+        "contributing": ["CONTRIBUTING.md", "CONTRIBUTE.md"],
+        "license": ["LICENSE.md", "LICENSE.txt", "LICENSE"],
+        "docs": ["docs/**/*.md", "doc/**/*.md", "documentation/**/*.md"],
     }
 
     # Maximum file size to read (1MB)
@@ -64,7 +65,7 @@ class DocumentationScanner:
         docs = []
 
         try:
-            if '**' in pattern:
+            if "**" in pattern:
                 # Glob pattern
                 for file_path in self.project_root.glob(pattern):
                     if file_path.is_file():
@@ -94,16 +95,13 @@ class DocumentationScanner:
 
             # Read content
             try:
-                content = file_path.read_text(encoding='utf-8')
+                content = file_path.read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 # Try with different encoding
-                content = file_path.read_text(encoding='latin-1')
+                content = file_path.read_text(encoding="latin-1")
 
             return DocumentationFile(
-                path=file_path,
-                type=doc_type,
-                content=content,
-                size_bytes=size
+                path=file_path, type=doc_type, content=content, size_bytes=size
             )
 
         except Exception as e:
@@ -113,14 +111,14 @@ class DocumentationScanner:
     def get_summary(self, docs: List[DocumentationFile]) -> Dict[str, any]:
         """Get summary of documentation files"""
         summary = {
-            'total_files': len(docs),
-            'total_size_bytes': sum(doc.size_bytes for doc in docs),
-            'by_type': {}
+            "total_files": len(docs),
+            "total_size_bytes": sum(doc.size_bytes for doc in docs),
+            "by_type": {},
         }
 
         for doc in docs:
-            if doc.type not in summary['by_type']:
-                summary['by_type'][doc.type] = []
-            summary['by_type'][doc.type].append(str(doc.path.relative_to(self.project_root)))
+            if doc.type not in summary["by_type"]:
+                summary["by_type"][doc.type] = []
+            summary["by_type"][doc.type].append(str(doc.path.relative_to(self.project_root)))
 
         return summary

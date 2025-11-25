@@ -24,18 +24,53 @@ class PlanningModeDetector:
 
     # Strategic keywords that indicate planning mode
     STRATEGIC_KEYWORDS = [
-        'architecture', 'design', 'approach', 'strategy', 'plan',
-        'should we', 'how should', 'what if', 'consider', 'evaluate',
-        'pros and cons', 'trade-offs', 'decide', 'choose', 'compare',
-        'long-term', 'scalability', 'maintainability', 'performance',
-        'security', 'infrastructure', 'deployment', 'migration'
+        "architecture",
+        "design",
+        "approach",
+        "strategy",
+        "plan",
+        "should we",
+        "how should",
+        "what if",
+        "consider",
+        "evaluate",
+        "pros and cons",
+        "trade-offs",
+        "decide",
+        "choose",
+        "compare",
+        "long-term",
+        "scalability",
+        "maintainability",
+        "performance",
+        "security",
+        "infrastructure",
+        "deployment",
+        "migration",
     ]
 
     # Tactical keywords that indicate execution mode
     TACTICAL_KEYWORDS = [
-        'implement', 'build', 'create', 'write', 'code', 'fix', 'debug',
-        'test', 'deploy', 'commit', 'push', 'run', 'execute', 'install',
-        'configure', 'setup', 'add', 'update', 'delete', 'modify'
+        "implement",
+        "build",
+        "create",
+        "write",
+        "code",
+        "fix",
+        "debug",
+        "test",
+        "deploy",
+        "commit",
+        "push",
+        "run",
+        "execute",
+        "install",
+        "configure",
+        "setup",
+        "add",
+        "update",
+        "delete",
+        "modify",
     ]
 
     def __init__(self, project_root: str):
@@ -62,16 +97,16 @@ class PlanningModeDetector:
         total_keywords = strategic_count + tactical_count
 
         if total_keywords == 0:
-            return 'execution', 0.5  # Default to execution mode
+            return "execution", 0.5  # Default to execution mode
 
         strategic_ratio = strategic_count / total_keywords
 
         if strategic_ratio > 0.6:
-            return 'planning', strategic_ratio
+            return "planning", strategic_ratio
         elif strategic_ratio < 0.4:
-            return 'execution', 1.0 - strategic_ratio
+            return "execution", 1.0 - strategic_ratio
         else:
-            return 'mixed', 0.5
+            return "mixed", 0.5
 
     def suggest_model(self, mode: str, confidence: float) -> Optional[str]:
         """
@@ -83,10 +118,10 @@ class PlanningModeDetector:
         if confidence < 0.6:
             return None  # Not confident enough to suggest
 
-        if mode == 'planning':
-            return 'opus'
-        elif mode == 'execution':
-            return 'sonnet'
+        if mode == "planning":
+            return "opus"
+        elif mode == "execution":
+            return "sonnet"
         else:
             return None
 
@@ -108,7 +143,7 @@ class PlanningModeDetector:
 """
 
         # Append to log
-        with open(self.planning_log, 'a') as f:
+        with open(self.planning_log, "a") as f:
             f.write(log_entry)
 
     def get_planning_history(self, limit: int = 10) -> List[str]:
@@ -116,11 +151,11 @@ class PlanningModeDetector:
         if not self.planning_log.exists():
             return []
 
-        with open(self.planning_log, 'r') as f:
+        with open(self.planning_log, "r") as f:
             content = f.read()
 
         # Split by session separator
-        sessions = content.split('---')
+        sessions = content.split("---")
 
         # Return most recent sessions
         return sessions[-limit:] if sessions else []
@@ -132,7 +167,7 @@ class PlanningModeDetector:
         Returns:
             Dictionary with mode distribution percentages
         """
-        modes = {'planning': 0, 'execution': 0, 'mixed': 0}
+        modes = {"planning": 0, "execution": 0, "mixed": 0}
 
         for message in messages:
             mode, _ = self.detect_mode(message)
@@ -141,12 +176,12 @@ class PlanningModeDetector:
         total = len(messages)
 
         if total == 0:
-            return {'planning': 0.0, 'execution': 0.0, 'mixed': 0.0}
+            return {"planning": 0.0, "execution": 0.0, "mixed": 0.0}
 
         return {
-            'planning': modes['planning'] / total,
-            'execution': modes['execution'] / total,
-            'mixed': modes['mixed'] / total
+            "planning": modes["planning"] / total,
+            "execution": modes["execution"] / total,
+            "mixed": modes["mixed"] / total,
         }
 
 
@@ -157,7 +192,7 @@ class ModelSwitchSuggester:
 
     def __init__(self, detector: PlanningModeDetector):
         self.detector = detector
-        self.current_model = 'sonnet'  # Default
+        self.current_model = "sonnet"  # Default
 
     def should_suggest_switch(self, user_input: str) -> Tuple[bool, Optional[str], str]:
         """
@@ -173,7 +208,7 @@ class ModelSwitchSuggester:
             return False, None, ""
 
         # Build reason
-        if suggested_model == 'opus':
+        if suggested_model == "opus":
             reason = (
                 "Detected strategic planning discussion. "
                 "Opus is better suited for architecture decisions, "
@@ -206,10 +241,9 @@ Switch models? (y/n):
 
 # ===== Enhanced Auto-Detection Functions =====
 
+
 def detect_planning_mode(
-    user_prompt: str,
-    project_state: Dict[str, Any],
-    conversation_history: List[Dict[str, str]]
+    user_prompt: str, project_state: Dict[str, Any], conversation_history: List[Dict[str, str]]
 ) -> Dict[str, Any]:
     """
     Detect if user request requires planning mode (Opus)
@@ -239,7 +273,7 @@ def detect_planning_mode(
         "strategy",
         "evaluate",
         "compare",
-        "consider"
+        "consider",
     ]
 
     # Indicators for Sonnet (execution mode)
@@ -255,7 +289,7 @@ def detect_planning_mode(
         "create",
         "code",
         "install",
-        "run"
+        "run",
     ]
 
     # Check if PROJECT_SPEC.md exists
@@ -275,7 +309,7 @@ def detect_planning_mode(
         return {
             "use_opus": True,
             "confidence": 0.95,
-            "reason": "New project detected - planning mode recommended"
+            "reason": "New project detected - planning mode recommended",
         }
 
     if opus_score > sonnet_score:
@@ -284,7 +318,7 @@ def detect_planning_mode(
         return {
             "use_opus": True,
             "confidence": confidence,
-            "reason": f"Planning-related keywords detected ({opus_score})"
+            "reason": f"Planning-related keywords detected ({opus_score})",
         }
 
     if sonnet_score > opus_score:
@@ -293,7 +327,7 @@ def detect_planning_mode(
         return {
             "use_opus": False,
             "confidence": confidence,
-            "reason": f"Execution-related keywords detected ({sonnet_score})"
+            "reason": f"Execution-related keywords detected ({sonnet_score})",
         }
 
     # Ambiguous - default to Sonnet for existing projects
@@ -301,14 +335,14 @@ def detect_planning_mode(
         return {
             "use_opus": False,
             "confidence": 0.6,
-            "reason": "Ambiguous request, defaulting to execution mode"
+            "reason": "Ambiguous request, defaulting to execution mode",
         }
 
     # Ambiguous - default to Opus for new projects
     return {
         "use_opus": True,
         "confidence": 0.6,
-        "reason": "Ambiguous request, defaulting to planning mode"
+        "reason": "Ambiguous request, defaulting to planning mode",
     }
 
 
@@ -330,7 +364,9 @@ def should_use_opus(detection: Dict[str, Any], confidence_threshold: float = 0.7
     return None
 
 
-def should_use_sonnet(detection: Dict[str, Any], confidence_threshold: float = 0.7) -> Optional[bool]:
+def should_use_sonnet(
+    detection: Dict[str, Any], confidence_threshold: float = 0.7
+) -> Optional[bool]:
     """
     Decide if Sonnet should be used based on detection
 
@@ -387,7 +423,7 @@ def get_project_state(project_root: Path) -> Dict[str, Any]:
         "has_features": has_features,
         "features": features,
         "feature_count": len(features),
-        "completed_count": len(completed)
+        "completed_count": len(completed),
     }
 
 
@@ -400,7 +436,7 @@ def main():
         sys.exit(1)
 
     project_root = sys.argv[1]
-    text = ' '.join(sys.argv[2:])
+    text = " ".join(sys.argv[2:])
 
     # Legacy detector
     detector = PlanningModeDetector(project_root)

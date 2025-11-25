@@ -68,28 +68,28 @@ class MCPServer:
                     "id": "Feature ID (optional)",
                     "status": "Status (default: planned)",
                     "priority": "Priority (default: medium)",
-                }
+                },
             },
             {
                 "name": "feature_complete",
                 "description": "Mark a feature as complete",
                 "parameters": {
                     "feature_id": "Feature ID to complete (required)",
-                }
+                },
             },
             {
                 "name": "feature_list",
                 "description": "List all features, optionally filtered by status",
                 "parameters": {
                     "status": "Filter by status (optional)",
-                }
+                },
             },
             {
                 "name": "feature_get",
                 "description": "Get details of a specific feature",
                 "parameters": {
                     "feature_id": "Feature ID (required)",
-                }
+                },
             },
             {
                 "name": "feature_update",
@@ -97,29 +97,29 @@ class MCPServer:
                 "parameters": {
                     "feature_id": "Feature ID (required)",
                     "updates": "Dictionary of updates (required)",
-                }
+                },
             },
             {
                 "name": "status_get",
                 "description": "Get current project status and metrics",
-                "parameters": {}
+                "parameters": {},
             },
             {
                 "name": "status_generate",
                 "description": "Generate STATUS.md from features.json",
-                "parameters": {}
+                "parameters": {},
             },
             {
                 "name": "governance_check",
                 "description": "Run governance checks (pre-commit or pre-push)",
                 "parameters": {
                     "check_type": "Type of check: pre_commit or pre_push (required)",
-                }
+                },
             },
             {
                 "name": "governance_validate",
                 "description": "Validate governance configuration",
-                "parameters": {}
+                "parameters": {},
             },
         ]
 
@@ -142,16 +142,16 @@ class MCPServer:
             Response dict with added feature data
         """
         try:
-            name = kwargs.get('name')
+            name = kwargs.get("name")
             if not name:
                 return {"success": False, "error": "name is required"}
 
             # Call FeatureRegistry.add_feature with correct signature
-            feature_id = kwargs.get('id', name.lower().replace(' ', '-'))
-            description = kwargs.get('description', '')
-            priority = kwargs.get('priority', 'medium')
-            week = kwargs.get('week')
-            build = kwargs.get('build')
+            feature_id = kwargs.get("id", name.lower().replace(" ", "-"))
+            description = kwargs.get("description", "")
+            priority = kwargs.get("priority", "medium")
+            week = kwargs.get("week")
+            build = kwargs.get("build")
 
             added = self.registry.add_feature(
                 feature_id=feature_id,
@@ -159,12 +159,12 @@ class MCPServer:
                 description=description,
                 priority=priority,
                 week=week,
-                build=build
+                build=build,
             )
 
             # Update status if provided (add_feature may not support it directly)
-            status = kwargs.get('status')
-            if status and status != 'planned':
+            status = kwargs.get("status")
+            if status and status != "planned":
                 self.registry.update_feature(feature_id, status=status)
                 # Get updated feature to return correct status
                 added = self.registry.get_feature(feature_id)
@@ -175,7 +175,7 @@ class MCPServer:
             return {
                 "success": True,
                 "result": added,
-                "message": f"Added feature: {added['name']} ({added['id']})"
+                "message": f"Added feature: {added['name']} ({added['id']})",
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -191,7 +191,7 @@ class MCPServer:
             Response dict
         """
         try:
-            feature_id = kwargs.get('feature_id')
+            feature_id = kwargs.get("feature_id")
             if not feature_id:
                 return {"success": False, "error": "feature_id is required"}
 
@@ -201,10 +201,7 @@ class MCPServer:
             # Auto-generate STATUS.md
             self.status_generator.save()
 
-            return {
-                "success": True,
-                "message": f"Completed feature: {feature_id}"
-            }
+            return {"success": True, "message": f"Completed feature: {feature_id}"}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -219,14 +216,10 @@ class MCPServer:
             Response dict with features list
         """
         try:
-            status = kwargs.get('status')
+            status = kwargs.get("status")
             features = self.registry.list_features(status=status)
 
-            return {
-                "success": True,
-                "result": features,
-                "count": len(features)
-            }
+            return {"success": True, "result": features, "count": len(features)}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -241,7 +234,7 @@ class MCPServer:
             Response dict with feature data
         """
         try:
-            feature_id = kwargs.get('feature_id')
+            feature_id = kwargs.get("feature_id")
             if not feature_id:
                 return {"success": False, "error": "feature_id is required"}
 
@@ -249,10 +242,7 @@ class MCPServer:
             if not feature:
                 return {"success": False, "error": f"Feature not found: {feature_id}"}
 
-            return {
-                "success": True,
-                "result": feature
-            }
+            return {"success": True, "result": feature}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -268,8 +258,8 @@ class MCPServer:
             Response dict
         """
         try:
-            feature_id = kwargs.get('feature_id')
-            updates = kwargs.get('updates')
+            feature_id = kwargs.get("feature_id")
+            updates = kwargs.get("updates")
 
             if not feature_id:
                 return {"success": False, "error": "feature_id is required"}
@@ -282,10 +272,7 @@ class MCPServer:
             if updated is None:
                 return {"success": False, "error": f"Feature '{feature_id}' not found"}
 
-            return {
-                "success": True,
-                "message": f"Updated feature: {feature_id}"
-            }
+            return {"success": True, "message": f"Updated feature: {feature_id}"}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -304,12 +291,12 @@ class MCPServer:
             return {
                 "success": True,
                 "result": {
-                    "project": data.get('project'),
-                    "version": data.get('version'),
-                    "status": data.get('status'),
-                    "metrics": data.get('metrics'),
-                    "features": data.get('features', [])
-                }
+                    "project": data.get("project"),
+                    "version": data.get("version"),
+                    "status": data.get("status"),
+                    "metrics": data.get("metrics"),
+                    "features": data.get("features", []),
+                },
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -328,7 +315,7 @@ class MCPServer:
             return {
                 "success": True,
                 "result": str(status_file),
-                "message": f"Generated: {status_file}"
+                "message": f"Generated: {status_file}",
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -346,32 +333,26 @@ class MCPServer:
             Response dict with check results
         """
         try:
-            check_type = kwargs.get('check_type')
-            if check_type not in ['pre_commit', 'pre_push']:
+            check_type = kwargs.get("check_type")
+            if check_type not in ["pre_commit", "pre_push"]:
                 return {"success": False, "error": "check_type must be pre_commit or pre_push"}
 
             gm = GovernanceManager(self.project_root)
             if not gm.config_file.exists():
-                return {
-                    "success": True,
-                    "message": "No governance configured"
-                }
+                return {"success": True, "message": "No governance configured"}
 
             gm.load()
             enforcer = GovernanceEnforcer(gm)
 
-            if check_type == 'pre_commit':
+            if check_type == "pre_commit":
                 passed, failed = enforcer.check_pre_commit()
             else:
                 passed, failed = enforcer.check_pre_push()
 
             return {
                 "success": True,
-                "result": {
-                    "passed": passed,
-                    "failed_checks": failed
-                },
-                "message": "All checks passed" if passed else f"Failed: {', '.join(failed)}"
+                "result": {"passed": passed, "failed_checks": failed},
+                "message": "All checks passed" if passed else f"Failed: {', '.join(failed)}",
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -386,18 +367,12 @@ class MCPServer:
         try:
             gm = GovernanceManager(self.project_root)
             if not gm.config_file.exists():
-                return {
-                    "success": True,
-                    "message": "No governance file found"
-                }
+                return {"success": True, "message": "No governance file found"}
 
             gm.load()
             gm.validate()
 
-            return {
-                "success": True,
-                "message": "Governance configuration valid"
-            }
+            return {"success": True, "message": "Governance configuration valid"}
         except Exception as e:
             return {"success": False, "error": str(e)}
 
@@ -413,13 +388,13 @@ class MCPServer:
         Returns:
             Response dict
         """
-        tool_name = request.get('tool')
-        arguments = request.get('arguments', {})
+        tool_name = request.get("tool")
+        arguments = request.get("arguments", {})
 
         if not tool_name:
             return {"success": False, "error": "tool is required"}
 
-        if tool_name == 'list_tools':
+        if tool_name == "list_tools":
             return {"success": True, "result": self.list_tools()}
 
         if tool_name not in self.tools:

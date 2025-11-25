@@ -89,11 +89,11 @@ class TestComplexityEstimator:
         estimator = ComplexityEstimator()
 
         # Create temporary files
-        with NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f1:
+        with NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f1:
             f1.write("line1\nline2\nline3\n")
             f1_path = Path(f1.name)
 
-        with NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f2:
+        with NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f2:
             f2.write("line1\nline2\n")
             f2_path = Path(f2.name)
 
@@ -127,8 +127,9 @@ class TestComplexityEstimator:
 
         for description, expected_type in test_cases:
             complexity = estimator.estimate(description)
-            assert complexity.task_type == expected_type, \
-                f"Expected {expected_type} for '{description}', got {complexity.task_type}"
+            assert (
+                complexity.task_type == expected_type
+            ), f"Expected {expected_type} for '{description}', got {complexity.task_type}"
 
     def test_keyword_detection(self):
         """Test detection of complexity keywords."""
@@ -171,9 +172,9 @@ class TestComplexityEstimator:
         estimator = ComplexityEstimator()
         stats = estimator.get_statistics()
 
-        assert stats['total_tasks'] == 0
-        assert stats['avg_score'] == 0.0
-        assert stats['level_distribution'] == {}
+        assert stats["total_tasks"] == 0
+        assert stats["avg_score"] == 0.0
+        assert stats["level_distribution"] == {}
 
     def test_statistics_with_history(self):
         """Test statistics with estimation history."""
@@ -186,11 +187,11 @@ class TestComplexityEstimator:
 
         stats = estimator.get_statistics()
 
-        assert stats['total_tasks'] == 3
-        assert stats['avg_score'] > 0
-        assert 'level_distribution' in stats
-        assert 'type_distribution' in stats
-        assert stats['total_tokens_estimated'] >= 0
+        assert stats["total_tasks"] == 3
+        assert stats["avg_score"] > 0
+        assert "level_distribution" in stats
+        assert "type_distribution" in stats
+        assert stats["total_tokens_estimated"] >= 0
 
 
 class TestModelSelector:
@@ -200,17 +201,17 @@ class TestModelSelector:
         """Test initialization with default models."""
         selector = ModelSelector()
 
-        assert 'haiku' in selector.models
-        assert 'sonnet' in selector.models
-        assert 'opus' in selector.models
+        assert "haiku" in selector.models
+        assert "sonnet" in selector.models
+        assert "opus" in selector.models
         assert selector.selection_history == []
 
     def test_init_custom_models(self):
         """Test initialization with custom models."""
         custom_models = {
-            'custom': ModelConfig(
-                name='custom',
-                provider='test',
+            "custom": ModelConfig(
+                name="custom",
+                provider="test",
                 tier=ModelTier.FAST,
                 max_tokens=1000,
                 context_window=10000,
@@ -218,8 +219,8 @@ class TestModelSelector:
         }
 
         selector = ModelSelector(models=custom_models)
-        assert 'custom' in selector.models
-        assert 'haiku' not in selector.models
+        assert "custom" in selector.models
+        assert "haiku" not in selector.models
 
     def test_select_for_simple_task(self):
         """Test model selection for simple task."""
@@ -229,7 +230,7 @@ class TestModelSelector:
         complexity = estimator.estimate("Fix typo")
         selection = selector.select(complexity)
 
-        assert selection.model.name == 'haiku'
+        assert selection.model.name == "haiku"
         assert selection.complexity == complexity
         assert "Simple task" in selection.reason
 
@@ -239,12 +240,11 @@ class TestModelSelector:
         estimator = ComplexityEstimator()
 
         complexity = estimator.estimate(
-            "Add API endpoint",
-            files=[Path(f"file{i}.py") for i in range(4)]
+            "Add API endpoint", files=[Path(f"file{i}.py") for i in range(4)]
         )
         selection = selector.select(complexity)
 
-        assert selection.model.name in ['haiku', 'sonnet']
+        assert selection.model.name in ["haiku", "sonnet"]
         assert selection.estimated_cost > 0
 
     def test_select_for_complex_task(self):
@@ -254,11 +254,11 @@ class TestModelSelector:
 
         complexity = estimator.estimate(
             "Refactor architecture with performance optimization",
-            files=[Path(f"file{i}.py") for i in range(15)]
+            files=[Path(f"file{i}.py") for i in range(15)],
         )
         selection = selector.select(complexity)
 
-        assert selection.model.name in ['sonnet', 'opus']
+        assert selection.model.name in ["sonnet", "opus"]
 
     def test_select_for_critical_task(self):
         """Test model selection for critical task."""
@@ -268,7 +268,7 @@ class TestModelSelector:
         complexity = estimator.estimate("Critical security vulnerability fix")
         selection = selector.select(complexity)
 
-        assert selection.model.name == 'opus'
+        assert selection.model.name == "opus"
         assert "Critical" in selection.reason or "best available" in selection.reason
 
     def test_select_with_override(self):
@@ -277,9 +277,9 @@ class TestModelSelector:
         estimator = ComplexityEstimator()
 
         complexity = estimator.estimate("Simple task")
-        selection = selector.select(complexity, override_model='opus')
+        selection = selector.select(complexity, override_model="opus")
 
-        assert selection.model.name == 'opus'
+        assert selection.model.name == "opus"
         assert "override" in selection.reason.lower()
 
     def test_select_with_invalid_override(self):
@@ -290,19 +290,19 @@ class TestModelSelector:
         complexity = estimator.estimate("Test task")
 
         with pytest.raises(ValueError, match="Unknown model"):
-            selector.select(complexity, override_model='invalid_model')
+            selector.select(complexity, override_model="invalid_model")
 
     def test_select_with_unavailable_model(self):
         """Test fallback when primary model unavailable."""
         selector = ModelSelector()
-        selector.update_model_availability('haiku', False)
+        selector.update_model_availability("haiku", False)
 
         estimator = ComplexityEstimator()
         complexity = estimator.estimate("Simple task")
         selection = selector.select(complexity)
 
         # Should fallback to sonnet
-        assert selection.model.name == 'sonnet'
+        assert selection.model.name == "sonnet"
         assert "unavailable" in selection.reason.lower()
 
     def test_select_with_cost_threshold(self):
@@ -310,18 +310,17 @@ class TestModelSelector:
         selector = ModelSelector(cost_threshold=0.0001)  # Very low threshold
 
         # Ensure haiku is available
-        selector.update_model_availability('haiku', True)
+        selector.update_model_availability("haiku", True)
 
         estimator = ComplexityEstimator()
 
         complexity = estimator.estimate(
-            "Simple task",  # Use simple task for predictable cost
-            context="x" * 100
+            "Simple task", context="x" * 100  # Use simple task for predictable cost
         )
         selection = selector.select(complexity)
 
         # Should use cheapest model (haiku) or respect cost threshold
-        assert selection.model.name == 'haiku' or selection.estimated_cost <= 0.0001
+        assert selection.model.name == "haiku" or selection.estimated_cost <= 0.0001
 
     def test_cost_estimation(self):
         """Test cost estimation."""
@@ -350,18 +349,18 @@ class TestModelSelector:
         selection = selector.select(complexity)
 
         # Should upgrade to opus due to context size
-        assert selection.model.name == 'opus'
+        assert selection.model.name == "opus"
         assert "Large context" in selection.reason
 
     def test_get_model(self):
         """Test getting model by name."""
         selector = ModelSelector()
 
-        haiku = selector.get_model('haiku')
+        haiku = selector.get_model("haiku")
         assert haiku is not None
-        assert haiku.name == 'haiku'
+        assert haiku.name == "haiku"
 
-        none_model = selector.get_model('nonexistent')
+        none_model = selector.get_model("nonexistent")
         assert none_model is None
 
     def test_list_models(self):
@@ -370,7 +369,7 @@ class TestModelSelector:
         selector = ModelSelector()
 
         # Ensure all models are available first
-        for model_name in ['haiku', 'sonnet', 'opus']:
+        for model_name in ["haiku", "sonnet", "opus"]:
             selector.update_model_availability(model_name, True)
 
         all_models = selector.list_models()
@@ -380,7 +379,7 @@ class TestModelSelector:
         assert len(available_models) == 3
 
         # Mark one unavailable
-        selector.update_model_availability('haiku', False)
+        selector.update_model_availability("haiku", False)
         available_models = selector.list_models(available_only=True)
         assert len(available_models) == 2
 
@@ -388,20 +387,20 @@ class TestModelSelector:
         """Test updating model availability."""
         selector = ModelSelector()
 
-        selector.update_model_availability('haiku', False)
-        assert not selector.models['haiku'].is_available
+        selector.update_model_availability("haiku", False)
+        assert not selector.models["haiku"].is_available
 
-        selector.update_model_availability('haiku', True)
-        assert selector.models['haiku'].is_available
+        selector.update_model_availability("haiku", True)
+        assert selector.models["haiku"].is_available
 
     def test_statistics_empty(self):
         """Test statistics with no history."""
         selector = ModelSelector()
         stats = selector.get_statistics()
 
-        assert stats['total_selections'] == 0
-        assert stats['total_estimated_cost'] == 0.0
-        assert stats['avg_cost_per_task'] == 0.0
+        assert stats["total_selections"] == 0
+        assert stats["total_estimated_cost"] == 0.0
+        assert stats["avg_cost_per_task"] == 0.0
 
     def test_statistics_with_history(self):
         """Test statistics with selection history."""
@@ -419,11 +418,11 @@ class TestModelSelector:
 
         stats = selector.get_statistics()
 
-        assert stats['total_selections'] == 3
-        assert stats['total_estimated_cost'] > 0
-        assert stats['avg_cost_per_task'] > 0
-        assert 'model_distribution' in stats
-        assert 'selections_by_complexity' in stats
+        assert stats["total_selections"] == 3
+        assert stats["total_estimated_cost"] > 0
+        assert stats["avg_cost_per_task"] > 0
+        assert "model_distribution" in stats
+        assert "selections_by_complexity" in stats
 
 
 class TestModelConfig:
@@ -432,8 +431,8 @@ class TestModelConfig:
     def test_model_config_defaults(self):
         """Test ModelConfig default values."""
         config = ModelConfig(
-            name='test',
-            provider='anthropic',
+            name="test",
+            provider="anthropic",
             tier=ModelTier.FAST,
             max_tokens=4096,
             context_window=200000,
@@ -448,8 +447,8 @@ class TestModelConfig:
     def test_model_config_custom_values(self):
         """Test ModelConfig with custom values."""
         config = ModelConfig(
-            name='custom',
-            provider='openai',
+            name="custom",
+            provider="openai",
             tier=ModelTier.ADVANCED,
             max_tokens=8192,
             context_window=128000,
@@ -459,8 +458,8 @@ class TestModelConfig:
             rate_limit_rpm=100,
         )
 
-        assert config.name == 'custom'
-        assert config.provider == 'openai'
+        assert config.name == "custom"
+        assert config.provider == "openai"
         assert config.supports_vision is True
         assert config.input_cost_per_1m == 10.0
 
@@ -471,8 +470,8 @@ class TestModelSelection:
     def test_model_selection_creation(self):
         """Test creating ModelSelection."""
         model = ModelConfig(
-            name='test',
-            provider='anthropic',
+            name="test",
+            provider="anthropic",
             tier=ModelTier.FAST,
             max_tokens=4096,
             context_window=200000,
@@ -515,14 +514,18 @@ class TestIntegration:
         complexity = estimator.estimate(task_description, files, context)
 
         # With architecture, async, security keywords + many files + large context, should be moderate or complex
-        assert complexity.level in [ComplexityLevel.MODERATE, ComplexityLevel.COMPLEX, ComplexityLevel.CRITICAL]
+        assert complexity.level in [
+            ComplexityLevel.MODERATE,
+            ComplexityLevel.COMPLEX,
+            ComplexityLevel.CRITICAL,
+        ]
         assert complexity.file_count == 12
         assert complexity.has_security_implications or complexity.has_architecture_changes
 
         # Select model
         selection = selector.select(complexity)
 
-        assert selection.model.name in ['haiku', 'sonnet', 'opus']  # Any model is fine
+        assert selection.model.name in ["haiku", "sonnet", "opus"]  # Any model is fine
         assert selection.estimated_cost > 0
         assert len(selection.alternatives) >= 0  # May have alternatives
 
@@ -553,13 +556,13 @@ class TestIntegration:
 
         # Check model progression (should increase with complexity)
         models_used = [s.model.name for s in selections]
-        assert 'haiku' in models_used  # For simple task
-        assert 'opus' in models_used   # For critical task
+        assert "haiku" in models_used  # For simple task
+        assert "opus" in models_used  # For critical task
 
         # Check statistics
         estimator_stats = estimator.get_statistics()
         selector_stats = selector.get_statistics()
 
-        assert estimator_stats['total_tasks'] == 4
-        assert selector_stats['total_selections'] == 4
-        assert selector_stats['total_estimated_cost'] > 0
+        assert estimator_stats["total_tasks"] == 4
+        assert selector_stats["total_selections"] == 4
+        assert selector_stats["total_estimated_cost"] > 0

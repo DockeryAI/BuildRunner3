@@ -24,7 +24,7 @@ def mock_queue():
         estimated_minutes=60,
         complexity="medium",
         domain="backend",
-        dependencies=[]
+        dependencies=[],
     )
     task2 = QueuedTask(
         id="task2",
@@ -34,7 +34,7 @@ def mock_queue():
         estimated_minutes=30,
         complexity="simple",
         domain="testing",
-        dependencies=["task1"]
+        dependencies=["task1"],
     )
     task3 = QueuedTask(
         id="task3",
@@ -44,7 +44,7 @@ def mock_queue():
         estimated_minutes=20,
         complexity="simple",
         domain="documentation",
-        dependencies=["task1"]
+        dependencies=["task1"],
     )
     queue.add_task(task1)
     queue.add_task(task2)
@@ -67,13 +67,7 @@ class TestTasksGenerate:
     @patch("cli.tasks_commands.DependencyGraph")
     @patch("cli.tasks_commands.save_task_queue")
     def test_generate_success(
-        self,
-        mock_save,
-        mock_graph_cls,
-        mock_decomposer_cls,
-        mock_parser_cls,
-        tmp_path,
-        monkeypatch
+        self, mock_save, mock_graph_cls, mock_decomposer_cls, mock_parser_cls, tmp_path, monkeypatch
     ):
         """Test successful task generation"""
         monkeypatch.chdir(tmp_path)
@@ -120,12 +114,7 @@ class TestTasksGenerate:
     @patch("cli.tasks_commands.TaskDecomposer")
     @patch("cli.tasks_commands.DependencyGraph")
     def test_generate_circular_dependency(
-        self,
-        mock_graph_cls,
-        mock_decomposer_cls,
-        mock_parser_cls,
-        tmp_path,
-        monkeypatch
+        self, mock_graph_cls, mock_decomposer_cls, mock_parser_cls, tmp_path, monkeypatch
     ):
         """Test generate fails with circular dependencies"""
         monkeypatch.chdir(tmp_path)
@@ -231,7 +220,9 @@ class TestTasksList:
 class TestTasksComplete:
     @patch("cli.tasks_commands.get_task_queue")
     @patch("cli.tasks_commands.save_task_queue")
-    def test_complete_task_success(self, mock_save, mock_get_queue, mock_queue, tmp_path, monkeypatch):
+    def test_complete_task_success(
+        self, mock_save, mock_get_queue, mock_queue, tmp_path, monkeypatch
+    ):
         """Test marking task as complete"""
         monkeypatch.chdir(tmp_path)
         mock_get_queue.return_value = mock_queue

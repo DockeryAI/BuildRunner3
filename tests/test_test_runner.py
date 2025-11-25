@@ -172,6 +172,7 @@ async def test_parse_pytest_output_all_passed(test_runner):
 @pytest.mark.asyncio
 async def test_websocket_client_management(test_runner):
     """Test adding and removing WebSocket clients"""
+
     class MockWebSocket:
         async def send_json(self, data):
             pass
@@ -197,6 +198,7 @@ async def test_websocket_client_management(test_runner):
 @pytest.mark.asyncio
 async def test_broadcast_message(test_runner):
     """Test broadcasting messages to WebSocket clients"""
+
     class MockWebSocket:
         def __init__(self):
             self.messages = []
@@ -218,6 +220,7 @@ async def test_broadcast_message(test_runner):
 @pytest.mark.asyncio
 async def test_broadcast_removes_disconnected_clients(test_runner):
     """Test that disconnected clients are removed during broadcast"""
+
     class MockWebSocket:
         def __init__(self, should_fail=False):
             self.should_fail = should_fail

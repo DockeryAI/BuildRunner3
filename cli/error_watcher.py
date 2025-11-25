@@ -16,6 +16,7 @@ from watchdog.events import FileSystemEventHandler, FileModifiedEvent
 
 class WatcherError(Exception):
     """Raised when error watcher operations fail."""
+
     pass
 
 
@@ -24,36 +25,30 @@ class ErrorPattern:
 
     PATTERNS = [
         # Python errors
-        (r'(Traceback \(most recent call last\):.*?)(?=\n\n|\Z)', 'Python Exception'),
-        (r'(\w+Error: .*)', 'Python Error'),
-        (r'(AssertionError: .*)', 'Assertion Failed'),
-
+        (r"(Traceback \(most recent call last\):.*?)(?=\n\n|\Z)", "Python Exception"),
+        (r"(\w+Error: .*)", "Python Error"),
+        (r"(AssertionError: .*)", "Assertion Failed"),
         # Test failures
-        (r'(FAILED .*)', 'Test Failure'),
-        (r'(ERROR .*)', 'Test Error'),
-        (r'(\d+ failed.*)', 'Multiple Test Failures'),
-
+        (r"(FAILED .*)", "Test Failure"),
+        (r"(ERROR .*)", "Test Error"),
+        (r"(\d+ failed.*)", "Multiple Test Failures"),
         # Build/compilation errors
-        (r'(error: .*)', 'Build Error'),
-        (r'(fatal error: .*)', 'Fatal Build Error'),
-
+        (r"(error: .*)", "Build Error"),
+        (r"(fatal error: .*)", "Fatal Build Error"),
         # Network/connection errors
-        (r'(Connection refused.*)', 'Connection Error'),
-        (r'(Timeout.*)', 'Timeout Error'),
-        (r'(Host not found.*)', 'DNS Error'),
-
+        (r"(Connection refused.*)", "Connection Error"),
+        (r"(Timeout.*)", "Timeout Error"),
+        (r"(Host not found.*)", "DNS Error"),
         # File system errors
-        (r'(No such file or directory: .*)', 'File Not Found'),
-        (r'(Permission denied: .*)', 'Permission Error'),
-        (r'(cannot open file.*)', 'File Access Error'),
-
+        (r"(No such file or directory: .*)", "File Not Found"),
+        (r"(Permission denied: .*)", "Permission Error"),
+        (r"(cannot open file.*)", "File Access Error"),
         # Git errors
-        (r'(git: .*)', 'Git Error'),
-        (r'(merge conflict.*)', 'Merge Conflict'),
-
+        (r"(git: .*)", "Git Error"),
+        (r"(merge conflict.*)", "Merge Conflict"),
         # Generic errors
-        (r'(\[ERROR\] .*)', 'Generic Error'),
-        (r'(Exception: .*)', 'Exception'),
+        (r"(\[ERROR\] .*)", "Generic Error"),
+        (r"(Exception: .*)", "Exception"),
     ]
 
     @classmethod
@@ -79,7 +74,7 @@ class ErrorPattern:
 class LogFileHandler(FileSystemEventHandler):
     """Handles file system events for log monitoring."""
 
-    def __init__(self, watcher: 'ErrorWatcher'):
+    def __init__(self, watcher: "ErrorWatcher"):
         """
         Initialize handler.
 
@@ -117,7 +112,7 @@ class ErrorWatcher:
         self,
         project_root: Optional[Path] = None,
         watch_patterns: Optional[List[str]] = None,
-        check_interval: int = 2
+        check_interval: int = 2,
     ):
         """
         Initialize ErrorWatcher.
@@ -128,10 +123,8 @@ class ErrorWatcher:
             check_interval: Seconds between file checks
         """
         self.project_root = Path(project_root) if project_root else Path.cwd()
-        self.blockers_file = (
-            self.project_root / ".buildrunner" / "context" / "blockers.md"
-        )
-        self.watch_patterns = watch_patterns or ['*.log', '*.err', 'pytest.out']
+        self.blockers_file = self.project_root / ".buildrunner" / "context" / "blockers.md"
+        self.watch_patterns = watch_patterns or ["*.log", "*.err", "pytest.out"]
         self.check_interval = check_interval
 
         self.observer: Optional[Observer] = None
@@ -161,7 +154,7 @@ class ErrorWatcher:
             file_path: Path to file to process
         """
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 content = f.read()
 
             errors = ErrorPattern.find_errors(content)
@@ -206,7 +199,7 @@ class ErrorWatcher:
 """
 
             # Append to blockers file
-            with open(self.blockers_file, 'a') as f:
+            with open(self.blockers_file, "a") as f:
                 f.write(entry)
 
             self.errors_detected.extend(errors)
@@ -268,27 +261,23 @@ class ErrorWatcher:
         Raises:
             WatcherError: If scan fails
         """
-        scan_results = {
-            'files_scanned': 0,
-            'errors_found': 0,
-            'files_with_errors': []
-        }
+        scan_results = {"files_scanned": 0, "errors_found": 0, "files_with_errors": []}
 
         try:
             # Find all matching files
             for pattern in self.watch_patterns:
                 for file_path in self.project_root.rglob(pattern):
                     if file_path.is_file():
-                        scan_results['files_scanned'] += 1
+                        scan_results["files_scanned"] += 1
 
-                        with open(file_path, 'r') as f:
+                        with open(file_path, "r") as f:
                             content = f.read()
 
                         errors = ErrorPattern.find_errors(content)
 
                         if errors:
-                            scan_results['errors_found'] += len(errors)
-                            scan_results['files_with_errors'].append(str(file_path))
+                            scan_results["errors_found"] += len(errors)
+                            scan_results["files_with_errors"].append(str(file_path))
                             self._update_blockers(file_path, errors)
 
             return scan_results
@@ -313,20 +302,17 @@ class ErrorWatcher:
             return []
 
         try:
-            with open(self.blockers_file, 'r') as f:
+            with open(self.blockers_file, "r") as f:
                 content = f.read()
 
             # Parse entries
-            entries = content.split('---\n')
+            entries = content.split("---\n")
             recent = entries[-count:] if len(entries) >= count else entries
 
             errors = []
             for entry in recent:
-                if '## Auto-Detected Error' in entry:
-                    errors.append({
-                        'content': entry,
-                        'timestamp': self._extract_timestamp(entry)
-                    })
+                if "## Auto-Detected Error" in entry:
+                    errors.append({"content": entry, "timestamp": self._extract_timestamp(entry)})
 
             return errors
 
@@ -335,7 +321,7 @@ class ErrorWatcher:
 
     def _extract_timestamp(self, entry: str) -> Optional[str]:
         """Extract timestamp from blocker entry."""
-        match = re.search(r'## Auto-Detected Error - ([\d\-: ]+)', entry)
+        match = re.search(r"## Auto-Detected Error - ([\d\-: ]+)", entry)
         return match.group(1) if match else None
 
     def clear_blockers(self) -> None:
@@ -353,9 +339,7 @@ class ErrorWatcher:
 
 
 def start_watcher(
-    project_root: Optional[Path] = None,
-    daemon: bool = False,
-    patterns: Optional[List[str]] = None
+    project_root: Optional[Path] = None, daemon: bool = False, patterns: Optional[List[str]] = None
 ) -> ErrorWatcher:
     """
     Convenience function to start error watcher.

@@ -20,6 +20,7 @@ from dataclasses import dataclass, asdict
 # OpusClient kept for backwards compatibility but not required
 try:
     from core.opus_client import OpusClient, OpusAPIError
+
     OPUS_AVAILABLE = True
 except ImportError:
     OPUS_AVAILABLE = False
@@ -58,7 +59,7 @@ def conversational_input(prompt: str) -> str:
         except EOFError:
             break
 
-    result = '\n'.join(lines).strip()
+    result = "\n".join(lines).strip()
     return result if result else ""
 
 
@@ -91,7 +92,7 @@ def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
 
             if file_path.exists() and file_path.is_file():
                 try:
-                    content = file_path.read_text(encoding='utf-8')
+                    content = file_path.read_text(encoding="utf-8")
                     print(f"✓ Read {len(content)} characters from: {file_path.name}")
                     return content.strip()
                 except Exception as e:
@@ -115,10 +116,10 @@ def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
             return "\n".join(lines).strip()
 
     # Default: Open text editor (choice == "1" or no choice given)
-    editor = os.environ.get('EDITOR', os.environ.get('VISUAL', 'nano'))
+    editor = os.environ.get("EDITOR", os.environ.get("VISUAL", "nano"))
 
     # Create temp file with helpful header
-    with tempfile.NamedTemporaryFile(mode='w+', suffix='.txt', delete=False) as tf:
+    with tempfile.NamedTemporaryFile(mode="w+", suffix=".txt", delete=False) as tf:
         tf.write(f"# {prompt}\n")
         tf.write("# Write your content below (delete this header if you want)\n")
         tf.write("# Save and close the editor when done\n\n")
@@ -130,13 +131,13 @@ def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
         subprocess.call([editor, temp_path])
 
         # Read result
-        with open(temp_path, 'r') as f:
+        with open(temp_path, "r") as f:
             content = f.read()
 
         # Remove comment header lines if present
-        lines = content.split('\n')
-        filtered_lines = [line for line in lines if not line.strip().startswith('#')]
-        result = '\n'.join(filtered_lines).strip()
+        lines = content.split("\n")
+        filtered_lines = [line for line in lines if not line.strip().startswith("#")]
+        result = "\n".join(filtered_lines).strip()
 
         return result
     finally:
@@ -149,6 +150,7 @@ def get_multiline_input(prompt: str, allow_file: bool = True) -> str:
 
 class SpecState(Enum):
     """State machine for PROJECT_SPEC lifecycle"""
+
     NEW = "new"
     DRAFT = "draft"
     REVIEWED = "reviewed"
@@ -159,6 +161,7 @@ class SpecState(Enum):
 @dataclass
 class SpecSection:
     """Represents a section of the PROJECT_SPEC"""
+
     name: str
     title: str
     content: str
@@ -169,6 +172,7 @@ class SpecSection:
 @dataclass
 class ProjectSpec:
     """Complete PROJECT_SPEC data structure"""
+
     state: SpecState
     industry: Optional[str] = None
     use_case: Optional[str] = None
@@ -202,7 +206,9 @@ class PRDWizard:
         # Initialize Synapse profile loader
         try:
             self.profile_loader = ProfileLoader()
-            print(f"[dim]✓ Loaded {len(self.profile_loader.list_available())} industry profiles[/dim]")
+            print(
+                f"[dim]✓ Loaded {len(self.profile_loader.list_available())} industry profiles[/dim]"
+            )
         except Exception as e:
             print(f"[yellow]⚠️  Could not load industry profiles: {e}[/yellow]")
             self.profile_loader = None
@@ -238,15 +244,15 @@ class PRDWizard:
         if not self.state_path.exists():
             return None
 
-        with open(self.state_path, 'r') as f:
+        with open(self.state_path, "r") as f:
             data = yaml.safe_load(f)
 
         return ProjectSpec(
-            state=SpecState(data['state']),
-            industry=data.get('industry'),
-            use_case=data.get('use_case'),
-            tech_stack=data.get('tech_stack'),
-            sections=[SpecSection(**s) for s in data.get('sections', [])]
+            state=SpecState(data["state"]),
+            industry=data.get("industry"),
+            use_case=data.get("use_case"),
+            tech_stack=data.get("tech_stack"),
+            sections=[SpecSection(**s) for s in data.get("sections", [])],
         )
 
     def save_spec_state(self, spec: ProjectSpec):
@@ -254,17 +260,19 @@ class PRDWizard:
         self.state_path.parent.mkdir(parents=True, exist_ok=True)
 
         data = {
-            'state': spec.state.value,
-            'industry': spec.industry,
-            'use_case': spec.use_case,
-            'tech_stack': spec.tech_stack,
-            'sections': [asdict(s) for s in spec.sections]
+            "state": spec.state.value,
+            "industry": spec.industry,
+            "use_case": spec.use_case,
+            "tech_stack": spec.tech_stack,
+            "sections": [asdict(s) for s in spec.sections],
         }
 
-        with open(self.state_path, 'w') as f:
+        with open(self.state_path, "w") as f:
             yaml.dump(data, f, default_flow_style=False)
 
-    def detect_industry_and_use_case(self, app_description: str) -> Tuple[str, str, Optional[IndustryProfile]]:
+    def detect_industry_and_use_case(
+        self, app_description: str
+    ) -> Tuple[str, str, Optional[IndustryProfile]]:
         """
         Detect industry and use case from app description using Synapse database.
 
@@ -276,7 +284,7 @@ class PRDWizard:
         """
         if not self.profile_loader:
             # Fallback to generic if profile loader not available
-            return 'saas', 'dashboard', None
+            return "saas", "dashboard", None
 
         app_lower = app_description.lower()
 
@@ -303,11 +311,13 @@ class PRDWizard:
             return best_match.id, use_case, best_match
         else:
             print("[yellow]⚠️  No exact match found in database[/yellow]")
-            print("[dim]You can manually select from available profiles or research new industry[/dim]")
+            print(
+                "[dim]You can manually select from available profiles or research new industry[/dim]"
+            )
 
             # Fallback to generic detection
             use_case = self._detect_use_case(app_description)
-            return 'saas', use_case, None
+            return "saas", use_case, None
 
     def _detect_use_case(self, app_description: str) -> str:
         """
@@ -322,25 +332,25 @@ class PRDWizard:
         app_lower = app_description.lower()
 
         use_case_keywords = {
-            'dashboard': ['dashboard', 'metrics', 'analytics', 'reports', 'visualize', 'insights'],
-            'marketplace': ['marketplace', 'listing', 'buy', 'sell', 'vendor', 'buyer', 'seller'],
-            'crm': ['crm', 'customer', 'contact', 'lead', 'sales', 'pipeline'],
-            'analytics': ['analytics', 'data', 'insights', 'charts', 'graphs', 'statistics'],
-            'ecommerce': ['shop', 'store', 'product', 'cart', 'checkout', 'catalog'],
-            'social': ['social', 'community', 'feed', 'post', 'share', 'follow'],
-            'saas-platform': ['platform', 'tool', 'service', 'application', 'software']
+            "dashboard": ["dashboard", "metrics", "analytics", "reports", "visualize", "insights"],
+            "marketplace": ["marketplace", "listing", "buy", "sell", "vendor", "buyer", "seller"],
+            "crm": ["crm", "customer", "contact", "lead", "sales", "pipeline"],
+            "analytics": ["analytics", "data", "insights", "charts", "graphs", "statistics"],
+            "ecommerce": ["shop", "store", "product", "cart", "checkout", "catalog"],
+            "social": ["social", "community", "feed", "post", "share", "follow"],
+            "saas-platform": ["platform", "tool", "service", "application", "software"],
         }
 
         for uc, keywords in use_case_keywords.items():
             if any(kw in app_lower for kw in keywords):
                 return uc
 
-        return 'dashboard'  # default
+        return "dashboard"  # default
 
     def get_section_template(self, section_name: str) -> str:
         """Get template content for a section"""
         templates = {
-            'product_requirements': """# Product Requirements
+            "product_requirements": """# Product Requirements
 
 ## Executive Summary
 [Brief overview of the product]
@@ -362,7 +372,7 @@ class PRDWizard:
 ## Out of Scope
 - [What we're not building]
 """,
-            'technical_architecture': """# Technical Architecture
+            "technical_architecture": """# Technical Architecture
 
 ## System Overview
 [High-level architecture description]
@@ -389,7 +399,7 @@ class PRDWizard:
 ## Scalability Plan
 [How the system will scale]
 """,
-            'design_architecture': """# Design Architecture
+            "design_architecture": """# Design Architecture
 
 ## Design System
 [Design system and component library]
@@ -416,13 +426,14 @@ class PRDWizard:
 
 ## Responsive Design
 [Mobile, tablet, desktop strategies]
-"""
+""",
         }
 
         return templates.get(section_name, "")
 
-    async def claude_code_discuss_section(self, section_name: str, app_description: str,
-                                          industry: str, use_case: str) -> str:
+    async def claude_code_discuss_section(
+        self, section_name: str, app_description: str, industry: str, use_case: str
+    ) -> str:
         """
         Claude Code mode: Generate prompt for user to send to their AI assistant.
         User copies prompt, sends to Claude Code, pastes response back.
@@ -508,9 +519,9 @@ Please be thorough and specific for this {industry} application."""
         # Build final content
         final_content = f"# {section_name.replace('_', ' ').title()}\n\n"
 
-        if selection == 'all':
+        if selection == "all":
             final_content += claude_response
-        elif selection == 'none':
+        elif selection == "none":
             # Only include "From Your Description" part
             if "## From Your Description" in claude_response:
                 end_idx = claude_response.find("## Additional Suggestions")
@@ -522,7 +533,7 @@ Please be thorough and specific for this {industry} application."""
                 final_content += claude_response
         else:
             # Parse and include only selected items
-            selected_ids = [s.strip() for s in selection.split(',')]
+            selected_ids = [s.strip() for s in selection.split(",")]
 
             # Include "From Your Description" section
             if "## From Your Description" in claude_response:
@@ -539,18 +550,18 @@ Please be thorough and specific for this {industry} application."""
                 suggestions_start = claude_response.find("## Additional Suggestions")
                 suggestions_text = claude_response[suggestions_start:]
 
-                lines = suggestions_text.split('\n')
+                lines = suggestions_text.split("\n")
                 current_suggestion = []
                 include_current = False
 
                 for line in lines:
-                    if line.strip() and line.strip()[0] == '[':
+                    if line.strip() and line.strip()[0] == "[":
                         # Save previous if selected
                         if include_current and current_suggestion:
-                            final_content += '\n'.join(current_suggestion) + '\n\n'
+                            final_content += "\n".join(current_suggestion) + "\n\n"
 
                         # Check if this ID is selected
-                        suggestion_id = line.strip()[1:].split(']')[0]
+                        suggestion_id = line.strip()[1:].split("]")[0]
                         include_current = suggestion_id in selected_ids
                         current_suggestion = [line] if include_current else []
                     elif include_current:
@@ -558,13 +569,14 @@ Please be thorough and specific for this {industry} application."""
 
                 # Add last suggestion
                 if include_current and current_suggestion:
-                    final_content += '\n'.join(current_suggestion) + '\n\n'
+                    final_content += "\n".join(current_suggestion) + "\n\n"
 
         print(f"\n✓ Built {section_name} content")
         return final_content
 
-    async def opus_discuss_section(self, section_name: str, app_description: str,
-                                   industry: str, use_case: str) -> str:
+    async def opus_discuss_section(
+        self, section_name: str, app_description: str, industry: str, use_case: str
+    ) -> str:
         """
         Interactive discussion with AI to build section content.
 
@@ -576,7 +588,9 @@ Please be thorough and specific for this {industry} application."""
         """
         if self.use_claude_code:
             # Claude Code mode: Generate prompt for user to send to their AI
-            return await self.claude_code_discuss_section(section_name, app_description, industry, use_case)
+            return await self.claude_code_discuss_section(
+                section_name, app_description, industry, use_case
+            )
         elif not self.use_opus_api:
             # Fall back to template
             return self.get_section_template(section_name)
@@ -605,7 +619,7 @@ Format as:
             message = await self.opus_client.async_client.messages.create(
                 model=self.opus_client.model,
                 max_tokens=2048,
-                messages=[{"role": "user", "content": extract_prompt}]
+                messages=[{"role": "user", "content": extract_prompt}],
             )
 
             extracted = message.content[0].text
@@ -642,7 +656,7 @@ Example:
             message = await self.opus_client.async_client.messages.create(
                 model=self.opus_client.model,
                 max_tokens=3072,
-                messages=[{"role": "user", "content": suggest_prompt}]
+                messages=[{"role": "user", "content": suggest_prompt}],
             )
 
             suggestions = message.content[0].text
@@ -664,29 +678,29 @@ Example:
             final_content += extracted.replace("## What You Specified:", "").strip()
             final_content += "\n\n"
 
-            if selection != 'none':
+            if selection != "none":
                 final_content += "## Additional Items\n\n"
 
-                if selection == 'all':
+                if selection == "all":
                     final_content += suggestions
                 else:
                     # Parse selected IDs
-                    selected_ids = [s.strip() for s in selection.split(',')]
+                    selected_ids = [s.strip() for s in selection.split(",")]
 
                     # Extract selected suggestions (simple line-based parsing)
-                    lines = suggestions.split('\n')
+                    lines = suggestions.split("\n")
                     current_suggestion = []
                     include_current = False
 
                     for line in lines:
                         # Check if line starts with [ID]
-                        if line.strip() and line.strip()[0] == '[':
+                        if line.strip() and line.strip()[0] == "[":
                             # Save previous suggestion if it was selected
                             if include_current and current_suggestion:
-                                final_content += '\n'.join(current_suggestion) + '\n\n'
+                                final_content += "\n".join(current_suggestion) + "\n\n"
 
                             # Check if this ID is selected
-                            suggestion_id = line.strip()[1:].split(']')[0]
+                            suggestion_id = line.strip()[1:].split("]")[0]
                             include_current = suggestion_id in selected_ids
                             current_suggestion = [line] if include_current else []
                         elif include_current:
@@ -694,7 +708,7 @@ Example:
 
                     # Add last suggestion if selected
                     if include_current and current_suggestion:
-                        final_content += '\n'.join(current_suggestion) + '\n\n'
+                        final_content += "\n".join(current_suggestion) + "\n\n"
 
             print(f"\n✓ Built {section_name} content")
             return final_content
@@ -707,8 +721,9 @@ Example:
             print(f"\n⚠️  Unexpected error: {e}")
             return self.get_section_template(section_name)
 
-    def opus_prefill_section(self, section_name: str, app_description: str,
-                            industry: str, use_case: str) -> str:
+    def opus_prefill_section(
+        self, section_name: str, app_description: str, industry: str, use_case: str
+    ) -> str:
         """
         Wrapper to run async opus_discuss_section synchronously.
         """
@@ -743,7 +758,7 @@ Example:
         print(f"  Detected Use Case: {use_case}")
 
         confirm = input("\nIs this correct? (y/n): ")
-        if confirm.lower() != 'y':
+        if confirm.lower() != "y":
             # Show available industries
             if self.profile_loader:
                 available = self.profile_loader.list_available()
@@ -760,16 +775,12 @@ Example:
                 industry_profile = self.profile_loader.load_profile(industry)
 
         # Create spec object
-        spec = ProjectSpec(
-            state=SpecState.DRAFT,
-            industry=industry,
-            use_case=use_case
-        )
+        spec = ProjectSpec(state=SpecState.DRAFT, industry=industry, use_case=use_case)
 
         # Step 3-4: Interactive section wizard
         print("\nStep 3-4: Building PROJECT_SPEC Sections...")
 
-        sections = ['product_requirements', 'technical_architecture', 'design_architecture']
+        sections = ["product_requirements", "technical_architecture", "design_architecture"]
 
         for section_name in sections:
             print(f"\n{'='*60}")
@@ -787,25 +798,27 @@ Example:
 
             final_choice = input("\nChoice (1-3): ").strip()
 
-            if final_choice == '2':
+            if final_choice == "2":
                 print("\nOpening editor for final edits...")
                 content = get_multiline_input("Edit the content:", allow_file=False)
                 completed = True
                 skipped = False
-            elif final_choice == '3':
+            elif final_choice == "3":
                 completed = False
                 skipped = True
             else:  # Accept
                 completed = True
                 skipped = False
 
-            spec.sections.append(SpecSection(
-                name=section_name,
-                title=section_name.replace('_', ' ').title(),
-                content=content,
-                completed=completed,
-                skipped=skipped
-            ))
+            spec.sections.append(
+                SpecSection(
+                    name=section_name,
+                    title=section_name.replace("_", " ").title(),
+                    content=content,
+                    completed=completed,
+                    skipped=skipped,
+                )
+            )
 
             print(f"✓ {section_name} {'completed' if completed else 'skipped'}")
 
@@ -819,7 +832,7 @@ Example:
         print("  - Database: PostgreSQL")
 
         tech_stack = input("Accept this stack? (y/n): ")
-        if tech_stack.lower() == 'y':
+        if tech_stack.lower() == "y":
             spec.tech_stack = "react-fastapi-postgres"
         else:
             spec.tech_stack = input("  Enter your tech stack: ")
@@ -829,7 +842,7 @@ Example:
         print("PROJECT_SPEC is complete. Ready to confirm and lock?")
         confirm = input("Confirm (y/n): ")
 
-        if confirm.lower() == 'y':
+        if confirm.lower() == "y":
             spec.state = SpecState.CONFIRMED
 
         return spec
@@ -852,7 +865,7 @@ Example:
         for section in spec.sections:
             content += f"\n{section.content}\n\n---\n"
 
-        with open(self.spec_path, 'w') as f:
+        with open(self.spec_path, "w") as f:
             f.write(content)
 
     def run_existing_spec_mode(self, spec: ProjectSpec):
@@ -870,7 +883,7 @@ Example:
 
         choice = input("Choice (1-4): ")
 
-        if choice == '1':
+        if choice == "1":
             print("\nSections:")
             for i, section in enumerate(spec.sections):
                 print(f"  {i+1}. {section.title}")
@@ -886,12 +899,12 @@ Example:
                 section.content = new_content
                 section.completed = True
 
-        elif choice == '2':
+        elif choice == "2":
             for section in spec.sections:
                 print(f"\n--- {section.title} ---")
                 print(section.content[:200] + "...")
 
-        elif choice == '3':
+        elif choice == "3":
             print("\nStates: new, draft, reviewed, confirmed, locked")
             new_state = input("Enter new state: ")
             spec.state = SpecState(new_state)
@@ -905,15 +918,17 @@ Example:
         Natural discussion to gather all requirements, make suggestions iteratively,
         build complete spec through conversation. Then simplified wizard confirms sections.
         """
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("  BRAINSTORMING MODE - Conversational PRD Builder")
-        print("="*70)
+        print("=" * 70)
         print()
         print("[cyan]Let's build your PROJECT_SPEC through conversation![/cyan]")
         print("[dim]I'll ask questions, make suggestions, and we'll build it together.[/dim]\n")
 
         # Conversational gathering using conversational_input to handle paste properly
-        app_description = conversational_input("Tell me about your project idea:\n[dim]Just describe it in your own words - I'll ask follow-up questions.[/dim]\n\n[cyan]What do you want to build?[/cyan]")
+        app_description = conversational_input(
+            "Tell me about your project idea:\n[dim]Just describe it in your own words - I'll ask follow-up questions.[/dim]\n\n[cyan]What do you want to build?[/cyan]"
+        )
 
         # Detect industry
         print("\n🔍 Let me analyze that...")
@@ -930,7 +945,7 @@ Example:
                 print()
 
         # Start conversational requirements gathering
-        print("\n" + "-"*70)
+        print("\n" + "-" * 70)
         print("Let's dig deeper. I'll ask some questions to build your PRD.\n")
 
         conversation_prompts = [
@@ -940,25 +955,25 @@ Example:
                     "Who is your target audience? Be specific about user personas.",
                     "What's the main problem you're solving for them?",
                     "What are the 3-5 core features you need for MVP?",
-                    "What's out of scope for v1.0?"
-                ]
+                    "What's out of scope for v1.0?",
+                ],
             },
             {
                 "section": "technical_architecture",
                 "questions": [
                     "Do you have preferences for tech stack? (or should I suggest based on your needs)",
                     "Any specific scalability requirements? (users, data volume, regions)",
-                    "What integrations do you need? (payment, auth, APIs, etc.)"
-                ]
+                    "What integrations do you need? (payment, auth, APIs, etc.)",
+                ],
             },
             {
                 "section": "design_architecture",
                 "questions": [
                     "What's the desired user experience? (simple/feature-rich, mobile-first/desktop, etc.)",
                     f"Are there {industry} compliance requirements I should know about?",
-                    "Any accessibility requirements? (WCAG level, specific needs)"
-                ]
-            }
+                    "Any accessibility requirements? (WCAG level, specific needs)",
+                ],
+            },
         ]
 
         sections_content = {}
@@ -983,28 +998,26 @@ Example:
             sections_content[section] = section_content
 
         # Build spec object
-        spec = ProjectSpec(
-            state=SpecState.DRAFT,
-            industry=industry,
-            use_case=use_case
-        )
+        spec = ProjectSpec(state=SpecState.DRAFT, industry=industry, use_case=use_case)
 
         for section_name, content in sections_content.items():
-            spec.sections.append(SpecSection(
-                name=section_name,
-                title=section_name.replace('_', ' ').title(),
-                content=content,
-                completed=True,
-                skipped=False
-            ))
+            spec.sections.append(
+                SpecSection(
+                    name=section_name,
+                    title=section_name.replace("_", " ").title(),
+                    content=content,
+                    completed=True,
+                    skipped=False,
+                )
+            )
 
         # Save spec
         self.save_spec_state(spec)
         self.write_spec_to_file(spec)
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("  ✓ PROJECT_SPEC Built from Conversation!")
-        print("="*70)
+        print("=" * 70)
         print(f"\nSaved to: {self.spec_path}")
         print("\n[cyan]Next: Review each section and confirm[/cyan]\n")
 
@@ -1018,7 +1031,7 @@ Example:
         industry: str,
         use_case: str,
         conversation: List[Dict],
-        industry_profile: Optional[IndustryProfile]
+        industry_profile: Optional[IndustryProfile],
     ) -> str:
         """
         Build section content from conversational responses.
@@ -1068,9 +1081,9 @@ Example:
         Returns:
             Updated ProjectSpec
         """
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("  CONFIRMATION - Review Your PRD")
-        print("="*70)
+        print("=" * 70)
         print()
 
         for section in spec.sections:
@@ -1082,11 +1095,11 @@ Example:
 
             choice = input("  1. Accept  2. Edit  3. Skip\nChoice (1-3): ").strip()
 
-            if choice == '2':
+            if choice == "2":
                 print("\nOpening editor...")
                 edited = get_multiline_input(f"Edit {section.title}:", allow_file=False)
                 section.content = edited
-            elif choice == '3':
+            elif choice == "3":
                 section.skipped = True
                 section.completed = False
             else:
@@ -1108,9 +1121,9 @@ Example:
         Opens text editor once, user pastes/writes everything, we build the PRD,
         then simple confirmation.
         """
-        print("="*70)
+        print("=" * 70)
         print("  BRAINSTORMING MODE")
-        print("="*70)
+        print("=" * 70)
         print()
         print("[cyan]I'll open a text editor for you to describe your project.[/cyan]")
         print("[dim]Write or paste everything about your project idea.[/dim]")
@@ -1125,8 +1138,7 @@ Example:
 
         # Get full project description in text editor (no fragmentation!)
         app_description = get_multiline_input(
-            "Opening text editor for your project description...",
-            allow_file=True
+            "Opening text editor for your project description...", allow_file=True
         )
 
         if not app_description or len(app_description.strip()) < 50:
@@ -1154,35 +1166,30 @@ Example:
         print("\n📝 Building your PROJECT_SPEC...")
 
         sections_content = self._parse_description_into_sections(
-            app_description,
-            industry,
-            use_case,
-            industry_profile
+            app_description, industry, use_case, industry_profile
         )
 
         # Build spec object
-        spec = ProjectSpec(
-            state=SpecState.DRAFT,
-            industry=industry,
-            use_case=use_case
-        )
+        spec = ProjectSpec(state=SpecState.DRAFT, industry=industry, use_case=use_case)
 
         for section_name, content in sections_content.items():
-            spec.sections.append(SpecSection(
-                name=section_name,
-                title=section_name.replace('_', ' ').title(),
-                content=content,
-                completed=True,
-                skipped=False
-            ))
+            spec.sections.append(
+                SpecSection(
+                    name=section_name,
+                    title=section_name.replace("_", " ").title(),
+                    content=content,
+                    completed=True,
+                    skipped=False,
+                )
+            )
 
         # Save initial version
         self.save_spec_state(spec)
         self.write_spec_to_file(spec)
 
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("  PRD GENERATED - Review")
-        print("="*70)
+        print("=" * 70)
         print()
         print(f"[green]✓ Created {len(spec.sections)} sections[/green]")
         print()
@@ -1195,33 +1202,29 @@ Example:
 
         choice = input("\nChoice (1-3): ").strip()
 
-        if choice == '2':
+        if choice == "2":
             # Let them edit the generated PRD
             current_content = self._render_spec_for_editing(spec)
-            edited_content = get_multiline_input(
-                "Edit your PROJECT_SPEC...",
-                allow_file=False
-            )
+            edited_content = get_multiline_input("Edit your PROJECT_SPEC...", allow_file=False)
 
             # Re-parse edited version
             sections_content = self._parse_description_into_sections(
-                edited_content,
-                industry,
-                use_case,
-                industry_profile
+                edited_content, industry, use_case, industry_profile
             )
 
             spec.sections = []
             for section_name, content in sections_content.items():
-                spec.sections.append(SpecSection(
-                    name=section_name,
-                    title=section_name.replace('_', ' ').title(),
-                    content=content,
-                    completed=True,
-                    skipped=False
-                ))
+                spec.sections.append(
+                    SpecSection(
+                        name=section_name,
+                        title=section_name.replace("_", " ").title(),
+                        content=content,
+                        completed=True,
+                        skipped=False,
+                    )
+                )
 
-        elif choice == '3':
+        elif choice == "3":
             print("\n[yellow]Cancelled. Run 'br spec brainstorm' to try again.[/yellow]")
             raise ValueError("User cancelled")
 
@@ -1239,7 +1242,7 @@ Example:
         description: str,
         industry: str,
         use_case: str,
-        industry_profile: Optional[IndustryProfile]
+        industry_profile: Optional[IndustryProfile],
     ) -> Dict[str, str]:
         """
         Parse raw project description into structured PRD sections.
@@ -1267,7 +1270,7 @@ Example:
             for pain in industry_profile.common_pain_points[:5]:
                 product_section += f"- {pain}\n"
 
-        sections['product_requirements'] = product_section
+        sections["product_requirements"] = product_section
 
         # Technical Architecture section
         tech_section = """# Technical Architecture
@@ -1286,7 +1289,7 @@ Example:
 - Database needs
 - Caching strategy
 """
-        sections['technical_architecture'] = tech_section
+        sections["technical_architecture"] = tech_section
 
         # Design Architecture section
         design_section = f"""# Design Architecture
@@ -1309,7 +1312,7 @@ Example:
 - Screen reader support
 """
 
-        sections['design_architecture'] = design_section
+        sections["design_architecture"] = design_section
 
         return sections
 
@@ -1351,9 +1354,9 @@ Example:
         Returns:
             Completed ProjectSpec
         """
-        print("\n" + "="*70)
+        print("\n" + "=" * 70)
         print("  BuildRunner PROJECT_SPEC Wizard")
-        print("="*70)
+        print("=" * 70)
         print()
         print("Choose your mode:\n")
         print("  1. [cyan]Brainstorming Mode[/cyan] (Recommended)")
@@ -1365,7 +1368,7 @@ Example:
 
         choice = input("Choice (1-2): ").strip()
 
-        if choice == '2':
+        if choice == "2":
             return self.run_first_time_wizard()
         else:
             # Default to brainstorming
@@ -1373,6 +1376,7 @@ Example:
 
 
 # ===== Enhanced Wizard with Real Opus Integration =====
+
 
 async def run_wizard(interactive: bool = True) -> Optional[Dict[str, Any]]:
     """
@@ -1410,18 +1414,42 @@ async def run_wizard(interactive: bool = True) -> Optional[Dict[str, Any]]:
     if interactive:
         industry = Prompt.ask(
             "Industry",
-            choices=["Healthcare", "Fintech", "E-commerce", "SaaS", "Education",
-                    "Social", "Marketplace", "Analytics", "Government", "Legal",
-                    "Nonprofit", "Gaming", "Manufacturing"],
-            default="SaaS"
+            choices=[
+                "Healthcare",
+                "Fintech",
+                "E-commerce",
+                "SaaS",
+                "Education",
+                "Social",
+                "Marketplace",
+                "Analytics",
+                "Government",
+                "Legal",
+                "Nonprofit",
+                "Gaming",
+                "Manufacturing",
+            ],
+            default="SaaS",
         )
 
         use_case = Prompt.ask(
             "Use Case",
-            choices=["Dashboard", "Marketplace", "CRM", "Analytics", "Onboarding",
-                    "API Service", "Admin Panel", "Mobile App", "Chat", "Video",
-                    "Calendar", "Forms", "Search"],
-            default="Dashboard"
+            choices=[
+                "Dashboard",
+                "Marketplace",
+                "CRM",
+                "Analytics",
+                "Onboarding",
+                "API Service",
+                "Admin Panel",
+                "Mobile App",
+                "Chat",
+                "Video",
+                "Calendar",
+                "Forms",
+                "Search",
+            ],
+            default="Dashboard",
         )
     else:
         # Default for non-interactive
@@ -1445,7 +1473,7 @@ async def run_wizard(interactive: bool = True) -> Optional[Dict[str, Any]]:
             "project_name": "Example Project",
             "description": "AI-powered application",
             "target_audience": "General users",
-            "key_features": "User auth, Dashboard, API"
+            "key_features": "User auth, Dashboard, API",
         }
 
     # Step 3: Use Opus to pre-fill spec
@@ -1480,18 +1508,17 @@ async def run_wizard(interactive: bool = True) -> Optional[Dict[str, Any]]:
     # Import sync function - need to check if this exists
     try:
         from cli.spec_commands import sync_spec_to_features
+
         features_path = sync_spec_to_features(spec_path)
     except (ImportError, AttributeError):
         # Fallback: create basic features.json from spec
-        console.print("[yellow]Warning: sync_spec_to_features not available, creating basic features.json[/yellow]")
+        console.print(
+            "[yellow]Warning: sync_spec_to_features not available, creating basic features.json[/yellow]"
+        )
         features_path = project_root / ".buildrunner" / "features.json"
         features_data = {
             "features": [],
-            "metadata": {
-                "industry": industry,
-                "use_case": use_case,
-                "generated_by": "prd_wizard"
-            }
+            "metadata": {"industry": industry, "use_case": use_case, "generated_by": "prd_wizard"},
         }
         features_path.write_text(json.dumps(features_data, indent=2))
 
@@ -1506,11 +1533,7 @@ async def run_wizard(interactive: bool = True) -> Optional[Dict[str, Any]]:
     handoff_package = switcher.create_handoff_package(
         spec_path=spec_path,
         features_path=features_path,
-        context={
-            "industry": industry,
-            "use_case": use_case,
-            "constraints": []
-        }
+        context={"industry": industry, "use_case": use_case, "constraints": []},
     )
 
     console.print("[green]✓ Handoff package created[/green]\n")
@@ -1525,13 +1548,14 @@ async def run_wizard(interactive: bool = True) -> Optional[Dict[str, Any]]:
     return {
         "spec_path": str(spec_path),
         "features_path": str(features_path),
-        "handoff_package": handoff_package
+        "handoff_package": handoff_package,
     }
 
 
 def main():
     """CLI entry point for testing"""
     import sys
+
     project_root = sys.argv[1] if len(sys.argv) > 1 else "."
 
     wizard = PRDWizard(project_root)

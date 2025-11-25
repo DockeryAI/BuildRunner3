@@ -35,7 +35,7 @@ class ClaudeMdGenerator:
         profile_name: Optional[str] = None,
         planning_content: Optional[str] = None,
         existing_codebase: bool = False,
-        force: bool = False
+        force: bool = False,
     ) -> Path:
         """
         Generate CLAUDE.md with optional profile and planning content.
@@ -107,8 +107,8 @@ class ClaudeMdGenerator:
             Path to created CLAUDE.md, or None if no default configured
         """
         config = get_config_manager(self.project_root)
-        default_profile = config.get('profiles.default_profile')
-        auto_activate = config.get('profiles.auto_activate', True)
+        default_profile = config.get("profiles.default_profile")
+        auto_activate = config.get("profiles.auto_activate", True)
 
         if default_profile and auto_activate:
             return self.generate(profile_name=default_profile, force=force)
@@ -116,10 +116,7 @@ class ClaudeMdGenerator:
         return None
 
     def generate_planning_mode(
-        self,
-        project_name: str,
-        profile_name: Optional[str] = None,
-        force: bool = False
+        self, project_name: str, profile_name: Optional[str] = None, force: bool = False
     ) -> Path:
         """
         Generate CLAUDE.md for planning mode (br init).
@@ -135,7 +132,7 @@ class ClaudeMdGenerator:
         # Use default profile if none specified
         if not profile_name:
             config = get_config_manager(self.project_root)
-            profile_name = config.get('profiles.default_profile')
+            profile_name = config.get("profiles.default_profile")
 
         # Get planning content
         spec_path = self.project_root / ".buildrunner" / "PROJECT_SPEC.md"
@@ -189,16 +186,10 @@ AskUserQuestion(
 """
 
         return self.generate(
-            profile_name=profile_name,
-            planning_content=planning_content,
-            force=force
+            profile_name=profile_name, planning_content=planning_content, force=force
         )
 
-    def generate_attach_mode(
-        self,
-        profile_name: Optional[str] = None,
-        force: bool = False
-    ) -> Path:
+    def generate_attach_mode(self, profile_name: Optional[str] = None, force: bool = False) -> Path:
         """
         Generate CLAUDE.md for attach mode (br attach).
 
@@ -212,13 +203,9 @@ AskUserQuestion(
         # Use default profile if none specified
         if not profile_name:
             config = get_config_manager(self.project_root)
-            profile_name = config.get('profiles.default_profile')
+            profile_name = config.get("profiles.default_profile")
 
-        return self.generate(
-            profile_name=profile_name,
-            existing_codebase=True,
-            force=force
-        )
+        return self.generate(profile_name=profile_name, existing_codebase=True, force=force)
 
     def _get_profile_content(self, profile_name: str) -> tuple[str, str]:
         """

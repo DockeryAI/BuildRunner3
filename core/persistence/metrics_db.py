@@ -51,10 +51,7 @@ class MetricsDB:
             logger.info("Metrics database schema initialized")
 
     def aggregate_from_cost_entries(
-        self,
-        start_time: datetime,
-        end_time: datetime,
-        period_type: str = 'hourly'
+        self, start_time: datetime, end_time: datetime, period_type: str = "hourly"
     ) -> MetricEntry:
         """
         Aggregate metrics from cost_entries table for a time period.
@@ -77,12 +74,9 @@ class MetricsDB:
         WHERE timestamp >= ? AND timestamp < ?
         """
 
-        result = self.db.query_one(sql, (
-            start_time.isoformat(),
-            end_time.isoformat()
-        ))
+        result = self.db.query_one(sql, (start_time.isoformat(), end_time.isoformat()))
 
-        if not result or result['total_tasks'] == 0:
+        if not result or result["total_tasks"] == 0:
             return MetricEntry(
                 timestamp=start_time.isoformat(),
                 period_type=period_type,
@@ -91,11 +85,11 @@ class MetricsDB:
                 failed_tasks=0,
                 total_cost_usd=0.0,
                 total_tokens=0,
-                avg_duration_ms=0.0
+                avg_duration_ms=0.0,
             )
 
         # For now, assume all tasks are successful (no failure tracking in cost_entries)
-        total_tasks = result['total_tasks']
+        total_tasks = result["total_tasks"]
 
         return MetricEntry(
             timestamp=start_time.isoformat(),
@@ -103,9 +97,9 @@ class MetricsDB:
             total_tasks=total_tasks,
             successful_tasks=total_tasks,  # Assume success if cost recorded
             failed_tasks=0,
-            total_cost_usd=result['total_cost_usd'] or 0.0,
-            total_tokens=result['total_tokens'] or 0,
-            avg_duration_ms=0.0  # Duration not tracked in cost_entries
+            total_cost_usd=result["total_cost_usd"] or 0.0,
+            total_tokens=result["total_tokens"] or 0,
+            avg_duration_ms=0.0,  # Duration not tracked in cost_entries
         )
 
     def save_metric(self, metric: MetricEntry):
@@ -122,21 +116,21 @@ class MetricsDB:
             # Check if metric already exists
             existing = self.db.query_one(
                 "SELECT * FROM metrics_hourly WHERE timestamp = ? AND period_type = ?",
-                (metric.timestamp, metric.period_type)
+                (metric.timestamp, metric.period_type),
             )
 
             if existing:
                 # Update existing
                 self.db.update(
-                    'metrics_hourly',
+                    "metrics_hourly",
                     data,
-                    'timestamp = ? AND period_type = ?',
-                    (metric.timestamp, metric.period_type)
+                    "timestamp = ? AND period_type = ?",
+                    (metric.timestamp, metric.period_type),
                 )
                 logger.debug(f"Updated metric for {metric.timestamp}")
             else:
                 # Insert new
-                self.db.insert('metrics_hourly', data)
+                self.db.insert("metrics_hourly", data)
                 logger.debug(f"Inserted metric for {metric.timestamp}")
 
         except Exception as e:
@@ -147,7 +141,7 @@ class MetricsDB:
         self,
         start_time: Optional[datetime] = None,
         end_time: Optional[datetime] = None,
-        period_type: Optional[str] = None
+        period_type: Optional[str] = None,
     ) -> List[MetricEntry]:
         """
         Get metrics for a time range.
@@ -184,7 +178,7 @@ class MetricsDB:
             logger.error(f"Failed to get metrics: {e}")
             return []
 
-    def get_latest_metric(self, period_type: str = 'hourly') -> Optional[MetricEntry]:
+    def get_latest_metric(self, period_type: str = "hourly") -> Optional[MetricEntry]:
         """
         Get the most recent metric for a period type.
 
@@ -196,7 +190,7 @@ class MetricsDB:
         """
         result = self.db.query_one(
             "SELECT * FROM metrics_hourly WHERE period_type = ? ORDER BY timestamp DESC LIMIT 1",
-            (period_type,)
+            (period_type,),
         )
 
         if result:
@@ -217,7 +211,7 @@ class MetricsDB:
         start_time = hour.replace(minute=0, second=0, microsecond=0)
         end_time = start_time + timedelta(hours=1)
 
-        return self.aggregate_from_cost_entries(start_time, end_time, 'hourly')
+        return self.aggregate_from_cost_entries(start_time, end_time, "hourly")
 
     def aggregate_daily(self, day: datetime) -> MetricEntry:
         """
@@ -233,7 +227,7 @@ class MetricsDB:
         start_time = day.replace(hour=0, minute=0, second=0, microsecond=0)
         end_time = start_time + timedelta(days=1)
 
-        return self.aggregate_from_cost_entries(start_time, end_time, 'daily')
+        return self.aggregate_from_cost_entries(start_time, end_time, "daily")
 
     def aggregate_weekly(self, week_start: datetime) -> MetricEntry:
         """
@@ -249,7 +243,7 @@ class MetricsDB:
         start_time = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
         end_time = start_time + timedelta(weeks=1)
 
-        return self.aggregate_from_cost_entries(start_time, end_time, 'weekly')
+        return self.aggregate_from_cost_entries(start_time, end_time, "weekly")
 
     def aggregate_and_save(self, period: datetime, period_type: str):
         """
@@ -259,11 +253,11 @@ class MetricsDB:
             period: Time period to aggregate
             period_type: Type of period ('hourly', 'daily', 'weekly')
         """
-        if period_type == 'hourly':
+        if period_type == "hourly":
             metric = self.aggregate_hourly(period)
-        elif period_type == 'daily':
+        elif period_type == "daily":
             metric = self.aggregate_daily(period)
-        elif period_type == 'weekly':
+        elif period_type == "weekly":
             metric = self.aggregate_weekly(period)
         else:
             raise ValueError(f"Invalid period_type: {period_type}")
@@ -290,11 +284,7 @@ class MetricsDB:
 
         logger.info(f"Aggregated last {hours} hours of metrics")
 
-    def get_summary(
-        self,
-        period_type: str = 'hourly',
-        limit: int = 24
-    ) -> Dict[str, Any]:
+    def get_summary(self, period_type: str = "hourly", limit: int = 24) -> Dict[str, Any]:
         """
         Get summary statistics for recent periods.
 
@@ -309,12 +299,12 @@ class MetricsDB:
 
         if not metrics:
             return {
-                'period_type': period_type,
-                'periods': 0,
-                'total_tasks': 0,
-                'total_cost_usd': 0.0,
-                'avg_success_rate': 0.0,
-                'avg_cost_per_task': 0.0
+                "period_type": period_type,
+                "periods": 0,
+                "total_tasks": 0,
+                "total_cost_usd": 0.0,
+                "avg_success_rate": 0.0,
+                "avg_cost_per_task": 0.0,
             }
 
         total_tasks = sum(m.total_tasks for m in metrics)
@@ -322,13 +312,13 @@ class MetricsDB:
         avg_success_rate = sum(m.success_rate for m in metrics) / len(metrics)
 
         return {
-            'period_type': period_type,
-            'periods': len(metrics),
-            'total_tasks': total_tasks,
-            'total_cost_usd': total_cost,
-            'avg_success_rate': avg_success_rate,
-            'avg_cost_per_task': total_cost / total_tasks if total_tasks > 0 else 0.0,
-            'metrics': [m.to_dict() for m in metrics]
+            "period_type": period_type,
+            "periods": len(metrics),
+            "total_tasks": total_tasks,
+            "total_cost_usd": total_cost,
+            "avg_success_rate": avg_success_rate,
+            "avg_cost_per_task": total_cost / total_tasks if total_tasks > 0 else 0.0,
+            "metrics": [m.to_dict() for m in metrics],
         }
 
     def cleanup_old_metrics(self, days: int = 90):
@@ -340,11 +330,7 @@ class MetricsDB:
         """
         cutoff = datetime.now() - timedelta(days=days)
 
-        deleted = self.db.delete(
-            'metrics_hourly',
-            'timestamp < ?',
-            (cutoff.isoformat(),)
-        )
+        deleted = self.db.delete("metrics_hourly", "timestamp < ?", (cutoff.isoformat(),))
 
         if deleted > 0:
             logger.info(f"Cleaned up {deleted} old metrics")

@@ -18,11 +18,11 @@ console = Console()
 @doctor_app.command()
 def check(
     fix: bool = typer.Option(False, "--fix", help="Attempt to auto-fix issues"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output")
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output"),
 ):
     """
     Check the health of all BuildRunner 3.0 systems
-    
+
     Example:
         br doctor
         br doctor --fix
@@ -53,7 +53,7 @@ def check(
     # Check 2: Git Hooks
     console.print()
     console.print("[bold]2. Git Hooks[/bold]")
-    
+
     pre_commit = project_root / ".git/hooks/pre-commit"
     pre_push = project_root / ".git/hooks/pre-push"
 
@@ -85,7 +85,7 @@ def check(
     # Check 3: Debug Logging
     console.print()
     console.print("[bold]3. Debug Logging System[/bold]")
-    
+
     debug_scripts = buildrunner_dir / "scripts"
     clog_wrapper = project_root / "clog"
 
@@ -105,7 +105,7 @@ def check(
     # Check 4: Governance
     console.print()
     console.print("[bold]4. Governance System[/bold]")
-    
+
     governance_file = buildrunner_dir / "governance" / "governance.yaml"
     quality_file = buildrunner_dir / "quality-standards.yaml"
 
@@ -125,7 +125,7 @@ def check(
     # Check 5: Auto-Debug
     console.print()
     console.print("[bold]5. Auto-Debug Pipeline[/bold]")
-    
+
     # Check if br command works
     try:
         result = subprocess.run(["br", "autodebug", "--help"], capture_output=True, timeout=2)
@@ -142,7 +142,7 @@ def check(
     # Check 6: Security Scanning
     console.print()
     console.print("[bold]6. Security System[/bold]")
-    
+
     try:
         result = subprocess.run(["br", "security", "--help"], capture_output=True, timeout=2)
         if result.returncode == 0:
@@ -156,7 +156,7 @@ def check(
     # Check 7: Quality Gates
     console.print()
     console.print("[bold]7. Code Quality Gates[/bold]")
-    
+
     try:
         result = subprocess.run(["br", "quality", "--help"], capture_output=True, timeout=2)
         if result.returncode == 0:
@@ -170,7 +170,7 @@ def check(
     # Check 8: Architecture Guard
     console.print()
     console.print("[bold]8. Architecture Guard[/bold]")
-    
+
     try:
         result = subprocess.run(["br", "guard", "--help"], capture_output=True, timeout=2)
         if result.returncode == 0:
@@ -184,7 +184,7 @@ def check(
     # Check 9: Gap Analysis
     console.print()
     console.print("[bold]9. Gap Analysis[/bold]")
-    
+
     try:
         result = subprocess.run(["br", "gaps", "--help"], capture_output=True, timeout=2)
         if result.returncode == 0:
@@ -198,12 +198,12 @@ def check(
     # Check 10: Telemetry (Datadog)
     console.print()
     console.print("[bold]10. Telemetry (Datadog)[/bold]")
-    
+
     dd_api_key = os.getenv("DD_API_KEY")
     if dd_api_key:
         console.print(f"  ✅ DD_API_KEY configured")
         active_systems += 1
-        
+
         # Check telemetry config
         telem_config = buildrunner_dir / "telemetry-config.yaml"
         if telem_config.exists():
@@ -218,7 +218,7 @@ def check(
     # Check 11-21: Other Systems
     console.print()
     console.print("[bold]11-21. Additional Systems[/bold]")
-    
+
     # These are available if BR CLI works
     other_systems = [
         ("Model Routing", "routing"),
@@ -246,7 +246,7 @@ def check(
     # Check 22: Project Files
     console.print()
     console.print("[bold]Project Files[/bold]")
-    
+
     project_spec = buildrunner_dir / "PROJECT_SPEC.md"
     features_json = buildrunner_dir / "features.json"
 
@@ -269,7 +269,7 @@ def check(
 
     # Calculate score
     score_percent = (active_systems / total_systems) * 100
-    
+
     if score_percent >= 90:
         status_color = "green"
         status_emoji = "✅"
@@ -287,14 +287,16 @@ def check(
         status_emoji = "❌"
         status_text = "CRITICAL"
 
-    console.print(Panel(
-        f"[bold {status_color}]{status_emoji} System Health: {status_text}[/bold {status_color}]\n\n"
-        f"[white]Active Systems:[/white] [{status_color}]{active_systems}/{total_systems}[/{status_color}] ({score_percent:.0f}%)\n"
-        f"[white]Issues:[/white] [red]{len(issues)}[/red]\n"
-        f"[white]Warnings:[/white] [yellow]{len(warnings)}[/yellow]",
-        title="Health Summary",
-        border_style=status_color
-    ))
+    console.print(
+        Panel(
+            f"[bold {status_color}]{status_emoji} System Health: {status_text}[/bold {status_color}]\n\n"
+            f"[white]Active Systems:[/white] [{status_color}]{active_systems}/{total_systems}[/{status_color}] ({score_percent:.0f}%)\n"
+            f"[white]Issues:[/white] [red]{len(issues)}[/red]\n"
+            f"[white]Warnings:[/white] [yellow]{len(warnings)}[/yellow]",
+            title="Health Summary",
+            border_style=status_color,
+        )
+    )
 
     # Show issues
     if issues:
@@ -314,7 +316,7 @@ def check(
     if issues or warnings:
         console.print()
         console.print("[bold blue]💡 Recommendations:[/bold blue]")
-        
+
         if issues:
             console.print()
             console.print("To fix critical issues:")
@@ -323,7 +325,7 @@ def check(
             console.print()
             console.print("  2. Or run activation script manually:")
             console.print("     [cyan]bash ~/.buildrunner/scripts/activate-all-systems.sh .[/cyan]")
-        
+
         if "Datadog telemetry not configured" in warnings:
             console.print()
             console.print("To enable Datadog telemetry:")

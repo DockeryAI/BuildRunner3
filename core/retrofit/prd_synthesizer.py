@@ -19,7 +19,9 @@ class PRDSynthesizer:
     def __init__(self):
         self.doc_analyzer = DocumentationAnalyzer()
 
-    def synthesize(self, scan_result: ScanResult, output_path: Path = None, project_root: Optional[Path] = None) -> PRD:
+    def synthesize(
+        self, scan_result: ScanResult, output_path: Path = None, project_root: Optional[Path] = None
+    ) -> PRD:
         """
         Generate PRD from scan results
 
@@ -43,7 +45,9 @@ class PRDSynthesizer:
 
                 if docs:
                     logger.info(f"Found {len(docs)} documentation files, analyzing...")
-                    doc_sections = self.doc_analyzer.sync_analyze_for_prd(docs, scan_result.project_name)
+                    doc_sections = self.doc_analyzer.sync_analyze_for_prd(
+                        docs, scan_result.project_name
+                    )
                 else:
                     logger.info("No documentation found")
             except Exception as e:
@@ -78,7 +82,7 @@ class PRDSynthesizer:
                 requirements=feature.requirements,
                 acceptance_criteria=feature.acceptance_criteria,
                 technical_details=feature.technical_details,
-                dependencies=feature.dependencies
+                dependencies=feature.dependencies,
             )
             prd_features.append(prd_feature)
 
@@ -96,14 +100,14 @@ class PRDSynthesizer:
             features=prd_features,
             architecture=architecture,
             metadata={
-                'generated_from': 'br attach',
-                'scan_date': datetime.now().isoformat(),
-                'total_files': scan_result.total_files,
-                'total_lines': scan_result.total_lines,
-                'languages': scan_result.languages,
-                'frameworks': scan_result.frameworks,
-                'doc_sections': doc_sections,  # Store documentation sections
-            }
+                "generated_from": "br attach",
+                "scan_date": datetime.now().isoformat(),
+                "total_files": scan_result.total_files,
+                "total_lines": scan_result.total_lines,
+                "languages": scan_result.languages,
+                "frameworks": scan_result.frameworks,
+                "doc_sections": doc_sections,  # Store documentation sections
+            },
         )
 
         return prd
@@ -116,25 +120,25 @@ class PRDSynthesizer:
         lines = []
 
         # Executive Summary from documentation
-        if doc_sections.get('executive_summary'):
+        if doc_sections.get("executive_summary"):
             lines.append("### Executive Summary")
             lines.append("")
-            lines.append(doc_sections['executive_summary'])
+            lines.append(doc_sections["executive_summary"])
             lines.append("")
 
         # Project Goals from documentation
-        if doc_sections.get('goals'):
+        if doc_sections.get("goals"):
             lines.append("### Project Goals")
             lines.append("")
-            for goal in doc_sections['goals']:
+            for goal in doc_sections["goals"]:
                 lines.append(f"- {goal}")
             lines.append("")
 
         # Target Users from documentation
-        if doc_sections.get('target_users'):
+        if doc_sections.get("target_users"):
             lines.append("### Target Users")
             lines.append("")
-            lines.append(doc_sections['target_users'])
+            lines.append(doc_sections["target_users"])
             lines.append("")
 
         # Basic stats
@@ -150,14 +154,20 @@ class PRDSynthesizer:
         # Feature summary
         lines.append("### Detected Features")
         lines.append("")
-        lines.append(f"This project contains {len(scan_result.features)} main features, "
-                    f"identified through code analysis:")
+        lines.append(
+            f"This project contains {len(scan_result.features)} main features, "
+            f"identified through code analysis:"
+        )
         lines.append("")
 
         for i, feature in enumerate(scan_result.features[:5], 1):  # Top 5
-            confidence_emoji = "🟢" if feature.confidence >= 0.8 else "🟡" if feature.confidence >= 0.6 else "🔴"
+            confidence_emoji = (
+                "🟢" if feature.confidence >= 0.8 else "🟡" if feature.confidence >= 0.6 else "🔴"
+            )
             lines.append(f"{i}. **{feature.name}** {confidence_emoji}")
-            lines.append(f"   - {feature.artifact_count} code artifacts across {feature.file_count} files")
+            lines.append(
+                f"   - {feature.artifact_count} code artifacts across {feature.file_count} files"
+            )
 
         if len(scan_result.features) > 5:
             lines.append(f"\n...and {len(scan_result.features) - 5} more features.")
@@ -174,41 +184,42 @@ class PRDSynthesizer:
             doc_sections = {}
 
         architecture = {
-            'languages': scan_result.languages,
-            'frameworks': scan_result.frameworks,
-            'structure': {}
+            "languages": scan_result.languages,
+            "frameworks": scan_result.frameworks,
+            "structure": {},
         }
 
         # Add technical requirements from documentation
-        if doc_sections.get('technical_requirements'):
-            architecture['technical_requirements'] = doc_sections['technical_requirements']
+        if doc_sections.get("technical_requirements"):
+            architecture["technical_requirements"] = doc_sections["technical_requirements"]
 
         # Identify architecture patterns
-        has_api = any('api' in f.id.lower() for f in scan_result.features)
-        has_models = any(a.type.value == 'model' for f in scan_result.features for a in f.artifacts)
-        has_ui = any('component' in str(f.technical_details) for f in scan_result.features)
-        has_tests = any(f.technical_details.get('has_tests') for f in scan_result.features)
+        has_api = any("api" in f.id.lower() for f in scan_result.features)
+        has_models = any(a.type.value == "model" for f in scan_result.features for a in f.artifacts)
+        has_ui = any("component" in str(f.technical_details) for f in scan_result.features)
+        has_tests = any(f.technical_details.get("has_tests") for f in scan_result.features)
 
         if has_api and has_models:
-            architecture['pattern'] = 'REST API + Database'
+            architecture["pattern"] = "REST API + Database"
         elif has_ui and has_api:
-            architecture['pattern'] = 'Full-stack (Frontend + Backend API)'
+            architecture["pattern"] = "Full-stack (Frontend + Backend API)"
         elif has_api:
-            architecture['pattern'] = 'API Service'
+            architecture["pattern"] = "API Service"
         elif has_ui:
-            architecture['pattern'] = 'Frontend Application'
+            architecture["pattern"] = "Frontend Application"
         else:
-            architecture['pattern'] = 'Application'
+            architecture["pattern"] = "Application"
 
-        architecture['has_tests'] = has_tests
-        architecture['test_coverage'] = self._estimate_test_coverage(scan_result)
+        architecture["has_tests"] = has_tests
+        architecture["test_coverage"] = self._estimate_test_coverage(scan_result)
 
         return architecture
 
     def _estimate_test_coverage(self, scan_result: ScanResult) -> str:
         """Estimate test coverage based on features with tests"""
-        features_with_tests = sum(1 for f in scan_result.features
-                                  if f.technical_details.get('has_tests'))
+        features_with_tests = sum(
+            1 for f in scan_result.features if f.technical_details.get("has_tests")
+        )
         total_features = len(scan_result.features)
 
         if total_features == 0:
@@ -228,7 +239,7 @@ class PRDSynthesizer:
     def _write_prd_markdown(self, prd: PRD, output_path: Path):
         """Write PRD to PROJECT_SPEC.md format"""
         lines = []
-        doc_sections = prd.metadata.get('doc_sections', {})
+        doc_sections = prd.metadata.get("doc_sections", {})
 
         # Header
         lines.append(f"# {prd.project_name}")
@@ -245,10 +256,10 @@ class PRDSynthesizer:
         lines.append("")
 
         # User Stories from documentation
-        if doc_sections.get('user_stories'):
+        if doc_sections.get("user_stories"):
             lines.append("## User Stories")
             lines.append("")
-            for story in doc_sections['user_stories']:
+            for story in doc_sections["user_stories"]:
                 lines.append(f"- {story}")
             lines.append("")
 
@@ -256,36 +267,36 @@ class PRDSynthesizer:
         if prd.architecture:
             lines.append("## Architecture")
             lines.append("")
-            if 'pattern' in prd.architecture:
+            if "pattern" in prd.architecture:
                 lines.append(f"**Pattern:** {prd.architecture['pattern']}")
-            if 'languages' in prd.architecture:
+            if "languages" in prd.architecture:
                 lines.append(f"**Languages:** {', '.join(prd.architecture['languages'])}")
-            if 'frameworks' in prd.architecture:
+            if "frameworks" in prd.architecture:
                 lines.append(f"**Frameworks:** {', '.join(prd.architecture['frameworks'])}")
-            if 'test_coverage' in prd.architecture:
+            if "test_coverage" in prd.architecture:
                 lines.append(f"**Test Coverage:** {prd.architecture['test_coverage']}")
             lines.append("")
 
             # Technical Requirements from documentation
-            if 'technical_requirements' in prd.architecture:
-                tech_req = prd.architecture['technical_requirements']
+            if "technical_requirements" in prd.architecture:
+                tech_req = prd.architecture["technical_requirements"]
                 lines.append("### Technical Requirements")
                 lines.append("")
-                if tech_req.get('frontend'):
+                if tech_req.get("frontend"):
                     lines.append(f"**Frontend:** {tech_req['frontend']}")
-                if tech_req.get('backend'):
+                if tech_req.get("backend"):
                     lines.append(f"**Backend:** {tech_req['backend']}")
-                if tech_req.get('database'):
+                if tech_req.get("database"):
                     lines.append(f"**Database:** {tech_req['database']}")
-                if tech_req.get('infrastructure'):
+                if tech_req.get("infrastructure"):
                     lines.append(f"**Infrastructure:** {tech_req['infrastructure']}")
                 lines.append("")
 
         # Success Criteria from documentation
-        if doc_sections.get('success_criteria'):
+        if doc_sections.get("success_criteria"):
             lines.append("## Success Criteria")
             lines.append("")
-            for criterion in doc_sections['success_criteria']:
+            for criterion in doc_sections["success_criteria"]:
                 lines.append(f"- [ ] {criterion}")
             lines.append("")
 
@@ -321,14 +332,20 @@ class PRDSynthesizer:
                 lines.append("")
 
                 # Show key technical details
-                if 'files' in feature.technical_details:
+                if "files" in feature.technical_details:
                     lines.append(f"**Files:** {len(feature.technical_details['files'])}")
-                if 'artifact_types' in feature.technical_details:
-                    types = feature.technical_details['artifact_types']
+                if "artifact_types" in feature.technical_details:
+                    types = feature.technical_details["artifact_types"]
                     lines.append(f"**Components:** {', '.join(types)}")
-                if 'has_routes' in feature.technical_details and feature.technical_details['has_routes']:
+                if (
+                    "has_routes" in feature.technical_details
+                    and feature.technical_details["has_routes"]
+                ):
                     lines.append("**Type:** API Endpoint")
-                if 'has_tests' in feature.technical_details and feature.technical_details['has_tests']:
+                if (
+                    "has_tests" in feature.technical_details
+                    and feature.technical_details["has_tests"]
+                ):
                     lines.append("**Tested:** ✓")
 
                 lines.append("")
@@ -338,8 +355,10 @@ class PRDSynthesizer:
         lines.append("")
         lines.append("*This PROJECT_SPEC.md was auto-generated by BuildRunner 3.*")
         lines.append("*Generated from existing codebase using `br attach` command.*")
-        lines.append(f"*Scanned {prd.metadata.get('total_files', 0)} files "
-                    f"({prd.metadata.get('total_lines', 0):,} lines) on {prd.metadata.get('scan_date', 'N/A')[:10]}.*")
+        lines.append(
+            f"*Scanned {prd.metadata.get('total_files', 0)} files "
+            f"({prd.metadata.get('total_lines', 0):,} lines) on {prd.metadata.get('scan_date', 'N/A')[:10]}.*"
+        )
         lines.append("")
 
         # Write to file

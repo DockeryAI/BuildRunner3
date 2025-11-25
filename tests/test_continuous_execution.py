@@ -102,27 +102,22 @@ class TestContinuousExecution:
 
     def test_execute_continuous_pauses_on_blocker(self, orchestrator, sample_tasks):
         """Test continuous execution pauses when blocker detected"""
+
         # Define callback that adds blocker on CODE_GENERATION phase
         def code_gen_callback(orch, tasks):
-            orch.phase_manager.add_blocker(
-                BlockerType.MISSING_CREDENTIALS,
-                "Missing API key"
-            )
+            orch.phase_manager.add_blocker(BlockerType.MISSING_CREDENTIALS, "Missing API key")
             return {
                 "success": False,
                 "blocked": True,
                 "blocker": {
                     "type": "missing_credentials",
                     "description": "Missing API key",
-                }
+                },
             }
 
         callbacks = {Phase.CODE_GENERATION: code_gen_callback}
 
-        result = orchestrator.execute_continuous(
-            sample_tasks,
-            phase_callbacks=callbacks
-        )
+        result = orchestrator.execute_continuous(sample_tasks, phase_callbacks=callbacks)
 
         assert result["success"] is False
         assert result["paused_for_blockers"] is True
@@ -132,19 +127,14 @@ class TestContinuousExecution:
 
     def test_execute_continuous_handles_phase_failure(self, orchestrator, sample_tasks):
         """Test continuous execution handles phase failure"""
+
         # Define callback that fails
         def failing_callback(orch, tasks):
-            return {
-                "success": False,
-                "error": "Phase failed"
-            }
+            return {"success": False, "error": "Phase failed"}
 
         callbacks = {Phase.TASK_DECOMPOSITION: failing_callback}
 
-        result = orchestrator.execute_continuous(
-            sample_tasks,
-            phase_callbacks=callbacks
-        )
+        result = orchestrator.execute_continuous(sample_tasks, phase_callbacks=callbacks)
 
         assert result["success"] is False
         assert "failed" in result["error"].lower()
@@ -152,16 +142,14 @@ class TestContinuousExecution:
 
     def test_execute_continuous_with_exception(self, orchestrator, sample_tasks):
         """Test continuous execution handles exceptions"""
+
         # Define callback that raises exception
         def exception_callback(orch, tasks):
             raise ValueError("Test exception")
 
         callbacks = {Phase.DEPENDENCY_ANALYSIS: exception_callback}
 
-        result = orchestrator.execute_continuous(
-            sample_tasks,
-            phase_callbacks=callbacks
-        )
+        result = orchestrator.execute_continuous(sample_tasks, phase_callbacks=callbacks)
 
         assert result["success"] is False
         assert "Test exception" in result["error"]  # Exception message should be in error
@@ -172,57 +160,40 @@ class TestPhaseExecution:
 
     def test_execute_phase_spec_parsing(self, orchestrator, sample_tasks):
         """Test SPEC_PARSING phase execution"""
-        result = orchestrator._execute_phase(
-            Phase.SPEC_PARSING,
-            sample_tasks,
-            {}
-        )
+        result = orchestrator._execute_phase(Phase.SPEC_PARSING, sample_tasks, {})
 
         assert result["success"] is True
         assert result["metadata"]["phase"] == "spec_parsing"
 
     def test_execute_phase_task_decomposition(self, orchestrator, sample_tasks):
         """Test TASK_DECOMPOSITION phase execution"""
-        result = orchestrator._execute_phase(
-            Phase.TASK_DECOMPOSITION,
-            sample_tasks,
-            {}
-        )
+        result = orchestrator._execute_phase(Phase.TASK_DECOMPOSITION, sample_tasks, {})
 
         assert result["success"] is True
         assert result["metadata"]["tasks"] == len(sample_tasks)
 
     def test_execute_phase_with_callback(self, orchestrator, sample_tasks):
         """Test phase execution with custom callback"""
+
         def custom_callback(orch, tasks):
-            return {
-                "success": True,
-                "metadata": {"custom": "data"}
-            }
+            return {"success": True, "metadata": {"custom": "data"}}
 
         callbacks = {Phase.SPEC_PARSING: custom_callback}
 
-        result = orchestrator._execute_phase(
-            Phase.SPEC_PARSING,
-            sample_tasks,
-            callbacks
-        )
+        result = orchestrator._execute_phase(Phase.SPEC_PARSING, sample_tasks, callbacks)
 
         assert result["success"] is True
         assert result["metadata"]["custom"] == "data"
 
     def test_execute_phase_callback_exception(self, orchestrator, sample_tasks):
         """Test phase execution handles callback exception"""
+
         def failing_callback(orch, tasks):
             raise RuntimeError("Callback failed")
 
         callbacks = {Phase.SPEC_PARSING: failing_callback}
 
-        result = orchestrator._execute_phase(
-            Phase.SPEC_PARSING,
-            sample_tasks,
-            callbacks
-        )
+        result = orchestrator._execute_phase(Phase.SPEC_PARSING, sample_tasks, callbacks)
 
         assert result["success"] is False
         assert "callback failed" in result["error"].lower()
@@ -259,10 +230,7 @@ class TestResumeContinuous:
     def test_resume_continuous_when_blocked(self, orchestrator):
         """Test resume fails when blocked"""
         # Add blocker
-        orchestrator.phase_manager.add_blocker(
-            BlockerType.TEST_FAILURES,
-            "Tests failed"
-        )
+        orchestrator.phase_manager.add_blocker(BlockerType.TEST_FAILURES, "Tests failed")
 
         result = orchestrator.resume_continuous()
 
@@ -371,6 +339,7 @@ class TestPhaseCallbacks:
             def callback(orch, tasks):
                 called_phases.append(phase)
                 return {"success": True}
+
             return callback
 
         callbacks = {
@@ -387,10 +356,7 @@ class TestPhaseCallbacks:
             ]
         }
 
-        result = orchestrator.execute_continuous(
-            sample_tasks,
-            phase_callbacks=callbacks
-        )
+        result = orchestrator.execute_continuous(sample_tasks, phase_callbacks=callbacks)
 
         assert result["success"] is True
         assert len(called_phases) == 8
@@ -406,10 +372,7 @@ class TestPhaseCallbacks:
 
         callbacks = {Phase.SPEC_PARSING: callback}
 
-        orchestrator.execute_continuous(
-            sample_tasks,
-            phase_callbacks=callbacks
-        )
+        orchestrator.execute_continuous(sample_tasks, phase_callbacks=callbacks)
 
         # Should have been modified by callback and potentially by other phases
         # Just check it was changed from original
@@ -421,27 +384,19 @@ class TestBlockerWorkflow:
 
     def test_blocker_pause_and_resume_workflow(self, orchestrator, sample_tasks):
         """Test complete workflow: execute, block, clear, resume"""
+
         # Step 1: Execute until blocker
         def blocker_callback(orch, tasks):
-            orch.phase_manager.add_blocker(
-                BlockerType.MISSING_CREDENTIALS,
-                "Need API key"
-            )
+            orch.phase_manager.add_blocker(BlockerType.MISSING_CREDENTIALS, "Need API key")
             return {
                 "success": False,
                 "blocked": True,
-                "blocker": {
-                    "type": "missing_credentials",
-                    "description": "Need API key"
-                }
+                "blocker": {"type": "missing_credentials", "description": "Need API key"},
             }
 
         callbacks = {Phase.CODE_GENERATION: blocker_callback}
 
-        result1 = orchestrator.execute_continuous(
-            sample_tasks,
-            phase_callbacks=callbacks
-        )
+        result1 = orchestrator.execute_continuous(sample_tasks, phase_callbacks=callbacks)
 
         assert result1["success"] is False
         assert result1["paused_for_blockers"] is True

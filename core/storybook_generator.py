@@ -1,6 +1,7 @@
 """
 Storybook component library generator
 """
+
 from pathlib import Path
 from typing import Dict, List, Any
 
@@ -31,10 +32,7 @@ class StorybookGenerator:
         # manager.js
         self._write_manager_config()
 
-    def create_component_stories(
-        self,
-        spec_path: Path
-    ) -> List[Path]:
+    def create_component_stories(self, spec_path: Path) -> List[Path]:
         """
         Auto-generate component stories from PROJECT_SPEC
 

@@ -55,14 +55,18 @@ def show_summary(
         return
 
     # Display summary
-    console.print(f"[bold]Period:[/bold] {summary.start_time.strftime('%Y-%m-%d %H:%M')} to {summary.end_time.strftime('%Y-%m-%d %H:%M')}")
+    console.print(
+        f"[bold]Period:[/bold] {summary.start_time.strftime('%Y-%m-%d %H:%M')} to {summary.end_time.strftime('%Y-%m-%d %H:%M')}"
+    )
 
     # Task metrics
     console.print(f"\n[bold]Task Metrics:[/bold]")
     console.print(f"  Total Tasks: {summary.total_tasks}")
     console.print(f"  Successful: [green]{summary.successful_tasks}[/green]")
     console.print(f"  Failed: [red]{summary.failed_tasks}[/red]")
-    success_color = "green" if summary.success_rate >= 80 else "yellow" if summary.success_rate >= 50 else "red"
+    success_color = (
+        "green" if summary.success_rate >= 80 else "yellow" if summary.success_rate >= 50 else "red"
+    )
     console.print(f"  Success Rate: [{success_color}]{summary.success_rate:.1f}%[/{success_color}]")
 
     # Performance metrics
@@ -83,7 +87,9 @@ def show_summary(
     if summary.total_errors > 0:
         console.print(f"\n[bold]Error Metrics:[/bold]")
         console.print(f"  Total Errors: {summary.total_errors}")
-        error_color = "red" if summary.error_rate > 10 else "yellow" if summary.error_rate > 5 else "green"
+        error_color = (
+            "red" if summary.error_rate > 10 else "yellow" if summary.error_rate > 5 else "green"
+        )
         console.print(f"  Error Rate: [{error_color}]{summary.error_rate:.1f}%[/{error_color}]")
 
         if summary.errors_by_type:
@@ -155,12 +161,12 @@ def list_events(
 
         # Extract details based on event type
         details = ""
-        if hasattr(event, 'task_id') and event.task_id:
+        if hasattr(event, "task_id") and event.task_id:
             details = f"Task: {event.task_id}"
-            if hasattr(event, 'success'):
+            if hasattr(event, "success"):
                 status = "✓" if event.success else "✗"
                 details += f" {status}"
-        elif hasattr(event, 'error_type') and event.error_type:
+        elif hasattr(event, "error_type") and event.error_type:
             details = f"Error: {event.error_type}"
 
         event_id = event.event_id[:8] if event.event_id else ""
@@ -175,7 +181,9 @@ def list_events(
 @telemetry_app.command("alerts")
 def list_alerts(
     count: int = typer.Option(10, "--count", "-n", help="Number of alerts to show"),
-    level: Optional[str] = typer.Option(None, "--level", "-l", help="Filter by level (info/warning/error/critical)"),
+    level: Optional[str] = typer.Option(
+        None, "--level", "-l", help="Filter by level (info/warning/error/critical)"
+    ),
 ):
     """
     Show recent alerts.
@@ -207,7 +215,9 @@ def list_alerts(
             }
             color = level_colors.get(alert.level, "white")
             console.print(f"  [{color}][{alert.level.value.upper()}][/{color}] {alert.message}")
-            console.print(f"    {alert.metric_name} = {alert.metric_value} (threshold: {alert.threshold_value})")
+            console.print(
+                f"    {alert.metric_name} = {alert.metric_value} (threshold: {alert.threshold_value})"
+            )
         console.print()
 
     # Get alert history
@@ -254,7 +264,7 @@ def list_alerts(
 
     # Statistics
     stats = monitor.get_statistics()
-    if stats['total_alerts'] > 0:
+    if stats["total_alerts"] > 0:
         console.print(f"\n[bold]Alert Statistics:[/bold]")
         console.print(f"  Total Alerts: {stats['total_alerts']}")
         console.print(f"  By Level: {stats['alerts_by_level']}")
@@ -265,7 +275,9 @@ def list_alerts(
 @telemetry_app.command("performance")
 def show_performance(
     hours: int = typer.Option(24, "--hours", "-h", help="Number of hours to analyze"),
-    operation: Optional[str] = typer.Option(None, "--operation", "-o", help="Filter by operation type"),
+    operation: Optional[str] = typer.Option(
+        None, "--operation", "-o", help="Filter by operation type"
+    ),
 ):
     """
     Show performance metrics.
@@ -305,7 +317,9 @@ def show_performance(
     # By operation type
     if metrics.by_operation and len(metrics.by_operation) > 1:
         console.print(f"\n[bold]By Operation Type:[/bold]")
-        for op_type, op_metrics in sorted(metrics.by_operation.items(), key=lambda x: x[1]['count'], reverse=True):
+        for op_type, op_metrics in sorted(
+            metrics.by_operation.items(), key=lambda x: x[1]["count"], reverse=True
+        ):
             console.print(f"  {op_type}:")
             console.print(f"    Count: {op_metrics['count']}")
             console.print(f"    Avg: {op_metrics['avg_duration_ms']:.1f}ms")
@@ -315,7 +329,7 @@ def show_performance(
     if slowest:
         console.print(f"\n[bold]Slowest Operations:[/bold]")
         for op in slowest:
-            timestamp = op['timestamp'][:19]  # Trim microseconds
+            timestamp = op["timestamp"][:19]  # Trim microseconds
             console.print(f"  {op['duration_ms']:.1f}ms - {op['operation_type']} ({timestamp})")
 
     console.print()
@@ -340,7 +354,9 @@ def export_data(
     if data_type == "events":
         collector = EventCollector()
         collector.export_csv(output_path)
-        console.print(f"[green]✓ Exported {collector.get_statistics()['total_events']} events to {output}[/green]")
+        console.print(
+            f"[green]✓ Exported {collector.get_statistics()['total_events']} events to {output}[/green]"
+        )
 
     elif data_type == "performance":
         console.print(f"[yellow]Performance export not yet implemented[/yellow]")

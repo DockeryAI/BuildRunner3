@@ -60,11 +60,11 @@ class EventStorage:
 
             # Save events
             data = {
-                'events': events,
-                'version': '1.0',
+                "events": events,
+                "version": "1.0",
             }
 
-            with open(self.storage_path, 'w') as f:
+            with open(self.storage_path, "w") as f:
                 json.dump(data, f, indent=2)
 
             logger.debug(f"Saved {len(events)} events to {self.storage_path}")
@@ -84,10 +84,10 @@ class EventStorage:
             return []
 
         try:
-            with open(self.storage_path, 'r') as f:
+            with open(self.storage_path, "r") as f:
                 data = json.load(f)
 
-            events = data.get('events', [])
+            events = data.get("events", [])
             logger.debug(f"Loaded {len(events)} events from {self.storage_path}")
             return events
 
@@ -105,7 +105,7 @@ class EventStorage:
             # Cleanup old files
             self.rotator.cleanup_old_files(
                 self.storage_path.parent,
-                pattern=f"{self.storage_path.stem}.*{self.storage_path.suffix}*"
+                pattern=f"{self.storage_path.stem}.*{self.storage_path.suffix}*",
             )
 
     def get_rotated_files(self) -> List[Path]:
@@ -129,14 +129,14 @@ class EventStorage:
         """
         try:
             # Check if file is compressed
-            if rotated_path.suffix == '.gz':
-                with gzip.open(rotated_path, 'rt') as f:
+            if rotated_path.suffix == ".gz":
+                with gzip.open(rotated_path, "rt") as f:
                     data = json.load(f)
             else:
-                with open(rotated_path, 'r') as f:
+                with open(rotated_path, "r") as f:
                     data = json.load(f)
 
-            events = data.get('events', [])
+            events = data.get("events", [])
             logger.debug(f"Loaded {len(events)} events from rotated file {rotated_path}")
             return events
 
@@ -168,10 +168,7 @@ class EventStorage:
         # Sort by timestamp (newest first)
         # Assuming events have 'timestamp' field
         try:
-            all_events.sort(
-                key=lambda e: e.get('timestamp', ''),
-                reverse=True
-            )
+            all_events.sort(key=lambda e: e.get("timestamp", ""), reverse=True)
         except Exception:
             # If sorting fails, just return unsorted
             pass
@@ -187,7 +184,7 @@ class EventStorage:
         """Remove rotated files older than retention period."""
         self.rotator.cleanup_old_files(
             self.storage_path.parent,
-            pattern=f"{self.storage_path.stem}.*{self.storage_path.suffix}*"
+            pattern=f"{self.storage_path.stem}.*{self.storage_path.suffix}*",
         )
 
     def get_storage_stats(self) -> Dict[str, Any]:
@@ -198,18 +195,18 @@ class EventStorage:
             Dictionary with storage statistics
         """
         stats = {
-            'current_file': str(self.storage_path),
-            'current_file_exists': self.storage_path.exists(),
-            'current_file_size': 0,
-            'current_event_count': 0,
-            'rotated_files': [],
-            'total_rotated_size': 0,
+            "current_file": str(self.storage_path),
+            "current_file_exists": self.storage_path.exists(),
+            "current_file_size": 0,
+            "current_event_count": 0,
+            "rotated_files": [],
+            "total_rotated_size": 0,
         }
 
         # Current file stats
         if self.storage_path.exists():
-            stats['current_file_size'] = self.storage_path.stat().st_size
-            stats['current_event_count'] = len(self.load())
+            stats["current_file_size"] = self.storage_path.stat().st_size
+            stats["current_event_count"] = len(self.load())
 
         # Rotated files stats
         rotated_files = self.get_rotated_files()
@@ -219,13 +216,17 @@ class EventStorage:
             file_size = rotated_path.stat().st_size
             total_rotated_size += file_size
 
-            stats['rotated_files'].append({
-                'path': str(rotated_path),
-                'size': file_size,
-                'compressed': rotated_path.suffix == '.gz',
-            })
+            stats["rotated_files"].append(
+                {
+                    "path": str(rotated_path),
+                    "size": file_size,
+                    "compressed": rotated_path.suffix == ".gz",
+                }
+            )
 
-        stats['total_rotated_size'] = total_rotated_size
-        stats['total_files'] = 1 + len(rotated_files) if stats['current_file_exists'] else len(rotated_files)
+        stats["total_rotated_size"] = total_rotated_size
+        stats["total_files"] = (
+            1 + len(rotated_files) if stats["current_file_exists"] else len(rotated_files)
+        )
 
         return stats

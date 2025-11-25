@@ -12,7 +12,7 @@ from pathlib import Path
 from cli.error_watcher import (
     ErrorWatcher as CLIErrorWatcher,
     ErrorPattern as CLIErrorPattern,
-    WatcherError as CLIWatcherError
+    WatcherError as CLIWatcherError,
 )
 from api.error_watcher import ErrorWatcher as APIErrorWatcher, ErrorPattern as APIErrorPattern
 
@@ -20,6 +20,7 @@ from api.error_watcher import ErrorWatcher as APIErrorWatcher, ErrorPattern as A
 # ============================================================================
 # CLI ERROR WATCHER TESTS
 # ============================================================================
+
 
 class TestCLIErrorPattern:
     """Test suite for CLI ErrorPattern."""
@@ -30,7 +31,7 @@ class TestCLIErrorPattern:
         errors = CLIErrorPattern.find_errors(content)
 
         assert len(errors) > 0
-        assert any('ValueError' in err[0] for err in errors)
+        assert any("ValueError" in err[0] for err in errors)
 
     def test_find_traceback(self):
         """Test finding Python tracebacks."""
@@ -50,7 +51,7 @@ Exception: test
         errors = CLIErrorPattern.find_errors(content)
 
         assert len(errors) > 0
-        assert any('Test Failure' in err[1] for err in errors)
+        assert any("Test Failure" in err[1] for err in errors)
 
     def test_find_file_not_found(self):
         """Test finding file errors."""
@@ -58,7 +59,7 @@ Exception: test
         errors = CLIErrorPattern.find_errors(content)
 
         assert len(errors) > 0
-        assert any('File Not Found' in err[1] for err in errors)
+        assert any("File Not Found" in err[1] for err in errors)
 
     def test_find_connection_error(self):
         """Test finding network errors."""
@@ -66,7 +67,7 @@ Exception: test
         errors = CLIErrorPattern.find_errors(content)
 
         assert len(errors) > 0
-        assert any('Connection Error' in err[1] for err in errors)
+        assert any("Connection Error" in err[1] for err in errors)
 
     def test_no_errors(self):
         """Test content with no errors."""
@@ -101,8 +102,8 @@ class TestCLIErrorWatcher:
 
     def test_init_custom_patterns(self, temp_project):
         """Test initialization with custom patterns."""
-        watcher = CLIErrorWatcher(temp_project, watch_patterns=['*.txt'])
-        assert '*.txt' in watcher.watch_patterns
+        watcher = CLIErrorWatcher(temp_project, watch_patterns=["*.txt"])
+        assert "*.txt" in watcher.watch_patterns
 
     def test_should_watch_file(self, watcher):
         """Test file pattern matching."""
@@ -121,10 +122,10 @@ class TestCLIErrorWatcher:
 
         assert watcher.blockers_file.exists()
 
-        with open(watcher.blockers_file, 'r') as f:
+        with open(watcher.blockers_file, "r") as f:
             content = f.read()
 
-        assert 'ValueError' in content
+        assert "ValueError" in content
 
     def test_process_file_no_errors(self, watcher, temp_project):
         """Test processing file without errors."""
@@ -143,16 +144,16 @@ class TestCLIErrorWatcher:
 
         results = watcher.scan_once()
 
-        assert results['files_scanned'] >= 1
-        assert results['errors_found'] >= 0
+        assert results["files_scanned"] >= 1
+        assert results["errors_found"] >= 0
 
     def test_scan_once_no_files(self, watcher):
         """Test scan when no matching files exist."""
         results = watcher.scan_once()
 
-        assert results['files_scanned'] == 0
-        assert results['errors_found'] == 0
-        assert results['files_with_errors'] == []
+        assert results["files_scanned"] == 0
+        assert results["errors_found"] == 0
+        assert results["files_with_errors"] == []
 
     def test_clear_blockers(self, watcher):
         """Test clearing blockers file."""
@@ -183,27 +184,25 @@ class TestCLIErrorWatcher:
 
     def test_update_blockers(self, watcher, temp_project):
         """Test updating blockers file."""
-        errors = [
-            ("ValueError: Test", "Python Error"),
-            ("FAILED test", "Test Failure")
-        ]
+        errors = [("ValueError: Test", "Python Error"), ("FAILED test", "Test Failure")]
 
         source_file = temp_project / "test.log"
         watcher._update_blockers(source_file, errors)
 
         assert watcher.blockers_file.exists()
 
-        with open(watcher.blockers_file, 'r') as f:
+        with open(watcher.blockers_file, "r") as f:
             content = f.read()
 
-        assert 'ValueError' in content
-        assert 'FAILED' in content
-        assert 'Auto-Detected Error' in content
+        assert "ValueError" in content
+        assert "FAILED" in content
+        assert "Auto-Detected Error" in content
 
 
 # ============================================================================
 # API ERROR WATCHER TESTS
 # ============================================================================
+
 
 @pytest.fixture
 def api_error_watcher():
@@ -274,13 +273,7 @@ async def test_api_stop_not_watching(api_error_watcher):
 
 def test_api_error_pattern_matching():
     """Test API error pattern matching"""
-    pattern = APIErrorPattern(
-        r"SyntaxError:.*",
-        "syntax",
-        "high",
-        0.95,
-        ["Fix syntax"]
-    )
+    pattern = APIErrorPattern(r"SyntaxError:.*", "syntax", "high", 0.95, ["Fix syntax"])
 
     # Should match
     text = "SyntaxError: invalid syntax"
@@ -366,12 +359,12 @@ async def test_api_analyze_content_with_test_failure(api_error_watcher):
 
 def test_api_extract_location(api_error_watcher):
     """Test extracting file location from error"""
-    content = '''
+    content = """
     Traceback (most recent call last):
       File "app.py", line 42, in main
         result = dangerous_function()
     RuntimeError: Something broke
-    '''
+    """
 
     # Position at the RuntimeError
     position = content.index("RuntimeError")
@@ -391,7 +384,7 @@ def test_api_is_duplicate(api_error_watcher):
         "line_number": 10,
         "category": {"type": "syntax", "severity": "high", "confidence": 0.9},
         "suggestions": [],
-        "resolved": False
+        "resolved": False,
     }
 
     error2 = {
@@ -401,7 +394,7 @@ def test_api_is_duplicate(api_error_watcher):
         "line_number": 10,
         "category": {"type": "syntax", "severity": "high", "confidence": 0.9},
         "suggestions": [],
-        "resolved": False
+        "resolved": False,
     }
 
     error3 = {
@@ -411,7 +404,7 @@ def test_api_is_duplicate(api_error_watcher):
         "line_number": 10,
         "category": {"type": "syntax", "severity": "high", "confidence": 0.9},
         "suggestions": [],
-        "resolved": False
+        "resolved": False,
     }
 
     api_error_watcher.errors.append(error1)
@@ -426,16 +419,8 @@ def test_api_is_duplicate(api_error_watcher):
 def test_api_get_errors_no_filter(api_error_watcher):
     """Test getting all errors without filter"""
     api_error_watcher.errors = [
-        {
-            "id": "err1",
-            "category": {"type": "syntax", "severity": "high"},
-            "resolved": False
-        },
-        {
-            "id": "err2",
-            "category": {"type": "runtime", "severity": "medium"},
-            "resolved": False
-        }
+        {"id": "err1", "category": {"type": "syntax", "severity": "high"}, "resolved": False},
+        {"id": "err2", "category": {"type": "runtime", "severity": "medium"}, "resolved": False},
     ]
 
     errors = api_error_watcher.get_errors()
@@ -445,16 +430,8 @@ def test_api_get_errors_no_filter(api_error_watcher):
 def test_api_get_errors_filter_category(api_error_watcher):
     """Test filtering errors by category"""
     api_error_watcher.errors = [
-        {
-            "id": "err1",
-            "category": {"type": "syntax", "severity": "high"},
-            "resolved": False
-        },
-        {
-            "id": "err2",
-            "category": {"type": "runtime", "severity": "medium"},
-            "resolved": False
-        }
+        {"id": "err1", "category": {"type": "syntax", "severity": "high"}, "resolved": False},
+        {"id": "err2", "category": {"type": "runtime", "severity": "medium"}, "resolved": False},
     ]
 
     errors = api_error_watcher.get_errors(category="syntax")
@@ -465,16 +442,8 @@ def test_api_get_errors_filter_category(api_error_watcher):
 def test_api_get_errors_filter_severity(api_error_watcher):
     """Test filtering errors by severity"""
     api_error_watcher.errors = [
-        {
-            "id": "err1",
-            "category": {"type": "syntax", "severity": "high"},
-            "resolved": False
-        },
-        {
-            "id": "err2",
-            "category": {"type": "runtime", "severity": "medium"},
-            "resolved": False
-        }
+        {"id": "err1", "category": {"type": "syntax", "severity": "high"}, "resolved": False},
+        {"id": "err2", "category": {"type": "runtime", "severity": "medium"}, "resolved": False},
     ]
 
     errors = api_error_watcher.get_errors(severity="high")
@@ -485,16 +454,8 @@ def test_api_get_errors_filter_severity(api_error_watcher):
 def test_api_get_errors_unresolved_only(api_error_watcher):
     """Test getting only unresolved errors"""
     api_error_watcher.errors = [
-        {
-            "id": "err1",
-            "category": {"type": "syntax", "severity": "high"},
-            "resolved": False
-        },
-        {
-            "id": "err2",
-            "category": {"type": "runtime", "severity": "medium"},
-            "resolved": True
-        }
+        {"id": "err1", "category": {"type": "syntax", "severity": "high"}, "resolved": False},
+        {"id": "err2", "category": {"type": "runtime", "severity": "medium"}, "resolved": True},
     ]
 
     errors = api_error_watcher.get_errors(unresolved_only=True)
@@ -505,21 +466,9 @@ def test_api_get_errors_unresolved_only(api_error_watcher):
 def test_api_get_error_summary(api_error_watcher):
     """Test getting error summary"""
     api_error_watcher.errors = [
-        {
-            "id": "err1",
-            "category": {"type": "syntax", "severity": "high"},
-            "resolved": False
-        },
-        {
-            "id": "err2",
-            "category": {"type": "syntax", "severity": "medium"},
-            "resolved": False
-        },
-        {
-            "id": "err3",
-            "category": {"type": "runtime", "severity": "high"},
-            "resolved": False
-        }
+        {"id": "err1", "category": {"type": "syntax", "severity": "high"}, "resolved": False},
+        {"id": "err2", "category": {"type": "syntax", "severity": "medium"}, "resolved": False},
+        {"id": "err3", "category": {"type": "runtime", "severity": "high"}, "resolved": False},
     ]
 
     summary = api_error_watcher.get_error_summary()
@@ -535,11 +484,7 @@ def test_api_get_error_summary(api_error_watcher):
 def test_api_mark_resolved(api_error_watcher):
     """Test marking error as resolved"""
     api_error_watcher.errors = [
-        {
-            "id": "err1",
-            "category": {"type": "syntax", "severity": "high"},
-            "resolved": False
-        }
+        {"id": "err1", "category": {"type": "syntax", "severity": "high"}, "resolved": False}
     ]
 
     result = api_error_watcher.mark_resolved("err1")
@@ -553,10 +498,7 @@ def test_api_mark_resolved(api_error_watcher):
 
 def test_api_clear_errors(api_error_watcher):
     """Test clearing all errors"""
-    api_error_watcher.errors = [
-        {"id": "err1"},
-        {"id": "err2"}
-    ]
+    api_error_watcher.errors = [{"id": "err1"}, {"id": "err2"}]
 
     assert len(api_error_watcher.errors) == 2
 

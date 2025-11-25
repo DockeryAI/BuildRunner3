@@ -77,12 +77,12 @@ class TestFileRotator:
 
         # Verify compression
         assert rotated_path is not None
-        assert rotated_path.suffix == '.gz'
+        assert rotated_path.suffix == ".gz"
         assert rotated_path.exists()
         assert not temp_file.exists()
 
         # Verify content can be decompressed
-        with gzip.open(rotated_path, 'rt') as f:
+        with gzip.open(rotated_path, "rt") as f:
             decompressed = f.read()
         assert decompressed == original_content
 
@@ -98,6 +98,7 @@ class TestFileRotator:
         old_mtime = (datetime.now() - timedelta(days=10)).timestamp()
         old_file.touch()
         import os
+
         os.utime(old_file, (old_mtime, old_mtime))
 
         # Create recent file
@@ -134,9 +135,9 @@ class TestFileRotator:
 
         # Create and compress file
         original_content = "test data for decompression"
-        compressed_path = temp_file.with_suffix('.json.gz')
+        compressed_path = temp_file.with_suffix(".json.gz")
 
-        with gzip.open(compressed_path, 'wt') as f:
+        with gzip.open(compressed_path, "wt") as f:
             f.write(original_content)
 
         # Decompress
@@ -157,17 +158,17 @@ class TestEventStorage:
         # Create test events
         events = [
             {
-                'event_id': '1',
-                'event_type': 'test',
-                'timestamp': datetime.now().isoformat(),
-                'data': 'test data 1'
+                "event_id": "1",
+                "event_type": "test",
+                "timestamp": datetime.now().isoformat(),
+                "data": "test data 1",
             },
             {
-                'event_id': '2',
-                'event_type': 'test',
-                'timestamp': datetime.now().isoformat(),
-                'data': 'test data 2'
-            }
+                "event_id": "2",
+                "event_type": "test",
+                "timestamp": datetime.now().isoformat(),
+                "data": "test data 2",
+            },
         ]
 
         # Save events
@@ -178,8 +179,8 @@ class TestEventStorage:
 
         # Verify
         assert len(loaded_events) == 2
-        assert loaded_events[0]['event_id'] == '1'
-        assert loaded_events[1]['event_id'] == '2'
+        assert loaded_events[0]["event_id"] == "1"
+        assert loaded_events[1]["event_id"] == "2"
 
     def test_automatic_rotation_on_save(self, temp_dir):
         """Test automatic file rotation when size exceeds threshold."""
@@ -187,17 +188,11 @@ class TestEventStorage:
         storage = EventStorage(
             storage_path=storage_path,
             max_file_size=200,  # Small threshold for testing
-            compress=False
+            compress=False,
         )
 
         # Create events that will exceed threshold
-        large_events = [
-            {
-                'event_id': str(i),
-                'data': 'x' * 50  # Large data
-            }
-            for i in range(10)
-        ]
+        large_events = [{"event_id": str(i), "data": "x" * 50} for i in range(10)]  # Large data
 
         # Save first batch
         storage.save(large_events[:5])
@@ -218,35 +213,28 @@ class TestEventStorage:
         storage = EventStorage(storage_path=temp_dir / "events.json", compress=True)
 
         # Create rotated compressed file
-        events = [
-            {'event_id': '1', 'data': 'test 1'},
-            {'event_id': '2', 'data': 'test 2'}
-        ]
+        events = [{"event_id": "1", "data": "test 1"}, {"event_id": "2", "data": "test 2"}]
 
         rotated_path = temp_dir / "events.20250118_120000.json.gz"
-        with gzip.open(rotated_path, 'wt') as f:
-            json.dump({'events': events, 'version': '1.0'}, f)
+        with gzip.open(rotated_path, "wt") as f:
+            json.dump({"events": events, "version": "1.0"}, f)
 
         # Load from rotated file
         loaded_events = storage.load_from_rotated(rotated_path)
 
         # Verify
         assert len(loaded_events) == 2
-        assert loaded_events[0]['event_id'] == '1'
+        assert loaded_events[0]["event_id"] == "1"
 
     def test_load_all_events_from_multiple_files(self, temp_dir):
         """Test loading events from current and rotated files."""
         storage_path = temp_dir / "events.json"
-        storage = EventStorage(
-            storage_path=storage_path,
-            max_file_size=150,
-            compress=False
-        )
+        storage = EventStorage(storage_path=storage_path, max_file_size=150, compress=False)
 
         # Create and save events that will cause rotation
-        events_batch1 = [{'event_id': '1', 'timestamp': '2025-01-01T10:00:00', 'data': 'x' * 50}]
-        events_batch2 = [{'event_id': '2', 'timestamp': '2025-01-01T11:00:00', 'data': 'x' * 50}]
-        events_batch3 = [{'event_id': '3', 'timestamp': '2025-01-01T12:00:00', 'data': 'x' * 50}]
+        events_batch1 = [{"event_id": "1", "timestamp": "2025-01-01T10:00:00", "data": "x" * 50}]
+        events_batch2 = [{"event_id": "2", "timestamp": "2025-01-01T11:00:00", "data": "x" * 50}]
+        events_batch3 = [{"event_id": "3", "timestamp": "2025-01-01T12:00:00", "data": "x" * 50}]
 
         storage.save(events_batch1)
         time.sleep(0.01)
@@ -266,21 +254,18 @@ class TestEventStorage:
         storage = EventStorage(storage_path=temp_file)
 
         # Save some events
-        events = [
-            {'event_id': '1', 'data': 'test 1'},
-            {'event_id': '2', 'data': 'test 2'}
-        ]
+        events = [{"event_id": "1", "data": "test 1"}, {"event_id": "2", "data": "test 2"}]
         storage.save(events)
 
         # Get stats
         stats = storage.get_storage_stats()
 
         # Verify stats
-        assert stats['current_file_exists']
-        assert stats['current_file_size'] > 0
-        assert stats['current_event_count'] == 2
-        assert 'rotated_files' in stats
-        assert 'total_files' in stats
+        assert stats["current_file_exists"]
+        assert stats["current_file_size"] > 0
+        assert stats["current_event_count"] == 2
+        assert "rotated_files" in stats
+        assert "total_files" in stats
 
 
 class TestEventCollectorIntegration:
@@ -295,15 +280,15 @@ class TestEventCollectorIntegration:
         collector = EventCollector(
             storage_path=storage_path,
             max_file_size=300,  # Small size for testing
-            retention_days=30
+            retention_days=30,
         )
 
         # Create and collect events
         for i in range(20):
             event = Event(
                 event_type=EventType.TASK_STARTED,
-                session_id='test-session',
-                metadata={'test_id': i, 'data': 'x' * 50}
+                session_id="test-session",
+                metadata={"test_id": i, "data": "x" * 50},
             )
             collector.collect(event)
 
@@ -316,4 +301,4 @@ class TestEventCollectorIntegration:
         # Check if rotation occurred (file size should be managed)
         # If file grew too large, rotated files should exist
         stats = collector.event_storage.get_storage_stats()
-        assert stats['current_file_exists']
+        assert stats["current_file_exists"]

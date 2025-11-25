@@ -52,14 +52,14 @@ class DesktopBridge:
                     ["claude", "--dangerously-skip-permissions", str(temp_file)],
                     capture_output=True,
                     text=True,
-                    timeout=5
+                    timeout=5,
                 )
 
                 if result.returncode == 0:
                     return {
                         "status": "success",
                         "message": "Claude CLI launched successfully",
-                        "method": "cli"
+                        "method": "cli",
                     }
             except (subprocess.TimeoutExpired, FileNotFoundError):
                 pass
@@ -70,7 +70,7 @@ class DesktopBridge:
                     "/Applications/Claude.app",
                     "/Applications/Claude Code.app",
                     "~/Applications/Claude.app",
-                    "~/Applications/Claude Code.app"
+                    "~/Applications/Claude Code.app",
                 ]
 
                 for app_path in apps:
@@ -81,7 +81,7 @@ class DesktopBridge:
                             "status": "success",
                             "message": f"Opened {os.path.basename(expanded)}",
                             "method": "desktop_app",
-                            "note": "Please paste the prompt manually"
+                            "note": "Please paste the prompt manually",
                         }
 
             elif system == "Windows":
@@ -91,67 +91,48 @@ class DesktopBridge:
                     return {
                         "status": "success",
                         "message": "Claude launched on Windows",
-                        "method": "windows_start"
+                        "method": "windows_start",
                     }
                 except:
                     pass
 
             # Fallback: copy to clipboard
             if system == "Darwin":
-                process = subprocess.Popen(
-                    ['pbcopy'],
-                    stdin=subprocess.PIPE,
-                    text=True
-                )
+                process = subprocess.Popen(["pbcopy"], stdin=subprocess.PIPE, text=True)
                 process.communicate(prompt)
                 return {
                     "status": "partial",
                     "message": "Prompt copied to clipboard. Please open Claude manually.",
-                    "method": "clipboard"
+                    "method": "clipboard",
                 }
 
             return {
                 "status": "error",
                 "message": "Could not find Claude on your system",
-                "method": "none"
+                "method": "none",
             }
 
         except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e),
-                "method": "error"
-            }
+            return {"status": "error", "message": str(e), "method": "error"}
 
     @staticmethod
     async def execute_command(command: str, cwd: str = None) -> Dict[str, Any]:
         """Execute a system command"""
         try:
             result = subprocess.run(
-                command,
-                shell=True,
-                cwd=cwd,
-                capture_output=True,
-                text=True,
-                timeout=60
+                command, shell=True, cwd=cwd, capture_output=True, text=True, timeout=60
             )
 
             return {
                 "status": "success",
                 "output": result.stdout,
                 "error": result.stderr,
-                "returncode": result.returncode
+                "returncode": result.returncode,
             }
         except subprocess.TimeoutExpired:
-            return {
-                "status": "error",
-                "message": "Command timeout"
-            }
+            return {"status": "error", "message": "Command timeout"}
         except Exception as e:
-            return {
-                "status": "error",
-                "message": str(e)
-            }
+            return {"status": "error", "message": str(e)}
 
 
 bridge = DesktopBridge()
@@ -170,26 +151,21 @@ async def desktop_bridge_socket(websocket: WebSocket):
 
             if action == "launch_claude":
                 result = await bridge.launch_claude(
-                    data.get("project_name", "Unknown"),
-                    data.get("prompt", "")
+                    data.get("project_name", "Unknown"), data.get("prompt", "")
                 )
                 await websocket.send_json(result)
 
             elif action == "execute":
-                result = await bridge.execute_command(
-                    data.get("command"),
-                    data.get("cwd")
-                )
+                result = await bridge.execute_command(data.get("command"), data.get("cwd"))
                 await websocket.send_json(result)
 
             elif action == "ping":
                 await websocket.send_json({"status": "pong"})
 
             else:
-                await websocket.send_json({
-                    "status": "error",
-                    "message": f"Unknown action: {action}"
-                })
+                await websocket.send_json(
+                    {"status": "error", "message": f"Unknown action: {action}"}
+                )
 
     except WebSocketDisconnect:
         print("Client disconnected from desktop bridge")
@@ -203,16 +179,13 @@ async def root():
     return {
         "service": "BuildRunner Desktop Bridge",
         "status": "running",
-        "capabilities": [
-            "launch_claude",
-            "execute_command",
-            "clipboard_operations"
-        ]
+        "capabilities": ["launch_claude", "execute_command", "clipboard_operations"],
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     print("🌉 Starting BuildRunner Desktop Bridge on port 8081...")
     print("This bridge enables web UI to control desktop applications")
     uvicorn.run(app, host="127.0.0.1", port=8081)

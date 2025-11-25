@@ -215,7 +215,9 @@ class TestCostBreakdown:
         assert "claude-3-sonnet" in model_names or len(model_names) > 0
 
     @patch("api.routes.analytics.get_metrics_analyzer")
-    def test_get_cost_breakdown_token_type_breakdown(self, mock_get_analyzer, client, mock_analyzer):
+    def test_get_cost_breakdown_token_type_breakdown(
+        self, mock_get_analyzer, client, mock_analyzer
+    ):
         """Test token type breakdown in cost breakdown"""
         mock_get_analyzer.return_value = mock_analyzer
 
@@ -391,7 +393,9 @@ class TestHistoricalComparison:
         assert trends["cost_per_task"] in ["up", "down"]
 
     @patch("api.routes.analytics.get_metrics_analyzer")
-    def test_get_historical_comparison_period_labels(self, mock_get_analyzer, client, mock_analyzer):
+    def test_get_historical_comparison_period_labels(
+        self, mock_get_analyzer, client, mock_analyzer
+    ):
         """Test period labels in historical comparison"""
         mock_get_analyzer.return_value = mock_analyzer
 

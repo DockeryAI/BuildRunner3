@@ -15,6 +15,7 @@ from datetime import datetime
 @dataclass
 class DesignResearch:
     """Research results for a design profile"""
+
     industry: str
     use_case: str
     timestamp: str
@@ -54,133 +55,131 @@ class DesignResearcher:
         For now, returns example patterns based on industry/use case.
         """
         research = DesignResearch(
-            industry=industry,
-            use_case=use_case,
-            timestamp=datetime.now().isoformat()
+            industry=industry, use_case=use_case, timestamp=datetime.now().isoformat()
         )
 
         # Simulated research results (in production, from web search + Opus analysis)
-        if industry == 'healthcare' and use_case == 'dashboard':
+        if industry == "healthcare" and use_case == "dashboard":
             research.patterns = [
-                'Clean, minimal layouts with clear hierarchy',
-                'Blue/green color schemes for trust and calm',
-                'Large, readable fonts for accessibility',
-                'Clear data visualization with medical terminology',
-                'Patient privacy indicators'
+                "Clean, minimal layouts with clear hierarchy",
+                "Blue/green color schemes for trust and calm",
+                "Large, readable fonts for accessibility",
+                "Clear data visualization with medical terminology",
+                "Patient privacy indicators",
             ]
             research.best_practices = [
-                'HIPAA compliance for all data display',
-                'High contrast for readability',
-                'Clear error states and validation',
-                'Tooltips for medical terminology',
-                'Print-friendly views for records'
+                "HIPAA compliance for all data display",
+                "High contrast for readability",
+                "Clear error states and validation",
+                "Tooltips for medical terminology",
+                "Print-friendly views for records",
             ]
             research.components = [
-                'Patient vitals cards',
-                'Medical chart widgets',
-                'Appointment timeline',
-                'Medication list',
-                'Alert banners for critical values'
+                "Patient vitals cards",
+                "Medical chart widgets",
+                "Appointment timeline",
+                "Medication list",
+                "Alert banners for critical values",
             ]
             research.color_trends = [
-                '#0066CC - Primary (trust blue)',
-                '#00A86B - Success (medical green)',
-                '#FF6B6B - Alert (urgent red)',
-                '#F8F9FA - Background (clean white)'
+                "#0066CC - Primary (trust blue)",
+                "#00A86B - Success (medical green)",
+                "#FF6B6B - Alert (urgent red)",
+                "#F8F9FA - Background (clean white)",
             ]
             research.layout_examples = [
-                'Sidebar navigation with patient list',
-                'Main content area with tabs (Overview, Vitals, History)',
-                'Right panel for alerts and notifications',
-                'Top bar for patient quick search'
+                "Sidebar navigation with patient list",
+                "Main content area with tabs (Overview, Vitals, History)",
+                "Right panel for alerts and notifications",
+                "Top bar for patient quick search",
             ]
             research.sources = [
-                'https://dribbble.com/tags/healthcare_dashboard',
-                'https://www.healthit.gov/topic/usability-and-ux',
-                'Epic EHR design patterns'
+                "https://dribbble.com/tags/healthcare_dashboard",
+                "https://www.healthit.gov/topic/usability-and-ux",
+                "Epic EHR design patterns",
             ]
 
-        elif industry == 'fintech' and use_case == 'dashboard':
+        elif industry == "fintech" and use_case == "dashboard":
             research.patterns = [
-                'Dark theme options for professional look',
-                'Real-time data updates with visual indicators',
-                'Security badges and trust indicators prominent',
-                'Clear hierarchy of financial information',
-                'Quick actions easily accessible'
+                "Dark theme options for professional look",
+                "Real-time data updates with visual indicators",
+                "Security badges and trust indicators prominent",
+                "Clear hierarchy of financial information",
+                "Quick actions easily accessible",
             ]
             research.best_practices = [
-                'Two-factor authentication UI',
-                'Clear disclosure of fees and terms',
-                'Transaction history with filters',
-                'Balance visibility controls',
-                'Secure session indicators'
+                "Two-factor authentication UI",
+                "Clear disclosure of fees and terms",
+                "Transaction history with filters",
+                "Balance visibility controls",
+                "Secure session indicators",
             ]
             research.components = [
-                'Account balance cards',
-                'Transaction list with categories',
-                'Budget vs actual charts',
-                'Security settings panel',
-                'Quick transfer buttons'
+                "Account balance cards",
+                "Transaction list with categories",
+                "Budget vs actual charts",
+                "Security settings panel",
+                "Quick transfer buttons",
             ]
             research.color_trends = [
-                '#1E3A8A - Primary (trust navy)',
-                '#10B981 - Success (profit green)',
-                '#EF4444 - Alert (loss red)',
-                '#111827 - Background (dark mode)'
+                "#1E3A8A - Primary (trust navy)",
+                "#10B981 - Success (profit green)",
+                "#EF4444 - Alert (loss red)",
+                "#111827 - Background (dark mode)",
             ]
             research.sources = [
-                'https://stripe.com/design',
-                'https://design.robinhood.com/',
-                'Plaid design guidelines'
+                "https://stripe.com/design",
+                "https://design.robinhood.com/",
+                "Plaid design guidelines",
             ]
 
-        elif industry == 'ecommerce' and use_case == 'marketplace':
+        elif industry == "ecommerce" and use_case == "marketplace":
             research.patterns = [
-                'Grid layouts for product display',
-                'Prominent call-to-action buttons',
-                'Trust signals (reviews, ratings, badges)',
-                'Clear product hierarchy',
-                'Easy-to-use filters and search'
+                "Grid layouts for product display",
+                "Prominent call-to-action buttons",
+                "Trust signals (reviews, ratings, badges)",
+                "Clear product hierarchy",
+                "Easy-to-use filters and search",
             ]
             research.best_practices = [
-                'High-quality product images',
-                'Clear pricing and shipping info',
-                'Easy checkout flow',
-                'Social proof prominent',
-                'Mobile-first responsive design'
+                "High-quality product images",
+                "Clear pricing and shipping info",
+                "Easy checkout flow",
+                "Social proof prominent",
+                "Mobile-first responsive design",
             ]
             research.components = [
-                'Product grid with hover effects',
-                'Filter sidebar',
-                'Product card with quick view',
-                'Shopping cart preview',
-                'Category navigation'
+                "Product grid with hover effects",
+                "Filter sidebar",
+                "Product card with quick view",
+                "Shopping cart preview",
+                "Category navigation",
             ]
             research.color_trends = [
-                '#F97316 - Primary (call to action orange)',
-                '#22C55E - Success (available green)',
-                '#6366F1 - Accent (premium purple)',
-                '#FFFFFF - Background (clean white)'
+                "#F97316 - Primary (call to action orange)",
+                "#22C55E - Success (available green)",
+                "#6366F1 - Accent (premium purple)",
+                "#FFFFFF - Background (clean white)",
             ]
             research.sources = [
-                'https://www.shopify.com/partners/blog/ecommerce-design',
-                'Amazon design patterns',
-                'Etsy seller handbook'
+                "https://www.shopify.com/partners/blog/ecommerce-design",
+                "Amazon design patterns",
+                "Etsy seller handbook",
             ]
 
         else:
             # Generic patterns for unknown combinations
             research.patterns = [
-                'Clean, modern interface',
-                'Intuitive navigation',
-                'Responsive design',
-                'Clear call-to-actions'
+                "Clean, modern interface",
+                "Intuitive navigation",
+                "Responsive design",
+                "Clear call-to-actions",
             ]
             research.best_practices = [
-                'Mobile-first approach',
-                'Fast load times',
-                'Clear error messages',
-                'Consistent UI patterns'
+                "Mobile-first approach",
+                "Fast load times",
+                "Clear error messages",
+                "Consistent UI patterns",
             ]
 
         return research
@@ -192,18 +191,18 @@ class DesignResearcher:
         output_path = self.research_dir / f"{project_name}_research.json"
 
         data = {
-            'industry': research.industry,
-            'use_case': research.use_case,
-            'timestamp': research.timestamp,
-            'patterns': research.patterns,
-            'best_practices': research.best_practices,
-            'components': research.components,
-            'color_trends': research.color_trends,
-            'layout_examples': research.layout_examples,
-            'sources': research.sources
+            "industry": research.industry,
+            "use_case": research.use_case,
+            "timestamp": research.timestamp,
+            "patterns": research.patterns,
+            "best_practices": research.best_practices,
+            "components": research.components,
+            "color_trends": research.color_trends,
+            "layout_examples": research.layout_examples,
+            "sources": research.sources,
         }
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(data, f, indent=2)
 
         return output_path
@@ -215,19 +214,19 @@ class DesignResearcher:
         if not research_path.exists():
             return None
 
-        with open(research_path, 'r') as f:
+        with open(research_path, "r") as f:
             data = json.load(f)
 
         return DesignResearch(
-            industry=data['industry'],
-            use_case=data['use_case'],
-            timestamp=data['timestamp'],
-            patterns=data.get('patterns', []),
-            best_practices=data.get('best_practices', []),
-            components=data.get('components', []),
-            color_trends=data.get('color_trends', []),
-            layout_examples=data.get('layout_examples', []),
-            sources=data.get('sources', [])
+            industry=data["industry"],
+            use_case=data["use_case"],
+            timestamp=data["timestamp"],
+            patterns=data.get("patterns", []),
+            best_practices=data.get("best_practices", []),
+            components=data.get("components", []),
+            color_trends=data.get("color_trends", []),
+            layout_examples=data.get("layout_examples", []),
+            sources=data.get("sources", []),
         )
 
     def generate_design_brief(self, research: DesignResearch) -> str:

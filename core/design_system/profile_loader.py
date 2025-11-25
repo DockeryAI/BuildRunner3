@@ -32,37 +32,37 @@ class IndustryProfile:
 
     # Metadata
     has_full_profile: bool = False
-    source: str = 'yaml'
+    source: str = "yaml"
 
     def to_dict(self) -> Dict:
         """Convert to dictionary."""
         data = {
-            'id': self.id,
-            'name': self.name,
-            'naics_code': self.naics_code,
-            'category': self.category,
-            'keywords': self.keywords,
-            'has_full_profile': self.has_full_profile,
-            'source': self.source
+            "id": self.id,
+            "name": self.name,
+            "naics_code": self.naics_code,
+            "category": self.category,
+            "keywords": self.keywords,
+            "has_full_profile": self.has_full_profile,
+            "source": self.source,
         }
 
         # Add optional fields if present
         if self.power_words:
-            data['power_words'] = self.power_words
+            data["power_words"] = self.power_words
         if self.avoid_words:
-            data['avoid_words'] = self.avoid_words
+            data["avoid_words"] = self.avoid_words
         if self.content_themes:
-            data['content_themes'] = self.content_themes
+            data["content_themes"] = self.content_themes
         if self.common_pain_points:
-            data['common_pain_points'] = self.common_pain_points
+            data["common_pain_points"] = self.common_pain_points
         if self.common_buying_triggers:
-            data['common_buying_triggers'] = self.common_buying_triggers
+            data["common_buying_triggers"] = self.common_buying_triggers
         if self.trust_builders:
-            data['trust_builders'] = self.trust_builders
+            data["trust_builders"] = self.trust_builders
         if self.audience_characteristics:
-            data['audience_characteristics'] = self.audience_characteristics
+            data["audience_characteristics"] = self.audience_characteristics
         if self.psychology_profile:
-            data['psychology_profile'] = self.psychology_profile
+            data["psychology_profile"] = self.psychology_profile
 
         return data
 
@@ -106,25 +106,25 @@ class ProfileLoader:
         if not profile_file.exists():
             return None
 
-        with open(profile_file, 'r') as f:
+        with open(profile_file, "r") as f:
             data = yaml.safe_load(f)
 
         return IndustryProfile(
-            id=data.get('id', industry_id),
-            name=data.get('name', industry_id.replace('-', ' ').title()),
-            naics_code=data.get('naics_code', ''),
-            category=data.get('category', 'Unknown'),
-            keywords=data.get('keywords', []),
-            power_words=data.get('power_words'),
-            avoid_words=data.get('avoid_words'),
-            content_themes=data.get('content_themes'),
-            common_pain_points=data.get('common_pain_points'),
-            common_buying_triggers=data.get('common_buying_triggers'),
-            trust_builders=data.get('trust_builders'),
-            audience_characteristics=data.get('audience_characteristics'),
-            psychology_profile=data.get('psychology_profile'),
-            has_full_profile=data.get('has_full_profile', True),
-            source=data.get('source', 'yaml')
+            id=data.get("id", industry_id),
+            name=data.get("name", industry_id.replace("-", " ").title()),
+            naics_code=data.get("naics_code", ""),
+            category=data.get("category", "Unknown"),
+            keywords=data.get("keywords", []),
+            power_words=data.get("power_words"),
+            avoid_words=data.get("avoid_words"),
+            content_themes=data.get("content_themes"),
+            common_pain_points=data.get("common_pain_points"),
+            common_buying_triggers=data.get("common_buying_triggers"),
+            trust_builders=data.get("trust_builders"),
+            audience_characteristics=data.get("audience_characteristics"),
+            psychology_profile=data.get("psychology_profile"),
+            has_full_profile=data.get("has_full_profile", True),
+            source=data.get("source", "yaml"),
         )
 
     def list_available(self) -> List[str]:
@@ -221,10 +221,10 @@ class ProfileLoader:
                 full_profile_count += 1
 
         return {
-            'total': len(self.list_available()),
-            'full_profiles': full_profile_count,
-            'basic_profiles': len(self.list_available()) - full_profile_count,
-            'by_category': category_counts
+            "total": len(self.list_available()),
+            "full_profiles": full_profile_count,
+            "basic_profiles": len(self.list_available()) - full_profile_count,
+            "by_category": category_counts,
         }
 
 
@@ -245,7 +245,7 @@ def main():
     print()
 
     print("By category:")
-    for category, count in sorted(summary['by_category'].items(), key=lambda x: -x[1]):
+    for category, count in sorted(summary["by_category"].items(), key=lambda x: -x[1]):
         print(f"  {category:30s} {count:3d} profiles")
     print()
 
@@ -255,7 +255,7 @@ def main():
     print("=" * 70)
     print()
 
-    restaurant = loader.load_profile('restaurant')
+    restaurant = loader.load_profile("restaurant")
     if restaurant:
         print(f"ID: {restaurant.id}")
         print(f"Name: {restaurant.name}")
@@ -264,7 +264,9 @@ def main():
         print()
 
         if restaurant.power_words:
-            print(f"Power Words ({len(restaurant.power_words)}): {', '.join(restaurant.power_words[:10])}...")
+            print(
+                f"Power Words ({len(restaurant.power_words)}): {', '.join(restaurant.power_words[:10])}..."
+            )
 
         if restaurant.content_themes:
             print(f"\nContent Themes:")
@@ -273,7 +275,9 @@ def main():
 
         if restaurant.psychology_profile:
             print(f"\nPsychology Profile:")
-            print(f"  Primary Triggers: {', '.join(restaurant.psychology_profile.get('primary_triggers', []))}")
+            print(
+                f"  Primary Triggers: {', '.join(restaurant.psychology_profile.get('primary_triggers', []))}"
+            )
             print(f"  Urgency Level: {restaurant.psychology_profile.get('urgency_level', 'N/A')}")
 
     # Search example
@@ -283,7 +287,7 @@ def main():
     print("=" * 70)
     print()
 
-    results = loader.search('dental')
+    results = loader.search("dental")
     print(f"Found {len(results)} matches:")
     for profile in results[:5]:
         print(f"  • {profile.name} ({profile.category})")

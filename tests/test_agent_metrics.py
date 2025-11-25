@@ -124,10 +124,10 @@ class TestAgentMetricsBasics:
         )
 
         metric_dict = metric.to_dict()
-        assert metric_dict['agent_type'] == "review"
-        assert metric_dict['task_id'] == "task-004"
-        assert metric_dict['cost_usd'] > 0
-        assert isinstance(metric_dict['timestamp'], str)
+        assert metric_dict["agent_type"] == "review"
+        assert metric_dict["task_id"] == "task-004"
+        assert metric_dict["cost_usd"] > 0
+        assert isinstance(metric_dict["timestamp"], str)
 
 
 class TestCostCalculation:
@@ -453,7 +453,7 @@ class TestPersistence:
         assert storage_path.exists()
         data = json.loads(storage_path.read_text())
         assert len(data) == 1
-        assert data[0]['task_id'] == "task-persist-001"
+        assert data[0]["task_id"] == "task-persist-001"
 
     def test_metrics_loaded_from_json(self, temp_dir):
         """Test metrics are loaded from JSON file on initialization."""
@@ -509,22 +509,22 @@ class TestPersistence:
         # Create import file
         import_data = [
             {
-                'timestamp': datetime.now().isoformat(),
-                'agent_type': 'implement',
-                'task_id': 'task-import-001',
-                'task_description': 'Import test',
-                'model_used': ModelType.SONNET.value,
-                'duration_ms': 5000.0,
-                'input_tokens': 1000,
-                'output_tokens': 500,
-                'total_tokens': 1500,
-                'cost_usd': 0.05,
-                'success': True,
-                'test_pass_rate': 1.0,
-                'error_rate': 0.0,
-                'files_created': 0,
-                'files_modified': 0,
-                'error_message': None,
+                "timestamp": datetime.now().isoformat(),
+                "agent_type": "implement",
+                "task_id": "task-import-001",
+                "task_description": "Import test",
+                "model_used": ModelType.SONNET.value,
+                "duration_ms": 5000.0,
+                "input_tokens": 1000,
+                "output_tokens": 500,
+                "total_tokens": 1500,
+                "cost_usd": 0.05,
+                "success": True,
+                "test_pass_rate": 1.0,
+                "error_rate": 0.0,
+                "files_created": 0,
+                "files_modified": 0,
+                "error_message": None,
             }
         ]
         import_path.write_text(json.dumps(import_data))

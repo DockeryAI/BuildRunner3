@@ -37,27 +37,27 @@ class TestGovernanceManager:
     def sample_governance_config(self):
         """Sample valid governance configuration."""
         return {
-            'project': {
-                'name': 'TestProject',
-                'version': '1.0.0',
+            "project": {
+                "name": "TestProject",
+                "version": "1.0.0",
             },
-            'workflow': {
-                'rules': {
-                    'allowed_states': ['planned', 'in_progress', 'complete'],
-                    'transitions': {
-                        'planned': ['in_progress'],
-                        'in_progress': ['complete'],
-                        'complete': [],
-                    }
+            "workflow": {
+                "rules": {
+                    "allowed_states": ["planned", "in_progress", "complete"],
+                    "transitions": {
+                        "planned": ["in_progress"],
+                        "in_progress": ["complete"],
+                        "complete": [],
+                    },
                 }
             },
-            'validation': {
-                'required_checks': ['tests_pass', 'lint_pass'],
-                'coverage_threshold': 90,
+            "validation": {
+                "required_checks": ["tests_pass", "lint_pass"],
+                "coverage_threshold": 90,
             },
-            'enforcement': {
-                'policy': 'strict',
-            }
+            "enforcement": {
+                "policy": "strict",
+            },
         }
 
     @pytest.fixture
@@ -66,7 +66,7 @@ class TestGovernanceManager:
         gm = GovernanceManager(temp_project)
         config_file = temp_project / ".buildrunner" / "governance" / "governance.yaml"
 
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(sample_governance_config, f)
 
         return gm
@@ -105,7 +105,7 @@ class TestGovernanceManager:
         config_file.parent.mkdir(parents=True, exist_ok=True)
 
         # Write invalid YAML
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             f.write("invalid: yaml: syntax: [unclosed")
 
         with pytest.raises(GovernanceError, match="Failed to parse"):
@@ -119,7 +119,7 @@ class TestGovernanceManager:
     def test_validate_missing_section(self, governance_with_config):
         """Test validation fails when required section is missing."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
+            "project": {"name": "Test"},
             # Missing 'workflow' and 'validation'
         }
 
@@ -129,9 +129,9 @@ class TestGovernanceManager:
     def test_validate_missing_project_name(self, governance_with_config):
         """Test validation fails when project.name is missing."""
         governance_with_config.config = {
-            'project': {},  # Missing 'name'
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
+            "project": {},  # Missing 'name'
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
         }
 
         with pytest.raises(GovernanceValidationError, match="project.name is required"):
@@ -140,9 +140,9 @@ class TestGovernanceManager:
     def test_validate_missing_workflow_rules(self, governance_with_config):
         """Test validation fails when workflow.rules is missing."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
-            'workflow': {},  # Missing 'rules'
-            'validation': {'required_checks': []},
+            "project": {"name": "Test"},
+            "workflow": {},  # Missing 'rules'
+            "validation": {"required_checks": []},
         }
 
         with pytest.raises(GovernanceValidationError, match="workflow.rules is required"):
@@ -158,7 +158,7 @@ class TestGovernanceManager:
         assert gm.config_file.exists()
 
         # Verify content
-        with open(gm.config_file, 'r') as f:
+        with open(gm.config_file, "r") as f:
             saved_config = yaml.safe_load(f)
 
         assert saved_config == sample_governance_config
@@ -179,7 +179,7 @@ class TestGovernanceManager:
 
         # SHA256 hex digest is 64 characters
         assert len(checksum) == 64
-        assert all(c in '0123456789abcdef' for c in checksum)
+        assert all(c in "0123456789abcdef" for c in checksum)
 
         # Verify checksum file was created
         assert governance_with_config.checksum_file.exists()
@@ -212,7 +212,7 @@ class TestGovernanceManager:
         governance_with_config.generate_checksum()
 
         # Modify the file
-        with open(governance_with_config.config_file, 'a') as f:
+        with open(governance_with_config.config_file, "a") as f:
             f.write("\n# Modified\n")
 
         assert governance_with_config.verify_checksum() is False
@@ -223,7 +223,7 @@ class TestGovernanceManager:
         governance_with_config.generate_checksum()
 
         # Modify the file
-        with open(governance_with_config.config_file, 'a') as f:
+        with open(governance_with_config.config_file, "a") as f:
             f.write("\n# Tampered\n")
 
         # Load should fail checksum verification
@@ -235,8 +235,8 @@ class TestGovernanceManager:
         governance_with_config.load(verify_checksum=False)
         rules = governance_with_config.get_workflow_rules()
 
-        assert 'allowed_states' in rules
-        assert 'transitions' in rules
+        assert "allowed_states" in rules
+        assert "transitions" in rules
 
     def test_get_workflow_rules_not_loaded(self, temp_project):
         """Test get_workflow_rules fails when not loaded."""
@@ -250,65 +250,63 @@ class TestGovernanceManager:
         governance_with_config.load(verify_checksum=False)
         validation = governance_with_config.get_validation_rules()
 
-        assert 'required_checks' in validation
-        assert validation['coverage_threshold'] == 90
+        assert "required_checks" in validation
+        assert validation["coverage_threshold"] == 90
 
     def test_get_required_checks(self, governance_with_config):
         """Test retrieving required checks list."""
         governance_with_config.load(verify_checksum=False)
         checks = governance_with_config.get_required_checks()
 
-        assert 'tests_pass' in checks
-        assert 'lint_pass' in checks
+        assert "tests_pass" in checks
+        assert "lint_pass" in checks
 
     def test_get_feature_dependencies(self, governance_with_config):
         """Test retrieving feature dependencies."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
-            'dependencies': {
-                'feature-a': [],
-                'feature-b': ['feature-a'],
-                'feature-c': ['feature-a', 'feature-b'],
-            }
+            "project": {"name": "Test"},
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
+            "dependencies": {
+                "feature-a": [],
+                "feature-b": ["feature-a"],
+                "feature-c": ["feature-a", "feature-b"],
+            },
         }
         governance_with_config._loaded = True
 
-        deps_a = governance_with_config.get_feature_dependencies('feature-a')
-        deps_b = governance_with_config.get_feature_dependencies('feature-b')
-        deps_c = governance_with_config.get_feature_dependencies('feature-c')
+        deps_a = governance_with_config.get_feature_dependencies("feature-a")
+        deps_b = governance_with_config.get_feature_dependencies("feature-b")
+        deps_c = governance_with_config.get_feature_dependencies("feature-c")
 
         assert deps_a == []
-        assert deps_b == ['feature-a']
-        assert deps_c == ['feature-a', 'feature-b']
+        assert deps_b == ["feature-a"]
+        assert deps_c == ["feature-a", "feature-b"]
 
     def test_get_feature_dependencies_missing(self, governance_with_config):
         """Test retrieving dependencies for non-existent feature."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
-            'dependencies': {}
+            "project": {"name": "Test"},
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
+            "dependencies": {},
         }
         governance_with_config._loaded = True
 
-        deps = governance_with_config.get_feature_dependencies('nonexistent')
+        deps = governance_with_config.get_feature_dependencies("nonexistent")
         assert deps == []
 
     def test_check_feature_can_start_no_deps(self, governance_with_config):
         """Test checking if feature can start when it has no dependencies."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
-            'dependencies': {'feature-a': []}
+            "project": {"name": "Test"},
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
+            "dependencies": {"feature-a": []},
         }
         governance_with_config._loaded = True
 
-        can_start, missing = governance_with_config.check_feature_can_start(
-            'feature-a', set()
-        )
+        can_start, missing = governance_with_config.check_feature_can_start("feature-a", set())
 
         assert can_start is True
         assert missing == []
@@ -316,15 +314,15 @@ class TestGovernanceManager:
     def test_check_feature_can_start_deps_met(self, governance_with_config):
         """Test feature can start when dependencies are met."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
-            'dependencies': {'feature-b': ['feature-a']}
+            "project": {"name": "Test"},
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
+            "dependencies": {"feature-b": ["feature-a"]},
         }
         governance_with_config._loaded = True
 
         can_start, missing = governance_with_config.check_feature_can_start(
-            'feature-b', {'feature-a'}
+            "feature-b", {"feature-a"}
         )
 
         assert can_start is True
@@ -333,39 +331,37 @@ class TestGovernanceManager:
     def test_check_feature_can_start_deps_not_met(self, governance_with_config):
         """Test feature cannot start when dependencies are not met."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
-            'dependencies': {'feature-b': ['feature-a']}
+            "project": {"name": "Test"},
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
+            "dependencies": {"feature-b": ["feature-a"]},
         }
         governance_with_config._loaded = True
 
-        can_start, missing = governance_with_config.check_feature_can_start(
-            'feature-b', set()
-        )
+        can_start, missing = governance_with_config.check_feature_can_start("feature-b", set())
 
         assert can_start is False
-        assert missing == ['feature-a']
+        assert missing == ["feature-a"]
 
     def test_get_enforcement_policy(self, governance_with_config):
         """Test retrieving enforcement policy."""
         governance_with_config.load(verify_checksum=False)
         policy = governance_with_config.get_enforcement_policy()
 
-        assert policy == 'strict'
+        assert policy == "strict"
 
     def test_get_enforcement_policy_default(self, governance_with_config):
         """Test enforcement policy defaults to strict."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
+            "project": {"name": "Test"},
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
             # No 'enforcement' section
         }
         governance_with_config._loaded = True
 
         policy = governance_with_config.get_enforcement_policy()
-        assert policy == 'strict'
+        assert policy == "strict"
 
     def test_is_strict_mode(self, governance_with_config):
         """Test is_strict_mode returns correct boolean."""
@@ -375,10 +371,10 @@ class TestGovernanceManager:
     def test_is_strict_mode_false(self, governance_with_config):
         """Test is_strict_mode returns False for non-strict policy."""
         governance_with_config.config = {
-            'project': {'name': 'Test'},
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
-            'enforcement': {'policy': 'warn'}
+            "project": {"name": "Test"},
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
+            "enforcement": {"policy": "warn"},
         }
         governance_with_config._loaded = True
 
@@ -402,16 +398,16 @@ class TestFactoryFunction:
         config_file.parent.mkdir(parents=True)
 
         config = {
-            'project': {'name': 'Test'},
-            'workflow': {'rules': {}},
-            'validation': {'required_checks': []},
+            "project": {"name": "Test"},
+            "workflow": {"rules": {}},
+            "validation": {"required_checks": []},
         }
 
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config, f)
 
         # Factory should load it
         gm = get_governance_manager(tmp_path)
 
         assert gm._loaded is True
-        assert gm.config['project']['name'] == 'Test'
+        assert gm.config["project"]["name"] == "Test"

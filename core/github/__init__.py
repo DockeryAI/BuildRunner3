@@ -26,21 +26,21 @@ from .coauthor_manager import CoAuthorManager
 from .deployment_manager import DeploymentManager
 
 __all__ = [
-    'BranchManager',
-    'PushIntelligence',
-    'ConflictDetector',
-    'VersionManager',
-    'ChangelogGenerator',
-    'ReleaseManager',
-    'PRManager',
-    'CommitBuilder',
-    'ProtectionManager',
-    'SnapshotManager',
-    'MetricsTracker',
-    'HealthChecker',
-    'IssuesManager',
-    'CoAuthorManager',
-    'DeploymentManager',
+    "BranchManager",
+    "PushIntelligence",
+    "ConflictDetector",
+    "VersionManager",
+    "ChangelogGenerator",
+    "ReleaseManager",
+    "PRManager",
+    "CommitBuilder",
+    "ProtectionManager",
+    "SnapshotManager",
+    "MetricsTracker",
+    "HealthChecker",
+    "IssuesManager",
+    "CoAuthorManager",
+    "DeploymentManager",
 ]
 
-__version__ = '1.0.0'
+__version__ = "1.0.0"

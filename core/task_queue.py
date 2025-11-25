@@ -14,18 +14,20 @@ from pathlib import Path
 
 class TaskStatus(Enum):
     """Task execution status"""
+
     PENDING = "pending"
-    READY = "ready"           # Dependencies met, ready to execute
+    READY = "ready"  # Dependencies met, ready to execute
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
-    BLOCKED = "blocked"       # Dependencies not met
+    BLOCKED = "blocked"  # Dependencies not met
     SKIPPED = "skipped"
 
 
 @dataclass
 class QueuedTask:
     """Represents a task in the execution queue"""
+
     id: str
     name: str
     description: str
@@ -248,7 +250,12 @@ class TaskQueue:
     def is_complete(self) -> bool:
         """Check if all tasks are complete or failed"""
         for task in self.tasks.values():
-            if task.status in [TaskStatus.PENDING, TaskStatus.READY, TaskStatus.IN_PROGRESS, TaskStatus.BLOCKED]:
+            if task.status in [
+                TaskStatus.PENDING,
+                TaskStatus.READY,
+                TaskStatus.IN_PROGRESS,
+                TaskStatus.BLOCKED,
+            ]:
                 return False
         return True
 
@@ -353,7 +360,12 @@ class TaskQueue:
         remaining_minutes = 0
 
         for task in self.tasks.values():
-            if task.status in [TaskStatus.PENDING, TaskStatus.READY, TaskStatus.IN_PROGRESS, TaskStatus.BLOCKED]:
+            if task.status in [
+                TaskStatus.PENDING,
+                TaskStatus.READY,
+                TaskStatus.IN_PROGRESS,
+                TaskStatus.BLOCKED,
+            ]:
                 remaining_minutes += task.estimated_minutes
 
         return remaining_minutes

@@ -12,7 +12,7 @@ from core.routing.fallback_handler import (
     FallbackHandler,
     FallbackStrategy,
     FailureReason,
-    FailureEvent
+    FailureEvent,
 )
 
 
@@ -30,11 +30,7 @@ class TestFallbackHandler:
         alternatives = ["sonnet", "opus"]
 
         next_model, should_retry = handler.handle_failure(
-            model="haiku",
-            error=error,
-            task_id="task-1",
-            alternatives=alternatives,
-            retry_count=0
+            model="haiku", error=error, task_id="task-1", alternatives=alternatives, retry_count=0
         )
 
         # Should switch to first alternative
@@ -52,7 +48,7 @@ class TestFallbackHandler:
             task_id="task-2",
             alternatives=alternatives,
             retry_count=0,
-            strategy=FallbackStrategy.UPGRADE
+            strategy=FallbackStrategy.UPGRADE,
         )
 
         # Should upgrade to opus
@@ -65,11 +61,7 @@ class TestFallbackHandler:
         alternatives = ["sonnet"]
 
         next_model, should_retry = handler.handle_failure(
-            model="haiku",
-            error=error,
-            task_id="task-3",
-            alternatives=alternatives,
-            retry_count=0
+            model="haiku", error=error, task_id="task-3", alternatives=alternatives, retry_count=0
         )
 
         # Should retry same model
@@ -86,7 +78,7 @@ class TestFallbackHandler:
             error=error,
             task_id="task-4",
             alternatives=alternatives,
-            retry_count=3  # At max retries
+            retry_count=3,  # At max retries
         )
 
         # Should switch to alternative
@@ -99,11 +91,7 @@ class TestFallbackHandler:
         alternatives = ["sonnet"]
 
         next_model, should_retry = handler.handle_failure(
-            model="haiku",
-            error=error,
-            task_id="task-5",
-            alternatives=alternatives,
-            retry_count=0
+            model="haiku", error=error, task_id="task-5", alternatives=alternatives, retry_count=0
         )
 
         # Should try alternative immediately
@@ -116,11 +104,7 @@ class TestFallbackHandler:
         alternatives = ["sonnet"]
 
         next_model, should_retry = handler.handle_failure(
-            model="haiku",
-            error=error,
-            task_id="task-6",
-            alternatives=alternatives,
-            retry_count=0
+            model="haiku", error=error, task_id="task-6", alternatives=alternatives, retry_count=0
         )
 
         # Should retry same model (transient error)
@@ -132,11 +116,7 @@ class TestFallbackHandler:
         error = Exception("Rate limit exceeded")
 
         handler.handle_failure(
-            model="haiku",
-            error=error,
-            task_id="task-7",
-            alternatives=["sonnet"],
-            retry_count=0
+            model="haiku", error=error, task_id="task-7", alternatives=["sonnet"], retry_count=0
         )
 
         # Check history
@@ -148,14 +128,12 @@ class TestFallbackHandler:
 
     def test_execute_with_fallback_success_first_try(self, handler):
         """Test execute_with_fallback succeeds on first try."""
+
         def execute_fn(model):
             return f"Success with {model}"
 
         result = handler.execute_with_fallback(
-            model="haiku",
-            task_id="task-8",
-            execute_fn=execute_fn,
-            alternatives=["sonnet", "opus"]
+            model="haiku", task_id="task-8", execute_fn=execute_fn, alternatives=["sonnet", "opus"]
         )
 
         assert result == "Success with haiku"
@@ -172,10 +150,7 @@ class TestFallbackHandler:
             return f"Success with {model}"
 
         result = handler.execute_with_fallback(
-            model="haiku",
-            task_id="task-9",
-            execute_fn=execute_fn,
-            alternatives=["sonnet"]
+            model="haiku", task_id="task-9", execute_fn=execute_fn, alternatives=["sonnet"]
         )
 
         # Should succeed with alternative
@@ -216,16 +191,16 @@ class TestFallbackHandler:
                     error=Exception("Rate limit exceeded"),
                     task_id=f"task-{i}",
                     alternatives=["sonnet"],
-                    retry_count=i
+                    retry_count=i,
                 )
             except:
                 pass
 
         stats = handler.get_statistics()
 
-        assert stats['total_failures'] == 5
-        assert 'haiku' in stats['failures_by_model']
-        assert stats['most_common_failure'] == 'rate_limit'
+        assert stats["total_failures"] == 5
+        assert "haiku" in stats["failures_by_model"]
+        assert stats["most_common_failure"] == "rate_limit"
 
     def test_rate_limit_tracking(self, handler):
         """Test rate limit detection and tracking."""

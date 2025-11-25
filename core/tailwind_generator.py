@@ -1,6 +1,7 @@
 """
 Tailwind 4 configuration generator for BuildRunner design system
 """
+
 import json
 import yaml
 from pathlib import Path
@@ -15,10 +16,7 @@ class TailwindGenerator:
         self.templates_dir = self.project_root / "templates"
 
     def generate_tailwind_config(
-        self,
-        industry: str,
-        use_case: str,
-        output_path: Path = None
+        self, industry: str, use_case: str, output_path: Path = None
     ) -> Dict[str, Any]:
         """
         Generate complete Tailwind config from profiles
@@ -48,9 +46,7 @@ class TailwindGenerator:
         return config
 
     def merge_design_tokens(
-        self,
-        industry: Dict[str, Any],
-        use_case: Dict[str, Any]
+        self, industry: Dict[str, Any], use_case: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
         Merge industry and use case design tokens
@@ -72,12 +68,9 @@ class TailwindGenerator:
             "borders": industry.get("borders", {}),
             "shadows": industry.get("shadows", {}),
             "breakpoints": industry.get("breakpoints", use_case.get("breakpoints", {})),
-            "components": {
-                **industry.get("components", {}),
-                **use_case.get("components", {})
-            },
+            "components": {**industry.get("components", {}), **use_case.get("components", {})},
             "layout": use_case.get("layout", {}),
-            "patterns": use_case.get("patterns", [])
+            "patterns": use_case.get("patterns", []),
         }
 
         return merged
@@ -124,9 +117,13 @@ class TailwindGenerator:
         theme = {
             "colors": self._flatten_colors(tokens.get("colors", {})),
             "fontFamily": {
-                "sans": [tokens.get("typography", {}).get("fonts", {}).get("primary", "sans-serif")],
+                "sans": [
+                    tokens.get("typography", {}).get("fonts", {}).get("primary", "sans-serif")
+                ],
                 "serif": [tokens.get("typography", {}).get("fonts", {}).get("secondary", "serif")],
-                "mono": [tokens.get("typography", {}).get("fonts", {}).get("monospace", "monospace")]
+                "mono": [
+                    tokens.get("typography", {}).get("fonts", {}).get("monospace", "monospace")
+                ],
             },
             "fontSize": tokens.get("typography", {}).get("sizes", {}),
             "fontWeight": tokens.get("typography", {}).get("weights", {}),
@@ -134,7 +131,7 @@ class TailwindGenerator:
             "spacing": self._spacing_to_scale(tokens.get("spacing", {})),
             "borderRadius": tokens.get("borders", {}).get("radius", {}),
             "boxShadow": tokens.get("shadows", {}),
-            "screens": tokens.get("breakpoints", {})
+            "screens": tokens.get("breakpoints", {}),
         }
 
         return theme
@@ -145,18 +142,15 @@ class TailwindGenerator:
         if not profile_path.exists():
             raise FileNotFoundError(f"Profile not found: {profile_path}")
 
-        with open(profile_path, 'r') as f:
+        with open(profile_path, "r") as f:
             return yaml.safe_load(f)
 
     def _build_tailwind_config(self, tokens: Dict[str, Any]) -> Dict[str, Any]:
         """Build complete Tailwind config object"""
         return {
-            "content": [
-                "./src/**/*.{js,jsx,ts,tsx}",
-                "./public/index.html"
-            ],
+            "content": ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
             "theme": self.generate_theme_json(tokens),
-            "plugins": []
+            "plugins": [],
         }
 
     def _write_config(self, config: Dict[str, Any], output_path: Path):

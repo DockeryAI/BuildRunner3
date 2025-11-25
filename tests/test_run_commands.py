@@ -24,7 +24,7 @@ def mock_queue_with_ready_tasks():
         estimated_minutes=60,
         complexity="medium",
         domain="backend",
-        dependencies=[]
+        dependencies=[],
     )
     task2 = QueuedTask(
         id="task2",
@@ -34,7 +34,7 @@ def mock_queue_with_ready_tasks():
         estimated_minutes=30,
         complexity="simple",
         domain="testing",
-        dependencies=[]
+        dependencies=[],
     )
     task3 = QueuedTask(
         id="task3",
@@ -44,7 +44,7 @@ def mock_queue_with_ready_tasks():
         estimated_minutes=20,
         complexity="simple",
         domain="documentation",
-        dependencies=["task2"]
+        dependencies=["task2"],
     )
     queue.add_task(task1)
     queue.add_task(task2)
@@ -80,7 +80,7 @@ class TestRunAuto:
             estimated_minutes=60,
             complexity="medium",
             domain="backend",
-            dependencies=["task0"]  # Depends on non-existent task
+            dependencies=["task0"],  # Depends on non-existent task
         )
         mock_queue.add_task(task1)
         mock_get_queue.return_value = mock_queue
@@ -104,7 +104,7 @@ class TestRunAuto:
         mock_get_queue,
         mock_queue_with_ready_tasks,
         tmp_path,
-        monkeypatch
+        monkeypatch,
     ):
         """Test successful auto-run in interactive mode"""
         monkeypatch.chdir(tmp_path)
@@ -114,7 +114,13 @@ class TestRunAuto:
         mock_batch = Mock()
         mock_batch.id = 1
         mock_batch.tasks = [
-            {"id": "task1", "description": "Task 1", "duration_minutes": 60, "complexity": "medium", "domain": "backend"}
+            {
+                "id": "task1",
+                "description": "Task 1",
+                "duration_minutes": 60,
+                "complexity": "medium",
+                "domain": "backend",
+            }
         ]
         mock_optimizer = Mock()
         mock_optimizer.optimize_batches.return_value = [mock_batch]
@@ -140,12 +146,7 @@ class TestRunAuto:
     @patch("cli.run_commands.get_task_queue")
     @patch("cli.run_commands.BatchOptimizer")
     def test_run_auto_cancel(
-        self,
-        mock_batch_cls,
-        mock_get_queue,
-        mock_queue_with_ready_tasks,
-        tmp_path,
-        monkeypatch
+        self, mock_batch_cls, mock_get_queue, mock_queue_with_ready_tasks, tmp_path, monkeypatch
     ):
         """Test cancelling auto-run"""
         monkeypatch.chdir(tmp_path)
@@ -177,7 +178,7 @@ class TestRunAuto:
         mock_get_queue,
         mock_queue_with_ready_tasks,
         tmp_path,
-        monkeypatch
+        monkeypatch,
     ):
         """Test auto-run in non-interactive mode"""
         monkeypatch.chdir(tmp_path)
@@ -187,7 +188,13 @@ class TestRunAuto:
         mock_batch = Mock()
         mock_batch.id = 1
         mock_batch.tasks = [
-            {"id": "task1", "description": "Task 1", "duration_minutes": 60, "complexity": "medium", "domain": "backend"}
+            {
+                "id": "task1",
+                "description": "Task 1",
+                "duration_minutes": 60,
+                "complexity": "medium",
+                "domain": "backend",
+            }
         ]
         mock_optimizer = Mock()
         mock_optimizer.optimize_batches.return_value = [mock_batch]
@@ -222,7 +229,7 @@ class TestRunAuto:
         mock_get_queue,
         mock_queue_with_ready_tasks,
         tmp_path,
-        monkeypatch
+        monkeypatch,
     ):
         """Test auto-run with verification enabled"""
         monkeypatch.chdir(tmp_path)
@@ -238,7 +245,7 @@ class TestRunAuto:
                 "duration_minutes": 60,
                 "complexity": "medium",
                 "domain": "backend",
-                "file_path": "test.py"
+                "file_path": "test.py",
             }
         ]
         mock_optimizer = Mock()
@@ -282,7 +289,9 @@ class TestRunStatus:
         assert "No orchestration in progress" in result.stdout
 
     @patch("cli.run_commands.get_task_queue")
-    def test_status_with_tasks(self, mock_get_queue, mock_queue_with_ready_tasks, tmp_path, monkeypatch):
+    def test_status_with_tasks(
+        self, mock_get_queue, mock_queue_with_ready_tasks, tmp_path, monkeypatch
+    ):
         """Test status displays task progress"""
         monkeypatch.chdir(tmp_path)
         mock_get_queue.return_value = mock_queue_with_ready_tasks
@@ -294,7 +303,9 @@ class TestRunStatus:
         assert "Progress" in result.stdout
 
     @patch("cli.run_commands.get_task_queue")
-    def test_status_with_completed_tasks(self, mock_get_queue, mock_queue_with_ready_tasks, tmp_path, monkeypatch):
+    def test_status_with_completed_tasks(
+        self, mock_get_queue, mock_queue_with_ready_tasks, tmp_path, monkeypatch
+    ):
         """Test status shows completion percentage"""
         monkeypatch.chdir(tmp_path)
 
@@ -309,7 +320,9 @@ class TestRunStatus:
         assert "Completed" in result.stdout
 
     @patch("cli.run_commands.get_task_queue")
-    def test_status_shows_next_batch(self, mock_get_queue, mock_queue_with_ready_tasks, tmp_path, monkeypatch):
+    def test_status_shows_next_batch(
+        self, mock_get_queue, mock_queue_with_ready_tasks, tmp_path, monkeypatch
+    ):
         """Test status shows next batch info"""
         monkeypatch.chdir(tmp_path)
         mock_get_queue.return_value = mock_queue_with_ready_tasks

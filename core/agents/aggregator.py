@@ -20,17 +20,19 @@ from core.agents.claude_agent_bridge import AgentResponse, AgentType
 
 class ConflictStrategy(str, Enum):
     """Strategy for resolving conflicts between agent results"""
-    FIRST_WINS = "first_wins"         # Take first result
-    LAST_WINS = "last_wins"           # Take last result
-    MERGE = "merge"                   # Merge results
-    UNION = "union"                   # Union of all results
-    INTERSECTION = "intersection"     # Intersection of all results
-    CONSENSUS = "consensus"           # Require consensus
+
+    FIRST_WINS = "first_wins"  # Take first result
+    LAST_WINS = "last_wins"  # Take last result
+    MERGE = "merge"  # Merge results
+    UNION = "union"  # Union of all results
+    INTERSECTION = "intersection"  # Intersection of all results
+    CONSENSUS = "consensus"  # Require consensus
 
 
 @dataclass
 class AggregatedResult:
     """Result of aggregating multiple agent responses"""
+
     aggregation_id: str
     aggregated_at: datetime
     results: List[AgentResponse]
@@ -45,16 +47,16 @@ class AggregatedResult:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'aggregation_id': self.aggregation_id,
-            'aggregated_at': self.aggregated_at.isoformat(),
-            'result_count': len(self.results),
-            'merged_output': self.merged_output,
-            'merged_files_created': self.merged_files_created,
-            'merged_files_modified': self.merged_files_modified,
-            'merged_errors': self.merged_errors,
-            'summary': self.summary,
-            'conflict_resolutions': self.conflict_resolutions,
-            'metrics': self.metrics,
+            "aggregation_id": self.aggregation_id,
+            "aggregated_at": self.aggregated_at.isoformat(),
+            "result_count": len(self.results),
+            "merged_output": self.merged_output,
+            "merged_files_created": self.merged_files_created,
+            "merged_files_modified": self.merged_files_modified,
+            "merged_errors": self.merged_errors,
+            "summary": self.summary,
+            "conflict_resolutions": self.conflict_resolutions,
+            "metrics": self.metrics,
         }
 
 
@@ -119,12 +121,8 @@ class ResultAggregator:
         merged_output = self._merge_outputs(results)
 
         # Merge files
-        merged_files_created = self._merge_files(
-            [r.files_created for r in results]
-        )
-        merged_files_modified = self._merge_files(
-            [r.files_modified for r in results]
-        )
+        merged_files_created = self._merge_files([r.files_created for r in results])
+        merged_files_modified = self._merge_files([r.files_modified for r in results])
 
         # Merge errors
         merged_errors = self._merge_errors(results)
@@ -235,14 +233,16 @@ class ResultAggregator:
                 lines.append(f"   - Errors: {len(result.errors)}")
 
         # Add metrics
-        lines.extend([
-            "",
-            "## Metrics",
-            "",
-            f"Total files created: {len(set().union(*(r.files_created for r in results)))}",
-            f"Total files modified: {len(set().union(*(r.files_modified for r in results)))}",
-            f"Total errors: {len(self._merge_errors(results))}",
-        ])
+        lines.extend(
+            [
+                "",
+                "## Metrics",
+                "",
+                f"Total files created: {len(set().union(*(r.files_created for r in results)))}",
+                f"Total files modified: {len(set().union(*(r.files_modified for r in results)))}",
+                f"Total errors: {len(self._merge_errors(results))}",
+            ]
+        )
 
         # Calculate success rate
         successful = sum(1 for r in results if r.success)
@@ -292,19 +292,13 @@ class ResultAggregator:
         failed_count = len(results) - successful_count
 
         return {
-            'total_duration_ms': total_duration_ms,
-            'avg_duration_ms': (
-                total_duration_ms / len(results) if results else 0
-            ),
-            'total_tokens': total_tokens,
-            'avg_tokens': (
-                total_tokens / len(results) if results else 0
-            ),
-            'successful_agents': successful_count,
-            'failed_agents': failed_count,
-            'success_rate': (
-                (successful_count / len(results)) * 100 if results else 0
-            ),
+            "total_duration_ms": total_duration_ms,
+            "avg_duration_ms": (total_duration_ms / len(results) if results else 0),
+            "total_tokens": total_tokens,
+            "avg_tokens": (total_tokens / len(results) if results else 0),
+            "successful_agents": successful_count,
+            "failed_agents": failed_count,
+            "success_rate": ((successful_count / len(results)) * 100 if results else 0),
         }
 
     def aggregate_sequential_results(
@@ -332,12 +326,8 @@ class ResultAggregator:
         # For sequential results, focus on final outputs
         # but track progression through phases
         merged_output = self._create_sequential_narrative(results, task_context)
-        merged_files_created = self._merge_files(
-            [r.files_created for r in results]
-        )
-        merged_files_modified = self._merge_files(
-            [r.files_modified for r in results]
-        )
+        merged_files_created = self._merge_files([r.files_created for r in results])
+        merged_files_modified = self._merge_files([r.files_modified for r in results])
         merged_errors = self._merge_errors(results)
 
         summary = self._generate_sequential_summary(results)
@@ -384,12 +374,8 @@ class ResultAggregator:
         # For parallel results, group by agent type
         results_by_type = self._group_results_by_agent_type(results)
         merged_output = self._create_parallel_summary(results_by_type, task_context)
-        merged_files_created = self._merge_files(
-            [r.files_created for r in results]
-        )
-        merged_files_modified = self._merge_files(
-            [r.files_modified for r in results]
-        )
+        merged_files_created = self._merge_files([r.files_created for r in results])
+        merged_files_modified = self._merge_files([r.files_modified for r in results])
         merged_errors = self._merge_errors(results)
 
         summary = self._generate_parallel_summary(results_by_type)
@@ -446,12 +432,14 @@ class ResultAggregator:
         ]
 
         for i, (phase, result) in enumerate(zip(phases, results), 1):
-            lines.extend([
-                f"## Phase {i}: {phase}",
-                f"Agent: {result.agent_type.value.upper()}",
-                f"Status: {'SUCCESS' if result.success else 'FAILED'}",
-                "",
-            ])
+            lines.extend(
+                [
+                    f"## Phase {i}: {phase}",
+                    f"Agent: {result.agent_type.value.upper()}",
+                    f"Status: {'SUCCESS' if result.success else 'FAILED'}",
+                    "",
+                ]
+            )
 
             if result.output:
                 lines.append(result.output)
@@ -475,11 +463,13 @@ class ResultAggregator:
             lines.extend([task_context, ""])
 
         for agent_type, results in sorted(results_by_type.items()):
-            lines.extend([
-                f"## {agent_type.upper()}",
-                f"Results: {len(results)}",
-                "",
-            ])
+            lines.extend(
+                [
+                    f"## {agent_type.upper()}",
+                    f"Results: {len(results)}",
+                    "",
+                ]
+            )
 
             for result in results:
                 status = "SUCCESS" if result.success else "FAILED"
@@ -513,10 +503,12 @@ class ResultAggregator:
 
         # Overall status
         overall_success = all(r.success for r in results)
-        lines.extend([
-            "",
-            f"Overall Status: {'SUCCESS' if overall_success else 'FAILED'}",
-        ])
+        lines.extend(
+            [
+                "",
+                f"Overall Status: {'SUCCESS' if overall_success else 'FAILED'}",
+            ]
+        )
 
         return "\n".join(lines)
 
@@ -542,24 +534,27 @@ class ResultAggregator:
         # Overall status
         all_results = [r for results in results_by_type.values() for r in results]
         all_successful = all(r.success for r in all_results)
-        lines.extend([
-            "",
-            f"Overall Success: {all_successful}",
-        ])
+        lines.extend(
+            [
+                "",
+                f"Overall Success: {all_successful}",
+            ]
+        )
 
         return "\n".join(lines)
 
     def _generate_id(self) -> str:
         """Generate unique aggregation ID"""
         from uuid import uuid4
+
         return str(uuid4())[:8]
 
     def get_stats(self) -> Dict[str, Any]:
         """Get aggregator statistics"""
         return {
-            'aggregations_count': self.aggregations_count,
-            'total_results_aggregated': self.total_results_aggregated,
-            'avg_results_per_aggregation': (
+            "aggregations_count": self.aggregations_count,
+            "total_results_aggregated": self.total_results_aggregated,
+            "avg_results_per_aggregation": (
                 self.total_results_aggregated / self.aggregations_count
                 if self.aggregations_count > 0
                 else 0

@@ -32,6 +32,7 @@ from core.task_queue import QueuedTask, TaskStatus
 
 class WorkflowStatus(str, Enum):
     """Workflow execution status"""
+
     PENDING = "pending"
     RUNNING = "running"
     PAUSED = "paused"
@@ -42,16 +43,18 @@ class WorkflowStatus(str, Enum):
 
 class WorkflowPhase(str, Enum):
     """Phases in a workflow"""
-    EXPLORE = "explore"           # Understanding and analysis
-    IMPLEMENT = "implement"       # Feature implementation
-    TEST = "test"                 # Testing and validation
-    REVIEW = "review"             # Code review and optimization
-    COMPLETE = "complete"         # Workflow completion
+
+    EXPLORE = "explore"  # Understanding and analysis
+    IMPLEMENT = "implement"  # Feature implementation
+    TEST = "test"  # Testing and validation
+    REVIEW = "review"  # Code review and optimization
+    COMPLETE = "complete"  # Workflow completion
 
 
 @dataclass
 class AgentWorkItem:
     """A single work item in the workflow"""
+
     item_id: str
     agent_type: AgentType
     prompt: str
@@ -75,18 +78,19 @@ class AgentWorkItem:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
-            'item_id': self.item_id,
-            'agent_type': self.agent_type.value,
-            'task_id': self.task.id,
-            'status': self.status.value,
-            'duration_ms': self.duration_ms(),
-            'error_message': self.error_message,
+            "item_id": self.item_id,
+            "agent_type": self.agent_type.value,
+            "task_id": self.task.id,
+            "status": self.status.value,
+            "duration_ms": self.duration_ms(),
+            "error_message": self.error_message,
         }
 
 
 @dataclass
 class WorkflowCheckpoint:
     """Checkpoint for workflow recovery"""
+
     checkpoint_id: str
     workflow_id: str
     phase: WorkflowPhase
@@ -123,7 +127,7 @@ class AgentChain:
         """
         self.agent_bridge = agent_bridge
         self.workflow_id = workflow_id or str(uuid4())[:8]
-        self.checkpoint_dir = checkpoint_dir or Path('.buildrunner/workflows')
+        self.checkpoint_dir = checkpoint_dir or Path(".buildrunner/workflows")
         self.enable_checkpointing = enable_checkpointing
 
         # Ensure checkpoint directory exists
@@ -144,12 +148,12 @@ class AgentChain:
 
         # Statistics
         self.stats = {
-            'total_items': 0,
-            'completed_items': 0,
-            'failed_items': 0,
-            'avg_item_duration_ms': 0.0,
-            'by_phase': {},
-            'by_agent_type': {},
+            "total_items": 0,
+            "completed_items": 0,
+            "failed_items": 0,
+            "avg_item_duration_ms": 0.0,
+            "by_phase": {},
+            "by_agent_type": {},
         }
 
     def add_work_item(
@@ -184,7 +188,7 @@ class AgentChain:
         )
 
         self.items[item_id] = item
-        self.stats['total_items'] += 1
+        self.stats["total_items"] += 1
 
         return item_id
 
@@ -242,7 +246,8 @@ class AgentChain:
                         item.status = AgentStatus.FAILED
                         self.failed_items.append(item_id)
                         error_msg = (
-                            item.response.errors[0] if item.response and item.response.errors
+                            item.response.errors[0]
+                            if item.response and item.response.errors
                             else "Unknown error"
                         )
                         if on_item_failed:
@@ -261,9 +266,7 @@ class AgentChain:
 
             # Final status
             self.completed_at = datetime.now()
-            self.total_duration_ms = (
-                self.completed_at - self.started_at
-            ).total_seconds() * 1000
+            self.total_duration_ms = (self.completed_at - self.started_at).total_seconds() * 1000
 
             if self.failed_items:
                 self.status = WorkflowStatus.FAILED
@@ -284,18 +287,15 @@ class AgentChain:
 
         while len(executed) < len(self.items):
             ready_items = [
-                item_id for item_id in self.items
-                if item_id not in executed and all(
-                    dep in executed for dep in self.items[item_id].dependencies
-                )
+                item_id
+                for item_id in self.items
+                if item_id not in executed
+                and all(dep in executed for dep in self.items[item_id].dependencies)
             ]
 
             if not ready_items:
                 # Circular dependency or blocked items
-                remaining = [
-                    item_id for item_id in self.items
-                    if item_id not in executed
-                ]
+                remaining = [item_id for item_id in self.items if item_id not in executed]
                 if remaining:
                     # Just add remaining items (will fail gracefully)
                     order.extend(remaining)
@@ -309,10 +309,7 @@ class AgentChain:
     def _dependencies_met(self, item_id: str) -> bool:
         """Check if all dependencies for an item are completed"""
         item = self.items[item_id]
-        return all(
-            dep in self.completed_items
-            for dep in item.dependencies
-        )
+        return all(dep in self.completed_items for dep in item.dependencies)
 
     def _execute_item(self, item: AgentWorkItem) -> None:
         """Execute a single work item"""
@@ -344,47 +341,50 @@ class AgentChain:
             completed_items=self.completed_items.copy(),
             timestamp=datetime.now(),
             state_data={
-                'status': self.status.value,
-                'total_items': self.stats['total_items'],
-                'completed_count': len(self.completed_items),
-                'failed_count': len(self.failed_items),
-            }
+                "status": self.status.value,
+                "total_items": self.stats["total_items"],
+                "completed_count": len(self.completed_items),
+                "failed_count": len(self.failed_items),
+            },
         )
 
-        checkpoint_file = (
-            self.checkpoint_dir / f"workflow_{self.workflow_id}_checkpoint.json"
-        )
+        checkpoint_file = self.checkpoint_dir / f"workflow_{self.workflow_id}_checkpoint.json"
         try:
-            with open(checkpoint_file, 'w') as f:
-                json.dump({
-                    'checkpoint_id': checkpoint.checkpoint_id,
-                    'workflow_id': checkpoint.workflow_id,
-                    'phase': checkpoint.phase.value,
-                    'completed_items': checkpoint.completed_items,
-                    'timestamp': checkpoint.timestamp.isoformat(),
-                    'state_data': checkpoint.state_data,
-                }, f, indent=2)
+            with open(checkpoint_file, "w") as f:
+                json.dump(
+                    {
+                        "checkpoint_id": checkpoint.checkpoint_id,
+                        "workflow_id": checkpoint.workflow_id,
+                        "phase": checkpoint.phase.value,
+                        "completed_items": checkpoint.completed_items,
+                        "timestamp": checkpoint.timestamp.isoformat(),
+                        "state_data": checkpoint.state_data,
+                    },
+                    f,
+                    indent=2,
+                )
         except IOError:
             pass
 
     def get_results(self) -> Dict[str, Any]:
         """Get workflow results"""
         items_by_status = {
-            'completed': [self.items[item_id].to_dict() for item_id in self.completed_items],
-            'failed': [self.items[item_id].to_dict() for item_id in self.failed_items],
-            'pending': [
-                self.items[item_id].to_dict() for item_id in self.items
+            "completed": [self.items[item_id].to_dict() for item_id in self.completed_items],
+            "failed": [self.items[item_id].to_dict() for item_id in self.failed_items],
+            "pending": [
+                self.items[item_id].to_dict()
+                for item_id in self.items
                 if item_id not in self.completed_items and item_id not in self.failed_items
             ],
         }
 
         return {
-            'workflow_id': self.workflow_id,
-            'status': self.status.value,
-            'phase': self.phase.value,
-            'duration_ms': self.total_duration_ms,
-            'items': items_by_status,
-            'stats': self._update_stats(),
+            "workflow_id": self.workflow_id,
+            "status": self.status.value,
+            "phase": self.phase.value,
+            "duration_ms": self.total_duration_ms,
+            "items": items_by_status,
+            "stats": self._update_stats(),
         }
 
     def _update_stats(self) -> Dict[str, Any]:
@@ -395,13 +395,11 @@ class AgentChain:
             if self.items[item_id].duration_ms()
         ]
 
-        self.stats['completed_items'] = len(self.completed_items)
-        self.stats['failed_items'] = len(self.failed_items)
+        self.stats["completed_items"] = len(self.completed_items)
+        self.stats["failed_items"] = len(self.failed_items)
 
         if completed_durations:
-            self.stats['avg_item_duration_ms'] = (
-                sum(completed_durations) / len(completed_durations)
-            )
+            self.stats["avg_item_duration_ms"] = sum(completed_durations) / len(completed_durations)
 
         return self.stats
 
@@ -434,7 +432,7 @@ class ParallelAgentPool:
         self.agent_bridge = agent_bridge
         self.max_workers = min(max_workers, 10)  # Cap at 10 workers
         self.timeout_seconds = timeout_seconds
-        self.checkpoint_dir = checkpoint_dir or Path('.buildrunner/workflows')
+        self.checkpoint_dir = checkpoint_dir or Path(".buildrunner/workflows")
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
         # Execution state
@@ -445,11 +443,11 @@ class ParallelAgentPool:
 
         # Statistics
         self.stats = {
-            'total_items': 0,
-            'completed_items': 0,
-            'failed_items': 0,
-            'total_duration_ms': 0.0,
-            'avg_item_duration_ms': 0.0,
+            "total_items": 0,
+            "completed_items": 0,
+            "failed_items": 0,
+            "total_duration_ms": 0.0,
+            "avg_item_duration_ms": 0.0,
         }
 
     def add_work_item(
@@ -481,7 +479,7 @@ class ParallelAgentPool:
         )
 
         self.items[item_id] = item
-        self.stats['total_items'] += 1
+        self.stats["total_items"] += 1
 
         return item_id
 
@@ -515,9 +513,7 @@ class ParallelAgentPool:
 
                 # Wait for completion and process results
                 for future in as_completed(self.futures.values(), timeout=self.timeout_seconds):
-                    item_id = next(
-                        item_id for item_id, f in self.futures.items() if f == future
-                    )
+                    item_id = next(item_id for item_id, f in self.futures.items() if f == future)
                     item = self.items[item_id]
 
                     try:
@@ -526,14 +522,15 @@ class ParallelAgentPool:
 
                         if item.response and item.response.success:
                             item.status = AgentStatus.COMPLETED
-                            self.stats['completed_items'] += 1
+                            self.stats["completed_items"] += 1
                             if on_item_complete:
                                 on_item_complete(item)
                         else:
                             item.status = AgentStatus.FAILED
                             failed_items.append(item_id)
                             error_msg = (
-                                item.response.errors[0] if item.response and item.response.errors
+                                item.response.errors[0]
+                                if item.response and item.response.errors
                                 else "Unknown error"
                             )
                             if on_item_failed:
@@ -547,23 +544,20 @@ class ParallelAgentPool:
                             on_item_failed(item, str(e))
 
         except TimeoutError:
-            self.stats['failed_items'] = len(self.items) - self.stats['completed_items']
+            self.stats["failed_items"] = len(self.items) - self.stats["completed_items"]
             return False
 
         finally:
             # Calculate duration
             duration = datetime.now() - start_time
-            self.stats['total_duration_ms'] = duration.total_seconds() * 1000
+            self.stats["total_duration_ms"] = duration.total_seconds() * 1000
 
             # Calculate average duration
-            durations = [
-                item.duration_ms() for item in self.results.values()
-                if item.duration_ms()
-            ]
+            durations = [item.duration_ms() for item in self.results.values() if item.duration_ms()]
             if durations:
-                self.stats['avg_item_duration_ms'] = sum(durations) / len(durations)
+                self.stats["avg_item_duration_ms"] = sum(durations) / len(durations)
 
-            self.stats['failed_items'] = len(failed_items)
+            self.stats["failed_items"] = len(failed_items)
 
             # Save checkpoint
             self._save_checkpoint()
@@ -592,39 +586,44 @@ class ParallelAgentPool:
 
     def _save_checkpoint(self) -> None:
         """Save pool execution checkpoint"""
-        checkpoint_file = (
-            self.checkpoint_dir / f"pool_{self.pool_id}_checkpoint.json"
-        )
+        checkpoint_file = self.checkpoint_dir / f"pool_{self.pool_id}_checkpoint.json"
 
         try:
-            with open(checkpoint_file, 'w') as f:
-                json.dump({
-                    'pool_id': self.pool_id,
-                    'timestamp': datetime.now().isoformat(),
-                    'stats': self.stats,
-                    'results': {
-                        item_id: item.to_dict()
-                        for item_id, item in self.results.items()
+            with open(checkpoint_file, "w") as f:
+                json.dump(
+                    {
+                        "pool_id": self.pool_id,
+                        "timestamp": datetime.now().isoformat(),
+                        "stats": self.stats,
+                        "results": {
+                            item_id: item.to_dict() for item_id, item in self.results.items()
+                        },
                     },
-                }, f, indent=2)
+                    f,
+                    indent=2,
+                )
         except IOError:
             pass
 
     def get_results(self) -> Dict[str, Any]:
         """Get pool execution results"""
-        completed = [item.to_dict() for item in self.results.values() if item.status == AgentStatus.COMPLETED]
-        failed = [item.to_dict() for item in self.results.values() if item.status == AgentStatus.FAILED]
+        completed = [
+            item.to_dict() for item in self.results.values() if item.status == AgentStatus.COMPLETED
+        ]
+        failed = [
+            item.to_dict() for item in self.results.values() if item.status == AgentStatus.FAILED
+        ]
 
         return {
-            'pool_id': self.pool_id,
-            'total_items': self.stats['total_items'],
-            'completed': len(completed),
-            'failed': len(failed),
-            'duration_ms': self.stats['total_duration_ms'],
-            'avg_duration_ms': self.stats['avg_item_duration_ms'],
-            'results': {
-                'completed': completed,
-                'failed': failed,
+            "pool_id": self.pool_id,
+            "total_items": self.stats["total_items"],
+            "completed": len(completed),
+            "failed": len(failed),
+            "duration_ms": self.stats["total_duration_ms"],
+            "avg_duration_ms": self.stats["avg_item_duration_ms"],
+            "results": {
+                "completed": completed,
+                "failed": failed,
             },
         }
 

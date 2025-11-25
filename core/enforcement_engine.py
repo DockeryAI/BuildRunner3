@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EnforcementRule:
     """A rule that must be enforced"""
+
     id: str
     name: str
     description: str
@@ -34,6 +35,7 @@ class EnforcementRule:
 @dataclass
 class EnforcementResult:
     """Result of enforcement check"""
+
     rule_id: str
     passed: bool
     message: str
@@ -71,7 +73,7 @@ class EnforcementEngine:
                 description="autodebug.yaml must exist",
                 check_function="check_autodebug_config",
                 required_files=["autodebug.yaml"],
-                auto_fix=True
+                auto_fix=True,
             ),
             EnforcementRule(
                 id="quality-config",
@@ -79,7 +81,7 @@ class EnforcementEngine:
                 description="Quality thresholds must be configured",
                 check_function="check_quality_config",
                 required_files=["governance/governance.yaml"],
-                auto_fix=True
+                auto_fix=True,
             ),
             EnforcementRule(
                 id="features-json",
@@ -87,7 +89,7 @@ class EnforcementEngine:
                 description="features.json must exist and be up to date",
                 check_function="check_features_json",
                 required_files=["features.json"],
-                auto_fix=False
+                auto_fix=False,
             ),
             EnforcementRule(
                 id="design-system",
@@ -95,46 +97,44 @@ class EnforcementEngine:
                 description="design-system.json must exist",
                 check_function="check_design_system",
                 required_files=["design-system.json"],
-                auto_fix=True
+                auto_fix=True,
             ),
-
             # Pre-commit rules
             EnforcementRule(
                 id="no-bypass",
                 name="No Bypass",
                 description="--no-verify flag is prohibited",
                 check_function="check_no_bypass",
-                required_commands=[]
+                required_commands=[],
             ),
             EnforcementRule(
                 id="gaps-analysis",
                 name="Gap Analysis",
                 description="Must run 'br gaps analyze' before commit",
                 check_function="check_gaps_analysis",
-                required_commands=["br gaps analyze"]
+                required_commands=["br gaps analyze"],
             ),
-
             # Pre-push rules
             EnforcementRule(
                 id="autodebug-passed",
                 name="AutoDebug Passing",
                 description="Must run 'br autodebug run' and pass",
                 check_function="check_autodebug_passed",
-                required_commands=["br autodebug run"]
+                required_commands=["br autodebug run"],
             ),
             EnforcementRule(
                 id="quality-passed",
                 name="Quality Check Passing",
                 description="Must run 'br quality check' and pass",
                 check_function="check_quality_passed",
-                required_commands=["br quality check"]
+                required_commands=["br quality check"],
             ),
             EnforcementRule(
                 id="use-br-github-push",
                 name="Use BR GitHub Push",
                 description="Must use 'br github push' instead of raw 'git push'",
                 check_function="check_br_github_push",
-                required_commands=["br github push"]
+                required_commands=["br github push"],
             ),
         ]
 
@@ -161,9 +161,7 @@ class EnforcementEngine:
 
         if autodebug_file.exists():
             return EnforcementResult(
-                rule_id=rule.id,
-                passed=True,
-                message="✅ autodebug.yaml exists"
+                rule_id=rule.id, passed=True, message="✅ autodebug.yaml exists"
             )
 
         return EnforcementResult(
@@ -171,7 +169,7 @@ class EnforcementEngine:
             passed=False,
             message="❌ autodebug.yaml missing - autodebug checks will be skipped",
             auto_fixable=True,
-            fix_command="br init autodebug"
+            fix_command="br init autodebug",
         )
 
     def check_quality_config(self, rule: EnforcementRule) -> EnforcementResult:
@@ -184,28 +182,27 @@ class EnforcementEngine:
                 passed=False,
                 message="❌ governance.yaml missing",
                 auto_fixable=True,
-                fix_command="br init"
+                fix_command="br init",
             )
 
         # Check if quality section exists
         import yaml
+
         try:
             with open(gov_file) as f:
                 gov = yaml.safe_load(f)
 
-            if 'quality' not in gov or 'thresholds' not in gov.get('quality', {}):
+            if "quality" not in gov or "thresholds" not in gov.get("quality", {}):
                 return EnforcementResult(
                     rule_id=rule.id,
                     passed=False,
                     message="❌ Quality thresholds not configured in governance.yaml",
                     auto_fixable=True,
-                    fix_command="br quality init"
+                    fix_command="br quality init",
                 )
 
             return EnforcementResult(
-                rule_id=rule.id,
-                passed=True,
-                message="✅ Quality configuration exists"
+                rule_id=rule.id, passed=True, message="✅ Quality configuration exists"
             )
 
         except Exception as e:
@@ -213,7 +210,7 @@ class EnforcementEngine:
                 rule_id=rule.id,
                 passed=False,
                 message=f"❌ Error reading governance.yaml: {e}",
-                auto_fixable=False
+                auto_fixable=False,
             )
 
     def check_features_json(self, rule: EnforcementRule) -> EnforcementResult:
@@ -226,7 +223,7 @@ class EnforcementEngine:
                 passed=False,
                 message="❌ features.json missing - feature tracking disabled",
                 auto_fixable=False,
-                fix_command="br attach"
+                fix_command="br attach",
             )
 
         # Check if it's valid JSON
@@ -234,18 +231,18 @@ class EnforcementEngine:
             with open(features_file) as f:
                 data = json.load(f)
 
-            if 'features' not in data:
+            if "features" not in data:
                 return EnforcementResult(
                     rule_id=rule.id,
                     passed=False,
                     message="❌ features.json is invalid (no 'features' key)",
-                    auto_fixable=False
+                    auto_fixable=False,
                 )
 
             return EnforcementResult(
                 rule_id=rule.id,
                 passed=True,
-                message=f"✅ features.json exists ({len(data['features'])} features tracked)"
+                message=f"✅ features.json exists ({len(data['features'])} features tracked)",
             )
 
         except Exception as e:
@@ -253,7 +250,7 @@ class EnforcementEngine:
                 rule_id=rule.id,
                 passed=False,
                 message=f"❌ features.json is invalid: {e}",
-                auto_fixable=False
+                auto_fixable=False,
             )
 
     def check_design_system(self, rule: EnforcementRule) -> EnforcementResult:
@@ -266,7 +263,7 @@ class EnforcementEngine:
                 passed=False,
                 message="❌ design-system.json missing - design adoption disabled",
                 auto_fixable=True,
-                fix_command="br design extract"
+                fix_command="br design extract",
             )
 
         # Check confidence
@@ -274,20 +271,20 @@ class EnforcementEngine:
             with open(design_file) as f:
                 data = json.load(f)
 
-            confidence = data.get('confidence', 0)
+            confidence = data.get("confidence", 0)
             if confidence < 0.3:
                 return EnforcementResult(
                     rule_id=rule.id,
                     passed=False,
                     message=f"⚠️  Design system confidence too low ({confidence:.0%})",
                     auto_fixable=True,
-                    fix_command="br design extract"
+                    fix_command="br design extract",
                 )
 
             return EnforcementResult(
                 rule_id=rule.id,
                 passed=True,
-                message=f"✅ Design system extracted (confidence: {confidence:.0%})"
+                message=f"✅ Design system extracted (confidence: {confidence:.0%})",
             )
 
         except Exception as e:
@@ -296,16 +293,14 @@ class EnforcementEngine:
                 passed=False,
                 message=f"❌ design-system.json is invalid: {e}",
                 auto_fixable=True,
-                fix_command="br design extract"
+                fix_command="br design extract",
             )
 
     def check_no_bypass(self, rule: EnforcementRule) -> EnforcementResult:
         """Check if --no-verify was used (can't check from here, checked in hooks)"""
         # This is actually checked in the git hooks themselves
         return EnforcementResult(
-            rule_id=rule.id,
-            passed=True,
-            message="✅ No bypass flags detected"
+            rule_id=rule.id, passed=True, message="✅ No bypass flags detected"
         )
 
     def check_gaps_analysis(self, rule: EnforcementRule) -> EnforcementResult:
@@ -319,11 +314,12 @@ class EnforcementEngine:
                 passed=False,
                 message="❌ Gap analysis not run - run 'br gaps analyze' first",
                 auto_fixable=False,
-                fix_command="br gaps analyze"
+                fix_command="br gaps analyze",
             )
 
         # Check if it's recent (within last hour)
         import time
+
         age = time.time() - gaps_cache.stat().st_mtime
 
         if age > 3600:  # 1 hour
@@ -332,14 +328,10 @@ class EnforcementEngine:
                 passed=False,
                 message=f"❌ Gap analysis is stale ({age/3600:.1f}h old) - run 'br gaps analyze'",
                 auto_fixable=False,
-                fix_command="br gaps analyze"
+                fix_command="br gaps analyze",
             )
 
-        return EnforcementResult(
-            rule_id=rule.id,
-            passed=True,
-            message="✅ Gap analysis is current"
-        )
+        return EnforcementResult(rule_id=rule.id, passed=True, message="✅ Gap analysis is current")
 
     def check_autodebug_passed(self, rule: EnforcementRule) -> EnforcementResult:
         """Check if autodebug passed recently"""
@@ -352,7 +344,7 @@ class EnforcementEngine:
                 passed=False,
                 message="❌ AutoDebug not run - run 'br autodebug run' first",
                 auto_fixable=False,
-                fix_command="br autodebug run"
+                fix_command="br autodebug run",
             )
 
         # Check if tests passed
@@ -360,17 +352,18 @@ class EnforcementEngine:
             with open(autodebug_results) as f:
                 results = json.load(f)
 
-            if not results.get('overall_success', False):
-                failures = results.get('critical_failures', [])
+            if not results.get("overall_success", False):
+                failures = results.get("critical_failures", [])
                 return EnforcementResult(
                     rule_id=rule.id,
                     passed=False,
                     message=f"❌ AutoDebug failed ({len(failures)} critical failures)",
-                    auto_fixable=False
+                    auto_fixable=False,
                 )
 
             # Check if results are recent
             import time
+
             age = time.time() - autodebug_results.stat().st_mtime
 
             if age > 1800:  # 30 minutes
@@ -379,21 +372,17 @@ class EnforcementEngine:
                     passed=False,
                     message=f"❌ AutoDebug results are stale ({age/60:.0f}m old)",
                     auto_fixable=False,
-                    fix_command="br autodebug run"
+                    fix_command="br autodebug run",
                 )
 
-            return EnforcementResult(
-                rule_id=rule.id,
-                passed=True,
-                message="✅ AutoDebug passed"
-            )
+            return EnforcementResult(rule_id=rule.id, passed=True, message="✅ AutoDebug passed")
 
         except Exception as e:
             return EnforcementResult(
                 rule_id=rule.id,
                 passed=False,
                 message=f"❌ Error reading autodebug results: {e}",
-                auto_fixable=False
+                auto_fixable=False,
             )
 
     def check_quality_passed(self, rule: EnforcementRule) -> EnforcementResult:
@@ -407,7 +396,7 @@ class EnforcementEngine:
                 passed=False,
                 message="❌ Quality check not run - run 'br quality check' first",
                 auto_fixable=False,
-                fix_command="br quality check"
+                fix_command="br quality check",
             )
 
         # Check if quality passed
@@ -415,19 +404,20 @@ class EnforcementEngine:
             with open(quality_results) as f:
                 results = json.load(f)
 
-            score = results.get('overall_score', 0)
-            threshold = results.get('threshold', 70)
+            score = results.get("overall_score", 0)
+            threshold = results.get("threshold", 70)
 
             if score < threshold:
                 return EnforcementResult(
                     rule_id=rule.id,
                     passed=False,
                     message=f"❌ Quality check failed (score: {score}/100, threshold: {threshold})",
-                    auto_fixable=False
+                    auto_fixable=False,
                 )
 
             # Check if results are recent
             import time
+
             age = time.time() - quality_results.stat().st_mtime
 
             if age > 1800:  # 30 minutes
@@ -436,13 +426,13 @@ class EnforcementEngine:
                     passed=False,
                     message=f"❌ Quality results are stale ({age/60:.0f}m old)",
                     auto_fixable=False,
-                    fix_command="br quality check"
+                    fix_command="br quality check",
                 )
 
             return EnforcementResult(
                 rule_id=rule.id,
                 passed=True,
-                message=f"✅ Quality check passed (score: {score}/100)"
+                message=f"✅ Quality check passed (score: {score}/100)",
             )
 
         except Exception as e:
@@ -450,15 +440,13 @@ class EnforcementEngine:
                 rule_id=rule.id,
                 passed=False,
                 message=f"❌ Error reading quality results: {e}",
-                auto_fixable=False
+                auto_fixable=False,
             )
 
     def check_br_github_push(self, rule: EnforcementRule) -> EnforcementResult:
         """This is checked in git hooks to intercept raw git push"""
         return EnforcementResult(
-            rule_id=rule.id,
-            passed=True,
-            message="✅ Using BR3 GitHub commands"
+            rule_id=rule.id, passed=True, message="✅ Using BR3 GitHub commands"
         )
 
     def get_blocking_issues(self) -> List[EnforcementResult]:
@@ -483,14 +471,14 @@ class EnforcementEngine:
         results = self.check_all()
 
         # Check for config issues
-        config_rules = ['autodebug-config', 'quality-config', 'features-json', 'design-system']
+        config_rules = ["autodebug-config", "quality-config", "features-json", "design-system"]
         config_issues = [r for r in results if r.rule_id in config_rules and not r.passed]
 
         if config_issues:
             return False
 
         # Check gaps analysis
-        gaps_result = next((r for r in results if r.rule_id == 'gaps-analysis'), None)
+        gaps_result = next((r for r in results if r.rule_id == "gaps-analysis"), None)
         if gaps_result and not gaps_result.passed:
             return False
 
@@ -505,12 +493,12 @@ class EnforcementEngine:
         results = self.check_all()
 
         # Check autodebug
-        autodebug_result = next((r for r in results if r.rule_id == 'autodebug-passed'), None)
+        autodebug_result = next((r for r in results if r.rule_id == "autodebug-passed"), None)
         if autodebug_result and not autodebug_result.passed:
             return False
 
         # Check quality
-        quality_result = next((r for r in results if r.rule_id == 'quality-passed'), None)
+        quality_result = next((r for r in results if r.rule_id == "quality-passed"), None)
         if quality_result and not quality_result.passed:
             return False
 
@@ -579,7 +567,9 @@ thresholds:
 enforcement:
   block_on_failure: true
   auto_fix: true
-""".format(project_name=self.project_root.name)
+""".format(
+            project_name=self.project_root.name
+        )
 
         autodebug_file = self.buildrunner_dir / "autodebug.yaml"
         autodebug_file.parent.mkdir(parents=True, exist_ok=True)
@@ -594,10 +584,11 @@ enforcement:
             return False
 
         import yaml
+
         try:
             with open(gov_file) as f:
                 gov = yaml.safe_load(f)
-            return 'quality' in gov and 'thresholds' in gov.get('quality', {})
+            return "quality" in gov and "thresholds" in gov.get("quality", {})
         except:
             return False
 
@@ -616,23 +607,20 @@ enforcement:
             gov = {}
 
         # Add quality section
-        gov['quality'] = {
-            'enabled': True,
-            'thresholds': {
-                'overall': 70,
-                'structure': 60,
-                'testing': 80,
-                'documentation': 50,
-                'security': 90,
-                'performance': 60
+        gov["quality"] = {
+            "enabled": True,
+            "thresholds": {
+                "overall": 70,
+                "structure": 60,
+                "testing": 80,
+                "documentation": 50,
+                "security": 90,
+                "performance": 60,
             },
-            'enforcement': {
-                'block_commit': True,
-                'block_push': True
-            }
+            "enforcement": {"block_commit": True, "block_push": True},
         }
 
-        with open(gov_file, 'w') as f:
+        with open(gov_file, "w") as f:
             yaml.dump(gov, f, default_flow_style=False, sort_keys=False)
 
         logger.info(f"Added quality config to {gov_file}")

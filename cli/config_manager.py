@@ -14,6 +14,7 @@ from copy import deepcopy
 
 class ConfigError(Exception):
     """Raised when configuration operations fail."""
+
     pass
 
 
@@ -34,43 +35,43 @@ class ConfigManager:
     """
 
     DEFAULT_CONFIG = {
-        'debug': {
-            'auto_retry': True,
-            'max_retries': 3,
-            'retry_delays': [1, 2, 4, 8],  # seconds
-            'capture_output': True,
-            'log_to_context': True,
+        "debug": {
+            "auto_retry": True,
+            "max_retries": 3,
+            "retry_delays": [1, 2, 4, 8],  # seconds
+            "capture_output": True,
+            "log_to_context": True,
         },
-        'watch': {
-            'enabled': False,
-            'patterns': ['*.log', '*.err', 'pytest.out'],
-            'check_interval': 2,  # seconds
-            'auto_update_blockers': True,
+        "watch": {
+            "enabled": False,
+            "patterns": ["*.log", "*.err", "pytest.out"],
+            "check_interval": 2,  # seconds
+            "auto_update_blockers": True,
         },
-        'piping': {
-            'auto_timestamp': True,
-            'max_output_size': 100000,  # characters
-            'context_file': '.buildrunner/context/command-outputs.md',
+        "piping": {
+            "auto_timestamp": True,
+            "max_output_size": 100000,  # characters
+            "context_file": ".buildrunner/context/command-outputs.md",
         },
-        'cli': {
-            'use_rich': True,
-            'show_progress': True,
-            'confirm_destructive': True,
+        "cli": {
+            "use_rich": True,
+            "show_progress": True,
+            "confirm_destructive": True,
         },
-        'governance': {
-            'enforce_on_commit': True,
-            'verify_checksums': True,
-            'strict_mode': True,
+        "governance": {
+            "enforce_on_commit": True,
+            "verify_checksums": True,
+            "strict_mode": True,
         },
-        'profiles': {
-            'default_profile': None,  # Auto-activate this profile in all projects
-            'auto_activate': True,  # Auto-activate default profile
+        "profiles": {
+            "default_profile": None,  # Auto-activate this profile in all projects
+            "auto_activate": True,  # Auto-activate default profile
         },
-        'build': {
-            'auto_continue': True,  # Never pause for confirmation, build to 100% completion
-            'require_user_approval': False,  # Don't ask for approval between tasks
-            'stop_on_error': True,  # Only stop if there's a critical error
-        }
+        "build": {
+            "auto_continue": True,  # Never pause for confirmation, build to 100% completion
+            "require_user_approval": False,  # Don't ask for approval between tasks
+            "stop_on_error": True,  # Only stop if there's a critical error
+        },
     }
 
     def __init__(self, project_root: Optional[Path] = None):
@@ -103,7 +104,7 @@ class ConfigManager:
         # Load and merge global config
         if self.global_config_file.exists():
             try:
-                with open(self.global_config_file, 'r') as f:
+                with open(self.global_config_file, "r") as f:
                     global_config = yaml.safe_load(f) or {}
                 config = self._merge_configs(config, global_config)
             except Exception as e:
@@ -112,7 +113,7 @@ class ConfigManager:
         # Load and merge project config
         if self.project_config_file.exists():
             try:
-                with open(self.project_config_file, 'r') as f:
+                with open(self.project_config_file, "r") as f:
                     project_config = yaml.safe_load(f) or {}
                 config = self._merge_configs(config, project_config)
             except Exception as e:
@@ -162,7 +163,7 @@ class ConfigManager:
         if self._config is None:
             self.load()
 
-        keys = key.split('.')
+        keys = key.split(".")
         value = self._config
 
         for k in keys:
@@ -173,7 +174,7 @@ class ConfigManager:
 
         return value
 
-    def set(self, key: str, value: Any, scope: str = 'project') -> None:
+    def set(self, key: str, value: Any, scope: str = "project") -> None:
         """
         Set configuration value.
 
@@ -185,20 +186,20 @@ class ConfigManager:
         Raises:
             ConfigError: If setting fails
         """
-        if scope not in ['project', 'global']:
+        if scope not in ["project", "global"]:
             raise ConfigError(f"Invalid scope: {scope}. Must be 'project' or 'global'.")
 
-        config_file = self.project_config_file if scope == 'project' else self.global_config_file
+        config_file = self.project_config_file if scope == "project" else self.global_config_file
 
         # Load existing config for this scope
         if config_file.exists():
-            with open(config_file, 'r') as f:
+            with open(config_file, "r") as f:
                 config = yaml.safe_load(f) or {}
         else:
             config = {}
 
         # Set value using dot notation
-        keys = key.split('.')
+        keys = key.split(".")
         current = config
 
         for k in keys[:-1]:
@@ -212,7 +213,7 @@ class ConfigManager:
         config_file.parent.mkdir(parents=True, exist_ok=True)
 
         # Save config
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
         # Reload to update in-memory config
@@ -235,7 +236,9 @@ class ConfigManager:
             return self._flatten_dict(self._config)
         return deepcopy(self._config)
 
-    def _flatten_dict(self, d: Dict[str, Any], parent_key: str = '', sep: str = '.') -> Dict[str, Any]:
+    def _flatten_dict(
+        self, d: Dict[str, Any], parent_key: str = "", sep: str = "."
+    ) -> Dict[str, Any]:
         """
         Flatten nested dictionary to dot-notation keys.
 
@@ -274,13 +277,8 @@ class ConfigManager:
                 f"Use 'br config set' to modify it."
             )
 
-        with open(self.global_config_file, 'w') as f:
-            yaml.dump(
-                self.DEFAULT_CONFIG,
-                f,
-                default_flow_style=False,
-                sort_keys=False
-            )
+        with open(self.global_config_file, "w") as f:
+            yaml.dump(self.DEFAULT_CONFIG, f, default_flow_style=False, sort_keys=False)
 
         return self.global_config_file
 
@@ -304,21 +302,16 @@ class ConfigManager:
 
         # Start with minimal project config
         project_config = {
-            'debug': {
-                'auto_retry': True,
+            "debug": {
+                "auto_retry": True,
             },
-            'cli': {
-                'use_rich': True,
-            }
+            "cli": {
+                "use_rich": True,
+            },
         }
 
-        with open(self.project_config_file, 'w') as f:
-            yaml.dump(
-                project_config,
-                f,
-                default_flow_style=False,
-                sort_keys=False
-            )
+        with open(self.project_config_file, "w") as f:
+            yaml.dump(project_config, f, default_flow_style=False, sort_keys=False)
 
         return self.project_config_file
 
@@ -329,19 +322,15 @@ class ConfigManager:
         Returns:
             Dictionary with 'default', 'global', 'project' keys
         """
-        sources = {
-            'default': deepcopy(self.DEFAULT_CONFIG),
-            'global': {},
-            'project': {}
-        }
+        sources = {"default": deepcopy(self.DEFAULT_CONFIG), "global": {}, "project": {}}
 
         if self.global_config_file.exists():
-            with open(self.global_config_file, 'r') as f:
-                sources['global'] = yaml.safe_load(f) or {}
+            with open(self.global_config_file, "r") as f:
+                sources["global"] = yaml.safe_load(f) or {}
 
         if self.project_config_file.exists():
-            with open(self.project_config_file, 'r') as f:
-                sources['project'] = yaml.safe_load(f) or {}
+            with open(self.project_config_file, "r") as f:
+                sources["project"] = yaml.safe_load(f) or {}
 
         return sources
 

@@ -17,12 +17,7 @@ class ErrorPattern:
     """Error pattern for matching and categorization."""
 
     def __init__(
-        self,
-        pattern: str,
-        category: str,
-        severity: str,
-        confidence: float,
-        suggestions: List[str]
+        self, pattern: str, category: str, severity: str, confidence: float, suggestions: List[str]
     ):
         self.pattern = re.compile(pattern, re.IGNORECASE | re.MULTILINE)
         self.category = category
@@ -62,8 +57,8 @@ class ErrorWatcher:
                 [
                     "Check for missing colons, parentheses, or brackets",
                     "Verify indentation is consistent",
-                    "Look for unclosed strings or comments"
-                ]
+                    "Look for unclosed strings or comments",
+                ],
             ),
             ErrorPattern(
                 r"IndentationError:.*",
@@ -73,8 +68,8 @@ class ErrorWatcher:
                 [
                     "Fix indentation - Python requires consistent indentation",
                     "Use either spaces or tabs, not both",
-                    "Check that indentation matches the surrounding code"
-                ]
+                    "Check that indentation matches the surrounding code",
+                ],
             ),
             ErrorPattern(
                 r"ModuleNotFoundError:.*|ImportError:.*",
@@ -84,8 +79,8 @@ class ErrorWatcher:
                 [
                     "Install the missing package: pip install <package>",
                     "Check if the module name is correct",
-                    "Verify the package is in your requirements"
-                ]
+                    "Verify the package is in your requirements",
+                ],
             ),
             ErrorPattern(
                 r"TypeError:.*",
@@ -95,8 +90,8 @@ class ErrorWatcher:
                 [
                     "Check function arguments match expected types",
                     "Verify variable types are correct",
-                    "Look for None values where objects are expected"
-                ]
+                    "Look for None values where objects are expected",
+                ],
             ),
             ErrorPattern(
                 r"AttributeError:.*",
@@ -106,8 +101,8 @@ class ErrorWatcher:
                 [
                     "Check if object has the attribute you're accessing",
                     "Verify object is not None",
-                    "Check for typos in attribute names"
-                ]
+                    "Check for typos in attribute names",
+                ],
             ),
             ErrorPattern(
                 r"KeyError:.*",
@@ -117,8 +112,8 @@ class ErrorWatcher:
                 [
                     "Check if dictionary key exists before accessing",
                     "Use dict.get() with a default value",
-                    "Verify the data structure matches expectations"
-                ]
+                    "Verify the data structure matches expectations",
+                ],
             ),
             ErrorPattern(
                 r"FileNotFoundError:.*",
@@ -128,8 +123,8 @@ class ErrorWatcher:
                 [
                     "Check if the file path is correct",
                     "Verify the file exists",
-                    "Check file permissions"
-                ]
+                    "Check file permissions",
+                ],
             ),
             ErrorPattern(
                 r"FAILED.*test_.*",
@@ -139,8 +134,8 @@ class ErrorWatcher:
                 [
                     "Review the test failure message",
                     "Check if test expectations match actual behavior",
-                    "Verify test data and mocks are correct"
-                ]
+                    "Verify test data and mocks are correct",
+                ],
             ),
             ErrorPattern(
                 r"AssertionError:.*",
@@ -150,8 +145,8 @@ class ErrorWatcher:
                 [
                     "Check assertion conditions",
                     "Verify expected vs actual values",
-                    "Review test logic"
-                ]
+                    "Review test logic",
+                ],
             ),
             ErrorPattern(
                 r"ConnectionError:.*|TimeoutError:.*",
@@ -161,8 +156,8 @@ class ErrorWatcher:
                 [
                     "Check network connectivity",
                     "Verify service is running",
-                    "Check if endpoint URL is correct"
-                ]
+                    "Check if endpoint URL is correct",
+                ],
             ),
         ]
 
@@ -179,11 +174,7 @@ class ErrorWatcher:
         self.is_watching = True
         self.watch_task = asyncio.create_task(self._watch_loop(interval))
 
-        return {
-            "status": "started",
-            "interval": interval,
-            "message": "Error watcher started"
-        }
+        return {"status": "started", "interval": interval, "message": "Error watcher started"}
 
     async def stop_watching(self):
         """Stop watching for errors."""
@@ -198,10 +189,7 @@ class ErrorWatcher:
             except asyncio.CancelledError:
                 pass
 
-        return {
-            "status": "stopped",
-            "message": "Error watcher stopped"
-        }
+        return {"status": "stopped", "message": "Error watcher stopped"}
 
     async def _watch_loop(self, interval: int):
         """Main error watching loop."""
@@ -257,14 +245,11 @@ class ErrorWatcher:
                     "category": {
                         "type": pattern.category,
                         "severity": pattern.severity,
-                        "confidence": pattern.confidence
+                        "confidence": pattern.confidence,
                     },
-                    "context": {
-                        "source": source,
-                        "detected_at": datetime.now().isoformat()
-                    },
+                    "context": {"source": source, "detected_at": datetime.now().isoformat()},
                     "suggestions": pattern.suggestions,
-                    "resolved": False
+                    "resolved": False,
                 }
 
                 # Avoid duplicates
@@ -283,7 +268,7 @@ class ErrorWatcher:
             Tuple of (file_path, line_number)
         """
         # Look backwards for file path pattern
-        before = content[max(0, position - 200):position]
+        before = content[max(0, position - 200) : position]
 
         # Try to find "File "path", line X" pattern
         file_match = re.search(r'File "([^"]+)", line (\d+)', before)
@@ -303,9 +288,11 @@ class ErrorWatcher:
             True if duplicate exists
         """
         for existing in self.errors:
-            if (existing["message"] == error["message"] and
-                existing["file_path"] == error["file_path"] and
-                existing["line_number"] == error["line_number"]):
+            if (
+                existing["message"] == error["message"]
+                and existing["file_path"] == error["file_path"]
+                and existing["line_number"] == error["line_number"]
+            ):
                 return True
         return False
 
@@ -313,7 +300,7 @@ class ErrorWatcher:
         self,
         category: Optional[str] = None,
         severity: Optional[str] = None,
-        unresolved_only: bool = False
+        unresolved_only: bool = False,
     ) -> List[Dict[str, Any]]:
         """
         Get errors matching criteria.
@@ -362,7 +349,7 @@ class ErrorWatcher:
             "total_errors": len(self.errors),
             "by_category": by_category,
             "by_severity": by_severity,
-            "recent_errors": self.errors[-10:]  # Last 10 errors
+            "recent_errors": self.errors[-10:],  # Last 10 errors
         }
 
     def mark_resolved(self, error_id: str) -> bool:

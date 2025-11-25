@@ -1,12 +1,13 @@
 """
 Tests for Dependency Graph
 """
+
 import pytest
 from core.dependency_graph import (
     DependencyGraph,
     ExecutionLevel,
     GraphError,
-    CircularDependencyError
+    CircularDependencyError,
 )
 
 
@@ -24,7 +25,7 @@ class TestDependencyGraph:
         return [
             {"id": "task_a", "dependencies": [], "estimated_minutes": 60},
             {"id": "task_b", "dependencies": ["task_a"], "estimated_minutes": 90},
-            {"id": "task_c", "dependencies": ["task_b"], "estimated_minutes": 120}
+            {"id": "task_c", "dependencies": ["task_b"], "estimated_minutes": 120},
         ]
 
     @pytest.fixture
@@ -34,7 +35,7 @@ class TestDependencyGraph:
             {"id": "task_a", "dependencies": [], "estimated_minutes": 60},
             {"id": "task_b", "dependencies": ["task_a"], "estimated_minutes": 90},
             {"id": "task_c", "dependencies": ["task_a"], "estimated_minutes": 90},
-            {"id": "task_d", "dependencies": ["task_b", "task_c"], "estimated_minutes": 60}
+            {"id": "task_d", "dependencies": ["task_b", "task_c"], "estimated_minutes": 60},
         ]
 
     @pytest.fixture
@@ -43,7 +44,7 @@ class TestDependencyGraph:
         return [
             {"id": "task_a", "dependencies": ["task_c"], "estimated_minutes": 60},
             {"id": "task_b", "dependencies": ["task_a"], "estimated_minutes": 90},
-            {"id": "task_c", "dependencies": ["task_b"], "estimated_minutes": 120}
+            {"id": "task_c", "dependencies": ["task_b"], "estimated_minutes": 120},
         ]
 
     @pytest.fixture
@@ -55,7 +56,7 @@ class TestDependencyGraph:
             {"id": "task_3", "dependencies": ["task_1"], "estimated_minutes": 90},
             {"id": "task_4", "dependencies": ["task_1", "task_2"], "estimated_minutes": 90},
             {"id": "task_5", "dependencies": ["task_3", "task_4"], "estimated_minutes": 120},
-            {"id": "task_6", "dependencies": ["task_2"], "estimated_minutes": 60}
+            {"id": "task_6", "dependencies": ["task_2"], "estimated_minutes": 60},
         ]
 
     def test_init(self, graph):
@@ -330,7 +331,7 @@ class TestDependencyGraph:
         # Verify path is valid (each task depends on previous)
         for i in range(1, len(path)):
             deps = graph.get_dependencies(path[i], recursive=True)
-            assert path[i-1] in deps or path[i-1] not in graph.tasks
+            assert path[i - 1] in deps or path[i - 1] not in graph.tasks
 
     def test_get_task_count(self, graph, linear_tasks):
         """Test getting task count"""
@@ -388,7 +389,7 @@ class TestDependencyGraph:
         """Test validation with missing dependencies"""
         tasks = [
             {"id": "task_a", "dependencies": [], "estimated_minutes": 60},
-            {"id": "task_b", "dependencies": ["task_x"], "estimated_minutes": 90}
+            {"id": "task_b", "dependencies": ["task_x"], "estimated_minutes": 90},
         ]
 
         graph.build_graph(tasks)
@@ -401,7 +402,7 @@ class TestDependencyGraph:
         """Test validation with multiple missing dependencies"""
         tasks = [
             {"id": "task_a", "dependencies": ["task_x", "task_y"], "estimated_minutes": 60},
-            {"id": "task_b", "dependencies": ["task_z"], "estimated_minutes": 90}
+            {"id": "task_b", "dependencies": ["task_z"], "estimated_minutes": 90},
         ]
 
         graph.build_graph(tasks)
@@ -423,11 +424,7 @@ class TestDependencyGraph:
 
     def test_execution_level_dataclass(self):
         """Test ExecutionLevel dataclass"""
-        level = ExecutionLevel(
-            level=0,
-            tasks=["task_a", "task_b"],
-            estimated_minutes=90
-        )
+        level = ExecutionLevel(level=0, tasks=["task_a", "task_b"], estimated_minutes=90)
 
         assert level.level == 0
         assert level.tasks == ["task_a", "task_b"]
@@ -463,7 +460,7 @@ class TestDependencyGraph:
 
         tasks = [
             {"id": "task_a", "dependencies": [], "estimated_minutes": 60},
-            {"id": "task_b", "dependencies": ["task_a"], "estimated_minutes": 90}
+            {"id": "task_b", "dependencies": ["task_a"], "estimated_minutes": 90},
         ]
 
         original_argv = sys.argv

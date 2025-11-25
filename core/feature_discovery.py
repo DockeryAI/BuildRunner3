@@ -20,6 +20,7 @@ from datetime import datetime
 @dataclass
 class DiscoveredFeature:
     """A feature discovered from the codebase"""
+
     title: str
     description: str
     component: str  # File or module path
@@ -79,11 +80,11 @@ class FeatureDiscovery:
         route_files = list(api_dir.glob("**/routes/*.py")) + list(api_dir.glob("**/*_api.py"))
 
         for route_file in route_files:
-            if route_file.name.startswith('_'):
+            if route_file.name.startswith("_"):
                 continue
 
             try:
-                with open(route_file, 'r', encoding='utf-8') as f:
+                with open(route_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Extract module docstring for feature description
@@ -95,13 +96,15 @@ class FeatureDiscovery:
 
                 if endpoints:
                     # Create feature from API routes
-                    feature_name = route_file.stem.replace('_', ' ').replace('routes', '').strip().title()
+                    feature_name = (
+                        route_file.stem.replace("_", " ").replace("routes", "").strip().title()
+                    )
                     if not feature_name:
                         feature_name = "API Endpoints"
 
                     # Generate description from docstring or endpoints
                     if module_doc:
-                        description = module_doc.split('\n')[0]
+                        description = module_doc.split("\n")[0]
                     else:
                         description = f"API endpoints for {feature_name.lower()}"
 
@@ -116,7 +119,7 @@ class FeatureDiscovery:
                         endpoints=[f"{ep['method']} {ep['path']}" for ep in endpoints],
                         files=[str(route_file.relative_to(self.project_root))],
                         acceptance_criteria=criteria,
-                        version="1.0"
+                        version="1.0",
                     )
 
                     self.features.append(feature)
@@ -132,18 +135,18 @@ class FeatureDiscovery:
             return
 
         for cli_file in cli_dir.glob("*.py"):
-            if cli_file.name.startswith('_') or cli_file.name == 'main.py':
+            if cli_file.name.startswith("_") or cli_file.name == "main.py":
                 continue
 
             try:
-                with open(cli_file, 'r', encoding='utf-8') as f:
+                with open(cli_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Look for typer/click commands
                 commands = self._extract_cli_commands(content)
 
                 if commands:
-                    feature_name = cli_file.stem.replace('_commands', '').replace('_', ' ').title()
+                    feature_name = cli_file.stem.replace("_commands", "").replace("_", " ").title()
 
                     # Get module docstring
                     tree = ast.parse(content)
@@ -151,13 +154,15 @@ class FeatureDiscovery:
 
                     feature = DiscoveredFeature(
                         title=f"CLI: {feature_name}",
-                        description=module_doc.split('\n')[0],
+                        description=module_doc.split("\n")[0],
                         component=str(cli_file.relative_to(self.project_root)),
                         priority="medium",
-                        functions=[cmd['name'] for cmd in commands],
+                        functions=[cmd["name"] for cmd in commands],
                         files=[str(cli_file.relative_to(self.project_root))],
-                        acceptance_criteria=[f"Command '{cmd['name']}' executes successfully" for cmd in commands],
-                        version="1.0"
+                        acceptance_criteria=[
+                            f"Command '{cmd['name']}' executes successfully" for cmd in commands
+                        ],
+                        version="1.0",
                     )
 
                     self.features.append(feature)
@@ -172,29 +177,34 @@ class FeatureDiscovery:
             return
 
         for ui_file in ui_dir.glob("*.tsx"):
-            if ui_file.name.startswith('_'):
+            if ui_file.name.startswith("_"):
                 continue
 
             try:
-                with open(ui_file, 'r', encoding='utf-8') as f:
+                with open(ui_file, "r", encoding="utf-8") as f:
                     content = f.read()
 
                 # Extract component name and description from comments
                 component_name = ui_file.stem
 
                 # Look for JSDoc or leading comments
-                doc_match = re.search(r'/\*\*\s*\n\s*\*\s*(.*?)\n', content)
-                description = doc_match.group(1).strip() if doc_match else f"{component_name} UI component"
+                doc_match = re.search(r"/\*\*\s*\n\s*\*\s*(.*?)\n", content)
+                description = (
+                    doc_match.group(1).strip() if doc_match else f"{component_name} UI component"
+                )
 
                 # Check if it's a major feature (not a util component)
-                if any(keyword in component_name.lower() for keyword in ['workspace', 'editor', 'builder', 'wizard', 'picker', 'modal']):
+                if any(
+                    keyword in component_name.lower()
+                    for keyword in ["workspace", "editor", "builder", "wizard", "picker", "modal"]
+                ):
                     feature = DiscoveredFeature(
                         title=f"UI: {component_name.replace('UI', '').replace('Component', '')}",
                         description=description,
                         component=str(ui_file.relative_to(self.project_root)),
                         priority="high",
                         files=[str(ui_file.relative_to(self.project_root))],
-                        version="1.0"
+                        version="1.0",
                     )
 
                     self.features.append(feature)
@@ -210,14 +220,14 @@ class FeatureDiscovery:
 
         # Look for major subsystems
         for subdir in core_dir.iterdir():
-            if not subdir.is_dir() or subdir.name.startswith('_'):
+            if not subdir.is_dir() or subdir.name.startswith("_"):
                 continue
 
             # Check for __init__.py with exports
             init_file = subdir / "__init__.py"
             if init_file.exists():
                 try:
-                    with open(init_file, 'r', encoding='utf-8') as f:
+                    with open(init_file, "r", encoding="utf-8") as f:
                         content = f.read()
 
                     tree = ast.parse(content)
@@ -227,16 +237,22 @@ class FeatureDiscovery:
                     exports = self._extract_exports(content)
 
                     if exports:
-                        feature_name = subdir.name.replace('_', ' ').title()
+                        feature_name = subdir.name.replace("_", " ").title()
 
                         feature = DiscoveredFeature(
                             title=f"Core: {feature_name}",
-                            description=module_doc.split('\n')[0] if module_doc else f"{feature_name} system",
+                            description=(
+                                module_doc.split("\n")[0]
+                                if module_doc
+                                else f"{feature_name} system"
+                            ),
                             component=str(subdir.relative_to(self.project_root)),
                             priority="high",
                             classes=exports,
-                            files=[str(f.relative_to(self.project_root)) for f in subdir.glob("*.py")],
-                            version="1.0"
+                            files=[
+                                str(f.relative_to(self.project_root)) for f in subdir.glob("*.py")
+                            ],
+                            version="1.0",
                         )
 
                         self.features.append(feature)
@@ -250,7 +266,7 @@ class FeatureDiscovery:
         model_patterns = [
             self.project_root / "models",
             self.project_root / "core" / "models",
-            self.project_root / "api" / "models"
+            self.project_root / "api" / "models",
         ]
 
         for model_dir in model_patterns:
@@ -258,15 +274,17 @@ class FeatureDiscovery:
                 continue
 
             for model_file in model_dir.glob("*.py"):
-                if model_file.name.startswith('_'):
+                if model_file.name.startswith("_"):
                     continue
 
                 try:
-                    with open(model_file, 'r', encoding='utf-8') as f:
+                    with open(model_file, "r", encoding="utf-8") as f:
                         content = f.read()
 
                     tree = ast.parse(content)
-                    classes = [node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
+                    classes = [
+                        node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)
+                    ]
 
                     if classes:
                         feature = DiscoveredFeature(
@@ -276,7 +294,7 @@ class FeatureDiscovery:
                             priority="medium",
                             classes=classes,
                             files=[str(model_file.relative_to(self.project_root))],
-                            version="1.0"
+                            version="1.0",
                         )
 
                         self.features.append(feature)
@@ -294,10 +312,7 @@ class FeatureDiscovery:
 
         for pattern in patterns:
             for match in re.finditer(pattern, content):
-                endpoints.append({
-                    'method': match.group(1).upper(),
-                    'path': match.group(2)
-                })
+                endpoints.append({"method": match.group(1).upper(), "path": match.group(2)})
 
         return endpoints
 
@@ -306,19 +321,17 @@ class FeatureDiscovery:
         commands = []
 
         # Look for function definitions with @app.command() decorator
-        pattern = r'@(?:app|cli)\.command\(\)\s*\ndef\s+(\w+)'
+        pattern = r"@(?:app|cli)\.command\(\)\s*\ndef\s+(\w+)"
 
         for match in re.finditer(pattern, content):
-            commands.append({
-                'name': match.group(1)
-            })
+            commands.append({"name": match.group(1)})
 
         # Also look for plain function definitions in CLI files
         if not commands:
             tree = ast.parse(content)
             for node in ast.walk(tree):
-                if isinstance(node, ast.FunctionDef) and not node.name.startswith('_'):
-                    commands.append({'name': node.name})
+                if isinstance(node, ast.FunctionDef) and not node.name.startswith("_"):
+                    commands.append({"name": node.name})
 
         return commands
 
@@ -327,7 +340,7 @@ class FeatureDiscovery:
         exports = []
 
         # Look for __all__ = [...]
-        match = re.search(r'__all__\s*=\s*\[(.*?)\]', content, re.DOTALL)
+        match = re.search(r"__all__\s*=\s*\[(.*?)\]", content, re.DOTALL)
         if match:
             exports_str = match.group(1)
             # Extract quoted strings
@@ -341,11 +354,11 @@ class FeatureDiscovery:
         criteria = []
 
         # Look for test functions
-        if 'def test_' in content:
+        if "def test_" in content:
             tree = ast.parse(content)
             for node in ast.walk(tree):
-                if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'):
-                    test_name = node.name.replace('test_', '').replace('_', ' ').capitalize()
+                if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
+                    test_name = node.name.replace("test_", "").replace("_", " ").capitalize()
                     criteria.append(f"{test_name}")
 
         return criteria[:5]  # Limit to first 5
@@ -376,13 +389,7 @@ class FeatureDiscovery:
 """
 
         # Group features by category
-        categories = {
-            'API': [],
-            'CLI': [],
-            'UI': [],
-            'Core': [],
-            'Data': []
-        }
+        categories = {"API": [], "CLI": [], "UI": [], "Core": [], "Data": []}
 
         for feature in self.features:
             for category in categories:
@@ -390,14 +397,16 @@ class FeatureDiscovery:
                     categories[category].append(feature)
                     break
             else:
-                categories['Core'].append(feature)
+                categories["Core"].append(feature)
 
         # List capabilities by category
         for category, features in categories.items():
             if features:
                 md += f"\n### {category} Features\n\n"
                 for feature in features:
-                    md += f"- **{feature.title.split(':', 1)[-1].strip()}**: {feature.description}\n"
+                    md += (
+                        f"- **{feature.title.split(':', 1)[-1].strip()}**: {feature.description}\n"
+                    )
 
         md += "\n\n---\n\n"
 
@@ -464,7 +473,7 @@ class FeatureDiscovery:
         """Generate version planning sections"""
 
         # Parse version
-        parts = current_version.split('.')
+        parts = current_version.split(".")
         major = int(parts[0])
         minor = int(parts[1]) if len(parts) > 1 else 0
         patch = int(parts[2]) if len(parts) > 2 else 0

@@ -137,11 +137,13 @@ class WorkerCoordinator:
 
         if not idle_workers:
             # Queue task for later
-            self.task_queue.append({
-                'task_id': task_id,
-                'task_data': task_data,
-                'session_id': session_id,
-            })
+            self.task_queue.append(
+                {
+                    "task_id": task_id,
+                    "task_data": task_data,
+                    "session_id": session_id,
+                }
+            )
             return None
 
         # Assign to first idle worker
@@ -238,14 +240,14 @@ class WorkerCoordinator:
         total_failed = sum(w.tasks_failed for w in self.workers.values())
 
         return {
-            'total_workers': total_workers,
-            'idle_workers': idle_workers,
-            'busy_workers': busy_workers,
-            'offline_workers': offline_workers,
-            'queued_tasks': len(self.task_queue),
-            'total_completed': total_completed,
-            'total_failed': total_failed,
-            'utilization': (busy_workers / total_workers * 100) if total_workers > 0 else 0,
+            "total_workers": total_workers,
+            "idle_workers": idle_workers,
+            "busy_workers": busy_workers,
+            "offline_workers": offline_workers,
+            "queued_tasks": len(self.task_queue),
+            "total_completed": total_completed,
+            "total_failed": total_failed,
+            "utilization": (busy_workers / total_workers * 100) if total_workers > 0 else 0,
         }
 
     def scale_workers(self, target_count: int):
@@ -286,10 +288,10 @@ class WorkerCoordinator:
 
         # Assign to worker
         worker.status = WorkerStatus.BUSY
-        worker.current_task = task['task_id']
-        worker.current_session = task.get('session_id')
+        worker.current_task = task["task_id"]
+        worker.current_session = task.get("session_id")
 
-        self.task_assignments[task['task_id']] = worker.worker_id
+        self.task_assignments[task["task_id"]] = worker.worker_id
 
     def _requeue_task(self, task_id: str):
         """Requeue a task that was assigned to a failed worker."""
@@ -302,11 +304,13 @@ class WorkerCoordinator:
 
         # Add back to queue (we don't have the task data, so this is a placeholder)
         # In a real implementation, we'd need to store task data
-        self.task_queue.append({
-            'task_id': task_id,
-            'task_data': {},
-            'session_id': None,
-        })
+        self.task_queue.append(
+            {
+                "task_id": task_id,
+                "task_data": {},
+                "session_id": None,
+            }
+        )
 
     def get_statistics(self) -> Dict[str, any]:
         """
@@ -320,17 +324,19 @@ class WorkerCoordinator:
         # Per-worker stats
         worker_stats = []
         for worker in self.workers.values():
-            worker_stats.append({
-                'worker_id': worker.worker_id,
-                'status': worker.status.value,
-                'tasks_completed': worker.tasks_completed,
-                'tasks_failed': worker.tasks_failed,
-                'current_task': worker.current_task,
-            })
+            worker_stats.append(
+                {
+                    "worker_id": worker.worker_id,
+                    "status": worker.status.value,
+                    "tasks_completed": worker.tasks_completed,
+                    "tasks_failed": worker.tasks_failed,
+                    "current_task": worker.current_task,
+                }
+            )
 
         return {
-            'distribution': distribution,
-            'workers': worker_stats,
+            "distribution": distribution,
+            "workers": worker_stats,
         }
 
     def get_all_workers(self) -> List[Worker]:

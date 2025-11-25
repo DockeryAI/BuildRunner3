@@ -16,6 +16,7 @@ from dataclasses import dataclass
 @dataclass
 class RealSQLRisk:
     """A REAL SQL injection risk (not a false positive)"""
+
     file_path: str
     line_number: int
     line_content: str
@@ -28,45 +29,52 @@ class SmartSQLDetector:
 
     # Paths to always exclude
     EXCLUDE_PATHS = {
-        'node_modules', '.venv', 'venv', '__pycache__',
-        'dist', 'build', '.git', 'coverage',
-        'electron/node_modules', 'ui/node_modules'
+        "node_modules",
+        ".venv",
+        "venv",
+        "__pycache__",
+        "dist",
+        "build",
+        ".git",
+        "coverage",
+        "electron/node_modules",
+        "ui/node_modules",
     }
 
     # Test/doc patterns to exclude
     EXCLUDE_PATTERNS = [
-        r'/tests?/',
-        r'/test_',
-        r'_test\.py$',
-        r'\.test\.',
-        r'/docs?/',
-        r'\.md$',
-        r'/examples?/',
-        r'core/security/.*detector\.py$',  # Exclude detector files (contain example patterns)
-        r'EXAMPLE',
-        r'_EXAMPLE'
+        r"/tests?/",
+        r"/test_",
+        r"_test\.py$",
+        r"\.test\.",
+        r"/docs?/",
+        r"\.md$",
+        r"/examples?/",
+        r"core/security/.*detector\.py$",  # Exclude detector files (contain example patterns)
+        r"EXAMPLE",
+        r"_EXAMPLE",
     ]
 
     # Safe patterns (parameterized queries)
     SAFE_PATTERNS = [
-        r'\?',  # ? placeholder
-        r':\w+',  # :param named placeholders
-        r'%\(.*?\)s',  # %(name)s placeholders
-        r'\.execute\(',  # Using execute() with params
-        r'\.filter\(',  # ORM filters (Django, SQLAlchemy)
-        r'\.query\('  # ORM queries
+        r"\?",  # ? placeholder
+        r":\w+",  # :param named placeholders
+        r"%\(.*?\)s",  # %(name)s placeholders
+        r"\.execute\(",  # Using execute() with params
+        r"\.filter\(",  # ORM filters (Django, SQLAlchemy)
+        r"\.query\(",  # ORM queries
     ]
 
     # Logging patterns (safe)
     LOGGING_PATTERNS = [
-        r'logger\.',
-        r'log\.',
-        r'print\(',
-        r'console\.',
-        r'debug\(',
-        r'info\(',
-        r'warning\(',
-        r'error\('
+        r"logger\.",
+        r"log\.",
+        r"print\(",
+        r"console\.",
+        r"debug\(",
+        r"info\(",
+        r"warning\(",
+        r"error\(",
     ]
 
     def is_excluded_path(self, file_path: str) -> bool:
@@ -75,7 +83,7 @@ class SmartSQLDetector:
 
         # Exclude by directory name
         for exclude in self.EXCLUDE_PATHS:
-            if f'/{exclude}/' in path_str or path_str.startswith(exclude):
+            if f"/{exclude}/" in path_str or path_str.startswith(exclude):
                 return True
 
         # Exclude by pattern
@@ -143,7 +151,7 @@ class SmartSQLDetector:
                     line_number=line_num,
                     line_content=line.strip(),
                     risk_type="string_concatenation",
-                    severity="HIGH"
+                    severity="HIGH",
                 )
 
         # Pattern 2: f-string with user input directly in SQL query
@@ -155,20 +163,20 @@ class SmartSQLDetector:
                 line_number=line_num,
                 line_content=line.strip(),
                 risk_type="f-string_in_where_clause",
-                severity="HIGH"
+                severity="HIGH",
             )
 
         # Pattern 3: execute() with string formatting (not placeholders)
         # BAD: cursor.execute(f"SELECT * FROM users WHERE id={uid}")
-        if 'execute(' in line and ('f"' in line or "f'" in line):
-            if 'WHERE' in line.upper() or 'SET' in line.upper():
+        if "execute(" in line and ('f"' in line or "f'" in line):
+            if "WHERE" in line.upper() or "SET" in line.upper():
                 if not self.is_safe_pattern(line):
                     return RealSQLRisk(
                         file_path=str(file_path),
                         line_number=line_num,
                         line_content=line.strip(),
                         risk_type="execute_with_f-string",
-                        severity="HIGH"
+                        severity="HIGH",
                     )
 
         return None

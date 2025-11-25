@@ -10,14 +10,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import Mock, patch, mock_open, MagicMock
 
-from core.dashboard_views import (
-    ProjectStatus,
-    DashboardScanner,
-    DashboardViews
-)
+from core.dashboard_views import ProjectStatus, DashboardScanner, DashboardViews
 
 
 # Fixtures
+
 
 @pytest.fixture
 def sample_features_data():
@@ -30,11 +27,9 @@ def sample_features_data():
         "features": [
             {"id": "f1", "name": "Feature 1", "status": "complete"},
             {"id": "f2", "name": "Feature 2", "status": "in_progress"},
-            {"id": "f3", "name": "Feature 3", "status": "planned"}
+            {"id": "f3", "name": "Feature 3", "status": "planned"},
         ],
-        "metrics": {
-            "completion_percentage": 33.3
-        }
+        "metrics": {"completion_percentage": 33.3},
     }
 
 
@@ -53,7 +48,7 @@ def mock_project():
         completion_percentage=33.3,
         last_updated=datetime.now() - timedelta(days=2),
         blockers=[],
-        active_features=["Feature 2"]
+        active_features=["Feature 2"],
     )
 
 
@@ -72,7 +67,7 @@ def mock_stale_project():
         completion_percentage=40.0,
         last_updated=datetime.now() - timedelta(days=10),
         blockers=[],
-        active_features=[]
+        active_features=[],
     )
 
 
@@ -91,11 +86,12 @@ def mock_blocked_project():
         completion_percentage=70.0,
         last_updated=datetime.now() - timedelta(days=1),
         blockers=["Missing dependency", "Build failure"],
-        active_features=["Feature X", "Feature Y"]
+        active_features=["Feature X", "Feature Y"],
     )
 
 
 # ProjectStatus Tests
+
 
 class TestProjectStatus:
     """Test ProjectStatus dataclass properties"""
@@ -122,7 +118,7 @@ class TestProjectStatus:
             completion_percentage=80.0,
             last_updated=datetime.now(),
             blockers=[],
-            active_features=[]
+            active_features=[],
         )
         assert project.health_status == "healthy"
 
@@ -144,7 +140,7 @@ class TestProjectStatus:
             completion_percentage=20.0,
             last_updated=datetime.now(),
             blockers=[],
-            active_features=[]
+            active_features=[],
         )
         assert project.health_status == "warning"
 
@@ -154,6 +150,7 @@ class TestProjectStatus:
 
 
 # DashboardScanner Tests
+
 
 class TestDashboardScanner:
     """Test DashboardScanner filesystem discovery"""
@@ -168,7 +165,7 @@ class TestDashboardScanner:
         scanner = DashboardScanner(Path("/custom/path"))
         assert scanner.root_path == Path("/custom/path")
 
-    @patch('core.dashboard_views.Path.iterdir')
+    @patch("core.dashboard_views.Path.iterdir")
     def test_find_features_files_single(self, mock_iterdir):
         """Find single features.json file"""
         # Setup mock directory structure
@@ -187,7 +184,7 @@ class TestDashboardScanner:
 
         assert len(files) == 1
 
-    @patch('core.dashboard_views.Path.iterdir')
+    @patch("core.dashboard_views.Path.iterdir")
     def test_find_features_files_excludes_common_dirs(self, mock_iterdir):
         """Excludes .git, node_modules, etc."""
         # Setup mock directory structure with excluded dirs
@@ -241,12 +238,7 @@ class TestDashboardScanner:
 
     def test_parse_project_missing_fields(self, tmp_path):
         """Handle missing fields with defaults"""
-        minimal_data = {
-            "features": [
-                {"status": "complete"},
-                {"status": "planned"}
-            ]
-        }
+        minimal_data = {"features": [{"status": "complete"}, {"status": "planned"}]}
 
         features_file = tmp_path / "features.json"
         features_file.write_text(json.dumps(minimal_data))
@@ -264,12 +256,8 @@ class TestDashboardScanner:
         """Calculate completion percentage when not in metrics"""
         data = {
             "project": "Test",
-            "features": [
-                {"status": "complete"},
-                {"status": "complete"},
-                {"status": "planned"}
-            ],
-            "metrics": {}
+            "features": [{"status": "complete"}, {"status": "complete"}, {"status": "planned"}],
+            "metrics": {},
         }
 
         features_file = tmp_path / "features.json"
@@ -287,8 +275,8 @@ class TestDashboardScanner:
             "features": [
                 {"name": "Feature 1", "status": "in_progress"},
                 {"name": "Feature 2", "status": "in_progress"},
-                {"name": "Feature 3", "status": "complete"}
-            ]
+                {"name": "Feature 3", "status": "complete"},
+            ],
         }
 
         features_file = tmp_path / "features.json"
@@ -305,10 +293,7 @@ class TestDashboardScanner:
         """Limit active features to 5"""
         data = {
             "project": "Test",
-            "features": [
-                {"name": f"Feature {i}", "status": "in_progress"}
-                for i in range(10)
-            ]
+            "features": [{"name": f"Feature {i}", "status": "in_progress"} for i in range(10)],
         }
 
         features_file = tmp_path / "features.json"
@@ -322,6 +307,7 @@ class TestDashboardScanner:
 
 # DashboardViews Tests
 
+
 class TestDashboardViews:
     """Test DashboardViews aggregation and filtering"""
 
@@ -332,25 +318,25 @@ class TestDashboardViews:
 
         overview = views.get_overview_data()
 
-        assert overview['total_projects'] == 3
-        assert overview['total_features'] == 18  # 3 + 5 + 10
-        assert overview['total_completed'] == 10  # 1 + 2 + 7
-        assert overview['total_in_progress'] == 3  # 1 + 0 + 2
-        assert overview['total_planned'] == 5  # 1 + 3 + 1
-        assert overview['overall_completion'] == 55.6  # 10/18 * 100
-        assert overview['stale_projects'] == 1
-        assert overview['blocked_projects'] == 1
-        assert overview['active_projects'] == 2  # Projects with in_progress > 0
-        assert len(overview['projects']) == 3
+        assert overview["total_projects"] == 3
+        assert overview["total_features"] == 18  # 3 + 5 + 10
+        assert overview["total_completed"] == 10  # 1 + 2 + 7
+        assert overview["total_in_progress"] == 3  # 1 + 0 + 2
+        assert overview["total_planned"] == 5  # 1 + 3 + 1
+        assert overview["overall_completion"] == 55.6  # 10/18 * 100
+        assert overview["stale_projects"] == 1
+        assert overview["blocked_projects"] == 1
+        assert overview["active_projects"] == 2  # Projects with in_progress > 0
+        assert len(overview["projects"]) == 3
 
     def test_get_overview_data_empty(self):
         """Handle empty project list"""
         views = DashboardViews([])
         overview = views.get_overview_data()
 
-        assert overview['total_projects'] == 0
-        assert overview['total_features'] == 0
-        assert overview['overall_completion'] == 0
+        assert overview["total_projects"] == 0
+        assert overview["total_features"] == 0
+        assert overview["overall_completion"] == 0
 
     def test_get_detail_data_found(self, mock_project):
         """Get detail data for existing project"""
@@ -358,12 +344,12 @@ class TestDashboardViews:
         detail = views.get_detail_data("TestProject")
 
         assert detail is not None
-        assert detail['project'].name == "TestProject"
-        assert detail['features_by_status']['completed'] == 1
-        assert detail['features_by_status']['in_progress'] == 1
-        assert detail['features_by_status']['planned'] == 1
-        assert detail['health'] == "healthy"
-        assert detail['days_since_update'] == 2
+        assert detail["project"].name == "TestProject"
+        assert detail["features_by_status"]["completed"] == 1
+        assert detail["features_by_status"]["in_progress"] == 1
+        assert detail["features_by_status"]["planned"] == 1
+        assert detail["health"] == "healthy"
+        assert detail["days_since_update"] == 2
 
     def test_get_detail_data_not_found(self, mock_project):
         """Return None for non-existent project"""
@@ -381,13 +367,13 @@ class TestDashboardViews:
         assert len(timeline) == 2
 
         # Should be sorted by timestamp descending (most recent first)
-        assert timeline[0]['project'] == "TestProject"  # 2 days ago
-        assert timeline[1]['project'] == "StaleProject"  # 10 days ago
+        assert timeline[0]["project"] == "TestProject"  # 2 days ago
+        assert timeline[1]["project"] == "StaleProject"  # 10 days ago
 
         # Check structure
-        assert 'timestamp' in timeline[0]
-        assert 'event' in timeline[0]
-        assert 'completion' in timeline[0]
+        assert "timestamp" in timeline[0]
+        assert "event" in timeline[0]
+        assert "completion" in timeline[0]
 
     def test_get_timeline_data_filtered_by_days(self):
         """Filter timeline by date range"""
@@ -403,7 +389,7 @@ class TestDashboardViews:
             completion_percentage=100.0,
             last_updated=datetime.now() - timedelta(days=60),
             blockers=[],
-            active_features=[]
+            active_features=[],
         )
 
         recent_project = ProjectStatus(
@@ -418,7 +404,7 @@ class TestDashboardViews:
             completion_percentage=33.3,
             last_updated=datetime.now() - timedelta(days=5),
             blockers=[],
-            active_features=[]
+            active_features=[],
         )
 
         views = DashboardViews([old_project, recent_project])
@@ -426,7 +412,7 @@ class TestDashboardViews:
 
         # Should only include recent project
         assert len(timeline) == 1
-        assert timeline[0]['project'] == "RecentProject"
+        assert timeline[0]["project"] == "RecentProject"
 
     def test_get_alerts_data(self, mock_project, mock_stale_project, mock_blocked_project):
         """Get all alert categories"""
@@ -443,7 +429,7 @@ class TestDashboardViews:
             completion_percentage=0.0,
             last_updated=datetime.now(),
             blockers=[],
-            active_features=[]
+            active_features=[],
         )
 
         # Add high WIP project
@@ -459,7 +445,7 @@ class TestDashboardViews:
             completion_percentage=25.0,
             last_updated=datetime.now(),
             blockers=[],
-            active_features=[]
+            active_features=[],
         )
 
         projects = [mock_project, mock_stale_project, mock_blocked_project, no_progress, high_wip]
@@ -468,30 +454,30 @@ class TestDashboardViews:
         alerts = views.get_alerts_data()
 
         # Check alert categories
-        assert len(alerts['stale']) == 1
-        assert alerts['stale'][0].name == "StaleProject"
+        assert len(alerts["stale"]) == 1
+        assert alerts["stale"][0].name == "StaleProject"
 
-        assert len(alerts['blocked']) == 1
-        assert alerts['blocked'][0].name == "BlockedProject"
+        assert len(alerts["blocked"]) == 1
+        assert alerts["blocked"][0].name == "BlockedProject"
 
         # Both StaleProject and NoProgress have 0 in_progress but have planned features
-        assert len(alerts['no_progress']) == 2
-        no_progress_names = [p.name for p in alerts['no_progress']]
+        assert len(alerts["no_progress"]) == 2
+        no_progress_names = [p.name for p in alerts["no_progress"]]
         assert "StaleProject" in no_progress_names
         assert "NoProgress" in no_progress_names
 
-        assert len(alerts['high_wip']) == 1
-        assert alerts['high_wip'][0].name == "HighWIP"
+        assert len(alerts["high_wip"]) == 1
+        assert alerts["high_wip"][0].name == "HighWIP"
 
     def test_get_alerts_data_no_alerts(self, mock_project):
         """Return empty lists when no alerts"""
         views = DashboardViews([mock_project])
         alerts = views.get_alerts_data()
 
-        assert len(alerts['stale']) == 0
-        assert len(alerts['blocked']) == 0
-        assert len(alerts['no_progress']) == 0
-        assert len(alerts['high_wip']) == 0
+        assert len(alerts["stale"]) == 0
+        assert len(alerts["blocked"]) == 0
+        assert len(alerts["no_progress"]) == 0
+        assert len(alerts["high_wip"]) == 0
 
     def test_get_summary_stats(self, mock_project, mock_stale_project):
         """Generate text summary"""
@@ -508,6 +494,7 @@ class TestDashboardViews:
 
 # Integration Tests
 
+
 class TestDashboardIntegration:
     """End-to-end integration tests"""
 
@@ -521,12 +508,8 @@ class TestDashboardIntegration:
             "project": "Project1",
             "version": "1.0.0",
             "status": "active",
-            "features": [
-                {"status": "complete"},
-                {"status": "complete"},
-                {"status": "in_progress"}
-            ],
-            "metrics": {"completion_percentage": 66.7}
+            "features": [{"status": "complete"}, {"status": "complete"}, {"status": "in_progress"}],
+            "metrics": {"completion_percentage": 66.7},
         }
         (project1_dir / "features.json").write_text(json.dumps(project1_data))
 
@@ -537,10 +520,7 @@ class TestDashboardIntegration:
             "project": "Project2",
             "version": "2.0.0",
             "status": "active",
-            "features": [
-                {"status": "planned"},
-                {"status": "planned"}
-            ]
+            "features": [{"status": "planned"}, {"status": "planned"}],
         }
         (project2_dir / "features.json").write_text(json.dumps(project2_data))
 
@@ -554,10 +534,10 @@ class TestDashboardIntegration:
         views = DashboardViews(projects)
         overview = views.get_overview_data()
 
-        assert overview['total_projects'] == 2
-        assert overview['total_features'] == 5
-        assert overview['total_completed'] == 2
-        assert overview['active_projects'] == 1
+        assert overview["total_projects"] == 2
+        assert overview["total_features"] == 5
+        assert overview["total_completed"] == 2
+        assert overview["active_projects"] == 1
 
     def test_empty_directory(self, tmp_path):
         """Handle directory with no BuildRunner projects"""
@@ -569,4 +549,4 @@ class TestDashboardIntegration:
         views = DashboardViews(projects)
         overview = views.get_overview_data()
 
-        assert overview['total_projects'] == 0
+        assert overview["total_projects"] == 0

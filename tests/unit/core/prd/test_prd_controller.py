@@ -27,7 +27,7 @@ from core.prd.prd_controller import (
     PRDVersion,
     PRDChangeEvent,
     ChangeType,
-    get_prd_controller
+    get_prd_controller,
 )
 
 
@@ -43,7 +43,7 @@ class TestPRDModels:
             priority="high",
             status="planned",
             requirements=["req1", "req2"],
-            acceptance_criteria=["ac1", "ac2"]
+            acceptance_criteria=["ac1", "ac2"],
         )
 
         assert feature.id == "test-1"
@@ -54,16 +54,13 @@ class TestPRDModels:
 
     def test_prd_creation(self):
         """Test creating PRD"""
-        features = [
-            PRDFeature(id="f1", name="Feature 1"),
-            PRDFeature(id="f2", name="Feature 2")
-        ]
+        features = [PRDFeature(id="f1", name="Feature 1"), PRDFeature(id="f2", name="Feature 2")]
 
         prd = PRD(
             project_name="Test Project",
             version="1.0.0",
             overview="Test overview",
-            features=features
+            features=features,
         )
 
         assert prd.project_name == "Test Project"
@@ -73,10 +70,7 @@ class TestPRDModels:
     def test_prd_to_dict(self):
         """Test PRD serialization"""
         feature = PRDFeature(id="f1", name="Feature 1")
-        prd = PRD(
-            project_name="Test",
-            features=[feature]
-        )
+        prd = PRD(project_name="Test", features=[feature])
 
         data = prd.to_dict()
 
@@ -89,9 +83,7 @@ class TestPRDModels:
         data = {
             "project_name": "Test",
             "version": "1.0.0",
-            "features": [
-                {"id": "f1", "name": "Feature 1"}
-            ]
+            "features": [{"id": "f1", "name": "Feature 1"}],
         }
 
         prd = PRD.from_dict(data)
@@ -110,7 +102,8 @@ class TestPRDController:
         temp_dir = Path(tempfile.mkdtemp())
         spec_path = temp_dir / "PROJECT_SPEC.md"
 
-        spec_path.write_text("""# Test Project
+        spec_path.write_text(
+            """# Test Project
 
 **Version:** 1.0.0
 
@@ -135,7 +128,8 @@ First feature description
 
 - [ ] Criterion 1
 - [ ] Criterion 2
-""")
+"""
+        )
 
         yield spec_path
 
@@ -202,14 +196,17 @@ First feature description
         """Test adding feature via update_prd"""
         controller = PRDController(temp_spec)
 
-        event = controller.update_prd({
-            "add_feature": {
-                "id": "new-feature",
-                "name": "New Feature",
-                "description": "New feature description",
-                "priority": "medium"
-            }
-        }, author="test")
+        event = controller.update_prd(
+            {
+                "add_feature": {
+                    "id": "new-feature",
+                    "name": "New Feature",
+                    "description": "New feature description",
+                    "priority": "medium",
+                }
+            },
+            author="test",
+        )
 
         assert event.event_type == ChangeType.FEATURE_ADDED
         assert "new-feature" in event.affected_features
@@ -220,17 +217,12 @@ First feature description
         controller = PRDController(temp_spec)
 
         # Add a feature first
-        controller.update_prd({
-            "add_feature": {
-                "id": "to-remove",
-                "name": "To Remove"
-            }
-        }, author="test")
+        controller.update_prd(
+            {"add_feature": {"id": "to-remove", "name": "To Remove"}}, author="test"
+        )
 
         # Remove it
-        event = controller.update_prd({
-            "remove_feature": "to-remove"
-        }, author="test")
+        event = controller.update_prd({"remove_feature": "to-remove"}, author="test")
 
         assert event.event_type == ChangeType.FEATURE_REMOVED
         assert "to-remove" in event.affected_features
@@ -240,15 +232,15 @@ First feature description
         """Test modifying feature via update_prd"""
         controller = PRDController(temp_spec)
 
-        event = controller.update_prd({
-            "update_feature": {
-                "id": "feature-1",
-                "updates": {
-                    "description": "Updated description",
-                    "priority": "low"
+        event = controller.update_prd(
+            {
+                "update_feature": {
+                    "id": "feature-1",
+                    "updates": {"description": "Updated description", "priority": "low"},
                 }
-            }
-        }, author="test")
+            },
+            author="test",
+        )
 
         assert event.event_type == ChangeType.FEATURE_UPDATED
         assert "feature-1" in event.affected_features
@@ -278,17 +270,13 @@ class TestVersionControl:
         """Test version is saved on each update"""
         initial_versions = len(controller.get_versions())
 
-        controller.update_prd({
-            "add_feature": {"id": "f1", "name": "Feature 1"}
-        }, author="test")
+        controller.update_prd({"add_feature": {"id": "f1", "name": "Feature 1"}}, author="test")
 
         assert len(controller.get_versions()) == initial_versions + 1
 
     def test_version_contains_snapshot(self, controller):
         """Test version contains PRD snapshot"""
-        controller.update_prd({
-            "add_feature": {"id": "f1", "name": "Feature 1"}
-        }, author="test")
+        controller.update_prd({"add_feature": {"id": "f1", "name": "Feature 1"}}, author="test")
 
         versions = controller.get_versions()
         assert len(versions) > 0
@@ -302,9 +290,9 @@ class TestVersionControl:
         """Test only last 10 versions are kept"""
         # Make 15 updates
         for i in range(15):
-            controller.update_prd({
-                "add_feature": {"id": f"f{i}", "name": f"Feature {i}"}
-            }, author="test")
+            controller.update_prd(
+                {"add_feature": {"id": f"f{i}", "name": f"Feature {i}"}}, author="test"
+            )
 
         versions = controller.get_versions()
         assert len(versions) <= 10
@@ -313,9 +301,9 @@ class TestVersionControl:
         """Test rollback restores previous state"""
         # Add 3 features
         for i in range(3):
-            controller.update_prd({
-                "add_feature": {"id": f"f{i}", "name": f"Feature {i}"}
-            }, author="test")
+            controller.update_prd(
+                {"add_feature": {"id": f"f{i}", "name": f"Feature {i}"}}, author="test"
+            )
 
         assert len(controller.prd.features) == 3
 
@@ -333,9 +321,7 @@ class TestVersionControl:
 
         controller.subscribe(listener)
 
-        controller.update_prd({
-            "add_feature": {"id": "f1", "name": "Feature 1"}
-        }, author="test")
+        controller.update_prd({"add_feature": {"id": "f1", "name": "Feature 1"}}, author="test")
 
         controller.rollback_to_version(0)
 
@@ -369,9 +355,7 @@ class TestEventSystem:
 
         controller.subscribe(listener)
 
-        controller.update_prd({
-            "add_feature": {"id": "f1", "name": "Feature 1"}
-        }, author="test")
+        controller.update_prd({"add_feature": {"id": "f1", "name": "Feature 1"}}, author="test")
 
         assert len(events) == 1
         assert isinstance(events[0], PRDChangeEvent)
@@ -390,9 +374,7 @@ class TestEventSystem:
         controller.subscribe(listener1)
         controller.subscribe(listener2)
 
-        controller.update_prd({
-            "add_feature": {"id": "f1", "name": "Feature 1"}
-        }, author="test")
+        controller.update_prd({"add_feature": {"id": "f1", "name": "Feature 1"}}, author="test")
 
         assert len(events1) == 1
         assert len(events2) == 1
@@ -407,23 +389,20 @@ class TestEventSystem:
         controller.subscribe(listener)
         controller.unsubscribe(listener)
 
-        controller.update_prd({
-            "add_feature": {"id": "f1", "name": "Feature 1"}
-        }, author="test")
+        controller.update_prd({"add_feature": {"id": "f1", "name": "Feature 1"}}, author="test")
 
         assert len(events) == 0
 
     def test_listener_exception_doesnt_crash(self, controller):
         """Test listener exception doesn't crash system"""
+
         def bad_listener(event):
             raise Exception("Listener error")
 
         controller.subscribe(bad_listener)
 
         # Should not raise exception
-        controller.update_prd({
-            "add_feature": {"id": "f1", "name": "Feature 1"}
-        }, author="test")
+        controller.update_prd({"add_feature": {"id": "f1", "name": "Feature 1"}}, author="test")
 
         # Controller should still work
         assert len(controller.prd.features) == 1
@@ -462,9 +441,9 @@ class TestNaturalLanguageParsing:
     def test_parse_remove_feature(self, controller):
         """Test parsing 'remove feature X'"""
         # Add a feature first
-        controller.update_prd({
-            "add_feature": {"id": "auth", "name": "Authentication"}
-        }, author="test")
+        controller.update_prd(
+            {"add_feature": {"id": "auth", "name": "Authentication"}}, author="test"
+        )
 
         updates = controller.parse_natural_language("remove auth")
 
@@ -506,12 +485,10 @@ class TestConcurrency:
 
         def update_worker(i):
             try:
-                controller.update_prd({
-                    "add_feature": {
-                        "id": f"concurrent-{i}",
-                        "name": f"Concurrent Feature {i}"
-                    }
-                }, author=f"worker-{i}")
+                controller.update_prd(
+                    {"add_feature": {"id": f"concurrent-{i}", "name": f"Concurrent Feature {i}"}},
+                    author=f"worker-{i}",
+                )
             except Exception as e:
                 errors.append(e)
 
@@ -536,9 +513,7 @@ class TestConcurrency:
 
         def rapid_update(i):
             for j in range(3):
-                controller.update_prd({
-                    "project_name": f"Update {i}-{j}"
-                }, author="test")
+                controller.update_prd({"project_name": f"Update {i}-{j}"}, author="test")
 
         threads = [threading.Thread(target=rapid_update, args=(i,)) for i in range(3)]
 
@@ -565,6 +540,7 @@ class TestSingleton:
         try:
             # Reset singleton
             from core import prd_controller
+
             prd_controller._controller = None
 
             controller1 = get_prd_controller(spec_path)

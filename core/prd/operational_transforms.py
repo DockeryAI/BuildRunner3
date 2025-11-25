@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Operation:
     """Single operation in an OT sequence"""
+
     op_type: str  # "insert", "delete", "update", "no-op"
     position: Optional[int] = None
     data: Optional[Any] = None
@@ -35,6 +36,7 @@ class Operation:
 @dataclass
 class Conflict:
     """Detected conflict between operations"""
+
     op1: Operation
     op2: Operation
     conflict_type: str  # "same_field", "dependent", "ordering"
@@ -52,9 +54,7 @@ class OperationalTransform:
         self.pending_operations: List[Operation] = []
 
     def transform(
-        self,
-        local_ops: List[Operation],
-        remote_ops: List[Operation]
+        self, local_ops: List[Operation], remote_ops: List[Operation]
     ) -> Tuple[List[Operation], List[Conflict]]:
         """
         Transform local operations against remote operations
@@ -101,7 +101,7 @@ class OperationalTransform:
         """Detect if two operations conflict"""
 
         # Same feature, same field -> conflict
-        if (op1.op_type == "update" and op2.op_type == "update"):
+        if op1.op_type == "update" and op2.op_type == "update":
             if self._operations_target_same_field(op1, op2):
                 # Timestamp-based resolution (last write wins)
                 if op1.timestamp > op2.timestamp:
@@ -109,25 +109,16 @@ class OperationalTransform:
                 else:
                     resolution = "accept_op2"
 
-                return Conflict(
-                    op1=op1,
-                    op2=op2,
-                    conflict_type="same_field",
-                    resolution=resolution
-                )
+                return Conflict(op1=op1, op2=op2, conflict_type="same_field", resolution=resolution)
 
         # Delete vs Update -> conflict
-        if (op1.op_type == "delete" and op2.op_type == "update") or \
-           (op1.op_type == "update" and op2.op_type == "delete"):
+        if (op1.op_type == "delete" and op2.op_type == "update") or (
+            op1.op_type == "update" and op2.op_type == "delete"
+        ):
             # Delete wins
             resolution = "accept_op1" if op1.op_type == "delete" else "accept_op2"
 
-            return Conflict(
-                op1=op1,
-                op2=op2,
-                conflict_type="dependent",
-                resolution=resolution
-            )
+            return Conflict(op1=op1, op2=op2, conflict_type="dependent", resolution=resolution)
 
         # No conflict
         return None
@@ -138,10 +129,9 @@ class OperationalTransform:
             return False
 
         # Compare feature IDs and updated fields
-        return (
-            op1.data.get("feature_id") == op2.data.get("feature_id") and
-            op1.data.get("field") == op2.data.get("field")
-        )
+        return op1.data.get("feature_id") == op2.data.get("feature_id") and op1.data.get(
+            "field"
+        ) == op2.data.get("field")
 
     def _merge_operations(self, op1: Operation, op2: Operation) -> Operation:
         """Attempt to merge two operations"""
@@ -154,7 +144,7 @@ class OperationalTransform:
                 position=op1.position,
                 data=merged_data,
                 author=f"{op1.author}+{op2.author}",
-                timestamp=max(op1.timestamp, op2.timestamp)
+                timestamp=max(op1.timestamp, op2.timestamp),
             )
 
         return op1
@@ -192,24 +182,20 @@ class ConflictResolver:
 
                 if field1 != field2:
                     # Different fields, can merge
-                    merged_data = {
-                        **conflict.op1.data,
-                        **conflict.op2.data
-                    }
+                    merged_data = {**conflict.op1.data, **conflict.op2.data}
 
                     return Operation(
                         op_type="update",
                         data=merged_data,
                         author=f"{conflict.op1.author}+{conflict.op2.author}",
-                        timestamp=max(conflict.op1.timestamp, conflict.op2.timestamp)
+                        timestamp=max(conflict.op1.timestamp, conflict.op2.timestamp),
                     )
 
         return None
 
     @staticmethod
     def resolve_by_author_priority(
-        conflict: Conflict,
-        author_priorities: Dict[str, int]
+        conflict: Conflict, author_priorities: Dict[str, int]
     ) -> Operation:
         """Resolve conflict based on author priority"""
         priority1 = author_priorities.get(conflict.op1.author, 0)

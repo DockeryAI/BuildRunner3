@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 @dataclass
 class DesignProfile:
     """Complete design profile for a project"""
+
     industry: str
     use_case: str
     colors: Dict[str, str] = field(default_factory=dict)
@@ -51,7 +52,7 @@ class DesignProfiler:
         if not profile_path.exists():
             return None
 
-        with open(profile_path, 'r') as f:
+        with open(profile_path, "r") as f:
             return yaml.safe_load(f)
 
     def load_use_case_profile(self, use_case: str) -> Optional[Dict]:
@@ -61,7 +62,7 @@ class DesignProfiler:
         if not profile_path.exists():
             return None
 
-        with open(profile_path, 'r') as f:
+        with open(profile_path, "r") as f:
             return yaml.safe_load(f)
 
     def _deep_merge_dict(self, base: Dict, override: Dict) -> Dict:
@@ -85,30 +86,30 @@ class DesignProfiler:
         """
         # Start with industry profile as base
         merged = DesignProfile(
-            industry=industry_profile.get('name', 'unknown'),
-            use_case=use_case_profile.get('name', 'unknown')
+            industry=industry_profile.get("name", "unknown"),
+            use_case=use_case_profile.get("name", "unknown"),
         )
 
         # Colors: Industry first, use case fills in gaps (deep merge for nested structures)
-        industry_colors = industry_profile.get('colors', {})
-        use_case_colors = use_case_profile.get('colors', {})
-        merged.colors = self._deep_merge_dict(use_case_colors, industry_colors)  # Industry overrides
+        industry_colors = industry_profile.get("colors", {})
+        use_case_colors = use_case_profile.get("colors", {})
+        merged.colors = self._deep_merge_dict(
+            use_case_colors, industry_colors
+        )  # Industry overrides
 
         # Typography: Industry first (deep merge for nested structures)
         merged.typography = self._deep_merge_dict(
-            use_case_profile.get('typography', {}),
-            industry_profile.get('typography', {})
+            use_case_profile.get("typography", {}), industry_profile.get("typography", {})
         )
 
         # Spacing: Use case provides defaults, industry can override
         merged.spacing = self._deep_merge_dict(
-            use_case_profile.get('spacing', {}),
-            industry_profile.get('spacing', {})
+            use_case_profile.get("spacing", {}), industry_profile.get("spacing", {})
         )
 
         # Components: Handle both list and dict formats
-        industry_components = industry_profile.get('components', [])
-        use_case_components = use_case_profile.get('components', [])
+        industry_components = industry_profile.get("components", [])
+        use_case_components = use_case_profile.get("components", [])
 
         # Convert dict to list if needed (extract keys for component names)
         if isinstance(industry_components, dict):
@@ -119,22 +120,22 @@ class DesignProfiler:
         merged.components = list(set(industry_components + use_case_components))
 
         # Compliance: Industry only (handle both list and dict formats)
-        compliance = industry_profile.get('compliance', [])
+        compliance = industry_profile.get("compliance", [])
         if isinstance(compliance, dict):
-            compliance = compliance.get('standards', [])
+            compliance = compliance.get("standards", [])
         merged.compliance_requirements = compliance
 
         # Trust signals: Industry only
-        merged.trust_signals = industry_profile.get('trust_signals', [])
+        merged.trust_signals = industry_profile.get("trust_signals", [])
 
         # Layout patterns: Use case provides
-        merged.layout_patterns = use_case_profile.get('layout_patterns', [])
+        merged.layout_patterns = use_case_profile.get("layout_patterns", [])
 
         # Navigation: Use case provides
-        merged.navigation = use_case_profile.get('navigation', {})
+        merged.navigation = use_case_profile.get("navigation", {})
 
         # Data viz: Use case provides
-        merged.data_viz_preferences = use_case_profile.get('data_viz', [])
+        merged.data_viz_preferences = use_case_profile.get("data_viz", [])
 
         return merged
 
@@ -144,40 +145,35 @@ class DesignProfiler:
 
         Outputs Tailwind-compatible token structure.
         """
-        tokens = {
-            'colors': {},
-            'typography': {},
-            'spacing': {},
-            'components': profile.components
-        }
+        tokens = {"colors": {}, "typography": {}, "spacing": {}, "components": profile.components}
 
         # Color tokens
         for key, value in profile.colors.items():
-            tokens['colors'][key] = value
+            tokens["colors"][key] = value
 
         # Typography tokens
-        tokens['typography'] = {
-            'fontFamily': profile.typography.get('font_family', 'Inter, sans-serif'),
-            'fontSize': profile.typography.get('scale', {
-                'xs': '0.75rem',
-                'sm': '0.875rem',
-                'base': '1rem',
-                'lg': '1.125rem',
-                'xl': '1.25rem',
-                '2xl': '1.5rem',
-                '3xl': '1.875rem',
-                '4xl': '2.25rem'
-            }),
-            'fontWeight': profile.typography.get('weights', {
-                'normal': '400',
-                'medium': '500',
-                'semibold': '600',
-                'bold': '700'
-            })
+        tokens["typography"] = {
+            "fontFamily": profile.typography.get("font_family", "Inter, sans-serif"),
+            "fontSize": profile.typography.get(
+                "scale",
+                {
+                    "xs": "0.75rem",
+                    "sm": "0.875rem",
+                    "base": "1rem",
+                    "lg": "1.125rem",
+                    "xl": "1.25rem",
+                    "2xl": "1.5rem",
+                    "3xl": "1.875rem",
+                    "4xl": "2.25rem",
+                },
+            ),
+            "fontWeight": profile.typography.get(
+                "weights", {"normal": "400", "medium": "500", "semibold": "600", "bold": "700"}
+            ),
         }
 
         # Spacing tokens
-        tokens['spacing'] = profile.spacing
+        tokens["spacing"] = profile.spacing
 
         return tokens
 
@@ -191,7 +187,7 @@ module.exports = {{
 """
 
         # Add colors
-        for key, value in tokens['colors'].items():
+        for key, value in tokens["colors"].items():
             config += f"        '{key}': '{value}',\n"
 
         config += """      },
@@ -199,7 +195,7 @@ module.exports = {{
 """
 
         # Add fonts
-        font_family = tokens['typography']['fontFamily']
+        font_family = tokens["typography"]["fontFamily"]
         config += f"        'sans': ['{font_family}'],\n"
 
         config += """      },
@@ -207,7 +203,7 @@ module.exports = {{
 """
 
         # Add font sizes
-        for key, value in tokens['typography']['fontSize'].items():
+        for key, value in tokens["typography"]["fontSize"].items():
             config += f"        '{key}': '{value}',\n"
 
         config += """      },
@@ -215,7 +211,7 @@ module.exports = {{
 """
 
         # Add spacing
-        for key, value in tokens['spacing'].items():
+        for key, value in tokens["spacing"].items():
             config += f"        '{key}': '{value}',\n"
 
         config += """      }
@@ -232,34 +228,36 @@ module.exports = {{
         requirements = []
 
         for component in profile.components:
-            requirements.append({
-                'component': component,
-                'description': f"{component} component required for {profile.use_case}",
-                'priority': 'high' if component in ['Button', 'Input', 'Card'] else 'medium'
-            })
+            requirements.append(
+                {
+                    "component": component,
+                    "description": f"{component} component required for {profile.use_case}",
+                    "priority": "high" if component in ["Button", "Input", "Card"] else "medium",
+                }
+            )
 
         return requirements
 
     def generate_accessibility_checklist(self, profile: DesignProfile) -> List[str]:
         """Generate accessibility checklist based on compliance requirements"""
         checklist = [
-            'Color contrast ratio ≥ 4.5:1 for normal text',
-            'Color contrast ratio ≥ 3:1 for large text',
-            'All interactive elements keyboard accessible',
-            'Focus indicators visible',
-            'Alt text for all images',
-            'ARIA labels for complex components',
-            'Semantic HTML structure',
-            'Screen reader testing'
+            "Color contrast ratio ≥ 4.5:1 for normal text",
+            "Color contrast ratio ≥ 3:1 for large text",
+            "All interactive elements keyboard accessible",
+            "Focus indicators visible",
+            "Alt text for all images",
+            "ARIA labels for complex components",
+            "Semantic HTML structure",
+            "Screen reader testing",
         ]
 
         # Add industry-specific requirements
-        if 'WCAG 2.1 AA' in profile.compliance_requirements:
-            checklist.append('WCAG 2.1 AA compliance verified')
-        if 'ADA' in profile.compliance_requirements:
-            checklist.append('ADA compliance verified')
-        if 'HIPAA' in profile.compliance_requirements:
-            checklist.append('Secure data display (no PHI exposure)')
+        if "WCAG 2.1 AA" in profile.compliance_requirements:
+            checklist.append("WCAG 2.1 AA compliance verified")
+        if "ADA" in profile.compliance_requirements:
+            checklist.append("ADA compliance verified")
+        if "HIPAA" in profile.compliance_requirements:
+            checklist.append("Secure data display (no PHI exposure)")
 
         return checklist
 
@@ -286,20 +284,20 @@ module.exports = {{
         output.parent.mkdir(parents=True, exist_ok=True)
 
         data = {
-            'industry': profile.industry,
-            'use_case': profile.use_case,
-            'colors': profile.colors,
-            'typography': profile.typography,
-            'spacing': profile.spacing,
-            'components': profile.components,
-            'compliance': profile.compliance_requirements,
-            'trust_signals': profile.trust_signals,
-            'layout_patterns': profile.layout_patterns,
-            'navigation': profile.navigation,
-            'data_viz': profile.data_viz_preferences
+            "industry": profile.industry,
+            "use_case": profile.use_case,
+            "colors": profile.colors,
+            "typography": profile.typography,
+            "spacing": profile.spacing,
+            "components": profile.components,
+            "compliance": profile.compliance_requirements,
+            "trust_signals": profile.trust_signals,
+            "layout_patterns": profile.layout_patterns,
+            "navigation": profile.navigation,
+            "data_viz": profile.data_viz_preferences,
         }
 
-        with open(output, 'w') as f:
+        with open(output, "w") as f:
             yaml.dump(data, f, default_flow_style=False)
 
 

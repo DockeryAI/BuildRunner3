@@ -35,6 +35,7 @@ class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_connect_disconnect(self, connection_manager):
         """Test connecting and disconnecting"""
+
         class MockWebSocket:
             async def accept(self):
                 pass
@@ -56,6 +57,7 @@ class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_send_personal_message(self, connection_manager):
         """Test sending personal message"""
+
         class MockWebSocket:
             def __init__(self):
                 self.messages = []
@@ -78,6 +80,7 @@ class TestConnectionManager:
     @pytest.mark.asyncio
     async def test_broadcast(self, connection_manager):
         """Test broadcasting to all clients"""
+
         class MockWebSocket:
             def __init__(self):
                 self.messages = []
@@ -134,10 +137,7 @@ class TestWebSocketEndpoint:
             websocket.receive_json()
 
             # Send subscribe
-            websocket.send_json({
-                "type": "subscribe",
-                "topics": ["tasks", "telemetry"]
-            })
+            websocket.send_json({"type": "subscribe", "topics": ["tasks", "telemetry"]})
 
             # Receive confirmation
             data = websocket.receive_json()

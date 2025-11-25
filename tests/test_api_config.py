@@ -75,14 +75,8 @@ def test_get_project_config(client):
 def test_update_config(client):
     """Test updating configuration"""
     updates = {
-        "ai_behavior": {
-            "auto_suggest_tests": False,
-            "verbosity": "verbose"
-        },
-        "testing": {
-            "auto_run": True,
-            "coverage_threshold": 90
-        }
+        "ai_behavior": {"auto_suggest_tests": False, "verbosity": "verbose"},
+        "testing": {"auto_run": True, "coverage_threshold": 90},
     }
 
     response = client.patch("/config", json=updates)
@@ -97,11 +91,7 @@ def test_update_config(client):
 
 def test_update_config_partial(client):
     """Test partial config update"""
-    updates = {
-        "ai_behavior": {
-            "verbosity": "quiet"
-        }
-    }
+    updates = {"ai_behavior": {"verbosity": "quiet"}}
 
     response = client.patch("/config", json=updates)
     assert response.status_code == 200
@@ -132,12 +122,7 @@ def test_get_config_schema(client):
 def test_config_persistence(client):
     """Test that config updates persist"""
     # Update config
-    updates = {
-        "ai_behavior": {
-            "verbosity": "verbose",
-            "max_retries": 5
-        }
-    }
+    updates = {"ai_behavior": {"verbosity": "verbose", "max_retries": 5}}
 
     response1 = client.patch("/config", json=updates)
     assert response1.status_code == 200
@@ -154,11 +139,7 @@ def test_config_persistence(client):
 def test_config_merge_priority(client):
     """Test that project config overrides global config"""
     # Set project config
-    updates = {
-        "ai_behavior": {
-            "verbosity": "verbose"
-        }
-    }
+    updates = {"ai_behavior": {"verbosity": "verbose"}}
 
     client.patch("/config", json=updates)
 
@@ -199,26 +180,26 @@ def test_update_all_config_sections(client):
             "auto_suggest_tests": True,
             "auto_fix_errors": True,
             "verbosity": "verbose",
-            "max_retries": 5
+            "max_retries": 5,
         },
         "auto_commit": {
             "enabled": True,
             "on_feature_complete": True,
             "on_tests_pass": True,
-            "require_approval": False
+            "require_approval": False,
         },
         "testing": {
             "auto_run": True,
             "run_on_save": True,
             "coverage_threshold": 90,
-            "fail_on_coverage_drop": True
+            "fail_on_coverage_drop": True,
         },
         "notifications": {
             "enabled": True,
             "on_error": True,
             "on_test_fail": True,
-            "on_feature_complete": True
-        }
+            "on_feature_complete": True,
+        },
     }
 
     response = client.patch("/config", json=updates)

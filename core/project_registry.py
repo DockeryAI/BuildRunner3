@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ProjectInfo:
     """Information about a registered project"""
+
     alias: str
     path: str
     created: str
@@ -37,7 +38,7 @@ class ProjectInfo:
         return asdict(self)
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> 'ProjectInfo':
+    def from_dict(data: Dict[str, Any]) -> "ProjectInfo":
         """Create from dictionary"""
         return ProjectInfo(**data)
 
@@ -106,7 +107,7 @@ class ProjectRegistry:
         alias: str,
         project_path: Path,
         editor: str = "claude",
-        spec_path: Optional[str] = None
+        spec_path: Optional[str] = None,
     ) -> ProjectInfo:
         """
         Register a project with an alias
@@ -125,7 +126,9 @@ class ProjectRegistry:
         """
         # Validate alias
         if not alias or not alias.replace("-", "").replace("_", "").isalnum():
-            raise ValueError(f"Invalid alias '{alias}'. Use alphanumeric characters, hyphens, or underscores.")
+            raise ValueError(
+                f"Invalid alias '{alias}'. Use alphanumeric characters, hyphens, or underscores."
+            )
 
         # Validate path
         project_path = Path(project_path).resolve()
@@ -157,7 +160,7 @@ class ProjectRegistry:
             created=datetime.now().isoformat(),
             editor=editor,
             spec_path=spec_path,
-            last_accessed=None
+            last_accessed=None,
         )
 
         # Save to registry
@@ -267,7 +270,7 @@ class ProjectRegistry:
                 "exists": False,
                 "has_buildrunner": False,
                 "has_spec": False,
-                "issues": [f"Project '{alias}' not found in registry"]
+                "issues": [f"Project '{alias}' not found in registry"],
             }
 
         project_path = Path(project.path)
@@ -281,7 +284,7 @@ class ProjectRegistry:
                 "exists": False,
                 "has_buildrunner": False,
                 "has_spec": False,
-                "issues": issues
+                "issues": issues,
             }
 
         # Check for .buildrunner directory
@@ -303,7 +306,7 @@ class ProjectRegistry:
             "exists": True,
             "has_buildrunner": has_buildrunner,
             "has_spec": has_spec,
-            "issues": issues
+            "issues": issues,
         }
 
 

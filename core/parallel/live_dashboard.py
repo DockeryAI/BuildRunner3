@@ -76,9 +76,9 @@ class LiveDashboard:
 
         sessions = self.session_manager.get_active_sessions()
         if not sessions:
-            sessions = self.session_manager.list_sessions()[:self.config.max_sessions_display]
+            sessions = self.session_manager.list_sessions()[: self.config.max_sessions_display]
 
-        for session in sessions[:self.config.max_sessions_display]:
+        for session in sessions[: self.config.max_sessions_display]:
             # Status with color
             status_color = {
                 SessionStatus.CREATED: "yellow",
@@ -88,7 +88,9 @@ class LiveDashboard:
                 SessionStatus.FAILED: "red",
                 SessionStatus.CANCELLED: "dim",
             }
-            status_text = Text(session.status.value.upper(), style=status_color.get(session.status, "white"))
+            status_text = Text(
+                session.status.value.upper(), style=status_color.get(session.status, "white")
+            )
 
             # Progress bar
             progress_percent = session.progress_percent
@@ -133,7 +135,7 @@ class LiveDashboard:
         table.add_column("Failed", justify="right")
         table.add_column("Last HB", width=12)
 
-        workers = self.worker_coordinator.list_workers()[:self.config.max_workers_display]
+        workers = self.worker_coordinator.list_workers()[: self.config.max_workers_display]
 
         for worker in workers:
             # Status with color
@@ -143,7 +145,9 @@ class LiveDashboard:
                 WorkerStatus.OFFLINE: "red",
                 WorkerStatus.ERROR: "red bold",
             }
-            status_text = Text(worker.status.value.upper(), style=status_color.get(worker.status, "white"))
+            status_text = Text(
+                worker.status.value.upper(), style=status_color.get(worker.status, "white")
+            )
 
             # Current task (short)
             task_text = worker.current_task[:12] if worker.current_task else "-"
@@ -342,39 +346,39 @@ class LiveDashboard:
         if self.worker_coordinator:
             load_dist = self.worker_coordinator.get_load_distribution()
             workers_data = {
-                'total': load_dist['total_workers'],
-                'idle': load_dist['idle_workers'],
-                'busy': load_dist['busy_workers'],
-                'offline': load_dist['offline_workers'],
-                'utilization': load_dist['utilization'],
+                "total": load_dist["total_workers"],
+                "idle": load_dist["idle_workers"],
+                "busy": load_dist["busy_workers"],
+                "offline": load_dist["offline_workers"],
+                "utilization": load_dist["utilization"],
             }
             tasks_data = {
-                'queued': load_dist['queued_tasks'],
-                'completed': load_dist['total_completed'],
-                'failed': load_dist['total_failed'],
+                "queued": load_dist["queued_tasks"],
+                "completed": load_dist["total_completed"],
+                "failed": load_dist["total_failed"],
             }
         else:
             workers_data = {
-                'total': 0,
-                'idle': 0,
-                'busy': 0,
-                'offline': 0,
-                'utilization': 0.0,
+                "total": 0,
+                "idle": 0,
+                "busy": 0,
+                "offline": 0,
+                "utilization": 0.0,
             }
             tasks_data = {
-                'queued': 0,
-                'completed': 0,
-                'failed': 0,
+                "queued": 0,
+                "completed": 0,
+                "failed": 0,
             }
 
         return {
-            'timestamp': datetime.now().isoformat(),
-            'workers': workers_data,
-            'sessions': {
-                'active': len(active_sessions),
-                'total': len(self.session_manager.sessions),
+            "timestamp": datetime.now().isoformat(),
+            "workers": workers_data,
+            "sessions": {
+                "active": len(active_sessions),
+                "total": len(self.session_manager.sessions),
             },
-            'tasks': tasks_data,
+            "tasks": tasks_data,
         }
 
     def get_dashboard_data(self) -> Dict[str, any]:
@@ -388,30 +392,30 @@ class LiveDashboard:
         workers = self.worker_coordinator.get_all_workers() if self.worker_coordinator else []
 
         return {
-            'sessions': [
+            "sessions": [
                 {
-                    'session_id': s.session_id,
-                    'name': s.name,
-                    'status': s.status.value,
-                    'progress_percent': s.progress_percent,
-                    'total_tasks': s.total_tasks,
-                    'completed_tasks': s.completed_tasks,
-                    'failed_tasks': s.failed_tasks,
+                    "session_id": s.session_id,
+                    "name": s.name,
+                    "status": s.status.value,
+                    "progress_percent": s.progress_percent,
+                    "total_tasks": s.total_tasks,
+                    "completed_tasks": s.completed_tasks,
+                    "failed_tasks": s.failed_tasks,
                 }
                 for s in sessions
             ],
-            'workers': [
+            "workers": [
                 {
-                    'worker_id': w.worker_id,
-                    'status': w.status.value,
-                    'current_session': w.current_session,
-                    'tasks_completed': w.tasks_completed,
-                    'tasks_failed': w.tasks_failed,
+                    "worker_id": w.worker_id,
+                    "status": w.status.value,
+                    "current_session": w.current_session,
+                    "tasks_completed": w.tasks_completed,
+                    "tasks_failed": w.tasks_failed,
                 }
                 for w in workers
             ],
-            'stats': self.get_summary(),
-            'timeline': [],  # Placeholder for timeline data
+            "stats": self.get_summary(),
+            "timeline": [],  # Placeholder for timeline data
         }
 
     def print_summary(self) -> None:
@@ -421,7 +425,7 @@ class LiveDashboard:
         self.console.print("\n[bold]Parallel Orchestration Summary[/bold]\n")
 
         # Workers
-        workers = summary['workers']
+        workers = summary["workers"]
         self.console.print(
             f"Workers: [green]{workers['idle']} idle[/green] / "
             f"[yellow]{workers['busy']} busy[/yellow] / "
@@ -430,13 +434,13 @@ class LiveDashboard:
         )
 
         # Sessions
-        sessions = summary['sessions']
+        sessions = summary["sessions"]
         self.console.print(
             f"Sessions: [cyan]{sessions['active']} active[/cyan] / {sessions['total']} total"
         )
 
         # Tasks
-        tasks = summary['tasks']
+        tasks = summary["tasks"]
         self.console.print(
             f"Tasks: [blue]{tasks['completed']} completed[/blue] / "
             f"[red]{tasks['failed']} failed[/red] / "

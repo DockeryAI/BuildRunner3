@@ -227,7 +227,7 @@ class TestModelSelection:
             AgentType.EXPLORE.value,
             TaskComplexity.SIMPLE,
             max_cost_per_task=0.05,
-            prefer_speed=False
+            prefer_speed=False,
         )
         assert model is not None
         assert "haiku" in model.lower() or model is not None
@@ -238,7 +238,7 @@ class TestModelSelection:
             AgentType.IMPLEMENT.value,
             TaskComplexity.MEDIUM,
             max_cost_per_task=1.0,
-            prefer_speed=True
+            prefer_speed=True,
         )
         assert model is not None
 
@@ -248,9 +248,7 @@ class TestTaskAnalysis:
 
     def test_analyze_task_basic(self, recommender):
         """Test basic task analysis."""
-        recommendation = recommender.analyze_task(
-            "Write unit tests for the authentication module"
-        )
+        recommendation = recommender.analyze_task("Write unit tests for the authentication module")
 
         assert recommendation.recommended_agent_type is not None
         assert recommendation.recommended_model is not None
@@ -261,9 +259,11 @@ class TestTaskAnalysis:
         """Test analyzing a simple task."""
         recommendation = recommender.analyze_task("Add a comment to the function")
 
-        assert recommendation.recommended_agent_type == AgentType.EXPLORE.value or \
-               recommendation.recommended_agent_type is not None
-        assert recommendation.supporting_metrics['complexity'] == TaskComplexity.SIMPLE.value
+        assert (
+            recommendation.recommended_agent_type == AgentType.EXPLORE.value
+            or recommendation.recommended_agent_type is not None
+        )
+        assert recommendation.supporting_metrics["complexity"] == TaskComplexity.SIMPLE.value
 
     def test_analyze_complex_task(self, recommender):
         """Test analyzing a complex task."""
@@ -272,7 +272,7 @@ class TestTaskAnalysis:
             "with distributed caching and complex integration patterns"
         )
 
-        assert recommendation.supporting_metrics['complexity'] == TaskComplexity.COMPLEX.value
+        assert recommendation.supporting_metrics["complexity"] == TaskComplexity.COMPLEX.value
         assert recommendation.confidence is not None
 
     def test_recommendation_includes_alternatives(self, recommender):
@@ -316,7 +316,7 @@ class TestTaskAnalysis:
         recommendation = recommender.analyze_task("Write unit tests for the module")
 
         # Should have historical data supporting the recommendation
-        assert 'historical_success_rate' in recommendation.supporting_metrics
+        assert "historical_success_rate" in recommendation.supporting_metrics
         assert recommendation.expected_success_rate > 0
 
 
@@ -325,7 +325,9 @@ class TestAlternativeRecommendations:
 
     def test_alternative_agents(self, recommender):
         """Test getting alternative agents."""
-        alternatives = recommender._get_alternative_agents(AgentType.IMPLEMENT.value, TaskComplexity.MEDIUM)
+        alternatives = recommender._get_alternative_agents(
+            AgentType.IMPLEMENT.value, TaskComplexity.MEDIUM
+        )
 
         assert len(alternatives) > 0
         assert AgentType.IMPLEMENT.value not in alternatives
@@ -349,9 +351,7 @@ class TestAlternativeRecommendations:
 
         assert len(alternatives) > 0
         assert ModelType.SONNET.value not in alternatives
-        assert all(model in alternatives for model in [
-            ModelType.HAIKU.value, ModelType.OPUS.value
-        ])
+        assert all(model in alternatives for model in [ModelType.HAIKU.value, ModelType.OPUS.value])
 
 
 class TestBatchRecommendations:
@@ -360,11 +360,11 @@ class TestBatchRecommendations:
     def test_batch_recommendations(self, recommender):
         """Test recommending agents for batch of tasks."""
         tasks = [
-            {'description': 'Implement new authentication module'},
-            {'description': 'Write unit tests for the API'},
-            {'description': 'Review code quality'},
-            {'description': 'Refactor the database layer'},
-            {'description': 'Explore the codebase'},
+            {"description": "Implement new authentication module"},
+            {"description": "Write unit tests for the API"},
+            {"description": "Review code quality"},
+            {"description": "Refactor the database layer"},
+            {"description": "Explore the codebase"},
         ]
 
         recommendations = recommender.recommend_batch_agents(tasks)
@@ -375,9 +375,9 @@ class TestBatchRecommendations:
     def test_batch_with_empty_description(self, recommender):
         """Test batch with tasks having empty descriptions."""
         tasks = [
-            {'description': 'Implement feature'},
-            {'description': ''},  # Empty
-            {'description': 'Write tests'},
+            {"description": "Implement feature"},
+            {"description": ""},  # Empty
+            {"description": "Write tests"},
         ]
 
         recommendations = recommender.recommend_batch_agents(tasks)
@@ -393,9 +393,9 @@ class TestRecommendationSummary:
         """Test summary with no historical data."""
         summary = recommender.get_recommendations_summary()
 
-        assert 'total_recommendations' in summary
-        assert 'successful_recommendations' in summary
-        assert 'accuracy_rate' in summary
+        assert "total_recommendations" in summary
+        assert "successful_recommendations" in summary
+        assert "accuracy_rate" in summary
 
     def test_recommendations_summary_with_data(self, metrics_tracker, recommender):
         """Test summary with historical data."""
@@ -414,10 +414,10 @@ class TestRecommendationSummary:
 
         summary = recommender.get_recommendations_summary()
 
-        assert summary['total_recommendations'] == 10
-        assert summary['successful_recommendations'] == 8
-        assert abs(summary['accuracy_rate'] - 0.8) < 0.01
-        assert AgentType.TEST.value in summary['by_agent_type']
+        assert summary["total_recommendations"] == 10
+        assert summary["successful_recommendations"] == 8
+        assert abs(summary["accuracy_rate"] - 0.8) < 0.01
+        assert AgentType.TEST.value in summary["by_agent_type"]
 
 
 class TestCostEstimation:
@@ -455,41 +455,41 @@ class TestRecommenderKeywordMatching:
         """Test explore agent keywords."""
         keywords = recommender.AGENT_TYPE_KEYWORDS[AgentType.EXPLORE.value]
 
-        assert 'explore' in keywords
-        assert 'understand' in keywords
-        assert 'investigate' in keywords
+        assert "explore" in keywords
+        assert "understand" in keywords
+        assert "investigate" in keywords
 
     def test_test_keywords(self, recommender):
         """Test test agent keywords."""
         keywords = recommender.AGENT_TYPE_KEYWORDS[AgentType.TEST.value]
 
-        assert 'test' in keywords
-        assert 'unit test' in keywords
-        assert 'debug' in keywords
+        assert "test" in keywords
+        assert "unit test" in keywords
+        assert "debug" in keywords
 
     def test_review_keywords(self, recommender):
         """Test review agent keywords."""
         keywords = recommender.AGENT_TYPE_KEYWORDS[AgentType.REVIEW.value]
 
-        assert 'review' in keywords
-        assert 'quality' in keywords
-        assert 'security' in keywords
+        assert "review" in keywords
+        assert "quality" in keywords
+        assert "security" in keywords
 
     def test_refactor_keywords(self, recommender):
         """Test refactor agent keywords."""
         keywords = recommender.AGENT_TYPE_KEYWORDS[AgentType.REFACTOR.value]
 
-        assert 'refactor' in keywords
-        assert 'optimize' in keywords
-        assert 'improve' in keywords
+        assert "refactor" in keywords
+        assert "optimize" in keywords
+        assert "improve" in keywords
 
     def test_implement_keywords(self, recommender):
         """Test implement agent keywords."""
         keywords = recommender.AGENT_TYPE_KEYWORDS[AgentType.IMPLEMENT.value]
 
-        assert 'implement' in keywords
-        assert 'build' in keywords
-        assert 'create' in keywords
+        assert "implement" in keywords
+        assert "build" in keywords
+        assert "create" in keywords
 
 
 class TestRecommendationReasoning:
@@ -519,8 +519,9 @@ class TestRecommendationReasoning:
 
         recommendation = recommender.analyze_task("Write comprehensive tests")
 
-        assert "Historical success rate" in recommendation.reason or \
-               recommendation.reason is not None
+        assert (
+            "Historical success rate" in recommendation.reason or recommendation.reason is not None
+        )
 
 
 class TestModelNameFormatting:
@@ -564,9 +565,9 @@ class TestEdgeCases:
 
         assert recommendation is not None
         # Should classify as complex due to length
-        assert recommendation.supporting_metrics['complexity'] in [
+        assert recommendation.supporting_metrics["complexity"] in [
             TaskComplexity.COMPLEX.value,
-            TaskComplexity.MEDIUM.value
+            TaskComplexity.MEDIUM.value,
         ]
 
     def test_special_characters_in_description(self, recommender):

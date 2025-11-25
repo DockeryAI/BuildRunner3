@@ -19,23 +19,23 @@ import time
 class FallbackStrategy(str, Enum):
     """Fallback strategies for handling model failures."""
 
-    RETRY = "retry"                    # Retry same model with backoff
-    DOWNGRADE = "downgrade"            # Use cheaper/faster model
-    UPGRADE = "upgrade"                # Use better model (if original failed on capability)
-    ROUND_ROBIN = "round_robin"        # Try alternatives in order
+    RETRY = "retry"  # Retry same model with backoff
+    DOWNGRADE = "downgrade"  # Use cheaper/faster model
+    UPGRADE = "upgrade"  # Use better model (if original failed on capability)
+    ROUND_ROBIN = "round_robin"  # Try alternatives in order
     BEST_AVAILABLE = "best_available"  # Pick best available alternative
 
 
 class FailureReason(str, Enum):
     """Reasons for model failure."""
 
-    UNAVAILABLE = "unavailable"        # Model/API unavailable
-    RATE_LIMIT = "rate_limit"          # Rate limit exceeded
-    TIMEOUT = "timeout"                # Request timed out
+    UNAVAILABLE = "unavailable"  # Model/API unavailable
+    RATE_LIMIT = "rate_limit"  # Rate limit exceeded
+    TIMEOUT = "timeout"  # Request timed out
     CONTEXT_LENGTH = "context_length"  # Context too long for model
     INVALID_REQUEST = "invalid_request"  # Bad request format
-    SERVER_ERROR = "server_error"      # Server-side error
-    UNKNOWN = "unknown"                # Unknown error
+    SERVER_ERROR = "server_error"  # Server-side error
+    UNKNOWN = "unknown"  # Unknown error
 
 
 @dataclass
@@ -239,8 +239,7 @@ class FallbackHandler:
             except Exception as error:
                 # Get remaining alternatives (not yet attempted)
                 remaining_alternatives = [
-                    alt for alt in alternatives
-                    if alt not in attempted_models
+                    alt for alt in alternatives if alt not in attempted_models
                 ]
 
                 # Handle the failure
@@ -273,17 +272,17 @@ class FallbackHandler:
         """
         error_str = str(error).lower()
 
-        if 'rate' in error_str and 'limit' in error_str:
+        if "rate" in error_str and "limit" in error_str:
             return FailureReason.RATE_LIMIT
-        elif 'timeout' in error_str or 'timed out' in error_str:
+        elif "timeout" in error_str or "timed out" in error_str:
             return FailureReason.TIMEOUT
-        elif 'context' in error_str or 'token' in error_str and 'limit' in error_str:
+        elif "context" in error_str or "token" in error_str and "limit" in error_str:
             return FailureReason.CONTEXT_LENGTH
-        elif 'unavailable' in error_str or 'not found' in error_str:
+        elif "unavailable" in error_str or "not found" in error_str:
             return FailureReason.UNAVAILABLE
-        elif 'invalid' in error_str or 'bad request' in error_str:
+        elif "invalid" in error_str or "bad request" in error_str:
             return FailureReason.INVALID_REQUEST
-        elif 'server error' in error_str or '500' in error_str or '503' in error_str:
+        elif "server error" in error_str or "500" in error_str or "503" in error_str:
             return FailureReason.SERVER_ERROR
         else:
             return FailureReason.UNKNOWN
@@ -296,8 +295,8 @@ class FallbackHandler:
             retry_count: Current retry attempt number
         """
         wait_time = min(
-            self.INITIAL_BACKOFF_SECONDS * (self.BACKOFF_MULTIPLIER ** retry_count),
-            self.MAX_BACKOFF_SECONDS
+            self.INITIAL_BACKOFF_SECONDS * (self.BACKOFF_MULTIPLIER**retry_count),
+            self.MAX_BACKOFF_SECONDS,
         )
         print(f"⏳ Waiting {wait_time:.1f}s before retry {retry_count + 1}/{self.max_retries}...")
         time.sleep(wait_time)
@@ -319,8 +318,7 @@ class FallbackHandler:
         # Clean old entries
         cutoff = now - timedelta(seconds=self.RATE_LIMIT_WINDOW_SECONDS)
         self.rate_limit_tracker[model] = [
-            ts for ts in self.rate_limit_tracker[model]
-            if ts >= cutoff
+            ts for ts in self.rate_limit_tracker[model] if ts >= cutoff
         ]
 
     def _is_rate_limited(self, model: str) -> bool:
@@ -341,8 +339,7 @@ class FallbackHandler:
 
         # Clean old entries
         self.rate_limit_tracker[model] = [
-            ts for ts in self.rate_limit_tracker[model]
-            if ts >= cutoff
+            ts for ts in self.rate_limit_tracker[model] if ts >= cutoff
         ]
 
         # Check if we hit rate limit recently (heuristic: 3+ failures in window)
@@ -357,10 +354,10 @@ class FallbackHandler:
         """
         if not self.failure_history:
             return {
-                'total_failures': 0,
-                'failures_by_model': {},
-                'failures_by_reason': {},
-                'success_rate_after_fallback': 0.0,
+                "total_failures": 0,
+                "failures_by_model": {},
+                "failures_by_reason": {},
+                "success_rate_after_fallback": 0.0,
             }
 
         total = len(self.failure_history)
@@ -380,10 +377,12 @@ class FallbackHandler:
         success_rate = (successes / total) * 100 if total > 0 else 0.0
 
         return {
-            'total_failures': total,
-            'failures_by_model': by_model,
-            'failures_by_reason': by_reason,
-            'success_rate_after_fallback': success_rate,
-            'most_common_failure': max(by_reason.keys(), key=lambda k: by_reason[k]) if by_reason else None,
-            'avg_retries_per_failure': sum(f.retry_count for f in self.failure_history) / total,
+            "total_failures": total,
+            "failures_by_model": by_model,
+            "failures_by_reason": by_reason,
+            "success_rate_after_fallback": success_rate,
+            "most_common_failure": (
+                max(by_reason.keys(), key=lambda k: by_reason[k]) if by_reason else None
+            ),
+            "avg_retries_per_failure": sum(f.retry_count for f in self.failure_history) / total,
         }

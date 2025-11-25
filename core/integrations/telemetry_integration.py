@@ -104,7 +104,7 @@ def emit_batch_event(
         event_type=event_type,
         timestamp=datetime.now(),
         build_id=batch_id,
-        build_phase=metadata.get('phase', 'execution') if metadata else 'execution',
+        build_phase=metadata.get("phase", "execution") if metadata else "execution",
         total_tasks=task_count,
         success=success,
         metadata=metadata or {},
@@ -185,7 +185,7 @@ def emit_performance_event(
 def create_telemetry_context(
     event_collector: EventCollector,
     operation_name: str,
-) -> 'TelemetryContext':
+) -> "TelemetryContext":
     """
     Create a telemetry context for automatic timing and event emission.
 
@@ -227,7 +227,7 @@ class TelemetryContext:
         if exc_type is not None:
             self.success = False
             self.error = str(exc_val)
-            self.metadata['error_type'] = exc_type.__name__
+            self.metadata["error_type"] = exc_type.__name__
 
         emit_performance_event(
             self.event_collector,
@@ -235,9 +235,9 @@ class TelemetryContext:
             duration_ms,
             metadata={
                 **self.metadata,
-                'success': self.success,
-                'error': self.error,
-            }
+                "success": self.success,
+                "error": self.error,
+            },
         )
 
         # Don't suppress exceptions
@@ -270,22 +270,22 @@ def get_event_summary(event_collector: EventCollector) -> Dict[str, Any]:
     recent_events = event_collector.get_recent(count=1000)
 
     summary = {
-        'total_events': stats.get('total_events', 0),
-        'by_type': stats.get('by_type', {}),
-        'errors': 0,
-        'tasks_completed': 0,
-        'tasks_failed': 0,
+        "total_events": stats.get("total_events", 0),
+        "by_type": stats.get("by_type", {}),
+        "errors": 0,
+        "tasks_completed": 0,
+        "tasks_failed": 0,
     }
 
     # Count task-specific events from recent events
     for event in recent_events:
         if isinstance(event, TaskEvent):
             if event.event_type == EventType.TASK_COMPLETED:
-                summary['tasks_completed'] += 1
+                summary["tasks_completed"] += 1
             elif event.event_type == EventType.TASK_FAILED:
-                summary['tasks_failed'] += 1
+                summary["tasks_failed"] += 1
 
         if isinstance(event, ErrorEvent):
-            summary['errors'] += 1
+            summary["errors"] += 1
 
     return summary

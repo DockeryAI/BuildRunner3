@@ -26,15 +26,17 @@ from core.telemetry import EventCollector, EventType, TaskEvent
 
 class AgentType(str, Enum):
     """Available Claude agent types in Claude Code"""
-    EXPLORE = "explore"       # Explore and understand code
-    TEST = "test"            # Write and run tests
-    REVIEW = "review"        # Code review and analysis
-    REFACTOR = "refactor"    # Refactor code
+
+    EXPLORE = "explore"  # Explore and understand code
+    TEST = "test"  # Write and run tests
+    REVIEW = "review"  # Code review and analysis
+    REFACTOR = "refactor"  # Refactor code
     IMPLEMENT = "implement"  # Implement features
 
 
 class AgentStatus(str, Enum):
     """Agent execution status"""
+
     PENDING = "pending"
     DISPATCHED = "dispatched"
     EXECUTING = "executing"
@@ -47,6 +49,7 @@ class AgentStatus(str, Enum):
 @dataclass
 class AgentResponse:
     """Parsed response from Claude agent"""
+
     agent_type: AgentType
     task_id: str
     status: AgentStatus
@@ -63,24 +66,25 @@ class AgentResponse:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
-            'agent_type': self.agent_type.value,
-            'task_id': self.task_id,
-            'status': self.status.value,
-            'success': self.success,
-            'output': self.output,
-            'files_created': self.files_created,
-            'files_modified': self.files_modified,
-            'errors': self.errors,
-            'duration_ms': self.duration_ms,
-            'tokens_used': self.tokens_used,
-            'metadata': self.metadata,
-            'timestamp': self.timestamp.isoformat(),
+            "agent_type": self.agent_type.value,
+            "task_id": self.task_id,
+            "status": self.status.value,
+            "success": self.success,
+            "output": self.output,
+            "files_created": self.files_created,
+            "files_modified": self.files_modified,
+            "errors": self.errors,
+            "duration_ms": self.duration_ms,
+            "tokens_used": self.tokens_used,
+            "metadata": self.metadata,
+            "timestamp": self.timestamp.isoformat(),
         }
 
 
 @dataclass
 class AgentAssignment:
     """Record of a task assigned to an agent"""
+
     assignment_id: str
     task_id: str
     agent_type: AgentType
@@ -101,21 +105,25 @@ class AgentAssignment:
 
 class AgentError(Exception):
     """Base exception for agent-related errors"""
+
     pass
 
 
 class AgentDispatchError(AgentError):
     """Error dispatching task to agent"""
+
     pass
 
 
 class AgentTimeoutError(AgentError):
     """Agent execution timeout"""
+
     pass
 
 
 class AgentParseError(AgentError):
     """Error parsing agent response"""
+
     pass
 
 
@@ -158,16 +166,16 @@ class ClaudeAgentBridge:
 
         # Statistics
         self.stats = {
-            'total_dispatched': 0,
-            'total_completed': 0,
-            'total_failed': 0,
-            'total_retries': 0,
-            'by_agent_type': {},
-            'by_status': {},
+            "total_dispatched": 0,
+            "total_completed": 0,
+            "total_failed": 0,
+            "total_retries": 0,
+            "by_agent_type": {},
+            "by_status": {},
         }
 
         # Initialize agent state file
-        self.state_file = self.project_root / '.buildrunner' / 'agent_bridge_state.json'
+        self.state_file = self.project_root / ".buildrunner" / "agent_bridge_state.json"
         self._load_state()
 
     def _load_state(self) -> None:
@@ -176,7 +184,7 @@ class ClaudeAgentBridge:
             try:
                 with open(self.state_file) as f:
                     state = json.load(f)
-                    self.stats = state.get('stats', self.stats)
+                    self.stats = state.get("stats", self.stats)
             except (json.JSONDecodeError, IOError):
                 pass
 
@@ -184,8 +192,8 @@ class ClaudeAgentBridge:
         """Save state to disk"""
         self.state_file.parent.mkdir(parents=True, exist_ok=True)
         try:
-            with open(self.state_file, 'w') as f:
-                json.dump({'stats': self.stats}, f, indent=2)
+            with open(self.state_file, "w") as f:
+                json.dump({"stats": self.stats}, f, indent=2)
         except IOError as e:
             # Log but don't fail if state save fails
             pass
@@ -222,9 +230,10 @@ class ClaudeAgentBridge:
 
         try:
             # Update statistics
-            self.stats['total_dispatched'] += 1
-            self.stats['by_agent_type'][agent_type.value] = \
-                self.stats['by_agent_type'].get(agent_type.value, 0) + 1
+            self.stats["total_dispatched"] += 1
+            self.stats["by_agent_type"][agent_type.value] = (
+                self.stats["by_agent_type"].get(agent_type.value, 0) + 1
+            )
 
             # Build the agent command
             full_prompt = self._build_prompt(task, agent_type, prompt, context)
@@ -244,9 +253,10 @@ class ClaudeAgentBridge:
             self.responses[task.id] = response
 
             # Update statistics
-            self.stats['total_completed'] += 1
-            self.stats['by_status'][response.status.value] = \
-                self.stats['by_status'].get(response.status.value, 0) + 1
+            self.stats["total_completed"] += 1
+            self.stats["by_status"][response.status.value] = (
+                self.stats["by_status"].get(response.status.value, 0) + 1
+            )
 
             # Emit telemetry
             self._emit_assignment_telemetry(assignment, response)
@@ -256,16 +266,16 @@ class ClaudeAgentBridge:
 
         except AgentError as e:
             assignment.completed_at = datetime.now()
-            self.stats['total_failed'] += 1
+            self.stats["total_failed"] += 1
 
             # Emit error telemetry
             self._emit_error_telemetry(assignment, str(e))
 
             if self.enable_retries and assignment.retry_count < assignment.max_retries:
                 assignment.retry_count += 1
-                self.stats['total_retries'] += 1
+                self.stats["total_retries"] += 1
                 # Retry with backoff
-                time.sleep(2 ** assignment.retry_count)
+                time.sleep(2**assignment.retry_count)
                 return self.dispatch_task(task, agent_type, prompt, context)
 
             raise
@@ -305,26 +315,32 @@ class ClaudeAgentBridge:
         for criterion in task.acceptance_criteria:
             lines.append(f"- {criterion}")
 
-        lines.extend([
-            "",
-            "## Instructions",
-            prompt,
-        ])
+        lines.extend(
+            [
+                "",
+                "## Instructions",
+                prompt,
+            ]
+        )
 
         # Add context if provided
         if context:
-            lines.extend([
-                "",
-                "## Additional Context",
-                context,
-            ])
+            lines.extend(
+                [
+                    "",
+                    "## Additional Context",
+                    context,
+                ]
+            )
 
         # Add agent-specific instructions
-        lines.extend([
-            "",
-            f"## Agent: {agent_type.value.upper()}",
-            self._get_agent_instructions(agent_type),
-        ])
+        lines.extend(
+            [
+                "",
+                f"## Agent: {agent_type.value.upper()}",
+                self._get_agent_instructions(agent_type),
+            ]
+        )
 
         return "\n".join(lines)
 
@@ -396,11 +412,13 @@ class ClaudeAgentBridge:
             # Note: This assumes Claude Code CLI has an /agent command
             # In production, this would integrate with Claude Code's actual API
             cmd = [
-                'claude',
-                'agent',
+                "claude",
+                "agent",
                 agent_type.value,
-                '--task-id', task_id,
-                '--timeout', str(self.timeout_seconds),
+                "--task-id",
+                task_id,
+                "--timeout",
+                str(self.timeout_seconds),
             ]
 
             start_time = time.time()
@@ -429,9 +447,7 @@ class ClaudeAgentBridge:
             return response
 
         except subprocess.TimeoutExpired as e:
-            raise AgentTimeoutError(
-                f"Agent execution timeout after {self.timeout_seconds}s"
-            )
+            raise AgentTimeoutError(f"Agent execution timeout after {self.timeout_seconds}s")
         except FileNotFoundError:
             raise AgentDispatchError(
                 "Claude Code CLI not found. Is 'claude' installed and in PATH?"
@@ -478,16 +494,16 @@ class ClaudeAgentBridge:
             if stdout.strip():
                 try:
                     # Try to extract JSON from output
-                    json_match = re.search(r'\{.*\}', stdout, re.DOTALL)
+                    json_match = re.search(r"\{.*\}", stdout, re.DOTALL)
                     if json_match:
                         metadata = json.loads(json_match.group())
-                        files_created = metadata.get('files_created', [])
-                        files_modified = metadata.get('files_modified', [])
+                        files_created = metadata.get("files_created", [])
+                        files_modified = metadata.get("files_modified", [])
                 except (json.JSONDecodeError, AttributeError):
                     pass
 
             if stderr.strip():
-                errors = stderr.strip().split('\n')
+                errors = stderr.strip().split("\n")
 
             # Determine status
             if returncode == 0:
@@ -533,11 +549,11 @@ class ClaudeAgentBridge:
             tokens_used=response.tokens_used,
             error_message="; ".join(response.errors) if response.errors else "",
             metadata={
-                'assignment_id': assignment.assignment_id,
-                'agent_type': assignment.agent_type.value,
-                'files_created': response.files_created,
-                'files_modified': response.files_modified,
-                'agent_status': response.status.value,
+                "assignment_id": assignment.assignment_id,
+                "agent_type": assignment.agent_type.value,
+                "files_created": response.files_created,
+                "files_modified": response.files_modified,
+                "agent_status": response.status.value,
             },
         )
 
@@ -556,13 +572,13 @@ class ClaudeAgentBridge:
 
         event = ErrorEvent(
             event_type=EventType.ERROR_OCCURRED,
-            error_type='agent_dispatch_error',
+            error_type="agent_dispatch_error",
             error_message=error_message,
             task_id=assignment.task_id,
-            component='claude_agent_bridge',
-            severity='warning',
+            component="claude_agent_bridge",
+            severity="warning",
             recoverable=True,
-            recovery_action='retry' if self.enable_retries else 'manual_intervention',
+            recovery_action="retry" if self.enable_retries else "manual_intervention",
         )
 
         self.event_collector.collect(event)
@@ -578,17 +594,17 @@ class ClaudeAgentBridge:
     def get_stats(self) -> Dict[str, Any]:
         """Get bridge statistics"""
         return {
-            'total_dispatched': self.stats['total_dispatched'],
-            'total_completed': self.stats['total_completed'],
-            'total_failed': self.stats['total_failed'],
-            'total_retries': self.stats['total_retries'],
-            'success_rate': (
-                self.stats['total_completed'] / self.stats['total_dispatched']
-                if self.stats['total_dispatched'] > 0
+            "total_dispatched": self.stats["total_dispatched"],
+            "total_completed": self.stats["total_completed"],
+            "total_failed": self.stats["total_failed"],
+            "total_retries": self.stats["total_retries"],
+            "success_rate": (
+                self.stats["total_completed"] / self.stats["total_dispatched"]
+                if self.stats["total_dispatched"] > 0
                 else 0
             ),
-            'by_agent_type': self.stats['by_agent_type'],
-            'by_status': self.stats['by_status'],
+            "by_agent_type": self.stats["by_agent_type"],
+            "by_status": self.stats["by_status"],
         }
 
     def list_assignments(self, limit: int = 50) -> List[AgentAssignment]:

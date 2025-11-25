@@ -267,7 +267,9 @@ class EventCollector:
                 results = [e for e in results if e.session_id == filter.session_id]
 
             if filter.task_id:
-                results = [e for e in results if hasattr(e, 'task_id') and e.task_id == filter.task_id]
+                results = [
+                    e for e in results if hasattr(e, "task_id") and e.task_id == filter.task_id
+                ]
 
         # Apply limit
         if limit:
@@ -396,7 +398,7 @@ class EventCollector:
 
         if filter:
             if filter.event_types:
-                placeholders = ','.join('?' * len(filter.event_types))
+                placeholders = ",".join("?" * len(filter.event_types))
                 sql += f" AND event_type IN ({placeholders})"
                 params.extend([et.value for et in filter.event_types])
 
@@ -431,84 +433,84 @@ class EventCollector:
             events = []
             for row in rows:
                 # Reconstruct event from row
-                event_type = EventType(row['event_type'])
-                timestamp = datetime.fromisoformat(row['timestamp'])
+                event_type = EventType(row["event_type"])
+                timestamp = datetime.fromisoformat(row["timestamp"])
 
                 # Determine event class based on type
-                if 'TASK_' in row['event_type']:
+                if "TASK_" in row["event_type"]:
                     event = TaskEvent(
                         event_type=event_type,
                         timestamp=timestamp,
-                        event_id=row['event_id'],
-                        session_id=row.get('session_id', ''),
-                        task_id=row.get('task_id', ''),
-                        task_type=row.get('task_type', ''),
-                        task_description=row.get('task_description', ''),
-                        complexity_level=row.get('complexity_level', ''),
-                        model_used=row.get('model_used', ''),
-                        file_count=row.get('file_count', 0) or 0,
-                        line_count=row.get('line_count', 0) or 0,
-                        duration_ms=row.get('duration_ms', 0.0) or 0.0,
-                        tokens_used=row.get('tokens_used', 0) or 0,
-                        cost_usd=row.get('cost_usd', 0.0) or 0.0,
-                        success=bool(row.get('success', True)),
-                        error_message=row.get('error_message', ''),
-                        metadata=json.loads(row['metadata']) if row.get('metadata') else {},
+                        event_id=row["event_id"],
+                        session_id=row.get("session_id", ""),
+                        task_id=row.get("task_id", ""),
+                        task_type=row.get("task_type", ""),
+                        task_description=row.get("task_description", ""),
+                        complexity_level=row.get("complexity_level", ""),
+                        model_used=row.get("model_used", ""),
+                        file_count=row.get("file_count", 0) or 0,
+                        line_count=row.get("line_count", 0) or 0,
+                        duration_ms=row.get("duration_ms", 0.0) or 0.0,
+                        tokens_used=row.get("tokens_used", 0) or 0,
+                        cost_usd=row.get("cost_usd", 0.0) or 0.0,
+                        success=bool(row.get("success", True)),
+                        error_message=row.get("error_message", ""),
+                        metadata=json.loads(row["metadata"]) if row.get("metadata") else {},
                     )
-                elif 'BUILD_' in row['event_type']:
+                elif "BUILD_" in row["event_type"]:
                     event = BuildEvent(
                         event_type=event_type,
                         timestamp=timestamp,
-                        event_id=row['event_id'],
-                        session_id=row.get('session_id', ''),
-                        build_id=row.get('build_id', ''),
-                        build_phase=row.get('build_phase', ''),
-                        total_tasks=row.get('total_tasks', 0) or 0,
-                        completed_tasks=row.get('completed_tasks', 0) or 0,
-                        failed_tasks=row.get('failed_tasks', 0) or 0,
-                        duration_ms=row.get('duration_ms', 0.0) or 0.0,
-                        total_cost_usd=row.get('total_cost_usd', 0.0) or 0.0,
-                        success=bool(row.get('success', True)),
-                        error_message=row.get('error_message', ''),
-                        metadata=json.loads(row['metadata']) if row.get('metadata') else {},
+                        event_id=row["event_id"],
+                        session_id=row.get("session_id", ""),
+                        build_id=row.get("build_id", ""),
+                        build_phase=row.get("build_phase", ""),
+                        total_tasks=row.get("total_tasks", 0) or 0,
+                        completed_tasks=row.get("completed_tasks", 0) or 0,
+                        failed_tasks=row.get("failed_tasks", 0) or 0,
+                        duration_ms=row.get("duration_ms", 0.0) or 0.0,
+                        total_cost_usd=row.get("total_cost_usd", 0.0) or 0.0,
+                        success=bool(row.get("success", True)),
+                        error_message=row.get("error_message", ""),
+                        metadata=json.loads(row["metadata"]) if row.get("metadata") else {},
                     )
-                elif 'ERROR_' in row['event_type'] or 'EXCEPTION_' in row['event_type']:
+                elif "ERROR_" in row["event_type"] or "EXCEPTION_" in row["event_type"]:
                     event = ErrorEvent(
                         event_type=event_type,
                         timestamp=timestamp,
-                        event_id=row['event_id'],
-                        session_id=row.get('session_id', ''),
-                        error_type=row.get('error_type', ''),
-                        error_message=row.get('error_message', ''),
-                        stack_trace=row.get('stack_trace', ''),
-                        task_id=row.get('task_id', ''),
-                        component=row.get('component', ''),
-                        severity=row.get('severity', 'error'),
-                        metadata=json.loads(row['metadata']) if row.get('metadata') else {},
+                        event_id=row["event_id"],
+                        session_id=row.get("session_id", ""),
+                        error_type=row.get("error_type", ""),
+                        error_message=row.get("error_message", ""),
+                        stack_trace=row.get("stack_trace", ""),
+                        task_id=row.get("task_id", ""),
+                        component=row.get("component", ""),
+                        severity=row.get("severity", "error"),
+                        metadata=json.loads(row["metadata"]) if row.get("metadata") else {},
                     )
-                elif 'PERFORMANCE_' in row['event_type']:
+                elif "PERFORMANCE_" in row["event_type"]:
                     event = PerformanceEvent(
                         event_type=event_type,
                         timestamp=timestamp,
-                        event_id=row['event_id'],
-                        session_id=row.get('session_id', ''),
-                        metric_name=row.get('component', ''),
-                        metric_value=row.get('duration_ms', 0.0) or 0.0,
-                        metric_unit='ms',
-                        component=row.get('component', ''),
-                        operation='',
-                        cpu_percent=row.get('cpu_percent', 0.0) or 0.0,
-                        memory_mb=row.get('memory_mb', 0.0) or 0.0,
-                        metadata=json.loads(row['metadata']) if row.get('metadata') else {},
+                        event_id=row["event_id"],
+                        session_id=row.get("session_id", ""),
+                        metric_name=row.get("component", ""),
+                        metric_value=row.get("duration_ms", 0.0) or 0.0,
+                        metric_unit="ms",
+                        component=row.get("component", ""),
+                        operation="",
+                        cpu_percent=row.get("cpu_percent", 0.0) or 0.0,
+                        memory_mb=row.get("memory_mb", 0.0) or 0.0,
+                        metadata=json.loads(row["metadata"]) if row.get("metadata") else {},
                     )
                 else:
                     # Default to base Event
                     event = Event(
                         event_type=event_type,
                         timestamp=timestamp,
-                        event_id=row['event_id'],
-                        session_id=row.get('session_id', ''),
-                        metadata=json.loads(row['metadata']) if row.get('metadata') else {},
+                        event_id=row["event_id"],
+                        session_id=row.get("session_id", ""),
+                        metadata=json.loads(row["metadata"]) if row.get("metadata") else {},
                     )
 
                 events.append(event)
@@ -531,67 +533,75 @@ class EventCollector:
 
         # Build event data dictionary with all possible fields
         data = {
-            'event_id': event.event_id,
-            'event_type': event.event_type.value,
-            'timestamp': event.timestamp.isoformat(),
-            'session_id': event.session_id or None,
-            'metadata': json.dumps(event.metadata) if event.metadata else None,
+            "event_id": event.event_id,
+            "event_type": event.event_type.value,
+            "timestamp": event.timestamp.isoformat(),
+            "session_id": event.session_id or None,
+            "metadata": json.dumps(event.metadata) if event.metadata else None,
         }
 
         # Add TaskEvent-specific fields
         if isinstance(event, TaskEvent):
-            data.update({
-                'task_id': event.task_id or None,
-                'task_type': event.task_type or None,
-                'task_description': event.task_description or None,
-                'complexity_level': event.complexity_level or None,
-                'model_used': event.model_used or None,
-                'file_count': event.file_count if event.file_count else None,
-                'line_count': event.line_count if event.line_count else None,
-                'duration_ms': event.duration_ms if event.duration_ms else None,
-                'tokens_used': event.tokens_used if event.tokens_used else None,
-                'cost_usd': event.cost_usd if event.cost_usd else None,
-                'success': event.success,
-                'error_message': event.error_message or None,
-            })
+            data.update(
+                {
+                    "task_id": event.task_id or None,
+                    "task_type": event.task_type or None,
+                    "task_description": event.task_description or None,
+                    "complexity_level": event.complexity_level or None,
+                    "model_used": event.model_used or None,
+                    "file_count": event.file_count if event.file_count else None,
+                    "line_count": event.line_count if event.line_count else None,
+                    "duration_ms": event.duration_ms if event.duration_ms else None,
+                    "tokens_used": event.tokens_used if event.tokens_used else None,
+                    "cost_usd": event.cost_usd if event.cost_usd else None,
+                    "success": event.success,
+                    "error_message": event.error_message or None,
+                }
+            )
 
         # Add BuildEvent-specific fields
         elif isinstance(event, BuildEvent):
-            data.update({
-                'build_id': event.build_id or None,
-                'build_phase': event.build_phase or None,
-                'total_tasks': event.total_tasks if event.total_tasks else None,
-                'completed_tasks': event.completed_tasks if event.completed_tasks else None,
-                'failed_tasks': event.failed_tasks if event.failed_tasks else None,
-                'duration_ms': event.duration_ms if event.duration_ms else None,
-                'total_cost_usd': event.total_cost_usd if event.total_cost_usd else None,
-                'success': event.success,
-                'error_message': event.error_message or None,
-            })
+            data.update(
+                {
+                    "build_id": event.build_id or None,
+                    "build_phase": event.build_phase or None,
+                    "total_tasks": event.total_tasks if event.total_tasks else None,
+                    "completed_tasks": event.completed_tasks if event.completed_tasks else None,
+                    "failed_tasks": event.failed_tasks if event.failed_tasks else None,
+                    "duration_ms": event.duration_ms if event.duration_ms else None,
+                    "total_cost_usd": event.total_cost_usd if event.total_cost_usd else None,
+                    "success": event.success,
+                    "error_message": event.error_message or None,
+                }
+            )
 
         # Add ErrorEvent-specific fields
         elif isinstance(event, ErrorEvent):
-            data.update({
-                'error_type': event.error_type or None,
-                'error_message': event.error_message or None,
-                'stack_trace': event.stack_trace or None,
-                'task_id': event.task_id or None,
-                'component': event.component or None,
-                'severity': event.severity or None,
-            })
+            data.update(
+                {
+                    "error_type": event.error_type or None,
+                    "error_message": event.error_message or None,
+                    "stack_trace": event.stack_trace or None,
+                    "task_id": event.task_id or None,
+                    "component": event.component or None,
+                    "severity": event.severity or None,
+                }
+            )
 
         # Add PerformanceEvent-specific fields
         elif isinstance(event, PerformanceEvent):
-            data.update({
-                'duration_ms': event.metric_value if event.metric_unit == 'ms' else None,
-                'component': event.component or None,
-                'cpu_percent': event.cpu_percent if event.cpu_percent else None,
-                'memory_mb': event.memory_mb if event.memory_mb else None,
-            })
+            data.update(
+                {
+                    "duration_ms": event.metric_value if event.metric_unit == "ms" else None,
+                    "component": event.component or None,
+                    "cpu_percent": event.cpu_percent if event.cpu_percent else None,
+                    "memory_mb": event.memory_mb if event.memory_mb else None,
+                }
+            )
 
         # Insert into database
         try:
-            self.db.insert('events', data)
+            self.db.insert("events", data)
         except Exception as e:
             logger.error(f"Failed to insert event into database: {e}")
             raise
@@ -616,9 +626,7 @@ class EventCollector:
 
             # Convert dicts to Event objects
             # Note: This loads as base Event class - subclasses not preserved
-            self.events = [
-                Event.from_dict(e) for e in event_dicts
-            ]
+            self.events = [Event.from_dict(e) for e in event_dicts]
 
             logger.info(f"Loaded {len(self.events)} events from storage")
 
@@ -638,27 +646,31 @@ class EventCollector:
 
         events = self.query(filter=filter)
 
-        with open(output_path, 'w', newline='') as f:
+        with open(output_path, "w", newline="") as f:
             writer = csv.writer(f)
 
             # Header
-            writer.writerow([
-                'Event ID',
-                'Event Type',
-                'Timestamp',
-                'Session ID',
-                'Metadata',
-            ])
+            writer.writerow(
+                [
+                    "Event ID",
+                    "Event Type",
+                    "Timestamp",
+                    "Session ID",
+                    "Metadata",
+                ]
+            )
 
             # Data
             for event in events:
-                writer.writerow([
-                    event.event_id,
-                    event.event_type.value,
-                    event.timestamp.isoformat(),
-                    event.session_id,
-                    str(event.metadata),
-                ])
+                writer.writerow(
+                    [
+                        event.event_id,
+                        event.event_type.value,
+                        event.timestamp.isoformat(),
+                        event.session_id,
+                        str(event.metadata),
+                    ]
+                )
 
     def get_statistics(self) -> Dict[str, any]:
         """
@@ -675,7 +687,7 @@ class EventCollector:
 
                 # Get total count
                 total_result = self.db.query_one("SELECT COUNT(*) as count FROM events")
-                total = total_result['count'] if total_result else 0
+                total = total_result["count"] if total_result else 0
 
                 # Get time range
                 time_result = self.db.query_one(
@@ -684,17 +696,17 @@ class EventCollector:
 
                 by_type = {}
                 for row in stats_rows:
-                    by_type[row['event_type']] = row['count']
+                    by_type[row["event_type"]] = row["count"]
 
                 return {
-                    'total_events': total,
-                    'buffered_events': len(self.buffer),
-                    'stored_events': total,
-                    'by_type': by_type,
-                    'events_by_type': by_type,  # Backward compatibility
-                    'oldest_event': time_result['oldest'] if time_result else None,
-                    'newest_event': time_result['newest'] if time_result else None,
-                    'listeners': len(self.listeners),
+                    "total_events": total,
+                    "buffered_events": len(self.buffer),
+                    "stored_events": total,
+                    "by_type": by_type,
+                    "events_by_type": by_type,  # Backward compatibility
+                    "oldest_event": time_result["oldest"] if time_result else None,
+                    "newest_event": time_result["newest"] if time_result else None,
+                    "listeners": len(self.listeners),
                 }
             except Exception as e:
                 logger.error(f"Failed to get statistics from SQLite: {e}")
@@ -705,10 +717,10 @@ class EventCollector:
 
         if not all_events:
             return {
-                'total_events': 0,
-                'events_by_type': {},
-                'oldest_event': None,
-                'newest_event': None,
+                "total_events": 0,
+                "events_by_type": {},
+                "oldest_event": None,
+                "newest_event": None,
             }
 
         # Count by type
@@ -722,12 +734,12 @@ class EventCollector:
         newest = sorted_events[-1].timestamp
 
         return {
-            'total_events': len(all_events),
-            'buffered_events': len(self.buffer),
-            'stored_events': len(self.events),
-            'events_by_type': by_type,
-            'by_type': by_type,
-            'oldest_event': oldest.isoformat(),
-            'newest_event': newest.isoformat(),
-            'listeners': len(self.listeners),
+            "total_events": len(all_events),
+            "buffered_events": len(self.buffer),
+            "stored_events": len(self.events),
+            "events_by_type": by_type,
+            "by_type": by_type,
+            "oldest_event": oldest.isoformat(),
+            "newest_event": newest.isoformat(),
+            "listeners": len(self.listeners),
         }

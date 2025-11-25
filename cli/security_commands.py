@@ -120,7 +120,9 @@ def security_check(
 
             console.print("\n[bold yellow]💡 Fix:[/bold yellow]")
             console.print("  Use parameterized queries with ? or :param placeholders")
-            console.print("  Example: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))\n")
+            console.print(
+                "  Example: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))\n"
+            )
         else:
             console.print("[green]✓ No SQL injection vulnerabilities detected[/green]\n")
 
@@ -139,7 +141,9 @@ def security_check(
 @security_app.command("scan")
 def security_scan(
     file: Optional[str] = typer.Option(None, "--file", "-f", help="Scan specific file"),
-    directory: Optional[str] = typer.Option(None, "--directory", "-d", help="Scan specific directory"),
+    directory: Optional[str] = typer.Option(
+        None, "--directory", "-d", help="Scan specific directory"
+    ),
 ):
     """
     Scan codebase for secrets and vulnerabilities
@@ -184,7 +188,9 @@ def security_scan(
         sql_results = sql_detector.scan_directory(str(scan_path))
 
     # Display results
-    total_issues = sum(len(m) for m in secret_results.values()) + sum(len(m) for m in sql_results.values())
+    total_issues = sum(len(m) for m in secret_results.values()) + sum(
+        len(m) for m in sql_results.values()
+    )
 
     if total_issues == 0:
         console.print("[bold green]✅ No security issues found[/bold green]\n")
@@ -253,7 +259,7 @@ def hooks_install(
         console.print("Run [cyan]git init[/cyan] first.\n")
         sys.exit(1)
 
-    success, message = manager.install_hook('pre-commit', force=force)
+    success, message = manager.install_hook("pre-commit", force=force)
 
     if success:
         console.print(f"[green]{message}[/green]")
@@ -287,7 +293,7 @@ def hooks_uninstall():
         console.print("[red]Error: Not a git repository[/red]\n")
         sys.exit(1)
 
-    success, message = manager.uninstall_hook('pre-commit')
+    success, message = manager.uninstall_hook("pre-commit")
 
     if success:
         console.print(f"[green]{message}[/green]\n")
@@ -311,7 +317,7 @@ def hooks_status():
 
     status = manager.get_hook_status()
 
-    if not status['is_git_repo']:
+    if not status["is_git_repo"]:
         console.print("[red]Not a git repository[/red]\n")
         sys.exit(1)
 
@@ -321,13 +327,15 @@ def hooks_status():
     table.add_column("Status")
     table.add_column("Path", style="dim")
 
-    hook_info = status['pre-commit']
-    status_text = "[green]✓ Installed[/green]" if hook_info['installed'] else "[red]✗ Not installed[/red]"
-    table.add_row("pre-commit", status_text, hook_info['path'])
+    hook_info = status["pre-commit"]
+    status_text = (
+        "[green]✓ Installed[/green]" if hook_info["installed"] else "[red]✗ Not installed[/red]"
+    )
+    table.add_row("pre-commit", status_text, hook_info["path"])
 
     console.print(table)
 
-    if not hook_info['installed']:
+    if not hook_info["installed"]:
         console.print("\n[yellow]Install hook with:[/yellow] br security hooks install\n")
     else:
         console.print()

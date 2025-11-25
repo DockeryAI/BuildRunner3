@@ -166,8 +166,10 @@ class MetricsAnalyzer:
 
         # Analyze security events
         security_events = [
-            e for e in events
-            if e.event_type in [
+            e
+            for e in events
+            if e.event_type
+            in [
                 EventType.SECURITY_VIOLATION,
                 EventType.SECRET_DETECTED,
                 EventType.SQL_INJECTION_DETECTED,
@@ -206,13 +208,13 @@ class MetricsAnalyzer:
         # Model usage
         for event in events:
             if event.model_used:
-                summary.models_used[event.model_used] = \
+                summary.models_used[event.model_used] = (
                     summary.models_used.get(event.model_used, 0) + 1
+                )
 
         if summary.models_used:
             summary.most_used_model = max(
-                summary.models_used.keys(),
-                key=lambda k: summary.models_used[k]
+                summary.models_used.keys(), key=lambda k: summary.models_used[k]
             )
 
     def _analyze_errors(self, events: List[ErrorEvent], summary: MetricsSummary):
@@ -225,8 +227,7 @@ class MetricsAnalyzer:
         # Count by error type
         for event in events:
             error_type = event.error_type or "unknown"
-            summary.errors_by_type[error_type] = \
-                summary.errors_by_type.get(error_type, 0) + 1
+            summary.errors_by_type[error_type] = summary.errors_by_type.get(error_type, 0) + 1
 
     def calculate_metric(
         self,
@@ -333,9 +334,7 @@ class MetricsAnalyzer:
             List of error info dicts
         """
         error_events = self.collector.query(
-            filter=EventFilter(
-                event_types=[EventType.ERROR_OCCURRED, EventType.EXCEPTION_RAISED]
-            )
+            filter=EventFilter(event_types=[EventType.ERROR_OCCURRED, EventType.EXCEPTION_RAISED])
         )
 
         # Count by error type
@@ -351,23 +350,19 @@ class MetricsAnalyzer:
 
             if error_type not in error_examples:
                 error_examples[error_type] = {
-                    'message': event.error_message,
-                    'component': event.component,
-                    'timestamp': event.timestamp,
+                    "message": event.error_message,
+                    "component": event.component,
+                    "timestamp": event.timestamp,
                 }
 
         # Sort by count
-        sorted_errors = sorted(
-            error_counts.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )[:limit]
+        sorted_errors = sorted(error_counts.items(), key=lambda x: x[1], reverse=True)[:limit]
 
         return [
             {
-                'error_type': error_type,
-                'count': count,
-                'example': error_examples.get(error_type, {}),
+                "error_type": error_type,
+                "count": count,
+                "example": error_examples.get(error_type, {}),
             }
             for error_type, count in sorted_errors
         ]

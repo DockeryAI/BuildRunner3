@@ -27,8 +27,8 @@ def init_temp_project(project_root: Path):
             "features_complete": 0,
             "features_in_progress": 0,
             "features_planned": 0,
-            "completion_percentage": 0
-        }
+            "completion_percentage": 0,
+        },
     }
 
     features_file.write_text(json.dumps(initial_data, indent=2))
@@ -57,19 +57,19 @@ class TestListTools:
         tools = mcp_server.list_tools()
 
         assert len(tools) == 9
-        tool_names = [t['name'] for t in tools]
+        tool_names = [t["name"] for t in tools]
 
         # Verify all 9 tools are present
         expected_tools = [
-            'feature_add',
-            'feature_complete',
-            'feature_list',
-            'feature_get',
-            'feature_update',
-            'status_get',
-            'status_generate',
-            'governance_check',
-            'governance_validate'
+            "feature_add",
+            "feature_complete",
+            "feature_list",
+            "feature_get",
+            "feature_update",
+            "status_get",
+            "status_generate",
+            "governance_check",
+            "governance_validate",
         ]
 
         for tool_name in expected_tools:
@@ -80,20 +80,20 @@ class TestListTools:
         tools = mcp_server.list_tools()
 
         for tool in tools:
-            assert 'name' in tool
-            assert 'description' in tool
-            assert 'parameters' in tool
-            assert isinstance(tool['description'], str)
-            assert len(tool['description']) > 0
+            assert "name" in tool
+            assert "description" in tool
+            assert "parameters" in tool
+            assert isinstance(tool["description"], str)
+            assert len(tool["description"]) > 0
 
     def test_list_tools_via_handle_request(self, mcp_server):
         """Test list_tools can be called via handle_request."""
         request = {"tool": "list_tools"}
         response = mcp_server.handle_request(request)
 
-        assert response['success'] is True
-        assert 'result' in response
-        assert len(response['result']) == 9
+        assert response["success"] is True
+        assert "result" in response
+        assert len(response["result"]) == 9
 
 
 class TestFeatureAdd:
@@ -103,37 +103,34 @@ class TestFeatureAdd:
         """Test adding feature with only name."""
         response = mcp_server.feature_add(name="Test Feature")
 
-        assert response['success'] is True
-        assert 'result' in response
-        assert response['result']['name'] == "Test Feature"
-        assert response['result']['status'] == "planned"  # Default
-        assert response['result']['priority'] == "medium"  # Default
-        assert 'id' in response['result']
+        assert response["success"] is True
+        assert "result" in response
+        assert response["result"]["name"] == "Test Feature"
+        assert response["result"]["status"] == "planned"  # Default
+        assert response["result"]["priority"] == "medium"  # Default
+        assert "id" in response["result"]
 
     def test_feature_add_with_all_fields(self, mcp_server):
         """Test adding feature with all fields."""
         response = mcp_server.feature_add(
-            name="Full Feature",
-            id="custom-id",
-            status="in_progress",
-            priority="high"
+            name="Full Feature", id="custom-id", status="in_progress", priority="high"
         )
 
-        if not response['success']:
+        if not response["success"]:
             print(f"Error: {response}")
-        assert response['success'] is True
-        assert response['result']['name'] == "Full Feature"
-        assert response['result']['id'] == "custom-id"
-        assert response['result']['status'] == "in_progress"
-        assert response['result']['priority'] == "high"
+        assert response["success"] is True
+        assert response["result"]["name"] == "Full Feature"
+        assert response["result"]["id"] == "custom-id"
+        assert response["result"]["status"] == "in_progress"
+        assert response["result"]["priority"] == "high"
 
     def test_feature_add_without_name_fails(self, mcp_server):
         """Test that adding feature without name fails."""
         response = mcp_server.feature_add()
 
-        assert response['success'] is False
-        assert 'error' in response
-        assert "name is required" in response['error']
+        assert response["success"] is False
+        assert "error" in response
+        assert "name is required" in response["error"]
 
     def test_feature_add_persists_to_file(self, mcp_server, temp_project_dir):
         """Test that added feature persists to features.json."""
@@ -144,7 +141,7 @@ class TestFeatureAdd:
         features = new_server.registry.list_features()
 
         assert len(features) == 1
-        assert features[0]['name'] == "Persistent Feature"
+        assert features[0]["name"] == "Persistent Feature"
 
 
 class TestFeatureComplete:
@@ -154,33 +151,33 @@ class TestFeatureComplete:
         """Test completing an existing feature."""
         # Add feature first
         add_response = mcp_server.feature_add(name="To Complete")
-        feature_id = add_response['result']['id']
+        feature_id = add_response["result"]["id"]
 
         # Complete it
         response = mcp_server.feature_complete(feature_id=feature_id)
 
-        assert response['success'] is True
-        assert 'message' in response
-        assert feature_id in response['message']
+        assert response["success"] is True
+        assert "message" in response
+        assert feature_id in response["message"]
 
         # Verify feature is completed
         feature = mcp_server.registry.get_feature(feature_id)
-        assert feature['status'] == 'complete'
+        assert feature["status"] == "complete"
 
     def test_feature_complete_without_id_fails(self, mcp_server):
         """Test that completing without feature_id fails."""
         response = mcp_server.feature_complete()
 
-        assert response['success'] is False
-        assert 'error' in response
-        assert "feature_id is required" in response['error']
+        assert response["success"] is False
+        assert "error" in response
+        assert "feature_id is required" in response["error"]
 
     def test_feature_complete_nonexistent_feature_fails(self, mcp_server):
         """Test that completing nonexistent feature fails."""
         response = mcp_server.feature_complete(feature_id="nonexistent-id")
 
-        assert response['success'] is False
-        assert 'error' in response
+        assert response["success"] is False
+        assert "error" in response
 
 
 class TestFeatureList:
@@ -190,9 +187,9 @@ class TestFeatureList:
         """Test listing features when none exist."""
         response = mcp_server.feature_list()
 
-        assert response['success'] is True
-        assert response['result'] == []
-        assert response['count'] == 0
+        assert response["success"] is True
+        assert response["result"] == []
+        assert response["count"] == 0
 
     def test_feature_list_multiple_features(self, mcp_server):
         """Test listing multiple features."""
@@ -203,9 +200,9 @@ class TestFeatureList:
 
         response = mcp_server.feature_list()
 
-        assert response['success'] is True
-        assert response['count'] == 3
-        assert len(response['result']) == 3
+        assert response["success"] is True
+        assert response["count"] == 3
+        assert len(response["result"]) == 3
 
     def test_feature_list_filtered_by_status(self, mcp_server):
         """Test listing features filtered by status."""
@@ -217,9 +214,9 @@ class TestFeatureList:
         # Filter by planned
         response = mcp_server.feature_list(status="planned")
 
-        assert response['success'] is True
-        assert response['count'] == 2
-        assert all(f['status'] == 'planned' for f in response['result'])
+        assert response["success"] is True
+        assert response["count"] == 2
+        assert all(f["status"] == "planned" for f in response["result"])
 
 
 class TestFeatureGet:
@@ -229,30 +226,30 @@ class TestFeatureGet:
         """Test getting an existing feature."""
         # Add feature
         add_response = mcp_server.feature_add(name="Get Test")
-        feature_id = add_response['result']['id']
+        feature_id = add_response["result"]["id"]
 
         # Get it
         response = mcp_server.feature_get(feature_id=feature_id)
 
-        assert response['success'] is True
-        assert response['result']['name'] == "Get Test"
-        assert response['result']['id'] == feature_id
+        assert response["success"] is True
+        assert response["result"]["name"] == "Get Test"
+        assert response["result"]["id"] == feature_id
 
     def test_feature_get_without_id_fails(self, mcp_server):
         """Test that getting without feature_id fails."""
         response = mcp_server.feature_get()
 
-        assert response['success'] is False
-        assert 'error' in response
-        assert "feature_id is required" in response['error']
+        assert response["success"] is False
+        assert "error" in response
+        assert "feature_id is required" in response["error"]
 
     def test_feature_get_nonexistent_feature_fails(self, mcp_server):
         """Test that getting nonexistent feature fails."""
         response = mcp_server.feature_get(feature_id="nonexistent")
 
-        assert response['success'] is False
-        assert 'error' in response
-        assert "not found" in response['error'].lower()
+        assert response["success"] is False
+        assert "error" in response
+        assert "not found" in response["error"].lower()
 
 
 class TestFeatureUpdate:
@@ -262,66 +259,57 @@ class TestFeatureUpdate:
         """Test updating feature name."""
         # Add feature
         add_response = mcp_server.feature_add(name="Original Name")
-        feature_id = add_response['result']['id']
+        feature_id = add_response["result"]["id"]
 
         # Update it
         response = mcp_server.feature_update(
-            feature_id=feature_id,
-            updates={'name': 'Updated Name'}
+            feature_id=feature_id, updates={"name": "Updated Name"}
         )
 
-        assert response['success'] is True
+        assert response["success"] is True
 
         # Verify update
         feature = mcp_server.registry.get_feature(feature_id)
-        assert feature['name'] == 'Updated Name'
+        assert feature["name"] == "Updated Name"
 
     def test_feature_update_multiple_fields(self, mcp_server):
         """Test updating multiple fields at once."""
         # Add feature
-        add_response = mcp_server.feature_add(
-            name="Multi Update",
-            status="planned",
-            priority="low"
-        )
-        feature_id = add_response['result']['id']
+        add_response = mcp_server.feature_add(name="Multi Update", status="planned", priority="low")
+        feature_id = add_response["result"]["id"]
 
         # Update multiple fields
         response = mcp_server.feature_update(
             feature_id=feature_id,
-            updates={
-                'status': 'in_progress',
-                'priority': 'high',
-                'description': 'New description'
-            }
+            updates={"status": "in_progress", "priority": "high", "description": "New description"},
         )
 
-        assert response['success'] is True
+        assert response["success"] is True
 
         # Verify all updates
         feature = mcp_server.registry.get_feature(feature_id)
-        assert feature['status'] == 'in_progress'
-        assert feature['priority'] == 'high'
-        assert feature['description'] == 'New description'
+        assert feature["status"] == "in_progress"
+        assert feature["priority"] == "high"
+        assert feature["description"] == "New description"
 
     def test_feature_update_without_id_fails(self, mcp_server):
         """Test that updating without feature_id fails."""
-        response = mcp_server.feature_update(updates={'name': 'New Name'})
+        response = mcp_server.feature_update(updates={"name": "New Name"})
 
-        assert response['success'] is False
-        assert 'error' in response
-        assert "feature_id is required" in response['error']
+        assert response["success"] is False
+        assert "error" in response
+        assert "feature_id is required" in response["error"]
 
     def test_feature_update_without_updates_fails(self, mcp_server):
         """Test that updating without updates dict fails."""
         add_response = mcp_server.feature_add(name="Test")
-        feature_id = add_response['result']['id']
+        feature_id = add_response["result"]["id"]
 
         response = mcp_server.feature_update(feature_id=feature_id)
 
-        assert response['success'] is False
-        assert 'error' in response
-        assert "updates is required" in response['error']
+        assert response["success"] is False
+        assert "error" in response
+        assert "updates is required" in response["error"]
 
 
 class TestStatusGet:
@@ -331,15 +319,15 @@ class TestStatusGet:
         """Test that status_get returns project information."""
         response = mcp_server.status_get()
 
-        assert response['success'] is True
-        assert 'result' in response
+        assert response["success"] is True
+        assert "result" in response
 
-        result = response['result']
-        assert 'project' in result
-        assert 'version' in result
-        assert 'status' in result
-        assert 'metrics' in result
-        assert 'features' in result
+        result = response["result"]
+        assert "project" in result
+        assert "version" in result
+        assert "status" in result
+        assert "metrics" in result
+        assert "features" in result
 
     def test_status_get_includes_metrics(self, mcp_server):
         """Test that status_get includes metrics."""
@@ -350,14 +338,14 @@ class TestStatusGet:
 
         response = mcp_server.status_get()
 
-        assert response['success'] is True
-        metrics = response['result']['metrics']
+        assert response["success"] is True
+        metrics = response["result"]["metrics"]
 
         # Metrics should be auto-calculated
-        assert 'completion_percentage' in metrics
-        assert 'features_complete' in metrics
-        assert 'features_in_progress' in metrics
-        assert 'features_planned' in metrics
+        assert "completion_percentage" in metrics
+        assert "features_complete" in metrics
+        assert "features_in_progress" in metrics
+        assert "features_planned" in metrics
 
 
 class TestStatusGenerate:
@@ -371,8 +359,8 @@ class TestStatusGenerate:
 
         response = mcp_server.status_generate()
 
-        assert response['success'] is True
-        assert 'result' in response
+        assert response["success"] is True
+        assert "result" in response
 
         # Verify STATUS.md was created
         status_file = temp_project_dir / "STATUS.md"
@@ -387,9 +375,9 @@ class TestStatusGenerate:
         """Test that status_generate returns file path in response."""
         response = mcp_server.status_generate()
 
-        assert response['success'] is True
-        assert 'STATUS.md' in response['result']
-        assert 'message' in response
+        assert response["success"] is True
+        assert "STATUS.md" in response["result"]
+        assert "message" in response
 
 
 class TestGovernanceCheck:
@@ -399,31 +387,31 @@ class TestGovernanceCheck:
         """Test pre-commit governance check."""
         response = mcp_server.governance_check(check_type="pre_commit")
 
-        assert response['success'] is True
+        assert response["success"] is True
         # When no governance file exists, should pass
-        assert "No governance" in response['message']
+        assert "No governance" in response["message"]
 
     def test_governance_check_pre_push(self, mcp_server):
         """Test pre-push governance check."""
         response = mcp_server.governance_check(check_type="pre_push")
 
-        assert response['success'] is True
-        assert "No governance" in response['message']
+        assert response["success"] is True
+        assert "No governance" in response["message"]
 
     def test_governance_check_invalid_type_fails(self, mcp_server):
         """Test that invalid check_type fails."""
         response = mcp_server.governance_check(check_type="invalid")
 
-        assert response['success'] is False
-        assert 'error' in response
-        assert "must be pre_commit or pre_push" in response['error']
+        assert response["success"] is False
+        assert "error" in response
+        assert "must be pre_commit or pre_push" in response["error"]
 
     def test_governance_check_without_type_fails(self, mcp_server):
         """Test that missing check_type fails."""
         response = mcp_server.governance_check()
 
-        assert response['success'] is False
-        assert 'error' in response
+        assert response["success"] is False
+        assert "error" in response
 
 
 class TestGovernanceValidate:
@@ -433,8 +421,8 @@ class TestGovernanceValidate:
         """Test validating when no governance config exists."""
         response = mcp_server.governance_validate()
 
-        assert response['success'] is True
-        assert "No governance file" in response['message']
+        assert response["success"] is True
+        assert "No governance file" in response["message"]
 
     def test_governance_validate_with_valid_config(self, mcp_server, temp_project_dir):
         """Test validating with valid governance config."""
@@ -464,8 +452,8 @@ quality:
 
         response = mcp_server.governance_validate()
 
-        assert response['success'] is True
-        assert "valid" in response['message'].lower()
+        assert response["success"] is True
+        assert "valid" in response["message"].lower()
 
 
 class TestHandleRequest:
@@ -473,15 +461,12 @@ class TestHandleRequest:
 
     def test_handle_request_with_valid_tool(self, mcp_server):
         """Test handling valid request."""
-        request = {
-            "tool": "feature_add",
-            "arguments": {"name": "Test Feature"}
-        }
+        request = {"tool": "feature_add", "arguments": {"name": "Test Feature"}}
 
         response = mcp_server.handle_request(request)
 
-        assert response['success'] is True
-        assert response['result']['name'] == "Test Feature"
+        assert response["success"] is True
+        assert response["result"]["name"] == "Test Feature"
 
     def test_handle_request_without_tool_fails(self, mcp_server):
         """Test that request without tool fails."""
@@ -489,8 +474,8 @@ class TestHandleRequest:
 
         response = mcp_server.handle_request(request)
 
-        assert response['success'] is False
-        assert "tool is required" in response['error']
+        assert response["success"] is False
+        assert "tool is required" in response["error"]
 
     def test_handle_request_with_unknown_tool_fails(self, mcp_server):
         """Test that unknown tool fails."""
@@ -498,8 +483,8 @@ class TestHandleRequest:
 
         response = mcp_server.handle_request(request)
 
-        assert response['success'] is False
-        assert "Unknown tool" in response['error']
+        assert response["success"] is False
+        assert "Unknown tool" in response["error"]
 
     def test_handle_request_without_arguments(self, mcp_server):
         """Test that request without arguments uses empty dict."""
@@ -507,7 +492,7 @@ class TestHandleRequest:
 
         response = mcp_server.handle_request(request)
 
-        assert response['success'] is True
+        assert response["success"] is True
         # Should work with default empty arguments
 
 
@@ -517,111 +502,102 @@ class TestE2EWorkflow:
     def test_complete_feature_workflow(self, mcp_server):
         """Test complete workflow: add → update → complete → status."""
         # Step 1: Add a feature
-        add_response = mcp_server.handle_request({
-            "tool": "feature_add",
-            "arguments": {
-                "name": "E2E Feature",
-                "status": "planned",
-                "priority": "high"
+        add_response = mcp_server.handle_request(
+            {
+                "tool": "feature_add",
+                "arguments": {"name": "E2E Feature", "status": "planned", "priority": "high"},
             }
-        })
+        )
 
-        assert add_response['success'] is True
-        feature_id = add_response['result']['id']
+        assert add_response["success"] is True
+        feature_id = add_response["result"]["id"]
 
         # Step 2: Update feature to in_progress
-        update_response = mcp_server.handle_request({
-            "tool": "feature_update",
-            "arguments": {
-                "feature_id": feature_id,
-                "updates": {
-                    "status": "in_progress",
-                    "description": "Working on implementation"
-                }
+        update_response = mcp_server.handle_request(
+            {
+                "tool": "feature_update",
+                "arguments": {
+                    "feature_id": feature_id,
+                    "updates": {
+                        "status": "in_progress",
+                        "description": "Working on implementation",
+                    },
+                },
             }
-        })
+        )
 
-        assert update_response['success'] is True
+        assert update_response["success"] is True
 
         # Step 3: Complete the feature
-        complete_response = mcp_server.handle_request({
-            "tool": "feature_complete",
-            "arguments": {"feature_id": feature_id}
-        })
+        complete_response = mcp_server.handle_request(
+            {"tool": "feature_complete", "arguments": {"feature_id": feature_id}}
+        )
 
-        assert complete_response['success'] is True
+        assert complete_response["success"] is True
 
         # Step 4: Get status to verify
-        status_response = mcp_server.handle_request({
-            "tool": "status_get"
-        })
+        status_response = mcp_server.handle_request({"tool": "status_get"})
 
-        assert status_response['success'] is True
-        metrics = status_response['result']['metrics']
-        assert metrics['features_complete'] == 1
-        assert metrics['features_in_progress'] == 0
-        assert metrics['features_planned'] == 0
+        assert status_response["success"] is True
+        metrics = status_response["result"]["metrics"]
+        assert metrics["features_complete"] == 1
+        assert metrics["features_in_progress"] == 0
+        assert metrics["features_planned"] == 0
 
     def test_multi_feature_workflow(self, mcp_server):
         """Test workflow with multiple features."""
         # Add multiple features
         for i in range(5):
-            mcp_server.handle_request({
-                "tool": "feature_add",
-                "arguments": {
-                    "name": f"Feature {i+1}",
-                    "status": "planned" if i < 3 else "in_progress"
+            mcp_server.handle_request(
+                {
+                    "tool": "feature_add",
+                    "arguments": {
+                        "name": f"Feature {i+1}",
+                        "status": "planned" if i < 3 else "in_progress",
+                    },
                 }
-            })
+            )
 
         # List all features
         list_response = mcp_server.handle_request({"tool": "feature_list"})
-        assert list_response['success'] is True
-        assert list_response['count'] == 5
+        assert list_response["success"] is True
+        assert list_response["count"] == 5
 
         # List only planned features
-        planned_response = mcp_server.handle_request({
-            "tool": "feature_list",
-            "arguments": {"status": "planned"}
-        })
-        assert planned_response['count'] == 3
+        planned_response = mcp_server.handle_request(
+            {"tool": "feature_list", "arguments": {"status": "planned"}}
+        )
+        assert planned_response["count"] == 3
 
         # List only in_progress features
-        progress_response = mcp_server.handle_request({
-            "tool": "feature_list",
-            "arguments": {"status": "in_progress"}
-        })
-        assert progress_response['count'] == 2
+        progress_response = mcp_server.handle_request(
+            {"tool": "feature_list", "arguments": {"status": "in_progress"}}
+        )
+        assert progress_response["count"] == 2
 
         # Generate status
         status_response = mcp_server.handle_request({"tool": "status_generate"})
-        assert status_response['success'] is True
+        assert status_response["success"] is True
 
     def test_feature_lifecycle(self, mcp_server):
         """Test complete lifecycle of a feature."""
         # Create feature
-        add_response = mcp_server.feature_add(
-            name="Lifecycle Feature",
-            status="planned"
-        )
-        feature_id = add_response['result']['id']
+        add_response = mcp_server.feature_add(name="Lifecycle Feature", status="planned")
+        feature_id = add_response["result"]["id"]
 
         # Verify initial state
         feature = mcp_server.registry.get_feature(feature_id)
-        assert feature['status'] == 'planned'
+        assert feature["status"] == "planned"
 
         # Move to in_progress
-        mcp_server.feature_update(
-            feature_id=feature_id,
-            updates={'status': 'in_progress'}
-        )
+        mcp_server.feature_update(feature_id=feature_id, updates={"status": "in_progress"})
         feature = mcp_server.registry.get_feature(feature_id)
-        assert feature['status'] == 'in_progress'
+        assert feature["status"] == "in_progress"
 
         # Complete feature
         mcp_server.feature_complete(feature_id=feature_id)
         feature = mcp_server.registry.get_feature(feature_id)
-        assert feature['status'] == 'complete'
+        assert feature["status"] == "complete"
         # Note: completed_at not currently tracked by FeatureRegistry
 
 
@@ -632,57 +608,54 @@ class TestErrorHandling:
         """Test various missing required parameters."""
         # feature_add without name
         response = mcp_server.feature_add()
-        assert response['success'] is False
-        assert "required" in response['error'].lower()
+        assert response["success"] is False
+        assert "required" in response["error"].lower()
 
         # feature_complete without feature_id
         response = mcp_server.feature_complete()
-        assert response['success'] is False
-        assert "required" in response['error'].lower()
+        assert response["success"] is False
+        assert "required" in response["error"].lower()
 
         # feature_get without feature_id
         response = mcp_server.feature_get()
-        assert response['success'] is False
-        assert "required" in response['error'].lower()
+        assert response["success"] is False
+        assert "required" in response["error"].lower()
 
         # feature_update without feature_id
-        response = mcp_server.feature_update(updates={'name': 'Test'})
-        assert response['success'] is False
-        assert "required" in response['error'].lower()
+        response = mcp_server.feature_update(updates={"name": "Test"})
+        assert response["success"] is False
+        assert "required" in response["error"].lower()
 
         # feature_update without updates
         add_response = mcp_server.feature_add(name="Test")
-        response = mcp_server.feature_update(feature_id=add_response['result']['id'])
-        assert response['success'] is False
-        assert "required" in response['error'].lower()
+        response = mcp_server.feature_update(feature_id=add_response["result"]["id"])
+        assert response["success"] is False
+        assert "required" in response["error"].lower()
 
     def test_nonexistent_resources(self, mcp_server):
         """Test operations on nonexistent resources."""
         # Get nonexistent feature
         response = mcp_server.feature_get(feature_id="nonexistent-123")
-        assert response['success'] is False
-        assert "not found" in response['error'].lower()
+        assert response["success"] is False
+        assert "not found" in response["error"].lower()
 
         # Complete nonexistent feature
         response = mcp_server.feature_complete(feature_id="nonexistent-456")
-        assert response['success'] is False
+        assert response["success"] is False
 
         # Update nonexistent feature
-        response = mcp_server.feature_update(
-            feature_id="nonexistent-789",
-            updates={'name': 'Test'}
-        )
-        assert response['success'] is False
+        response = mcp_server.feature_update(feature_id="nonexistent-789", updates={"name": "Test"})
+        assert response["success"] is False
 
     def test_invalid_tool_names(self, mcp_server):
         """Test handling of invalid tool names."""
         response = mcp_server.handle_request({"tool": "invalid_tool"})
-        assert response['success'] is False
-        assert "Unknown tool" in response['error']
+        assert response["success"] is False
+        assert "Unknown tool" in response["error"]
 
         response = mcp_server.handle_request({"tool": "feature_delete"})
-        assert response['success'] is False
-        assert "Unknown tool" in response['error']
+        assert response["success"] is False
+        assert "Unknown tool" in response["error"]
 
     def test_invalid_governance_check_type(self, mcp_server):
         """Test invalid governance check types."""
@@ -690,8 +663,8 @@ class TestErrorHandling:
 
         for check_type in invalid_types:
             response = mcp_server.governance_check(check_type=check_type)
-            assert response['success'] is False
-            assert "must be pre_commit or pre_push" in response['error']
+            assert response["success"] is False
+            assert "must be pre_commit or pre_push" in response["error"]
 
 
 class TestPersistence:
@@ -715,9 +688,9 @@ class TestPersistence:
 
         # Verify features are still there
         response = server2.feature_list()
-        assert response['count'] == 3
+        assert response["count"] == 3
 
-        feature_names = [f['name'] for f in response['result']]
+        feature_names = [f["name"] for f in response["result"]]
         assert "Persistent Feature 1" in feature_names
         assert "Persistent Feature 2" in feature_names
         assert "Persistent Feature 3" in feature_names
@@ -731,15 +704,12 @@ class TestPersistence:
         server1 = MCPServer(project_root=project_dir)
         server1.registry.load()
         add_response = server1.feature_add(name="Update Test")
-        feature_id = add_response['result']['id']
+        feature_id = add_response["result"]["id"]
 
         # Update feature
         server1.feature_update(
             feature_id=feature_id,
-            updates={
-                'status': 'in_progress',
-                'description': 'Updated description'
-            }
+            updates={"status": "in_progress", "description": "Updated description"},
         )
 
         # Create new server and verify update persisted
@@ -747,8 +717,8 @@ class TestPersistence:
         server2.registry.load()
         feature = server2.registry.get_feature(feature_id)
 
-        assert feature['status'] == 'in_progress'
-        assert feature['description'] == 'Updated description'
+        assert feature["status"] == "in_progress"
+        assert feature["description"] == "Updated description"
 
     def test_completion_persists(self, tmp_path):
         """Test that feature completion persists."""
@@ -759,7 +729,7 @@ class TestPersistence:
         server1 = MCPServer(project_root=project_dir)
         server1.registry.load()
         add_response = server1.feature_add(name="Complete Test")
-        feature_id = add_response['result']['id']
+        feature_id = add_response["result"]["id"]
         server1.feature_complete(feature_id=feature_id)
 
         # Verify persistence
@@ -767,7 +737,7 @@ class TestPersistence:
         server2.registry.load()
         feature = server2.registry.get_feature(feature_id)
 
-        assert feature['status'] == 'complete'
+        assert feature["status"] == "complete"
         # Note: completed_at not currently tracked by FeatureRegistry
 
 
@@ -778,8 +748,8 @@ class TestEdgeCases:
         """Test adding feature with empty name."""
         response = mcp_server.feature_add(name="")
         # Empty string counts as no name
-        assert response['success'] is False
-        assert "required" in response['error'].lower() or "name" in response['error'].lower()
+        assert response["success"] is False
+        assert "required" in response["error"].lower() or "name" in response["error"].lower()
 
     def test_duplicate_feature_ids(self, mcp_server):
         """Test handling of duplicate feature IDs."""
@@ -790,7 +760,7 @@ class TestEdgeCases:
         response = mcp_server.feature_add(name="Second", id="duplicate-id")
 
         # Registry should handle this (either reject or auto-rename)
-        assert 'result' in response or 'error' in response
+        assert "result" in response or "error" in response
 
     def test_list_with_invalid_status_filter(self, mcp_server):
         """Test listing with invalid status filter."""
@@ -801,17 +771,17 @@ class TestEdgeCases:
         response = mcp_server.feature_list(status="invalid_status")
 
         # Should return empty list (no features match)
-        assert response['success'] is True
-        assert response['count'] == 0
+        assert response["success"] is True
+        assert response["count"] == 0
 
     def test_status_get_with_no_features(self, mcp_server):
         """Test getting status when no features exist."""
         response = mcp_server.status_get()
 
-        assert response['success'] is True
-        assert response['result']['features'] == []
+        assert response["success"] is True
+        assert response["result"]["features"] == []
 
         # Metrics should show all zeros
-        metrics = response['result']['metrics']
-        assert metrics['features_complete'] == 0
-        assert metrics['completion_percentage'] == 0
+        metrics = response["result"]["metrics"]
+        assert metrics["features_complete"] == 0
+        assert metrics["completion_percentage"] == 0

@@ -16,6 +16,7 @@ from .prd_parser import PRDParser, ParsedSpec
 @dataclass
 class HandoffPackage:
     """Complete handoff package from Opus to Sonnet"""
+
     project_summary: str
     technical_decisions: List[str]
     build_instructions: List[Dict]
@@ -74,7 +75,7 @@ class OpusHandoff:
             build_instructions=build_instructions,
             atomic_tasks=atomic_tasks,
             context_files=context_files,
-            success_criteria=success_criteria
+            success_criteria=success_criteria,
         )
 
     def _generate_project_summary(self, spec: ParsedSpec) -> str:
@@ -126,23 +127,25 @@ This project builds a {spec.use_case} for the {spec.industry} industry.
                     "Implement features",
                     "Write tests",
                     "Integration testing",
-                    "Deploy"
-                ]
+                    "Deploy",
+                ],
             }
             instructions.append(instruction)
 
         # If no phases, create default instruction
         if not instructions:
-            instructions.append({
-                "phase": 1,
-                "name": "Initial Implementation",
-                "steps": [
-                    "Setup project structure",
-                    "Implement core features",
-                    "Write comprehensive tests",
-                    "Document code"
-                ]
-            })
+            instructions.append(
+                {
+                    "phase": 1,
+                    "name": "Initial Implementation",
+                    "steps": [
+                        "Setup project structure",
+                        "Implement core features",
+                        "Write comprehensive tests",
+                        "Document code",
+                    ],
+                }
+            )
 
         return instructions
 
@@ -154,26 +157,32 @@ This project builds a {spec.use_case} for the {spec.industry} industry.
             # Break down each feature into atomic tasks
             task_id = f"task_{i+1}"
 
-            tasks.append({
-                "id": f"{task_id}_design",
-                "description": f"Design {feature.name}",
-                "estimated_time": "30 minutes",
-                "dependencies": []
-            })
+            tasks.append(
+                {
+                    "id": f"{task_id}_design",
+                    "description": f"Design {feature.name}",
+                    "estimated_time": "30 minutes",
+                    "dependencies": [],
+                }
+            )
 
-            tasks.append({
-                "id": f"{task_id}_implement",
-                "description": f"Implement {feature.name}",
-                "estimated_time": "2 hours",
-                "dependencies": [f"{task_id}_design"]
-            })
+            tasks.append(
+                {
+                    "id": f"{task_id}_implement",
+                    "description": f"Implement {feature.name}",
+                    "estimated_time": "2 hours",
+                    "dependencies": [f"{task_id}_design"],
+                }
+            )
 
-            tasks.append({
-                "id": f"{task_id}_test",
-                "description": f"Test {feature.name}",
-                "estimated_time": "1 hour",
-                "dependencies": [f"{task_id}_implement"]
-            })
+            tasks.append(
+                {
+                    "id": f"{task_id}_test",
+                    "description": f"Test {feature.name}",
+                    "estimated_time": "1 hour",
+                    "dependencies": [f"{task_id}_implement"],
+                }
+            )
 
         return tasks
 
@@ -201,12 +210,12 @@ This project builds a {spec.use_case} for the {spec.industry} industry.
             "All tests pass (85%+ coverage)",
             "Code passes quality gates",
             "Documentation complete",
-            "No security vulnerabilities"
+            "No security vulnerabilities",
         ]
 
-        if spec.industry == 'healthcare':
+        if spec.industry == "healthcare":
             criteria.append("HIPAA compliance verified")
-        elif spec.industry == 'fintech':
+        elif spec.industry == "fintech":
             criteria.append("Security audit passed")
 
         return criteria
@@ -222,10 +231,10 @@ This project builds a {spec.use_case} for the {spec.industry} industry.
             "build_instructions": package.build_instructions,
             "atomic_tasks": package.atomic_tasks,
             "context_files": package.context_files,
-            "success_criteria": package.success_criteria
+            "success_criteria": package.success_criteria,
         }
 
-        with open(output, 'w') as f:
+        with open(output, "w") as f:
             json.dump(data, f, indent=2)
 
     def generate_sonnet_prompt(self, package: HandoffPackage) -> str:

@@ -12,12 +12,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from core.build_context_detector import (
-    BuildContextDetector,
-    BuildContext,
-    BuildType,
-    TechStack
-)
+from core.build_context_detector import BuildContextDetector, BuildContext, BuildType, TechStack
 from core.typescript_checker import TypeScriptChecker, TypeScriptCheckResult
 from core.code_quality import QualityGate
 from core.gap_analyzer import GapAnalyzer
@@ -29,6 +24,7 @@ from typing import Tuple
 @dataclass
 class CheckResult:
     """Result of a single check"""
+
     name: str
     passed: bool
     duration_ms: float
@@ -42,6 +38,7 @@ class CheckResult:
 @dataclass
 class AutoDebugReport:
     """Complete auto-debug report"""
+
     timestamp: str
     build_context: BuildContext
     checks_run: List[CheckResult]
@@ -55,6 +52,7 @@ class AutoDebugReport:
 @dataclass
 class RetryStrategy:
     """Strategy for retrying a failed command"""
+
     type: str  # timeout, import_error, type_error, network_error, generic
     actions: Dict[str, bool]  # Actions to take
     confidence: float  # 0.0 to 1.0
@@ -64,6 +62,7 @@ class RetryStrategy:
 @dataclass
 class ErrorContext:
     """Context of an error from a debug session"""
+
     command: str
     exit_code: int
     log: str
@@ -75,6 +74,7 @@ class ErrorContext:
 @dataclass
 class HotSpot:
     """A location with frequent failures"""
+
     location: str  # file path or command
     type: str  # 'file' or 'cmd'
     failure_count: int
@@ -84,6 +84,7 @@ class HotSpot:
 @dataclass
 class TrendReport:
     """Error trends over time"""
+
     weekly_breakdown: Dict[str, Dict[str, int]]
     most_common_type: str
     trend_direction: str  # 'improving' or 'worsening'
@@ -92,6 +93,7 @@ class TrendReport:
 @dataclass
 class ProjectInsights:
     """Comprehensive project debugging insights"""
+
     hot_spots: List[HotSpot]
     error_trends: TrendReport
     success_rates: Dict[str, float]
@@ -102,57 +104,36 @@ class RetryAnalyzer:
     """Analyze failures and suggest intelligent retry strategies"""
 
     PATTERNS = {
-        'timeout': {
-            'detection': r'(timeout|timed out|deadline exceeded|ETIMEDOUT)',
-            'strategy': {
-                'increase_timeout': True,
-                'exponential_backoff': True,
-                'max_retries': 3
-            },
-            'explanation': 'Operation timed out. Try increasing timeout and adding exponential backoff.'
+        "timeout": {
+            "detection": r"(timeout|timed out|deadline exceeded|ETIMEDOUT)",
+            "strategy": {"increase_timeout": True, "exponential_backoff": True, "max_retries": 3},
+            "explanation": "Operation timed out. Try increasing timeout and adding exponential backoff.",
         },
-        'import_error': {
-            'detection': r'(ModuleNotFoundError|ImportError|Cannot find module|cannot resolve|ENOENT.*node_modules)',
-            'strategy': {
-                'check_dependencies': True,
-                'install_missing': True,
-                'verify_paths': True
-            },
-            'explanation': 'Module/package not found. Check dependencies and install missing packages.'
+        "import_error": {
+            "detection": r"(ModuleNotFoundError|ImportError|Cannot find module|cannot resolve|ENOENT.*node_modules)",
+            "strategy": {"check_dependencies": True, "install_missing": True, "verify_paths": True},
+            "explanation": "Module/package not found. Check dependencies and install missing packages.",
         },
-        'type_error': {
-            'detection': r'(TypeError|type error|expected .+ got|Property .* does not exist)',
-            'strategy': {
-                'run_type_checker': True,
-                'suggest_type_hints': True
-            },
-            'explanation': 'Type mismatch detected. Run type checker to identify all type issues.'
+        "type_error": {
+            "detection": r"(TypeError|type error|expected .+ got|Property .* does not exist)",
+            "strategy": {"run_type_checker": True, "suggest_type_hints": True},
+            "explanation": "Type mismatch detected. Run type checker to identify all type issues.",
         },
-        'network_error': {
-            'detection': r'(ConnectionError|NetworkError|ECONNREFUSED|ENOTFOUND|fetch failed|network)',
-            'strategy': {
-                'retry_with_backoff': True,
-                'check_connectivity': True,
-                'max_retries': 5
-            },
-            'explanation': 'Network connection failed. Verify connectivity and retry with exponential backoff.'
+        "network_error": {
+            "detection": r"(ConnectionError|NetworkError|ECONNREFUSED|ENOTFOUND|fetch failed|network)",
+            "strategy": {"retry_with_backoff": True, "check_connectivity": True, "max_retries": 5},
+            "explanation": "Network connection failed. Verify connectivity and retry with exponential backoff.",
         },
-        'permission_error': {
-            'detection': r'(PermissionError|EACCES|permission denied|access denied)',
-            'strategy': {
-                'check_permissions': True,
-                'suggest_sudo': True
-            },
-            'explanation': 'Permission denied. Check file/directory permissions or run with appropriate privileges.'
+        "permission_error": {
+            "detection": r"(PermissionError|EACCES|permission denied|access denied)",
+            "strategy": {"check_permissions": True, "suggest_sudo": True},
+            "explanation": "Permission denied. Check file/directory permissions or run with appropriate privileges.",
         },
-        'syntax_error': {
-            'detection': r'(SyntaxError|Unexpected token|Unexpected identifier|Parse error)',
-            'strategy': {
-                'run_linter': True,
-                'check_syntax': True
-            },
-            'explanation': 'Syntax error in code. Run linter to identify all syntax issues.'
-        }
+        "syntax_error": {
+            "detection": r"(SyntaxError|Unexpected token|Unexpected identifier|Parse error)",
+            "strategy": {"run_linter": True, "check_syntax": True},
+            "explanation": "Syntax error in code. Run linter to identify all syntax issues.",
+        },
     }
 
     def analyze_failure(self, error_log: str, context: ErrorContext) -> RetryStrategy:
@@ -168,26 +149,26 @@ class RetryAnalyzer:
         """
         # Check each pattern
         for pattern_type, config in self.PATTERNS.items():
-            if re.search(config['detection'], error_log, re.IGNORECASE):
+            if re.search(config["detection"], error_log, re.IGNORECASE):
                 return RetryStrategy(
                     type=pattern_type,
-                    actions=config['strategy'],
+                    actions=config["strategy"],
                     confidence=self._calculate_confidence(error_log, config),
-                    explanation=config['explanation']
+                    explanation=config["explanation"],
                 )
 
         # No specific pattern match - generic retry
         return RetryStrategy(
-            type='generic',
-            actions={'retry_as_is': True},
+            type="generic",
+            actions={"retry_as_is": True},
             confidence=0.3,
-            explanation="No specific pattern detected. Consider reviewing the full error log."
+            explanation="No specific pattern detected. Consider reviewing the full error log.",
         )
 
     def _calculate_confidence(self, error_log: str, config: dict) -> float:
         """Calculate confidence score for pattern match"""
         # Count number of pattern matches
-        matches = len(re.findall(config['detection'], error_log, re.IGNORECASE))
+        matches = len(re.findall(config["detection"], error_log, re.IGNORECASE))
 
         # More matches = higher confidence (capped at 0.95)
         confidence = min(0.95, 0.6 + (matches * 0.1))
@@ -195,34 +176,34 @@ class RetryAnalyzer:
 
     def suggest_fix_command(self, strategy: RetryStrategy, context: ErrorContext) -> str:
         """Generate specific fix command based on strategy"""
-        if strategy.type == 'import_error':
+        if strategy.type == "import_error":
             # Detect package manager from context
-            if 'package.json' in context.log or 'npm' in context.command:
+            if "package.json" in context.log or "npm" in context.command:
                 return f"cd {context.working_dir} && npm install"
-            elif 'requirements.txt' in context.log or 'pip' in context.command:
+            elif "requirements.txt" in context.log or "pip" in context.command:
                 return f"cd {context.working_dir} && pip install -r requirements.txt"
             else:
                 return f"cd {context.working_dir} && npm install"  # default
 
-        elif strategy.type == 'timeout':
+        elif strategy.type == "timeout":
             # Add timeout flag if not present
-            if '--timeout' in context.command:
-                return context.command.replace('--timeout', '--timeout 120')
+            if "--timeout" in context.command:
+                return context.command.replace("--timeout", "--timeout 120")
             else:
                 return f"{context.command} --timeout 60"
 
-        elif strategy.type == 'type_error':
+        elif strategy.type == "type_error":
             # Run type checker
-            if 'tsc' in context.log or '.ts' in context.log:
+            if "tsc" in context.log or ".ts" in context.log:
                 return f"cd {context.working_dir} && npx tsc --noEmit"
             else:
                 return f"cd {context.working_dir} && mypy ."
 
-        elif strategy.type == 'permission_error':
+        elif strategy.type == "permission_error":
             return f"sudo {context.command}"
 
-        elif strategy.type == 'syntax_error':
-            if '.py' in context.log:
+        elif strategy.type == "syntax_error":
+            if ".py" in context.log:
                 return f"cd {context.working_dir} && ruff check ."
             else:
                 return f"cd {context.working_dir} && npx eslint ."
@@ -237,7 +218,7 @@ class SessionAnalyzer:
 
     def __init__(self, project_root: Path):
         self.project_root = Path(project_root)
-        self.sessions_dir = self.project_root / '.buildrunner' / 'debug-sessions'
+        self.sessions_dir = self.project_root / ".buildrunner" / "debug-sessions"
 
     def analyze_project_patterns(self) -> ProjectInsights:
         """
@@ -252,19 +233,19 @@ class SessionAnalyzer:
             return ProjectInsights(
                 hot_spots=[],
                 error_trends=TrendReport(
-                    weekly_breakdown={},
-                    most_common_type='none',
-                    trend_direction='stable'
+                    weekly_breakdown={}, most_common_type="none", trend_direction="stable"
                 ),
                 success_rates={},
-                recommendations=["No debug sessions found. Run 'br autodebug run' to start tracking."]
+                recommendations=[
+                    "No debug sessions found. Run 'br autodebug run' to start tracking."
+                ],
             )
 
         return ProjectInsights(
             hot_spots=self._find_hot_spots(sessions),
             error_trends=self._analyze_trends(sessions),
             success_rates=self._calculate_rates(sessions),
-            recommendations=self._generate_recommendations(sessions)
+            recommendations=self._generate_recommendations(sessions),
         )
 
     def _load_all_sessions(self) -> List[Dict[str, Any]]:
@@ -273,7 +254,7 @@ class SessionAnalyzer:
             return []
 
         sessions = []
-        for report_file in self.sessions_dir.glob('autodebug_*.json'):
+        for report_file in self.sessions_dir.glob("autodebug_*.json"):
             try:
                 with open(report_file) as f:
                     sessions.append(json.load(f))
@@ -288,17 +269,19 @@ class SessionAnalyzer:
         failure_counts = defaultdict(int)
 
         for session in sessions:
-            checks = session.get('checks_run', [])
+            checks = session.get("checks_run", [])
             for check in checks:
-                if not check.get('passed', True) and not check.get('skipped', False):
+                if not check.get("passed", True) and not check.get("skipped", False):
                     # Track by check name
-                    check_name = check.get('name', 'unknown')
+                    check_name = check.get("name", "unknown")
                     failure_counts[f"check:{check_name}"] += 1
 
                     # Track by file if error mentions a file
-                    for error in check.get('errors', []):
+                    for error in check.get("errors", []):
                         # Try to extract file path from error message
-                        file_match = re.search(r'([a-zA-Z0-9_/.-]+\.(py|ts|tsx|js|jsx)):', str(error))
+                        file_match = re.search(
+                            r"([a-zA-Z0-9_/.-]+\.(py|ts|tsx|js|jsx)):", str(error)
+                        )
                         if file_match:
                             file_path = file_match.group(1)
                             failure_counts[f"file:{file_path}"] += 1
@@ -306,18 +289,15 @@ class SessionAnalyzer:
         # Return top 10 hot spots
         hot_spots = []
         for key, count in sorted(failure_counts.items(), key=lambda x: -x[1])[:10]:
-            parts = key.split(':', 1)
+            parts = key.split(":", 1)
             spot_type = parts[0]
-            location = parts[1] if len(parts) > 1 else 'unknown'
+            location = parts[1] if len(parts) > 1 else "unknown"
 
-            severity = 'high' if count > 10 else 'medium' if count > 5 else 'low'
+            severity = "high" if count > 10 else "medium" if count > 5 else "low"
 
-            hot_spots.append(HotSpot(
-                location=location,
-                type=spot_type,
-                failure_count=count,
-                severity=severity
-            ))
+            hot_spots.append(
+                HotSpot(location=location, type=spot_type, failure_count=count, severity=severity)
+            )
 
         return hot_spots
 
@@ -327,18 +307,18 @@ class SessionAnalyzer:
 
         for session in sessions:
             # Parse timestamp
-            timestamp_str = session.get('timestamp', '')
+            timestamp_str = session.get("timestamp", "")
             try:
                 timestamp = datetime.fromisoformat(timestamp_str)
-                week = timestamp.strftime('%Y-W%W')
+                week = timestamp.strftime("%Y-W%W")
             except:
-                week = 'unknown'
+                week = "unknown"
 
             # Classify errors
-            checks = session.get('checks_run', [])
+            checks = session.get("checks_run", [])
             for check in checks:
-                if not check.get('passed', True):
-                    check_type = check.get('name', 'unknown').split('_')[0]
+                if not check.get("passed", True):
+                    check_type = check.get("name", "unknown").split("_")[0]
                     weekly_errors[week][check_type] += 1
 
         # Find most common error type
@@ -347,7 +327,7 @@ class SessionAnalyzer:
             for error_type, count in week_data.items():
                 all_errors[error_type] += count
 
-        most_common = max(all_errors.items(), key=lambda x: x[1])[0] if all_errors else 'none'
+        most_common = max(all_errors.items(), key=lambda x: x[1])[0] if all_errors else "none"
 
         # Determine trend direction
         trend = self._calculate_trend(weekly_errors)
@@ -355,13 +335,13 @@ class SessionAnalyzer:
         return TrendReport(
             weekly_breakdown=dict(weekly_errors),
             most_common_type=most_common,
-            trend_direction=trend
+            trend_direction=trend,
         )
 
     def _calculate_trend(self, weekly_errors: Dict[str, Dict[str, int]]) -> str:
         """Determine if errors are improving or worsening"""
         if len(weekly_errors) < 2:
-            return 'stable'
+            return "stable"
 
         # Get sorted weeks
         weeks = sorted(weekly_errors.keys())
@@ -371,30 +351,30 @@ class SessionAnalyzer:
         older_total = sum(weekly_errors[weeks[0]].values()) if len(weeks) > 1 else recent_total
 
         if recent_total < older_total * 0.8:
-            return 'improving'
+            return "improving"
         elif recent_total > older_total * 1.2:
-            return 'worsening'
+            return "worsening"
         else:
-            return 'stable'
+            return "stable"
 
     def _calculate_rates(self, sessions: List[Dict]) -> Dict[str, float]:
         """Calculate success rates by check type"""
-        check_stats = defaultdict(lambda: {'passed': 0, 'total': 0})
+        check_stats = defaultdict(lambda: {"passed": 0, "total": 0})
 
         for session in sessions:
-            checks = session.get('checks_run', [])
+            checks = session.get("checks_run", [])
             for check in checks:
-                if not check.get('skipped', False):
-                    check_name = check.get('name', 'unknown')
-                    check_stats[check_name]['total'] += 1
-                    if check.get('passed', False):
-                        check_stats[check_name]['passed'] += 1
+                if not check.get("skipped", False):
+                    check_name = check.get("name", "unknown")
+                    check_stats[check_name]["total"] += 1
+                    if check.get("passed", False):
+                        check_stats[check_name]["passed"] += 1
 
         # Calculate success rates
         success_rates = {}
         for check_name, stats in check_stats.items():
-            if stats['total'] > 0:
-                success_rates[check_name] = (stats['passed'] / stats['total']) * 100
+            if stats["total"] > 0:
+                success_rates[check_name] = (stats["passed"] / stats["total"]) * 100
 
         return success_rates
 
@@ -408,8 +388,10 @@ class SessionAnalyzer:
 
         # Analyze recent failures
         recent_session = sessions[-1] if sessions else {}
-        checks = recent_session.get('checks_run', [])
-        failed_checks = [c for c in checks if not c.get('passed', True) and not c.get('skipped', False)]
+        checks = recent_session.get("checks_run", [])
+        failed_checks = [
+            c for c in checks if not c.get("passed", True) and not c.get("skipped", False)
+        ]
 
         if failed_checks:
             recommendations.append(f"Fix {len(failed_checks)} failing checks before next build")
@@ -418,13 +400,17 @@ class SessionAnalyzer:
         success_rates = self._calculate_rates(sessions)
         for check_name, rate in success_rates.items():
             if rate < 50:
-                recommendations.append(f"Low success rate for {check_name} ({rate:.0f}%) - consider investigation")
+                recommendations.append(
+                    f"Low success rate for {check_name} ({rate:.0f}%) - consider investigation"
+                )
 
         # Check for consistent failures
         hot_spots = self._find_hot_spots(sessions)
-        high_severity_spots = [h for h in hot_spots if h.severity == 'high']
+        high_severity_spots = [h for h in hot_spots if h.severity == "high"]
         if high_severity_spots:
-            recommendations.append(f"Address {len(high_severity_spots)} high-severity failure hot spots")
+            recommendations.append(
+                f"Address {len(high_severity_spots)} high-severity failure hot spots"
+            )
 
         if not recommendations:
             recommendations.append("No critical issues detected. Keep up the good work!")
@@ -507,7 +493,7 @@ class ToolSelector:
 
         # Skip API tests for CSS-only changes
         if check_name == "integration_tests":
-            if all(f.suffix in {'.css', '.scss', '.sass'} for f in self.context.changed_files):
+            if all(f.suffix in {".css", ".scss", ".sass"} for f in self.context.changed_files):
                 return True, "CSS-only changes"
 
         # Skip database checks if no database changes
@@ -533,11 +519,7 @@ class AutoDebugPipeline:
         self.quality_gate = QualityGate()  # Fixed: QualityGate doesn't take project_root
         self.gap_analyzer = GapAnalyzer(project_root)
 
-    def run(
-        self,
-        files: Optional[List[str]] = None,
-        skip_deep: bool = False
-    ) -> AutoDebugReport:
+    def run(self, files: Optional[List[str]] = None, skip_deep: bool = False) -> AutoDebugReport:
         """
         Run the complete auto-debug pipeline
 
@@ -591,11 +573,7 @@ class AutoDebugPipeline:
 
         return self._generate_report(context, results, start_time, critical_failures)
 
-    def _run_checks(
-        self,
-        check_names: List[str],
-        selector: ToolSelector
-    ) -> List[CheckResult]:
+    def _run_checks(self, check_names: List[str], selector: ToolSelector) -> List[CheckResult]:
         """Run a list of checks in parallel where possible"""
         results = []
 
@@ -607,16 +585,18 @@ class AutoDebugPipeline:
             # Skip if not applicable
             should_skip, reason = selector.should_skip_check(check_name)
             if should_skip:
-                results.append(CheckResult(
-                    name=check_name,
-                    passed=True,
-                    duration_ms=0,
-                    errors=[],
-                    warnings=[],
-                    info=[],
-                    skipped=True,
-                    skip_reason=reason
-                ))
+                results.append(
+                    CheckResult(
+                        name=check_name,
+                        passed=True,
+                        duration_ms=0,
+                        errors=[],
+                        warnings=[],
+                        info=[],
+                        skipped=True,
+                        skip_reason=reason,
+                    )
+                )
                 continue
 
             # Categorize
@@ -681,7 +661,7 @@ class AutoDebugPipeline:
                     duration_ms=0,
                     errors=[f"Unknown check: {check_name}"],
                     warnings=[],
-                    info=[]
+                    info=[],
                 )
 
             duration = (time.time() - start) * 1000
@@ -701,7 +681,7 @@ class AutoDebugPipeline:
                 duration_ms=duration,
                 errors=[f"Check failed: {str(e)}"],
                 warnings=[],
-                info=[]
+                info=[],
             )
 
     def _check_syntax(self) -> CheckResult:
@@ -709,9 +689,9 @@ class AutoDebugPipeline:
         errors = []
 
         for file in self.context_detector.detect_from_git().changed_files:
-            if file.suffix == '.py':
+            if file.suffix == ".py":
                 try:
-                    compile(file.read_text(), str(file), 'exec')
+                    compile(file.read_text(), str(file), "exec")
                 except SyntaxError as e:
                     errors.append(f"{file}:{e.lineno}: {e.msg}")
 
@@ -721,7 +701,7 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=errors,
             warnings=[],
-            info=[]
+            info=[],
         )
 
     def _check_imports(self) -> CheckResult:
@@ -740,16 +720,14 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=errors,
             warnings=[],
-            info=[]
+            info=[],
         )
 
     def _check_typescript_quick(self) -> CheckResult:
         """Quick TypeScript check (incremental)"""
         context = self.context_detector.detect_from_git()
         result = self.ts_checker.check(
-            files=context.typescript_files,
-            incremental=True,
-            strict=False
+            files=context.typescript_files, incremental=True, strict=False
         )
 
         errors = [f"{e.file}:{e.line}: {e.message}" for e in result.errors]
@@ -761,7 +739,7 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=errors,
             warnings=warnings,
-            info=[f"Checked {result.files_checked} files"]
+            info=[f"Checked {result.files_checked} files"],
         )
 
     def _check_typescript_full(self) -> CheckResult:
@@ -773,10 +751,7 @@ class AutoDebugPipeline:
 
         # Add type coverage info
         coverage = self.ts_checker.calculate_type_coverage()
-        info = [
-            f"Checked {result.files_checked} files",
-            f"Type coverage: {coverage:.1f}%"
-        ]
+        info = [f"Checked {result.files_checked} files", f"Type coverage: {coverage:.1f}%"]
 
         return CheckResult(
             name="typescript_full",
@@ -784,7 +759,7 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=errors,
             warnings=warnings,
-            info=info
+            info=info,
         )
 
     def _check_python_syntax(self) -> CheckResult:
@@ -794,7 +769,7 @@ class AutoDebugPipeline:
     def _run_pytest_changed(self) -> CheckResult:
         """Run pytest on changed test files only"""
         context = self.context_detector.detect_from_git()
-        test_files = [str(f) for f in context.test_files if f.suffix == '.py']
+        test_files = [str(f) for f in context.test_files if f.suffix == ".py"]
 
         if not test_files:
             return CheckResult(
@@ -803,16 +778,12 @@ class AutoDebugPipeline:
                 duration_ms=0,
                 errors=[],
                 warnings=[],
-                info=["No test files changed"]
+                info=["No test files changed"],
             )
 
         # Check if pytest is available
         try:
-            pytest_result = subprocess.run(
-                ["pytest", "--version"],
-                capture_output=True,
-                text=True
-            )
+            pytest_result = subprocess.run(["pytest", "--version"], capture_output=True, text=True)
             if pytest_result.returncode != 0:
                 return CheckResult(
                     name="pytest_changed",
@@ -822,7 +793,7 @@ class AutoDebugPipeline:
                     warnings=["pytest not available"],
                     info=["Skipping tests - pytest not installed"],
                     skipped=True,
-                    skip_reason="pytest not available"
+                    skip_reason="pytest not available",
                 )
         except FileNotFoundError:
             return CheckResult(
@@ -833,14 +804,14 @@ class AutoDebugPipeline:
                 warnings=["pytest not available"],
                 info=["Skipping tests - pytest not installed"],
                 skipped=True,
-                skip_reason="pytest not available"
+                skip_reason="pytest not available",
             )
 
         result = subprocess.run(
             ["pytest"] + test_files + ["-v", "--tb=short"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         return CheckResult(
@@ -849,16 +820,13 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=[result.stdout + result.stderr] if result.returncode != 0 else [],
             warnings=[],
-            info=[f"Ran {len(test_files)} test files"]
+            info=[f"Ran {len(test_files)} test files"],
         )
 
     def _run_pytest_full(self) -> CheckResult:
         """Run full pytest suite"""
         result = subprocess.run(
-            ["pytest", "-v", "--tb=short"],
-            cwd=self.project_root,
-            capture_output=True,
-            text=True
+            ["pytest", "-v", "--tb=short"], cwd=self.project_root, capture_output=True, text=True
         )
 
         return CheckResult(
@@ -867,7 +835,7 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=[result.stdout + result.stderr] if result.returncode != 0 else [],
             warnings=[],
-            info=["Full test suite"]
+            info=["Full test suite"],
         )
 
     def _run_eslint(self) -> CheckResult:
@@ -882,14 +850,11 @@ class AutoDebugPipeline:
                 duration_ms=0,
                 errors=[],
                 warnings=[],
-                info=["No TypeScript files to lint"]
+                info=["No TypeScript files to lint"],
             )
 
         result = subprocess.run(
-            ["npx", "eslint"] + ts_files,
-            cwd=self.project_root,
-            capture_output=True,
-            text=True
+            ["npx", "eslint"] + ts_files, cwd=self.project_root, capture_output=True, text=True
         )
 
         return CheckResult(
@@ -898,7 +863,7 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=[result.stdout] if result.returncode != 0 else [],
             warnings=[],
-            info=[f"Linted {len(ts_files)} files"]
+            info=[f"Linted {len(ts_files)} files"],
         )
 
     def _run_jest(self) -> CheckResult:
@@ -907,7 +872,7 @@ class AutoDebugPipeline:
             ["npm", "test", "--", "--passWithNoTests"],
             cwd=self.project_root,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         return CheckResult(
@@ -916,7 +881,7 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=[result.stdout + result.stderr] if result.returncode != 0 else [],
             warnings=[],
-            info=["Jest test suite"]
+            info=["Jest test suite"],
         )
 
     def _check_quality_changed(self) -> CheckResult:
@@ -931,7 +896,7 @@ class AutoDebugPipeline:
                 duration_ms=0,
                 errors=[],
                 warnings=[],
-                info=["No Python files changed"]
+                info=["No Python files changed"],
             )
 
         # Quality checks on individual files not implemented yet
@@ -945,7 +910,7 @@ class AutoDebugPipeline:
             warnings=[],
             info=[f"Quality check skipped for {len(python_files)} files (not implemented)"],
             skipped=True,
-            skip_reason="Per-file quality checking not implemented"
+            skip_reason="Per-file quality checking not implemented",
         )
 
     def _check_quality_full(self) -> CheckResult:
@@ -961,7 +926,7 @@ class AutoDebugPipeline:
             warnings=[],
             info=["Full quality check skipped (not implemented)"],
             skipped=True,
-            skip_reason="Full quality checking not implemented - use 'br quality check'"
+            skip_reason="Full quality checking not implemented - use 'br quality check'",
         )
 
     def _run_gap_analysis(self) -> CheckResult:
@@ -972,9 +937,19 @@ class AutoDebugPipeline:
             warnings = []
             # Collect warnings from various gap types
             if gaps.missing_features:
-                warnings.extend([f"Missing feature: {f.get('name', 'Unknown')}" for f in gaps.missing_features[:5]])
+                warnings.extend(
+                    [
+                        f"Missing feature: {f.get('name', 'Unknown')}"
+                        for f in gaps.missing_features[:5]
+                    ]
+                )
             if gaps.incomplete_features:
-                warnings.extend([f"Incomplete feature: {f.get('name', 'Unknown')}" for f in gaps.incomplete_features[:5]])
+                warnings.extend(
+                    [
+                        f"Incomplete feature: {f.get('name', 'Unknown')}"
+                        for f in gaps.incomplete_features[:5]
+                    ]
+                )
 
             # Pass unless there are missing or incomplete features
             # Circular deps and other gap types are informational for now
@@ -983,7 +958,9 @@ class AutoDebugPipeline:
 
             errors = []
             if has_feature_gaps:
-                errors.append(f"Missing/incomplete features: {len(gaps.missing_features)} missing, {len(gaps.incomplete_features)} incomplete")
+                errors.append(
+                    f"Missing/incomplete features: {len(gaps.missing_features)} missing, {len(gaps.incomplete_features)} incomplete"
+                )
 
             return CheckResult(
                 name="gap_analysis",
@@ -991,7 +968,9 @@ class AutoDebugPipeline:
                 duration_ms=0,
                 errors=errors,
                 warnings=warnings[:10],  # Limit warnings
-                info=[f"Total gaps: {gaps.total_gaps} (High: {gaps.severity_high}, Med: {gaps.severity_medium}, Low: {gaps.severity_low})"]
+                info=[
+                    f"Total gaps: {gaps.total_gaps} (High: {gaps.severity_high}, Med: {gaps.severity_medium}, Low: {gaps.severity_low})"
+                ],
             )
         except Exception as e:
             return CheckResult(
@@ -1000,7 +979,7 @@ class AutoDebugPipeline:
                 duration_ms=0,
                 errors=[f"Check failed: {str(e)}"],
                 warnings=[],
-                info=[]
+                info=[],
             )
 
     def _run_integration_tests(self) -> CheckResult:
@@ -1013,7 +992,7 @@ class AutoDebugPipeline:
             duration_ms=0,
             errors=[],
             warnings=[],
-            info=["Integration tests not yet configured"]
+            info=["Integration tests not yet configured"],
         )
 
     def _generate_report(
@@ -1021,7 +1000,7 @@ class AutoDebugPipeline:
         context: BuildContext,
         results: List[CheckResult],
         start_time: float,
-        critical_failures: List[str]
+        critical_failures: List[str],
     ) -> AutoDebugReport:
         """Generate final report"""
         total_duration = (time.time() - start_time) * 1000
@@ -1049,8 +1028,8 @@ class AutoDebugPipeline:
                 "checks_run": len([r for r in results if not r.skipped]),
                 "checks_skipped": len([r for r in results if r.skipped]),
                 "total_errors": sum(len(r.errors) for r in results),
-                "total_warnings": sum(len(r.warnings) for r in results)
-            }
+                "total_warnings": sum(len(r.warnings) for r in results),
+            },
         )
 
     def save_report(self, report: AutoDebugReport) -> Path:
@@ -1063,9 +1042,9 @@ class AutoDebugPipeline:
 
         # Convert dataclasses to dict for JSON serialization
         report_dict = asdict(report)
-        report_dict['build_context'] = str(report.build_context.build_type.value)
+        report_dict["build_context"] = str(report.build_context.build_type.value)
 
-        with open(report_file, 'w') as f:
+        with open(report_file, "w") as f:
             json.dump(report_dict, f, indent=2, default=str)
 
         return report_file

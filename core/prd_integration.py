@@ -86,6 +86,7 @@ class PRDSystemIntegration:
         # Stop file watcher
         if self.file_watcher:
             from core.prd_file_watcher import stop_prd_watcher
+
             stop_prd_watcher()
 
         # Unsubscribe from controller
@@ -132,8 +133,7 @@ _integration: Optional[PRDSystemIntegration] = None
 
 
 def get_prd_integration(
-    project_root: Optional[Path] = None,
-    spec_path: Optional[Path] = None
+    project_root: Optional[Path] = None, spec_path: Optional[Path] = None
 ) -> PRDSystemIntegration:
     """Get or create global PRD integration instance"""
     global _integration
@@ -150,7 +150,7 @@ def get_prd_integration(
 def start_prd_system(
     project_root: Optional[Path] = None,
     spec_path: Optional[Path] = None,
-    enable_file_watcher: bool = True
+    enable_file_watcher: bool = True,
 ):
     """Start integrated PRD system"""
     integration = get_prd_integration(project_root, spec_path)

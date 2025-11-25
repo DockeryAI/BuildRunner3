@@ -1,6 +1,7 @@
 """
 Alias Commands - Project alias management for quick switching
 """
+
 import typer
 import subprocess
 import os
@@ -98,12 +99,7 @@ def jump_to_alias(
 
     # Copy prompt to clipboard
     try:
-        subprocess.run(
-            ["pbcopy"],
-            input=prompt.encode(),
-            check=True,
-            capture_output=True
-        )
+        subprocess.run(["pbcopy"], input=prompt.encode(), check=True, capture_output=True)
         console.print("✓ Project prompt copied to clipboard", style="green")
     except subprocess.CalledProcessError:
         console.print("⚠ Could not copy to clipboard (pbcopy not available)", style="yellow")
@@ -119,7 +115,7 @@ def jump_to_alias(
     try:
         subprocess.run(
             ["claude", "--dangerously-skip-permissions", project_path],
-            check=False  # Don't error if Claude Code exits normally
+            check=False,  # Don't error if Claude Code exits normally
         )
     except FileNotFoundError:
         console.print("\nError: 'claude' command not found", style="red")

@@ -8,6 +8,7 @@ from dataclasses import dataclass
 @dataclass
 class MockTask:
     """Mock task for testing"""
+
     id: str
     dependencies: list
     estimated_minutes: int

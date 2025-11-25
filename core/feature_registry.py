@@ -37,7 +37,7 @@ class FeatureRegistry:
         if not self.features_file.exists():
             return self._get_default_structure()
 
-        with open(self.features_file, 'r') as f:
+        with open(self.features_file, "r") as f:
             return json.load(f)
 
     def save(self, data: Dict[str, Any]):
@@ -46,7 +46,7 @@ class FeatureRegistry:
         Args:
             data: Dictionary to save
         """
-        with open(self.features_file, 'w') as f:
+        with open(self.features_file, "w") as f:
             json.dump(data, f, indent=2)
 
     def _get_default_structure(self) -> Dict[str, Any]:
@@ -66,13 +66,19 @@ class FeatureRegistry:
                 "features_complete": 0,
                 "features_in_progress": 0,
                 "features_planned": 0,
-                "completion_percentage": 0
-            }
+                "completion_percentage": 0,
+            },
         }
 
-    def add_feature(self, feature_id: str, name: str, description: str,
-                   priority: str = "medium", week: Optional[int] = None,
-                   build: Optional[str] = None) -> Dict[str, Any]:
+    def add_feature(
+        self,
+        feature_id: str,
+        name: str,
+        description: str,
+        priority: str = "medium",
+        week: Optional[int] = None,
+        build: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Add a new feature
 
         Args:
@@ -89,7 +95,7 @@ class FeatureRegistry:
         data = self.load()
 
         # Check if feature already exists
-        if any(f['id'] == feature_id for f in data['features']):
+        if any(f["id"] == feature_id for f in data["features"]):
             raise ValueError(f"Feature with id '{feature_id}' already exists")
 
         feature = {
@@ -98,7 +104,7 @@ class FeatureRegistry:
             "status": "planned",
             "version": data.get("version", "1.0.0"),
             "priority": priority,
-            "description": description
+            "description": description,
         }
 
         if week is not None:
@@ -106,8 +112,8 @@ class FeatureRegistry:
         if build is not None:
             feature["build"] = build
 
-        data['features'].append(feature)
-        data['last_updated'] = datetime.now().isoformat() + "Z"
+        data["features"].append(feature)
+        data["last_updated"] = datetime.now().isoformat() + "Z"
 
         # Update metrics
         self._update_metrics(data)
@@ -130,16 +136,16 @@ class FeatureRegistry:
         data = self.load()
 
         feature = None
-        for f in data['features']:
-            if f['id'] == feature_id:
+        for f in data["features"]:
+            if f["id"] == feature_id:
                 feature = f
                 break
 
         if not feature:
             raise ValueError(f"Feature '{feature_id}' not found")
 
-        feature['status'] = 'complete'
-        data['last_updated'] = datetime.now().isoformat() + "Z"
+        feature["status"] = "complete"
+        data["last_updated"] = datetime.now().isoformat() + "Z"
 
         # Update metrics
         self._update_metrics(data)
@@ -163,8 +169,8 @@ class FeatureRegistry:
         data = self.load()
 
         feature = None
-        for f in data['features']:
-            if f['id'] == feature_id:
+        for f in data["features"]:
+            if f["id"] == feature_id:
                 feature = f
                 break
 
@@ -172,12 +178,12 @@ class FeatureRegistry:
             return None
 
         # Update allowed fields
-        allowed_fields = ['name', 'description', 'status', 'priority', 'week', 'build']
+        allowed_fields = ["name", "description", "status", "priority", "week", "build"]
         for key, value in kwargs.items():
             if key in allowed_fields:
                 feature[key] = value
 
-        data['last_updated'] = datetime.now().isoformat() + "Z"
+        data["last_updated"] = datetime.now().isoformat() + "Z"
 
         # Update metrics
         self._update_metrics(data)
@@ -197,13 +203,13 @@ class FeatureRegistry:
         data = self.load()
 
         # Find and remove feature
-        original_length = len(data['features'])
-        data['features'] = [f for f in data['features'] if f['id'] != feature_id]
+        original_length = len(data["features"])
+        data["features"] = [f for f in data["features"] if f["id"] != feature_id]
 
-        if len(data['features']) == original_length:
+        if len(data["features"]) == original_length:
             return False
 
-        data['last_updated'] = datetime.now().isoformat() + "Z"
+        data["last_updated"] = datetime.now().isoformat() + "Z"
 
         # Update metrics
         self._update_metrics(data)
@@ -222,8 +228,8 @@ class FeatureRegistry:
         """
         data = self.load()
 
-        for feature in data['features']:
-            if feature['id'] == feature_id:
+        for feature in data["features"]:
+            if feature["id"] == feature_id:
                 return feature
 
         return None
@@ -238,10 +244,10 @@ class FeatureRegistry:
             List of feature dictionaries
         """
         data = self.load()
-        features = data['features']
+        features = data["features"]
 
         if status:
-            features = [f for f in features if f.get('status') == status]
+            features = [f for f in features if f.get("status") == status]
 
         return features
 
@@ -257,7 +263,7 @@ class FeatureRegistry:
             "version": data.get("version", "1.0.0"),
             "status": data.get("status", "unknown"),
             "metrics": data.get("metrics", {}),
-            "total_features": len(data.get("features", []))
+            "total_features": len(data.get("features", [])),
         }
 
     def _update_metrics(self, data: Dict[str, Any]):
@@ -266,20 +272,20 @@ class FeatureRegistry:
         Args:
             data: Features data dictionary
         """
-        features = data.get('features', [])
+        features = data.get("features", [])
 
-        complete = sum(1 for f in features if f.get('status') == 'complete')
-        in_progress = sum(1 for f in features if f.get('status') == 'in_progress')
-        planned = sum(1 for f in features if f.get('status') == 'planned')
+        complete = sum(1 for f in features if f.get("status") == "complete")
+        in_progress = sum(1 for f in features if f.get("status") == "in_progress")
+        planned = sum(1 for f in features if f.get("status") == "planned")
         total = len(features)
 
         completion = 0
         if total > 0:
             completion = round((complete / total) * 100)
 
-        data['metrics'] = {
+        data["metrics"] = {
             "features_complete": complete,
             "features_in_progress": in_progress,
             "features_planned": planned,
-            "completion_percentage": completion
+            "completion_percentage": completion,
         }

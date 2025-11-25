@@ -127,12 +127,7 @@ class ShellIntegration:
 
         return before, br_section, after
 
-    def generate_alias_command(
-        self,
-        alias: str,
-        project_path: str,
-        editor: str = "claude"
-    ) -> str:
+    def generate_alias_command(self, alias: str, project_path: str, editor: str = "claude") -> str:
         """
         Generate shell alias command
 
@@ -148,7 +143,7 @@ class ShellIntegration:
         editor_commands = {
             "claude": "claude --dangerously-skip-permissions",
             "cursor": "cursor --disable-extensions --wait",
-            "windsurf": "windsurf"
+            "windsurf": "windsurf",
         }
 
         editor_cmd = editor_commands.get(editor, editor)
@@ -156,11 +151,7 @@ class ShellIntegration:
         return f"alias {alias}='cd {project_path} && {editor_cmd}'"
 
     def add_alias(
-        self,
-        alias: str,
-        project_path: str,
-        editor: str = "claude",
-        backup: bool = True
+        self, alias: str, project_path: str, editor: str = "claude", backup: bool = True
     ) -> bool:
         """
         Add or update a project alias in shell config

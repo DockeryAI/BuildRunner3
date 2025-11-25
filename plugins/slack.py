@@ -12,6 +12,7 @@ from datetime import datetime
 try:
     from slack_sdk import WebClient
     from slack_sdk.errors import SlackApiError
+
     SLACK_AVAILABLE = True
 except ImportError:
     SLACK_AVAILABLE = False
@@ -72,7 +73,7 @@ class SlackPlugin:
         self,
         text: str,
         channel: Optional[str] = None,
-        blocks: Optional[List[Dict[str, Any]]] = None
+        blocks: Optional[List[Dict[str, Any]]] = None,
     ) -> bool:
         """
         Post a message to Slack.
@@ -92,11 +93,7 @@ class SlackPlugin:
         channel = channel or self.default_channel
 
         try:
-            self.client.chat_postMessage(
-                channel=channel,
-                text=text,
-                blocks=blocks
-            )
+            self.client.chat_postMessage(channel=channel, text=text, blocks=blocks)
             print(f"✅ Posted to Slack: {channel}")
             return True
 
@@ -123,8 +120,8 @@ class SlackPlugin:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*🚀 Build Started*\n\n*Build:* {build_name}\n*Branch:* `{branch}`\n*Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-                }
+                    "text": f"*🚀 Build Started*\n\n*Build:* {build_name}\n*Branch:* `{branch}`\n*Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                },
             }
         ]
 
@@ -136,7 +133,7 @@ class SlackPlugin:
         branch: str,
         duration: float,
         tests_passed: int,
-        channel: Optional[str] = None
+        channel: Optional[str] = None,
     ) -> bool:
         """
         Post notification that a build succeeded.
@@ -158,19 +155,15 @@ class SlackPlugin:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*✅ Build Successful*\n\n*Build:* {build_name}\n*Branch:* `{branch}`\n*Tests:* {tests_passed} passed\n*Duration:* {duration:.1f}s"
-                }
+                    "text": f"*✅ Build Successful*\n\n*Build:* {build_name}\n*Branch:* `{branch}`\n*Tests:* {tests_passed} passed\n*Duration:* {duration:.1f}s",
+                },
             }
         ]
 
         return self.post_message(text, channel, blocks)
 
     def post_build_failure(
-        self,
-        build_name: str,
-        branch: str,
-        error: str,
-        channel: Optional[str] = None
+        self, build_name: str, branch: str, error: str, channel: Optional[str] = None
     ) -> bool:
         """
         Post notification that a build failed.
@@ -191,19 +184,15 @@ class SlackPlugin:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*❌ Build Failed*\n\n*Build:* {build_name}\n*Branch:* `{branch}`\n*Error:* ```{error}```\n*Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-                }
+                    "text": f"*❌ Build Failed*\n\n*Build:* {build_name}\n*Branch:* `{branch}`\n*Error:* ```{error}```\n*Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                },
             }
         ]
 
         return self.post_message(text, channel, blocks)
 
     def post_feature_update(
-        self,
-        feature_name: str,
-        old_status: str,
-        new_status: str,
-        channel: Optional[str] = None
+        self, feature_name: str, old_status: str, new_status: str, channel: Optional[str] = None
     ) -> bool:
         """
         Post notification about feature status change.
@@ -217,11 +206,7 @@ class SlackPlugin:
         Returns:
             True if successful
         """
-        emoji = {
-            "planned": "📋",
-            "in_progress": "🔨",
-            "complete": "✅"
-        }
+        emoji = {"planned": "📋", "in_progress": "🔨", "complete": "✅"}
 
         status_emoji = emoji.get(new_status, "📝")
         text = f"{status_emoji} Feature update: {feature_name} → {new_status}"
@@ -231,18 +216,15 @@ class SlackPlugin:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*{status_emoji} Feature Status Update*\n\n*Feature:* {feature_name}\n*Status:* {old_status} → *{new_status}*"
-                }
+                    "text": f"*{status_emoji} Feature Status Update*\n\n*Feature:* {feature_name}\n*Status:* {old_status} → *{new_status}*",
+                },
             }
         ]
 
         return self.post_message(text, channel, blocks)
 
     def post_daily_standup(
-        self,
-        features: List[Dict[str, Any]],
-        metrics: Dict[str, Any],
-        channel: Optional[str] = None
+        self, features: List[Dict[str, Any]], metrics: Dict[str, Any], channel: Optional[str] = None
     ) -> bool:
         """
         Post daily standup summary.
@@ -255,13 +237,17 @@ class SlackPlugin:
         Returns:
             True if successful
         """
-        total = metrics.get('features_complete', 0) + metrics.get('features_in_progress', 0) + metrics.get('features_planned', 0)
-        complete = metrics.get('features_complete', 0)
-        in_progress = metrics.get('features_in_progress', 0)
-        completion = metrics.get('completion_percentage', 0)
+        total = (
+            metrics.get("features_complete", 0)
+            + metrics.get("features_in_progress", 0)
+            + metrics.get("features_planned", 0)
+        )
+        complete = metrics.get("features_complete", 0)
+        in_progress = metrics.get("features_in_progress", 0)
+        completion = metrics.get("completion_percentage", 0)
 
         # Get in_progress features
-        active_features = [f for f in features if f.get('status') == 'in_progress']
+        active_features = [f for f in features if f.get("status") == "in_progress"]
         active_text = "\n".join([f"  • {f.get('name', 'Unknown')}" for f in active_features[:5]])
 
         if not active_text:
@@ -272,45 +258,34 @@ class SlackPlugin:
         blocks = [
             {
                 "type": "header",
-                "text": {
-                    "type": "plain_text",
-                    "text": "📊 BuildRunner Daily Standup"
-                }
+                "text": {"type": "plain_text", "text": "📊 BuildRunner Daily Standup"},
             },
             {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*Progress Overview*\n✅ {complete} complete\n🔨 {in_progress} in progress\n📋 {metrics.get('features_planned', 0)} planned\n\n*Completion:* {completion}%"
-                }
+                    "text": f"*Progress Overview*\n✅ {complete} complete\n🔨 {in_progress} in progress\n📋 {metrics.get('features_planned', 0)} planned\n\n*Completion:* {completion}%",
+                },
             },
             {
                 "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"*Active Features:*\n{active_text}"
-                }
+                "text": {"type": "mrkdwn", "text": f"*Active Features:*\n{active_text}"},
             },
             {
                 "type": "context",
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": f"Generated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                        "text": f"Generated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
                     }
-                ]
-            }
+                ],
+            },
         ]
 
         return self.post_message(text, channel, blocks)
 
     def post_test_results(
-        self,
-        total: int,
-        passed: int,
-        failed: int,
-        coverage: float,
-        channel: Optional[str] = None
+        self, total: int, passed: int, failed: int, coverage: float, channel: Optional[str] = None
     ) -> bool:
         """
         Post test results to Slack.
@@ -333,19 +308,15 @@ class SlackPlugin:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*{status_emoji} Test Results*\n\n*Total:* {total}\n*Passed:* {passed}\n*Failed:* {failed}\n*Coverage:* {coverage}%"
-                }
+                    "text": f"*{status_emoji} Test Results*\n\n*Total:* {total}\n*Passed:* {passed}\n*Failed:* {failed}\n*Coverage:* {coverage}%",
+                },
             }
         ]
 
         return self.post_message(text, channel, blocks)
 
     def post_deployment(
-        self,
-        environment: str,
-        version: str,
-        deployer: str,
-        channel: Optional[str] = None
+        self, environment: str, version: str, deployer: str, channel: Optional[str] = None
     ) -> bool:
         """
         Post deployment notification.
@@ -366,8 +337,8 @@ class SlackPlugin:
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"*🚀 Deployment*\n\n*Environment:* {environment}\n*Version:* {version}\n*Deployed by:* {deployer}\n*Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-                }
+                    "text": f"*🚀 Deployment*\n\n*Environment:* {environment}\n*Version:* {version}\n*Deployed by:* {deployer}\n*Time:* {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                },
             }
         ]
 

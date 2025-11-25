@@ -51,32 +51,32 @@ class TestEventSchemas:
         event = Event(
             event_type=EventType.TASK_COMPLETED,
             event_id="test-456",
-            metadata={'key': 'value'},
+            metadata={"key": "value"},
         )
 
         data = event.to_dict()
 
-        assert data['event_type'] == 'task_completed'
-        assert data['event_id'] == 'test-456'
-        assert data['metadata'] == {'key': 'value'}
-        assert 'timestamp' in data
+        assert data["event_type"] == "task_completed"
+        assert data["event_id"] == "test-456"
+        assert data["metadata"] == {"key": "value"}
+        assert "timestamp" in data
 
     def test_event_from_dict(self):
         """Test event deserialization from dictionary."""
         now = datetime.now()
         data = {
-            'event_type': 'task_started',
-            'timestamp': now.isoformat(),
-            'event_id': 'test-789',
-            'session_id': 'session-2',
-            'metadata': {},
+            "event_type": "task_started",
+            "timestamp": now.isoformat(),
+            "event_id": "test-789",
+            "session_id": "session-2",
+            "metadata": {},
         }
 
         event = Event.from_dict(data)
 
         assert event.event_type == EventType.TASK_STARTED
-        assert event.event_id == 'test-789'
-        assert event.session_id == 'session-2'
+        assert event.event_id == "test-789"
+        assert event.session_id == "session-2"
 
     def test_task_event_creation(self):
         """Test creating TaskEvent."""
@@ -112,9 +112,9 @@ class TestEventSchemas:
 
         data = event.to_dict()
 
-        assert data['task_id'] == 'task-2'
-        assert data['success'] is False
-        assert data['error_message'] == 'Import error'
+        assert data["task_id"] == "task-2"
+        assert data["success"] is False
+        assert data["error_message"] == "Import error"
 
     def test_build_event_creation(self):
         """Test creating BuildEvent."""
@@ -388,8 +388,12 @@ class TestEventCollector:
             collector.collect(Event(event_type=EventType.TASK_COMPLETED))
             collector.flush()
 
-            started_count = len(collector.query(filter=EventFilter(event_types=[EventType.TASK_STARTED])))
-            completed_count = len(collector.query(filter=EventFilter(event_types=[EventType.TASK_COMPLETED])))
+            started_count = len(
+                collector.query(filter=EventFilter(event_types=[EventType.TASK_STARTED]))
+            )
+            completed_count = len(
+                collector.query(filter=EventFilter(event_types=[EventType.TASK_COMPLETED]))
+            )
 
             assert started_count == 2
             assert completed_count == 1
@@ -465,26 +469,30 @@ class TestMetricsAnalyzer:
             analyzer = MetricsAnalyzer(collector)
 
             # Add task events
-            collector.collect(TaskEvent(
-                event_type=EventType.TASK_COMPLETED,
-                task_id="t1",
-                duration_ms=1000,
-                tokens_used=500,
-                cost_usd=0.01,
-                success=True,
-            ))
-            collector.collect(TaskEvent(
-                event_type=EventType.TASK_FAILED,
-                task_id="t2",
-                success=False,
-            ))
+            collector.collect(
+                TaskEvent(
+                    event_type=EventType.TASK_COMPLETED,
+                    task_id="t1",
+                    duration_ms=1000,
+                    tokens_used=500,
+                    cost_usd=0.01,
+                    success=True,
+                )
+            )
+            collector.collect(
+                TaskEvent(
+                    event_type=EventType.TASK_FAILED,
+                    task_id="t2",
+                    success=False,
+                )
+            )
             collector.flush()
 
             # Calculate a metric (COUNT of tasks)
             metric = analyzer.calculate_metric(
                 metric_name="task_count",
                 metric_type=MetricType.COUNT,
-                event_type=EventType.TASK_COMPLETED
+                event_type=EventType.TASK_COMPLETED,
             )
 
             assert metric.value >= 1  # At least 1 completed task
@@ -496,15 +504,19 @@ class TestMetricsAnalyzer:
             analyzer = MetricsAnalyzer(collector)
 
             # Add various events
-            collector.collect(TaskEvent(event_type=EventType.TASK_COMPLETED, success=True, cost_usd=0.01))
-            collector.collect(TaskEvent(event_type=EventType.TASK_COMPLETED, success=True, cost_usd=0.02))
+            collector.collect(
+                TaskEvent(event_type=EventType.TASK_COMPLETED, success=True, cost_usd=0.01)
+            )
+            collector.collect(
+                TaskEvent(event_type=EventType.TASK_COMPLETED, success=True, cost_usd=0.02)
+            )
             collector.collect(TaskEvent(event_type=EventType.TASK_FAILED, success=False))
             collector.flush()
 
             summary = analyzer.calculate_summary(period="day")
 
             # Summary is a MetricsSummary object with total_tasks not total_events
-            assert hasattr(summary, 'total_tasks')
+            assert hasattr(summary, "total_tasks")
             assert summary.total_tasks == 3
 
 
@@ -565,7 +577,7 @@ class TestIntegration:
             # Analyze metrics
             summary = analyzer.calculate_summary(period="day")
 
-            assert hasattr(summary, 'total_tasks')
+            assert hasattr(summary, "total_tasks")
             assert summary.total_tasks == 1
             assert summary.successful_tasks == 1
             assert summary.total_cost_usd == 0.015

@@ -252,7 +252,9 @@ class TestPromptBuilder:
         """Test token limit check for large prompt"""
         builder = PromptBuilder()
         # Create prompt exceeding token limit
-        large_prompt = "x" * (PromptBuilder.MAX_CONTEXT_TOKENS * PromptBuilder.CHARS_PER_TOKEN + 1000)
+        large_prompt = "x" * (
+            PromptBuilder.MAX_CONTEXT_TOKENS * PromptBuilder.CHARS_PER_TOKEN + 1000
+        )
         assert not builder._is_within_token_limit(large_prompt)
 
     def test_build_batch_series_prompt(self):
@@ -337,8 +339,20 @@ class TestPromptBuilder:
             acceptance_criteria=["Done"],
         )
 
-        batch1 = TaskBatch(id=1, tasks=[task1], total_minutes=60, domain=TaskDomain.BACKEND, complexity_level=TaskComplexity.SIMPLE)
-        batch2 = TaskBatch(id=2, tasks=[task2], total_minutes=60, domain=TaskDomain.BACKEND, complexity_level=TaskComplexity.SIMPLE)
+        batch1 = TaskBatch(
+            id=1,
+            tasks=[task1],
+            total_minutes=60,
+            domain=TaskDomain.BACKEND,
+            complexity_level=TaskComplexity.SIMPLE,
+        )
+        batch2 = TaskBatch(
+            id=2,
+            tasks=[task2],
+            total_minutes=60,
+            domain=TaskDomain.BACKEND,
+            complexity_level=TaskComplexity.SIMPLE,
+        )
 
         prompts = builder.build_batch_series_prompt([batch1, batch2], context)
 

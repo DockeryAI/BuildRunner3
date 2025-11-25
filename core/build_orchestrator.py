@@ -21,6 +21,7 @@ from core.task_queue import TaskQueue, TaskStatus, QueuedTask
 
 class BuildPhase(Enum):
     """Build phase states"""
+
     NOT_STARTED = "not_started"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -31,6 +32,7 @@ class BuildPhase(Enum):
 @dataclass
 class BuildState:
     """Current build state"""
+
     phase: str
     status: BuildPhase
     tasks_completed: List[str] = field(default_factory=list)
@@ -54,12 +56,7 @@ class BuildOrchestrator:
     - Resume from checkpoints
     """
 
-    def __init__(
-        self,
-        project_root: Path,
-        task_queue: TaskQueue,
-        auto_checkpoint: bool = True
-    ):
+    def __init__(self, project_root: Path, task_queue: TaskQueue, auto_checkpoint: bool = True):
         """
         Initialize BuildOrchestrator.
 
@@ -94,11 +91,13 @@ class BuildOrchestrator:
         # Build dependency graph from task queue
         tasks_dict = []
         for task in self.task_queue.tasks.values():
-            tasks_dict.append({
-                'id': task.id,
-                'dependencies': task.dependencies,
-                'estimated_minutes': task.estimated_minutes
-            })
+            tasks_dict.append(
+                {
+                    "id": task.id,
+                    "dependencies": task.dependencies,
+                    "estimated_minutes": task.estimated_minutes,
+                }
+            )
 
         self.dependency_graph.build_graph(tasks_dict)
 
@@ -109,25 +108,23 @@ class BuildOrchestrator:
         parallelizable = []
         for level in levels:
             if len(level.tasks) > 1:
-                parallelizable.append({
-                    'level': level.level,
-                    'tasks': level.tasks,
-                    'count': len(level.tasks)
-                })
+                parallelizable.append(
+                    {"level": level.level, "tasks": level.tasks, "count": len(level.tasks)}
+                )
 
         # Calculate critical path (longest path through graph)
         critical_path = self._calculate_critical_path()
 
         return {
-            'execution_levels': levels,
-            'total_levels': len(levels),
-            'parallelizable_tasks': parallelizable,
-            'critical_path': critical_path,
-            'critical_path_duration': sum(
+            "execution_levels": levels,
+            "total_levels": len(levels),
+            "parallelizable_tasks": parallelizable,
+            "critical_path": critical_path,
+            "critical_path_duration": sum(
                 self.task_queue.tasks[tid].estimated_minutes
                 for tid in critical_path
                 if tid in self.task_queue.tasks
-            )
+            ),
         }
 
     def create_checkpoint(self, phase: str, metadata: Optional[Dict] = None) -> str:
@@ -142,16 +139,13 @@ class BuildOrchestrator:
             Checkpoint ID
         """
         if not self.current_state:
-            self.current_state = BuildState(
-                phase=phase,
-                status=BuildPhase.IN_PROGRESS
-            )
+            self.current_state = BuildState(phase=phase, status=BuildPhase.IN_PROGRESS)
 
         checkpoint = self.checkpoint_manager.create_checkpoint(
             phase=phase,
             tasks_completed=self.current_state.tasks_completed.copy(),
             files_created=self.current_state.files_created.copy(),
-            metadata=metadata or self.current_state.metadata
+            metadata=metadata or self.current_state.metadata,
         )
 
         self.current_state.checkpoint_id = checkpoint.id
@@ -185,7 +179,7 @@ class BuildOrchestrator:
             tasks_completed=checkpoint.tasks_completed.copy(),
             files_created=checkpoint.files_created.copy(),
             checkpoint_id=checkpoint_id,
-            metadata=checkpoint.metadata.copy()
+            metadata=checkpoint.metadata.copy(),
         )
 
         # Update task queue status
@@ -223,7 +217,7 @@ class BuildOrchestrator:
             tasks_completed=checkpoint.tasks_completed.copy(),
             files_created=checkpoint.files_created.copy(),
             checkpoint_id=checkpoint.id,
-            metadata=checkpoint.metadata.copy()
+            metadata=checkpoint.metadata.copy(),
         )
 
         return True
@@ -265,10 +259,7 @@ class BuildOrchestrator:
             return []
 
         # Filter out interruption gates
-        non_gate_tasks = [
-            t for t in ready_tasks
-            if not self.is_interruption_gate(t.id)
-        ]
+        non_gate_tasks = [t for t in ready_tasks if not self.is_interruption_gate(t.id)]
 
         return non_gate_tasks[:max_tasks]
 
@@ -303,26 +294,26 @@ class BuildOrchestrator:
         """
         if not self.current_state:
             return {
-                'phase': 'not_started',
-                'status': 'not_started',
-                'progress_percent': 0,
-                'tasks_completed': 0,
-                'tasks_total': len(self.task_queue.tasks)
+                "phase": "not_started",
+                "status": "not_started",
+                "progress_percent": 0,
+                "tasks_completed": 0,
+                "tasks_total": len(self.task_queue.tasks),
             }
 
         total_tasks = len(self.task_queue.tasks)
         completed_tasks = len(self.current_state.tasks_completed)
 
         return {
-            'phase': self.current_state.phase,
-            'status': self.current_state.status.value,
-            'progress_percent': (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0,
-            'tasks_completed': completed_tasks,
-            'tasks_in_progress': len(self.current_state.tasks_in_progress),
-            'tasks_pending': len(self.current_state.tasks_pending),
-            'tasks_total': total_tasks,
-            'checkpoint_id': self.current_state.checkpoint_id,
-            'files_created': len(self.current_state.files_created)
+            "phase": self.current_state.phase,
+            "status": self.current_state.status.value,
+            "progress_percent": (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0,
+            "tasks_completed": completed_tasks,
+            "tasks_in_progress": len(self.current_state.tasks_in_progress),
+            "tasks_pending": len(self.current_state.tasks_pending),
+            "tasks_total": total_tasks,
+            "checkpoint_id": self.current_state.checkpoint_id,
+            "files_created": len(self.current_state.files_created),
         }
 
     def _calculate_critical_path(self) -> List[str]:
@@ -362,10 +353,7 @@ class BuildOrchestrator:
         visited.add(task_id)
 
         # Find all tasks that depend on this task
-        dependent_tasks = [
-            t for t in self.task_queue.tasks.values()
-            if task_id in t.dependencies
-        ]
+        dependent_tasks = [t for t in self.task_queue.tasks.values() if task_id in t.dependencies]
 
         if not dependent_tasks:
             return [task_id]

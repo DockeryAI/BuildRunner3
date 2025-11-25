@@ -158,7 +158,9 @@ class FeatureExtractor:
                 merge_target = None
                 for existing_id in merged:
                     existing_artifacts = merged[existing_id][1]
-                    overlap = sum(1 for a in artifacts if id(a) in [id(ea) for ea in existing_artifacts])
+                    overlap = sum(
+                        1 for a in artifacts if id(a) in [id(ea) for ea in existing_artifacts]
+                    )
                     overlap_ratio = overlap / len(artifacts) if artifacts else 0
 
                     if overlap_ratio > 0.5:  # 50% overlap
@@ -171,7 +173,7 @@ class FeatureExtractor:
                     merged[merge_target] = (
                         existing_name,  # Keep existing name
                         existing_artifacts + unassigned,
-                        max(existing_conf, confidence)  # Take higher confidence
+                        max(existing_conf, confidence),  # Take higher confidence
                     )
                     for a in unassigned:
                         artifact_assignments[id(a)] = merge_target
@@ -189,8 +191,9 @@ class FeatureExtractor:
         logger.debug(f"Merged into {len(merged)} total feature groups")
         return merged
 
-    def _create_feature(self, feature_id: str, name: str,
-                       artifacts: List[CodeArtifact], confidence: float) -> ExtractedFeature:
+    def _create_feature(
+        self, feature_id: str, name: str, artifacts: List[CodeArtifact], confidence: float
+    ) -> ExtractedFeature:
         """Create an ExtractedFeature from artifacts"""
 
         # Generate description from artifacts
@@ -207,10 +210,10 @@ class FeatureExtractor:
 
         # Build technical details
         technical_details = {
-            'files': list(set(str(a.file_path) for a in artifacts)),
-            'artifact_types': list(set(a.type.value for a in artifacts)),
-            'has_tests': any(a.type == ArtifactType.TEST for a in artifacts),
-            'has_routes': any(a.type == ArtifactType.ROUTE for a in artifacts),
+            "files": list(set(str(a.file_path) for a in artifacts)),
+            "artifact_types": list(set(a.type.value for a in artifacts)),
+            "has_tests": any(a.type == ArtifactType.TEST for a in artifacts),
+            "has_routes": any(a.type == ArtifactType.ROUTE for a in artifacts),
         }
 
         return ExtractedFeature(
@@ -222,7 +225,7 @@ class FeatureExtractor:
             priority=priority,
             requirements=requirements,
             acceptance_criteria=acceptance_criteria,
-            technical_details=technical_details
+            technical_details=technical_details,
         )
 
     def _generate_description(self, artifacts: List[CodeArtifact]) -> str:
@@ -233,7 +236,7 @@ class FeatureExtractor:
             # Use first non-trivial docstring
             for doc in docstrings:
                 if len(doc) > 20:
-                    return doc.split('\n')[0].strip()
+                    return doc.split("\n")[0].strip()
 
         # Fallback: describe artifact types
         types = set(a.type.value for a in artifacts)
@@ -268,7 +271,7 @@ class FeatureExtractor:
         for test in tests:
             # Convert test name to acceptance criterion
             # test_user_can_login → User can login
-            criterion = test.name.replace('test_', '').replace('_', ' ').capitalize()
+            criterion = test.name.replace("test_", "").replace("_", " ").capitalize()
             criteria.append(criterion)
 
         return criteria
@@ -296,39 +299,39 @@ class FeatureExtractor:
         """Convert route prefix to feature name"""
         # /api/users → User Management
         # /api/auth → Authentication
-        name = prefix.replace('-', ' ').replace('_', ' ').title()
-        if not name.endswith('Management') and not name.endswith('tion'):
-            name += ' Management'
+        name = prefix.replace("-", " ").replace("_", " ").title()
+        if not name.endswith("Management") and not name.endswith("tion"):
+            name += " Management"
         return name
 
     def _find_meaningful_directory(self, parts: tuple) -> Optional[str]:
         """Find meaningful directory name from path parts"""
         # Skip common root dirs
-        skip = {'src', 'lib', 'app', 'core', 'api', 'cli', 'tests', 'test'}
+        skip = {"src", "lib", "app", "core", "api", "cli", "tests", "test"}
 
         for part in reversed(parts):
-            if part not in skip and not part.startswith('.') and not part.startswith('__'):
+            if part not in skip and not part.startswith(".") and not part.startswith("__"):
                 return part
 
         return None
 
     def _dir_to_feature_name(self, dir_name: str) -> str:
         """Convert directory name to feature name"""
-        return dir_name.replace('-', ' ').replace('_', ' ').title()
+        return dir_name.replace("-", " ").replace("_", " ").title()
 
     def _extract_feature_from_test(self, artifact: CodeArtifact) -> Optional[str]:
         """Extract feature name from test artifact"""
         # test_auth.py → Authentication
         # test_user_management.py → User Management
         filename = artifact.file_path.stem
-        if filename.startswith('test_'):
+        if filename.startswith("test_"):
             feature = filename[5:]  # Remove 'test_'
-            return feature.replace('_', ' ').title()
+            return feature.replace("_", " ").title()
         return None
 
     def _files_related(self, file1: Path, file2: Path) -> bool:
         """Check if two files are related (e.g., test and implementation)"""
         # Strip 'test_' prefix and compare stems
-        stem1 = file1.stem.replace('test_', '')
-        stem2 = file2.stem.replace('test_', '')
+        stem1 = file1.stem.replace("test_", "")
+        stem2 = file2.stem.replace("test_", "")
         return stem1 == stem2

@@ -2,6 +2,7 @@
 Project Alias Manager
 Handles project alias configuration for quick project switching
 """
+
 import json
 import os
 from pathlib import Path
@@ -25,14 +26,14 @@ class AliasManager:
     def _load_aliases(self) -> Dict[str, str]:
         """Load aliases from config file"""
         try:
-            with open(self.alias_file, 'r') as f:
+            with open(self.alias_file, "r") as f:
                 return json.load(f)
         except (json.JSONDecodeError, FileNotFoundError):
             return {}
 
     def _save_aliases(self, aliases: Dict[str, str]):
         """Save aliases to config file"""
-        with open(self.alias_file, 'w') as f:
+        with open(self.alias_file, "w") as f:
             json.dump(aliases, f, indent=2)
 
     def set_alias(self, alias: str, project_path: str) -> bool:
@@ -47,7 +48,7 @@ class AliasManager:
             bool: True if successful
         """
         # Validate alias name
-        if not alias or not alias.replace('-', '').replace('_', '').isalnum():
+        if not alias or not alias.replace("-", "").replace("_", "").isalnum():
             raise ValueError(f"Invalid alias name: {alias}. Use alphanumeric, dash, or underscore.")
 
         # Validate project path exists

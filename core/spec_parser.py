@@ -9,6 +9,7 @@ Extracts:
 
 Returns structured dictionary for downstream processing.
 """
+
 import re
 from typing import Dict, List, Optional, Any
 from pathlib import Path
@@ -18,6 +19,7 @@ from dataclasses import dataclass, field
 @dataclass
 class Feature:
     """Represents a single feature from spec"""
+
     id: str
     name: str
     description: str
@@ -41,9 +43,7 @@ class SpecParser:
 
     def __init__(self):
         """Initialize SpecParser"""
-        self.required_sections = [
-            'overview', 'features', 'technical requirements'
-        ]
+        self.required_sections = ["overview", "features", "technical requirements"]
 
     def parse_spec(self, spec_path: Path) -> Dict[str, Any]:
         """
@@ -91,8 +91,8 @@ class SpecParser:
             "metadata": {
                 "source_file": str(spec_path),
                 "feature_count": len(features),
-                "has_dependencies": len(dependencies) > 0
-            }
+                "has_dependencies": len(dependencies) > 0,
+            },
         }
 
     def extract_features(self, content: str) -> List[Feature]:
@@ -109,9 +109,7 @@ class SpecParser:
 
         # Find Features section (greedy match until next ## heading or end)
         features_match = re.search(
-            r'##\s+Features\s*\n(.*?)(?=\n##\s|\Z)',
-            content,
-            re.IGNORECASE | re.DOTALL
+            r"##\s+Features\s*\n(.*?)(?=\n##\s|\Z)", content, re.IGNORECASE | re.DOTALL
         )
 
         if not features_match:
@@ -121,13 +119,13 @@ class SpecParser:
 
         # Extract individual features (###)
         # Split by ### headers first
-        feature_sections = re.split(r'\n###\s+', '\n' + features_section)
+        feature_sections = re.split(r"\n###\s+", "\n" + features_section)
         # Remove empty first element
         feature_sections = [s for s in feature_sections if s.strip()]
 
         for section in feature_sections:
             # First line is the feature name
-            lines = section.split('\n', 1)
+            lines = section.split("\n", 1)
             if not lines:
                 continue
 
@@ -159,7 +157,7 @@ class SpecParser:
                 requirements=requirements,
                 acceptance_criteria=acceptance_criteria,
                 technical_details=technical_details,
-                complexity=complexity
+                complexity=complexity,
             )
 
             features.append(feature)
@@ -180,14 +178,14 @@ class SpecParser:
 
         # Look for "depends on", "requires", "needs" patterns
         dependency_patterns = [
-            r'depends on:?\s*(.+?)(?:\n|$)',
-            r'requires:?\s*(.+?)(?:\n|$)',
-            r'needs:?\s*(.+?)(?:\n|$)',
-            r'after:?\s*(.+?)(?:\n|$)'
+            r"depends on:?\s*(.+?)(?:\n|$)",
+            r"requires:?\s*(.+?)(?:\n|$)",
+            r"needs:?\s*(.+?)(?:\n|$)",
+            r"after:?\s*(.+?)(?:\n|$)",
         ]
 
         # Find all feature sections
-        feature_pattern = r'###\s+(.+?)\n(.*?)(?=\n###|\Z)'
+        feature_pattern = r"###\s+(.+?)\n(.*?)(?=\n###|\Z)"
         matches = re.finditer(feature_pattern, content, re.DOTALL)
 
         for match in matches:
@@ -204,7 +202,7 @@ class SpecParser:
                     dep_text = dep_match.group(1).strip()
 
                     # Split by comma or "and"
-                    dep_names = re.split(r',|\s+and\s+', dep_text)
+                    dep_names = re.split(r",|\s+and\s+", dep_text)
 
                     for dep_name in dep_names:
                         dep_name = dep_name.strip()
@@ -233,7 +231,7 @@ class SpecParser:
 
         for section in self.required_sections:
             # Check for section heading
-            pattern = rf'##\s+{re.escape(section)}'
+            pattern = rf"##\s+{re.escape(section)}"
             if not re.search(pattern, content_lower):
                 return False
 
@@ -242,9 +240,7 @@ class SpecParser:
     def _extract_overview(self, content: str) -> str:
         """Extract project overview section"""
         overview_match = re.search(
-            r'##\s+Overview\s*\n(.*?)(?=\n##|\Z)',
-            content,
-            re.IGNORECASE | re.DOTALL
+            r"##\s+Overview\s*\n(.*?)(?=\n##|\Z)", content, re.IGNORECASE | re.DOTALL
         )
 
         if overview_match:
@@ -255,9 +251,7 @@ class SpecParser:
     def _extract_tech_requirements(self, content: str) -> List[str]:
         """Extract technical requirements list"""
         tech_match = re.search(
-            r'##\s+Technical Requirements\s*\n(.*?)(?=\n##|\Z)',
-            content,
-            re.IGNORECASE | re.DOTALL
+            r"##\s+Technical Requirements\s*\n(.*?)(?=\n##|\Z)", content, re.IGNORECASE | re.DOTALL
         )
 
         if not tech_match:
@@ -267,7 +261,7 @@ class SpecParser:
 
         # Extract bullet points
         requirements = []
-        bullet_pattern = r'[-*]\s+(.+?)(?:\n|$)'
+        bullet_pattern = r"[-*]\s+(.+?)(?:\n|$)"
         matches = re.finditer(bullet_pattern, tech_section)
 
         for match in matches:
@@ -280,19 +274,24 @@ class SpecParser:
     def _generate_feature_id(self, feature_name: str) -> str:
         """Generate feature ID from name"""
         # Convert to lowercase, replace spaces/special chars with underscore
-        feature_id = re.sub(r'[^a-z0-9]+', '_', feature_name.lower())
-        feature_id = feature_id.strip('_')
+        feature_id = re.sub(r"[^a-z0-9]+", "_", feature_name.lower())
+        feature_id = feature_id.strip("_")
         return feature_id
 
     def _extract_description(self, feature_body: str) -> str:
         """Extract feature description (first paragraph)"""
         # Get first non-empty paragraph
-        paragraphs = feature_body.split('\n\n')
+        paragraphs = feature_body.split("\n\n")
 
         for para in paragraphs:
             para = para.strip()
             # Skip headings and lists
-            if para and not para.startswith('#') and not para.startswith('-') and not para.startswith('*'):
+            if (
+                para
+                and not para.startswith("#")
+                and not para.startswith("-")
+                and not para.startswith("*")
+            ):
                 return para
 
         return ""
@@ -303,16 +302,14 @@ class SpecParser:
 
         # Look for Requirements section
         req_match = re.search(
-            r'Requirements?:?\s*\n(.*?)(?=\n[A-Z]|\Z)',
-            feature_body,
-            re.IGNORECASE | re.DOTALL
+            r"Requirements?:?\s*\n(.*?)(?=\n[A-Z]|\Z)", feature_body, re.IGNORECASE | re.DOTALL
         )
 
         if req_match:
             req_section = req_match.group(1)
 
             # Extract bullet points
-            bullet_pattern = r'[-*]\s+(.+?)(?:\n|$)'
+            bullet_pattern = r"[-*]\s+(.+?)(?:\n|$)"
             matches = re.finditer(bullet_pattern, req_section)
 
             for match in matches:
@@ -328,16 +325,16 @@ class SpecParser:
 
         # Look for Acceptance Criteria section
         ac_match = re.search(
-            r'Acceptance Criteria:?\s*\n(.*?)(?=\n[A-Z]|\Z)',
+            r"Acceptance Criteria:?\s*\n(.*?)(?=\n[A-Z]|\Z)",
             feature_body,
-            re.IGNORECASE | re.DOTALL
+            re.IGNORECASE | re.DOTALL,
         )
 
         if ac_match:
             ac_section = ac_match.group(1)
 
             # Extract bullet points or checkboxes
-            bullet_pattern = r'[-*]\s*\[?\s*\]?\s*(.+?)(?:\n|$)'
+            bullet_pattern = r"[-*]\s*\[?\s*\]?\s*(.+?)(?:\n|$)"
             matches = re.finditer(bullet_pattern, ac_section)
 
             for match in matches:
@@ -353,16 +350,16 @@ class SpecParser:
 
         # Look for Technical Details or Implementation section
         tech_match = re.search(
-            r'(?:Technical Details?|Implementation):?\s*\n(.*?)(?=\n[A-Z]|\Z)',
+            r"(?:Technical Details?|Implementation):?\s*\n(.*?)(?=\n[A-Z]|\Z)",
             feature_body,
-            re.IGNORECASE | re.DOTALL
+            re.IGNORECASE | re.DOTALL,
         )
 
         if tech_match:
             tech_section = tech_match.group(1)
 
             # Extract bullet points
-            bullet_pattern = r'[-*]\s+(.+?)(?:\n|$)'
+            bullet_pattern = r"[-*]\s+(.+?)(?:\n|$)"
             matches = re.finditer(bullet_pattern, tech_section)
 
             for match in matches:
@@ -405,7 +402,7 @@ class SpecParser:
             "dependencies": feature.dependencies,
             "acceptance_criteria": feature.acceptance_criteria,
             "technical_details": feature.technical_details,
-            "complexity": feature.complexity
+            "complexity": feature.complexity,
         }
 
 
@@ -426,11 +423,13 @@ def main():
     print(f"Features: {result['metadata']['feature_count']}")
     print(f"\nFeatures found:")
 
-    for feature in result['features']:
+    for feature in result["features"]:
         print(f"\n  • {feature['name']} ({feature['id']})")
         print(f"    Complexity: {feature['complexity']}")
         print(f"    Requirements: {len(feature['requirements'])}")
-        print(f"    Dependencies: {', '.join(feature['dependencies']) if feature['dependencies'] else 'None'}")
+        print(
+            f"    Dependencies: {', '.join(feature['dependencies']) if feature['dependencies'] else 'None'}"
+        )
 
 
 if __name__ == "__main__":

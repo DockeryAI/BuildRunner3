@@ -9,7 +9,7 @@ from typing import Dict
 class DesignGenerator:
     """Generate framework-specific design configs from industry profiles"""
 
-    def __init__(self, framework: str = 'tailwind'):
+    def __init__(self, framework: str = "tailwind"):
         """
         Initialize generator
 
@@ -18,8 +18,10 @@ class DesignGenerator:
         """
         self.framework = framework.lower()
 
-        if self.framework not in ['tailwind', 'mui', 'chakra']:
-            raise ValueError(f"Unsupported framework: {framework}. Supported: tailwind, mui, chakra")
+        if self.framework not in ["tailwind", "mui", "chakra"]:
+            raise ValueError(
+                f"Unsupported framework: {framework}. Supported: tailwind, mui, chakra"
+            )
 
     def generate_config(self, profile: Dict) -> str:
         """
@@ -31,56 +33,59 @@ class DesignGenerator:
         Returns:
             Config file content as string
         """
-        if self.framework == 'tailwind':
+        if self.framework == "tailwind":
             return self._generate_tailwind(profile)
-        elif self.framework == 'mui':
+        elif self.framework == "mui":
             return self._generate_mui(profile)
-        elif self.framework == 'chakra':
+        elif self.framework == "chakra":
             return self._generate_chakra(profile)
         else:
             raise ValueError(f"Unsupported framework: {self.framework}")
 
     def _generate_tailwind(self, profile: Dict) -> str:
         """Generate Tailwind CSS config from industry profile"""
-        colors = profile.get('color_scheme', {})
-        typography = profile.get('typography', {})
-        industry = profile.get('industry', 'Unknown')
-        naics = profile.get('naics_code', 'N/A')
+        colors = profile.get("color_scheme", {})
+        typography = profile.get("typography", {})
+        industry = profile.get("industry", "Unknown")
+        naics = profile.get("naics_code", "N/A")
 
         # Extract color palette
-        primary_color = colors.get('primary', '#3B82F6')
-        secondary_color = colors.get('secondary', '#10B981')
-        accent_color = colors.get('accent', '#F59E0B')
+        primary_color = colors.get("primary", "#3B82F6")
+        secondary_color = colors.get("secondary", "#10B981")
+        accent_color = colors.get("accent", "#F59E0B")
 
         # Build color palette
         color_palette = {
-            'primary': primary_color,
-            'secondary': secondary_color,
-            'accent': accent_color,
+            "primary": primary_color,
+            "secondary": secondary_color,
+            "accent": accent_color,
         }
 
         # Add additional colors if available
-        if 'palette' in colors:
-            color_palette.update(colors['palette'])
+        if "palette" in colors:
+            color_palette.update(colors["palette"])
 
         # Extract typography settings
-        font_family = typography.get('fonts', {})
+        font_family = typography.get("fonts", {})
         if isinstance(font_family, dict):
-            heading_font = font_family.get('heading', 'Inter')
-            body_font = font_family.get('body', 'Inter')
+            heading_font = font_family.get("heading", "Inter")
+            body_font = font_family.get("body", "Inter")
         else:
-            heading_font = body_font = 'Inter'
+            heading_font = body_font = "Inter"
 
-        font_sizes = typography.get('scales', {
-            'xs': '0.75rem',
-            'sm': '0.875rem',
-            'base': '1rem',
-            'lg': '1.125rem',
-            'xl': '1.25rem',
-            '2xl': '1.5rem',
-            '3xl': '1.875rem',
-            '4xl': '2.25rem',
-        })
+        font_sizes = typography.get(
+            "scales",
+            {
+                "xs": "0.75rem",
+                "sm": "0.875rem",
+                "base": "1rem",
+                "lg": "1.125rem",
+                "xl": "1.25rem",
+                "2xl": "1.5rem",
+                "3xl": "1.875rem",
+                "4xl": "2.25rem",
+            },
+        )
 
         return f"""/** @type {{import('tailwindcss').Config}} */
 module.exports = {{
@@ -109,20 +114,20 @@ module.exports = {{
 
     def _generate_mui(self, profile: Dict) -> str:
         """Generate Material-UI theme from industry profile"""
-        colors = profile.get('color_scheme', {})
-        typography = profile.get('typography', {})
-        industry = profile.get('industry', 'Unknown')
+        colors = profile.get("color_scheme", {})
+        typography = profile.get("typography", {})
+        industry = profile.get("industry", "Unknown")
 
-        primary_color = colors.get('primary', '#3B82F6')
-        secondary_color = colors.get('secondary', '#10B981')
+        primary_color = colors.get("primary", "#3B82F6")
+        secondary_color = colors.get("secondary", "#10B981")
 
         # Extract font settings
-        font_family = typography.get('fonts', {})
+        font_family = typography.get("fonts", {})
         if isinstance(font_family, dict):
-            heading_font = font_family.get('heading', 'Roboto')
-            body_font = font_family.get('body', 'Roboto')
+            heading_font = font_family.get("heading", "Roboto")
+            body_font = font_family.get("body", "Roboto")
         else:
-            heading_font = body_font = 'Roboto'
+            heading_font = body_font = "Roboto"
 
         return f"""// Material-UI Theme Configuration
 // Generated by BuildRunner 3.0 Design System
@@ -158,20 +163,20 @@ export default theme;
 
     def _generate_chakra(self, profile: Dict) -> str:
         """Generate Chakra UI theme from industry profile"""
-        colors = profile.get('color_scheme', {})
-        typography = profile.get('typography', {})
-        industry = profile.get('industry', 'Unknown')
+        colors = profile.get("color_scheme", {})
+        typography = profile.get("typography", {})
+        industry = profile.get("industry", "Unknown")
 
-        primary_color = colors.get('primary', '#3B82F6')
-        secondary_color = colors.get('secondary', '#10B981')
+        primary_color = colors.get("primary", "#3B82F6")
+        secondary_color = colors.get("secondary", "#10B981")
 
         # Extract font settings
-        font_family = typography.get('fonts', {})
+        font_family = typography.get("fonts", {})
         if isinstance(font_family, dict):
-            heading_font = font_family.get('heading', 'Inter')
-            body_font = font_family.get('body', 'Inter')
+            heading_font = font_family.get("heading", "Inter")
+            body_font = font_family.get("body", "Inter")
         else:
-            heading_font = body_font = 'Inter'
+            heading_font = body_font = "Inter"
 
         return f"""// Chakra UI Theme Configuration
 // Generated by BuildRunner 3.0 Design System
@@ -202,26 +207,26 @@ def main():
     """Test design generator"""
     # Sample profile
     profile = {
-        'industry': 'Healthcare',
-        'naics_code': '621111',
-        'color_scheme': {
-            'primary': '#0EA5E9',
-            'secondary': '#10B981',
-            'accent': '#F59E0B',
+        "industry": "Healthcare",
+        "naics_code": "621111",
+        "color_scheme": {
+            "primary": "#0EA5E9",
+            "secondary": "#10B981",
+            "accent": "#F59E0B",
         },
-        'typography': {
-            'fonts': {
-                'heading': 'Poppins',
-                'body': 'Inter',
+        "typography": {
+            "fonts": {
+                "heading": "Poppins",
+                "body": "Inter",
             },
-            'scales': {
-                'xs': '0.75rem',
-                'sm': '0.875rem',
-                'base': '1rem',
-                'lg': '1.125rem',
-                'xl': '1.25rem',
-            }
-        }
+            "scales": {
+                "xs": "0.75rem",
+                "sm": "0.875rem",
+                "base": "1rem",
+                "lg": "1.125rem",
+                "xl": "1.25rem",
+            },
+        },
     }
 
     print("=" * 70)
@@ -231,7 +236,7 @@ def main():
 
     # Generate Tailwind config
     print("Generating Tailwind config...")
-    generator = DesignGenerator('tailwind')
+    generator = DesignGenerator("tailwind")
     tailwind_config = generator.generate_config(profile)
     print(tailwind_config)
     print()

@@ -12,6 +12,7 @@ import shutil
 
 class ProfileError(Exception):
     """Raised when profile operations fail."""
+
     pass
 
 
@@ -55,14 +56,14 @@ class ProfileManager:
         # Find global profiles
         if self.global_personalities_dir.exists():
             for file in self.global_personalities_dir.glob("*.md"):
-                if file.stem not in ['README', 'readme']:
-                    profiles[file.stem] = 'global'
+                if file.stem not in ["README", "readme"]:
+                    profiles[file.stem] = "global"
 
         # Find project profiles (override global)
         if self.project_personalities_dir.exists():
             for file in self.project_personalities_dir.glob("*.md"):
-                if file.stem not in ['README', 'readme']:
-                    profiles[file.stem] = 'project'
+                if file.stem not in ["README", "readme"]:
+                    profiles[file.stem] = "project"
 
         return profiles
 
@@ -140,7 +141,11 @@ class ProfileManager:
         # Read profile content
         profile_content = self.read_profile(name)
         profile_path = self.get_profile_path(name)
-        source = "project-specific" if profile_path.parent == self.project_personalities_dir else "global"
+        source = (
+            "project-specific"
+            if profile_path.parent == self.project_personalities_dir
+            else "global"
+        )
 
         # Generate CLAUDE.md with profile
         claude_content = f"""<!-- BUILDRUNNER_PROFILE: {name} (source: {source}) -->
@@ -199,7 +204,7 @@ To switch: `br profile activate <other_name>`
 
         # Parse profile name from marker
         content = self.claude_md.read_text()
-        for line in content.split('\n'):
+        for line in content.split("\n"):
             if line.startswith("<!-- BUILDRUNNER_PROFILE:"):
                 # Extract name from: <!-- BUILDRUNNER_PROFILE: roy (source: global) -->
                 parts = line.split(":", 1)[1].strip()
@@ -208,7 +213,7 @@ To switch: `br profile activate <other_name>`
 
         return None
 
-    def copy_profile(self, name: str, source: str = 'global', overwrite: bool = False) -> Path:
+    def copy_profile(self, name: str, source: str = "global", overwrite: bool = False) -> Path:
         """
         Copy a profile from global to project or vice versa.
 
@@ -223,11 +228,11 @@ To switch: `br profile activate <other_name>`
         Raises:
             ProfileError: If source not found or destination exists
         """
-        if source not in ['global', 'project']:
+        if source not in ["global", "project"]:
             raise ProfileError(f"Invalid source: {source}. Must be 'global' or 'project'.")
 
         # Determine source and destination
-        if source == 'global':
+        if source == "global":
             src_file = self.global_personalities_dir / f"{name}.md"
             dst_file = self.project_personalities_dir / f"{name}.md"
         else:
@@ -251,7 +256,7 @@ To switch: `br profile activate <other_name>`
 
         return dst_file
 
-    def create_profile(self, name: str, content: str, scope: str = 'project') -> Path:
+    def create_profile(self, name: str, content: str, scope: str = "project") -> Path:
         """
         Create a new profile.
 
@@ -266,11 +271,11 @@ To switch: `br profile activate <other_name>`
         Raises:
             ProfileError: If profile already exists
         """
-        if scope not in ['project', 'global']:
+        if scope not in ["project", "global"]:
             raise ProfileError(f"Invalid scope: {scope}. Must be 'project' or 'global'.")
 
         # Determine file path
-        if scope == 'project':
+        if scope == "project":
             profile_file = self.project_personalities_dir / f"{name}.md"
         else:
             profile_file = self.global_personalities_dir / f"{name}.md"
@@ -285,7 +290,7 @@ To switch: `br profile activate <other_name>`
 
         return profile_file
 
-    def init_personalities_dir(self, scope: str = 'both') -> List[Path]:
+    def init_personalities_dir(self, scope: str = "both") -> List[Path]:
         """
         Initialize personalities directories with example profiles.
 
@@ -297,13 +302,14 @@ To switch: `br profile activate <other_name>`
         """
         created = []
 
-        if scope in ['project', 'both']:
+        if scope in ["project", "both"]:
             self.project_personalities_dir.mkdir(parents=True, exist_ok=True)
 
             # Create README
             readme = self.project_personalities_dir / "README.md"
             if not readme.exists():
-                readme.write_text("""# BuildRunner Personalities
+                readme.write_text(
+                    """# BuildRunner Personalities
 
 Project-specific personality profiles for Claude Code sessions.
 
@@ -334,10 +340,11 @@ See global profiles in `~/.br/personalities/` for examples.
 When activated, the profile is written to `CLAUDE.md` in the project root.
 Claude Code automatically reads CLAUDE.md on every request, so the personality
 persists across context clearing and compaction.
-""")
+"""
+                )
             created.append(self.project_personalities_dir)
 
-        if scope in ['global', 'both']:
+        if scope in ["global", "both"]:
             self.global_personalities_dir.mkdir(parents=True, exist_ok=True)
             created.append(self.global_personalities_dir)
 

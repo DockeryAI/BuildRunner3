@@ -46,7 +46,7 @@ def get_orchestrator() -> TaskOrchestrator:
         prompt_builder=prompt_builder,
         context_manager=context_manager,
         file_monitor=file_monitor,
-        verification_engine=verification_engine
+        verification_engine=verification_engine,
     )
 
     return orchestrator
@@ -55,22 +55,17 @@ def get_orchestrator() -> TaskOrchestrator:
 @run_app.command("auto")
 def run_auto(
     max_batches: int = typer.Option(
-        10,
-        "--max-batches",
-        "-m",
-        help="Maximum number of batches to execute (safety limit)"
+        10, "--max-batches", "-m", help="Maximum number of batches to execute (safety limit)"
     ),
     interactive: bool = typer.Option(
         True,
         "--interactive/--non-interactive",
         "-i/-n",
-        help="Prompt for confirmation between batches"
+        help="Prompt for confirmation between batches",
     ),
     verify: bool = typer.Option(
-        True,
-        "--verify/--no-verify",
-        help="Run verification after each batch"
-    )
+        True, "--verify/--no-verify", help="Run verification after each batch"
+    ),
 ):
     """
     Auto-orchestrate task execution with batch optimization and Claude prompts
@@ -133,12 +128,12 @@ def run_auto(
                 complexity=complexity_enum,
                 domain=domain_enum,
                 dependencies=task.dependencies,
-                acceptance_criteria=task.acceptance_criteria
+                acceptance_criteria=task.acceptance_criteria,
             )
             ready_task_objs.append(batch_task)
 
         # Optimize into batches
-        batches = batch_optimizer.optimize_batches(ready_task_objs[:max_batches * 3])
+        batches = batch_optimizer.optimize_batches(ready_task_objs[: max_batches * 3])
 
         console.print(f"[bold]Execution Plan:[/bold] {len(batches)} batches\n")
 
@@ -161,7 +156,7 @@ def run_auto(
                 str(len(batch_tasks)),
                 f"{total_time}m",
                 ", ".join(complexities),
-                ", ".join(domains)
+                ", ".join(domains),
             )
 
         console.print(plan_table)
@@ -172,7 +167,9 @@ def run_auto(
             batches_executed = 0
 
             for i, batch in enumerate(batches[:max_batches], 1):
-                console.print(f"\n[bold cyan]═══ Batch {i}/{min(len(batches), max_batches)} ═══[/bold cyan]\n")
+                console.print(
+                    f"\n[bold cyan]═══ Batch {i}/{min(len(batches), max_batches)} ═══[/bold cyan]\n"
+                )
 
                 # Get batch tasks
                 batch_tasks = batch.tasks if hasattr(batch, "tasks") else batch.get("tasks", [])
@@ -181,7 +178,9 @@ def run_auto(
                 console.print(f"[bold]Tasks in this batch:[/bold]")
                 for task in batch_tasks:
                     task_id = task.get("id") if isinstance(task, dict) else task.id
-                    task_desc = task.get("description") if isinstance(task, dict) else task.description
+                    task_desc = (
+                        task.get("description") if isinstance(task, dict) else task.description
+                    )
                     console.print(f"  • {task_id}: {task_desc}")
 
                 console.print()
@@ -194,14 +193,18 @@ def run_auto(
                 prompt = prompt_builder.build_prompt(batch, context)
 
                 # Display prompt
-                console.print(Panel(
-                    prompt,
-                    title=f"[bold]Claude Prompt for Batch {i}[/bold]",
-                    border_style="blue",
-                    expand=False
-                ))
+                console.print(
+                    Panel(
+                        prompt,
+                        title=f"[bold]Claude Prompt for Batch {i}[/bold]",
+                        border_style="blue",
+                        expand=False,
+                    )
+                )
 
-                console.print("\n[bold yellow]📋 Copy the above prompt and execute it in Claude[/bold yellow]")
+                console.print(
+                    "\n[bold yellow]📋 Copy the above prompt and execute it in Claude[/bold yellow]"
+                )
 
                 if interactive:
                     if not typer.confirm("\nHave you completed this batch?", default=False):
@@ -216,7 +219,11 @@ def run_auto(
                     # Update context
                     for task in batch_tasks:
                         task_id = task.get("id") if isinstance(task, dict) else task.id
-                        file_path = task.get("file_path") if isinstance(task, dict) else getattr(task, "file_path", None)
+                        file_path = (
+                            task.get("file_path")
+                            if isinstance(task, dict)
+                            else getattr(task, "file_path", None)
+                        )
 
                         if file_path:
                             context_manager.add_completed_file(file_path)
@@ -233,9 +240,17 @@ def run_auto(
 
                         # Check files exist
                         files_to_check = [
-                            task.get("file_path") if isinstance(task, dict) else getattr(task, "file_path", None)
+                            (
+                                task.get("file_path")
+                                if isinstance(task, dict)
+                                else getattr(task, "file_path", None)
+                            )
                             for task in batch_tasks
-                            if (task.get("file_path") if isinstance(task, dict) else getattr(task, "file_path", None))
+                            if (
+                                task.get("file_path")
+                                if isinstance(task, dict)
+                                else getattr(task, "file_path", None)
+                            )
                         ]
 
                         if files_to_check:
@@ -245,7 +260,9 @@ def run_auto(
                             else:
                                 console.print(f"[red]✗ {result.message}[/red]")
                                 if result.details.get("missing_files"):
-                                    console.print(f"[dim]Missing: {', '.join(result.details['missing_files'])}[/dim]")
+                                    console.print(
+                                        f"[dim]Missing: {', '.join(result.details['missing_files'])}[/dim]"
+                                    )
                 else:
                     # Non-interactive mode: just generate prompts
                     batches_executed += 1
@@ -263,7 +280,7 @@ def run_auto(
             console.print(f"  Tasks completed: {stats['completed']}")
             console.print(f"  Tasks remaining: {stats['total'] - stats['completed']}")
 
-            if stats['completed'] == stats['total']:
+            if stats["completed"] == stats["total"]:
                 console.print("\n[bold bright_green]🎉 All tasks completed![/bold bright_green]")
             else:
                 console.print("\n[dim]Run 'br run --auto' again to continue[/dim]")
@@ -274,6 +291,7 @@ def run_auto(
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
         import traceback
+
         console.print(f"[dim]{traceback.format_exc()}[/dim]")
         raise typer.Exit(1)
 
@@ -302,28 +320,28 @@ def run_status():
         table.add_column("Count", style="green", justify="right")
         table.add_column("Percentage", style="blue", justify="right")
 
-        table.add_row("Total Tasks", str(stats['total']), "100%")
+        table.add_row("Total Tasks", str(stats["total"]), "100%")
         table.add_row(
             "Completed",
-            str(stats['completed']),
-            f"{(stats['completed'] / stats['total'] * 100):.1f}%"
+            str(stats["completed"]),
+            f"{(stats['completed'] / stats['total'] * 100):.1f}%",
         )
         table.add_row(
             "In Progress",
-            str(stats['in_progress']),
-            f"{(stats['in_progress'] / stats['total'] * 100):.1f}%"
+            str(stats["in_progress"]),
+            f"{(stats['in_progress'] / stats['total'] * 100):.1f}%",
         )
         table.add_row(
             "Ready",
             str(len(queue.get_ready_tasks())),
-            f"{(len(queue.get_ready_tasks()) / stats['total'] * 100):.1f}%"
+            f"{(len(queue.get_ready_tasks()) / stats['total'] * 100):.1f}%",
         )
         table.add_row(
             "Blocked",
             str(len(queue.get_pending_tasks())),
-            f"{(len(queue.get_pending_tasks()) / stats['total'] * 100):.1f}%"
+            f"{(len(queue.get_pending_tasks()) / stats['total'] * 100):.1f}%",
         )
-        table.add_row("Failed", str(stats['failed']), "-")
+        table.add_row("Failed", str(stats["failed"]), "-")
 
         console.print(table)
 

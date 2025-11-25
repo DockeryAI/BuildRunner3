@@ -28,7 +28,7 @@ design_app = typer.Typer(help="Industry profile and design system commands")
 @design_app.command("list")
 def list_profiles(
     category: str = typer.Option(None, "--category", "-c", help="Filter by category"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show details")
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show details"),
 ):
     """
     List all 140+ industry profiles.
@@ -46,14 +46,16 @@ def list_profiles(
 
         # Header
         console.print()
-        console.print(Panel(
-            f"[bold cyan]Industry Profiles[/bold cyan]\n\n"
-            f"Total: {summary['total']} profiles\n"
-            f"Full Profiles: {summary['full_profiles']}\n"
-            f"Basic Profiles: {summary['basic_profiles']}",
-            title="📚 Synapse Design System",
-            border_style="cyan"
-        ))
+        console.print(
+            Panel(
+                f"[bold cyan]Industry Profiles[/bold cyan]\n\n"
+                f"Total: {summary['total']} profiles\n"
+                f"Full Profiles: {summary['full_profiles']}\n"
+                f"Basic Profiles: {summary['basic_profiles']}",
+                title="📚 Synapse Design System",
+                border_style="cyan",
+            )
+        )
         console.print()
 
         # Filter by category if specified
@@ -64,13 +66,15 @@ def list_profiles(
 
             for profile in sorted(profiles, key=lambda p: p.name):
                 if verbose:
-                    console.print(f"  • [cyan]{profile.name}[/cyan] (ID: {profile.id}, NAICS: {profile.naics_code})")
+                    console.print(
+                        f"  • [cyan]{profile.name}[/cyan] (ID: {profile.id}, NAICS: {profile.naics_code})"
+                    )
                 else:
                     console.print(f"  • {profile.name}")
 
         else:
             # Show by category
-            for cat, count in sorted(summary['by_category'].items(), key=lambda x: -x[1]):
+            for cat, count in sorted(summary["by_category"].items(), key=lambda x: -x[1]):
                 console.print(f"[bold yellow]{cat}[/bold yellow] ({count} profiles)")
 
                 if verbose:
@@ -93,7 +97,7 @@ def list_profiles(
 @design_app.command("profile")
 def show_profile(
     industry: str = typer.Argument(..., help="Industry ID (e.g., 'restaurant', 'msp')"),
-    format: str = typer.Option("rich", "--format", "-f", help="Output format: rich, json, yaml")
+    format: str = typer.Option("rich", "--format", "-f", help="Output format: rich, json, yaml"),
 ):
     """
     Show detailed industry profile.
@@ -127,22 +131,26 @@ def show_profile(
         # Output in requested format
         if format == "json":
             import json
+
             print(json.dumps(profile.to_dict(), indent=2))
 
         elif format == "yaml":
             import yaml
+
             print(yaml.dump(profile.to_dict(), default_flow_style=False))
 
         else:  # rich format
             console.print()
-            console.print(Panel(
-                f"[bold cyan]{profile.name}[/bold cyan]\n\n"
-                f"Category: {profile.category}\n"
-                f"NAICS Code: {profile.naics_code}\n"
-                f"Profile Type: {'Full Profile' if profile.has_full_profile else 'Basic Profile'}",
-                title=f"📋 {profile.id}",
-                border_style="cyan"
-            ))
+            console.print(
+                Panel(
+                    f"[bold cyan]{profile.name}[/bold cyan]\n\n"
+                    f"Category: {profile.category}\n"
+                    f"NAICS Code: {profile.naics_code}\n"
+                    f"Profile Type: {'Full Profile' if profile.has_full_profile else 'Basic Profile'}",
+                    title=f"📋 {profile.id}",
+                    border_style="cyan",
+                )
+            )
             console.print()
 
             # Keywords
@@ -175,13 +183,13 @@ def show_profile(
                 console.print("[bold yellow]🧠 Psychology Profile:[/bold yellow]")
                 psych = profile.psychology_profile
 
-                if 'primary_triggers' in psych:
+                if "primary_triggers" in psych:
                     console.print(f"  Triggers: {', '.join(psych['primary_triggers'])}")
 
-                if 'urgency_level' in psych:
+                if "urgency_level" in psych:
                     console.print(f"  Urgency: {psych['urgency_level']}")
 
-                if 'trust_importance' in psych:
+                if "trust_importance" in psych:
                     console.print(f"  Trust: {psych['trust_importance']}")
 
                 console.print()
@@ -192,12 +200,15 @@ def show_profile(
                 for point in profile.common_pain_points[:5]:
                     console.print(f"  • {point}")
                 if len(profile.common_pain_points) > 5:
-                    console.print(f"  [dim]... and {len(profile.common_pain_points) - 5} more[/dim]")
+                    console.print(
+                        f"  [dim]... and {len(profile.common_pain_points) - 5} more[/dim]"
+                    )
                 console.print()
 
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
         import traceback
+
         traceback.print_exc()
         raise typer.Exit(1)
 
@@ -205,7 +216,7 @@ def show_profile(
 @design_app.command("search")
 def search_profiles(
     query: str = typer.Argument(..., help="Search query"),
-    limit: int = typer.Option(20, "--limit", "-n", help="Maximum results")
+    limit: int = typer.Option(20, "--limit", "-n", help="Maximum results"),
 ):
     """
     Search industry profiles by name, category, or keywords.
@@ -246,7 +257,7 @@ def search_profiles(
 def generate_config(
     industry: str = typer.Argument(..., help="Industry ID"),
     use_case: str = typer.Argument(..., help="Use case (dashboard, marketplace, etc.)"),
-    output: Path = typer.Option("tailwind.config.js", "--output", "-o", help="Output file")
+    output: Path = typer.Option("tailwind.config.js", "--output", "-o", help="Output file"),
 ):
     """
     Generate tailwind.config.js for industry + use case.
@@ -300,14 +311,14 @@ def db_list_industries():
 
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
-        console.print(f"[yellow]💡 Make sure Synapse credentials are in environment or /Users/byronhudson/Projects/Synapse/.env[/yellow]")
+        console.print(
+            f"[yellow]💡 Make sure Synapse credentials are in environment or /Users/byronhudson/Projects/Synapse/.env[/yellow]"
+        )
         raise typer.Exit(1)
 
 
 @design_app.command("db-search")
-def db_search_industries(
-    query: str = typer.Argument(..., help="Search term")
-):
+def db_search_industries(query: str = typer.Argument(..., help="Search term")):
     """
     Search industries in Synapse database
 
@@ -328,7 +339,9 @@ def db_search_industries(
         for result in results:
             console.print(f"  • {result}")
 
-        console.print(f"\n[dim]💡 Use 'br design db-profile \"{results[0]}\"' to view full profile[/dim]\n")
+        console.print(
+            f"\n[dim]💡 Use 'br design db-profile \"{results[0]}\"' to view full profile[/dim]\n"
+        )
 
     except Exception as e:
         console.print(f"[red]❌ Error: {e}[/red]")
@@ -338,7 +351,7 @@ def db_search_industries(
 @design_app.command("db-profile")
 def db_show_profile(
     industry: str = typer.Argument(..., help="Industry name"),
-    format: str = typer.Option("text", "--format", "-f", help="Output format: text, json, yaml")
+    format: str = typer.Option("text", "--format", "-f", help="Output format: text, json, yaml"),
 ):
     """
     Get industry profile from Synapse database
@@ -353,13 +366,16 @@ def db_show_profile(
 
         if not profile:
             console.print(f"\n[red]❌ Industry '{industry}' not found in database[/red]\n")
-            console.print(f"[dim]💡 Use 'br design db-search {industry}' to find similar industries[/dim]\n")
+            console.print(
+                f"[dim]💡 Use 'br design db-search {industry}' to find similar industries[/dim]\n"
+            )
             raise typer.Exit(1)
 
-        if format == 'json':
+        if format == "json":
             console.print(json.dumps(profile, indent=2))
-        elif format == 'yaml':
+        elif format == "yaml":
             import yaml
+
             console.print(yaml.dump(profile, default_flow_style=False))
         else:
             # Text format
@@ -367,15 +383,15 @@ def db_show_profile(
             console.print(f"[bold]NAICS Code:[/bold] {profile.get('naics_code', 'N/A')}")
             console.print(f"[bold]Category:[/bold] {profile.get('category', 'N/A')}")
 
-            if profile.get('design_psychology'):
+            if profile.get("design_psychology"):
                 console.print(f"\n[bold]Design Psychology:[/bold]")
-                psych = profile['design_psychology']
+                psych = profile["design_psychology"]
                 for key, value in psych.items():
                     console.print(f"  {key}: {value}")
 
-            if profile.get('color_scheme'):
+            if profile.get("color_scheme"):
                 console.print(f"\n[bold]Color Scheme:[/bold]")
-                colors = profile['color_scheme']
+                colors = profile["color_scheme"]
                 for key, value in colors.items():
                     console.print(f"  {key}: {value}")
 
@@ -389,8 +405,10 @@ def db_show_profile(
 @design_app.command("db-generate")
 def db_generate_config(
     industry: str = typer.Argument(..., help="Industry name"),
-    framework: str = typer.Option("tailwind", "--framework", "-f", help="Framework: tailwind, mui, chakra"),
-    output: Path = typer.Option(None, "--output", "-o", help="Output file (optional)")
+    framework: str = typer.Option(
+        "tailwind", "--framework", "-f", help="Framework: tailwind, mui, chakra"
+    ),
+    output: Path = typer.Option(None, "--output", "-o", help="Output file (optional)"),
 ):
     """
     Generate design config from Synapse database profile

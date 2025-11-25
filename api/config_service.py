@@ -37,26 +37,26 @@ class ConfigService:
                 "auto_suggest_tests": True,
                 "auto_fix_errors": False,
                 "verbosity": "normal",
-                "max_retries": 3
+                "max_retries": 3,
             },
             "auto_commit": {
                 "enabled": False,
                 "on_feature_complete": True,
                 "on_tests_pass": False,
-                "require_approval": True
+                "require_approval": True,
             },
             "testing": {
                 "auto_run": False,
                 "run_on_save": False,
                 "coverage_threshold": 85,
-                "fail_on_coverage_drop": True
+                "fail_on_coverage_drop": True,
             },
             "notifications": {
                 "enabled": False,
                 "on_error": True,
                 "on_test_fail": True,
-                "on_feature_complete": True
-            }
+                "on_feature_complete": True,
+            },
         }
 
     def load_config(self, path: Path) -> Dict[str, Any]:
@@ -73,7 +73,7 @@ class ConfigService:
             return {}
 
         try:
-            with open(path, 'r') as f:
+            with open(path, "r") as f:
                 config = yaml.safe_load(f) or {}
             return config
         except Exception as e:
@@ -159,7 +159,7 @@ class ConfigService:
         buildrunner_dir.mkdir(parents=True, exist_ok=True)
 
         # Write updated config
-        with open(self.project_config_path, 'w') as f:
+        with open(self.project_config_path, "w") as f:
             yaml.dump(updated, f, default_flow_style=False, sort_keys=False)
 
         return updated
@@ -180,8 +180,8 @@ class ConfigService:
                         "auto_suggest_tests": {"type": "boolean"},
                         "auto_fix_errors": {"type": "boolean"},
                         "verbosity": {"type": "string", "enum": ["quiet", "normal", "verbose"]},
-                        "max_retries": {"type": "integer", "minimum": 0, "maximum": 10}
-                    }
+                        "max_retries": {"type": "integer", "minimum": 0, "maximum": 10},
+                    },
                 },
                 "auto_commit": {
                     "type": "object",
@@ -189,8 +189,8 @@ class ConfigService:
                         "enabled": {"type": "boolean"},
                         "on_feature_complete": {"type": "boolean"},
                         "on_tests_pass": {"type": "boolean"},
-                        "require_approval": {"type": "boolean"}
-                    }
+                        "require_approval": {"type": "boolean"},
+                    },
                 },
                 "testing": {
                     "type": "object",
@@ -198,8 +198,8 @@ class ConfigService:
                         "auto_run": {"type": "boolean"},
                         "run_on_save": {"type": "boolean"},
                         "coverage_threshold": {"type": "number", "minimum": 0, "maximum": 100},
-                        "fail_on_coverage_drop": {"type": "boolean"}
-                    }
+                        "fail_on_coverage_drop": {"type": "boolean"},
+                    },
                 },
                 "notifications": {
                     "type": "object",
@@ -207,10 +207,10 @@ class ConfigService:
                         "enabled": {"type": "boolean"},
                         "on_error": {"type": "boolean"},
                         "on_test_fail": {"type": "boolean"},
-                        "on_feature_complete": {"type": "boolean"}
-                    }
-                }
-            }
+                        "on_feature_complete": {"type": "boolean"},
+                    },
+                },
+            },
         }
 
     def validate_config(self, config: Dict[str, Any]) -> tuple[bool, list[str]]:
@@ -240,7 +240,11 @@ class ConfigService:
                 if "verbosity" in ai and ai["verbosity"] not in ["quiet", "normal", "verbose"]:
                     errors.append("ai_behavior.verbosity must be 'quiet', 'normal', or 'verbose'")
                 if "max_retries" in ai:
-                    if not isinstance(ai["max_retries"], int) or ai["max_retries"] < 0 or ai["max_retries"] > 10:
+                    if (
+                        not isinstance(ai["max_retries"], int)
+                        or ai["max_retries"] < 0
+                        or ai["max_retries"] > 10
+                    ):
                         errors.append("ai_behavior.max_retries must be an integer between 0 and 10")
 
         # Validate testing
@@ -252,6 +256,8 @@ class ConfigService:
                 if "coverage_threshold" in testing:
                     threshold = testing["coverage_threshold"]
                     if not isinstance(threshold, (int, float)) or threshold < 0 or threshold > 100:
-                        errors.append("testing.coverage_threshold must be a number between 0 and 100")
+                        errors.append(
+                            "testing.coverage_threshold must be a number between 0 and 100"
+                        )
 
         return len(errors) == 0, errors

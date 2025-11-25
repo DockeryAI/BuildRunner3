@@ -23,6 +23,7 @@ from core.codebase_scanner import CodebaseScanner
 @dataclass
 class CompletenessResult:
     """Result of completeness validation"""
+
     is_complete: bool
     completion_percent: float
 
@@ -74,7 +75,7 @@ class CompletenessValidator:
         self,
         expected_files: Optional[List[str]] = None,
         acceptance_criteria: Optional[List[str]] = None,
-        min_coverage: float = 85.0
+        min_coverage: float = 85.0,
     ) -> CompletenessResult:
         """
         Run complete validation.
@@ -88,9 +89,7 @@ class CompletenessValidator:
             CompletenessResult with validation details
         """
         result = CompletenessResult(
-            is_complete=False,
-            completion_percent=0.0,
-            target_coverage=min_coverage
+            is_complete=False, completion_percent=0.0, target_coverage=min_coverage
         )
 
         # 1. Validate files exist
@@ -128,20 +127,16 @@ class CompletenessValidator:
             "core/build_orchestrator.py",
             "core/checkpoint_manager.py",
             "tests/test_build_orchestrator.py",
-
             # Feature 2: Gap Analyzer
             "core/gap_analyzer.py",
             "core/codebase_scanner.py",
             "tests/test_gap_analyzer.py",
-
             # Feature 3: Code Quality
             "core/code_quality.py",  # Alternative to quality_gates.py
             "tests/test_code_quality.py",
-
             # Feature 4: Architecture Drift
             "core/architecture_guard.py",
             "tests/test_architecture_guard.py",
-
             # CLI Layer
             "cli/build_commands.py",
             "cli/gaps_commands.py",
@@ -155,13 +150,11 @@ class CompletenessValidator:
             "Gap analysis detects missing features",
             "Quality gates validate code",
             "All tests passing",
-            "Test coverage >= 85%"
+            "Test coverage >= 85%",
         ]
 
         return self.validate(
-            expected_files=expected_files,
-            acceptance_criteria=criteria,
-            min_coverage=85.0
+            expected_files=expected_files, acceptance_criteria=criteria, min_coverage=85.0
         )
 
     def _validate_files(self, expected_files: List[str], result: CompletenessResult):
@@ -216,11 +209,14 @@ class CompletenessValidator:
 
         for py_file in self.project_root.rglob("*.py"):
             # Skip test files, venv, etc
-            if any(excluded in py_file.parts for excluded in ['.venv', 'venv', '__pycache__', '.git', 'tests']):
+            if any(
+                excluded in py_file.parts
+                for excluded in [".venv", "venv", "__pycache__", ".git", "tests"]
+            ):
                 continue
 
             # Skip __init__.py
-            if py_file.name == '__init__.py':
+            if py_file.name == "__init__.py":
                 continue
 
             implementation_files += 1
@@ -349,9 +345,7 @@ class CompletenessValidator:
 
         # Recommendations
         if result.missing_files:
-            result.recommendations.append(
-                f"Create {len(result.missing_files)} missing files"
-            )
+            result.recommendations.append(f"Create {len(result.missing_files)} missing files")
 
         if result.critical_gaps > 0:
             result.recommendations.append(
@@ -360,9 +354,7 @@ class CompletenessValidator:
 
         if result.test_coverage < result.target_coverage:
             shortfall = result.target_coverage - result.test_coverage
-            result.recommendations.append(
-                f"Increase test coverage by ~{shortfall:.1f}%"
-            )
+            result.recommendations.append(f"Increase test coverage by ~{shortfall:.1f}%")
 
         if result.criteria_failed:
             result.recommendations.append(
@@ -425,7 +417,9 @@ def format_result(result: CompletenessResult) -> str:
 
     lines.append("")
     lines.append("Quality Metrics:")
-    lines.append(f"  Test Coverage: ~{result.test_coverage:.1f}% (target: {result.target_coverage}%)")
+    lines.append(
+        f"  Test Coverage: ~{result.test_coverage:.1f}% (target: {result.target_coverage}%)"
+    )
     lines.append(f"  Critical Gaps: {result.critical_gaps}")
 
     if result.warnings:

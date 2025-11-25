@@ -7,6 +7,7 @@ Provides automated code review capabilities including:
 - Code quality assessment
 - Best practices validation
 """
+
 import os
 import asyncio
 from typing import Dict, List, Optional, Any
@@ -17,6 +18,7 @@ import subprocess
 
 class CodeReviewError(Exception):
     """Base exception for code review errors"""
+
     pass
 
 
@@ -52,9 +54,7 @@ class CodeReviewer:
         self.project_root = Path(project_root) if project_root else Path.cwd()
 
     async def review_diff(
-        self,
-        diff: str,
-        context: Optional[Dict[str, Any]] = None
+        self, diff: str, context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Review a git diff using Claude AI
@@ -78,7 +78,7 @@ class CodeReviewer:
                 "summary": "No changes to review",
                 "issues": [],
                 "suggestions": [],
-                "score": 100
+                "score": 100,
             }
 
         # Build prompt for Claude
@@ -88,7 +88,7 @@ class CodeReviewer:
             message = await self.client.messages.create(
                 model=self.model,
                 max_tokens=self.max_tokens,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             # Parse Claude's response
@@ -98,11 +98,7 @@ class CodeReviewer:
         except Exception as e:
             raise CodeReviewError(f"Failed to review diff: {e}")
 
-    async def analyze_architecture(
-        self,
-        code: str,
-        file_path: str
-    ) -> Dict[str, Any]:
+    async def analyze_architecture(self, code: str, file_path: str) -> Dict[str, Any]:
         """
         Analyze code against PROJECT_SPEC.md architecture
 
@@ -130,7 +126,7 @@ class CodeReviewer:
             message = await self.client.messages.create(
                 model=self.model,
                 max_tokens=self.max_tokens,
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
             )
 
             response_text = message.content[0].text
@@ -139,11 +135,7 @@ class CodeReviewer:
         except Exception as e:
             raise CodeReviewError(f"Failed to analyze architecture: {e}")
 
-    async def review_file(
-        self,
-        file_path: str,
-        check_architecture: bool = True
-    ) -> Dict[str, Any]:
+    async def review_file(self, file_path: str, check_architecture: bool = True) -> Dict[str, Any]:
         """
         Comprehensive review of a single file
 
@@ -172,10 +164,7 @@ class CodeReviewer:
         diff = self._get_file_diff(str(file_path))
 
         # Review diff
-        review_result = await self.review_diff(
-            diff,
-            context={"file_path": str(file_path)}
-        )
+        review_result = await self.review_diff(diff, context={"file_path": str(file_path)})
 
         # Analyze architecture if requested
         architecture_result = {}
@@ -185,7 +174,7 @@ class CodeReviewer:
         return {
             "file": str(file_path),
             "review": review_result,
-            "architecture": architecture_result
+            "architecture": architecture_result,
         }
 
     def _build_diff_review_prompt(self, diff: str, context: Optional[Dict] = None) -> str:
@@ -298,12 +287,7 @@ Focus on:
             elif line.startswith("- ") and current_section == "suggestions":
                 suggestions.append(line[2:])
 
-        return {
-            "summary": summary,
-            "issues": issues,
-            "suggestions": suggestions,
-            "score": score
-        }
+        return {"summary": summary, "issues": issues, "suggestions": suggestions, "score": score}
 
     def _parse_architecture_response(self, response: str) -> Dict[str, Any]:
         """Parse Claude's architecture analysis response"""
@@ -342,7 +326,7 @@ Focus on:
             "compliant": compliant,
             "violations": violations,
             "recommendations": recommendations,
-            "spec_alignment": score
+            "spec_alignment": score,
         }
 
     def _load_project_spec(self) -> str:
@@ -364,7 +348,7 @@ Focus on:
                 ["git", "diff", "HEAD", file_path],
                 capture_output=True,
                 text=True,
-                cwd=self.project_root
+                cwd=self.project_root,
             )
             return result.stdout
         except Exception:
@@ -388,17 +372,17 @@ async def main():
     print(f"Summary: {result['review']['summary']}")
     print(f"Score: {result['review']['score']}/100")
 
-    if result['review']['issues']:
+    if result["review"]["issues"]:
         print("\nIssues:")
-        for issue in result['review']['issues']:
+        for issue in result["review"]["issues"]:
             print(f"  - {issue}")
 
-    if result['review']['suggestions']:
+    if result["review"]["suggestions"]:
         print("\nSuggestions:")
-        for suggestion in result['review']['suggestions']:
+        for suggestion in result["review"]["suggestions"]:
             print(f"  - {suggestion}")
 
-    if result.get('architecture'):
+    if result.get("architecture"):
         print(f"\nArchitecture Compliance: {'✓' if result['architecture']['compliant'] else '✗'}")
         print(f"Alignment Score: {result['architecture']['spec_alignment']}/100")
 

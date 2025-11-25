@@ -41,10 +41,7 @@ class TestQualityMetrics:
     def test_custom_metrics(self):
         """Test custom metric values."""
         metrics = QualityMetrics(
-            structure_score=85.0,
-            security_score=95.0,
-            testing_score=80.0,
-            docs_score=75.0
+            structure_score=85.0, security_score=95.0, testing_score=80.0, docs_score=75.0
         )
 
         assert metrics.structure_score == 85.0
@@ -63,7 +60,7 @@ class TestFileQualityMetrics:
             complexity=5,
             has_type_hints=True,
             has_docstrings=True,
-            line_count=100
+            line_count=100,
         )
 
         assert metrics.file_path == "test.py"
@@ -81,7 +78,8 @@ class TestCodeQualityAnalyzer:
         """Create a sample project for testing."""
         # Create a simple Python file
         main_file = tmp_path / "main.py"
-        main_file.write_text('''
+        main_file.write_text(
+            '''
 """Main module with docstring."""
 
 def simple_function(x: int, y: int) -> int:
@@ -93,21 +91,24 @@ def simple_function(x: int, y: int) -> int:
 class TestClass:
     """Test class."""
     pass
-''')
+'''
+        )
 
         # Create a test file
         test_dir = tmp_path / "tests"
         test_dir.mkdir()
 
         test_file = test_dir / "test_main.py"
-        test_file.write_text('''
+        test_file.write_text(
+            '''
 def test_simple():
     """Test simple function."""
     assert 1 + 1 == 2
 
 def test_another():
     assert True
-''')
+'''
+        )
 
         # Create README
         readme = tmp_path / "README.md"
@@ -132,25 +133,25 @@ def test_another():
         assert len(analyzer.test_files) > 0
 
         # Check that main.py is found
-        main_files = [f for f in analyzer.python_files if f.name == 'main.py']
+        main_files = [f for f in analyzer.python_files if f.name == "main.py"]
         assert len(main_files) == 1
 
         # Check that test file is found
-        test_files = [f for f in analyzer.test_files if 'test_' in f.name]
+        test_files = [f for f in analyzer.test_files if "test_" in f.name]
         assert len(test_files) > 0
 
     def test_calculate_complexity(self, sample_project):
         """Test complexity calculation."""
         analyzer = CodeQualityAnalyzer(sample_project)
 
-        code = '''
+        code = """
 def complex_function(x):
     if x > 0:
         for i in range(x):
             if i % 2 == 0:
                 pass
     return x
-'''
+"""
         tree = ast.parse(code)
         func_node = tree.body[0]
 
@@ -162,8 +163,8 @@ def complex_function(x):
         """Test full project analysis."""
         analyzer = CodeQualityAnalyzer(sample_project)
 
-        with patch.object(analyzer, '_check_formatting', return_value=100.0):
-            with patch('subprocess.run'):  # Mock security scan
+        with patch.object(analyzer, "_check_formatting", return_value=100.0):
+            with patch("subprocess.run"):  # Mock security scan
                 metrics = analyzer.analyze_project()
 
         assert metrics.structure_score >= 0
@@ -177,7 +178,7 @@ def complex_function(x):
 
         metrics = QualityMetrics()
 
-        with patch.object(analyzer, '_check_formatting', return_value=100.0):
+        with patch.object(analyzer, "_check_formatting", return_value=100.0):
             score = analyzer.calculate_structure_score(metrics)
 
         assert 0 <= score <= 100
@@ -187,7 +188,7 @@ def complex_function(x):
         """Test formatting check."""
         analyzer = CodeQualityAnalyzer(sample_project)
 
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock black returning success
             mock_run.return_value = Mock(returncode=0)
 
@@ -199,7 +200,7 @@ def complex_function(x):
         """Test formatting check when black not installed."""
         analyzer = CodeQualityAnalyzer(sample_project)
 
-        with patch('subprocess.run', side_effect=FileNotFoundError()):
+        with patch("subprocess.run", side_effect=FileNotFoundError()):
             score = analyzer._check_formatting()
 
             # Should return default score
@@ -211,11 +212,10 @@ def complex_function(x):
 
         metrics = QualityMetrics()
 
-        with patch('subprocess.run') as mock_run:
+        with patch("subprocess.run") as mock_run:
             # Mock bandit output
             mock_run.return_value = Mock(
-                stdout='{"results": [{"issue_severity": "HIGH"}]}',
-                returncode=0
+                stdout='{"results": [{"issue_severity": "HIGH"}]}', returncode=0
             )
 
             score = analyzer.calculate_security_score(metrics)
@@ -229,7 +229,7 @@ def complex_function(x):
 
         metrics = QualityMetrics()
 
-        with patch('subprocess.run', side_effect=FileNotFoundError()):
+        with patch("subprocess.run", side_effect=FileNotFoundError()):
             score = analyzer.calculate_security_score(metrics)
 
             # Should return neutral score
@@ -254,11 +254,7 @@ def complex_function(x):
 
         # Create coverage file
         coverage_file = sample_project / "coverage.json"
-        coverage_data = {
-            "totals": {
-                "percent_covered": 85.5
-            }
-        }
+        coverage_data = {"totals": {"percent_covered": 85.5}}
         coverage_file.write_text(json.dumps(coverage_data))
 
         metrics = QualityMetrics()
@@ -299,10 +295,7 @@ def complex_function(x):
         analyzer = CodeQualityAnalyzer(sample_project)
 
         metrics = QualityMetrics(
-            structure_score=80.0,
-            security_score=90.0,
-            testing_score=85.0,
-            docs_score=75.0
+            structure_score=80.0, security_score=90.0, testing_score=85.0, docs_score=75.0
         )
 
         overall = analyzer.get_overall_score(metrics)
@@ -319,18 +312,18 @@ class TestQualityGate:
         """Test default threshold values."""
         gate = QualityGate()
 
-        assert gate.thresholds['overall'] == 80.0
-        assert gate.thresholds['structure'] == 75.0
-        assert gate.thresholds['security'] == 90.0
-        assert gate.thresholds['testing'] == 80.0
-        assert gate.thresholds['docs'] == 70.0
+        assert gate.thresholds["overall"] == 80.0
+        assert gate.thresholds["structure"] == 75.0
+        assert gate.thresholds["security"] == 90.0
+        assert gate.thresholds["testing"] == 80.0
+        assert gate.thresholds["docs"] == 70.0
 
     def test_custom_thresholds(self):
         """Test custom threshold values."""
-        gate = QualityGate({'overall': 90.0, 'security': 95.0})
+        gate = QualityGate({"overall": 90.0, "security": 95.0})
 
-        assert gate.thresholds['overall'] == 90.0
-        assert gate.thresholds['security'] == 95.0
+        assert gate.thresholds["overall"] == 90.0
+        assert gate.thresholds["security"] == 95.0
 
     def test_check_passing(self):
         """Test quality gate check passing."""
@@ -341,7 +334,7 @@ class TestQualityGate:
             structure_score=80.0,
             security_score=95.0,
             testing_score=85.0,
-            docs_score=75.0
+            docs_score=75.0,
         )
 
         passed, failures = gate.check(metrics)
@@ -358,7 +351,7 @@ class TestQualityGate:
             structure_score=80.0,
             security_score=95.0,
             testing_score=85.0,
-            docs_score=75.0
+            docs_score=75.0,
         )
 
         passed, failures = gate.check(metrics)
@@ -374,9 +367,9 @@ class TestQualityGate:
         metrics = QualityMetrics(
             overall_score=70.0,
             structure_score=60.0,  # Below threshold
-            security_score=85.0,   # Below threshold
-            testing_score=75.0,    # Below threshold
-            docs_score=65.0        # Below threshold
+            security_score=85.0,  # Below threshold
+            testing_score=75.0,  # Below threshold
+            docs_score=65.0,  # Below threshold
         )
 
         passed, failures = gate.check(metrics)
@@ -393,7 +386,7 @@ class TestQualityGate:
             structure_score=80.0,
             security_score=95.0,
             testing_score=85.0,
-            docs_score=75.0
+            docs_score=75.0,
         )
 
         # Should not raise
@@ -408,7 +401,7 @@ class TestQualityGate:
             structure_score=60.0,
             security_score=85.0,
             testing_score=75.0,
-            docs_score=65.0
+            docs_score=65.0,
         )
 
         # Should not raise in non-strict mode
@@ -423,7 +416,7 @@ class TestQualityGate:
             structure_score=60.0,
             security_score=85.0,
             testing_score=75.0,
-            docs_score=65.0
+            docs_score=65.0,
         )
 
         # Should raise in strict mode
@@ -471,5 +464,5 @@ class TestEdgeCases:
         analyzer._discover_files()
 
         # Should not include venv files
-        venv_files = [f for f in analyzer.python_files if '.venv' in str(f)]
+        venv_files = [f for f in analyzer.python_files if ".venv" in str(f)]
         assert len(venv_files) == 0

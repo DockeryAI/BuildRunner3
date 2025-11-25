@@ -82,6 +82,7 @@ def get_load_balancer(agent_ids: Optional[List[str]] = None) -> AgentLoadBalance
 # Response models
 class SessionResponse(BaseModel):
     """Session information response"""
+
     session_id: str
     name: str
     status: str
@@ -98,6 +99,7 @@ class SessionResponse(BaseModel):
 
 class WorkerResponse(BaseModel):
     """Worker information response"""
+
     worker_id: str
     status: str
     current_session: Optional[str]
@@ -108,6 +110,7 @@ class WorkerResponse(BaseModel):
 
 class AgentPoolResponse(BaseModel):
     """Agent pool status response"""
+
     total_sessions: int
     active_sessions: int
     paused_sessions: int
@@ -119,6 +122,7 @@ class AgentPoolResponse(BaseModel):
 
 class AgentHealthResponse(BaseModel):
     """Agent health information"""
+
     agent_id: str
     status: str
     response_time_ms: float
@@ -132,6 +136,7 @@ class AgentHealthResponse(BaseModel):
 
 class HealthSummaryResponse(BaseModel):
     """Health summary for agent pool"""
+
     total_agents: int
     healthy: int
     degraded: int
@@ -145,6 +150,7 @@ class HealthSummaryResponse(BaseModel):
 
 class AgentLoadResponse(BaseModel):
     """Agent load information"""
+
     agent_id: str
     current_connections: int
     available_connections: int
@@ -157,6 +163,7 @@ class AgentLoadResponse(BaseModel):
 
 class LoadBalancingAssignmentResponse(BaseModel):
     """Load balancing assignment result"""
+
     request_id: str
     assigned_agent_id: str
     strategy_used: str
@@ -306,9 +313,11 @@ async def get_workers() -> List[WorkerResponse]:
             current_session=worker.current_session,
             tasks_completed=worker.tasks_completed,
             tasks_failed=worker.tasks_failed,
-            uptime_seconds=(worker.last_heartbeat - worker.created_at).total_seconds()
-            if worker.last_heartbeat
-            else 0.0,
+            uptime_seconds=(
+                (worker.last_heartbeat - worker.created_at).total_seconds()
+                if worker.last_heartbeat
+                else 0.0
+            ),
         )
         for worker in workers
     ]
@@ -351,10 +360,11 @@ async def get_agent_metrics() -> Dict:
         "sessions": session_stats,
         "workers": worker_stats,
         "utilization": {
-            "session_utilization": session_stats["active_sessions"]
-            / session_manager.max_concurrent_sessions
-            if session_manager.max_concurrent_sessions > 0
-            else 0,
+            "session_utilization": (
+                session_stats["active_sessions"] / session_manager.max_concurrent_sessions
+                if session_manager.max_concurrent_sessions > 0
+                else 0
+            ),
             "total_capacity": session_manager.max_concurrent_sessions,
             "available_capacity": session_manager.max_concurrent_sessions
             - session_stats["active_sessions"],
@@ -365,6 +375,7 @@ async def get_agent_metrics() -> Dict:
 # ============================================================================
 # Health Monitoring Endpoints (Feature 6)
 # ============================================================================
+
 
 @router.get("/health", response_model=HealthSummaryResponse)
 async def get_agent_health_summary():
@@ -381,7 +392,7 @@ async def get_agent_health_summary():
         healthy_agents=summary["healthy_agents"],
         failing_agents=summary["failing_agents"],
         offline_agents=summary["offline_agents"],
-        timestamp=datetime.now()
+        timestamp=datetime.now(),
     )
 
 
@@ -403,7 +414,7 @@ async def get_agent_health(agent_id: str):
         memory_mb=result.memory_mb,
         disk_percent=result.disk_percent,
         last_successful_check=result.last_successful_check,
-        consecutive_failures=result.consecutive_failures
+        consecutive_failures=result.consecutive_failures,
     )
 
 
@@ -416,10 +427,7 @@ async def trigger_agent_health_check(agent_id: str):
 
 
 @router.get("/health/{agent_id}/history")
-async def get_agent_health_history(
-    agent_id: str,
-    limit: int = Query(50, ge=1, le=200)
-):
+async def get_agent_health_history(agent_id: str, limit: int = Query(50, ge=1, le=200)):
     """Get health history for agent"""
     health_monitor = get_health_monitor()
     return {"history": health_monitor.get_history(agent_id, limit)}
@@ -445,12 +453,14 @@ async def get_failover_candidates():
             elif health.consecutive_failures > 3:
                 reason = f"Too many consecutive failures"
 
-        recommendations.append({
-            "agent_id": agent_id,
-            "reason": reason,
-            "recommended_action": "failover",
-            "alternative_agents": alternatives[:3]
-        })
+        recommendations.append(
+            {
+                "agent_id": agent_id,
+                "reason": reason,
+                "recommended_action": "failover",
+                "alternative_agents": alternatives[:3],
+            }
+        )
 
     return recommendations
 
@@ -471,13 +481,14 @@ async def trigger_failover(agent_id: str):
         "status": "failover_initiated",
         "agent_id": agent_id,
         "alternative_agents": alternatives,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
     }
 
 
 # ============================================================================
 # Load Balancing Endpoints (Feature 6)
 # ============================================================================
+
 
 @router.get("/load")
 async def get_agent_load_summary():
@@ -503,18 +514,17 @@ async def get_agent_load(agent_id: str):
         max_connections=load_info["max_connections"],
         weight=load_info["weight"],
         available=load_info["available"],
-        last_assigned=load_info.get("last_assigned")
+        last_assigned=load_info.get("last_assigned"),
     )
 
 
 @router.post("/assign")
 async def assign_request(
-    task_type: str,
-    priority: int = 0,
-    affinity_agent_id: Optional[str] = None
+    task_type: str, priority: int = 0, affinity_agent_id: Optional[str] = None
 ):
     """Assign request to best available agent"""
     import uuid
+
     load_balancer = get_load_balancer()
 
     request_id = str(uuid.uuid4())
@@ -522,7 +532,7 @@ async def assign_request(
         request_id=request_id,
         task_type=task_type,
         priority=priority,
-        affinity_agent_id=affinity_agent_id
+        affinity_agent_id=affinity_agent_id,
     )
 
     decision = await load_balancer.assign_request(request)
@@ -534,7 +544,7 @@ async def assign_request(
         confidence_score=decision.confidence_score,
         alternative_agents=decision.alternative_agents,
         reason=decision.reason,
-        timestamp=decision.timestamp
+        timestamp=decision.timestamp,
     )
 
 

@@ -35,14 +35,14 @@ class TestPreCommitHook:
             pytest.skip("pre-commit hook not found")
 
         # Read the hook file
-        with open(hook_path, 'r') as f:
+        with open(hook_path, "r") as f:
             hook_code = f.read()
 
         # Create a module namespace
         module_namespace = {}
 
         # Mock project_root in the namespace
-        with patch('pathlib.Path') as mock_path_class:
+        with patch("pathlib.Path") as mock_path_class:
             mock_path_instance = MagicMock()
             mock_path_instance.parent.parent.parent = mock_project_root
             mock_path_class.return_value = mock_path_instance
@@ -55,25 +55,23 @@ class TestPreCommitHook:
     def test_validate_features_json_valid(self, mock_project_root, tmp_path):
         """Test that valid features.json passes validation."""
         features_file = mock_project_root / ".buildrunner" / "features.json"
-        features_data = {
-            "project": "TestProject",
-            "version": "1.0.0",
-            "features": []
-        }
+        features_data = {"project": "TestProject", "version": "1.0.0", "features": []}
         features_file.write_text(json.dumps(features_data))
 
-        with patch('core.feature_registry.FeatureRegistry') as MockRegistry:
+        with patch("core.feature_registry.FeatureRegistry") as MockRegistry:
             mock_registry = Mock()
             MockRegistry.return_value = mock_registry
             mock_registry.load.return_value = features_data
 
             # Import and call the validation function
             from pathlib import Path
+
             original_cwd = Path.cwd()
 
             try:
                 # Change to mock project root
                 import os
+
                 os.chdir(mock_project_root)
 
                 # Re-import to get updated project_root
@@ -101,7 +99,7 @@ class TestPreCommitHook:
         features_file = mock_project_root / ".buildrunner" / "features.json"
         features_file.write_text("invalid json {{{")
 
-        with patch('core.feature_registry.FeatureRegistry') as MockRegistry:
+        with patch("core.feature_registry.FeatureRegistry") as MockRegistry:
             mock_registry = Mock()
             MockRegistry.return_value = mock_registry
             mock_registry.load.side_effect = json.JSONDecodeError("msg", "doc", 0)
@@ -120,7 +118,7 @@ class TestPreCommitHook:
         governance_file = mock_project_root / ".buildrunner" / "governance" / "governance.yaml"
         governance_file.write_text("enforcement:\n  policy: strict\n")
 
-        with patch('core.governance.GovernanceManager') as MockGM:
+        with patch("core.governance.GovernanceManager") as MockGM:
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True
@@ -135,7 +133,7 @@ class TestPreCommitHook:
         governance_file = mock_project_root / ".buildrunner" / "governance" / "governance.yaml"
         governance_file.write_text("enforcement:\n  policy: strict\n")
 
-        with patch('core.governance.GovernanceManager') as MockGM:
+        with patch("core.governance.GovernanceManager") as MockGM:
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True
@@ -147,17 +145,15 @@ class TestPreCommitHook:
 
     def test_enforce_governance_rules_strict(self, mock_project_root):
         """Test governance enforcement in strict mode."""
-        with patch('core.governance.GovernanceManager') as MockGM, \
-             patch('core.governance_enforcer.GovernanceEnforcer') as MockEnforcer:
+        with (
+            patch("core.governance.GovernanceManager") as MockGM,
+            patch("core.governance_enforcer.GovernanceEnforcer") as MockEnforcer,
+        ):
 
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True
-            mock_gm.config = {
-                'enforcement': {
-                    'policy': 'strict'
-                }
-            }
+            mock_gm.config = {"enforcement": {"policy": "strict"}}
 
             mock_enforcer = Mock()
             MockEnforcer.return_value = mock_enforcer
@@ -169,41 +165,35 @@ class TestPreCommitHook:
 
     def test_enforce_governance_rules_failure(self, mock_project_root):
         """Test governance enforcement when checks fail."""
-        with patch('core.governance.GovernanceManager') as MockGM, \
-             patch('core.governance_enforcer.GovernanceEnforcer') as MockEnforcer:
+        with (
+            patch("core.governance.GovernanceManager") as MockGM,
+            patch("core.governance_enforcer.GovernanceEnforcer") as MockEnforcer,
+        ):
 
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True
-            mock_gm.config = {
-                'enforcement': {
-                    'policy': 'strict'
-                }
-            }
+            mock_gm.config = {"enforcement": {"policy": "strict"}}
 
             mock_enforcer = Mock()
             MockEnforcer.return_value = mock_enforcer
-            mock_enforcer.check_pre_commit.return_value = (False, ['checksum_validation'])
+            mock_enforcer.check_pre_commit.return_value = (False, ["checksum_validation"])
 
             passed, failed = mock_enforcer.check_pre_commit()
             assert passed == False
-            assert 'checksum_validation' in failed
+            assert "checksum_validation" in failed
 
     def test_enforce_governance_disabled(self, mock_project_root):
         """Test that disabled governance enforcement passes."""
-        with patch('core.governance.GovernanceManager') as MockGM:
+        with patch("core.governance.GovernanceManager") as MockGM:
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True
-            mock_gm.config = {
-                'enforcement': {
-                    'policy': 'off'
-                }
-            }
+            mock_gm.config = {"enforcement": {"policy": "off"}}
 
             # When policy is 'off', should return True
-            policy = mock_gm.config['enforcement']['policy']
-            result = (policy == 'off')
+            policy = mock_gm.config["enforcement"]["policy"]
+            result = policy == "off"
             assert result == True
 
 
@@ -219,25 +209,25 @@ class TestPostCommitHook:
 
     def test_update_metrics(self, mock_project_root):
         """Test metrics update functionality."""
-        with patch('core.feature_registry.FeatureRegistry') as MockRegistry:
+        with patch("core.feature_registry.FeatureRegistry") as MockRegistry:
             mock_registry = Mock()
             MockRegistry.return_value = mock_registry
             mock_registry.load.return_value = {
-                'metrics': {
-                    'features_complete': 5,
-                    'features_in_progress': 3,
-                    'features_planned': 7,
-                    'completion_percentage': 33
+                "metrics": {
+                    "features_complete": 5,
+                    "features_in_progress": 3,
+                    "features_planned": 7,
+                    "completion_percentage": 33,
                 }
             }
 
             data = mock_registry.load()
-            metrics = data['metrics']
+            metrics = data["metrics"]
 
-            assert metrics['features_complete'] == 5
-            assert metrics['features_in_progress'] == 3
-            assert metrics['features_planned'] == 7
-            assert metrics['completion_percentage'] == 33
+            assert metrics["features_complete"] == 5
+            assert metrics["features_in_progress"] == 3
+            assert metrics["features_planned"] == 7
+            assert metrics["completion_percentage"] == 33
 
             # Verify save was called
             mock_registry.save.return_value = None
@@ -248,7 +238,7 @@ class TestPostCommitHook:
         """Test STATUS.md generation."""
         status_file = mock_project_root / ".buildrunner" / "STATUS.md"
 
-        with patch('core.status_generator.StatusGenerator') as MockGenerator:
+        with patch("core.status_generator.StatusGenerator") as MockGenerator:
             mock_generator = Mock()
             MockGenerator.return_value = mock_generator
             mock_generator.generate.return_value = status_file
@@ -259,23 +249,22 @@ class TestPostCommitHook:
 
     def test_update_ai_context(self, mock_project_root):
         """Test AI context update with commit information."""
-        with patch('core.ai_context.AIContextManager') as MockAI, \
-             patch('subprocess.run') as mock_run:
+        with (
+            patch("core.ai_context.AIContextManager") as MockAI,
+            patch("subprocess.run") as mock_run,
+        ):
 
             mock_ai = Mock()
             MockAI.return_value = mock_ai
 
             # Mock git log output
-            mock_run.return_value = Mock(
-                returncode=0,
-                stdout="abc123 feat: Add new feature"
-            )
+            mock_run.return_value = Mock(returncode=0, stdout="abc123 feat: Add new feature")
 
             result = mock_run(
-                ['git', 'log', '-1', '--pretty=format:%H %s'],
+                ["git", "log", "-1", "--pretty=format:%H %s"],
                 capture_output=True,
                 text=True,
-                cwd=mock_project_root
+                cwd=mock_project_root,
             )
 
             assert result.returncode == 0
@@ -284,15 +273,13 @@ class TestPostCommitHook:
             # Verify context update was called
             mock_ai.update_context.return_value = None
             mock_ai.update_context(
-                'current-work',
-                f"\n## Recent Commit\n{result.stdout}\n",
-                append=True
+                "current-work", f"\n## Recent Commit\n{result.stdout}\n", append=True
             )
             mock_ai.update_context.assert_called_once()
 
     def test_post_commit_handles_errors_gracefully(self, mock_project_root):
         """Test that post-commit doesn't fail on errors."""
-        with patch('core.feature_registry.FeatureRegistry') as MockRegistry:
+        with patch("core.feature_registry.FeatureRegistry") as MockRegistry:
             mock_registry = Mock()
             MockRegistry.return_value = mock_registry
             mock_registry.load.side_effect = Exception("Test error")
@@ -326,56 +313,53 @@ class TestPrePushHook:
 
     def test_validate_completeness_no_blockers(self, mock_project_root):
         """Test completeness validation with no blocked features."""
-        with patch('core.feature_registry.FeatureRegistry') as MockRegistry:
+        with patch("core.feature_registry.FeatureRegistry") as MockRegistry:
             mock_registry = Mock()
             MockRegistry.return_value = mock_registry
             mock_registry.load.return_value = {
-                'features': [
-                    {'id': 'feat1', 'name': 'Feature 1', 'status': 'complete'},
-                    {'id': 'feat2', 'name': 'Feature 2', 'status': 'in_progress'}
+                "features": [
+                    {"id": "feat1", "name": "Feature 1", "status": "complete"},
+                    {"id": "feat2", "name": "Feature 2", "status": "in_progress"},
                 ]
             }
 
             data = mock_registry.load()
-            features = data['features']
-            blocked = [f for f in features if f.get('status') == 'blocked']
+            features = data["features"]
+            blocked = [f for f in features if f.get("status") == "blocked"]
 
             assert len(blocked) == 0
 
     def test_validate_completeness_with_blockers(self, mock_project_root):
         """Test completeness validation with blocked features."""
-        with patch('core.feature_registry.FeatureRegistry') as MockRegistry:
+        with patch("core.feature_registry.FeatureRegistry") as MockRegistry:
             mock_registry = Mock()
             MockRegistry.return_value = mock_registry
             mock_registry.load.return_value = {
-                'features': [
-                    {'id': 'feat1', 'name': 'Feature 1', 'status': 'blocked'},
-                    {'id': 'feat2', 'name': 'Feature 2', 'status': 'in_progress'}
+                "features": [
+                    {"id": "feat1", "name": "Feature 1", "status": "blocked"},
+                    {"id": "feat2", "name": "Feature 2", "status": "in_progress"},
                 ]
             }
 
             data = mock_registry.load()
-            features = data['features']
-            blocked = [f for f in features if f.get('status') == 'blocked']
+            features = data["features"]
+            blocked = [f for f in features if f.get("status") == "blocked"]
 
             assert len(blocked) == 1
-            assert blocked[0]['id'] == 'feat1'
+            assert blocked[0]["id"] == "feat1"
 
     def test_run_governance_checks_pass(self, mock_project_root):
         """Test governance checks passing."""
-        with patch('core.governance.GovernanceManager') as MockGM, \
-             patch('core.governance_enforcer.GovernanceEnforcer') as MockEnforcer:
+        with (
+            patch("core.governance.GovernanceManager") as MockGM,
+            patch("core.governance_enforcer.GovernanceEnforcer") as MockEnforcer,
+        ):
 
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True
             mock_gm.config = {
-                'enforcement': {
-                    'policy': 'strict',
-                    'on_violation': {
-                        'pre_push': 'block'
-                    }
-                }
+                "enforcement": {"policy": "strict", "on_violation": {"pre_push": "block"}}
             }
 
             mock_enforcer = Mock()
@@ -388,61 +372,55 @@ class TestPrePushHook:
 
     def test_run_governance_checks_fail_block(self, mock_project_root):
         """Test governance checks failing with block action."""
-        with patch('core.governance.GovernanceManager') as MockGM, \
-             patch('core.governance_enforcer.GovernanceEnforcer') as MockEnforcer:
+        with (
+            patch("core.governance.GovernanceManager") as MockGM,
+            patch("core.governance_enforcer.GovernanceEnforcer") as MockEnforcer,
+        ):
 
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True
             mock_gm.config = {
-                'enforcement': {
-                    'policy': 'strict',
-                    'on_violation': {
-                        'pre_push': 'block'
-                    }
-                }
+                "enforcement": {"policy": "strict", "on_violation": {"pre_push": "block"}}
             }
 
             mock_enforcer = Mock()
             MockEnforcer.return_value = mock_enforcer
-            mock_enforcer.check_pre_push.return_value = (False, ['sync_check'])
+            mock_enforcer.check_pre_push.return_value = (False, ["sync_check"])
 
             passed, failed = mock_enforcer.check_pre_push()
-            action = mock_gm.config['enforcement']['on_violation']['pre_push']
+            action = mock_gm.config["enforcement"]["on_violation"]["pre_push"]
 
             assert passed == False
-            assert 'sync_check' in failed
-            assert action == 'block'
+            assert "sync_check" in failed
+            assert action == "block"
 
     def test_run_governance_checks_fail_warn(self, mock_project_root):
         """Test governance checks failing with warn action."""
-        with patch('core.governance.GovernanceManager') as MockGM, \
-             patch('core.governance_enforcer.GovernanceEnforcer') as MockEnforcer:
+        with (
+            patch("core.governance.GovernanceManager") as MockGM,
+            patch("core.governance_enforcer.GovernanceEnforcer") as MockEnforcer,
+        ):
 
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True
             mock_gm.config = {
-                'enforcement': {
-                    'policy': 'strict',
-                    'on_violation': {
-                        'pre_push': 'warn'
-                    }
-                }
+                "enforcement": {"policy": "strict", "on_violation": {"pre_push": "warn"}}
             }
 
             mock_enforcer = Mock()
             MockEnforcer.return_value = mock_enforcer
-            mock_enforcer.check_pre_push.return_value = (False, ['sync_check'])
+            mock_enforcer.check_pre_push.return_value = (False, ["sync_check"])
 
             passed, failed = mock_enforcer.check_pre_push()
-            action = mock_gm.config['enforcement']['on_violation']['pre_push']
+            action = mock_gm.config["enforcement"]["on_violation"]["pre_push"]
 
             # Even though checks failed, warn action allows push
-            should_block = (action == 'block')
+            should_block = action == "block"
 
             assert passed == False
-            assert 'sync_check' in failed
+            assert "sync_check" in failed
             assert should_block == False
 
     def test_check_status_md_exists(self, mock_project_root):
@@ -462,7 +440,7 @@ class TestPrePushHook:
 
     def test_pre_push_handles_errors_gracefully(self, mock_project_root):
         """Test that pre-push handles errors without crashing."""
-        with patch('core.governance.GovernanceManager') as MockGM:
+        with patch("core.governance.GovernanceManager") as MockGM:
             mock_gm = Mock()
             MockGM.return_value = mock_gm
             mock_gm.config_file.exists.return_value = True

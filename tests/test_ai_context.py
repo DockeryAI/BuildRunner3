@@ -43,7 +43,7 @@ class TestAIContextManager:
         arch_file = context_manager.context_files["architecture"]
         assert arch_file.exists()
 
-        with open(arch_file, 'r') as f:
+        with open(arch_file, "r") as f:
             saved_content = f.read()
 
         assert saved_content == content
@@ -61,7 +61,7 @@ class TestAIContextManager:
         results_file = context_manager.context_files["test-results"]
         assert results_file.exists()
 
-        with open(results_file, 'r') as f:
+        with open(results_file, "r") as f:
             content = f.read()
 
         assert "Test output from command" in content
@@ -97,11 +97,11 @@ class TestAIContextManager:
         context_manager.add_blocker(
             title="Test Blocker",
             description="This is a test blocker",
-            issue="Error: Something went wrong"
+            issue="Error: Something went wrong",
         )
 
         blockers_file = context_manager.context_files["blockers"]
-        with open(blockers_file, 'r') as f:
+        with open(blockers_file, "r") as f:
             content = f.read()
 
         assert "### Test Blocker" in content
@@ -115,7 +115,7 @@ class TestAIContextManager:
 
         context_manager.update_memory("Test Section", "This is test content")
 
-        with open(context_manager.claude_md, 'r') as f:
+        with open(context_manager.claude_md, "r") as f:
             content = f.read()
 
         assert "## Test Section" in content
@@ -132,7 +132,7 @@ class TestAIContextManager:
         # Update again
         context_manager.update_memory("Current Work", "Updated content")
 
-        with open(context_manager.claude_md, 'r') as f:
+        with open(context_manager.claude_md, "r") as f:
             content = f.read()
 
         assert "Updated content" in content
@@ -144,7 +144,7 @@ class TestAIContextManager:
 
         assert context_manager.claude_md.exists()
 
-        with open(context_manager.claude_md, 'r') as f:
+        with open(context_manager.claude_md, "r") as f:
             content = f.read()
 
         assert "# CLAUDE.md" in content

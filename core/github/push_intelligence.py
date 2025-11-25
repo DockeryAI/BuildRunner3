@@ -12,6 +12,7 @@ from .git_client import GitClient
 @dataclass
 class PushReadiness:
     """Push readiness assessment"""
+
     is_ready: bool
     score: int  # 0-100
     blockers: List[str]
@@ -25,7 +26,7 @@ class PushIntelligence:
     def __init__(self, repo_path: Optional[Path] = None):
         self.repo_path = repo_path or Path.cwd()
         self.git = GitClient(self.repo_path)
-        self.buildrunner_dir = self.repo_path / '.buildrunner'
+        self.buildrunner_dir = self.repo_path / ".buildrunner"
 
     def assess_readiness(self, strict: bool = True) -> PushReadiness:
         """
@@ -54,6 +55,7 @@ class PushIntelligence:
         # Check 2: Tests passing
         try:
             from core.auto_debug import AutoDebugPipeline
+
             pipeline = AutoDebugPipeline(self.repo_path)
             report = pipeline.run(skip_deep=True)
             if not report.overall_success:
@@ -68,6 +70,7 @@ class PushIntelligence:
         # Check 3: Security scan
         try:
             from core.security import SecretDetector, SQLInjectionDetector
+
             secret_detector = SecretDetector()
             sql_detector = SQLInjectionDetector()
 
@@ -99,14 +102,14 @@ class PushIntelligence:
             warnings.append("Could not run security scan")
 
         # Check 4: Feature completeness
-        features_file = self.buildrunner_dir / 'features.json'
+        features_file = self.buildrunner_dir / "features.json"
         if features_file.exists():
             import json
+
             with open(features_file) as f:
                 data = json.load(f)
                 incomplete = [
-                    f for f in data.get('features', [])
-                    if f.get('status') == 'in_progress'
+                    f for f in data.get("features", []) if f.get("status") == "in_progress"
                 ]
                 if incomplete and strict:
                     warnings.append(f"{len(incomplete)} features in progress")
@@ -115,7 +118,7 @@ class PushIntelligence:
                     passed.append("All features complete or continuing work acknowledged")
 
         # Check 5: Behind main
-        is_behind, count = self.git.is_behind('origin/main')
+        is_behind, count = self.git.is_behind("origin/main")
         if is_behind:
             warnings.append(f"Branch is {count} commits behind origin/main")
             score -= 10
@@ -124,9 +127,9 @@ class PushIntelligence:
 
         # Check 6: Merge conflicts
         current = self.git.current_branch()
-        if current != 'main':
+        if current != "main":
             try:
-                has_conflicts, files = self.git.has_conflicts_with('origin/main')
+                has_conflicts, files = self.git.has_conflicts_with("origin/main")
                 if has_conflicts:
                     blockers.append(f"Merge conflicts detected in {len(files)} files")
                     score -= 30
@@ -141,7 +144,7 @@ class PushIntelligence:
             score=max(0, score),
             blockers=blockers,
             warnings=warnings,
-            passed_checks=passed
+            passed_checks=passed,
         )
 
     def should_push(self) -> bool:

@@ -19,6 +19,7 @@ from abc import ABC, abstractmethod
 
 class HealthStatus(str, Enum):
     """Agent health status enumeration"""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     FAILING = "failing"
@@ -28,6 +29,7 @@ class HealthStatus(str, Enum):
 
 class ResourceType(str, Enum):
     """Resource types for monitoring"""
+
     CPU = "cpu"
     MEMORY = "memory"
     DISK = "disk"
@@ -37,6 +39,7 @@ class ResourceType(str, Enum):
 @dataclass
 class ResourceMetrics:
     """Resource usage metrics for an agent"""
+
     cpu_percent: float = 0.0
     memory_percent: float = 0.0
     memory_mb: float = 0.0
@@ -54,13 +57,14 @@ class ResourceMetrics:
             "disk_percent": self.disk_percent,
             "network_io_sent_mb": self.network_io_sent_mb,
             "network_io_recv_mb": self.network_io_recv_mb,
-            "timestamp": self.timestamp.isoformat()
+            "timestamp": self.timestamp.isoformat(),
         }
 
 
 @dataclass
 class HealthCheckResult:
     """Result of a health check"""
+
     agent_id: str
     status: HealthStatus
     timestamp: datetime = field(default_factory=datetime.now)
@@ -131,10 +135,7 @@ class HTTPHealthChecker(HealthChecker):
     async def check(self, agent_id: str) -> HealthCheckResult:
         """Perform HTTP health check"""
         start_time = time.time()
-        result = HealthCheckResult(
-            agent_id=agent_id,
-            status=HealthStatus.UNKNOWN
-        )
+        result = HealthCheckResult(agent_id=agent_id, status=HealthStatus.UNKNOWN)
 
         try:
             # Simulate HTTP health check (would use aiohttp in production)
@@ -187,10 +188,7 @@ class ProcessHealthChecker(HealthChecker):
 
     async def check(self, agent_id: str) -> HealthCheckResult:
         """Perform process health check"""
-        result = HealthCheckResult(
-            agent_id=agent_id,
-            status=HealthStatus.UNKNOWN
-        )
+        result = HealthCheckResult(agent_id=agent_id, status=HealthStatus.UNKNOWN)
 
         pid = self.process_ids.get(agent_id)
         if not pid:
@@ -322,9 +320,7 @@ class AgentHealthMonitor:
         for agent_id, result in zip(self.agent_ids, results):
             if isinstance(result, Exception):
                 self.health_checks[agent_id] = HealthCheckResult(
-                    agent_id=agent_id,
-                    status=HealthStatus.OFFLINE,
-                    error_message=str(result)
+                    agent_id=agent_id, status=HealthStatus.OFFLINE, error_message=str(result)
                 )
             else:
                 self.health_checks[agent_id] = result
@@ -377,7 +373,8 @@ class AgentHealthMonitor:
             List of agent IDs that are healthy
         """
         return [
-            aid for aid, check in self.health_checks.items()
+            aid
+            for aid, check in self.health_checks.items()
             if check and check.status in (HealthStatus.HEALTHY, HealthStatus.DEGRADED)
         ]
 
@@ -389,7 +386,8 @@ class AgentHealthMonitor:
             List of agent IDs that are failing
         """
         return [
-            aid for aid, check in self.health_checks.items()
+            aid
+            for aid, check in self.health_checks.items()
             if check and check.status == HealthStatus.FAILING
         ]
 
@@ -401,7 +399,8 @@ class AgentHealthMonitor:
             List of agent IDs that are offline
         """
         return [
-            aid for aid, check in self.health_checks.items()
+            aid
+            for aid, check in self.health_checks.items()
             if check and check.status == HealthStatus.OFFLINE
         ]
 
@@ -419,13 +418,19 @@ class AgentHealthMonitor:
         return {
             "total_agents": len(self.agent_ids),
             "healthy": len(healthy),
-            "degraded": len([a for a in healthy if self.health_checks.get(a, {}).status == HealthStatus.DEGRADED]),
+            "degraded": len(
+                [
+                    a
+                    for a in healthy
+                    if self.health_checks.get(a, {}).status == HealthStatus.DEGRADED
+                ]
+            ),
             "failing": len(failing),
             "offline": len(offline),
             "healthy_agents": healthy,
             "failing_agents": failing,
             "offline_agents": offline,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
     def get_history(self, agent_id: str, limit: int = 50) -> List[Dict]:
@@ -457,9 +462,9 @@ class AgentHealthMonitor:
             return False
 
         return (
-            result.cpu_percent > self._resource_limits["cpu_percent"] or
-            result.memory_percent > self._resource_limits["memory_percent"] or
-            result.disk_percent > self._resource_limits["disk_percent"]
+            result.cpu_percent > self._resource_limits["cpu_percent"]
+            or result.memory_percent > self._resource_limits["memory_percent"]
+            or result.disk_percent > self._resource_limits["disk_percent"]
         )
 
     def detect_failover_candidates(self) -> List[str]:
@@ -486,7 +491,7 @@ class AgentHealthMonitor:
         state = {
             "timestamp": datetime.now().isoformat(),
             "health_checks": {aid: check.to_dict() for aid, check in self.health_checks.items()},
-            "summary": self.get_summary()
+            "summary": self.get_summary(),
         }
 
         filepath.parent.mkdir(parents=True, exist_ok=True)

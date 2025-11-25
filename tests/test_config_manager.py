@@ -6,11 +6,7 @@ import pytest
 import yaml
 from pathlib import Path
 
-from cli.config_manager import (
-    ConfigManager,
-    ConfigError,
-    get_config_manager
-)
+from cli.config_manager import ConfigManager, ConfigError, get_config_manager
 
 
 class TestConfigManager:
@@ -44,9 +40,9 @@ class TestConfigManager:
         """Test loading returns defaults when no configs exist."""
         config = config_manager.load()
 
-        assert 'debug' in config
-        assert config['debug']['auto_retry'] is True
-        assert config['debug']['max_retries'] == 3
+        assert "debug" in config
+        assert config["debug"]["auto_retry"] is True
+        assert config["debug"]["max_retries"] == 3
 
     def test_load_global_config(self, config_manager, tmp_path):
         """Test loading global config."""
@@ -55,39 +51,33 @@ class TestConfigManager:
         fake_home.mkdir()
         config_manager.global_config_dir = fake_home / ".buildrunner"
         config_manager.global_config_dir.mkdir()
-        config_manager.global_config_file = config_manager.global_config_dir / "global-behavior.yaml"
+        config_manager.global_config_file = (
+            config_manager.global_config_dir / "global-behavior.yaml"
+        )
 
         # Write global config
-        global_config = {
-            'debug': {
-                'auto_retry': False
-            }
-        }
-        with open(config_manager.global_config_file, 'w') as f:
+        global_config = {"debug": {"auto_retry": False}}
+        with open(config_manager.global_config_file, "w") as f:
             yaml.dump(global_config, f)
 
         config = config_manager.load()
 
         # Global should override defaults
-        assert config['debug']['auto_retry'] is False
-        assert config['debug']['max_retries'] == 3  # Still from defaults
+        assert config["debug"]["auto_retry"] is False
+        assert config["debug"]["max_retries"] == 3  # Still from defaults
 
     def test_load_project_config(self, config_manager):
         """Test loading project config."""
         # Write project config
-        project_config = {
-            'debug': {
-                'max_retries': 5
-            }
-        }
+        project_config = {"debug": {"max_retries": 5}}
         config_manager.project_config_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(config_manager.project_config_file, 'w') as f:
+        with open(config_manager.project_config_file, "w") as f:
             yaml.dump(project_config, f)
 
         config = config_manager.load()
 
         # Project should override defaults
-        assert config['debug']['max_retries'] == 5
+        assert config["debug"]["max_retries"] == 5
 
     def test_config_hierarchy(self, config_manager, tmp_path):
         """Test project > global > defaults hierarchy."""
@@ -96,63 +86,56 @@ class TestConfigManager:
         fake_home.mkdir()
         config_manager.global_config_dir = fake_home / ".buildrunner"
         config_manager.global_config_dir.mkdir()
-        config_manager.global_config_file = config_manager.global_config_dir / "global-behavior.yaml"
+        config_manager.global_config_file = (
+            config_manager.global_config_dir / "global-behavior.yaml"
+        )
 
         # Write global config (overrides defaults)
-        global_config = {
-            'debug': {
-                'auto_retry': False,
-                'max_retries': 5
-            }
-        }
-        with open(config_manager.global_config_file, 'w') as f:
+        global_config = {"debug": {"auto_retry": False, "max_retries": 5}}
+        with open(config_manager.global_config_file, "w") as f:
             yaml.dump(global_config, f)
 
         # Write project config (overrides global)
-        project_config = {
-            'debug': {
-                'max_retries': 10
-            }
-        }
+        project_config = {"debug": {"max_retries": 10}}
         config_manager.project_config_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(config_manager.project_config_file, 'w') as f:
+        with open(config_manager.project_config_file, "w") as f:
             yaml.dump(project_config, f)
 
         config = config_manager.load()
 
         # Project overrides global
-        assert config['debug']['max_retries'] == 10
+        assert config["debug"]["max_retries"] == 10
         # Global overrides defaults
-        assert config['debug']['auto_retry'] is False
+        assert config["debug"]["auto_retry"] is False
 
     def test_get_simple_key(self, config_manager):
         """Test getting simple config value."""
         config_manager.load()
-        value = config_manager.get('debug.auto_retry')
+        value = config_manager.get("debug.auto_retry")
         assert value is True
 
     def test_get_nested_key(self, config_manager):
         """Test getting nested config value."""
         config_manager.load()
-        value = config_manager.get('debug.max_retries')
+        value = config_manager.get("debug.max_retries")
         assert value == 3
 
     def test_get_missing_key(self, config_manager):
         """Test getting non-existent key returns default."""
         config_manager.load()
-        value = config_manager.get('nonexistent.key', default='test')
-        assert value == 'test'
+        value = config_manager.get("nonexistent.key", default="test")
+        assert value == "test"
 
     def test_set_project_scope(self, config_manager):
         """Test setting project config value."""
         config_manager.load()
-        config_manager.set('debug.auto_retry', False, scope='project')
+        config_manager.set("debug.auto_retry", False, scope="project")
 
         # Verify it was written
-        with open(config_manager.project_config_file, 'r') as f:
+        with open(config_manager.project_config_file, "r") as f:
             saved = yaml.safe_load(f)
 
-        assert saved['debug']['auto_retry'] is False
+        assert saved["debug"]["auto_retry"] is False
 
     def test_set_global_scope(self, config_manager, tmp_path):
         """Test setting global config value."""
@@ -163,21 +146,21 @@ class TestConfigManager:
         config_manager.global_config_file = fake_home / ".buildrunner" / "global-behavior.yaml"
 
         config_manager.load()
-        config_manager.set('debug.auto_retry', False, scope='global')
+        config_manager.set("debug.auto_retry", False, scope="global")
 
         # Verify it was written
         assert config_manager.global_config_file.exists()
-        with open(config_manager.global_config_file, 'r') as f:
+        with open(config_manager.global_config_file, "r") as f:
             saved = yaml.safe_load(f)
 
-        assert saved['debug']['auto_retry'] is False
+        assert saved["debug"]["auto_retry"] is False
 
     def test_set_invalid_scope(self, config_manager):
         """Test setting with invalid scope raises error."""
         config_manager.load()
 
         with pytest.raises(ConfigError, match="Invalid scope"):
-            config_manager.set('debug.auto_retry', False, scope='invalid')
+            config_manager.set("debug.auto_retry", False, scope="invalid")
 
     def test_list_all_nested(self, config_manager):
         """Test listing all config as nested dict."""
@@ -185,8 +168,8 @@ class TestConfigManager:
         config = config_manager.list_all(flat=False)
 
         assert isinstance(config, dict)
-        assert 'debug' in config
-        assert isinstance(config['debug'], dict)
+        assert "debug" in config
+        assert isinstance(config["debug"], dict)
 
     def test_list_all_flat(self, config_manager):
         """Test listing all config as flat dict."""
@@ -194,8 +177,8 @@ class TestConfigManager:
         config = config_manager.list_all(flat=True)
 
         assert isinstance(config, dict)
-        assert 'debug.auto_retry' in config
-        assert 'debug.max_retries' in config
+        assert "debug.auto_retry" in config
+        assert "debug.max_retries" in config
 
     def test_init_global_config(self, config_manager, tmp_path):
         """Test initializing global config file."""
@@ -210,11 +193,11 @@ class TestConfigManager:
         assert config_file.exists()
 
         # Verify it has defaults
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             config = yaml.safe_load(f)
 
-        assert 'debug' in config
-        assert 'watch' in config
+        assert "debug" in config
+        assert "watch" in config
 
     def test_init_global_config_exists(self, config_manager, tmp_path):
         """Test initializing global config when it exists raises error."""
@@ -237,19 +220,19 @@ class TestConfigManager:
         assert config_file.exists()
 
         # Verify minimal config
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             config = yaml.safe_load(f)
 
-        assert 'debug' in config
+        assert "debug" in config
 
     def test_get_config_sources(self, config_manager):
         """Test getting config from all sources separately."""
         sources = config_manager.get_config_sources()
 
-        assert 'default' in sources
-        assert 'global' in sources
-        assert 'project' in sources
-        assert len(sources['default']) > 0
+        assert "default" in sources
+        assert "global" in sources
+        assert "project" in sources
+        assert len(sources["default"]) > 0
 
 
 class TestFactoryFunction:

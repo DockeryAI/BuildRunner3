@@ -15,6 +15,7 @@ Supports common patterns:
 - Tests
 - Documentation
 """
+
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
@@ -22,6 +23,7 @@ from enum import Enum
 
 class TaskComplexity(str, Enum):
     """Task complexity levels"""
+
     SIMPLE = "simple"
     MEDIUM = "medium"
     COMPLEX = "complex"
@@ -30,6 +32,7 @@ class TaskComplexity(str, Enum):
 @dataclass
 class Task:
     """Represents an atomic task"""
+
     id: str
     name: str
     description: str
@@ -57,16 +60,27 @@ class TaskDecomposer:
     DURATION_MAP = {
         TaskComplexity.SIMPLE: 60,
         TaskComplexity.MEDIUM: 90,
-        TaskComplexity.COMPLEX: 120
+        TaskComplexity.COMPLEX: 120,
     }
 
     # Task patterns by complexity keywords
     COMPLEXITY_INDICATORS = {
-        'simple': ['crud', 'basic', 'simple', 'straightforward', 'minimal'],
-        'complex': ['algorithm', 'optimization', 'security', 'authentication',
-                   'authorization', 'payment', 'real-time', 'sync', 'migration',
-                   'integration', 'workflow', 'state machine'],
-        'medium': []  # Default fallback
+        "simple": ["crud", "basic", "simple", "straightforward", "minimal"],
+        "complex": [
+            "algorithm",
+            "optimization",
+            "security",
+            "authentication",
+            "authorization",
+            "payment",
+            "real-time",
+            "sync",
+            "migration",
+            "integration",
+            "workflow",
+            "state machine",
+        ],
+        "medium": [],  # Default fallback
     }
 
     def __init__(self):
@@ -88,16 +102,14 @@ class TaskDecomposer:
         """
         tasks = []
 
-        feature_id = feature['id']
-        feature_name = feature['name']
-        requirements = feature.get('requirements', [])
-        technical_details = feature.get('technical_details', [])
-        acceptance_criteria = feature.get('acceptance_criteria', [])
+        feature_id = feature["id"]
+        feature_name = feature["name"]
+        requirements = feature.get("requirements", [])
+        technical_details = feature.get("technical_details", [])
+        acceptance_criteria = feature.get("acceptance_criteria", [])
 
         # Determine task breakdown pattern
-        task_breakdown = self._determine_task_breakdown(
-            feature, requirements, technical_details
-        )
+        task_breakdown = self._determine_task_breakdown(feature, requirements, technical_details)
 
         # Create tasks for each component
         for task_type, task_details in task_breakdown.items():
@@ -106,7 +118,7 @@ class TaskDecomposer:
                 feature_name=feature_name,
                 task_type=task_type,
                 task_details=task_details,
-                requirements=requirements
+                requirements=requirements,
             )
 
             if task:
@@ -142,12 +154,12 @@ class TaskDecomposer:
         text = f"{task.name} {task.description}".lower()
 
         # Check for complex indicators
-        for indicator in self.COMPLEXITY_INDICATORS['complex']:
+        for indicator in self.COMPLEXITY_INDICATORS["complex"]:
             if indicator in text:
                 return TaskComplexity.COMPLEX
 
         # Check for simple indicators
-        for indicator in self.COMPLEXITY_INDICATORS['simple']:
+        for indicator in self.COMPLEXITY_INDICATORS["simple"]:
             if indicator in text:
                 return TaskComplexity.SIMPLE
 
@@ -164,7 +176,11 @@ class TaskDecomposer:
         Returns:
             Estimated minutes (60, 90, or 120)
         """
-        complexity = task.complexity if isinstance(task.complexity, TaskComplexity) else TaskComplexity(task.complexity)
+        complexity = (
+            task.complexity
+            if isinstance(task.complexity, TaskComplexity)
+            else TaskComplexity(task.complexity)
+        )
         return self.DURATION_MAP[complexity]
 
     def add_acceptance_criteria(self, task: Task) -> Task:
@@ -194,49 +210,46 @@ class TaskDecomposer:
         return task
 
     def _determine_task_breakdown(
-        self,
-        feature: Dict,
-        requirements: List[str],
-        technical_details: List[str]
+        self, feature: Dict, requirements: List[str], technical_details: List[str]
     ) -> Dict[str, Dict]:
         """Determine how to break down feature into tasks"""
         breakdown = {}
 
         # Check for database/model needs
         if self._needs_database_models(requirements, technical_details):
-            breakdown['database_models'] = {
-                'description': 'Create database models and migrations',
-                'complexity': TaskComplexity.SIMPLE
+            breakdown["database_models"] = {
+                "description": "Create database models and migrations",
+                "complexity": TaskComplexity.SIMPLE,
             }
 
         # Check for API needs
         if self._needs_api_endpoints(requirements, technical_details):
-            breakdown['api_endpoints'] = {
-                'description': 'Implement API endpoints',
-                'complexity': TaskComplexity.MEDIUM
+            breakdown["api_endpoints"] = {
+                "description": "Implement API endpoints",
+                "complexity": TaskComplexity.MEDIUM,
             }
 
         # Check for business logic
         if self._needs_business_logic(feature):
             complexity = self._assess_business_logic_complexity(feature)
-            breakdown['business_logic'] = {
-                'description': 'Implement core business logic',
-                'complexity': complexity
+            breakdown["business_logic"] = {
+                "description": "Implement core business logic",
+                "complexity": complexity,
             }
 
         # Check for UI components
         if self._needs_ui_components(requirements, technical_details):
-            breakdown['ui_components'] = {
-                'description': 'Create UI components',
-                'complexity': TaskComplexity.MEDIUM
+            breakdown["ui_components"] = {
+                "description": "Create UI components",
+                "complexity": TaskComplexity.MEDIUM,
             }
 
         # If no specific pattern matched, create generic implementation task
         if not breakdown:
             complexity = self._assess_feature_complexity(feature)
-            breakdown['implementation'] = {
-                'description': f'Implement {feature["name"]}',
-                'complexity': complexity
+            breakdown["implementation"] = {
+                "description": f'Implement {feature["name"]}',
+                "complexity": complexity,
             }
 
         return breakdown
@@ -247,7 +260,7 @@ class TaskDecomposer:
         feature_name: str,
         task_type: str,
         task_details: Dict,
-        requirements: List[str]
+        requirements: List[str],
     ) -> Optional[Task]:
         """Create a Task object"""
         self.task_counter += 1
@@ -255,17 +268,17 @@ class TaskDecomposer:
         task_id = f"{feature_id}_task_{self.task_counter}"
         task_name = f"{feature_name}: {task_type.replace('_', ' ').title()}"
 
-        complexity = task_details['complexity']
+        complexity = task_details["complexity"]
         estimated_minutes = self.DURATION_MAP[complexity]
 
         task = Task(
             id=task_id,
             name=task_name,
-            description=task_details['description'],
+            description=task_details["description"],
             feature_id=feature_id,
             complexity=complexity,
             estimated_minutes=estimated_minutes,
-            category="implementation"
+            category="implementation",
         )
 
         # Add acceptance criteria
@@ -274,10 +287,7 @@ class TaskDecomposer:
         return task
 
     def _create_test_task(
-        self,
-        feature_id: str,
-        feature_name: str,
-        implementation_tasks: List[Task]
+        self, feature_id: str, feature_name: str, implementation_tasks: List[Task]
     ) -> Task:
         """Create testing task"""
         self.task_counter += 1
@@ -294,17 +304,13 @@ class TaskDecomposer:
             complexity=TaskComplexity.MEDIUM,
             estimated_minutes=90,
             category="testing",
-            dependencies=[t.id for t in implementation_tasks]
+            dependencies=[t.id for t in implementation_tasks],
         )
 
         task = self.add_acceptance_criteria(task)
         return task
 
-    def _create_documentation_task(
-        self,
-        feature_id: str,
-        feature_name: str
-    ) -> Task:
+    def _create_documentation_task(self, feature_id: str, feature_name: str) -> Task:
         """Create documentation task"""
         self.task_counter += 1
 
@@ -318,7 +324,7 @@ class TaskDecomposer:
             feature_id=feature_id,
             complexity=TaskComplexity.SIMPLE,
             estimated_minutes=60,
-            category="documentation"
+            category="documentation",
         )
 
         task = self.add_acceptance_criteria(task)
@@ -326,46 +332,76 @@ class TaskDecomposer:
 
     def _needs_database_models(self, requirements: List[str], technical_details: List[str]) -> bool:
         """Check if feature needs database models"""
-        text = ' '.join(requirements + technical_details).lower()
-        keywords = ['database', 'model', 'table', 'schema', 'migration', 'postgres', 'mysql', 'store']
+        text = " ".join(requirements + technical_details).lower()
+        keywords = [
+            "database",
+            "model",
+            "table",
+            "schema",
+            "migration",
+            "postgres",
+            "mysql",
+            "store",
+        ]
         return any(keyword in text for keyword in keywords)
 
     def _needs_api_endpoints(self, requirements: List[str], technical_details: List[str]) -> bool:
         """Check if feature needs API endpoints"""
-        text = ' '.join(requirements + technical_details).lower()
-        keywords = ['api', 'endpoint', 'rest', 'graphql', 'route', 'controller', 'request', 'response']
+        text = " ".join(requirements + technical_details).lower()
+        keywords = [
+            "api",
+            "endpoint",
+            "rest",
+            "graphql",
+            "route",
+            "controller",
+            "request",
+            "response",
+        ]
         return any(keyword in text for keyword in keywords)
 
     def _needs_business_logic(self, feature: Dict) -> bool:
         """Check if feature needs business logic"""
         # Most features have some business logic
-        requirements = feature.get('requirements', [])
+        requirements = feature.get("requirements", [])
         return len(requirements) > 0
 
     def _needs_ui_components(self, requirements: List[str], technical_details: List[str]) -> bool:
         """Check if feature needs UI components"""
-        text = ' '.join(requirements + technical_details).lower()
-        keywords = ['ui', 'interface', 'component', 'view', 'page', 'form', 'frontend', 'display', 'render']
+        text = " ".join(requirements + technical_details).lower()
+        keywords = [
+            "ui",
+            "interface",
+            "component",
+            "view",
+            "page",
+            "form",
+            "frontend",
+            "display",
+            "render",
+        ]
         return any(keyword in text for keyword in keywords)
 
     def _needs_documentation(self, feature: Dict) -> bool:
         """Check if feature needs documentation task"""
         # Complex features or features with many requirements need docs
-        complexity = feature.get('complexity', 'medium')
-        requirements = feature.get('requirements', [])
-        return complexity == 'complex' or len(requirements) > 5
+        complexity = feature.get("complexity", "medium")
+        requirements = feature.get("requirements", [])
+        return complexity == "complex" or len(requirements) > 5
 
     def _assess_business_logic_complexity(self, feature: Dict) -> TaskComplexity:
         """Assess complexity of business logic"""
-        text = f"{feature.get('description', '')} {' '.join(feature.get('requirements', []))}".lower()
+        text = (
+            f"{feature.get('description', '')} {' '.join(feature.get('requirements', []))}".lower()
+        )
 
         # Check for complex indicators
-        for indicator in self.COMPLEXITY_INDICATORS['complex']:
+        for indicator in self.COMPLEXITY_INDICATORS["complex"]:
             if indicator in text:
                 return TaskComplexity.COMPLEX
 
         # Check for simple indicators
-        for indicator in self.COMPLEXITY_INDICATORS['simple']:
+        for indicator in self.COMPLEXITY_INDICATORS["simple"]:
             if indicator in text:
                 return TaskComplexity.SIMPLE
 
@@ -374,15 +410,15 @@ class TaskDecomposer:
     def _assess_feature_complexity(self, feature: Dict) -> TaskComplexity:
         """Assess overall feature complexity"""
         # Use existing complexity if available
-        if 'complexity' in feature:
-            complexity_str = feature['complexity']
+        if "complexity" in feature:
+            complexity_str = feature["complexity"]
             try:
                 return TaskComplexity(complexity_str)
             except ValueError:
                 pass
 
         # Assess based on requirements count
-        requirements = feature.get('requirements', [])
+        requirements = feature.get("requirements", [])
         if len(requirements) <= 2:
             return TaskComplexity.SIMPLE
         elif len(requirements) >= 6:
@@ -394,42 +430,48 @@ class TaskDecomposer:
         """Generate acceptance criteria for implementation tasks"""
         criteria = []
 
-        if 'database' in task.name.lower() or 'model' in task.name.lower():
-            criteria.extend([
-                "Database models created with proper fields and relationships",
-                "Migrations generated and tested",
-                "Models have appropriate indexes and constraints"
-            ])
+        if "database" in task.name.lower() or "model" in task.name.lower():
+            criteria.extend(
+                [
+                    "Database models created with proper fields and relationships",
+                    "Migrations generated and tested",
+                    "Models have appropriate indexes and constraints",
+                ]
+            )
 
-        elif 'api' in task.name.lower() or 'endpoint' in task.name.lower():
-            criteria.extend([
-                "API endpoints implemented with proper HTTP methods",
-                "Request/response validation in place",
-                "Error handling implemented",
-                "API documented (docstrings or OpenAPI)"
-            ])
+        elif "api" in task.name.lower() or "endpoint" in task.name.lower():
+            criteria.extend(
+                [
+                    "API endpoints implemented with proper HTTP methods",
+                    "Request/response validation in place",
+                    "Error handling implemented",
+                    "API documented (docstrings or OpenAPI)",
+                ]
+            )
 
-        elif 'ui' in task.name.lower() or 'component' in task.name.lower():
-            criteria.extend([
-                "UI components render correctly",
-                "Component is responsive and accessible",
-                "User interactions work as expected"
-            ])
+        elif "ui" in task.name.lower() or "component" in task.name.lower():
+            criteria.extend(
+                [
+                    "UI components render correctly",
+                    "Component is responsive and accessible",
+                    "User interactions work as expected",
+                ]
+            )
 
-        elif 'business' in task.name.lower() or 'logic' in task.name.lower():
-            criteria.extend([
-                "Core functionality implemented",
-                "Business rules enforced",
-                "Edge cases handled"
-            ])
+        elif "business" in task.name.lower() or "logic" in task.name.lower():
+            criteria.extend(
+                ["Core functionality implemented", "Business rules enforced", "Edge cases handled"]
+            )
 
         else:
             # Generic implementation criteria
-            criteria.extend([
-                "Feature functionality implemented as specified",
-                "Code follows project conventions",
-                "Error handling implemented"
-            ])
+            criteria.extend(
+                [
+                    "Feature functionality implemented as specified",
+                    "Code follows project conventions",
+                    "Error handling implemented",
+                ]
+            )
 
         return criteria
 
@@ -439,7 +481,7 @@ class TaskDecomposer:
             "Unit tests written for all public methods",
             "Edge cases and error conditions tested",
             "Test coverage >= 90%",
-            "All tests passing"
+            "All tests passing",
         ]
 
     def _generate_documentation_criteria(self, task: Task) -> List[str]:
@@ -448,7 +490,7 @@ class TaskDecomposer:
             "API/public methods documented with docstrings",
             "Usage examples provided",
             "README updated if needed",
-            "Documentation is clear and accurate"
+            "Documentation is clear and accurate",
         ]
 
 

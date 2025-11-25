@@ -14,6 +14,7 @@ from .v2_parser import V2Project
 @dataclass
 class ValidationResult:
     """Result of validation"""
+
     passed: bool
     warnings: List[str] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
@@ -97,7 +98,9 @@ class MigrationValidator:
 
         # Large project warning
         if len(project.features) > 1000:
-            result.warnings.append(f"Large project with {len(project.features)} features - migration may take time")
+            result.warnings.append(
+                f"Large project with {len(project.features)} features - migration may take time"
+            )
 
         # Check for Supabase
         if project.supabase_config:
@@ -110,7 +113,7 @@ class MigrationValidator:
         self,
         original_project: V2Project,
         features_json: Dict[str, Any],
-        governance_config: Dict[str, Any]
+        governance_config: Dict[str, Any],
     ) -> ValidationResult:
         """
         Validate migration results
@@ -149,7 +152,9 @@ class MigrationValidator:
             result.warnings.append(f"Feature count mismatch: {original_count} → {migrated_count}")
             result.suggestions.append("Review feature migration for missing items")
         elif migrated_count > original_count:
-            result.warnings.append(f"More features after migration: {original_count} → {migrated_count}")
+            result.warnings.append(
+                f"More features after migration: {original_count} → {migrated_count}"
+            )
             result.suggestions.append("Additional features may have been extracted from build plan")
 
         # Check for essential project data
@@ -276,7 +281,7 @@ class MigrationValidator:
                 cwd=self.source_path,
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
             )
 
             if result.returncode == 0:
@@ -286,7 +291,9 @@ class MigrationValidator:
         except Exception:
             return ""
 
-    def format_validation_result(self, result: ValidationResult, title: str = "Validation Result") -> str:
+    def format_validation_result(
+        self, result: ValidationResult, title: str = "Validation Result"
+    ) -> str:
         """
         Format validation result for display
 

@@ -40,9 +40,9 @@ def integrate_routing(orchestrator, enable_cost_tracking: bool = True) -> Dict[s
     orchestrator.cost_tracker = cost_tracker
 
     return {
-        'estimator': estimator,
-        'selector': selector,
-        'cost_tracker': cost_tracker,
+        "estimator": estimator,
+        "selector": selector,
+        "cost_tracker": cost_tracker,
     }
 
 
@@ -79,6 +79,7 @@ def estimate_task_complexity(
 
     # Convert file strings to Path objects if needed
     from pathlib import Path
+
     file_paths = [Path(f) if isinstance(f, str) else f for f in (files or [])]
 
     complexity = estimator.estimate(
@@ -169,10 +170,10 @@ def get_routing_recommendations(
     recommendations = []
 
     for task in tasks:
-        task_id = task.get('id', 'unknown')
-        description = task.get('description', '')
-        files = task.get('files', [])
-        requirements = task.get('requirements', [])
+        task_id = task.get("id", "unknown")
+        description = task.get("description", "")
+        files = task.get("files", [])
+        requirements = task.get("requirements", [])
 
         # Estimate complexity
         complexity = estimate_task_complexity(
@@ -185,14 +186,16 @@ def get_routing_recommendations(
         # Select model
         selection = select_model_for_task(selector, complexity)
 
-        recommendations.append({
-            'task_id': task_id,
-            'complexity_level': complexity.level.value,
-            'complexity_score': complexity.score,
-            'selected_model': selection.model.name,
-            'model_tier': selection.model.tier.value,
-            'reasoning': selection.reason,
-        })
+        recommendations.append(
+            {
+                "task_id": task_id,
+                "complexity_level": complexity.level.value,
+                "complexity_score": complexity.score,
+                "selected_model": selection.model.name,
+                "model_tier": selection.model.tier.value,
+                "reasoning": selection.reason,
+            }
+        )
 
     return recommendations
 
@@ -222,7 +225,7 @@ def optimize_batch_routing(
     # Group by model tier
     by_tier = {}
     for rec in recommendations:
-        tier = rec['model_tier']
+        tier = rec["model_tier"]
         if tier not in by_tier:
             by_tier[tier] = []
         by_tier[tier].append(rec)
@@ -243,22 +246,22 @@ def optimize_batch_routing(
         within_budget = False
 
     return {
-        'recommendations': recommendations,
-        'by_tier': by_tier,
-        'tier_counts': {tier: len(tasks) for tier, tasks in by_tier.items()},
-        'tier_costs': tier_costs,
-        'total_estimated_cost': total_estimated_cost,
-        'within_budget': within_budget,
-        'cost_limit': cost_limit,
+        "recommendations": recommendations,
+        "by_tier": by_tier,
+        "tier_counts": {tier: len(tasks) for tier, tasks in by_tier.items()},
+        "tier_costs": tier_costs,
+        "total_estimated_cost": total_estimated_cost,
+        "within_budget": within_budget,
+        "cost_limit": cost_limit,
     }
 
 
 def _estimate_tier_cost(tier: str) -> float:
     """Estimate cost per task for a model tier."""
     tier_costs = {
-        'haiku': 0.01,
-        'sonnet': 0.05,
-        'opus': 0.15,
+        "haiku": 0.01,
+        "sonnet": 0.05,
+        "opus": 0.15,
     }
     return tier_costs.get(tier, 0.05)
 
@@ -275,19 +278,19 @@ def get_routing_summary(cost_tracker: Optional[CostTracker]) -> Dict[str, Any]:
     """
     if not cost_tracker:
         return {
-            'cost_tracking_enabled': False,
-            'total_cost': 0.0,
-            'total_requests': 0,
+            "cost_tracking_enabled": False,
+            "total_cost": 0.0,
+            "total_requests": 0,
         }
 
     summary = cost_tracker.get_summary()
 
     return {
-        'cost_tracking_enabled': True,
-        'total_cost': summary.total_cost,
-        'total_requests': summary.request_count,
-        'total_input_tokens': summary.total_input_tokens,
-        'total_output_tokens': summary.total_output_tokens,
-        'average_cost_per_request': summary.average_cost,
-        'by_model': summary.by_model,
+        "cost_tracking_enabled": True,
+        "total_cost": summary.total_cost,
+        "total_requests": summary.request_count,
+        "total_input_tokens": summary.total_input_tokens,
+        "total_output_tokens": summary.total_output_tokens,
+        "average_cost_per_request": summary.average_cost,
+        "by_model": summary.by_model,
     }

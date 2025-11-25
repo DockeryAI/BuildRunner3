@@ -26,7 +26,7 @@ console = Console()
 @gaps_app.command("analyze")
 def analyze_gaps(
     output_file: Optional[str] = typer.Option(None, "--output", "-o", help="Save report to file"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed analysis")
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed analysis"),
 ):
     """
     Analyze gaps between spec and implementation
@@ -55,7 +55,7 @@ def analyze_gaps(
 
         # Display gaps by category
         if verbose or analysis.total_gaps > 0:
-            console.print("\n" + "="*80 + "\n")
+            console.print("\n" + "=" * 80 + "\n")
             _display_feature_gaps(analysis)
             _display_implementation_gaps(analysis)
             _display_dependency_gaps(analysis)
@@ -79,14 +79,19 @@ def analyze_gaps(
     except Exception as e:
         console.print(f"[red]❌ Error during gap analysis: {e}[/red]")
         import traceback
+
         console.print(f"[dim]{traceback.format_exc()}[/dim]")
         raise typer.Exit(1)
 
 
 @gaps_app.command("report")
 def generate_report(
-    output_file: str = typer.Option(".buildrunner/gap_report.md", "--output", "-o", help="Output file path"),
-    format: str = typer.Option("markdown", "--format", "-f", help="Report format (markdown/json/text)")
+    output_file: str = typer.Option(
+        ".buildrunner/gap_report.md", "--output", "-o", help="Output file path"
+    ),
+    format: str = typer.Option(
+        "markdown", "--format", "-f", help="Report format (markdown/json/text)"
+    ),
 ):
     """
     Generate detailed gap analysis report
@@ -112,7 +117,8 @@ def generate_report(
         if format == "json":
             import json
             import dataclasses
-            with open(output_path, 'w') as f:
+
+            with open(output_path, "w") as f:
                 json.dump(dataclasses.asdict(analysis), f, indent=2)
         elif format == "markdown":
             _save_report(analysis, output_path)
@@ -132,8 +138,12 @@ def generate_report(
 
 @gaps_app.command("list")
 def list_gaps(
-    severity: Optional[str] = typer.Option(None, "--severity", "-s", help="Filter by severity (high/medium/low)"),
-    category: Optional[str] = typer.Option(None, "--category", "-c", help="Filter by category (features/implementation/dependencies)")
+    severity: Optional[str] = typer.Option(
+        None, "--severity", "-s", help="Filter by severity (high/medium/low)"
+    ),
+    category: Optional[str] = typer.Option(
+        None, "--category", "-c", help="Filter by category (features/implementation/dependencies)"
+    ),
 ):
     """
     List all detected gaps
@@ -159,7 +169,9 @@ def list_gaps(
             if analysis.missing_features:
                 console.print("[bold red]Missing Features (High):[/bold red]")
                 for feature in analysis.missing_features:
-                    console.print(f"  • {feature.get('name', 'Unknown')} - {feature.get('status', 'Unknown')}")
+                    console.print(
+                        f"  • {feature.get('name', 'Unknown')} - {feature.get('status', 'Unknown')}"
+                    )
                     gaps_shown += 1
                 console.print()
 
@@ -168,7 +180,9 @@ def list_gaps(
             if analysis.todos and (not severity or severity == "low"):
                 console.print("[bold yellow]TODOs (Low):[/bold yellow]")
                 for todo in analysis.todos[:10]:
-                    console.print(f"  • {todo.get('file', 'Unknown')}:{todo.get('line', '?')} - {todo.get('message', 'No message')}")
+                    console.print(
+                        f"  • {todo.get('file', 'Unknown')}:{todo.get('line', '?')} - {todo.get('message', 'No message')}"
+                    )
                     gaps_shown += 1
                 if len(analysis.todos) > 10:
                     console.print(f"  ... and {len(analysis.todos) - 10} more")
@@ -244,6 +258,7 @@ def show_summary():
 
 # Helper functions
 
+
 def _display_summary(analysis: GapAnalysis):
     """Display gap analysis summary"""
     table = Table(title="Gap Analysis Summary")
@@ -261,7 +276,11 @@ def _display_summary(analysis: GapAnalysis):
 
 def _display_feature_gaps(analysis: GapAnalysis):
     """Display feature-related gaps"""
-    if not analysis.missing_features and not analysis.incomplete_features and not analysis.blocked_features:
+    if (
+        not analysis.missing_features
+        and not analysis.incomplete_features
+        and not analysis.blocked_features
+    ):
         return
 
     console.print("[bold]Feature Gaps:[/bold]\n")
@@ -274,7 +293,9 @@ def _display_feature_gaps(analysis: GapAnalysis):
             console.print(f"  ... and {len(analysis.missing_features) - 5} more\n")
 
     if analysis.incomplete_features:
-        console.print(f"[yellow]Incomplete Features ({len(analysis.incomplete_features)}):[/yellow]")
+        console.print(
+            f"[yellow]Incomplete Features ({len(analysis.incomplete_features)}):[/yellow]"
+        )
         for feature in analysis.incomplete_features[:5]:
             console.print(f"  • {feature.get('name', 'Unknown')}")
         if len(analysis.incomplete_features) > 5:
@@ -306,7 +327,9 @@ def _display_implementation_gaps(analysis: GapAnalysis):
     if analysis.todo_count > 0:
         console.print(f"[yellow]TODOs/FIXMEs ({analysis.todo_count}):[/yellow]")
         for todo in analysis.todos[:5]:
-            console.print(f"  • {todo.get('file', 'Unknown')}:{todo.get('line', '?')} - {todo.get('message', 'No message')[:60]}")
+            console.print(
+                f"  • {todo.get('file', 'Unknown')}:{todo.get('line', '?')} - {todo.get('message', 'No message')[:60]}"
+            )
         if len(analysis.todos) > 5:
             console.print(f"  ... and {len(analysis.todos) - 5} more")
         console.print()
@@ -320,7 +343,9 @@ def _display_dependency_gaps(analysis: GapAnalysis):
     console.print("[bold]Dependency Gaps:[/bold]\n")
 
     if analysis.missing_dependencies:
-        console.print(f"[yellow]Missing Dependencies ({len(analysis.missing_dependencies)}):[/yellow]")
+        console.print(
+            f"[yellow]Missing Dependencies ({len(analysis.missing_dependencies)}):[/yellow]"
+        )
         for dep in analysis.missing_dependencies[:10]:
             console.print(f"  • {dep}")
         if len(analysis.missing_dependencies) > 10:
@@ -360,7 +385,7 @@ def _display_spec_violations(analysis: GapAnalysis):
 
 def _save_report(analysis: GapAnalysis, output_path: Path):
     """Save gap analysis report to markdown file"""
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         f.write("# Gap Analysis Report\n\n")
         f.write(f"**Generated:** {Path.cwd()}\n\n")
         f.write("## Summary\n\n")
@@ -390,7 +415,9 @@ def _save_report(analysis: GapAnalysis, output_path: Path):
         if analysis.todos:
             f.write("## TODOs\n\n")
             for todo in analysis.todos:
-                f.write(f"- {todo.get('file', 'Unknown')}:{todo.get('line', '?')} - {todo.get('message', '')}\n")
+                f.write(
+                    f"- {todo.get('file', 'Unknown')}:{todo.get('line', '?')} - {todo.get('message', '')}\n"
+                )
             f.write("\n")
 
         if analysis.missing_dependencies:
@@ -402,7 +429,7 @@ def _save_report(analysis: GapAnalysis, output_path: Path):
 
 def _save_text_report(analysis: GapAnalysis, output_path: Path):
     """Save gap analysis report to text file"""
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         f.write("GAP ANALYSIS REPORT\n")
         f.write("=" * 80 + "\n\n")
         f.write(f"Total Gaps: {analysis.total_gaps}\n")

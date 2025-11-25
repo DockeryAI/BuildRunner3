@@ -13,12 +13,12 @@ from .worker_coordinator import WorkerCoordinator, Worker, WorkerStatus
 from .live_dashboard import LiveDashboard, DashboardConfig
 
 __all__ = [
-    'SessionManager',
-    'Session',
-    'SessionStatus',
-    'WorkerCoordinator',
-    'Worker',
-    'WorkerStatus',
-    'LiveDashboard',
-    'DashboardConfig',
+    "SessionManager",
+    "Session",
+    "SessionStatus",
+    "WorkerCoordinator",
+    "Worker",
+    "WorkerStatus",
+    "LiveDashboard",
+    "DashboardConfig",
 ]

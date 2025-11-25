@@ -15,6 +15,7 @@ import shlex
 
 class PipeError(Exception):
     """Raised when piping operations fail."""
+
     pass
 
 
@@ -35,7 +36,7 @@ class CommandPiper:
         self,
         project_root: Optional[Path] = None,
         context_file: Optional[Path] = None,
-        max_output_size: int = 100000
+        max_output_size: int = 100000,
     ):
         """
         Initialize CommandPiper.
@@ -56,10 +57,7 @@ class CommandPiper:
             )
 
     def run_and_pipe(
-        self,
-        command: str,
-        shell: bool = True,
-        capture_errors: bool = True
+        self, command: str, shell: bool = True, capture_errors: bool = True
     ) -> Tuple[int, str, str]:
         """
         Run command and capture output.
@@ -82,19 +80,14 @@ class CommandPiper:
                     shell=True,
                     capture_output=True,
                     text=True,
-                    timeout=300  # 5 minute timeout
+                    timeout=300,  # 5 minute timeout
                 )
             else:
                 args = shlex.split(command)
-                result = subprocess.run(
-                    args,
-                    capture_output=True,
-                    text=True,
-                    timeout=300
-                )
+                result = subprocess.run(args, capture_output=True, text=True, timeout=300)
 
-            stdout = result.stdout[:self.max_output_size] if result.stdout else ""
-            stderr = result.stderr[:self.max_output_size] if result.stderr else ""
+            stdout = result.stdout[: self.max_output_size] if result.stdout else ""
+            stderr = result.stderr[: self.max_output_size] if result.stderr else ""
 
             return (result.returncode, stdout, stderr)
 
@@ -104,12 +97,7 @@ class CommandPiper:
             raise PipeError(f"Failed to execute command: {e}")
 
     def pipe_to_context(
-        self,
-        command: str,
-        stdout: str,
-        stderr: str,
-        return_code: int,
-        tags: Optional[list] = None
+        self, command: str, stdout: str, stderr: str, return_code: int, tags: Optional[list] = None
     ) -> None:
         """
         Write command output to context file.
@@ -153,17 +141,14 @@ class CommandPiper:
 """
 
             # Append to context file
-            with open(self.context_file, 'a') as f:
+            with open(self.context_file, "a") as f:
                 f.write(entry)
 
         except Exception as e:
             raise PipeError(f"Failed to write to context: {e}")
 
     def run_with_piping(
-        self,
-        command: str,
-        show_output: bool = True,
-        tags: Optional[list] = None
+        self, command: str, show_output: bool = True, tags: Optional[list] = None
     ) -> int:
         """
         Run command, show output in real-time, and pipe to context.
@@ -184,9 +169,9 @@ class CommandPiper:
         # Show output if requested
         if show_output:
             if stdout:
-                print(stdout, end='')
+                print(stdout, end="")
             if stderr:
-                print(stderr, end='', file=sys.stderr)
+                print(stderr, end="", file=sys.stderr)
 
         # Pipe to context
         self.pipe_to_context(command, stdout, stderr, return_code, tags)
@@ -223,14 +208,14 @@ class CommandPiper:
             if not self.context_file.exists():
                 return "No command outputs captured yet."
 
-            with open(self.context_file, 'r') as f:
+            with open(self.context_file, "r") as f:
                 content = f.read()
 
             # Split by separator and get last N entries
-            entries = content.split('---\n')
+            entries = content.split("---\n")
             recent = entries[-count:] if len(entries) >= count else entries
 
-            return '\n---\n'.join(recent)
+            return "\n---\n".join(recent)
 
         except Exception as e:
             raise PipeError(f"Failed to read context: {e}")
@@ -247,38 +232,38 @@ class CommandPiper:
         """
         if not self.context_file.exists():
             return {
-                'total_commands': 0,
-                'failed_commands': 0,
-                'failure_rate': 0.0,
-                'common_errors': []
+                "total_commands": 0,
+                "failed_commands": 0,
+                "failure_rate": 0.0,
+                "common_errors": [],
             }
 
         try:
-            with open(self.context_file, 'r') as f:
+            with open(self.context_file, "r") as f:
                 content = f.read()
 
             # Count total and failed commands
-            total = content.count('**Return Code:**')
-            failed = content.count('❌ FAILED')
+            total = content.count("**Return Code:**")
+            failed = content.count("❌ FAILED")
 
             failure_rate = (failed / total * 100) if total > 0 else 0.0
 
             # Extract common error patterns
             common_errors = []
-            if 'command not found' in content.lower():
-                common_errors.append('Command not found errors')
-            if 'permission denied' in content.lower():
-                common_errors.append('Permission errors')
-            if 'no such file' in content.lower():
-                common_errors.append('File not found errors')
-            if 'connection refused' in content.lower():
-                common_errors.append('Network connection errors')
+            if "command not found" in content.lower():
+                common_errors.append("Command not found errors")
+            if "permission denied" in content.lower():
+                common_errors.append("Permission errors")
+            if "no such file" in content.lower():
+                common_errors.append("File not found errors")
+            if "connection refused" in content.lower():
+                common_errors.append("Network connection errors")
 
             return {
-                'total_commands': total,
-                'failed_commands': failed,
-                'failure_rate': round(failure_rate, 2),
-                'common_errors': common_errors
+                "total_commands": total,
+                "failed_commands": failed,
+                "failure_rate": round(failure_rate, 2),
+                "common_errors": common_errors,
             }
 
         except Exception as e:
@@ -289,7 +274,7 @@ def auto_pipe_command(
     command: str,
     project_root: Optional[Path] = None,
     show_output: bool = True,
-    tags: Optional[list] = None
+    tags: Optional[list] = None,
 ) -> int:
     """
     Convenience function to pipe a command.

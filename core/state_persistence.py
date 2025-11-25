@@ -63,13 +63,13 @@ class StatePersistence:
         # Serialize tasks (handle dataclasses)
         serialized_tasks = {}
         for task_id, task in tasks.items():
-            if hasattr(task, '__dataclass_fields__'):
+            if hasattr(task, "__dataclass_fields__"):
                 task_data = asdict(task)
                 # Convert datetime objects to ISO format
                 for key, value in task_data.items():
                     if isinstance(value, datetime):
                         task_data[key] = value.isoformat()
-                    elif hasattr(value, 'value'):  # Enum
+                    elif hasattr(value, "value"):  # Enum
                         task_data[key] = value.value
                 serialized_tasks[task_id] = task_data
             else:
@@ -226,10 +226,7 @@ class StatePersistence:
     def get_stats(self) -> Dict:
         """Get persistence statistics"""
         state_files = self.list_state_files()
-        total_size = sum(
-            (self.state_dir / f).stat().st_size
-            for f in state_files
-        )
+        total_size = sum((self.state_dir / f).stat().st_size for f in state_files)
 
         return {
             "state_dir": str(self.state_dir),

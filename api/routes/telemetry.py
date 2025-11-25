@@ -66,6 +66,7 @@ def get_performance_tracker() -> PerformanceTracker:
 # Response models
 class EventResponse(BaseModel):
     """Event response model"""
+
     event_id: str
     event_type: str
     timestamp: str
@@ -75,6 +76,7 @@ class EventResponse(BaseModel):
 
 class TimelineResponse(BaseModel):
     """Timeline response model"""
+
     events: List[EventResponse]
     total: int
     start_time: Optional[str]
@@ -83,6 +85,7 @@ class TimelineResponse(BaseModel):
 
 class StatisticsResponse(BaseModel):
     """Statistics response model"""
+
     total_events: int
     events_by_type: Dict[str, int]
     oldest_event: Optional[str]
@@ -320,6 +323,7 @@ async def get_event_count(
     since = None
     if since_hours:
         from datetime import timedelta
+
         since = datetime.now() - timedelta(hours=since_hours)
 
     count = collector.get_count(event_type=event_type_enum, since=since)

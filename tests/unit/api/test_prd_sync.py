@@ -44,7 +44,7 @@ class TestPRDAPIEndpoints:
                 "project_name": "Test Project",
                 "version": "1.0.0",
                 "features": [],
-                "last_updated": "2024-01-01T00:00:00Z"
+                "last_updated": "2024-01-01T00:00:00Z",
             }
 
         @app.post("/api/prd/update")
@@ -53,7 +53,7 @@ class TestPRDAPIEndpoints:
                 "success": True,
                 "event_type": "feature_added",
                 "affected_features": ["test"],
-                "timestamp": "2024-01-01T00:00:00Z"
+                "timestamp": "2024-01-01T00:00:00Z",
             }
 
         @app.post("/api/prd/parse-nl")
@@ -61,7 +61,7 @@ class TestPRDAPIEndpoints:
             return {
                 "success": True,
                 "updates": {"add_feature": {"id": "test", "name": "Test"}},
-                "preview": "Will add feature: Test"
+                "preview": "Will add feature: Test",
             }
 
         @app.get("/api/prd/versions")
@@ -73,17 +73,14 @@ class TestPRDAPIEndpoints:
                         "timestamp": "2024-01-01T00:00:00Z",
                         "author": "test",
                         "summary": "Initial",
-                        "feature_count": 1
+                        "feature_count": 1,
                     }
                 ]
             }
 
         @app.post("/api/prd/rollback")
         async def rollback(request: dict):
-            return {
-                "success": True,
-                "message": "Rolled back to version 0"
-            }
+            return {"success": True, "message": "Rolled back to version 0"}
 
         client = TestClient(app)
         yield client
@@ -99,15 +96,13 @@ class TestPRDAPIEndpoints:
 
     def test_update_prd(self, client):
         """Test POST /api/prd/update"""
-        response = client.post("/api/prd/update", json={
-            "updates": {
-                "add_feature": {
-                    "id": "test",
-                    "name": "Test Feature"
-                }
+        response = client.post(
+            "/api/prd/update",
+            json={
+                "updates": {"add_feature": {"id": "test", "name": "Test Feature"}},
+                "author": "test",
             },
-            "author": "test"
-        })
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -116,9 +111,7 @@ class TestPRDAPIEndpoints:
 
     def test_parse_natural_language(self, client):
         """Test POST /api/prd/parse-nl"""
-        response = client.post("/api/prd/parse-nl", json={
-            "text": "add authentication feature"
-        })
+        response = client.post("/api/prd/parse-nl", json={"text": "add authentication feature"})
 
         assert response.status_code == 200
         data = response.json()
@@ -137,9 +130,7 @@ class TestPRDAPIEndpoints:
 
     def test_rollback(self, client):
         """Test POST /api/prd/rollback"""
-        response = client.post("/api/prd/rollback", json={
-            "version_index": 0
-        })
+        response = client.post("/api/prd/rollback", json={"version_index": 0})
 
         assert response.status_code == 200
         data = response.json()
@@ -195,18 +186,12 @@ class TestBroadcastFunction:
         # Create test event
         prd = PRD(project_name="Test")
         event = PRDChangeEvent(
-            event_type=ChangeType.FEATURE_ADDED,
-            affected_features=["test"],
-            full_prd=prd,
-            diff={}
+            event_type=ChangeType.FEATURE_ADDED, affected_features=["test"], full_prd=prd, diff={}
         )
 
         # Test broadcast logic (simplified)
         for conn in active_connections:
-            await conn.send_json({
-                "type": "prd_updated",
-                "event_type": event.event_type.value
-            })
+            await conn.send_json({"type": "prd_updated", "event_type": event.event_type.value})
 
         # Verify both clients called
         mock_ws1.send_json.assert_called_once()
@@ -236,12 +221,7 @@ class TestPreviewGeneration:
         """Test preview for add feature"""
         from core.prd.prd_controller import PRD, PRDFeature
 
-        updates = {
-            "add_feature": {
-                "id": "test",
-                "name": "Test Feature"
-            }
-        }
+        updates = {"add_feature": {"id": "test", "name": "Test Feature"}}
 
         prd = PRD(project_name="Test", features=[])
 
@@ -259,9 +239,7 @@ class TestPreviewGeneration:
         """Test preview for remove feature"""
         from core.prd.prd_controller import PRD, PRDFeature
 
-        updates = {
-            "remove_feature": "test-id"
-        }
+        updates = {"remove_feature": "test-id"}
 
         feature = PRDFeature(id="test-id", name="Test Feature")
         prd = PRD(project_name="Test", features=[feature])
@@ -283,10 +261,7 @@ class TestPreviewGeneration:
         from core.prd.prd_controller import PRD, PRDFeature
 
         updates = {
-            "update_feature": {
-                "id": "test-id",
-                "updates": {"description": "New description"}
-            }
+            "update_feature": {"id": "test-id", "updates": {"description": "New description"}}
         }
 
         feature = PRDFeature(id="test-id", name="Test Feature")
@@ -314,10 +289,13 @@ class TestRequestValidation:
 
     def test_update_requires_updates_field(self, client):
         """Test update endpoint requires updates field"""
-        response = client.post("/api/prd/update", json={
-            "author": "test"
-            # Missing updates field
-        })
+        response = client.post(
+            "/api/prd/update",
+            json={
+                "author": "test"
+                # Missing updates field
+            },
+        )
 
         # Should return 422 for validation error (FastAPI default)
         # Or handle gracefully
@@ -325,17 +303,23 @@ class TestRequestValidation:
 
     def test_rollback_requires_version_index(self, client):
         """Test rollback requires version_index"""
-        response = client.post("/api/prd/rollback", json={
-            # Missing version_index
-        })
+        response = client.post(
+            "/api/prd/rollback",
+            json={
+                # Missing version_index
+            },
+        )
 
         assert response.status_code in [200, 422]
 
     def test_parse_nl_requires_text(self, client):
         """Test parse-nl requires text field"""
-        response = client.post("/api/prd/parse-nl", json={
-            # Missing text
-        })
+        response = client.post(
+            "/api/prd/parse-nl",
+            json={
+                # Missing text
+            },
+        )
 
         assert response.status_code in [200, 422]
 

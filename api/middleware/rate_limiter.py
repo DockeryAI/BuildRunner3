@@ -40,6 +40,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RateLimitBucket:
     """Token bucket for rate limiting"""
+
     tokens: float
     last_update: float
     limit: int
@@ -92,10 +93,7 @@ class RateLimitStore:
 
             if key not in self.buckets:
                 self.buckets[key] = RateLimitBucket(
-                    tokens=float(limit),
-                    last_update=current_time,
-                    limit=limit,
-                    window=window
+                    tokens=float(limit), last_update=current_time, limit=limit, window=window
                 )
 
             return self.buckets[key]
@@ -103,7 +101,8 @@ class RateLimitStore:
     async def _cleanup(self, current_time: float):
         """Remove expired buckets"""
         expired_keys = [
-            key for key, bucket in self.buckets.items()
+            key
+            for key, bucket in self.buckets.items()
             if current_time - bucket.last_update > bucket.window * 2
         ]
 
@@ -145,11 +144,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     """
 
     def __init__(
-        self,
-        app,
-        default_limit: int = 100,
-        default_window: int = 60,
-        exclude_paths: list = None
+        self, app, default_limit: int = 100, default_window: int = 60, exclude_paths: list = None
     ):
         super().__init__(app)
         self.default_limit = default_limit
@@ -204,8 +199,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if not success:
             # Rate limit exceeded
             logger.warning(
-                f"Rate limit exceeded for {client_id} on {path}. "
-                f"Retry after {retry_after}s"
+                f"Rate limit exceeded for {client_id} on {path}. " f"Retry after {retry_after}s"
             )
 
             return JSONResponse(
@@ -213,13 +207,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 content={
                     "error": "Rate limit exceeded",
                     "message": f"Too many requests. Please try again in {retry_after} seconds.",
-                    "retry_after": retry_after
+                    "retry_after": retry_after,
                 },
                 headers={
                     "Retry-After": str(retry_after),
                     "X-RateLimit-Limit": str(limit),
-                    "X-RateLimit-Window": str(window)
-                }
+                    "X-RateLimit-Window": str(window),
+                },
             )
 
         # Process request
@@ -231,9 +225,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         response.headers["X-RateLimit-Limit"] = str(limit)
         response.headers["X-RateLimit-Remaining"] = str(remaining)
-        response.headers["X-RateLimit-Reset"] = str(
-            int(bucket.last_update + window)
-        )
+        response.headers["X-RateLimit-Reset"] = str(int(bucket.last_update + window))
 
         return response
 
@@ -249,11 +241,13 @@ def rate_limit(limit: int, window: int = 60):
         async def expensive_operation():
             ...
     """
+
     def decorator(func):
         # Store rate limit config on function
         func._rate_limit = limit
         func._rate_limit_window = window
         return func
+
     return decorator
 
 
@@ -261,16 +255,14 @@ def rate_limit(limit: int, window: int = 60):
 RATE_LIMIT_CONFIG = {
     # PRD endpoints
     "/api/prd/current": {"limit": 100, "window": 60},  # 100 reads per minute
-    "/api/prd/update": {"limit": 30, "window": 60},    # 30 updates per minute
-    "/api/prd/parse": {"limit": 50, "window": 60},     # 50 parses per minute
+    "/api/prd/update": {"limit": 30, "window": 60},  # 30 updates per minute
+    "/api/prd/parse": {"limit": 50, "window": 60},  # 50 parses per minute
     "/api/prd/versions": {"limit": 50, "window": 60},  # 50 reads per minute
     "/api/prd/rollback": {"limit": 10, "window": 60},  # 10 rollbacks per minute
-
     # Task endpoints
     "/api/tasks": {"limit": 100, "window": 60},
     "/api/tasks/update": {"limit": 50, "window": 60},
     "/api/tasks/complete": {"limit": 50, "window": 60},
-
     # Build endpoints
     "/api/build/execute": {"limit": 20, "window": 60},  # Limited - expensive
     "/api/build/status": {"limit": 100, "window": 60},

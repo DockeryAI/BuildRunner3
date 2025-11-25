@@ -177,7 +177,7 @@ class Database:
         """
         with self.transaction():
             # Split on semicolons and execute each statement
-            statements = [s.strip() for s in migration_sql.split(';') if s.strip()]
+            statements = [s.strip() for s in migration_sql.split(";") if s.strip()]
             for statement in statements:
                 self.cursor.execute(statement)
 
@@ -185,7 +185,7 @@ class Database:
 
     def close(self):
         """Close database connection"""
-        if hasattr(self, 'conn'):
+        if hasattr(self, "conn"):
             self.conn.close()
             logger.info("Database connection closed")
 

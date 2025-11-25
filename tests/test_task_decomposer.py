@@ -1,6 +1,7 @@
 """
 Tests for Task Decomposer
 """
+
 import pytest
 from core.task_decomposer import TaskDecomposer, Task, TaskComplexity
 
@@ -20,17 +21,11 @@ class TestTaskDecomposer:
             "id": "simple_feature",
             "name": "Simple CRUD API",
             "description": "Basic CRUD operations for users",
-            "requirements": [
-                "Create user endpoint",
-                "Read user endpoint"
-            ],
-            "technical_details": [
-                "REST API",
-                "Database model"
-            ],
+            "requirements": ["Create user endpoint", "Read user endpoint"],
+            "technical_details": ["REST API", "Database model"],
             "acceptance_criteria": [],
             "dependencies": [],
-            "complexity": "simple"
+            "complexity": "simple",
         }
 
     @pytest.fixture
@@ -48,22 +43,22 @@ class TestTaskDecomposer:
                 "Password reset flow",
                 "2FA support",
                 "Rate limiting",
-                "Security audit logging"
+                "Security audit logging",
             ],
             "technical_details": [
                 "JWT tokens",
                 "PostgreSQL for user storage",
                 "Redis for sessions",
                 "OAuth2 protocol",
-                "bcrypt for password hashing"
+                "bcrypt for password hashing",
             ],
             "acceptance_criteria": [
                 "Users can register and login",
                 "OAuth providers work correctly",
-                "Sessions are properly managed"
+                "Sessions are properly managed",
             ],
             "dependencies": [],
-            "complexity": "complex"
+            "complexity": "complex",
         }
 
     @pytest.fixture
@@ -73,19 +68,11 @@ class TestTaskDecomposer:
             "id": "dashboard",
             "name": "User Dashboard",
             "description": "Interactive dashboard with charts and data visualization",
-            "requirements": [
-                "Display user metrics",
-                "Interactive charts",
-                "Responsive design"
-            ],
-            "technical_details": [
-                "React components",
-                "Chart.js library",
-                "API integration"
-            ],
+            "requirements": ["Display user metrics", "Interactive charts", "Responsive design"],
+            "technical_details": ["React components", "Chart.js library", "API integration"],
             "acceptance_criteria": [],
             "dependencies": [],
-            "complexity": "medium"
+            "complexity": "medium",
         }
 
     def test_init(self, decomposer):
@@ -127,7 +114,7 @@ class TestTaskDecomposer:
 
         # Should create UI-related task
         task_names = [task.name.lower() for task in tasks]
-        assert any('ui' in name or 'component' in name for name in task_names)
+        assert any("ui" in name or "component" in name for name in task_names)
 
     def test_estimate_complexity_simple(self, decomposer):
         """Test complexity estimation for simple tasks"""
@@ -137,7 +124,7 @@ class TestTaskDecomposer:
             description="Basic create operation",
             feature_id="feature_1",
             complexity=TaskComplexity.SIMPLE,
-            estimated_minutes=60
+            estimated_minutes=60,
         )
 
         complexity = decomposer.estimate_complexity(task)
@@ -151,7 +138,7 @@ class TestTaskDecomposer:
             description="Implement OAuth2 authentication with multiple providers",
             feature_id="feature_2",
             complexity=TaskComplexity.MEDIUM,  # Will be re-estimated
-            estimated_minutes=90
+            estimated_minutes=90,
         )
 
         # Re-estimate based on content
@@ -168,7 +155,7 @@ class TestTaskDecomposer:
             description="Implement payment gateway integration",
             feature_id="feature_3",
             complexity=None,
-            estimated_minutes=90
+            estimated_minutes=90,
         )
         assert decomposer.estimate_complexity(complex_task) == TaskComplexity.COMPLEX
 
@@ -179,7 +166,7 @@ class TestTaskDecomposer:
             description="Simple database operations",
             feature_id="feature_4",
             complexity=None,
-            estimated_minutes=60
+            estimated_minutes=60,
         )
         assert decomposer.estimate_complexity(simple_task) == TaskComplexity.SIMPLE
 
@@ -191,7 +178,7 @@ class TestTaskDecomposer:
             description="Description",
             feature_id="feature_5",
             complexity=TaskComplexity.SIMPLE,
-            estimated_minutes=60
+            estimated_minutes=60,
         )
 
         duration = decomposer.calculate_duration(task)
@@ -205,7 +192,7 @@ class TestTaskDecomposer:
             description="Description",
             feature_id="feature_6",
             complexity=TaskComplexity.MEDIUM,
-            estimated_minutes=90
+            estimated_minutes=90,
         )
 
         duration = decomposer.calculate_duration(task)
@@ -219,7 +206,7 @@ class TestTaskDecomposer:
             description="Description",
             feature_id="feature_7",
             complexity=TaskComplexity.COMPLEX,
-            estimated_minutes=120
+            estimated_minutes=120,
         )
 
         duration = decomposer.calculate_duration(task)
@@ -234,7 +221,7 @@ class TestTaskDecomposer:
             feature_id="feature_8",
             complexity=TaskComplexity.MEDIUM,
             estimated_minutes=90,
-            category="implementation"
+            category="implementation",
         )
 
         task = decomposer.add_acceptance_criteria(task)
@@ -251,15 +238,15 @@ class TestTaskDecomposer:
             feature_id="feature_9",
             complexity=TaskComplexity.MEDIUM,
             estimated_minutes=90,
-            category="testing"
+            category="testing",
         )
 
         task = decomposer.add_acceptance_criteria(task)
 
         assert len(task.acceptance_criteria) > 0
         # Testing criteria should include coverage requirements
-        criteria_text = ' '.join(task.acceptance_criteria).lower()
-        assert 'test' in criteria_text
+        criteria_text = " ".join(task.acceptance_criteria).lower()
+        assert "test" in criteria_text
 
     def test_add_acceptance_criteria_documentation(self, decomposer):
         """Test adding acceptance criteria for documentation tasks"""
@@ -270,15 +257,15 @@ class TestTaskDecomposer:
             feature_id="feature_10",
             complexity=TaskComplexity.SIMPLE,
             estimated_minutes=60,
-            category="documentation"
+            category="documentation",
         )
 
         task = decomposer.add_acceptance_criteria(task)
 
         assert len(task.acceptance_criteria) > 0
         # Documentation criteria should mention docs/examples
-        criteria_text = ' '.join(task.acceptance_criteria).lower()
-        assert 'document' in criteria_text or 'example' in criteria_text
+        criteria_text = " ".join(task.acceptance_criteria).lower()
+        assert "document" in criteria_text or "example" in criteria_text
 
     def test_add_acceptance_criteria_already_exists(self, decomposer):
         """Test that existing criteria are not overwritten"""
@@ -291,7 +278,7 @@ class TestTaskDecomposer:
             feature_id="feature_11",
             complexity=TaskComplexity.SIMPLE,
             estimated_minutes=60,
-            acceptance_criteria=existing_criteria.copy()
+            acceptance_criteria=existing_criteria.copy(),
         )
 
         task = decomposer.add_acceptance_criteria(task)
@@ -349,25 +336,19 @@ class TestTaskDecomposer:
     def test_needs_documentation(self, decomposer):
         """Test detection of documentation needs"""
         # Complex feature should need documentation
-        complex_feature = {
-            "complexity": "complex",
-            "requirements": ["Req 1", "Req 2"]
-        }
+        complex_feature = {"complexity": "complex", "requirements": ["Req 1", "Req 2"]}
         assert decomposer._needs_documentation(complex_feature) is True
 
         # Feature with many requirements should need documentation
         many_req_feature = {
             "complexity": "medium",
-            "requirements": ["R1", "R2", "R3", "R4", "R5", "R6"]
+            "requirements": ["R1", "R2", "R3", "R4", "R5", "R6"],
         }
         assert decomposer._needs_documentation(many_req_feature) is True
 
     def test_needs_documentation_false(self, decomposer):
         """Test when documentation not needed"""
-        simple_feature = {
-            "complexity": "simple",
-            "requirements": ["Req 1", "Req 2"]
-        }
+        simple_feature = {"complexity": "simple", "requirements": ["Req 1", "Req 2"]}
         assert decomposer._needs_documentation(simple_feature) is False
 
     def test_assess_business_logic_complexity(self, decomposer):
@@ -375,7 +356,7 @@ class TestTaskDecomposer:
         # Complex business logic
         complex_feature = {
             "description": "Payment processing with fraud detection",
-            "requirements": ["Payment gateway integration", "Security validation"]
+            "requirements": ["Payment gateway integration", "Security validation"],
         }
         complexity = decomposer._assess_business_logic_complexity(complex_feature)
         assert complexity == TaskComplexity.COMPLEX
@@ -383,7 +364,7 @@ class TestTaskDecomposer:
         # Simple business logic
         simple_feature = {
             "description": "Basic CRUD operations",
-            "requirements": ["Simple data handling"]
+            "requirements": ["Simple data handling"],
         }
         complexity = decomposer._assess_business_logic_complexity(simple_feature)
         assert complexity == TaskComplexity.SIMPLE
@@ -391,29 +372,20 @@ class TestTaskDecomposer:
     def test_assess_feature_complexity_by_requirements_count(self, decomposer):
         """Test feature complexity assessment based on requirements count"""
         # Simple (≤2 requirements)
-        simple_feature = {
-            "requirements": ["Req 1", "Req 2"]
-        }
+        simple_feature = {"requirements": ["Req 1", "Req 2"]}
         assert decomposer._assess_feature_complexity(simple_feature) == TaskComplexity.SIMPLE
 
         # Complex (≥6 requirements)
-        complex_feature = {
-            "requirements": ["R1", "R2", "R3", "R4", "R5", "R6"]
-        }
+        complex_feature = {"requirements": ["R1", "R2", "R3", "R4", "R5", "R6"]}
         assert decomposer._assess_feature_complexity(complex_feature) == TaskComplexity.COMPLEX
 
         # Medium (3-5 requirements)
-        medium_feature = {
-            "requirements": ["R1", "R2", "R3", "R4"]
-        }
+        medium_feature = {"requirements": ["R1", "R2", "R3", "R4"]}
         assert decomposer._assess_feature_complexity(medium_feature) == TaskComplexity.MEDIUM
 
     def test_assess_feature_complexity_from_complexity_field(self, decomposer):
         """Test using existing complexity field"""
-        feature = {
-            "complexity": "complex",
-            "requirements": ["R1"]  # Would normally be simple
-        }
+        feature = {"complexity": "complex", "requirements": ["R1"]}  # Would normally be simple
 
         complexity = decomposer._assess_feature_complexity(feature)
         assert complexity == TaskComplexity.COMPLEX
@@ -427,14 +399,14 @@ class TestTaskDecomposer:
             feature_id="feature_12",
             complexity=TaskComplexity.SIMPLE,
             estimated_minutes=60,
-            category="implementation"
+            category="implementation",
         )
 
         criteria = decomposer._generate_implementation_criteria(task)
 
         assert len(criteria) > 0
-        criteria_text = ' '.join(criteria).lower()
-        assert 'model' in criteria_text or 'database' in criteria_text
+        criteria_text = " ".join(criteria).lower()
+        assert "model" in criteria_text or "database" in criteria_text
 
     def test_generate_implementation_criteria_api(self, decomposer):
         """Test criteria generation for API tasks"""
@@ -445,14 +417,14 @@ class TestTaskDecomposer:
             feature_id="feature_13",
             complexity=TaskComplexity.MEDIUM,
             estimated_minutes=90,
-            category="implementation"
+            category="implementation",
         )
 
         criteria = decomposer._generate_implementation_criteria(task)
 
         assert len(criteria) > 0
-        criteria_text = ' '.join(criteria).lower()
-        assert 'api' in criteria_text or 'endpoint' in criteria_text
+        criteria_text = " ".join(criteria).lower()
+        assert "api" in criteria_text or "endpoint" in criteria_text
 
     def test_generate_implementation_criteria_ui(self, decomposer):
         """Test criteria generation for UI tasks"""
@@ -463,14 +435,14 @@ class TestTaskDecomposer:
             feature_id="feature_14",
             complexity=TaskComplexity.MEDIUM,
             estimated_minutes=90,
-            category="implementation"
+            category="implementation",
         )
 
         criteria = decomposer._generate_implementation_criteria(task)
 
         assert len(criteria) > 0
-        criteria_text = ' '.join(criteria).lower()
-        assert 'ui' in criteria_text or 'component' in criteria_text
+        criteria_text = " ".join(criteria).lower()
+        assert "ui" in criteria_text or "component" in criteria_text
 
     def test_generate_implementation_criteria_business_logic(self, decomposer):
         """Test criteria generation for business logic tasks"""
@@ -481,14 +453,18 @@ class TestTaskDecomposer:
             feature_id="feature_15",
             complexity=TaskComplexity.MEDIUM,
             estimated_minutes=90,
-            category="implementation"
+            category="implementation",
         )
 
         criteria = decomposer._generate_implementation_criteria(task)
 
         assert len(criteria) > 0
-        criteria_text = ' '.join(criteria).lower()
-        assert 'business' in criteria_text or 'logic' in criteria_text or 'functionality' in criteria_text
+        criteria_text = " ".join(criteria).lower()
+        assert (
+            "business" in criteria_text
+            or "logic" in criteria_text
+            or "functionality" in criteria_text
+        )
 
     def test_generate_testing_criteria(self, decomposer):
         """Test criteria generation for testing tasks"""
@@ -499,15 +475,15 @@ class TestTaskDecomposer:
             feature_id="feature_16",
             complexity=TaskComplexity.MEDIUM,
             estimated_minutes=90,
-            category="testing"
+            category="testing",
         )
 
         criteria = decomposer._generate_testing_criteria(task)
 
         assert len(criteria) == 4
-        criteria_text = ' '.join(criteria).lower()
-        assert 'test' in criteria_text
-        assert 'coverage' in criteria_text
+        criteria_text = " ".join(criteria).lower()
+        assert "test" in criteria_text
+        assert "coverage" in criteria_text
 
     def test_generate_documentation_criteria(self, decomposer):
         """Test criteria generation for documentation tasks"""
@@ -518,15 +494,15 @@ class TestTaskDecomposer:
             feature_id="feature_17",
             complexity=TaskComplexity.SIMPLE,
             estimated_minutes=60,
-            category="documentation"
+            category="documentation",
         )
 
         criteria = decomposer._generate_documentation_criteria(task)
 
         assert len(criteria) == 4
-        criteria_text = ' '.join(criteria).lower()
-        assert 'document' in criteria_text
-        assert 'example' in criteria_text
+        criteria_text = " ".join(criteria).lower()
+        assert "document" in criteria_text
+        assert "example" in criteria_text
 
     def test_task_counter_increments(self, decomposer):
         """Test that task counter increments correctly"""
@@ -540,7 +516,7 @@ class TestTaskDecomposer:
             "technical_details": [],
             "acceptance_criteria": [],
             "dependencies": [],
-            "complexity": "simple"
+            "complexity": "simple",
         }
 
         tasks = decomposer.decompose_feature(feature)
@@ -554,19 +530,11 @@ class TestTaskDecomposer:
             "id": "feature_y",
             "name": "Multi-task Feature",
             "description": "Feature with multiple tasks",
-            "requirements": [
-                "Database storage",
-                "API endpoints",
-                "UI components"
-            ],
-            "technical_details": [
-                "PostgreSQL",
-                "REST API",
-                "React"
-            ],
+            "requirements": ["Database storage", "API endpoints", "UI components"],
+            "technical_details": ["PostgreSQL", "REST API", "React"],
             "acceptance_criteria": [],
             "dependencies": [],
-            "complexity": "complex"
+            "complexity": "complex",
         }
 
         tasks = decomposer.decompose_feature(feature)
@@ -580,18 +548,11 @@ class TestTaskDecomposer:
             "id": "feature_z",
             "name": "Feature with Dependencies",
             "description": "Feature that generates testing tasks",
-            "requirements": [
-                "Database model",
-                "API endpoint",
-                "Business logic"
-            ],
-            "technical_details": [
-                "PostgreSQL",
-                "REST API"
-            ],
+            "requirements": ["Database model", "API endpoint", "Business logic"],
+            "technical_details": ["PostgreSQL", "REST API"],
             "acceptance_criteria": [],
             "dependencies": [],
-            "complexity": "medium"
+            "complexity": "medium",
         }
 
         tasks = decomposer.decompose_feature(feature)
@@ -615,7 +576,7 @@ class TestTaskDecomposer:
             "technical_details": [],
             "acceptance_criteria": [],
             "dependencies": [],
-            "complexity": "simple"
+            "complexity": "simple",
         }
 
         tasks = decomposer.decompose_feature(feature)
@@ -633,17 +594,17 @@ class TestTaskDecomposer:
                 "Database storage required",
                 "REST API endpoints needed",
                 "User interface components",
-                "Complex business logic"
+                "Complex business logic",
             ],
             "technical_details": [
                 "PostgreSQL database",
                 "FastAPI framework",
                 "React frontend",
-                "Authentication workflow"
+                "Authentication workflow",
             ],
             "acceptance_criteria": [],
             "dependencies": [],
-            "complexity": "complex"
+            "complexity": "complex",
         }
 
         tasks = decomposer.decompose_feature(feature)
@@ -667,14 +628,14 @@ class TestTaskDecomposer:
 
     def test_complexity_indicators_structure(self, decomposer):
         """Test that complexity indicators are properly structured"""
-        assert 'simple' in decomposer.COMPLEXITY_INDICATORS
-        assert 'complex' in decomposer.COMPLEXITY_INDICATORS
-        assert 'medium' in decomposer.COMPLEXITY_INDICATORS
+        assert "simple" in decomposer.COMPLEXITY_INDICATORS
+        assert "complex" in decomposer.COMPLEXITY_INDICATORS
+        assert "medium" in decomposer.COMPLEXITY_INDICATORS
 
-        assert isinstance(decomposer.COMPLEXITY_INDICATORS['simple'], list)
-        assert isinstance(decomposer.COMPLEXITY_INDICATORS['complex'], list)
-        assert len(decomposer.COMPLEXITY_INDICATORS['simple']) > 0
-        assert len(decomposer.COMPLEXITY_INDICATORS['complex']) > 0
+        assert isinstance(decomposer.COMPLEXITY_INDICATORS["simple"], list)
+        assert isinstance(decomposer.COMPLEXITY_INDICATORS["complex"], list)
+        assert len(decomposer.COMPLEXITY_INDICATORS["simple"]) > 0
+        assert len(decomposer.COMPLEXITY_INDICATORS["complex"]) > 0
 
     def test_estimate_complexity_default_medium(self, decomposer):
         """Test complexity defaults to medium when no keywords match"""
@@ -684,7 +645,7 @@ class TestTaskDecomposer:
             description="Generic task description without keywords",
             feature_id="feature_18",
             complexity=None,
-            estimated_minutes=90
+            estimated_minutes=90,
         )
 
         # Should default to medium when no keywords match
@@ -693,10 +654,7 @@ class TestTaskDecomposer:
 
     def test_assess_feature_complexity_invalid_complexity_string(self, decomposer):
         """Test handling of invalid complexity string"""
-        feature = {
-            "complexity": "invalid_complexity_level",
-            "requirements": ["R1", "R2", "R3"]
-        }
+        feature = {"complexity": "invalid_complexity_level", "requirements": ["R1", "R2", "R3"]}
 
         # Should fall back to requirements-based assessment
         complexity = decomposer._assess_feature_complexity(feature)
@@ -704,18 +662,14 @@ class TestTaskDecomposer:
 
     def test_needs_business_logic_true(self, decomposer):
         """Test business logic detection when requirements exist"""
-        feature = {
-            "requirements": ["Business rule 1", "Validation logic"]
-        }
+        feature = {"requirements": ["Business rule 1", "Validation logic"]}
 
         result = decomposer._needs_business_logic(feature)
         assert result is True
 
     def test_needs_business_logic_false(self, decomposer):
         """Test business logic detection when no requirements"""
-        feature = {
-            "requirements": []
-        }
+        feature = {"requirements": []}
 
         result = decomposer._needs_business_logic(feature)
         assert result is False
@@ -735,7 +689,7 @@ class TestTaskDecomposer:
             "technical_details": ["Detail 1"],
             "acceptance_criteria": [],
             "dependencies": [],
-            "complexity": "medium"
+            "complexity": "medium",
         }
 
         # Mock sys.argv

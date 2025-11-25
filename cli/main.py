@@ -53,7 +53,7 @@ from cli.github_commands import app as github_app
 app = typer.Typer(
     name="br",
     help="BuildRunner 3.0 - Git-backed governance for AI-assisted development",
-    add_completion=False
+    add_completion=False,
 )
 
 # Add command groups
@@ -92,6 +92,7 @@ console = Console()
 
 # ===== Helper Functions =====
 
+
 def get_project_root() -> Path:
     """Get project root directory."""
     return Path.cwd()
@@ -121,9 +122,7 @@ def retry_with_backoff(func, max_retries: int = 3, delays: list = [1, 2, 4, 8]):
             last_exception = e
             if attempt < max_retries - 1:
                 delay = delays[attempt] if attempt < len(delays) else delays[-1]
-                console.print(
-                    f"[yellow]⚠️  Attempt {attempt + 1} failed: {e}[/yellow]"
-                )
+                console.print(f"[yellow]⚠️  Attempt {attempt + 1} failed: {e}[/yellow]")
                 console.print(f"[yellow]Retrying in {delay}s...[/yellow]")
                 time.sleep(delay)
 
@@ -139,11 +138,12 @@ def handle_error(error: Exception, show_debug_hint: bool = True):
 
 # ===== Core Commands =====
 
+
 @app.command()
 def init(
     project_name: str = typer.Argument(..., help="Project name"),
     force: bool = typer.Option(False, "--force", "-f", help="Force initialization"),
-    no_profile: bool = typer.Option(False, "--no-profile", help="Skip global profile activation")
+    no_profile: bool = typer.Option(False, "--no-profile", help="Skip global profile activation"),
 ):
     """Initialize a new BuildRunner project in ~/Projects with automatic alias creation."""
     try:
@@ -160,9 +160,7 @@ def init(
             raise typer.Exit(1)
 
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
             task = progress.add_task("Initializing project...", total=None)
 
@@ -183,12 +181,12 @@ def init(
                     "features_complete": 0,
                     "features_in_progress": 0,
                     "features_planned": 0,
-                    "completion_percentage": 0
-                }
+                    "completion_percentage": 0,
+                },
             }
 
             features_file = buildrunner_dir / "features.json"
-            with open(features_file, 'w') as f:
+            with open(features_file, "w") as f:
                 json.dump(features_data, f, indent=2)
 
             # Initialize project behavior config
@@ -208,34 +206,37 @@ def init(
             if no_profile:
                 # Don't auto-activate any profile
                 config = get_config_manager(project_root)
-                config.set('profiles.auto_activate', False, scope='project')
+                config.set("profiles.auto_activate", False, scope="project")
 
             planning_path = generator.generate_planning_mode(
                 project_name=project_name,
                 profile_name=None,  # None = use global default if auto_activate is True
-                force=True
+                force=True,
             )
 
             console.print(f"\n[green]✅ Created {planning_path}[/green]")
 
             # Create project alias in ~/.zshrc
             import subprocess
+
             zshrc_path = Path.home() / ".zshrc"
-            alias_cmd = f'alias {project_name}="claude {project_root} --dangerously-skip-permissions"'
+            alias_cmd = (
+                f'alias {project_name}="claude {project_root} --dangerously-skip-permissions"'
+            )
 
             # Check if alias already exists
             if zshrc_path.exists():
                 zshrc_content = zshrc_path.read_text()
-                if f'alias {project_name}=' not in zshrc_content:
-                    with open(zshrc_path, 'a') as f:
-                        f.write(f'\n{alias_cmd}\n')
+                if f"alias {project_name}=" not in zshrc_content:
+                    with open(zshrc_path, "a") as f:
+                        f.write(f"\n{alias_cmd}\n")
                     console.print(f"[green]✅ Created alias: {project_name}[/green]")
                 else:
                     console.print(f"[yellow]⚠️  Alias '{project_name}' already exists[/yellow]")
             else:
                 # Create .zshrc if it doesn't exist
-                with open(zshrc_path, 'w') as f:
-                    f.write(f'{alias_cmd}\n')
+                with open(zshrc_path, "w") as f:
+                    f.write(f"{alias_cmd}\n")
                 console.print(f"[green]✅ Created alias: {project_name}[/green]")
 
             console.print(f"[dim]💡 Use '{project_name}' from anywhere to open this project[/dim]")
@@ -244,11 +245,14 @@ def init(
             planning_trigger = f"plan new project: {project_name}"
             try:
                 import pyperclip
+
                 pyperclip.copy(planning_trigger)
                 console.print(f"[green]📋 Copied to clipboard: '{planning_trigger}'[/green]")
                 console.print(f"[dim]💡 Paste this in Claude to start planning mode[/dim]")
             except ImportError:
-                console.print(f"[yellow]⚠️  Install pyperclip for clipboard support: pip install pyperclip[/yellow]")
+                console.print(
+                    f"[yellow]⚠️  Install pyperclip for clipboard support: pip install pyperclip[/yellow]"
+                )
                 console.print(f"[dim]💡 Type this in Claude: '{planning_trigger}'[/dim]")
 
             # Check if UI server is running, start if needed
@@ -260,15 +264,19 @@ def init(
             def is_port_open(port: int) -> bool:
                 """Check if port is open/in use."""
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    return s.connect_ex(('localhost', port)) == 0
+                    return s.connect_ex(("localhost", port)) == 0
 
             ui_port = 3001
             ui_url = f"http://localhost:{ui_port}/project/{project_name}"
 
             if not is_port_open(ui_port):
                 console.print(f"[yellow]⚠️  UI server not running on port {ui_port}[/yellow]")
-                console.print(f"[dim]Start it manually: cd ~/Projects/BuildRunner3/ui && npm run dev[/dim]")
-                console.print(f"[dim]Or it will start automatically in background (experimental)[/dim]\n")
+                console.print(
+                    f"[dim]Start it manually: cd ~/Projects/BuildRunner3/ui && npm run dev[/dim]"
+                )
+                console.print(
+                    f"[dim]Or it will start automatically in background (experimental)[/dim]\n"
+                )
 
                 # Try to start UI server in background
                 try:
@@ -280,7 +288,7 @@ def init(
                             cwd=str(ui_dir),
                             stdout=subprocess.DEVNULL,
                             stderr=subprocess.DEVNULL,
-                            start_new_session=True
+                            start_new_session=True,
                         )
                         console.print(f"[green]✅ Started UI server in background[/green]")
                         # Wait for server to be ready (poll up to 15 seconds)
@@ -291,7 +299,9 @@ def init(
                                 console.print(f"[green]✅ UI server ready[/green]")
                                 break
                         else:
-                            console.print(f"[yellow]⚠️  UI server taking longer than expected[/yellow]")
+                            console.print(
+                                f"[yellow]⚠️  UI server taking longer than expected[/yellow]"
+                            )
                 except Exception as e:
                     console.print(f"[yellow]⚠️  Could not auto-start UI: {e}[/yellow]")
 
@@ -305,7 +315,7 @@ def init(
                         cwd=str(electron_dir),
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
-                        start_new_session=True
+                        start_new_session=True,
                     )
                     console.print(f"[green]🖥️  Launching Electron: {ui_url}[/green]")
                 else:
@@ -319,7 +329,7 @@ def init(
             console.print(f"[green]✅ Starting Claude Code in planning mode...[/green]\n")
 
             # Replace this process with claude CLI
-            os.execvp('claude', ['claude', '--dangerously-skip-permissions', str(project_root)])
+            os.execvp("claude", ["claude", "--dangerously-skip-permissions", str(project_root)])
 
     except Exception as e:
         handle_error(e)
@@ -361,13 +371,15 @@ def plan(
                 raise typer.Exit(0)
 
         # Output planning trigger
-        console.print("\n" + "="*70)
+        console.print("\n" + "=" * 70)
         console.print("  🧠 PLANNING MODE")
-        console.print("="*70)
+        console.print("=" * 70)
         console.print()
         console.print("[bold cyan]→ Go to Claude Code and say:[/bold cyan]")
         console.print(f'   [yellow]"plan {project_root.name}"[/yellow]\n')
-        console.print("[dim]Claude will lead an interactive brainstorming session to build your PRD.[/dim]\n")
+        console.print(
+            "[dim]Claude will lead an interactive brainstorming session to build your PRD.[/dim]\n"
+        )
         console.print(f"[dim]Project: {project_root}[/dim]")
         console.print(f"[dim]PRD will be saved to: {spec_path}[/dim]\n")
 
@@ -384,20 +396,22 @@ def status():
         data = registry.load()
 
         # Display header
-        console.print(Panel.fit(
-            f"[bold]{data.get('project', 'Unknown')}[/bold] - v{data.get('version', '1.0.0')}",
-            title="📊 Project Status"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold]{data.get('project', 'Unknown')}[/bold] - v{data.get('version', '1.0.0')}",
+                title="📊 Project Status",
+            )
+        )
 
         # Display metrics
-        metrics = data.get('metrics', {})
+        metrics = data.get("metrics", {})
         table = Table(show_header=True, header_style="bold cyan")
         table.add_column("Metric")
         table.add_column("Value", justify="right")
 
-        table.add_row("Features Complete", str(metrics.get('features_complete', 0)))
-        table.add_row("Features In Progress", str(metrics.get('features_in_progress', 0)))
-        table.add_row("Features Planned", str(metrics.get('features_planned', 0)))
+        table.add_row("Features Complete", str(metrics.get("features_complete", 0)))
+        table.add_row("Features In Progress", str(metrics.get("features_in_progress", 0)))
+        table.add_row("Features Planned", str(metrics.get("features_planned", 0)))
         table.add_row("Completion", f"{metrics.get('completion_percentage', 0)}%")
 
         console.print(table)
@@ -416,41 +430,42 @@ def status():
                 orch_table.add_column("Metric", style="white")
                 orch_table.add_column("Value", style="green", justify="right")
 
-                orch_table.add_row("Total Tasks", str(stats['total']))
-                orch_table.add_row("Completed", str(stats['completed']))
-                orch_table.add_row("In Progress", str(stats['in_progress']))
+                orch_table.add_row("Total Tasks", str(stats["total"]))
+                orch_table.add_row("Completed", str(stats["completed"]))
+                orch_table.add_row("In Progress", str(stats["in_progress"]))
                 orch_table.add_row("Ready", str(len(queue.get_ready_tasks())))
-                orch_table.add_row("Failed", str(stats['failed']))
+                orch_table.add_row("Failed", str(stats["failed"]))
 
-                if stats['total'] > 0:
-                    completion = (stats['completed'] / stats['total']) * 100
+                if stats["total"] > 0:
+                    completion = (stats["completed"] / stats["total"]) * 100
                     orch_table.add_row("Progress", f"{completion:.1f}%")
 
                 console.print(orch_table)
 
                 ready_count = len(queue.get_ready_tasks())
                 if ready_count > 0:
-                    console.print(f"\n[dim]💡 Run 'br run --auto' to execute {ready_count} ready tasks[/dim]")
+                    console.print(
+                        f"\n[dim]💡 Run 'br run --auto' to execute {ready_count} ready tasks[/dim]"
+                    )
 
         except Exception:
             # Silently skip if orchestration not initialized
             pass
 
         # List features
-        features = data.get('features', [])
+        features = data.get("features", [])
         if features:
             console.print("\n[bold]Features:[/bold]")
             for feature in features:
                 status_icon = {
-                    'complete': '✅',
-                    'in_progress': '🚧',
-                    'planned': '📋',
-                    'blocked': '🚫'
-                }.get(feature.get('status'), '❓')
+                    "complete": "✅",
+                    "in_progress": "🚧",
+                    "planned": "📋",
+                    "blocked": "🚫",
+                }.get(feature.get("status"), "❓")
 
                 console.print(
-                    f"  {status_icon} {feature.get('name')} "
-                    f"[dim]({feature.get('id')})[/dim]"
+                    f"  {status_icon} {feature.get('name')} " f"[dim]({feature.get('id')})[/dim]"
                 )
 
     except Exception as e:
@@ -463,9 +478,7 @@ def generate():
     """Generate STATUS.md from features.json."""
     try:
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
             task = progress.add_task("Generating STATUS.md...", total=None)
 
@@ -491,20 +504,16 @@ app.add_typer(feature_app, name="feature")
 def feature_add(
     name: str = typer.Argument(..., help="Feature name"),
     feature_id: Optional[str] = typer.Option(None, "--id", help="Feature ID"),
-    priority: str = typer.Option("medium", "--priority", "-p", help="Priority level")
+    priority: str = typer.Option("medium", "--priority", "-p", help="Priority level"),
 ):
     """Add a new feature."""
     try:
         registry = FeatureRegistry()
 
-        feature_data = {
-            'name': name,
-            'status': 'planned',
-            'priority': priority
-        }
+        feature_data = {"name": name, "status": "planned", "priority": priority}
 
         if feature_id:
-            feature_data['id'] = feature_id
+            feature_data["id"] = feature_id
 
         added = registry.add_feature(feature_data)
         registry.save()
@@ -517,9 +526,7 @@ def feature_add(
 
 
 @feature_app.command("complete")
-def feature_complete(
-    feature_id: str = typer.Argument(..., help="Feature ID to complete")
-):
+def feature_complete(feature_id: str = typer.Argument(..., help="Feature ID to complete")):
     """Mark a feature as complete."""
     try:
         registry = FeatureRegistry()
@@ -560,10 +567,10 @@ def feature_list(
 
         for feature in features:
             table.add_row(
-                feature.get('id', ''),
-                feature.get('name', ''),
-                feature.get('status', ''),
-                feature.get('priority', '')
+                feature.get("id", ""),
+                feature.get("name", ""),
+                feature.get("status", ""),
+                feature.get("priority", ""),
             )
 
         console.print(table)
@@ -580,9 +587,7 @@ app.add_typer(config_app, name="config")
 
 
 @config_app.command("init")
-def config_init(
-    scope: str = typer.Option("global", "--scope", "-s", help="'global' or 'project'")
-):
+def config_init(scope: str = typer.Option("global", "--scope", "-s", help="'global' or 'project'")):
     """Initialize configuration file."""
     try:
         config_manager = ConfigManager()
@@ -608,7 +613,7 @@ def config_init(
 def config_set(
     key: str = typer.Argument(..., help="Config key (e.g., 'debug.auto_retry')"),
     value: str = typer.Argument(..., help="Config value"),
-    scope: str = typer.Option("project", "--scope", "-s", help="'global' or 'project'")
+    scope: str = typer.Option("project", "--scope", "-s", help="'global' or 'project'"),
 ):
     """Set configuration value."""
     try:
@@ -616,8 +621,8 @@ def config_set(
 
         # Parse value
         parsed_value = value
-        if value.lower() in ['true', 'false']:
-            parsed_value = value.lower() == 'true'
+        if value.lower() in ["true", "false"]:
+            parsed_value = value.lower() == "true"
         elif value.isdigit():
             parsed_value = int(value)
 
@@ -631,9 +636,7 @@ def config_set(
 
 
 @config_app.command("get")
-def config_get(
-    key: str = typer.Argument(..., help="Config key")
-):
+def config_get(key: str = typer.Argument(..., help="Config key")):
     """Get configuration value."""
     try:
         config_manager = get_config_manager()
@@ -672,27 +675,26 @@ def config_list():
 
 # ===== Debug/Pipe Commands =====
 
+
 @app.command()
 def pipe(
     command: str = typer.Argument(..., help="Command to execute and pipe"),
-    tags: Optional[str] = typer.Option(None, "--tags", "-t", help="Comma-separated tags")
+    tags: Optional[str] = typer.Option(None, "--tags", "-t", help="Comma-separated tags"),
 ):
     """Run command and auto-pipe output to context."""
     try:
-        tag_list = tags.split(',') if tags else None
+        tag_list = tags.split(",") if tags else None
 
         console.print(f"[cyan]▶️  Running: {command}[/cyan]")
 
-        return_code = auto_pipe_command(
-            command,
-            show_output=True,
-            tags=tag_list
-        )
+        return_code = auto_pipe_command(command, show_output=True, tags=tag_list)
 
         if return_code == 0:
             console.print(f"[green]✅ Command succeeded (piped to context)[/green]")
         else:
-            console.print(f"[red]❌ Command failed with code {return_code} (piped to context)[/red]")
+            console.print(
+                f"[red]❌ Command failed with code {return_code} (piped to context)[/red]"
+            )
 
     except PipeError as e:
         handle_error(e)
@@ -734,9 +736,9 @@ def debug():
         console.print(f"  Failed commands: {analysis['failed_commands']}")
         console.print(f"  Failure rate: {analysis['failure_rate']}%")
 
-        if analysis['common_errors']:
+        if analysis["common_errors"]:
             console.print(f"\n[yellow]⚠️  Common error patterns:[/yellow]")
-            for error in analysis['common_errors']:
+            for error in analysis["common_errors"]:
                 console.print(f"  • {error}")
 
         console.print("\n[dim]💡 Suggestions:[/dim]")
@@ -750,16 +752,16 @@ def debug():
 
 
 @app.command()
-def watch(
-    daemon: bool = typer.Option(False, "--daemon", "-d", help="Run in background")
-):
+def watch(daemon: bool = typer.Option(False, "--daemon", "-d", help="Run in background")):
     """Start error watcher daemon."""
     try:
         config = get_config_manager()
-        patterns = config.get('watch.patterns', ['*.log', '*.err', 'pytest.out'])
+        patterns = config.get("watch.patterns", ["*.log", "*.err", "pytest.out"])
 
         if daemon:
-            console.print("[yellow]Daemon mode not fully implemented. Running scan instead.[/yellow]")
+            console.print(
+                "[yellow]Daemon mode not fully implemented. Running scan instead.[/yellow]"
+            )
             watcher = ErrorWatcher(watch_patterns=patterns)
             results = watcher.scan_once()
 
@@ -767,9 +769,9 @@ def watch(
             console.print(f"  Files scanned: {results['files_scanned']}")
             console.print(f"  Errors found: {results['errors_found']}")
 
-            if results['files_with_errors']:
+            if results["files_with_errors"]:
                 console.print(f"\n[yellow]⚠️  Files with errors:[/yellow]")
-                for file in results['files_with_errors']:
+                for file in results["files_with_errors"]:
                     console.print(f"  • {file}")
         else:
             console.print("[cyan]👀 Starting error watcher...[/cyan]")
@@ -786,11 +788,14 @@ def watch(
 
 # ===== Guard Commands =====
 
+
 @guard_app.command("check")
 def guard_check(
     spec_path: Optional[str] = typer.Option(None, "--spec", "-s", help="Path to PROJECT_SPEC.md"),
     strict: bool = typer.Option(False, "--strict", help="Include info-level violations"),
-    output: str = typer.Option("markdown", "--output", "-o", help="Output format: markdown, json, text")
+    output: str = typer.Option(
+        "markdown", "--output", "-o", help="Output format: markdown, json, text"
+    ),
 ):
     """Validate code against PROJECT_SPEC architecture."""
     try:
@@ -803,7 +808,9 @@ def guard_check(
                 console.print("✅ Loaded architectural specifications")
             except FileNotFoundError as e:
                 console.print(f"[red]❌ {e}[/red]")
-                console.print("[yellow]💡 Tip: Create PROJECT_SPEC.md in your project root[/yellow]")
+                console.print(
+                    "[yellow]💡 Tip: Create PROJECT_SPEC.md in your project root[/yellow]"
+                )
                 raise typer.Exit(1)
 
         with console.status("[cyan]Analyzing codebase...[/cyan]"):
@@ -834,6 +841,7 @@ def guard_check(
 
 
 # ===== Service Commands =====
+
 
 @service_app.command("detect")
 def service_detect():
@@ -881,8 +889,12 @@ def service_detect():
 
 @service_app.command("setup")
 def service_setup(
-    service: Optional[str] = typer.Argument(None, help="Service to set up (stripe, aws, supabase, etc.)"),
-    non_interactive: bool = typer.Option(False, "--non-interactive", help="Generate template without prompting")
+    service: Optional[str] = typer.Argument(
+        None, help="Service to set up (stripe, aws, supabase, etc.)"
+    ),
+    non_interactive: bool = typer.Option(
+        False, "--non-interactive", help="Generate template without prompting"
+    ),
 ):
     """Interactively set up external service credentials."""
     try:
@@ -903,7 +915,9 @@ def service_setup(
                 if not req.configured:
                     console.print(f"  • {name.title()}")
 
-            console.print("\n[dim]Run 'br service setup <service>' to configure a specific service[/dim]")
+            console.print(
+                "\n[dim]Run 'br service setup <service>' to configure a specific service[/dim]"
+            )
             return
 
         # Setup specific service
@@ -918,7 +932,9 @@ def service_setup(
 
     except ValueError as e:
         console.print(f"[red]❌ {e}[/red]")
-        console.print("[yellow]Supported services: stripe, aws, supabase, openai, github, notion, slack[/yellow]")
+        console.print(
+            "[yellow]Supported services: stripe, aws, supabase, openai, github, notion, slack[/yellow]"
+        )
         raise typer.Exit(1)
     except Exception as e:
         handle_error(e, show_debug_hint=False)
@@ -976,7 +992,7 @@ app.add_typer(quality_app, name="quality")
 def quality_check(
     fix: bool = typer.Option(False, "--fix", help="Auto-fix issues where possible"),
     threshold: int = typer.Option(80, "--threshold", help="Minimum overall score (0-100)"),
-    strict: bool = typer.Option(False, "--strict", help="Fail if threshold not met")
+    strict: bool = typer.Option(False, "--strict", help="Fail if threshold not met"),
 ):
     """Run code quality analysis."""
     try:
@@ -985,9 +1001,7 @@ def quality_check(
         project_root = get_project_root()
 
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
             task = progress.add_task("Analyzing code quality...", total=None)
 
@@ -1015,12 +1029,21 @@ def quality_check(
             else:
                 return "[red]✗ Poor[/red]"
 
-        table.add_row("Structure", f"{metrics.structure_score:.1f}", get_status(metrics.structure_score))
-        table.add_row("Security", f"{metrics.security_score:.1f}", get_status(metrics.security_score))
+        table.add_row(
+            "Structure", f"{metrics.structure_score:.1f}", get_status(metrics.structure_score)
+        )
+        table.add_row(
+            "Security", f"{metrics.security_score:.1f}", get_status(metrics.security_score)
+        )
         table.add_row("Testing", f"{metrics.testing_score:.1f}", get_status(metrics.testing_score))
         table.add_row("Documentation", f"{metrics.docs_score:.1f}", get_status(metrics.docs_score))
         table.add_row("", "", "")
-        table.add_row("OVERALL", f"{metrics.overall_score:.1f}", get_status(metrics.overall_score), style="bold")
+        table.add_row(
+            "OVERALL",
+            f"{metrics.overall_score:.1f}",
+            get_status(metrics.overall_score),
+            style="bold",
+        )
 
         console.print(table)
 
@@ -1056,7 +1079,7 @@ def quality_check(
         # Use default thresholds but override overall threshold if specified
         thresholds = QualityGate.DEFAULT_THRESHOLDS.copy()
         if threshold:
-            thresholds['overall'] = threshold
+            thresholds["overall"] = threshold
         gate = QualityGate(thresholds)
         passed, failures = gate.check(metrics)
 
@@ -1087,7 +1110,7 @@ app.add_typer(gaps_app, name="gaps")
 @gaps_app.command("analyze")
 def gaps_analyze(
     spec_path: Optional[str] = typer.Option(None, "--spec", help="Path to PROJECT_SPEC.md"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Save report to file")
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Save report to file"),
 ):
     """Analyze implementation gaps."""
     try:
@@ -1096,9 +1119,7 @@ def gaps_analyze(
         project_root = get_project_root()
 
         with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
+            SpinnerColumn(), TextColumn("[progress.description]{task.description}"), console=console
         ) as progress:
             task = progress.add_task("Analyzing gaps...", total=None)
 
@@ -1116,13 +1137,15 @@ def gaps_analyze(
         console.print("\n[cyan]🔍 Gap Analysis Report[/cyan]\n")
 
         # Summary
-        console.print(Panel(
-            f"[bold]Total Gaps: {analysis.total_gaps}[/bold]\n"
-            f"[red]High: {analysis.severity_high}[/red] | "
-            f"[yellow]Medium: {analysis.severity_medium}[/yellow] | "
-            f"[dim]Low: {analysis.severity_low}[/dim]",
-            title="Summary"
-        ))
+        console.print(
+            Panel(
+                f"[bold]Total Gaps: {analysis.total_gaps}[/bold]\n"
+                f"[red]High: {analysis.severity_high}[/red] | "
+                f"[yellow]Medium: {analysis.severity_medium}[/yellow] | "
+                f"[dim]Low: {analysis.severity_low}[/dim]",
+                title="Summary",
+            )
+        )
 
         # Feature gaps
         if analysis.missing_features or analysis.incomplete_features or analysis.blocked_features:
@@ -1136,7 +1159,9 @@ def gaps_analyze(
                     console.print(f"    ... and {len(analysis.missing_features) - 5} more")
 
             if analysis.incomplete_features:
-                console.print(f"\n[yellow]  Incomplete ({len(analysis.incomplete_features)}):[/yellow]")
+                console.print(
+                    f"\n[yellow]  Incomplete ({len(analysis.incomplete_features)}):[/yellow]"
+                )
                 for feat in analysis.incomplete_features[:5]:
                     console.print(f"    • {feat['id']}: {feat['name']}")
                 if len(analysis.incomplete_features) > 5:
@@ -1172,7 +1197,9 @@ def gaps_analyze(
                     console.print(f"    ... and {len(analysis.missing_dependencies) - 5} more")
 
             if analysis.circular_dependencies:
-                console.print(f"  [red]Circular dependencies: {len(analysis.circular_dependencies)}[/red]")
+                console.print(
+                    f"  [red]Circular dependencies: {len(analysis.circular_dependencies)}[/red]"
+                )
 
         # Missing components
         if analysis.missing_components:
@@ -1195,6 +1222,7 @@ def gaps_analyze(
 
 
 # ===== Main Entry Point =====
+
 
 def cli():
     """CLI entry point."""

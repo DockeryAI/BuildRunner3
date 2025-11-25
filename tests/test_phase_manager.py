@@ -95,8 +95,7 @@ class TestPhaseTransitions:
 
         # Complete phase
         result = phase_manager.complete_phase(
-            BuildPhase.SPEC_PARSING,
-            metadata={"lines_parsed": 100}
+            BuildPhase.SPEC_PARSING, metadata={"lines_parsed": 100}
         )
 
         assert result is True
@@ -111,9 +110,7 @@ class TestPhaseTransitions:
         phase_manager.start_phase(BuildPhase.SPEC_PARSING)
 
         result = phase_manager.fail_phase(
-            BuildPhase.SPEC_PARSING,
-            error="Parse error",
-            metadata={"line": 42}
+            BuildPhase.SPEC_PARSING, error="Parse error", metadata={"line": 42}
         )
 
         assert result is True
@@ -125,10 +122,7 @@ class TestPhaseTransitions:
     def test_start_phase_with_active_blockers(self, phase_manager):
         """Test starting phase when blocked"""
         # Add blocker
-        phase_manager.add_blocker(
-            BlockerType.MISSING_CREDENTIALS,
-            "Missing API key"
-        )
+        phase_manager.add_blocker(BlockerType.MISSING_CREDENTIALS, "Missing API key")
 
         # Try to start phase
         result = phase_manager.start_phase(BuildPhase.SPEC_PARSING)
@@ -144,7 +138,7 @@ class TestBlockerManagement:
         blocker = phase_manager.add_blocker(
             BlockerType.MISSING_CREDENTIALS,
             "Missing API key",
-            metadata={"key_name": "OPENAI_API_KEY"}
+            metadata={"key_name": "OPENAI_API_KEY"},
         )
 
         assert isinstance(blocker, Blocker)
@@ -157,10 +151,7 @@ class TestBlockerManagement:
         """Test adding blocker marks phase as blocked"""
         phase_manager.start_phase(BuildPhase.SPEC_PARSING)
 
-        phase_manager.add_blocker(
-            BlockerType.TEST_FAILURES,
-            "3 tests failed"
-        )
+        phase_manager.add_blocker(BlockerType.TEST_FAILURES, "3 tests failed")
 
         phase_state = phase_manager.state.phases[BuildPhase.SPEC_PARSING.value]
         assert phase_state.status == PhaseStatus.BLOCKED
@@ -168,10 +159,7 @@ class TestBlockerManagement:
 
     def test_clear_blocker(self, phase_manager):
         """Test clearing a blocker"""
-        phase_manager.add_blocker(
-            BlockerType.MISSING_CREDENTIALS,
-            "Missing API key"
-        )
+        phase_manager.add_blocker(BlockerType.MISSING_CREDENTIALS, "Missing API key")
 
         result = phase_manager.clear_blocker(BlockerType.MISSING_CREDENTIALS)
 
@@ -181,10 +169,7 @@ class TestBlockerManagement:
     def test_clear_blocker_resumes_phase(self, phase_manager):
         """Test clearing blocker resumes phase"""
         phase_manager.start_phase(BuildPhase.SPEC_PARSING)
-        phase_manager.add_blocker(
-            BlockerType.MISSING_CREDENTIALS,
-            "Missing key"
-        )
+        phase_manager.add_blocker(BlockerType.MISSING_CREDENTIALS, "Missing key")
 
         # Clear blocker
         phase_manager.clear_blocker(BlockerType.MISSING_CREDENTIALS)
@@ -196,23 +181,14 @@ class TestBlockerManagement:
         """Test is_blocked check"""
         assert phase_manager.is_blocked() is False
 
-        phase_manager.add_blocker(
-            BlockerType.COMPILATION_ERROR,
-            "Syntax error"
-        )
+        phase_manager.add_blocker(BlockerType.COMPILATION_ERROR, "Syntax error")
 
         assert phase_manager.is_blocked() is True
 
     def test_get_active_blockers(self, phase_manager):
         """Test getting active blockers"""
-        phase_manager.add_blocker(
-            BlockerType.MISSING_CREDENTIALS,
-            "Missing key 1"
-        )
-        phase_manager.add_blocker(
-            BlockerType.TEST_FAILURES,
-            "Tests failed"
-        )
+        phase_manager.add_blocker(BlockerType.MISSING_CREDENTIALS, "Missing key 1")
+        phase_manager.add_blocker(BlockerType.TEST_FAILURES, "Tests failed")
 
         blockers = phase_manager.get_active_blockers()
 
@@ -257,10 +233,7 @@ class TestPhaseNavigation:
         phase_manager.complete_phase(BuildPhase.SPEC_PARSING)
 
         # Add blocker
-        phase_manager.add_blocker(
-            BlockerType.MISSING_CREDENTIALS,
-            "Missing key"
-        )
+        phase_manager.add_blocker(BlockerType.MISSING_CREDENTIALS, "Missing key")
 
         assert phase_manager.can_proceed() is False
 
@@ -360,10 +333,7 @@ class TestProgressTracking:
 
     def test_get_progress_with_blockers(self, phase_manager):
         """Test progress shows blockers"""
-        phase_manager.add_blocker(
-            BlockerType.TEST_FAILURES,
-            "Tests failed"
-        )
+        phase_manager.add_blocker(BlockerType.TEST_FAILURES, "Tests failed")
 
         progress = phase_manager.get_progress()
 
@@ -379,10 +349,7 @@ class TestReset:
         # Make some progress
         phase_manager.start_phase(BuildPhase.SPEC_PARSING)
         phase_manager.complete_phase(BuildPhase.SPEC_PARSING)
-        phase_manager.add_blocker(
-            BlockerType.MISSING_CREDENTIALS,
-            "Test"
-        )
+        phase_manager.add_blocker(BlockerType.MISSING_CREDENTIALS, "Test")
 
         # Reset
         phase_manager.reset()
@@ -416,8 +383,7 @@ class TestEdgeCases:
         """Test completing phase that wasn't started still works"""
         # Create phase state first
         phase_manager.state.phases[BuildPhase.SPEC_PARSING.value] = PhaseState(
-            phase=BuildPhase.SPEC_PARSING,
-            status=PhaseStatus.PENDING
+            phase=BuildPhase.SPEC_PARSING, status=PhaseStatus.PENDING
         )
 
         result = phase_manager.complete_phase(BuildPhase.SPEC_PARSING)
@@ -434,24 +400,15 @@ class TestEdgeCases:
             del phase_manager.state.phases["nonexistent"]
 
         # Try to fail it
-        result = phase_manager.fail_phase(
-            BuildPhase.SPEC_PARSING,
-            "error"
-        )
+        result = phase_manager.fail_phase(BuildPhase.SPEC_PARSING, "error")
 
         # Should work since SPEC_PARSING exists
         assert result is True
 
     def test_multiple_blockers_same_type(self, phase_manager):
         """Test adding multiple blockers of same type"""
-        phase_manager.add_blocker(
-            BlockerType.TEST_FAILURES,
-            "Test 1 failed"
-        )
-        phase_manager.add_blocker(
-            BlockerType.TEST_FAILURES,
-            "Test 2 failed"
-        )
+        phase_manager.add_blocker(BlockerType.TEST_FAILURES, "Test 1 failed")
+        phase_manager.add_blocker(BlockerType.TEST_FAILURES, "Test 2 failed")
 
         assert len(phase_manager.state.active_blockers) == 2
 

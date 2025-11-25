@@ -36,7 +36,7 @@ from core.telemetry import EventCollector, EventType
 @pytest.fixture
 def project_root(tmp_path):
     """Create temporary project root"""
-    buildrunner_dir = tmp_path / '.buildrunner'
+    buildrunner_dir = tmp_path / ".buildrunner"
     buildrunner_dir.mkdir()
     return tmp_path
 
@@ -112,10 +112,10 @@ class TestAgentResponse:
 
         response_dict = response.to_dict()
 
-        assert response_dict['agent_type'] == 'test'
-        assert response_dict['task_id'] == 'task-001'
-        assert response_dict['success'] is True
-        assert 'timestamp' in response_dict
+        assert response_dict["agent_type"] == "test"
+        assert response_dict["task_id"] == "task-001"
+        assert response_dict["success"] is True
+        assert "timestamp" in response_dict
 
 
 class TestAgentAssignment:
@@ -208,7 +208,7 @@ class TestClaudeAgentBridge:
             assert len(instructions) > 0
             assert agent_type.value.upper() in instructions or "role" in instructions.lower()
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_dispatch_task_success(self, mock_run, agent_bridge, sample_task):
         """Test successful task dispatch"""
         # Mock subprocess response
@@ -228,10 +228,10 @@ class TestClaudeAgentBridge:
         assert assignment.agent_type == AgentType.IMPLEMENT
         assert assignment.response is not None
         assert assignment.response.success is True
-        assert agent_bridge.stats['total_dispatched'] == 1
-        assert agent_bridge.stats['total_completed'] == 1
+        assert agent_bridge.stats["total_dispatched"] == 1
+        assert agent_bridge.stats["total_completed"] == 1
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_dispatch_task_failure(self, mock_run, agent_bridge, sample_task):
         """Test task dispatch failure"""
         mock_run.return_value = MagicMock(
@@ -247,9 +247,9 @@ class TestClaudeAgentBridge:
                 prompt="Implement authentication",
             )
 
-        assert agent_bridge.stats['total_failed'] == 1
+        assert agent_bridge.stats["total_failed"] == 1
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_dispatch_task_timeout(self, mock_run, agent_bridge, sample_task):
         """Test task dispatch timeout"""
         mock_run.side_effect = Exception("timeout")
@@ -263,10 +263,12 @@ class TestClaudeAgentBridge:
 
     def test_parse_agent_response_success(self, agent_bridge):
         """Test parsing successful agent response"""
-        stdout = json.dumps({
-            'files_created': ['auth.py', 'test_auth.py'],
-            'files_modified': ['__init__.py'],
-        })
+        stdout = json.dumps(
+            {
+                "files_created": ["auth.py", "test_auth.py"],
+                "files_modified": ["__init__.py"],
+            }
+        )
 
         response = agent_bridge._parse_agent_response(
             stdout=stdout,
@@ -346,19 +348,19 @@ class TestClaudeAgentBridge:
 
     def test_get_stats(self, agent_bridge):
         """Test getting statistics"""
-        agent_bridge.stats['total_dispatched'] = 10
-        agent_bridge.stats['total_completed'] = 9
-        agent_bridge.stats['total_failed'] = 1
-        agent_bridge.stats['by_agent_type']['implement'] = 5
-        agent_bridge.stats['by_status']['completed'] = 9
+        agent_bridge.stats["total_dispatched"] = 10
+        agent_bridge.stats["total_completed"] = 9
+        agent_bridge.stats["total_failed"] = 1
+        agent_bridge.stats["by_agent_type"]["implement"] = 5
+        agent_bridge.stats["by_status"]["completed"] = 9
 
         stats = agent_bridge.get_stats()
 
-        assert stats['total_dispatched'] == 10
-        assert stats['total_completed'] == 9
-        assert stats['total_failed'] == 1
-        assert stats['success_rate'] == 0.9
-        assert stats['by_agent_type']['implement'] == 5
+        assert stats["total_dispatched"] == 10
+        assert stats["total_completed"] == 9
+        assert stats["total_failed"] == 1
+        assert stats["success_rate"] == 0.9
+        assert stats["by_agent_type"]["implement"] == 5
 
     def test_list_assignments(self, agent_bridge):
         """Test listing assignments"""
@@ -392,7 +394,7 @@ class TestClaudeAgentBridge:
         result = agent_bridge.cancel_assignment("nonexistent")
         assert result is False
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_emit_assignment_telemetry(self, mock_run, agent_bridge, sample_task):
         """Test telemetry emission on assignment"""
         # Mock a successful dispatch
@@ -402,7 +404,7 @@ class TestClaudeAgentBridge:
             returncode=0,
         )
 
-        with patch.object(agent_bridge.event_collector, 'collect') as mock_collect:
+        with patch.object(agent_bridge.event_collector, "collect") as mock_collect:
             assignment = agent_bridge.dispatch_task(
                 task=sample_task,
                 agent_type=AgentType.IMPLEMENT,
@@ -414,8 +416,8 @@ class TestClaudeAgentBridge:
 
     def test_save_and_load_state(self, agent_bridge):
         """Test saving and loading state"""
-        agent_bridge.stats['total_dispatched'] = 100
-        agent_bridge.stats['total_completed'] = 95
+        agent_bridge.stats["total_dispatched"] = 100
+        agent_bridge.stats["total_completed"] = 95
 
         # Save state
         agent_bridge._save_state()
@@ -425,20 +427,20 @@ class TestClaudeAgentBridge:
             project_root=str(agent_bridge.project_root),
         )
 
-        assert new_bridge.stats['total_dispatched'] == 100
-        assert new_bridge.stats['total_completed'] == 95
+        assert new_bridge.stats["total_dispatched"] == 100
+        assert new_bridge.stats["total_completed"] == 95
 
     def test_stats_initialization(self, agent_bridge):
         """Test stats are properly initialized"""
-        assert agent_bridge.stats['total_dispatched'] == 0
-        assert agent_bridge.stats['total_completed'] == 0
-        assert agent_bridge.stats['total_failed'] == 0
-        assert agent_bridge.stats['total_retries'] == 0
+        assert agent_bridge.stats["total_dispatched"] == 0
+        assert agent_bridge.stats["total_completed"] == 0
+        assert agent_bridge.stats["total_failed"] == 0
+        assert agent_bridge.stats["total_retries"] == 0
         # Success rate is calculated in get_stats, not stored in stats
         stats = agent_bridge.get_stats()
-        assert stats['success_rate'] == 0
+        assert stats["success_rate"] == 0
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_retry_with_exponential_backoff(self, mock_run, agent_bridge, sample_task):
         """Test retry with exponential backoff"""
         # First call fails, second succeeds
@@ -485,14 +487,16 @@ class TestClaudeAgentBridge:
 class TestAgentBridgeIntegration:
     """Integration tests for agent bridge"""
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_complete_workflow(self, mock_run, agent_bridge, sample_task):
         """Test complete dispatch and tracking workflow"""
         mock_run.return_value = MagicMock(
-            stdout=json.dumps({
-                'files_created': ['auth.py', 'test_auth.py'],
-                'files_modified': ['__init__.py'],
-            }),
+            stdout=json.dumps(
+                {
+                    "files_created": ["auth.py", "test_auth.py"],
+                    "files_modified": ["__init__.py"],
+                }
+            ),
             stderr="",
             returncode=0,
         )
@@ -515,11 +519,11 @@ class TestAgentBridgeIntegration:
 
         # Check stats
         stats = agent_bridge.get_stats()
-        assert stats['total_dispatched'] == 1
-        assert stats['total_completed'] == 1
-        assert stats['success_rate'] == 1.0
+        assert stats["total_dispatched"] == 1
+        assert stats["total_completed"] == 1
+        assert stats["success_rate"] == 1.0
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_multiple_dispatches(self, mock_run, agent_bridge):
         """Test multiple task dispatches"""
         mock_run.return_value = MagicMock(
@@ -550,8 +554,8 @@ class TestAgentBridgeIntegration:
             )
 
         stats = agent_bridge.get_stats()
-        assert stats['total_dispatched'] == 5
-        assert stats['total_completed'] == 5
+        assert stats["total_dispatched"] == 5
+        assert stats["total_completed"] == 5
 
 
 class TestAgentErrors:
@@ -568,7 +572,7 @@ class TestAgentErrors:
         error = AgentDispatchError("Test error")
         assert str(error) == "Test error"
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_dispatch_error_handling(self, mock_run, agent_bridge, sample_task):
         """Test error handling during dispatch"""
         mock_run.side_effect = FileNotFoundError("claude command not found")

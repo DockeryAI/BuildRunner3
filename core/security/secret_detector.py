@@ -27,6 +27,7 @@ class SecretMatch:
         column_start: Starting column of the match
         column_end: Ending column of the match
     """
+
     file_path: str
     line_number: int
     line_content: str
@@ -58,30 +59,52 @@ class SecretDetector:
 
     # Default patterns to exclude from scanning
     DEFAULT_EXCLUDE_PATTERNS = {
-        '.git',
-        'node_modules',
-        'venv',
-        '__pycache__',
-        '.pytest_cache',
-        'dist',
-        'build',
-        '*.pyc',
-        '*.pyo',
-        '*.so',
-        '*.dylib',
-        '.DS_Store',
+        ".git",
+        "node_modules",
+        "venv",
+        "__pycache__",
+        ".pytest_cache",
+        "dist",
+        "build",
+        "*.pyc",
+        "*.pyo",
+        "*.so",
+        "*.dylib",
+        ".DS_Store",
     }
 
     # File extensions that are likely to contain secrets
     SCAN_EXTENSIONS = {
-        '.py', '.js', '.ts', '.jsx', '.tsx',
-        '.yml', '.yaml', '.json', '.toml',
-        '.env', '.env.local', '.env.production',
-        '.sh', '.bash', '.zsh',
-        '.rb', '.go', '.java', '.cpp', '.c',
-        '.php', '.cs', '.swift', '.kt',
-        '.txt', '.md', '.rst',
-        '.conf', '.config', '.cfg',
+        ".py",
+        ".js",
+        ".ts",
+        ".jsx",
+        ".tsx",
+        ".yml",
+        ".yaml",
+        ".json",
+        ".toml",
+        ".env",
+        ".env.local",
+        ".env.production",
+        ".sh",
+        ".bash",
+        ".zsh",
+        ".rb",
+        ".go",
+        ".java",
+        ".cpp",
+        ".c",
+        ".php",
+        ".cs",
+        ".swift",
+        ".kt",
+        ".txt",
+        ".md",
+        ".rst",
+        ".conf",
+        ".config",
+        ".cfg",
     }
 
     def __init__(self, project_root: Optional[Path] = None):
@@ -98,7 +121,7 @@ class SecretDetector:
 
     def _load_whitelist(self) -> None:
         """Load whitelist of known false positives."""
-        whitelist_file = self.project_root / '.buildrunner' / 'security' / 'whitelist.txt'
+        whitelist_file = self.project_root / ".buildrunner" / "security" / "whitelist.txt"
         if whitelist_file.exists():
             try:
                 content = whitelist_file.read_text()
@@ -106,21 +129,21 @@ class SecretDetector:
                 self.whitelist = {
                     line.strip()
                     for line in content.splitlines()
-                    if line.strip() and not line.startswith('#')
+                    if line.strip() and not line.startswith("#")
                 }
             except Exception:
                 pass  # Ignore errors loading whitelist
 
     def _load_securityignore(self) -> None:
         """Load .securityignore patterns (gitignore-style)."""
-        securityignore_file = self.project_root / '.securityignore'
+        securityignore_file = self.project_root / ".securityignore"
         if securityignore_file.exists():
             try:
                 content = securityignore_file.read_text()
                 self.ignore_patterns = [
                     line.strip()
                     for line in content.splitlines()
-                    if line.strip() and not line.startswith('#')
+                    if line.strip() and not line.startswith("#")
                 ]
             except Exception:
                 pass  # Ignore errors loading .securityignore
@@ -136,8 +159,8 @@ class SecretDetector:
 
         for pattern in self.ignore_patterns:
             # Handle directory patterns (ending with /)
-            if pattern.endswith('/'):
-                dir_pattern = pattern.rstrip('/')
+            if pattern.endswith("/"):
+                dir_pattern = pattern.rstrip("/")
                 if any(part == dir_pattern for part in file_path.parts):
                     return True
 
@@ -146,8 +169,8 @@ class SecretDetector:
                 return True
 
             # Handle ** patterns (match any directory depth)
-            if '**' in pattern:
-                glob_pattern = pattern.replace('**', '*')
+            if "**" in pattern:
+                glob_pattern = pattern.replace("**", "*")
                 if fnmatch.fnmatch(rel_path_str, glob_pattern):
                     return True
 
@@ -180,7 +203,7 @@ class SecretDetector:
 
         # Don't scan binary files
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 f.read(512)  # Try reading first 512 bytes
             return True
         except (UnicodeDecodeError, PermissionError):
@@ -211,12 +234,12 @@ class SecretDetector:
         matches = []
 
         try:
-            with open(path, 'r', encoding='utf-8') as f:
+            with open(path, "r", encoding="utf-8") as f:
                 for line_num, line in enumerate(f, start=1):
                     # Check each pattern
                     for pattern_name, pattern in SecretMasker.SENSITIVE_PATTERNS.items():
                         # Skip generic pattern - too many false positives
-                        if pattern_name == 'generic_api_key':
+                        if pattern_name == "generic_api_key":
                             continue
 
                         for match in re.finditer(pattern, line):
@@ -227,15 +250,17 @@ class SecretDetector:
                                 continue
 
                             # Create match object
-                            matches.append(SecretMatch(
-                                file_path=str(path),
-                                line_number=line_num,
-                                line_content=line.rstrip(),
-                                pattern_name=pattern_name,
-                                secret_value=SecretMasker.mask_value(secret_value),
-                                column_start=match.start(),
-                                column_end=match.end(),
-                            ))
+                            matches.append(
+                                SecretMatch(
+                                    file_path=str(path),
+                                    line_number=line_num,
+                                    line_content=line.rstrip(),
+                                    pattern_name=pattern_name,
+                                    secret_value=SecretMasker.mask_value(secret_value),
+                                    column_start=match.start(),
+                                    column_end=match.end(),
+                                )
+                            )
 
         except Exception as e:
             # Ignore errors reading individual files
@@ -247,7 +272,7 @@ class SecretDetector:
         self,
         directory: Optional[str] = None,
         exclude: Optional[List[str]] = None,
-        recursive: bool = True
+        recursive: bool = True,
     ) -> Dict[str, List[SecretMatch]]:
         """Recursively scan a directory for secrets.
 
@@ -277,7 +302,7 @@ class SecretDetector:
         results = {}
 
         # Scan files
-        pattern = '**/*' if recursive else '*'
+        pattern = "**/*" if recursive else "*"
         for file_path in scan_dir.glob(pattern):
             if not file_path.is_file():
                 continue
@@ -309,14 +334,14 @@ class SecretDetector:
         try:
             # Get list of staged files
             result = subprocess.run(
-                ['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'],
+                ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
 
-            staged_files = result.stdout.strip().split('\n')
+            staged_files = result.stdout.strip().split("\n")
             staged_files = [f for f in staged_files if f]
 
             # Scan each staged file
@@ -335,9 +360,7 @@ class SecretDetector:
             return {}
 
     def scan_git_history(
-        self,
-        file_path: Optional[str] = None,
-        max_commits: int = 100
+        self, file_path: Optional[str] = None, max_commits: int = 100
     ) -> Dict[str, List[SecretMatch]]:
         """Scan git history for secrets in committed files.
 
@@ -356,23 +379,15 @@ class SecretDetector:
         """
         try:
             # Build git log command
-            cmd = ['git', 'log', f'-{max_commits}', '--all', '--oneline']
+            cmd = ["git", "log", f"-{max_commits}", "--all", "--oneline"]
             if file_path:
-                cmd.extend(['--', file_path])
+                cmd.extend(["--", file_path])
 
             result = subprocess.run(
-                cmd,
-                cwd=self.project_root,
-                capture_output=True,
-                text=True,
-                check=True
+                cmd, cwd=self.project_root, capture_output=True, text=True, check=True
             )
 
-            commits = [
-                line.split()[0]
-                for line in result.stdout.strip().split('\n')
-                if line
-            ]
+            commits = [line.split()[0] for line in result.stdout.strip().split("\n") if line]
 
             results = {}
 
@@ -380,14 +395,14 @@ class SecretDetector:
             for commit in commits:
                 # Get files changed in this commit
                 files_result = subprocess.run(
-                    ['git', 'diff-tree', '--no-commit-id', '--name-only', '-r', commit],
+                    ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", commit],
                     cwd=self.project_root,
                     capture_output=True,
                     text=True,
-                    check=True
+                    check=True,
                 )
 
-                files = files_result.stdout.strip().split('\n')
+                files = files_result.stdout.strip().split("\n")
 
                 for file in files:
                     if not file:
@@ -396,17 +411,17 @@ class SecretDetector:
                     # Get file content at this commit
                     try:
                         content_result = subprocess.run(
-                            ['git', 'show', f'{commit}:{file}'],
+                            ["git", "show", f"{commit}:{file}"],
                             cwd=self.project_root,
                             capture_output=True,
                             text=True,
-                            check=True
+                            check=True,
                         )
 
                         # Scan content
-                        for line_num, line in enumerate(content_result.stdout.split('\n'), start=1):
+                        for line_num, line in enumerate(content_result.stdout.split("\n"), start=1):
                             for pattern_name, pattern in SecretMasker.SENSITIVE_PATTERNS.items():
-                                if pattern_name == 'generic_api_key':
+                                if pattern_name == "generic_api_key":
                                     continue
 
                                 for match in re.finditer(pattern, line):
@@ -414,15 +429,17 @@ class SecretDetector:
                                     if key not in results:
                                         results[key] = []
 
-                                    results[key].append(SecretMatch(
-                                        file_path=f"{commit}:{file}",
-                                        line_number=line_num,
-                                        line_content=line.rstrip(),
-                                        pattern_name=pattern_name,
-                                        secret_value=SecretMasker.mask_value(match.group(0)),
-                                        column_start=match.start(),
-                                        column_end=match.end(),
-                                    ))
+                                    results[key].append(
+                                        SecretMatch(
+                                            file_path=f"{commit}:{file}",
+                                            line_number=line_num,
+                                            line_content=line.rstrip(),
+                                            pattern_name=pattern_name,
+                                            secret_value=SecretMasker.mask_value(match.group(0)),
+                                            column_start=match.start(),
+                                            column_end=match.end(),
+                                        )
+                                    )
 
                     except subprocess.CalledProcessError:
                         # File doesn't exist at this commit or binary
@@ -434,7 +451,9 @@ class SecretDetector:
             # Not in a git repo or git not available
             return {}
 
-    def add_to_whitelist(self, file_path: str, line_number: int, pattern_name: Optional[str] = None) -> None:
+    def add_to_whitelist(
+        self, file_path: str, line_number: int, pattern_name: Optional[str] = None
+    ) -> None:
         """Add a false positive to the whitelist.
 
         Args:
@@ -446,7 +465,7 @@ class SecretDetector:
             >>> detector = SecretDetector()
             >>> detector.add_to_whitelist("test.py", 42, "jwt_token")
         """
-        whitelist_file = self.project_root / '.buildrunner' / 'security' / 'whitelist.txt'
+        whitelist_file = self.project_root / ".buildrunner" / "security" / "whitelist.txt"
         whitelist_file.parent.mkdir(parents=True, exist_ok=True)
 
         entry = f"{file_path}:{line_number}"
@@ -457,5 +476,5 @@ class SecretDetector:
         self.whitelist.add(entry)
 
         # Append to file
-        with open(whitelist_file, 'a') as f:
+        with open(whitelist_file, "a") as f:
             f.write(f"{entry}\n")

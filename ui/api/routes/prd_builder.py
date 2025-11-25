@@ -60,10 +60,7 @@ async def parse_prd(request: PRDParseRequest):
 async def get_suggestions(request: SuggestionsRequest):
     """Generate AI suggestions for PRD section"""
     result = await openrouter_client.generate_feature_suggestions(
-        request.project_context,
-        request.section,
-        request.subsection,
-        request.custom_request
+        request.project_context, request.section, request.subsection, request.custom_request
     )
     return result
 
@@ -74,30 +71,20 @@ async def save_prd(request: PRDSaveRequest):
     try:
         project_path = Path(request.project_path)
         prd_content = _convert_prd_to_markdown(request.prd_data)
-        
+
         spec_file = project_path / "PROJECT_SPEC.md"
         spec_file.write_text(prd_content)
-        
-        return {
-            "success": True,
-            "file_path": str(spec_file)
-        }
+
+        return {"success": True, "file_path": str(spec_file)}
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        return {"success": False, "error": str(e)}
 
 
 def _convert_prd_to_markdown(prd_data: Dict) -> str:
     """Convert structured PRD data to markdown"""
-    
-    priority_emojis = {
-        "high": "🔴",
-        "medium": "🟡",
-        "low": "🟢"
-    }
-    
+
+    priority_emojis = {"high": "🔴", "medium": "🟡", "low": "🟢"}
+
     md = f"""# PROJECT_SPEC.md
 
 ## Overview
@@ -106,7 +93,7 @@ def _convert_prd_to_markdown(prd_data: Dict) -> str:
 ## Features
 
 """
-    
+
     for feature in prd_data.get("features", []):
         pri = priority_emojis.get(feature.get("priority", "medium"), "🟡")
         md += f"""### {pri} {feature.get("title", "")}
@@ -124,7 +111,7 @@ def _convert_prd_to_markdown(prd_data: Dict) -> str:
 As a **{story.get("role", "")}**, I want to **{story.get("action", "")}** so that **{story.get("benefit", "")}**.
 
 """
-    
+
     md += "## Technical Requirements\n\n"
     for req in prd_data.get("tech_requirements", []):
         pri = priority_emojis.get(req.get("priority", "medium"), "🟡")
@@ -132,9 +119,9 @@ As a **{story.get("role", "")}**, I want to **{story.get("action", "")}** so tha
 {req.get("rationale", "")}
 
 """
-    
+
     md += "## Success Criteria\n\n"
     for criterion in prd_data.get("success_criteria", []):
         md += f"- {criterion}\n"
-    
+
     return md

@@ -31,33 +31,49 @@ class SecretMasker:
     # Patterns are designed to be strict enough to avoid false positives
     # but flexible enough to catch real-world keys
     SENSITIVE_PATTERNS = {
-        'anthropic_key': r'sk-ant-[a-zA-Z0-9_-]{20,}',  # Relaxed from 85+ to 20+
-        'openai_key': r'sk-proj-[a-zA-Z0-9]{20,}',  # Relaxed from 40+ to 20+
-        'openai_legacy_key': r'sk-[a-zA-Z0-9]{32,}',  # More flexible range
-        'openrouter_key': r'sk-or-v1-[a-f0-9]{64}',
-        'jwt_token': r'eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+',
-        'notion_secret': r'ntn_[a-zA-Z0-9]{20,}',  # Relaxed from 40+ to 20+
-        'notion_token': r'secret_[a-zA-Z0-9]{20,}',  # Relaxed from 40+ to 20+
-        'apify_key': r'apify_api_[a-zA-Z0-9]{20,}',  # Relaxed from 30+ to 20+
-        'bearer_token': r'Bearer\s+[a-zA-Z0-9_.\-]{20,}',
-        'basic_auth': r'Basic\s+[a-zA-Z0-9+/=]{20,}',
-        'aws_key': r'AKIA[0-9A-Z]{16}',
-        'github_token': r'gh[pousr]_[A-Za-z0-9_]{36,255}',
-        'slack_token': r'xox[baprs]-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24,}',
-        'generic_api_key': r'[a-zA-Z0-9_-]{32,}',  # Last resort, lower priority
+        "anthropic_key": r"sk-ant-[a-zA-Z0-9_-]{20,}",  # Relaxed from 85+ to 20+
+        "openai_key": r"sk-proj-[a-zA-Z0-9]{20,}",  # Relaxed from 40+ to 20+
+        "openai_legacy_key": r"sk-[a-zA-Z0-9]{32,}",  # More flexible range
+        "openrouter_key": r"sk-or-v1-[a-f0-9]{64}",
+        "jwt_token": r"eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+",
+        "notion_secret": r"ntn_[a-zA-Z0-9]{20,}",  # Relaxed from 40+ to 20+
+        "notion_token": r"secret_[a-zA-Z0-9]{20,}",  # Relaxed from 40+ to 20+
+        "apify_key": r"apify_api_[a-zA-Z0-9]{20,}",  # Relaxed from 30+ to 20+
+        "bearer_token": r"Bearer\s+[a-zA-Z0-9_.\-]{20,}",
+        "basic_auth": r"Basic\s+[a-zA-Z0-9+/=]{20,}",
+        "aws_key": r"AKIA[0-9A-Z]{16}",
+        "github_token": r"gh[pousr]_[A-Za-z0-9_]{36,255}",
+        "slack_token": r"xox[baprs]-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24,}",
+        "generic_api_key": r"[a-zA-Z0-9_-]{32,}",  # Last resort, lower priority
     }
 
     # Keywords that indicate sensitive values
     SENSITIVE_KEYS = {
-        'api_key', 'apikey', 'api-key',
-        'secret', 'secret_key', 'secret-key',
-        'token', 'auth_token', 'auth-token', 'access_token',
-        'password', 'passwd', 'pwd',
-        'key', 'private_key', 'private-key',
-        'auth', 'authorization',
-        'credential', 'credentials',
-        'jwt', 'bearer',
-        'session', 'session_id', 'session-id',
+        "api_key",
+        "apikey",
+        "api-key",
+        "secret",
+        "secret_key",
+        "secret-key",
+        "token",
+        "auth_token",
+        "auth-token",
+        "access_token",
+        "password",
+        "passwd",
+        "pwd",
+        "key",
+        "private_key",
+        "private-key",
+        "auth",
+        "authorization",
+        "credential",
+        "credentials",
+        "jwt",
+        "bearer",
+        "session",
+        "session_id",
+        "session-id",
     }
 
     @staticmethod
@@ -164,7 +180,7 @@ class SecretMasker:
         # Apply each pattern in order (most specific first)
         for pattern_name, pattern in SecretMasker.SENSITIVE_PATTERNS.items():
             # Skip generic pattern on first pass
-            if pattern_name == 'generic_api_key':
+            if pattern_name == "generic_api_key":
                 continue
 
             def mask_match(match):
@@ -198,9 +214,15 @@ class SecretMasker:
             elif isinstance(value, list):
                 # Sanitize lists
                 sanitized[key] = [
-                    SecretMasker.sanitize_dict(item, show_chars) if isinstance(item, dict)
-                    else SecretMasker.sanitize_text(str(item), show_chars) if isinstance(item, str)
-                    else item
+                    (
+                        SecretMasker.sanitize_dict(item, show_chars)
+                        if isinstance(item, dict)
+                        else (
+                            SecretMasker.sanitize_text(str(item), show_chars)
+                            if isinstance(item, str)
+                            else item
+                        )
+                    )
                     for item in value
                 ]
             elif isinstance(value, str):
@@ -230,7 +252,7 @@ class SecretMasker:
             'anthropic_key'
         """
         for pattern_name, pattern in SecretMasker.SENSITIVE_PATTERNS.items():
-            if pattern_name == 'generic_api_key':
+            if pattern_name == "generic_api_key":
                 continue  # Skip generic pattern for detection
 
             if re.search(pattern, text):

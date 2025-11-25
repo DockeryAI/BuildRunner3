@@ -59,9 +59,7 @@ class TestStatePersistence:
 
     def test_save_checkpoint(self, persistence):
         tasks = {"task1": {}}
-        result = persistence.save_checkpoint(
-            tasks, [], {}, "test_checkpoint"
-        )
+        result = persistence.save_checkpoint(tasks, [], {}, "test_checkpoint")
         assert result is True
 
     def test_load_checkpoint(self, persistence):

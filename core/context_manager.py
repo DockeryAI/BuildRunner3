@@ -16,6 +16,7 @@ from datetime import datetime
 @dataclass
 class ContextEntry:
     """Represents a single context entry"""
+
     id: str
     type: str  # "file", "task", "dependency", "pattern"
     content: str
@@ -200,11 +201,7 @@ class ContextManager:
         max_chars = max_chars or self.MAX_CHARS
 
         # Sort by priority (high to low) and timestamp (recent first)
-        sorted_entries = sorted(
-            self.entries,
-            key=lambda e: (e.priority, e.timestamp),
-            reverse=True
-        )
+        sorted_entries = sorted(self.entries, key=lambda e: (e.priority, e.timestamp), reverse=True)
 
         # Build context string
         sections = []
@@ -359,7 +356,9 @@ class ContextManager:
 
             if entry.priority >= 7:
                 relevant_entries.append(entry)
-            elif entry.type == "dependency" and any(dep in entry.content for dep in task.dependencies):
+            elif entry.type == "dependency" and any(
+                dep in entry.content for dep in task.dependencies
+            ):
                 relevant_entries.append(entry)
             elif entry.type == "pattern":
                 relevant_entries.append(entry)
@@ -378,11 +377,7 @@ class ContextManager:
             keep_recent_count: Number of recent entries to keep
         """
         # Sort by timestamp (recent first)
-        sorted_entries = sorted(
-            self.entries,
-            key=lambda e: e.timestamp,
-            reverse=True
-        )
+        sorted_entries = sorted(self.entries, key=lambda e: e.timestamp, reverse=True)
 
         # Keep only recent entries
         self.entries = sorted_entries[:keep_recent_count]

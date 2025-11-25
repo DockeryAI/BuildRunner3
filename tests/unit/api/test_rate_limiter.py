@@ -24,7 +24,7 @@ from api.middleware.rate_limiter import (
     RateLimitBucket,
     rate_limit,
     apply_rate_limit_config,
-    RATE_LIMIT_CONFIG
+    RATE_LIMIT_CONFIG,
 )
 
 
@@ -33,12 +33,7 @@ class TestRateLimitBucket:
 
     def test_bucket_creation(self):
         """Test creating a rate limit bucket"""
-        bucket = RateLimitBucket(
-            tokens=10.0,
-            last_update=time.time(),
-            limit=10,
-            window=60
-        )
+        bucket = RateLimitBucket(tokens=10.0, last_update=time.time(), limit=10, window=60)
 
         assert bucket.tokens == 10.0
         assert bucket.limit == 10
@@ -47,12 +42,7 @@ class TestRateLimitBucket:
     def test_consume_token_success(self):
         """Test successful token consumption"""
         current = time.time()
-        bucket = RateLimitBucket(
-            tokens=5.0,
-            last_update=current,
-            limit=10,
-            window=60
-        )
+        bucket = RateLimitBucket(tokens=5.0, last_update=current, limit=10, window=60)
 
         success, retry_after = bucket.consume(current)
         assert success is True
@@ -62,12 +52,7 @@ class TestRateLimitBucket:
     def test_consume_token_failure(self):
         """Test token consumption when bucket is empty"""
         current = time.time()
-        bucket = RateLimitBucket(
-            tokens=0.0,
-            last_update=current,
-            limit=10,
-            window=60
-        )
+        bucket = RateLimitBucket(tokens=0.0, last_update=current, limit=10, window=60)
 
         success, retry_after = bucket.consume(current)
         assert success is False
@@ -76,12 +61,7 @@ class TestRateLimitBucket:
     def test_token_refill(self):
         """Test tokens refill over time"""
         start = time.time()
-        bucket = RateLimitBucket(
-            tokens=0.0,
-            last_update=start,
-            limit=10,
-            window=60
-        )
+        bucket = RateLimitBucket(tokens=0.0, last_update=start, limit=10, window=60)
 
         # Simulate 30 seconds passing (should refill 5 tokens: 10/60 * 30)
         future = start + 30
@@ -94,12 +74,7 @@ class TestRateLimitBucket:
     def test_token_cap_at_limit(self):
         """Test tokens don't exceed limit"""
         start = time.time()
-        bucket = RateLimitBucket(
-            tokens=5.0,
-            last_update=start,
-            limit=10,
-            window=60
-        )
+        bucket = RateLimitBucket(tokens=5.0, last_update=start, limit=10, window=60)
 
         # Simulate 120 seconds (should refill 20 tokens, but capped at 10)
         future = start + 120
@@ -204,7 +179,7 @@ class TestRateLimitMiddleware:
             RateLimitMiddleware,
             default_limit=limit,
             default_window=window,
-            exclude_paths=exclude_paths or []
+            exclude_paths=exclude_paths or [],
         )
 
         @app.get("/api/test")
@@ -343,6 +318,7 @@ class TestRateLimitDecorator:
 
     def test_decorator_sets_attributes(self):
         """Test decorator sets rate limit attributes"""
+
         @rate_limit(limit=5, window=30)
         def test_func():
             pass

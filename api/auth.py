@@ -17,6 +17,7 @@ from enum import Enum
 
 class UserRole(str, Enum):
     """User role enumeration"""
+
     ADMIN = "admin"
     DEVELOPER = "developer"
     VIEWER = "viewer"
@@ -24,6 +25,7 @@ class UserRole(str, Enum):
 
 class Permission(str, Enum):
     """System permissions"""
+
     # Agent management
     AGENT_VIEW = "agent:view"
     AGENT_MANAGE = "agent:manage"
@@ -49,6 +51,7 @@ class Permission(str, Enum):
 @dataclass
 class UserSettings:
     """User settings"""
+
     user_id: str
     theme: str = "light"
     notifications_enabled: bool = True
@@ -64,6 +67,7 @@ class UserSettings:
 @dataclass
 class User:
     """User information"""
+
     user_id: str
     email: str
     username: str
@@ -89,7 +93,7 @@ class User:
             "created_at": self.created_at.isoformat(),
             "last_login": self.last_login.isoformat() if self.last_login else None,
             "is_active": self.is_active,
-            "settings": self.settings.to_dict()
+            "settings": self.settings.to_dict(),
         }
 
         if include_password:
@@ -115,7 +119,7 @@ class User:
                 Permission.BUILD_VIEW,
                 Permission.CONFIG_VIEW,
                 Permission.ANALYTICS_VIEW,
-            ]
+            ],
         }
 
         return role_permissions.get(self.role, [])
@@ -124,6 +128,7 @@ class User:
 @dataclass
 class AuthToken:
     """Authentication token"""
+
     token: str
     token_type: str = "Bearer"
     expires_at: Optional[datetime] = None
@@ -141,7 +146,7 @@ class AuthToken:
             "token": self.token,
             "token_type": self.token_type,
             "expires_at": self.expires_at.isoformat() if self.expires_at else None,
-            "issued_at": self.issued_at.isoformat()
+            "issued_at": self.issued_at.isoformat(),
         }
 
 
@@ -162,14 +167,12 @@ class PasswordHasher:
         """
         if not salt:
             import secrets
+
             salt = secrets.token_hex(16)
 
         # Hash password with salt
         password_hash = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt.encode('utf-8'),
-            100000
+            "sha256", password.encode("utf-8"), salt.encode("utf-8"), 100000
         ).hex()
 
         return f"{salt}${password_hash}", salt
@@ -187,7 +190,7 @@ class PasswordHasher:
             True if password matches
         """
         try:
-            salt, _ = password_hash.split('$')
+            salt, _ = password_hash.split("$")
             hashed, _ = PasswordHasher.hash_password(password, salt)
             return hashed == password_hash
         except Exception:
@@ -216,7 +219,7 @@ class JWTManager:
         email: str,
         role: UserRole,
         permissions: Optional[List[str]] = None,
-        additional_claims: Optional[Dict] = None
+        additional_claims: Optional[Dict] = None,
     ) -> AuthToken:
         """
         Create JWT token
@@ -242,7 +245,7 @@ class JWTManager:
             "iat": now,
             "exp": expires_at,
             "iss": "buildrunner",
-            "sub": user_id
+            "sub": user_id,
         }
 
         if additional_claims:
@@ -250,12 +253,7 @@ class JWTManager:
 
         token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
-        return AuthToken(
-            token=token,
-            token_type="Bearer",
-            expires_at=expires_at,
-            issued_at=now
-        )
+        return AuthToken(token=token, token_type="Bearer", expires_at=expires_at, issued_at=now)
 
     def verify_token(self, token: str) -> Optional[Dict]:
         """
@@ -304,10 +302,7 @@ class AuthenticationManager:
     """Main authentication manager"""
 
     def __init__(
-        self,
-        secret_key: str,
-        storage_path: Optional[Path] = None,
-        expiration_hours: int = 24
+        self, secret_key: str, storage_path: Optional[Path] = None, expiration_hours: int = 24
     ):
         """
         Initialize authentication manager
@@ -329,11 +324,7 @@ class AuthenticationManager:
         self._load_users()
 
     def register_user(
-        self,
-        email: str,
-        username: str,
-        password: str,
-        role: UserRole = UserRole.VIEWER
+        self, email: str, username: str, password: str, role: UserRole = UserRole.VIEWER
     ) -> Optional[User]:
         """
         Register a new user
@@ -360,7 +351,7 @@ class AuthenticationManager:
             email=email,
             username=username,
             password_hash=password_hash,
-            role=role
+            role=role,
         )
 
         self.users[user.user_id] = user
@@ -397,7 +388,7 @@ class AuthenticationManager:
             user_id=user.user_id,
             email=user.email,
             role=user.role,
-            permissions=[p.value for p in user.get_permissions()]
+            permissions=[p.value for p in user.get_permissions()],
         )
 
         # Store session
@@ -559,16 +550,14 @@ class AuthenticationManager:
     def _generate_user_id(self) -> str:
         """Generate unique user ID"""
         import uuid
+
         return str(uuid.uuid4())
 
     def _save_users(self) -> None:
         """Save users to storage"""
         users_file = self.storage_path / "users.json"
 
-        data = {
-            uid: user.to_dict(include_password=True)
-            for uid, user in self.users.items()
-        }
+        data = {uid: user.to_dict(include_password=True) for uid, user in self.users.items()}
 
         users_file.parent.mkdir(parents=True, exist_ok=True)
         with open(users_file, "w") as f:
@@ -584,7 +573,7 @@ class AuthenticationManager:
                 email="admin@buildrunner.local",
                 username="admin",
                 password="admin",
-                role=UserRole.ADMIN
+                role=UserRole.ADMIN,
             )
             return
 
@@ -600,10 +589,12 @@ class AuthenticationManager:
                     password_hash=user_data["password_hash"],
                     role=UserRole(user_data.get("role", "viewer")),
                     created_at=datetime.fromisoformat(user_data["created_at"]),
-                    last_login=datetime.fromisoformat(user_data["last_login"])
-                    if user_data.get("last_login")
-                    else None,
-                    is_active=user_data.get("is_active", True)
+                    last_login=(
+                        datetime.fromisoformat(user_data["last_login"])
+                        if user_data.get("last_login")
+                        else None
+                    ),
+                    is_active=user_data.get("is_active", True),
                 )
 
                 if "settings" in user_data:
@@ -614,7 +605,7 @@ class AuthenticationManager:
                         notifications_enabled=settings_data.get("notifications_enabled", True),
                         notification_email=settings_data.get("notification_email", ""),
                         dashboard_layout=settings_data.get("dashboard_layout", "default"),
-                        custom_settings=settings_data.get("custom_settings", {})
+                        custom_settings=settings_data.get("custom_settings", {}),
                     )
 
                 self.users[user_id] = user

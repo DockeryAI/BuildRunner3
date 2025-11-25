@@ -119,12 +119,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         # Send welcome message
-        await websocket.send_json({
-            "type": "connection",
-            "status": "connected",
-            "timestamp": datetime.now().isoformat(),
-            "message": "Connected to BuildRunner live updates",
-        })
+        await websocket.send_json(
+            {
+                "type": "connection",
+                "status": "connected",
+                "timestamp": datetime.now().isoformat(),
+                "message": "Connected to BuildRunner live updates",
+            }
+        )
 
         # Keep connection alive and handle incoming messages
         while True:
@@ -135,32 +137,40 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 # Handle client messages (ping, subscribe, etc.)
                 if message.get("type") == "ping":
-                    await websocket.send_json({
-                        "type": "pong",
-                        "timestamp": datetime.now().isoformat(),
-                    })
+                    await websocket.send_json(
+                        {
+                            "type": "pong",
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
                 elif message.get("type") == "subscribe":
                     # Handle subscription to specific event types
-                    await websocket.send_json({
-                        "type": "subscribed",
-                        "topics": message.get("topics", []),
-                        "timestamp": datetime.now().isoformat(),
-                    })
+                    await websocket.send_json(
+                        {
+                            "type": "subscribed",
+                            "topics": message.get("topics", []),
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
 
             except WebSocketDisconnect:
                 break
             except json.JSONDecodeError:
                 # Invalid JSON
-                await websocket.send_json({
-                    "type": "error",
-                    "message": "Invalid JSON",
-                })
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "message": "Invalid JSON",
+                    }
+                )
             except Exception as e:
                 # Other errors
-                await websocket.send_json({
-                    "type": "error",
-                    "message": str(e),
-                })
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "message": str(e),
+                    }
+                )
 
     except WebSocketDisconnect:
         pass
@@ -266,8 +276,10 @@ async def periodic_updates_task(interval: int = 5):
 
         if manager.get_connection_count() > 0:
             # Send heartbeat
-            await manager.broadcast({
-                "type": "heartbeat",
-                "timestamp": datetime.now().isoformat(),
-                "connections": manager.get_connection_count(),
-            })
+            await manager.broadcast(
+                {
+                    "type": "heartbeat",
+                    "timestamp": datetime.now().isoformat(),
+                    "connections": manager.get_connection_count(),
+                }
+            )

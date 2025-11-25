@@ -14,16 +14,19 @@ import yaml
 
 class GovernanceError(Exception):
     """Base exception for governance-related errors."""
+
     pass
 
 
 class GovernanceValidationError(GovernanceError):
     """Raised when governance configuration validation fails."""
+
     pass
 
 
 class GovernanceChecksumError(GovernanceError):
     """Raised when governance checksum verification fails."""
+
     pass
 
 
@@ -85,7 +88,7 @@ class GovernanceManager:
 
         # Load YAML
         try:
-            with open(self.config_file, 'r') as f:
+            with open(self.config_file, "r") as f:
                 self.config = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise GovernanceError(f"Failed to parse governance.yaml: {e}")
@@ -106,24 +109,24 @@ class GovernanceManager:
         if not isinstance(self.config, dict):
             raise GovernanceValidationError("Governance config must be a dictionary")
 
-        required_sections = ['project', 'workflow', 'validation']
+        required_sections = ["project", "workflow", "validation"]
         for section in required_sections:
             if section not in self.config:
                 raise GovernanceValidationError(f"Missing required section: {section}")
 
         # Validate project section
-        project = self.config.get('project', {})
-        if 'name' not in project:
+        project = self.config.get("project", {})
+        if "name" not in project:
             raise GovernanceValidationError("project.name is required")
 
         # Validate workflow section
-        workflow = self.config.get('workflow', {})
-        if 'rules' not in workflow:
+        workflow = self.config.get("workflow", {})
+        if "rules" not in workflow:
             raise GovernanceValidationError("workflow.rules is required")
 
         # Validate validation section
-        validation = self.config.get('validation', {})
-        if 'required_checks' not in validation:
+        validation = self.config.get("validation", {})
+        if "required_checks" not in validation:
             raise GovernanceValidationError("validation.required_checks is required")
 
     def save(self, update_checksum: bool = True) -> None:
@@ -144,14 +147,8 @@ class GovernanceManager:
 
         # Write YAML with nice formatting
         try:
-            with open(self.config_file, 'w') as f:
-                yaml.dump(
-                    self.config,
-                    f,
-                    default_flow_style=False,
-                    sort_keys=False,
-                    indent=2
-                )
+            with open(self.config_file, "w") as f:
+                yaml.dump(self.config, f, default_flow_style=False, sort_keys=False, indent=2)
         except Exception as e:
             raise GovernanceError(f"Failed to save governance.yaml: {e}")
 
@@ -181,7 +178,7 @@ class GovernanceManager:
         checksum = sha256_hash.hexdigest()
 
         # Save checksum
-        with open(self.checksum_file, 'w') as f:
+        with open(self.checksum_file, "w") as f:
             f.write(f"{checksum}  {self.config_file.name}\n")
 
         return checksum
@@ -200,7 +197,7 @@ class GovernanceManager:
             return False
 
         # Read stored checksum
-        with open(self.checksum_file, 'r') as f:
+        with open(self.checksum_file, "r") as f:
             stored_checksum = f.read().strip().split()[0]
 
         # Calculate current checksum
@@ -226,7 +223,7 @@ class GovernanceManager:
         if not self._loaded:
             raise GovernanceError("Governance not loaded. Call load() first.")
 
-        return self.config.get('workflow', {}).get('rules', {})
+        return self.config.get("workflow", {}).get("rules", {})
 
     def get_validation_rules(self) -> Dict[str, Any]:
         """
@@ -241,7 +238,7 @@ class GovernanceManager:
         if not self._loaded:
             raise GovernanceError("Governance not loaded. Call load() first.")
 
-        return self.config.get('validation', {})
+        return self.config.get("validation", {})
 
     def get_required_checks(self) -> List[str]:
         """
@@ -254,7 +251,7 @@ class GovernanceManager:
             GovernanceError: If governance not loaded.
         """
         validation = self.get_validation_rules()
-        return validation.get('required_checks', [])
+        return validation.get("required_checks", [])
 
     def get_feature_dependencies(self, feature_id: str) -> List[str]:
         """
@@ -272,10 +269,12 @@ class GovernanceManager:
         if not self._loaded:
             raise GovernanceError("Governance not loaded. Call load() first.")
 
-        dependencies = self.config.get('dependencies', {})
+        dependencies = self.config.get("dependencies", {})
         return dependencies.get(feature_id, [])
 
-    def check_feature_can_start(self, feature_id: str, completed_features: Set[str]) -> tuple[bool, List[str]]:
+    def check_feature_can_start(
+        self, feature_id: str, completed_features: Set[str]
+    ) -> tuple[bool, List[str]]:
         """
         Check if a feature can be started based on dependencies.
 
@@ -307,7 +306,7 @@ class GovernanceManager:
         if not self._loaded:
             raise GovernanceError("Governance not loaded. Call load() first.")
 
-        return self.config.get('enforcement', {}).get('policy', 'strict')
+        return self.config.get("enforcement", {}).get("policy", "strict")
 
     def is_strict_mode(self) -> bool:
         """
@@ -316,7 +315,7 @@ class GovernanceManager:
         Returns:
             True if strict mode is enabled.
         """
-        return self.get_enforcement_policy() == 'strict'
+        return self.get_enforcement_policy() == "strict"
 
 
 # Factory function for easy instantiation

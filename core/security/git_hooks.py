@@ -26,6 +26,7 @@ class HookResult:
         duration_ms: Time taken to run checks
         message: Summary message
     """
+
     passed: bool
     violations: List[str]
     warnings: List[str]
@@ -53,7 +54,7 @@ class GitHookManager:
         ...     print("Commit blocked!")
     """
 
-    HOOK_TEMPLATE = '''#!/bin/bash
+    HOOK_TEMPLATE = """#!/bin/bash
 # BuildRunner Pre-Commit Hook (Auto-generated)
 # Runs Tier 1 security checks: secrets, SQL injection, test coverage
 #
@@ -80,7 +81,7 @@ else
     fi
     exit $?
 fi
-'''
+"""
 
     def __init__(self, project_root: Optional[Path] = None):
         """Initialize the git hook manager.
@@ -89,18 +90,18 @@ fi
             project_root: Root directory of the project (default: current dir)
         """
         self.project_root = project_root or Path.cwd()
-        self.git_dir = self.project_root / '.git'
-        self.hooks_dir = self.git_dir / 'hooks'
+        self.git_dir = self.project_root / ".git"
+        self.hooks_dir = self.git_dir / "hooks"
 
     def is_git_repo(self) -> bool:
         """Check if current directory is a git repository."""
         return self.git_dir.exists() and self.git_dir.is_dir()
 
-    def get_hook_path(self, hook_name: str = 'pre-commit') -> Path:
+    def get_hook_path(self, hook_name: str = "pre-commit") -> Path:
         """Get the path to a git hook."""
         return self.hooks_dir / hook_name
 
-    def is_hook_installed(self, hook_name: str = 'pre-commit') -> bool:
+    def is_hook_installed(self, hook_name: str = "pre-commit") -> bool:
         """Check if a git hook is installed."""
         hook_path = self.get_hook_path(hook_name)
         if not hook_path.exists():
@@ -109,11 +110,11 @@ fi
         # Check if it's a BuildRunner hook
         try:
             content = hook_path.read_text()
-            return 'BuildRunner Pre-Commit Hook' in content
+            return "BuildRunner Pre-Commit Hook" in content
         except Exception:
             return False
 
-    def install_hook(self, hook_name: str = 'pre-commit', force: bool = False) -> Tuple[bool, str]:
+    def install_hook(self, hook_name: str = "pre-commit", force: bool = False) -> Tuple[bool, str]:
         """Install a git hook.
 
         Args:
@@ -160,7 +161,7 @@ fi
         except Exception as e:
             return False, f"Failed to install {hook_name} hook: {e}"
 
-    def uninstall_hook(self, hook_name: str = 'pre-commit') -> Tuple[bool, str]:
+    def uninstall_hook(self, hook_name: str = "pre-commit") -> Tuple[bool, str]:
         """Uninstall a git hook.
 
         Args:
@@ -218,6 +219,7 @@ fi
             ...     print(result.message)
         """
         import time
+
         start_time = time.time()
 
         violations = []
@@ -237,7 +239,9 @@ fi
                             f"    Line {match.line_number}: [{match.pattern_name}] "
                             f"{match.secret_value}"
                         )
-                violations.append("\n💡 Fix: Move secrets to .env (gitignored) or use environment variables")
+                violations.append(
+                    "\n💡 Fix: Move secrets to .env (gitignored) or use environment variables"
+                )
                 violations.append("   Skip this check: git commit --no-verify (NOT RECOMMENDED)")
 
             # Check 2: SQL injection detection
@@ -246,13 +250,13 @@ fi
             # Get staged files
             try:
                 result = subprocess.run(
-                    ['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'],
+                    ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"],
                     cwd=self.project_root,
                     capture_output=True,
                     text=True,
-                    check=True
+                    check=True,
                 )
-                staged_files = [f for f in result.stdout.strip().split('\n') if f]
+                staged_files = [f for f in result.stdout.strip().split("\n") if f]
 
                 # Scan each staged file
                 for file_path in staged_files:
@@ -261,7 +265,9 @@ fi
                         sql_matches = sql_detector.scan_file(str(full_path))
                         if sql_matches:
                             if not any("SQL INJECTION" in v for v in violations):
-                                violations.append("\n❌ SQL INJECTION RISK detected in staged files:")
+                                violations.append(
+                                    "\n❌ SQL INJECTION RISK detected in staged files:"
+                                )
 
                             violations.append(f"\n  {file_path}:")
                             for match in sql_matches:
@@ -296,7 +302,7 @@ fi
                     violations=violations,
                     warnings=warnings,
                     duration_ms=duration_ms,
-                    message=f"Security checks failed ({duration_ms:.0f}ms)"
+                    message=f"Security checks failed ({duration_ms:.0f}ms)",
                 )
             else:
                 return HookResult(
@@ -304,7 +310,7 @@ fi
                     violations=[],
                     warnings=warnings,
                     duration_ms=duration_ms,
-                    message=f"All security checks passed ({duration_ms:.0f}ms)"
+                    message=f"All security checks passed ({duration_ms:.0f}ms)",
                 )
 
         except Exception as e:
@@ -313,7 +319,7 @@ fi
                 violations=[f"Error running security checks: {e}"],
                 warnings=warnings,
                 duration_ms=(time.time() - start_time) * 1000,
-                message="Security checks failed with error"
+                message="Security checks failed with error",
             )
 
     def get_hook_status(self) -> Dict[str, any]:
@@ -328,11 +334,11 @@ fi
             >>> print(status['pre-commit']['installed'])
         """
         return {
-            'is_git_repo': self.is_git_repo(),
-            'pre-commit': {
-                'installed': self.is_hook_installed('pre-commit'),
-                'path': str(self.get_hook_path('pre-commit')),
-            }
+            "is_git_repo": self.is_git_repo(),
+            "pre-commit": {
+                "installed": self.is_hook_installed("pre-commit"),
+                "path": str(self.get_hook_path("pre-commit")),
+            },
         }
 
 

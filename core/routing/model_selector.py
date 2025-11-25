@@ -19,9 +19,9 @@ from .complexity_estimator import ComplexityLevel, TaskComplexity
 class ModelTier(str, Enum):
     """Model tier classification."""
 
-    FAST = "fast"           # Haiku - fast, cheap
-    BALANCED = "balanced"   # Sonnet - balanced performance/cost
-    ADVANCED = "advanced"   # Opus - best quality, expensive
+    FAST = "fast"  # Haiku - fast, cheap
+    BALANCED = "balanced"  # Sonnet - balanced performance/cost
+    ADVANCED = "advanced"  # Opus - best quality, expensive
 
 
 @dataclass
@@ -74,9 +74,9 @@ class ModelSelector:
 
     # Default model configurations
     DEFAULT_MODELS = {
-        'haiku': ModelConfig(
-            name='haiku',
-            provider='anthropic',
+        "haiku": ModelConfig(
+            name="haiku",
+            provider="anthropic",
             tier=ModelTier.FAST,
             max_tokens=4096,
             context_window=200000,
@@ -86,12 +86,12 @@ class ModelSelector:
             output_cost_per_1m=1.25,
             rate_limit_rpm=50,
             rate_limit_tpm=100000,
-            model_id='claude-haiku-3-5-20241022',
-            version='3.5',
+            model_id="claude-haiku-3-5-20241022",
+            version="3.5",
         ),
-        'sonnet': ModelConfig(
-            name='sonnet',
-            provider='anthropic',
+        "sonnet": ModelConfig(
+            name="sonnet",
+            provider="anthropic",
             tier=ModelTier.BALANCED,
             max_tokens=8192,
             context_window=200000,
@@ -101,12 +101,12 @@ class ModelSelector:
             output_cost_per_1m=15.0,
             rate_limit_rpm=50,
             rate_limit_tpm=100000,
-            model_id='claude-sonnet-4-5-20250929',
-            version='4.5',
+            model_id="claude-sonnet-4-5-20250929",
+            version="4.5",
         ),
-        'opus': ModelConfig(
-            name='opus',
-            provider='anthropic',
+        "opus": ModelConfig(
+            name="opus",
+            provider="anthropic",
             tier=ModelTier.ADVANCED,
             max_tokens=8192,
             context_window=200000,
@@ -116,8 +116,8 @@ class ModelSelector:
             output_cost_per_1m=75.0,
             rate_limit_rpm=50,
             rate_limit_tpm=100000,
-            model_id='claude-opus-4-20250514',
-            version='4.0',
+            model_id="claude-opus-4-20250514",
+            version="4.0",
         ),
     }
 
@@ -172,23 +172,23 @@ class ModelSelector:
 
         # Select based on complexity level
         if complexity.level == ComplexityLevel.SIMPLE:
-            primary = 'haiku'
-            alternatives = ['sonnet']
+            primary = "haiku"
+            alternatives = ["sonnet"]
             reason = "Simple task - using fast model"
 
         elif complexity.level == ComplexityLevel.MODERATE:
-            primary = 'sonnet'
-            alternatives = ['haiku', 'opus']
+            primary = "sonnet"
+            alternatives = ["haiku", "opus"]
             reason = "Moderate complexity - using balanced model"
 
         elif complexity.level == ComplexityLevel.COMPLEX:
-            primary = 'opus'
-            alternatives = ['sonnet']
+            primary = "opus"
+            alternatives = ["sonnet"]
             reason = "Complex task - using advanced model"
 
         else:  # CRITICAL
-            primary = 'opus'
-            alternatives = ['sonnet']
+            primary = "opus"
+            alternatives = ["sonnet"]
             reason = "Critical task - using best available model"
 
         # Get primary model
@@ -227,13 +227,14 @@ class ModelSelector:
         # Check if task requires more tokens than model supports
         if complexity.estimated_tokens > model.max_tokens:
             # Need to upgrade to larger context model
-            if primary != 'opus':
-                model = self.models['opus']
+            if primary != "opus":
+                model = self.models["opus"]
                 reason = "Large context requirement - upgrading to Opus"
 
         # Build alternative list
         alternative_models = [
-            self.models[name] for name in alternatives
+            self.models[name]
+            for name in alternatives
             if name in self.models and self.models[name].is_available
         ]
 
@@ -318,10 +319,10 @@ class ModelSelector:
         """
         if not self.selection_history:
             return {
-                'total_selections': 0,
-                'model_distribution': {},
-                'total_estimated_cost': 0.0,
-                'avg_cost_per_task': 0.0,
+                "total_selections": 0,
+                "model_distribution": {},
+                "total_estimated_cost": 0.0,
+                "avg_cost_per_task": 0.0,
             }
 
         total = len(self.selection_history)
@@ -335,11 +336,11 @@ class ModelSelector:
         total_cost = sum(s.estimated_cost for s in self.selection_history)
 
         return {
-            'total_selections': total,
-            'model_distribution': model_dist,
-            'total_estimated_cost': total_cost,
-            'avg_cost_per_task': total_cost / total if total > 0 else 0.0,
-            'selections_by_complexity': {
+            "total_selections": total,
+            "model_distribution": model_dist,
+            "total_estimated_cost": total_cost,
+            "avg_cost_per_task": total_cost / total if total > 0 else 0.0,
+            "selections_by_complexity": {
                 level.value: sum(1 for s in self.selection_history if s.complexity.level == level)
                 for level in ComplexityLevel
             },

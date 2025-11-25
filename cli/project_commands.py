@@ -30,33 +30,19 @@ project_app = typer.Typer(help="Project initialization and management")
 
 @project_app.command("init")
 def init_project(
-    alias: str = typer.Argument(
-        None,
-        help="Short alias for this project (e.g., 'sales', 'myapp')"
-    ),
+    alias: str = typer.Argument(None, help="Short alias for this project (e.g., 'sales', 'myapp')"),
     directory: Path = typer.Option(
-        None,
-        "--dir",
-        "-d",
-        help="Project directory (defaults to current directory)"
+        None, "--dir", "-d", help="Project directory (defaults to current directory)"
     ),
     template: str = typer.Option(
-        "standard",
-        "--template",
-        "-t",
-        help="Planning template: quick, standard, complete"
+        "standard", "--template", "-t", help="Planning template: quick, standard, complete"
     ),
     editor: str = typer.Option(
-        "claude",
-        "--editor",
-        "-e",
-        help="Editor preference: claude, cursor, windsurf"
+        "claude", "--editor", "-e", help="Editor preference: claude, cursor, windsurf"
     ),
     skip_planning: bool = typer.Option(
-        False,
-        "--skip-planning",
-        help="Skip planning mode, just initialize structure"
-    )
+        False, "--skip-planning", help="Skip planning mode, just initialize structure"
+    ),
 ):
     """
     Initialize a new BuildRunner project
@@ -91,30 +77,33 @@ def init_project(
     # Prompt for alias if not provided
     if alias is None:
         suggested_alias = project_name.lower().replace(" ", "-").replace("_", "-")
-        alias = Prompt.ask(
-            "Enter alias for this project",
-            default=suggested_alias
-        )
+        alias = Prompt.ask("Enter alias for this project", default=suggested_alias)
 
     # Check if alias already exists
     registry = get_project_registry()
     if registry.alias_exists(alias):
         existing = registry.get_project(alias)
         if existing.path != str(directory):
-            console.print(f"[red]Error: Alias '{alias}' already registered to {existing.path}[/red]")
-            console.print(f"[yellow]Use 'br project remove {alias}' first or choose a different alias[/yellow]")
+            console.print(
+                f"[red]Error: Alias '{alias}' already registered to {existing.path}[/red]"
+            )
+            console.print(
+                f"[yellow]Use 'br project remove {alias}' first or choose a different alias[/yellow]"
+            )
             raise typer.Exit(1)
 
     # Welcome message
     console.print()
-    console.print(Panel.fit(
-        f"[bold cyan]BuildRunner 3 - Initialize Project[/bold cyan]\n\n"
-        f"[white]Project:[/white] [yellow]{project_name}[/yellow]\n"
-        f"[white]Alias:[/white] [yellow]{alias}[/yellow]\n"
-        f"[white]Directory:[/white] [yellow]{directory}[/yellow]\n"
-        f"[white]Template:[/white] [yellow]{template}[/yellow]",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel.fit(
+            f"[bold cyan]BuildRunner 3 - Initialize Project[/bold cyan]\n\n"
+            f"[white]Project:[/white] [yellow]{project_name}[/yellow]\n"
+            f"[white]Alias:[/white] [yellow]{alias}[/yellow]\n"
+            f"[white]Directory:[/white] [yellow]{directory}[/yellow]\n"
+            f"[white]Template:[/white] [yellow]{template}[/yellow]",
+            border_style="cyan",
+        )
+    )
     console.print()
 
     # Step 1: Create .buildrunner structure
@@ -149,9 +138,10 @@ def init_project(
                 "project": project_name,
                 "version": "1.0.0",
                 "features": [],
-                "status": "initialized"
+                "status": "initialized",
             }
             import json
+
             features_path.write_text(json.dumps(features_data, indent=2))
             console.print(f"  ✓ Created {features_path}")
 
@@ -191,7 +181,7 @@ TODO: Add features
             alias=alias,
             project_path=directory,
             editor=editor,
-            spec_path=".buildrunner/PROJECT_SPEC.md"
+            spec_path=".buildrunner/PROJECT_SPEC.md",
         )
         console.print(f"  ✓ Registered '{alias}' in project registry")
     except ValueError as e:
@@ -215,10 +205,9 @@ TODO: Add features
 
     if activation_script:
         import subprocess
+
         result = subprocess.run(
-            ["bash", str(activation_script), str(directory)],
-            capture_output=True,
-            text=True
+            ["bash", str(activation_script), str(directory)], capture_output=True, text=True
         )
 
         if result.returncode == 0:
@@ -245,47 +234,36 @@ TODO: Add features
 
     # Success summary
     console.print()
-    console.print(Panel(
-        f"[green]✅ Project '{project_name}' initialized successfully![/green]\n\n"
-        f"[white]Files Created:[/white]\n"
-        f"  • PROJECT_SPEC.md: [cyan]{spec_path}[/cyan]\n"
-        f"  • features.json: [cyan]{features_path}[/cyan]\n\n"
-        f"[white]Shell Alias:[/white]\n"
-        f"  • Type [cyan]{alias}[/cyan] in terminal to launch {editor.title()} Code in this directory\n"
-        f"  • Or use: [cyan]br project jump {alias}[/cyan]\n\n"
-        f"[white]Next Steps:[/white]\n"
-        f"1. Reload shell: [cyan]source ~/.zshrc[/cyan] (or ~/.bashrc)\n"
-        f"2. Launch editor: [cyan]{alias}[/cyan]\n"
-        f"3. Start building features!",
-        title="✅ Initialization Complete",
-        border_style="green"
-    ))
+    console.print(
+        Panel(
+            f"[green]✅ Project '{project_name}' initialized successfully![/green]\n\n"
+            f"[white]Files Created:[/white]\n"
+            f"  • PROJECT_SPEC.md: [cyan]{spec_path}[/cyan]\n"
+            f"  • features.json: [cyan]{features_path}[/cyan]\n\n"
+            f"[white]Shell Alias:[/white]\n"
+            f"  • Type [cyan]{alias}[/cyan] in terminal to launch {editor.title()} Code in this directory\n"
+            f"  • Or use: [cyan]br project jump {alias}[/cyan]\n\n"
+            f"[white]Next Steps:[/white]\n"
+            f"1. Reload shell: [cyan]source ~/.zshrc[/cyan] (or ~/.bashrc)\n"
+            f"2. Launch editor: [cyan]{alias}[/cyan]\n"
+            f"3. Start building features!",
+            title="✅ Initialization Complete",
+            border_style="green",
+        )
+    )
     console.print()
 
 
 @project_app.command("attach")
 def attach_project(
-    alias: str = typer.Argument(
-        ...,
-        help="Short alias for this project (e.g., 'sales', 'myapp')"
-    ),
+    alias: str = typer.Argument(..., help="Short alias for this project (e.g., 'sales', 'myapp')"),
     directory: Path = typer.Option(
-        None,
-        "--dir",
-        "-d",
-        help="Project directory (defaults to current directory)"
+        None, "--dir", "-d", help="Project directory (defaults to current directory)"
     ),
     editor: str = typer.Option(
-        "claude",
-        "--editor",
-        "-e",
-        help="Editor preference: claude, cursor, windsurf"
+        "claude", "--editor", "-e", help="Editor preference: claude, cursor, windsurf"
     ),
-    scan: bool = typer.Option(
-        False,
-        "--scan",
-        help="Scan codebase and generate PROJECT_SPEC.md"
-    )
+    scan: bool = typer.Option(False, "--scan", help="Scan codebase and generate PROJECT_SPEC.md"),
 ):
     """
     Attach BuildRunner to an existing project
@@ -320,20 +298,28 @@ def attach_project(
     if registry.alias_exists(alias):
         existing = registry.get_project(alias)
         if existing.path != str(directory):
-            console.print(f"[red]Error: Alias '{alias}' already registered to {existing.path}[/red]")
-            console.print(f"[yellow]Use 'br project remove {alias}' first or choose a different alias[/yellow]")
+            console.print(
+                f"[red]Error: Alias '{alias}' already registered to {existing.path}[/red]"
+            )
+            console.print(
+                f"[yellow]Use 'br project remove {alias}' first or choose a different alias[/yellow]"
+            )
             raise typer.Exit(1)
-        console.print(f"[yellow]Alias '{alias}' already registered to this directory, updating...[/yellow]")
+        console.print(
+            f"[yellow]Alias '{alias}' already registered to this directory, updating...[/yellow]"
+        )
 
     # Welcome
     console.print()
-    console.print(Panel.fit(
-        f"[bold cyan]BuildRunner 3 - Attach to Project[/bold cyan]\n\n"
-        f"[white]Project:[/white] [yellow]{project_name}[/yellow]\n"
-        f"[white]Alias:[/white] [yellow]{alias}[/yellow]\n"
-        f"[white]Directory:[/white] [yellow]{directory}[/yellow]",
-        border_style="cyan"
-    ))
+    console.print(
+        Panel.fit(
+            f"[bold cyan]BuildRunner 3 - Attach to Project[/bold cyan]\n\n"
+            f"[white]Project:[/white] [yellow]{project_name}[/yellow]\n"
+            f"[white]Alias:[/white] [yellow]{alias}[/yellow]\n"
+            f"[white]Directory:[/white] [yellow]{directory}[/yellow]",
+            border_style="cyan",
+        )
+    )
     console.print()
 
     # Create .buildrunner if not exists
@@ -365,7 +351,7 @@ def attach_project(
                     output=None,
                     dry_run=False,
                     editor=editor,
-                    scan=True
+                    scan=True,
                 )
             except SystemExit:
                 pass
@@ -373,7 +359,9 @@ def attach_project(
         else:
             console.print()
             console.print("[yellow]Warning: No PROJECT_SPEC.md found[/yellow]")
-            create_spec = Confirm.ask("Would you like to create a minimal PROJECT_SPEC.md?", default=True)
+            create_spec = Confirm.ask(
+                "Would you like to create a minimal PROJECT_SPEC.md?", default=True
+            )
 
             if create_spec:
                 minimal_spec = f"""# {project_name}
@@ -407,7 +395,7 @@ TODO: Document existing features
             alias=alias,
             project_path=directory,
             editor=editor,
-            spec_path=".buildrunner/PROJECT_SPEC.md"
+            spec_path=".buildrunner/PROJECT_SPEC.md",
         )
         console.print(f"  ✓ Registered '{alias}' in project registry")
     except ValueError as e:
@@ -431,10 +419,9 @@ TODO: Document existing features
 
     if activation_script:
         import subprocess
+
         result = subprocess.run(
-            ["bash", str(activation_script), str(directory)],
-            capture_output=True,
-            text=True
+            ["bash", str(activation_script), str(directory)], capture_output=True, text=True
         )
 
         if result.returncode == 0:
@@ -459,17 +446,19 @@ TODO: Document existing features
 
     # Success
     console.print()
-    console.print(Panel(
-        f"[green]✅ Project '{project_name}' attached successfully![/green]\n\n"
-        f"[white]Shell Alias:[/white]\n"
-        f"  • Type [cyan]{alias}[/cyan] in terminal to launch {editor.title()} Code\n\n"
-        f"[white]Next Steps:[/white]\n"
-        f"1. Reload shell: [cyan]source {config_path}[/cyan]\n"
-        f"2. Launch editor: [cyan]{alias}[/cyan]\n"
-        f"3. Start building!",
-        title="✅ Attach Complete",
-        border_style="green"
-    ))
+    console.print(
+        Panel(
+            f"[green]✅ Project '{project_name}' attached successfully![/green]\n\n"
+            f"[white]Shell Alias:[/white]\n"
+            f"  • Type [cyan]{alias}[/cyan] in terminal to launch {editor.title()} Code\n\n"
+            f"[white]Next Steps:[/white]\n"
+            f"1. Reload shell: [cyan]source {config_path}[/cyan]\n"
+            f"2. Launch editor: [cyan]{alias}[/cyan]\n"
+            f"3. Start building!",
+            title="✅ Attach Complete",
+            border_style="green",
+        )
+    )
     console.print()
 
 
@@ -508,12 +497,7 @@ def list_projects():
         else:
             status = "❌ Missing"
 
-        table.add_row(
-            project.alias,
-            project.path,
-            project.editor,
-            status
-        )
+        table.add_row(project.alias, project.path, project.editor, status)
 
     console.print(table)
     console.print()
@@ -523,15 +507,10 @@ def list_projects():
 
 @project_app.command("remove")
 def remove_project(
-    alias: str = typer.Argument(
-        ...,
-        help="Project alias to remove"
-    ),
+    alias: str = typer.Argument(..., help="Project alias to remove"),
     keep_shell_alias: bool = typer.Option(
-        False,
-        "--keep-shell-alias",
-        help="Keep shell alias in config file"
-    )
+        False, "--keep-shell-alias", help="Keep shell alias in config file"
+    ),
 ):
     """
     Remove a project from BuildRunner registry
@@ -578,12 +557,7 @@ def remove_project(
 
 
 @project_app.command("jump")
-def jump_to_project(
-    alias: str = typer.Argument(
-        ...,
-        help="Project alias"
-    )
-):
+def jump_to_project(alias: str = typer.Argument(..., help="Project alias")):
     """
     Jump to a project directory
 
@@ -620,10 +594,12 @@ def jump_to_project(
     editor_commands = {
         "claude": ["claude", "--dangerously-skip-permissions", str(project_path)],
         "cursor": ["cursor", "--disable-extensions", str(project_path)],
-        "windsurf": ["windsurf", str(project_path)]
+        "windsurf": ["windsurf", str(project_path)],
     }
 
-    cmd = editor_commands.get(project.editor, ["claude", "--dangerously-skip-permissions", str(project_path)])
+    cmd = editor_commands.get(
+        project.editor, ["claude", "--dangerously-skip-permissions", str(project_path)]
+    )
 
     try:
         subprocess.run(cmd, check=False)

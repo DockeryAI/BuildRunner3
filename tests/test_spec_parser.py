@@ -1,6 +1,7 @@
 """
 Tests for Spec Parser
 """
+
 import pytest
 from pathlib import Path
 from core.spec_parser import SpecParser, Feature
@@ -83,21 +84,21 @@ Requirements:
     def test_init(self, parser):
         """Test initialization"""
         assert parser is not None
-        assert 'overview' in parser.required_sections
-        assert 'features' in parser.required_sections
+        assert "overview" in parser.required_sections
+        assert "features" in parser.required_sections
 
     def test_parse_spec_success(self, parser, sample_spec):
         """Test successful spec parsing"""
         result = parser.parse_spec(sample_spec)
 
-        assert 'features' in result
-        assert 'technical_requirements' in result
-        assert 'overview' in result
-        assert 'metadata' in result
+        assert "features" in result
+        assert "technical_requirements" in result
+        assert "overview" in result
+        assert "metadata" in result
 
         # Check metadata
-        assert result['metadata']['feature_count'] == 3
-        assert result['metadata']['has_dependencies'] is True
+        assert result["metadata"]["feature_count"] == 3
+        assert result["metadata"]["has_dependencies"] is True
 
     def test_parse_spec_file_not_found(self, parser):
         """Test parsing non-existent file"""
@@ -140,13 +141,13 @@ Requirements:
         dependencies = parser.extract_dependencies(content)
 
         # Profile depends on Authentication
-        assert 'user_profile_management' in dependencies
-        assert 'user_authentication' in dependencies['user_profile_management']
+        assert "user_profile_management" in dependencies
+        assert "user_authentication" in dependencies["user_profile_management"]
 
         # Admin depends on both
-        assert 'admin_dashboard' in dependencies
-        assert 'user_authentication' in dependencies['admin_dashboard']
-        assert 'user_profile_management' in dependencies['admin_dashboard']
+        assert "admin_dashboard" in dependencies
+        assert "user_authentication" in dependencies["admin_dashboard"]
+        assert "user_profile_management" in dependencies["admin_dashboard"]
 
     def test_extract_dependencies_no_dependencies(self, parser):
         """Test extraction when no dependencies exist"""
@@ -303,9 +304,12 @@ Requirements:
 
     def test_estimate_complexity_complex(self, parser):
         """Test complexity estimation for complex feature"""
-        feature_body = """
+        feature_body = (
+            """
 This is a very complex feature with lots of details and requirements.
-""" + " ".join(["word"] * 350) + """
+"""
+            + " ".join(["word"] * 350)
+            + """
 
 Requirements:
 - Req 1
@@ -317,15 +321,19 @@ Requirements:
 - Req 7
 - Req 8
 """
+        )
         complexity = parser._estimate_complexity(feature_body)
 
         assert complexity == "complex"
 
     def test_estimate_complexity_medium(self, parser):
         """Test complexity estimation for medium feature"""
-        feature_body = """
+        feature_body = (
+            """
 Medium complexity feature with moderate details.
-""" + " ".join(["word"] * 150) + """
+"""
+            + " ".join(["word"] * 150)
+            + """
 
 Requirements:
 - Req 1
@@ -333,6 +341,7 @@ Requirements:
 - Req 3
 - Req 4
 """
+        )
         complexity = parser._estimate_complexity(feature_body)
 
         assert complexity == "medium"
@@ -342,13 +351,10 @@ Requirements:
         features = [
             Feature(id="feature_a", name="Feature A", description="A"),
             Feature(id="feature_b", name="Feature B", description="B"),
-            Feature(id="feature_c", name="Feature C", description="C")
+            Feature(id="feature_c", name="Feature C", description="C"),
         ]
 
-        dependencies = {
-            "feature_b": ["feature_a"],
-            "feature_c": ["feature_a", "feature_b"]
-        }
+        dependencies = {"feature_b": ["feature_a"], "feature_c": ["feature_a", "feature_b"]}
 
         parser._apply_dependencies(features, dependencies)
 
@@ -358,13 +364,9 @@ Requirements:
 
     def test_apply_dependencies_invalid_reference(self, parser):
         """Test applying dependencies with invalid references"""
-        features = [
-            Feature(id="feature_a", name="Feature A", description="A")
-        ]
+        features = [Feature(id="feature_a", name="Feature A", description="A")]
 
-        dependencies = {
-            "feature_a": ["nonexistent_feature"]
-        }
+        dependencies = {"feature_a": ["nonexistent_feature"]}
 
         parser._apply_dependencies(features, dependencies)
 
@@ -381,16 +383,16 @@ Requirements:
             dependencies=["other_feature"],
             acceptance_criteria=["AC 1"],
             technical_details=["Detail 1"],
-            complexity="medium"
+            complexity="medium",
         )
 
         feature_dict = parser._feature_to_dict(feature)
 
-        assert feature_dict['id'] == "test_feature"
-        assert feature_dict['name'] == "Test Feature"
-        assert feature_dict['complexity'] == "medium"
-        assert len(feature_dict['requirements']) == 1
-        assert len(feature_dict['dependencies']) == 1
+        assert feature_dict["id"] == "test_feature"
+        assert feature_dict["name"] == "Test Feature"
+        assert feature_dict["complexity"] == "medium"
+        assert len(feature_dict["requirements"]) == 1
+        assert len(feature_dict["dependencies"]) == 1
 
     def test_extract_overview(self, parser, sample_spec):
         """Test overview extraction"""
@@ -414,17 +416,17 @@ Requirements:
         result = parser.parse_spec(sample_spec)
 
         # Verify features
-        assert len(result['features']) == 3
+        assert len(result["features"]) == 3
 
         # Verify dependencies applied
-        profile_feature = [f for f in result['features'] if f['id'] == 'user_profile_management'][0]
-        assert 'user_authentication' in profile_feature['dependencies']
+        profile_feature = [f for f in result["features"] if f["id"] == "user_profile_management"][0]
+        assert "user_authentication" in profile_feature["dependencies"]
 
-        admin_feature = [f for f in result['features'] if f['id'] == 'admin_dashboard'][0]
-        assert len(admin_feature['dependencies']) == 2
+        admin_feature = [f for f in result["features"] if f["id"] == "admin_dashboard"][0]
+        assert len(admin_feature["dependencies"]) == 2
 
         # Verify technical requirements
-        assert len(result['technical_requirements']) == 4
+        assert len(result["technical_requirements"]) == 4
 
         # Verify overview
-        assert len(result['overview']) > 0
+        assert len(result["overview"]) > 0

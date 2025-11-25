@@ -11,6 +11,7 @@ Analyzes code for:
 - Weak cryptography
 - Bandit integration for additional checks
 """
+
 import ast
 import re
 from typing import Dict, List, Optional, Set, Any
@@ -21,6 +22,7 @@ from dataclasses import dataclass
 @dataclass
 class SecurityIssue:
     """Represents a security issue"""
+
     issue_type: str
     location: str
     severity: str  # 'critical', 'high', 'medium', 'low'
@@ -45,34 +47,28 @@ class SecurityScanner:
 
     # Patterns for detecting secrets
     SECRET_PATTERNS = {
-        'password': re.compile(r'password\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE),
-        'api_key': re.compile(r'api[_-]?key\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE),
-        'secret': re.compile(r'secret\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE),
-        'token': re.compile(r'token\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE),
+        "password": re.compile(r'password\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE),
+        "api_key": re.compile(r'api[_-]?key\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE),
+        "secret": re.compile(r'secret\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE),
+        "token": re.compile(r'token\s*=\s*["\']([^"\']+)["\']', re.IGNORECASE),
     }
 
     # Dangerous functions
     DANGEROUS_FUNCTIONS = {
-        'eval': 'CWE-95',
-        'exec': 'CWE-95',
-        'compile': 'CWE-95',
-        '__import__': 'CWE-95',
+        "eval": "CWE-95",
+        "exec": "CWE-95",
+        "compile": "CWE-95",
+        "__import__": "CWE-95",
     }
 
     # SQL-like function names
-    SQL_FUNCTIONS = {
-        'execute', 'executemany', 'query', 'raw', 'exec_driver_sql'
-    }
+    SQL_FUNCTIONS = {"execute", "executemany", "query", "raw", "exec_driver_sql"}
 
     # Command execution functions
-    COMMAND_FUNCTIONS = {
-        'system', 'popen', 'spawn', 'call', 'check_output', 'run'
-    }
+    COMMAND_FUNCTIONS = {"system", "popen", "spawn", "call", "check_output", "run"}
 
     # Weak crypto algorithms
-    WEAK_CRYPTO = {
-        'md5', 'sha1', 'des', 'rc4'
-    }
+    WEAK_CRYPTO = {"md5", "sha1", "des", "rc4"}
 
     def __init__(self, project_root: Optional[Path] = None):
         """
@@ -130,14 +126,24 @@ class SecurityScanner:
 
         # Calculate security score
         security_score = self.calculate_security_score(
-            sql_injection, command_injection, hardcoded_secrets,
-            eval_usage, insecure_random, path_traversal, weak_crypto
+            sql_injection,
+            command_injection,
+            hardcoded_secrets,
+            eval_usage,
+            insecure_random,
+            path_traversal,
+            weak_crypto,
         )
 
         # Generate recommendations
         recommendations = self.generate_recommendations(
-            sql_injection, command_injection, hardcoded_secrets,
-            eval_usage, insecure_random, path_traversal, weak_crypto
+            sql_injection,
+            command_injection,
+            hardcoded_secrets,
+            eval_usage,
+            insecure_random,
+            path_traversal,
+            weak_crypto,
         )
 
         return {
@@ -149,7 +155,7 @@ class SecurityScanner:
             "path_traversal": [vars(i) for i in path_traversal],
             "weak_crypto": [vars(i) for i in weak_crypto],
             "security_score": security_score,
-            "recommendations": recommendations
+            "recommendations": recommendations,
         }
 
     def detect_sql_injection(self, tree: ast.AST, code: str) -> List[SecurityIssue]:
@@ -171,14 +177,16 @@ class SecurityScanner:
                 if self._is_sql_call(node):
                     # Check if using string formatting/concatenation
                     if self._uses_string_formatting(node):
-                        issues.append(SecurityIssue(
-                            issue_type='sql_injection',
-                            location=f"Line {node.lineno}",
-                            severity='critical',
-                            description="Potential SQL injection: SQL query uses string formatting",
-                            recommendation="Use parameterized queries or ORM methods",
-                            cwe_id='CWE-89'
-                        ))
+                        issues.append(
+                            SecurityIssue(
+                                issue_type="sql_injection",
+                                location=f"Line {node.lineno}",
+                                severity="critical",
+                                description="Potential SQL injection: SQL query uses string formatting",
+                                recommendation="Use parameterized queries or ORM methods",
+                                cwe_id="CWE-89",
+                            )
+                        )
 
         return issues
 
@@ -201,24 +209,28 @@ class SecurityScanner:
                 if self._is_command_call(node):
                     # Check if shell=True is used
                     if self._has_shell_true(node):
-                        issues.append(SecurityIssue(
-                            issue_type='command_injection',
-                            location=f"Line {node.lineno}",
-                            severity='critical',
-                            description="Command injection risk: shell=True with user input",
-                            recommendation="Avoid shell=True, use list arguments instead",
-                            cwe_id='CWE-78'
-                        ))
+                        issues.append(
+                            SecurityIssue(
+                                issue_type="command_injection",
+                                location=f"Line {node.lineno}",
+                                severity="critical",
+                                description="Command injection risk: shell=True with user input",
+                                recommendation="Avoid shell=True, use list arguments instead",
+                                cwe_id="CWE-78",
+                            )
+                        )
                     # Check for string formatting in command
                     elif self._uses_string_formatting(node):
-                        issues.append(SecurityIssue(
-                            issue_type='command_injection',
-                            location=f"Line {node.lineno}",
-                            severity='high',
-                            description="Potential command injection: command uses string formatting",
-                            recommendation="Use list arguments and avoid string formatting",
-                            cwe_id='CWE-78'
-                        ))
+                        issues.append(
+                            SecurityIssue(
+                                issue_type="command_injection",
+                                location=f"Line {node.lineno}",
+                                severity="high",
+                                description="Potential command injection: command uses string formatting",
+                                recommendation="Use list arguments and avoid string formatting",
+                                cwe_id="CWE-78",
+                            )
+                        )
 
         return issues
 
@@ -233,22 +245,24 @@ class SecurityScanner:
             List of hardcoded secret issues
         """
         issues = []
-        lines = code.split('\n')
+        lines = code.split("\n")
 
         for pattern_name, pattern in self.SECRET_PATTERNS.items():
             for i, line in enumerate(lines, 1):
                 matches = pattern.findall(line)
                 for match in matches:
                     # Skip empty values and placeholders
-                    if match and match not in ['', 'your-password', 'your-api-key', 'xxx', '***']:
-                        issues.append(SecurityIssue(
-                            issue_type='hardcoded_secret',
-                            location=f"Line {i}",
-                            severity='critical',
-                            description=f"Hardcoded {pattern_name} detected",
-                            recommendation="Use environment variables or secret management",
-                            cwe_id='CWE-798'
-                        ))
+                    if match and match not in ["", "your-password", "your-api-key", "xxx", "***"]:
+                        issues.append(
+                            SecurityIssue(
+                                issue_type="hardcoded_secret",
+                                location=f"Line {i}",
+                                severity="critical",
+                                description=f"Hardcoded {pattern_name} detected",
+                                recommendation="Use environment variables or secret management",
+                                cwe_id="CWE-798",
+                            )
+                        )
 
         return issues
 
@@ -269,14 +283,16 @@ class SecurityScanner:
                 if isinstance(node.func, ast.Name):
                     func_name = node.func.id
                     if func_name in self.DANGEROUS_FUNCTIONS:
-                        issues.append(SecurityIssue(
-                            issue_type='dangerous_function',
-                            location=f"Line {node.lineno}",
-                            severity='critical',
-                            description=f"Use of dangerous function '{func_name}'",
-                            recommendation=f"Avoid {func_name}, use safer alternatives",
-                            cwe_id=self.DANGEROUS_FUNCTIONS[func_name]
-                        ))
+                        issues.append(
+                            SecurityIssue(
+                                issue_type="dangerous_function",
+                                location=f"Line {node.lineno}",
+                                severity="critical",
+                                description=f"Use of dangerous function '{func_name}'",
+                                recommendation=f"Avoid {func_name}, use safer alternatives",
+                                cwe_id=self.DANGEROUS_FUNCTIONS[func_name],
+                            )
+                        )
 
         return issues
 
@@ -297,15 +313,17 @@ class SecurityScanner:
                 # Check for random module usage (not secrets module)
                 if isinstance(node.func, ast.Attribute):
                     if isinstance(node.func.value, ast.Name):
-                        if node.func.value.id == 'random':
-                            issues.append(SecurityIssue(
-                                issue_type='insecure_random',
-                                location=f"Line {node.lineno}",
-                                severity='medium',
-                                description="Use of insecure random module for security purposes",
-                                recommendation="Use secrets module for cryptographic operations",
-                                cwe_id='CWE-330'
-                            ))
+                        if node.func.value.id == "random":
+                            issues.append(
+                                SecurityIssue(
+                                    issue_type="insecure_random",
+                                    location=f"Line {node.lineno}",
+                                    severity="medium",
+                                    description="Use of insecure random module for security purposes",
+                                    recommendation="Use secrets module for cryptographic operations",
+                                    cwe_id="CWE-330",
+                                )
+                            )
 
         return issues
 
@@ -326,17 +344,19 @@ class SecurityScanner:
             if isinstance(node, ast.Call):
                 # Check for file operations
                 if isinstance(node.func, ast.Name):
-                    if node.func.id == 'open':
+                    if node.func.id == "open":
                         # Check if path uses string formatting/concatenation
                         if node.args and self._is_dynamic_string(node.args[0]):
-                            issues.append(SecurityIssue(
-                                issue_type='path_traversal',
-                                location=f"Line {node.lineno}",
-                                severity='high',
-                                description="Potential path traversal: file path uses dynamic input",
-                                recommendation="Validate and sanitize file paths, use Path.resolve()",
-                                cwe_id='CWE-22'
-                            ))
+                            issues.append(
+                                SecurityIssue(
+                                    issue_type="path_traversal",
+                                    location=f"Line {node.lineno}",
+                                    severity="high",
+                                    description="Potential path traversal: file path uses dynamic input",
+                                    recommendation="Validate and sanitize file paths, use Path.resolve()",
+                                    cwe_id="CWE-22",
+                                )
+                            )
 
         return issues
 
@@ -358,17 +378,19 @@ class SecurityScanner:
                 # Check for hashlib usage
                 if isinstance(node.func, ast.Attribute):
                     if isinstance(node.func.value, ast.Name):
-                        if node.func.value.id == 'hashlib':
+                        if node.func.value.id == "hashlib":
                             algo = node.func.attr.lower()
                             if algo in self.WEAK_CRYPTO:
-                                issues.append(SecurityIssue(
-                                    issue_type='weak_crypto',
-                                    location=f"Line {node.lineno}",
-                                    severity='medium',
-                                    description=f"Weak cryptographic algorithm '{algo}' used",
-                                    recommendation="Use SHA-256 or stronger algorithms",
-                                    cwe_id='CWE-327'
-                                ))
+                                issues.append(
+                                    SecurityIssue(
+                                        issue_type="weak_crypto",
+                                        location=f"Line {node.lineno}",
+                                        severity="medium",
+                                        description=f"Weak cryptographic algorithm '{algo}' used",
+                                        recommendation="Use SHA-256 or stronger algorithms",
+                                        cwe_id="CWE-327",
+                                    )
+                                )
 
         return issues
 
@@ -380,7 +402,7 @@ class SecurityScanner:
         eval_usage: List[SecurityIssue],
         insecure_random: List[SecurityIssue],
         path_traversal: List[SecurityIssue],
-        weak_crypto: List[SecurityIssue]
+        weak_crypto: List[SecurityIssue],
     ) -> int:
         """
         Calculate overall security score
@@ -416,7 +438,7 @@ class SecurityScanner:
         eval_usage: List[SecurityIssue],
         insecure_random: List[SecurityIssue],
         path_traversal: List[SecurityIssue],
-        weak_crypto: List[SecurityIssue]
+        weak_crypto: List[SecurityIssue],
     ) -> List[str]:
         """Generate actionable security recommendations"""
         recommendations = []
@@ -432,19 +454,13 @@ class SecurityScanner:
             )
 
         if hardcoded_secrets:
-            recommendations.append(
-                f"CRITICAL: Remove {len(hardcoded_secrets)} hardcoded secret(s)"
-            )
+            recommendations.append(f"CRITICAL: Remove {len(hardcoded_secrets)} hardcoded secret(s)")
 
         if eval_usage:
-            recommendations.append(
-                f"CRITICAL: Remove {len(eval_usage)} dangerous function call(s)"
-            )
+            recommendations.append(f"CRITICAL: Remove {len(eval_usage)} dangerous function call(s)")
 
         if path_traversal:
-            recommendations.append(
-                f"Fix {len(path_traversal)} path traversal vulnerability(ies)"
-            )
+            recommendations.append(f"Fix {len(path_traversal)} path traversal vulnerability(ies)")
 
         if insecure_random:
             recommendations.append(
@@ -452,9 +468,7 @@ class SecurityScanner:
             )
 
         if weak_crypto:
-            recommendations.append(
-                f"Upgrade {len(weak_crypto)} weak cryptographic algorithm(s)"
-            )
+            recommendations.append(f"Upgrade {len(weak_crypto)} weak cryptographic algorithm(s)")
 
         if not recommendations:
             recommendations.append("No critical security issues detected")
@@ -472,7 +486,7 @@ class SecurityScanner:
             "path_traversal": [],
             "weak_crypto": [],
             "security_score": 0,
-            "recommendations": [error_msg]
+            "recommendations": [error_msg],
         }
 
     def _is_sql_call(self, node: ast.Call) -> bool:
@@ -497,7 +511,7 @@ class SecurityScanner:
     def _has_shell_true(self, node: ast.Call) -> bool:
         """Check if shell=True is in call arguments"""
         for keyword in node.keywords:
-            if keyword.arg == 'shell':
+            if keyword.arg == "shell":
                 if isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
                     return True
         return False
@@ -510,7 +524,7 @@ class SecurityScanner:
             # Check for .format() calls
             if isinstance(arg, ast.Call):
                 if isinstance(arg.func, ast.Attribute):
-                    if arg.func.attr == 'format':
+                    if arg.func.attr == "format":
                         return True
         return False
 
@@ -535,36 +549,36 @@ def main():
     print(f"\n=== Security Analysis for {file_path} ===\n")
     print(f"Security Score: {result['security_score']}/100\n")
 
-    if result['sql_injection']:
+    if result["sql_injection"]:
         print("SQL Injection Vulnerabilities:")
-        for issue in result['sql_injection']:
+        for issue in result["sql_injection"]:
             print(f"  - [{issue['severity'].upper()}] {issue['description']}")
             print(f"    {issue['recommendation']}")
 
-    if result['command_injection']:
+    if result["command_injection"]:
         print("\nCommand Injection Vulnerabilities:")
-        for issue in result['command_injection']:
+        for issue in result["command_injection"]:
             print(f"  - [{issue['severity'].upper()}] {issue['description']}")
 
-    if result['hardcoded_secrets']:
+    if result["hardcoded_secrets"]:
         print(f"\nHardcoded Secrets: {len(result['hardcoded_secrets'])} detected")
 
-    if result['eval_usage']:
+    if result["eval_usage"]:
         print("\nDangerous Function Usage:")
-        for issue in result['eval_usage']:
+        for issue in result["eval_usage"]:
             print(f"  - [{issue['severity'].upper()}] {issue['description']}")
 
-    if result['insecure_random']:
+    if result["insecure_random"]:
         print(f"\nInsecure Random Usage: {len(result['insecure_random'])} detected")
 
-    if result['path_traversal']:
+    if result["path_traversal"]:
         print(f"\nPath Traversal Issues: {len(result['path_traversal'])} detected")
 
-    if result['weak_crypto']:
+    if result["weak_crypto"]:
         print(f"\nWeak Cryptography: {len(result['weak_crypto'])} detected")
 
     print("\nRecommendations:")
-    for rec in result['recommendations']:
+    for rec in result["recommendations"]:
         print(f"  - {rec}")
 
 

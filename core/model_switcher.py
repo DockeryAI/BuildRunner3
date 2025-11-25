@@ -4,6 +4,7 @@ Model switching protocol for Opus → Sonnet handoff
 Creates compact handoff packages that transfer planning context
 from Opus (planning mode) to Sonnet (execution mode) efficiently.
 """
+
 import json
 from typing import Dict, List, Any
 from pathlib import Path
@@ -25,10 +26,7 @@ class ModelSwitcher:
         self.handoff_dir.mkdir(parents=True, exist_ok=True)
 
     def create_handoff_package(
-        self,
-        spec_path: Path,
-        features_path: Path,
-        context: Dict[str, Any]
+        self, spec_path: Path, features_path: Path, context: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
         Create compact handoff package for Sonnet
@@ -73,7 +71,7 @@ class ModelSwitcher:
             "architecture": compressed["architecture"],
             "constraints": compressed["constraints"],
             "next_steps": compressed["next_steps"],
-            "sonnet_prompt": sonnet_prompt
+            "sonnet_prompt": sonnet_prompt,
         }
 
         # Validate package
@@ -86,10 +84,7 @@ class ModelSwitcher:
         return package
 
     def compress_context(
-        self,
-        spec_content: str,
-        features: Dict[str, Any],
-        context: Dict[str, Any]
+        self, spec_content: str, features: Dict[str, Any], context: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
         Compress context by removing verbosity, keeping essentials
@@ -117,7 +112,7 @@ class ModelSwitcher:
                 "name": f.get("name", "Unnamed feature"),
                 "description": f.get("description", "")[:200],  # Truncate to 200 chars
                 "status": f.get("status", "pending"),
-                "dependencies": f.get("dependencies", [])
+                "dependencies": f.get("dependencies", []),
             }
             for i, f in enumerate(features.get("features", []))
         ]
@@ -136,7 +131,7 @@ class ModelSwitcher:
             "features": essential_features,
             "architecture": architecture,
             "constraints": constraints,
-            "next_steps": next_steps
+            "next_steps": next_steps,
         }
 
     def generate_sonnet_prompt(self, compressed: Dict[str, Any]) -> str:
@@ -193,8 +188,14 @@ Follow the BuildRunner workflow:
             ValueError: If package missing required fields or has invalid data
         """
         required = [
-            "version", "timestamp", "source_model", "target_model",
-            "spec_summary", "features", "architecture", "next_steps"
+            "version",
+            "timestamp",
+            "source_model",
+            "target_model",
+            "spec_summary",
+            "features",
+            "architecture",
+            "next_steps",
         ]
 
         for field in required:
@@ -267,12 +268,7 @@ Follow the BuildRunner workflow:
             Dict with frontend, backend, database, infrastructure keys
         """
         lines = spec_content.split("\n")
-        arch = {
-            "frontend": "",
-            "backend": "",
-            "database": "",
-            "infrastructure": ""
-        }
+        arch = {"frontend": "", "backend": "", "database": "", "infrastructure": ""}
 
         in_arch_section = False
         for line in lines:

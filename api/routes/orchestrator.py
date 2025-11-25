@@ -46,6 +46,7 @@ def get_task_queue() -> TaskQueue:
 # Response models
 class TaskResponse(BaseModel):
     """Task information response"""
+
     id: str
     name: str
     description: str
@@ -62,6 +63,7 @@ class TaskResponse(BaseModel):
 
 class ProgressResponse(BaseModel):
     """Progress information response"""
+
     total: int
     completed: int
     failed: int
@@ -74,6 +76,7 @@ class ProgressResponse(BaseModel):
 
 class StatusResponse(BaseModel):
     """Orchestration status response"""
+
     status: str
     current_batch: Optional[str]
     batches_executed: int
@@ -87,6 +90,7 @@ class StatusResponse(BaseModel):
 async def status_options():
     """Handle OPTIONS for CORS preflight"""
     return {}
+
 
 @router.get("/status", response_model=StatusResponse)
 async def get_status() -> StatusResponse:

@@ -24,9 +24,10 @@ logger = logging.getLogger(__name__)
 
 class TaskComplexity(str, Enum):
     """Task complexity classification."""
-    SIMPLE = "simple"          # 60 minutes, straightforward tasks
-    MEDIUM = "medium"          # 90 minutes, moderate complexity
-    COMPLEX = "complex"        # 120+ minutes, difficult tasks
+
+    SIMPLE = "simple"  # 60 minutes, straightforward tasks
+    MEDIUM = "medium"  # 90 minutes, moderate complexity
+    COMPLEX = "complex"  # 120+ minutes, difficult tasks
 
 
 @dataclass
@@ -55,17 +56,17 @@ class AgentRecommendation:
     def to_dict(self) -> Dict:
         """Convert to dictionary."""
         return {
-            'recommended_agent_type': self.recommended_agent_type,
-            'recommended_model': self.recommended_model,
-            'confidence': self.confidence,
-            'reason': self.reason,
-            'supporting_metrics': self.supporting_metrics,
-            'alternative_agents': self.alternative_agents,
-            'alternative_models': self.alternative_models,
-            'expected_duration_ms': self.expected_duration_ms,
-            'expected_cost_usd': self.expected_cost_usd,
-            'expected_success_rate': self.expected_success_rate,
-            'timestamp': self.timestamp.isoformat(),
+            "recommended_agent_type": self.recommended_agent_type,
+            "recommended_model": self.recommended_model,
+            "confidence": self.confidence,
+            "reason": self.reason,
+            "supporting_metrics": self.supporting_metrics,
+            "alternative_agents": self.alternative_agents,
+            "alternative_models": self.alternative_models,
+            "expected_duration_ms": self.expected_duration_ms,
+            "expected_cost_usd": self.expected_cost_usd,
+            "expected_success_rate": self.expected_success_rate,
+            "timestamp": self.timestamp.isoformat(),
         }
 
 
@@ -75,48 +76,90 @@ class AgentRecommender:
     # Task keywords for agent type detection
     AGENT_TYPE_KEYWORDS = {
         AgentType.EXPLORE.value: [
-            'explore', 'understand', 'investigate', 'research',
-            'discover', 'examine', 'scan', 'map', 'diagram', 'discover'
+            "explore",
+            "understand",
+            "investigate",
+            "research",
+            "discover",
+            "examine",
+            "scan",
+            "map",
+            "diagram",
+            "discover",
         ],
         AgentType.TEST.value: [
-            'test', 'testing', 'unit test', 'integration test', 'e2e test',
-            'verify', 'validation', 'coverage', 'debug', 'benchmark', 'load test'
+            "test",
+            "testing",
+            "unit test",
+            "integration test",
+            "e2e test",
+            "verify",
+            "validation",
+            "coverage",
+            "debug",
+            "benchmark",
+            "load test",
         ],
         AgentType.REVIEW.value: [
-            'review', 'code review', 'analysis', 'quality', 'performance',
-            'security', 'best practice', 'lint', 'static analysis', 'audit'
+            "review",
+            "code review",
+            "analysis",
+            "quality",
+            "performance",
+            "security",
+            "best practice",
+            "lint",
+            "static analysis",
+            "audit",
         ],
         AgentType.REFACTOR.value: [
-            'refactor', 'improve', 'optimize', 'cleanup', 'simplify',
-            'restructure', 'rewrite', 'efficiency', 'maintainability'
+            "refactor",
+            "improve",
+            "optimize",
+            "cleanup",
+            "simplify",
+            "restructure",
+            "rewrite",
+            "efficiency",
+            "maintainability",
         ],
         AgentType.IMPLEMENT.value: [
-            'implement', 'build', 'create', 'add', 'feature', 'functionality',
-            'write', 'develop', 'code', 'script', 'module', 'component'
+            "implement",
+            "build",
+            "create",
+            "add",
+            "feature",
+            "functionality",
+            "write",
+            "develop",
+            "code",
+            "script",
+            "module",
+            "component",
         ],
     }
 
     # Task patterns that indicate complexity
     SIMPLE_PATTERNS = [
-        r'simple',
-        r'straightforward',
-        r'easy',
-        r'basic',
-        r'single',
-        r'one\s+file',
-        r'small',
+        r"simple",
+        r"straightforward",
+        r"easy",
+        r"basic",
+        r"single",
+        r"one\s+file",
+        r"small",
     ]
 
     COMPLEX_PATTERNS = [
-        r'complex',
-        r'difficult',
-        r'multiple',
-        r'integration',
-        r'architecture',
-        r'system',
-        r'large',
-        r'refactor',
-        r'rewrite',
+        r"complex",
+        r"difficult",
+        r"multiple",
+        r"integration",
+        r"architecture",
+        r"system",
+        r"large",
+        r"refactor",
+        r"rewrite",
     ]
 
     def __init__(self, metrics: Optional[AgentMetrics] = None):
@@ -180,9 +223,7 @@ class AgentRecommender:
         alternative_agents = self._get_alternative_agents(agent_type, complexity)
         alternative_models = self._get_alternative_models(model, complexity)
 
-        reason = self._generate_recommendation_reason(
-            agent_type, model, complexity, summary
-        )
+        reason = self._generate_recommendation_reason(agent_type, model, complexity, summary)
 
         recommendation = AgentRecommendation(
             recommended_agent_type=agent_type,
@@ -190,9 +231,9 @@ class AgentRecommender:
             confidence=confidence,
             reason=reason,
             supporting_metrics={
-                'complexity': complexity.value,
-                'agent_keywords_match': self._get_keyword_matches(task_description, agent_type),
-                'historical_success_rate': expected_success_rate,
+                "complexity": complexity.value,
+                "agent_keywords_match": self._get_keyword_matches(task_description, agent_type),
+                "historical_success_rate": expected_success_rate,
             },
             alternative_agents=alternative_agents,
             alternative_models=alternative_models,
@@ -201,8 +242,9 @@ class AgentRecommender:
             expected_success_rate=expected_success_rate,
         )
 
-        logger.info(f"Recommended {agent_type} agent with {model} "
-                   f"for task: {task_description[:100]}")
+        logger.info(
+            f"Recommended {agent_type} agent with {model} " f"for task: {task_description[:100]}"
+        )
 
         return recommendation
 
@@ -282,11 +324,13 @@ class AgentRecommender:
 
         # Check for explicit complexity patterns
         simple_score = sum(
-            1 for pattern in self.SIMPLE_PATTERNS
+            1
+            for pattern in self.SIMPLE_PATTERNS
             if re.search(pattern, description_lower, re.IGNORECASE)
         )
         complex_score = sum(
-            1 for pattern in self.COMPLEX_PATTERNS
+            1
+            for pattern in self.COMPLEX_PATTERNS
             if re.search(pattern, description_lower, re.IGNORECASE)
         )
 
@@ -311,10 +355,7 @@ class AgentRecommender:
         # Score each agent type
         agent_scores = {}
         for agent_type, keywords in self.AGENT_TYPE_KEYWORDS.items():
-            score = sum(
-                1 for keyword in keywords
-                if keyword in description_lower
-            )
+            score = sum(1 for keyword in keywords if keyword in description_lower)
             agent_scores[agent_type] = score
 
         # Return agent type with highest score
@@ -329,16 +370,9 @@ class AgentRecommender:
         keywords = self.AGENT_TYPE_KEYWORDS.get(agent_type, [])
         description_lower = task_description.lower()
 
-        return sum(
-            1 for keyword in keywords
-            if keyword in description_lower
-        )
+        return sum(1 for keyword in keywords if keyword in description_lower)
 
-    def _get_alternative_agents(
-        self,
-        primary_agent: str,
-        complexity: TaskComplexity
-    ) -> List[str]:
+    def _get_alternative_agents(self, primary_agent: str, complexity: TaskComplexity) -> List[str]:
         """Get alternative agent types for a task."""
         all_agents = [at.value for at in AgentType]
         alternatives = [a for a in all_agents if a != primary_agent]
@@ -349,11 +383,7 @@ class AgentRecommender:
         else:
             return alternatives[:2]
 
-    def _get_alternative_models(
-        self,
-        primary_model: str,
-        complexity: TaskComplexity
-    ) -> List[str]:
+    def _get_alternative_models(self, primary_model: str, complexity: TaskComplexity) -> List[str]:
         """Get alternative models for a task."""
         all_models = [ModelType.HAIKU.value, ModelType.SONNET.value, ModelType.OPUS.value]
         alternatives = [m for m in all_models if m != primary_model]
@@ -405,22 +435,22 @@ class AgentRecommender:
             return ModelType.SONNET
 
     def _generate_recommendation_reason(
-        self,
-        agent_type: str,
-        model: str,
-        complexity: TaskComplexity,
-        summary: Optional[Dict]
+        self, agent_type: str, model: str, complexity: TaskComplexity, summary: Optional[Dict]
     ) -> str:
         """Generate explanation for recommendation."""
         reason = f"Recommended {agent_type} agent with {self._get_model_name(model)} "
         reason += f"for {complexity.value} complexity task. "
 
         if summary:
-            reason += (f"Historical success rate for this agent type is "
-                      f"{summary.success_rate:.1%} based on {summary.total_tasks} tasks.")
+            reason += (
+                f"Historical success rate for this agent type is "
+                f"{summary.success_rate:.1%} based on {summary.total_tasks} tasks."
+            )
         else:
-            reason += ("No historical data available. Selection based on task "
-                      "keywords and complexity analysis.")
+            reason += (
+                "No historical data available. Selection based on task "
+                "keywords and complexity analysis."
+            )
 
         return reason
 
@@ -436,10 +466,7 @@ class AgentRecommender:
         else:
             return "Unknown"
 
-    def recommend_batch_agents(
-        self,
-        tasks: List[Dict]
-    ) -> List[AgentRecommendation]:
+    def recommend_batch_agents(self, tasks: List[Dict]) -> List[AgentRecommendation]:
         """
         Recommend agents for a batch of tasks.
 
@@ -452,7 +479,7 @@ class AgentRecommender:
         recommendations = []
 
         for task in tasks:
-            description = task.get('description', '')
+            description = task.get("description", "")
             if not description:
                 continue
 
@@ -464,31 +491,30 @@ class AgentRecommender:
     def get_recommendations_summary(self) -> Dict:
         """Get summary of recommendations and their accuracy."""
         summary = {
-            'total_recommendations': 0,
-            'successful_recommendations': 0,
-            'failed_recommendations': 0,
-            'accuracy_rate': 0.0,
-            'by_agent_type': {},
+            "total_recommendations": 0,
+            "successful_recommendations": 0,
+            "failed_recommendations": 0,
+            "accuracy_rate": 0.0,
+            "by_agent_type": {},
         }
 
         # Count successful vs failed recommendations
         agent_summaries = self.metrics.get_agent_types_summary(time_period_days=30)
 
         for agent_type, agent_summary in agent_summaries.items():
-            summary['total_recommendations'] += agent_summary.total_tasks
-            summary['successful_recommendations'] += agent_summary.successful_tasks
-            summary['failed_recommendations'] += agent_summary.failed_tasks
+            summary["total_recommendations"] += agent_summary.total_tasks
+            summary["successful_recommendations"] += agent_summary.successful_tasks
+            summary["failed_recommendations"] += agent_summary.failed_tasks
 
-            summary['by_agent_type'][agent_type] = {
-                'success_rate': agent_summary.success_rate,
-                'total_tasks': agent_summary.total_tasks,
-                'avg_cost': agent_summary.avg_cost_per_task,
+            summary["by_agent_type"][agent_type] = {
+                "success_rate": agent_summary.success_rate,
+                "total_tasks": agent_summary.total_tasks,
+                "avg_cost": agent_summary.avg_cost_per_task,
             }
 
-        if summary['total_recommendations'] > 0:
-            summary['accuracy_rate'] = (
-                summary['successful_recommendations'] /
-                summary['total_recommendations']
+        if summary["total_recommendations"] > 0:
+            summary["accuracy_rate"] = (
+                summary["successful_recommendations"] / summary["total_recommendations"]
             )
 
         return summary

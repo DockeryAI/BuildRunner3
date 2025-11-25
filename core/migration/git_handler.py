@@ -19,6 +19,7 @@ import shutil
 @dataclass
 class GitMigrationResult:
     """Result of git migration operations"""
+
     success: bool
     commit_hash: Optional[str] = None
     tag_name: Optional[str] = None
@@ -83,7 +84,9 @@ class GitMigrationHandler:
         tag_name = f"pre-migration-v2.0-{timestamp}"
 
         # Tag current state
-        tag_success, tag_hash = self._create_git_tag(tag_name, "Pre-migration backup - BuildRunner 2.0")
+        tag_success, tag_hash = self._create_git_tag(
+            tag_name, "Pre-migration backup - BuildRunner 2.0"
+        )
 
         if not tag_success:
             result.errors.append("Failed to create backup tag")
@@ -120,9 +123,7 @@ class GitMigrationHandler:
         return result
 
     def create_migration_commit(
-        self,
-        message: Optional[str] = None,
-        files_to_add: Optional[List[str]] = None
+        self, message: Optional[str] = None, files_to_add: Optional[List[str]] = None
     ) -> GitMigrationResult:
         """
         Create atomic migration commit
@@ -329,7 +330,7 @@ br migrate rollback
                 cwd=self.project_path,
                 capture_output=True,
                 text=True,
-                timeout=timeout
+                timeout=timeout,
             )
 
             success = result.returncode == 0

@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 class ModelType(str, Enum):
     """Available Claude models for agent assignment."""
+
     HAIKU = "claude-haiku-4-5-20251001"
     SONNET = "claude-sonnet-4-5-20250929"
     OPUS = "claude-opus-4-1-20250805"
@@ -35,16 +36,16 @@ class ModelType(str, Enum):
 # Model pricing (USD per 1M tokens) - as of 2025-01-18
 MODEL_PRICING = {
     ModelType.HAIKU: {
-        "input": 0.80,      # $0.80 per 1M input tokens
-        "output": 4.00,     # $4.00 per 1M output tokens
+        "input": 0.80,  # $0.80 per 1M input tokens
+        "output": 4.00,  # $4.00 per 1M output tokens
     },
     ModelType.SONNET: {
-        "input": 3.00,      # $3.00 per 1M input tokens
-        "output": 15.00,    # $15.00 per 1M output tokens
+        "input": 3.00,  # $3.00 per 1M input tokens
+        "output": 15.00,  # $15.00 per 1M output tokens
     },
     ModelType.OPUS: {
-        "input": 15.00,     # $15.00 per 1M input tokens
-        "output": 75.00,    # $75.00 per 1M output tokens
+        "input": 15.00,  # $15.00 per 1M input tokens
+        "output": 75.00,  # $75.00 per 1M output tokens
     },
 }
 
@@ -81,22 +82,22 @@ class AgentMetric:
     def to_dict(self) -> Dict:
         """Convert to dictionary for storage."""
         return {
-            'timestamp': self.timestamp.isoformat(),
-            'agent_type': self.agent_type,
-            'task_id': self.task_id,
-            'task_description': self.task_description,
-            'model_used': self.model_used,
-            'duration_ms': self.duration_ms,
-            'input_tokens': self.input_tokens,
-            'output_tokens': self.output_tokens,
-            'total_tokens': self.total_tokens,
-            'cost_usd': self.cost_usd,
-            'success': self.success,
-            'test_pass_rate': self.test_pass_rate,
-            'error_rate': self.error_rate,
-            'files_created': self.files_created,
-            'files_modified': self.files_modified,
-            'error_message': self.error_message,
+            "timestamp": self.timestamp.isoformat(),
+            "agent_type": self.agent_type,
+            "task_id": self.task_id,
+            "task_description": self.task_description,
+            "model_used": self.model_used,
+            "duration_ms": self.duration_ms,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "total_tokens": self.total_tokens,
+            "cost_usd": self.cost_usd,
+            "success": self.success,
+            "test_pass_rate": self.test_pass_rate,
+            "error_rate": self.error_rate,
+            "files_created": self.files_created,
+            "files_modified": self.files_modified,
+            "error_message": self.error_message,
         }
 
 
@@ -208,7 +209,7 @@ class AgentMetrics:
         CREATE INDEX IF NOT EXISTS idx_task_id ON agent_metrics(task_id);
         """
 
-        if not self.db.table_exists('agent_metrics'):
+        if not self.db.table_exists("agent_metrics"):
             self.db.run_migration(schema)
 
     def record_metric(
@@ -281,8 +282,10 @@ class AgentMetrics:
         # Save to file
         self._save_metrics()
 
-        logger.info(f"Recorded metric for {agent_type} agent on task {task_id}: "
-                   f"cost=${cost_usd:.4f}, success={success}")
+        logger.info(
+            f"Recorded metric for {agent_type} agent on task {task_id}: "
+            f"cost=${cost_usd:.4f}, success={success}"
+        )
 
         return metric
 
@@ -332,9 +335,9 @@ class AgentMetrics:
         cutoff_time = datetime.now() - timedelta(days=time_period_days)
 
         filtered_metrics = [
-            m for m in self.metrics
-            if (agent_type is None or m.agent_type == agent_type)
-            and m.timestamp >= cutoff_time
+            m
+            for m in self.metrics
+            if (agent_type is None or m.agent_type == agent_type) and m.timestamp >= cutoff_time
         ]
 
         if not filtered_metrics:
@@ -360,19 +363,19 @@ class AgentMetrics:
         # Quality metrics
         avg_test_pass_rate = (
             sum(m.test_pass_rate for m in filtered_metrics) / total_tasks
-            if total_tasks > 0 else 0.0
+            if total_tasks > 0
+            else 0.0
         )
         avg_error_rate = (
-            sum(m.error_rate for m in filtered_metrics) / total_tasks
-            if total_tasks > 0 else 0.0
+            sum(m.error_rate for m in filtered_metrics) / total_tasks if total_tasks > 0 else 0.0
         )
         avg_files_created = (
-            sum(m.files_created for m in filtered_metrics) / total_tasks
-            if total_tasks > 0 else 0.0
+            sum(m.files_created for m in filtered_metrics) / total_tasks if total_tasks > 0 else 0.0
         )
         avg_files_modified = (
             sum(m.files_modified for m in filtered_metrics) / total_tasks
-            if total_tasks > 0 else 0.0
+            if total_tasks > 0
+            else 0.0
         )
 
         # Performance metrics
@@ -391,7 +394,8 @@ class AgentMetrics:
         # Calculate trend (7-day trend by comparing to prior period)
         prior_cutoff = cutoff_time - timedelta(days=time_period_days)
         prior_metrics = [
-            m for m in self.metrics
+            m
+            for m in self.metrics
             if (agent_type is None or m.agent_type == agent_type)
             and prior_cutoff <= m.timestamp < cutoff_time
         ]
@@ -400,15 +404,14 @@ class AgentMetrics:
         cost_trend = 0.0
 
         if prior_metrics:
-            prior_success_rate = (
-                sum(1 for m in prior_metrics if m.success) / len(prior_metrics)
-            )
+            prior_success_rate = sum(1 for m in prior_metrics if m.success) / len(prior_metrics)
             success_rate_trend = success_rate - prior_success_rate
 
             prior_cost = sum(m.cost_usd for m in prior_metrics)
             prior_avg_cost = prior_cost / len(prior_metrics)
-            cost_trend = ((avg_cost - prior_avg_cost) / prior_avg_cost * 100
-                         if prior_avg_cost > 0 else 0.0)
+            cost_trend = (
+                (avg_cost - prior_avg_cost) / prior_avg_cost * 100 if prior_avg_cost > 0 else 0.0
+            )
 
         return AgentPerformanceSummary(
             agent_type=agent_type or "all",
@@ -435,7 +438,9 @@ class AgentMetrics:
             cost_trend=cost_trend,
         )
 
-    def get_agent_types_summary(self, time_period_days: int = 7) -> Dict[str, AgentPerformanceSummary]:
+    def get_agent_types_summary(
+        self, time_period_days: int = 7
+    ) -> Dict[str, AgentPerformanceSummary]:
         """
         Get performance summary for all agent types.
 
@@ -466,8 +471,7 @@ class AgentMetrics:
         """
         # Filter metrics by task description patterns
         filtered_metrics = [
-            m for m in self.metrics
-            if task_type.lower() in m.task_description.lower()
+            m for m in self.metrics if task_type.lower() in m.task_description.lower()
         ]
 
         if not filtered_metrics:
@@ -480,14 +484,12 @@ class AgentMetrics:
         summary.successful_tasks = sum(1 for m in filtered_metrics if m.success)
         summary.failed_tasks = summary.total_tasks - summary.successful_tasks
         summary.success_rate = (
-            summary.successful_tasks / summary.total_tasks
-            if summary.total_tasks > 0 else 0.0
+            summary.successful_tasks / summary.total_tasks if summary.total_tasks > 0 else 0.0
         )
 
         summary.total_cost_usd = sum(m.cost_usd for m in filtered_metrics)
         summary.avg_cost_per_task = (
-            summary.total_cost_usd / summary.total_tasks
-            if summary.total_tasks > 0 else 0.0
+            summary.total_cost_usd / summary.total_tasks if summary.total_tasks > 0 else 0.0
         )
 
         return summary
@@ -545,24 +547,27 @@ class AgentMetrics:
     def _insert_metric_db(self, metric: AgentMetric):
         """Insert metric into database."""
         try:
-            self.db.insert('agent_metrics', {
-                'timestamp': metric.timestamp.isoformat(),
-                'agent_type': metric.agent_type,
-                'task_id': metric.task_id,
-                'task_description': metric.task_description,
-                'model_used': metric.model_used,
-                'duration_ms': metric.duration_ms,
-                'input_tokens': metric.input_tokens,
-                'output_tokens': metric.output_tokens,
-                'total_tokens': metric.total_tokens,
-                'cost_usd': metric.cost_usd,
-                'success': metric.success,
-                'test_pass_rate': metric.test_pass_rate,
-                'error_rate': metric.error_rate,
-                'files_created': metric.files_created,
-                'files_modified': metric.files_modified,
-                'error_message': metric.error_message,
-            })
+            self.db.insert(
+                "agent_metrics",
+                {
+                    "timestamp": metric.timestamp.isoformat(),
+                    "agent_type": metric.agent_type,
+                    "task_id": metric.task_id,
+                    "task_description": metric.task_description,
+                    "model_used": metric.model_used,
+                    "duration_ms": metric.duration_ms,
+                    "input_tokens": metric.input_tokens,
+                    "output_tokens": metric.output_tokens,
+                    "total_tokens": metric.total_tokens,
+                    "cost_usd": metric.cost_usd,
+                    "success": metric.success,
+                    "test_pass_rate": metric.test_pass_rate,
+                    "error_rate": metric.error_rate,
+                    "files_created": metric.files_created,
+                    "files_modified": metric.files_modified,
+                    "error_message": metric.error_message,
+                },
+            )
         except Exception as e:
             logger.error(f"Failed to insert metric into database: {e}")
 
@@ -583,22 +588,22 @@ class AgentMetrics:
             data = json.loads(self.storage_path.read_text())
             for item in data:
                 metric = AgentMetric(
-                    timestamp=datetime.fromisoformat(item['timestamp']),
-                    agent_type=item['agent_type'],
-                    task_id=item['task_id'],
-                    task_description=item.get('task_description', ''),
-                    model_used=item['model_used'],
-                    duration_ms=item['duration_ms'],
-                    input_tokens=item['input_tokens'],
-                    output_tokens=item['output_tokens'],
-                    total_tokens=item['total_tokens'],
-                    cost_usd=item['cost_usd'],
-                    success=item['success'],
-                    test_pass_rate=item.get('test_pass_rate', 1.0),
-                    error_rate=item.get('error_rate', 0.0),
-                    files_created=item.get('files_created', 0),
-                    files_modified=item.get('files_modified', 0),
-                    error_message=item.get('error_message'),
+                    timestamp=datetime.fromisoformat(item["timestamp"]),
+                    agent_type=item["agent_type"],
+                    task_id=item["task_id"],
+                    task_description=item.get("task_description", ""),
+                    model_used=item["model_used"],
+                    duration_ms=item["duration_ms"],
+                    input_tokens=item["input_tokens"],
+                    output_tokens=item["output_tokens"],
+                    total_tokens=item["total_tokens"],
+                    cost_usd=item["cost_usd"],
+                    success=item["success"],
+                    test_pass_rate=item.get("test_pass_rate", 1.0),
+                    error_rate=item.get("error_rate", 0.0),
+                    files_created=item.get("files_created", 0),
+                    files_modified=item.get("files_modified", 0),
+                    error_message=item.get("error_message"),
                 )
                 self.metrics.append(metric)
         except Exception as e:
@@ -644,22 +649,22 @@ class AgentMetrics:
             data = json.loads(import_path.read_text())
             for item in data:
                 metric = AgentMetric(
-                    timestamp=datetime.fromisoformat(item['timestamp']),
-                    agent_type=item['agent_type'],
-                    task_id=item['task_id'],
-                    task_description=item.get('task_description', ''),
-                    model_used=item['model_used'],
-                    duration_ms=item['duration_ms'],
-                    input_tokens=item['input_tokens'],
-                    output_tokens=item['output_tokens'],
-                    total_tokens=item['total_tokens'],
-                    cost_usd=item['cost_usd'],
-                    success=item['success'],
-                    test_pass_rate=item.get('test_pass_rate', 1.0),
-                    error_rate=item.get('error_rate', 0.0),
-                    files_created=item.get('files_created', 0),
-                    files_modified=item.get('files_modified', 0),
-                    error_message=item.get('error_message'),
+                    timestamp=datetime.fromisoformat(item["timestamp"]),
+                    agent_type=item["agent_type"],
+                    task_id=item["task_id"],
+                    task_description=item.get("task_description", ""),
+                    model_used=item["model_used"],
+                    duration_ms=item["duration_ms"],
+                    input_tokens=item["input_tokens"],
+                    output_tokens=item["output_tokens"],
+                    total_tokens=item["total_tokens"],
+                    cost_usd=item["cost_usd"],
+                    success=item["success"],
+                    test_pass_rate=item.get("test_pass_rate", 1.0),
+                    error_rate=item.get("error_rate", 0.0),
+                    files_created=item.get("files_created", 0),
+                    files_modified=item.get("files_modified", 0),
+                    error_message=item.get("error_message"),
                 )
                 self.metrics.append(metric)
 

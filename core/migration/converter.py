@@ -20,6 +20,7 @@ from .v2_parser import V2Project
 @dataclass
 class ConversionResult:
     """Result of migration conversion"""
+
     success: bool
     features_json: Dict[str, Any]
     governance_yaml: Dict[str, Any]
@@ -57,12 +58,7 @@ class MigrationConverter:
             ConversionResult with converted data
         """
         result = ConversionResult(
-            success=False,
-            features_json={},
-            governance_yaml={},
-            warnings=[],
-            errors=[],
-            metadata={}
+            success=False, features_json={}, governance_yaml={}, warnings=[], errors=[], metadata={}
         )
 
         # Convert HRPO to features.json
@@ -116,9 +112,9 @@ class MigrationConverter:
                 "version": "3.0.0",
                 "description": hrpo.get("executive_summary", ""),
                 "migrated_from_v2": True,
-                "migration_date": datetime.now().isoformat()
+                "migration_date": datetime.now().isoformat(),
             },
-            "features": []
+            "features": [],
         }
 
         # Convert features list
@@ -126,21 +122,21 @@ class MigrationConverter:
         for idx, feature in enumerate(features_list, 1):
             if isinstance(feature, str):
                 # Simple string feature
-                features_json["features"].append({
-                    "id": f"feature_{idx}",
-                    "name": feature,
-                    "description": feature,
-                    "status": "unknown",
-                    "priority": "medium",
-                    "migrated": True
-                })
+                features_json["features"].append(
+                    {
+                        "id": f"feature_{idx}",
+                        "name": feature,
+                        "description": feature,
+                        "status": "unknown",
+                        "priority": "medium",
+                        "migrated": True,
+                    }
+                )
             elif isinstance(feature, dict):
                 # Structured feature - preserve structure
-                features_json["features"].append({
-                    "id": f"feature_{idx}",
-                    **feature,
-                    "migrated": True
-                })
+                features_json["features"].append(
+                    {"id": f"feature_{idx}", **feature, "migrated": True}
+                )
 
         # Convert build plan phases to features
         build_plan = hrpo.get("build_plan", {})
@@ -155,31 +151,35 @@ class MigrationConverter:
                     step_name = step.get("name", "Unknown Step")
                     done = step.get("done", False)
 
-                    features_json["features"].append({
-                        "id": f"phase_{phase_id}",
-                        "name": f"{phase_name}: {step_name}",
-                        "description": f"Step {step.get('id', '?')}: {step_name}",
-                        "status": "completed" if done else "not_started",
-                        "priority": "medium",
-                        "phase": phase_name,
-                        "step_id": step.get("id"),
-                        "migrated": True,
-                        "source": "build_plan"
-                    })
+                    features_json["features"].append(
+                        {
+                            "id": f"phase_{phase_id}",
+                            "name": f"{phase_name}: {step_name}",
+                            "description": f"Step {step.get('id', '?')}: {step_name}",
+                            "status": "completed" if done else "not_started",
+                            "priority": "medium",
+                            "phase": phase_name,
+                            "step_id": step.get("id"),
+                            "migrated": True,
+                            "source": "build_plan",
+                        }
+                    )
                     phase_id += 1
 
         # Add next version features
         next_features = hrpo.get("next_version_features", [])
         for idx, feature in enumerate(next_features, 1):
-            features_json["features"].append({
-                "id": f"future_{idx}",
-                "name": feature,
-                "description": feature,
-                "status": "planned",
-                "priority": "low",
-                "migrated": True,
-                "source": "next_version"
-            })
+            features_json["features"].append(
+                {
+                    "id": f"future_{idx}",
+                    "name": feature,
+                    "description": feature,
+                    "status": "planned",
+                    "priority": "low",
+                    "migrated": True,
+                    "source": "next_version",
+                }
+            )
 
         # Add progress metadata
         progress = hrpo.get("progress", {})
@@ -187,7 +187,7 @@ class MigrationConverter:
             features_json["project"]["progress"] = {
                 "steps_completed": progress.get("steps_completed", 0),
                 "total_steps": progress.get("total_steps", 0),
-                "percent_complete": progress.get("percent_complete", 0.0)
+                "percent_complete": progress.get("percent_complete", 0.0),
             }
 
         # Add value proposition and audience
@@ -227,10 +227,7 @@ class MigrationConverter:
             "policies": {},
             "quality": {},
             "workflow": {},
-            "migration": {
-                "migrated_from_v2": True,
-                "migration_date": datetime.now().isoformat()
-            }
+            "migration": {"migrated_from_v2": True, "migration_date": datetime.now().isoformat()},
         }
 
         # Convert policies
@@ -249,7 +246,7 @@ class MigrationConverter:
             new_config["policies"]["editor"] = {
                 "enabled": editor_policy.get("enforced", True),
                 "file_types": editor_policy.get("targets", []),
-                "action": editor_policy.get("action", "")
+                "action": editor_policy.get("action", ""),
             }
 
         # Convert full file output policy
@@ -257,7 +254,7 @@ class MigrationConverter:
         if file_policy:
             new_config["policies"]["output"] = {
                 "full_file_required": file_policy.get("enforced", True),
-                "description": file_policy.get("description", "")
+                "description": file_policy.get("description", ""),
             }
 
         # Convert versioning
@@ -268,7 +265,7 @@ class MigrationConverter:
                 "enabled": semver.get("enabled", True),
                 "strategy": "semver",
                 "rules": semver.get("rules", {}),
-                "prerelease_tags": semver.get("prerelease_tags", [])
+                "prerelease_tags": semver.get("prerelease_tags", []),
             }
 
         # Convert stages
@@ -277,7 +274,7 @@ class MigrationConverter:
             new_config["workflow"]["stages"] = {
                 "order": stages.get("order", []),
                 "aliases": stages.get("aliases", {}),
-                "current": old_config.get("defaults", {}).get("default_stage", "GA")
+                "current": old_config.get("defaults", {}).get("default_stage", "GA"),
             }
 
         # Add quality standards (new in v3.0)
@@ -286,12 +283,14 @@ class MigrationConverter:
             "max_complexity": 10,
             "require_type_hints": True,
             "code_formatting": "black",
-            "migrated_defaults": True
+            "migrated_defaults": True,
         }
 
         return new_config
 
-    def migrate_supabase_data(self, supabase_config: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    def migrate_supabase_data(
+        self, supabase_config: Optional[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
         """
         Migrate Supabase configuration and schema
 
@@ -308,7 +307,7 @@ class MigrationConverter:
             "version": "3.0",
             "migrated": True,
             "config": supabase_config.copy(),
-            "migration_notes": []
+            "migration_notes": [],
         }
 
         # Check for required fields
@@ -327,31 +326,22 @@ class MigrationConverter:
                 "name": "Migrated Project",
                 "version": "3.0.0",
                 "description": "Migrated from BuildRunner 2.0",
-                "migrated_from_v2": True
+                "migrated_from_v2": True,
             },
-            "features": []
+            "features": [],
         }
 
     def _create_default_governance(self) -> Dict[str, Any]:
         """Create default governance config"""
         return {
-            "project": {
-                "name": "Migrated Project",
-                "slug": "migrated-project"
-            },
-            "policies": {
-                "require_tests": True,
-                "require_documentation": True
-            },
-            "quality": {
-                "min_test_coverage": 85,
-                "max_complexity": 10
-            },
+            "project": {"name": "Migrated Project", "slug": "migrated-project"},
+            "policies": {"require_tests": True, "require_documentation": True},
+            "quality": {"min_test_coverage": 85, "max_complexity": 10},
             "migration": {
                 "migrated_from_v2": True,
                 "migration_date": datetime.now().isoformat(),
-                "note": "Created from default - no governance.json found"
-            }
+                "note": "Created from default - no governance.json found",
+            },
         }
 
     def format_features_json(self, features: Dict[str, Any]) -> str:
@@ -377,4 +367,5 @@ class MigrationConverter:
             YAML-formatted string
         """
         import yaml
+
         return yaml.dump(governance, default_flow_style=False, sort_keys=False)

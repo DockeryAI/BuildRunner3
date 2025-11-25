@@ -41,6 +41,7 @@ from core.phase_manager import PhaseManager, BuildPhase as Phase, BlockerType
 
 class OrchestrationStatus(Enum):
     """Orchestration execution status"""
+
     IDLE = "idle"
     RUNNING = "running"
     PAUSED = "paused"
@@ -109,6 +110,7 @@ class TaskOrchestrator:
         self.autodebug_pipeline = None
         if enable_autodebug and project_root:
             from core.auto_debug import AutoDebugPipeline
+
             self.autodebug_pipeline = AutoDebugPipeline(project_root)
 
         # Integrate telemetry
@@ -118,9 +120,9 @@ class TaskOrchestrator:
         # Integrate routing
         if enable_routing:
             routing_components = integrate_routing(self, enable_cost_tracking=True)
-            self.complexity_estimator = routing_components['estimator']
-            self.model_selector = routing_components['selector']
-            self.cost_tracker = routing_components['cost_tracker']
+            self.complexity_estimator = routing_components["estimator"]
+            self.model_selector = routing_components["selector"]
+            self.cost_tracker = routing_components["cost_tracker"]
 
         # Integrate parallel execution
         if enable_parallel:
@@ -129,9 +131,9 @@ class TaskOrchestrator:
                 max_concurrent_sessions=max_concurrent_sessions,
                 enable_dashboard=True,
             )
-            self.session_manager = parallel_components['session_manager']
-            self.worker_coordinator = parallel_components['worker_coordinator']
-            self.dashboard = parallel_components['dashboard']
+            self.session_manager = parallel_components["session_manager"]
+            self.worker_coordinator = parallel_components["worker_coordinator"]
+            self.dashboard = parallel_components["dashboard"]
 
     def execute_batch(
         self,
@@ -195,15 +197,18 @@ class TaskOrchestrator:
                             # Emit autodebug event if telemetry is enabled
                             if self.event_collector:
                                 from core.telemetry import EventType
+
                                 self.event_collector.emit(
                                     EventType.SYSTEM_EVENT,
                                     message="Auto-debug completed",
                                     metadata={
                                         "overall_success": autodebug_report.overall_success,
                                         "checks_run": len(autodebug_report.checks_run),
-                                        "critical_failures": len(autodebug_report.critical_failures),
+                                        "critical_failures": len(
+                                            autodebug_report.critical_failures
+                                        ),
                                         "duration_ms": autodebug_report.total_duration_ms,
-                                    }
+                                    },
                                 )
                             # Save report
                             self.autodebug_pipeline.save_report(autodebug_report)
@@ -211,10 +216,11 @@ class TaskOrchestrator:
                             # Don't fail the build if auto-debug fails
                             if self.event_collector:
                                 from core.telemetry import EventType
+
                                 self.event_collector.emit(
                                     EventType.ERROR,
                                     message=f"Auto-debug failed: {str(e)}",
-                                    metadata={"error": str(e)}
+                                    metadata={"error": str(e)},
                                 )
 
             self.status = OrchestrationStatus.COMPLETED
@@ -252,7 +258,11 @@ class TaskOrchestrator:
         self.current_batch = batch
         self.batches_executed += 1
 
-        batch_id = batch.get("id") if isinstance(batch, dict) else (batch.id if hasattr(batch, "id") else str(self.batches_executed))
+        batch_id = (
+            batch.get("id")
+            if isinstance(batch, dict)
+            else (batch.id if hasattr(batch, "id") else str(self.batches_executed))
+        )
         batch_tasks = batch.get("tasks", batch.tasks if hasattr(batch, "tasks") else [])
 
         # Emit batch started event
@@ -262,7 +272,7 @@ class TaskOrchestrator:
                 EventType.BUILD_STARTED,
                 batch_id=str(batch_id),
                 task_count=len(batch_tasks),
-                metadata={'auto_continue': auto_continue},
+                metadata={"auto_continue": auto_continue},
             )
 
         start_time = time.time()
@@ -280,8 +290,16 @@ class TaskOrchestrator:
             if self.complexity_estimator and self.model_selector and batch_tasks:
                 # Estimate complexity of first task as representative
                 first_task = batch_tasks[0]
-                task_id = first_task.get('id', 'unknown') if isinstance(first_task, dict) else (first_task.id if hasattr(first_task, 'id') else 'unknown')
-                task_desc = first_task.get('description', '') if isinstance(first_task, dict) else (first_task.description if hasattr(first_task, 'description') else '')
+                task_id = (
+                    first_task.get("id", "unknown")
+                    if isinstance(first_task, dict)
+                    else (first_task.id if hasattr(first_task, "id") else "unknown")
+                )
+                task_desc = (
+                    first_task.get("description", "")
+                    if isinstance(first_task, dict)
+                    else (first_task.description if hasattr(first_task, "description") else "")
+                )
 
                 complexity = estimate_task_complexity(
                     self.complexity_estimator,
@@ -292,19 +310,26 @@ class TaskOrchestrator:
                     self.model_selector,
                     complexity=complexity,
                 )
-                selected_model = selection.model.name if hasattr(selection, 'model') else str(selection)
+                selected_model = (
+                    selection.model.name if hasattr(selection, "model") else str(selection)
+                )
 
                 # Emit MODEL_SELECTED event
                 if self.event_collector:
                     from core.telemetry import Event
+
                     model_event = Event(
                         event_type=EventType.MODEL_SELECTED,
                         session_id=str(batch_id),
                         metadata={
-                            'task_id': str(task_id),
-                            'model': selected_model,
-                            'complexity': complexity.level.value if hasattr(complexity, 'level') else str(complexity),
-                            'batch_id': str(batch_id),
+                            "task_id": str(task_id),
+                            "model": selected_model,
+                            "complexity": (
+                                complexity.level.value
+                                if hasattr(complexity, "level")
+                                else str(complexity)
+                            ),
+                            "batch_id": str(batch_id),
                         },
                     )
                     self.event_collector.collect(model_event)
@@ -325,9 +350,21 @@ class TaskOrchestrator:
             # Emit task events for each task
             if self.event_collector:
                 for task in batch_tasks:
-                    task_id = task.get('id', 'unknown') if isinstance(task, dict) else (task.id if hasattr(task, 'id') else 'unknown')
-                    task_name = task.get('name', '') if isinstance(task, dict) else (task.name if hasattr(task, 'name') else '')
-                    task_desc = task.get('description', '') if isinstance(task, dict) else (task.description if hasattr(task, 'description') else '')
+                    task_id = (
+                        task.get("id", "unknown")
+                        if isinstance(task, dict)
+                        else (task.id if hasattr(task, "id") else "unknown")
+                    )
+                    task_name = (
+                        task.get("name", "")
+                        if isinstance(task, dict)
+                        else (task.name if hasattr(task, "name") else "")
+                    )
+                    task_desc = (
+                        task.get("description", "")
+                        if isinstance(task, dict)
+                        else (task.description if hasattr(task, "description") else "")
+                    )
 
                     # Task started
                     emit_task_event(
@@ -336,7 +373,7 @@ class TaskOrchestrator:
                         task_id=str(task_id),
                         task_type=task_name,
                         task_description=task_desc,
-                        metadata={'batch_id': str(batch_id), 'model': selected_model},
+                        metadata={"batch_id": str(batch_id), "model": selected_model},
                     )
 
                     # Task completed (simulated)
@@ -347,7 +384,7 @@ class TaskOrchestrator:
                         task_type=task_name,
                         task_description=task_desc,
                         success=True,
-                        metadata={'batch_id': str(batch_id), 'model': selected_model},
+                        metadata={"batch_id": str(batch_id), "model": selected_model},
                     )
 
             duration_ms = (time.time() - start_time) * 1000
@@ -361,8 +398,8 @@ class TaskOrchestrator:
                     task_count=len(batch_tasks),
                     success=True,
                     metadata={
-                        'duration_ms': duration_ms,
-                        'selected_model': selected_model,
+                        "duration_ms": duration_ms,
+                        "selected_model": selected_model,
                     },
                 )
 
@@ -377,7 +414,7 @@ class TaskOrchestrator:
                     batch_id=str(batch_id),
                     task_count=len(batch_tasks),
                     success=False,
-                    metadata={'error': str(e)},
+                    metadata={"error": str(e)},
                 )
 
             return {"success": False, "error": str(e)}
@@ -460,7 +497,11 @@ class TaskOrchestrator:
         """Get current orchestration status"""
         return {
             "status": self.status.value,
-            "current_batch": self.current_batch.id if self.current_batch and hasattr(self.current_batch, "id") else None,
+            "current_batch": (
+                self.current_batch.id
+                if self.current_batch and hasattr(self.current_batch, "id")
+                else None
+            ),
             "batches_executed": self.batches_executed,
             "tasks_completed": self.tasks_completed,
             "execution_errors": self.execution_errors,
@@ -516,11 +557,11 @@ class TaskOrchestrator:
                 emit_batch_event(
                     self.event_collector,
                     EventType.BUILD_STARTED,
-                    batch_id=result['session_id'],
-                    task_count=result['task_count'],
+                    batch_id=result["session_id"],
+                    task_count=result["task_count"],
                     metadata={
-                        'execution_mode': 'parallel',
-                        'session_name': result['session_name'],
+                        "execution_mode": "parallel",
+                        "session_name": result["session_name"],
                     },
                 )
 
@@ -536,8 +577,10 @@ class TaskOrchestrator:
         """Get status of all integrated systems."""
         return {
             "telemetry_enabled": self.event_collector is not None,
-            "routing_enabled": self.complexity_estimator is not None and self.model_selector is not None,
-            "parallel_enabled": self.session_manager is not None and self.worker_coordinator is not None,
+            "routing_enabled": self.complexity_estimator is not None
+            and self.model_selector is not None,
+            "parallel_enabled": self.session_manager is not None
+            and self.worker_coordinator is not None,
             "cost_tracking_enabled": self.cost_tracker is not None,
             "dashboard_enabled": self.dashboard is not None,
             "phase_manager_enabled": self.phase_manager is not None,
@@ -616,8 +659,7 @@ class TaskOrchestrator:
                     if phase_result.get("success"):
                         # Complete phase
                         self.phase_manager.complete_phase(
-                            current_phase,
-                            metadata=phase_result.get("metadata", {})
+                            current_phase, metadata=phase_result.get("metadata", {})
                         )
                         phases_completed.append(current_phase.value)
 
@@ -627,7 +669,7 @@ class TaskOrchestrator:
                         self.phase_manager.add_blocker(
                             blocker_type=BlockerType(blocker_info.get("type", "user_intervention")),
                             description=blocker_info.get("description", "Unknown blocker"),
-                            metadata=blocker_info.get("metadata", {})
+                            metadata=blocker_info.get("metadata", {}),
                         )
 
                         # Return with blocker info
@@ -646,7 +688,7 @@ class TaskOrchestrator:
                         self.phase_manager.fail_phase(
                             current_phase,
                             error=error_msg,
-                            metadata=phase_result.get("metadata", {})
+                            metadata=phase_result.get("metadata", {}),
                         )
 
                         return {
@@ -658,10 +700,7 @@ class TaskOrchestrator:
 
                 except Exception as e:
                     # Unexpected error in phase
-                    self.phase_manager.fail_phase(
-                        current_phase,
-                        error=str(e)
-                    )
+                    self.phase_manager.fail_phase(current_phase, error=str(e))
 
                     return {
                         "success": False,
@@ -691,7 +730,11 @@ class TaskOrchestrator:
                 "phases_completed": len(phases_completed),
                 "total_phases": progress["total_phases"],
                 "progress_percent": progress["progress_percent"],
-                "message": "Build execution complete!" if progress["progress_percent"] == 100 else "Build execution paused.",
+                "message": (
+                    "Build execution complete!"
+                    if progress["progress_percent"] == 100
+                    else "Build execution paused."
+                ),
             }
 
         except Exception as e:
@@ -739,7 +782,10 @@ class TaskOrchestrator:
 
         elif phase == Phase.TASK_DECOMPOSITION:
             # Decompose features into tasks
-            return {"success": True, "metadata": {"phase": "task_decomposition", "tasks": len(tasks)}}
+            return {
+                "success": True,
+                "metadata": {"phase": "task_decomposition", "tasks": len(tasks)},
+            }
 
         elif phase == Phase.DEPENDENCY_ANALYSIS:
             # Build dependency graph

@@ -60,17 +60,17 @@ class TestSynapseConnector:
 
     def test_load_profile_restaurant(self, connector):
         """Test loading restaurant profile from TypeScript."""
-        profile = connector.load_profile('restaurant')
+        profile = connector.load_profile("restaurant")
 
         assert profile is not None
-        assert profile['id'] == 'restaurant'
-        assert 'name' in profile
-        assert 'power_words' in profile
-        assert 'psychology_profile' in profile
+        assert profile["id"] == "restaurant"
+        assert "name" in profile
+        assert "power_words" in profile
+        assert "psychology_profile" in profile
 
     def test_load_profile_nonexistent(self, connector):
         """Test loading nonexistent profile."""
-        profile = connector.load_profile('nonexistent-industry')
+        profile = connector.load_profile("nonexistent-industry")
         assert profile is None
 
     def test_export_to_yaml(self, connector):
@@ -92,9 +92,9 @@ class TestSynapseConnector:
             with open(test_file) as f:
                 data = yaml.safe_load(f)
 
-            assert 'id' in data
-            assert 'name' in data
-            assert 'naics_code' in data
+            assert "id" in data
+            assert "name" in data
+            assert "naics_code" in data
 
     def test_export_creates_directory(self, connector):
         """Test export creates output directory if not exists."""
@@ -110,11 +110,11 @@ class TestSynapseConnector:
         """Test getting profile summary statistics."""
         summary = connector.get_profile_summary()
 
-        assert 'total' in summary
-        assert 'by_category' in summary
-        assert summary['total'] >= 140
-        assert isinstance(summary['by_category'], dict)
-        assert len(summary['by_category']) > 0
+        assert "total" in summary
+        assert "by_category" in summary
+        assert summary["total"] >= 140
+        assert isinstance(summary["by_category"], dict)
+        assert len(summary["by_category"]) > 0
 
 
 class TestProfileLoader:
@@ -213,7 +213,7 @@ class TestProfileLoader:
         """Test getting profiles by category."""
         # Get summary to find a valid category
         summary = loader.get_summary()
-        categories = list(summary['by_category'].keys())
+        categories = list(summary["by_category"].keys())
 
         if categories:
             category = categories[0]
@@ -232,14 +232,14 @@ class TestProfileLoader:
         """Test getting summary statistics."""
         summary = loader.get_summary()
 
-        assert 'total' in summary
-        assert 'full_profiles' in summary
-        assert 'basic_profiles' in summary
-        assert 'by_category' in summary
+        assert "total" in summary
+        assert "full_profiles" in summary
+        assert "basic_profiles" in summary
+        assert "by_category" in summary
 
-        assert summary['total'] >= 140
-        assert summary['full_profiles'] + summary['basic_profiles'] == summary['total']
-        assert isinstance(summary['by_category'], dict)
+        assert summary["total"] >= 140
+        assert summary["full_profiles"] + summary["basic_profiles"] == summary["total"]
+        assert isinstance(summary["by_category"], dict)
 
     def test_profile_to_dict(self, loader):
         """Test converting profile to dictionary."""
@@ -250,11 +250,11 @@ class TestProfileLoader:
             data = profile.to_dict()
 
             assert isinstance(data, dict)
-            assert 'id' in data
-            assert 'name' in data
-            assert 'naics_code' in data
-            assert 'category' in data
-            assert 'keywords' in data
+            assert "id" in data
+            assert "name" in data
+            assert "naics_code" in data
+            assert "category" in data
+            assert "keywords" in data
 
 
 class TestIndustryProfile:
@@ -267,7 +267,7 @@ class TestIndustryProfile:
             name="Test Industry",
             naics_code="123456",
             category="Test",
-            keywords=["test", "industry"]
+            keywords=["test", "industry"],
         )
 
         assert profile.id == "test"
@@ -289,7 +289,7 @@ class TestIndustryProfile:
             avoid_words=["bad", "worst"],
             content_themes=["theme1", "theme2"],
             psychology_profile={"triggers": ["trust"]},
-            has_full_profile=True
+            has_full_profile=True,
         )
 
         assert profile.power_words == ["amazing", "best"]
@@ -301,18 +301,14 @@ class TestIndustryProfile:
     def test_to_dict_basic(self):
         """Test converting basic profile to dict."""
         profile = IndustryProfile(
-            id="test",
-            name="Test",
-            naics_code="123",
-            category="Test",
-            keywords=["test"]
+            id="test", name="Test", naics_code="123", category="Test", keywords=["test"]
         )
 
         data = profile.to_dict()
 
-        assert data['id'] == "test"
-        assert data['name'] == "Test"
-        assert 'power_words' not in data  # Optional field should not be in dict
+        assert data["id"] == "test"
+        assert data["name"] == "Test"
+        assert "power_words" not in data  # Optional field should not be in dict
 
     def test_to_dict_full(self):
         """Test converting full profile to dict."""
@@ -323,14 +319,14 @@ class TestIndustryProfile:
             category="Test",
             keywords=["test"],
             power_words=["great"],
-            psychology_profile={"trust": "high"}
+            psychology_profile={"trust": "high"},
         )
 
         data = profile.to_dict()
 
-        assert 'power_words' in data
-        assert data['power_words'] == ["great"]
-        assert 'psychology_profile' in data
+        assert "power_words" in data
+        assert data["power_words"] == ["great"]
+        assert "psychology_profile" in data
 
 
 class TestNAICSEntry:
@@ -344,7 +340,7 @@ class TestNAICSEntry:
             category="Test",
             keywords=["test", "industry"],
             has_full_profile=True,
-            popularity=100
+            popularity=100,
         )
 
         assert entry.naics_code == "123456"
@@ -361,14 +357,14 @@ class TestNAICSEntry:
             display_name="Test Industry",
             category="Test",
             keywords=["test"],
-            has_full_profile=True
+            has_full_profile=True,
         )
 
         data = entry.to_dict()
 
-        assert data['naics_code'] == "123456"
-        assert data['display_name'] == "Test Industry"
-        assert data['has_full_profile'] is True
+        assert data["naics_code"] == "123456"
+        assert data["display_name"] == "Test Industry"
+        assert data["has_full_profile"] is True
 
 
 class TestIntegration:
@@ -427,12 +423,12 @@ class TestIntegration:
         summary = loader.get_summary()
 
         # Should have multiple categories
-        assert len(summary['by_category']) >= 5
+        assert len(summary["by_category"]) >= 5
 
         # Check for major categories
-        categories = [c.lower() for c in summary['by_category'].keys()]
-        assert any('healthcare' in c for c in categories)
-        assert any('technology' in c or 'tech' in c for c in categories)
+        categories = [c.lower() for c in summary["by_category"].keys()]
+        assert any("healthcare" in c for c in categories)
+        assert any("technology" in c or "tech" in c for c in categories)
 
 
 # Run tests if executed directly

@@ -36,11 +36,16 @@ app = typer.Typer(help="GitHub workflow automation")
 branch_app = typer.Typer(help="Branch management")
 app.add_typer(branch_app, name="branch")
 
+
 @branch_app.command("create")
 def branch_create(
     feature_name: str = typer.Argument(..., help="Feature name"),
-    week: int = typer.Option(None, "--week", "-w", help="Week number (auto-calculated if not provided)"),
-    checkout: bool = typer.Option(True, "--checkout/--no-checkout", help="Checkout branch after creation")
+    week: int = typer.Option(
+        None, "--week", "-w", help="Week number (auto-calculated if not provided)"
+    ),
+    checkout: bool = typer.Option(
+        True, "--checkout/--no-checkout", help="Checkout branch after creation"
+    ),
 ):
     """Create feature branch with governance naming"""
     try:
@@ -53,6 +58,7 @@ def branch_create(
     except Exception as e:
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
+
 
 @branch_app.command("list")
 def branch_list():
@@ -79,7 +85,7 @@ def branch_list():
                 f"{current_marker}{branch.name}",
                 str(branch.week_number or ""),
                 "current" if branch.is_current else "",
-                ready_marker
+                ready_marker,
             )
 
         console.print(table)
@@ -87,6 +93,7 @@ def branch_list():
     except Exception as e:
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
+
 
 @branch_app.command("ready")
 def branch_ready():
@@ -109,6 +116,7 @@ def branch_ready():
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 @branch_app.command("switch")
 def branch_switch(feature_name: str = typer.Argument(..., help="Feature name to switch to")):
     """Switch to feature branch by name"""
@@ -124,6 +132,7 @@ def branch_switch(feature_name: str = typer.Argument(..., help="Feature name to 
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 @branch_app.command("cleanup")
 def branch_cleanup(
     dry_run: bool = typer.Option(True, "--dry-run/--execute", help="Show what would be deleted")
@@ -137,7 +146,9 @@ def branch_cleanup(
             console.print("\n[green]No merged branches to clean up[/green]\n")
             return
 
-        console.print(f"\n[bold]{'Would delete' if dry_run else 'Deleted'} {len(branches)} branches:[/bold]\n")
+        console.print(
+            f"\n[bold]{'Would delete' if dry_run else 'Deleted'} {len(branches)} branches:[/bold]\n"
+        )
         for branch in branches:
             console.print(f"  • {branch}")
 
@@ -148,12 +159,15 @@ def branch_cleanup(
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 # Push commands
 @app.command("push")
 def push_smart(
     when_ready: bool = typer.Option(False, "--when-ready", help="Only push if all checks pass"),
-    check_conflicts: bool = typer.Option(True, "--check-conflicts/--skip-conflicts", help="Check for merge conflicts"),
-    force: bool = typer.Option(False, "--force", help="Skip readiness checks")
+    check_conflicts: bool = typer.Option(
+        True, "--check-conflicts/--skip-conflicts", help="Check for merge conflicts"
+    ),
+    force: bool = typer.Option(False, "--force", help="Skip readiness checks"),
 ):
     """Smart push with readiness checks"""
     try:
@@ -205,7 +219,7 @@ def push_smart(
         import os
 
         # Set environment variable to signal pre-push hook that we're using br github push
-        os.environ['BR_GITHUB_PUSH'] = 'true'
+        os.environ["BR_GITHUB_PUSH"] = "true"
 
         git = GitClient()
         current = git.current_branch()
@@ -220,10 +234,9 @@ def push_smart(
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 @app.command("sync")
-def sync_branch(
-    rebase: bool = typer.Option(True, "--rebase/--merge", help="Rebase or merge")
-):
+def sync_branch(rebase: bool = typer.Option(True, "--rebase/--merge", help="Rebase or merge")):
     """Sync current branch with main"""
     try:
         detector = ConflictDetector()
@@ -238,9 +251,11 @@ def sync_branch(
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 # Release commands
 release_app = typer.Typer(help="Release management")
 app.add_typer(release_app, name="release")
+
 
 @release_app.command("create")
 def release_create(
@@ -258,47 +273,52 @@ def release_create(
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 @release_app.command("patch")
 def release_patch():
     """Create patch release (v3.1.0 → v3.1.1)"""
     try:
         mgr = ReleaseManager()
-        new_version = mgr.create_release('patch')
+        new_version = mgr.create_release("patch")
         console.print(f"\n[green]✅ Created patch release v{new_version}[/green]\n")
     except Exception as e:
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
+
 
 @release_app.command("minor")
 def release_minor():
     """Create minor release (v3.1.0 → v3.2.0)"""
     try:
         mgr = ReleaseManager()
-        new_version = mgr.create_release('minor')
+        new_version = mgr.create_release("minor")
         console.print(f"\n[green]✅ Created minor release v{new_version}[/green]\n")
     except Exception as e:
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
+
 
 @release_app.command("major")
 def release_major():
     """Create major release (v3.1.0 → v4.0.0)"""
     try:
         mgr = ReleaseManager()
-        new_version = mgr.create_release('major')
+        new_version = mgr.create_release("major")
         console.print(f"\n[green]✅ Created major release v{new_version}[/green]\n")
     except Exception as e:
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 # PR commands
 pr_app = typer.Typer(help="Pull request management")
 app.add_typer(pr_app, name="pr")
 
+
 @pr_app.command("create")
 def pr_create(
     title: str = typer.Option(None, "--title", "-t", help="PR title"),
-    draft: bool = typer.Option(False, "--draft", "-d", help="Create as draft")
+    draft: bool = typer.Option(False, "--draft", "-d", help="Create as draft"),
 ):
     """Create pull request"""
     try:
@@ -311,9 +331,11 @@ def pr_create(
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 # Snapshot commands
 snapshot_app = typer.Typer(help="Snapshot management")
 app.add_typer(snapshot_app, name="snapshot")
+
 
 @snapshot_app.command("create")
 def snapshot_create(name: str = typer.Argument(..., help="Snapshot name")):
@@ -325,6 +347,7 @@ def snapshot_create(name: str = typer.Argument(..., help="Snapshot name")):
     except Exception as e:
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
+
 
 @snapshot_app.command("list")
 def snapshot_list():
@@ -345,6 +368,7 @@ def snapshot_list():
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
 
+
 # Protection commands
 @app.command("protect")
 def protect_setup(branch: str = typer.Option("main", "--branch", "-b", help="Branch to protect")):
@@ -356,17 +380,20 @@ def protect_setup(branch: str = typer.Option("main", "--branch", "-b", help="Bra
         if success:
             console.print(f"\n[green]✅ Branch protection enabled on {branch}[/green]\n")
         else:
-            console.print(f"\n[yellow]⚠️  Could not enable protection (GitHub API token needed)[/yellow]\n")
+            console.print(
+                f"\n[yellow]⚠️  Could not enable protection (GitHub API token needed)[/yellow]\n"
+            )
     except Exception as e:
         console.print(f"\n[red]❌ Error: {e}[/red]\n")
         raise typer.Exit(1)
+
 
 # Commit commands
 @app.command("commit")
 def commit_interactive(
     type: str = typer.Option(None, "--type", "-t", help="Commit type (feat/fix/refactor/etc)"),
     message: str = typer.Option(None, "--message", "-m", help="Commit message"),
-    scope: str = typer.Option(None, "--scope", "-s", help="Commit scope")
+    scope: str = typer.Option(None, "--scope", "-s", help="Commit scope"),
 ):
     """Interactive commit builder with conventional commits"""
     try:
@@ -385,6 +412,7 @@ def commit_interactive(
 
         # Create commit
         from core.github.git_client import GitClient
+
         git = GitClient()
         git.commit(commit_msg)
 

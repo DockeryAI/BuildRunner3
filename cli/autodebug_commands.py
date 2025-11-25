@@ -20,7 +20,7 @@ console = Console()
 def run_autodebug(
     files: list[str] = typer.Option(None, "--files", "-f", help="Specific files to check"),
     skip_deep: bool = typer.Option(False, "--skip-deep", help="Skip deep verification checks"),
-    save: bool = typer.Option(True, "--save/--no-save", help="Save report to disk")
+    save: bool = typer.Option(True, "--save/--no-save", help="Save report to disk"),
 ):
     """
     Run the automatic debugging pipeline
@@ -77,11 +77,14 @@ def show_status():
     console.print(f"\n[bold]Latest Report:[/bold] {latest.name}")
 
     import json
+
     with open(latest) as f:
         report_data = json.load(f)
 
     console.print(f"\n[bold]Timestamp:[/bold] {report_data['timestamp']}")
-    console.print(f"[bold]Overall Status:[/bold] {'✓ PASSED' if report_data['overall_success'] else '✗ FAILED'}")
+    console.print(
+        f"[bold]Overall Status:[/bold] {'✓ PASSED' if report_data['overall_success'] else '✗ FAILED'}"
+    )
     console.print(f"[bold]Duration:[/bold] {report_data['total_duration_ms']:.0f}ms")
     console.print(f"\n[bold]Checks Run:[/bold] {report_data['metadata']['checks_run']}")
     console.print(f"[bold]Errors:[/bold] {report_data['metadata']['total_errors']}")
@@ -184,8 +187,8 @@ def retry_analysis(
 
         # Find first failed check
         failed_check = None
-        for check in report_data.get('checks_run', []):
-            if not check.get('passed', True) and not check.get('skipped', False):
+        for check in report_data.get("checks_run", []):
+            if not check.get("passed", True) and not check.get("skipped", False):
                 failed_check = check
                 break
 
@@ -194,13 +197,13 @@ def retry_analysis(
             return
 
         # Create error context
-        error_log = "\n".join(failed_check.get('errors', []))
+        error_log = "\n".join(failed_check.get("errors", []))
         context = ErrorContext(
-            command=failed_check.get('name', 'unknown'),
+            command=failed_check.get("name", "unknown"),
             exit_code=1,
             log=error_log,
             working_dir=str(project_root),
-            timestamp=report_data.get('timestamp', '')
+            timestamp=report_data.get("timestamp", ""),
         )
 
         # Analyze with RetryAnalyzer
@@ -225,7 +228,10 @@ def retry_analysis(
         if auto_fix:
             console.print("[yellow]🚀 Applying fix...[/yellow]")
             import subprocess
-            result = subprocess.run(fix_cmd, shell=True, capture_output=True, text=True, cwd=project_root)
+
+            result = subprocess.run(
+                fix_cmd, shell=True, capture_output=True, text=True, cwd=project_root
+            )
             if result.returncode == 0:
                 console.print("[green]✅ Fix applied successfully[/green]")
                 if result.stdout:
@@ -265,8 +271,12 @@ def show_history():
         if insights.hot_spots:
             console.print("[bold]🔥 Failure Hot Spots:[/bold]")
             for spot in insights.hot_spots[:5]:  # Top 5
-                icon = "🔴" if spot.severity == 'high' else "🟡" if spot.severity == 'medium' else "🟢"
-                console.print(f"   {icon} {spot.location} ({spot.failure_count} failures, {spot.severity} severity)")
+                icon = (
+                    "🔴" if spot.severity == "high" else "🟡" if spot.severity == "medium" else "🟢"
+                )
+                console.print(
+                    f"   {icon} {spot.location} ({spot.failure_count} failures, {spot.severity} severity)"
+                )
         else:
             console.print("[green]✓ No significant hot spots detected[/green]")
 
@@ -309,15 +319,14 @@ def _display_report(report):
     """Display auto-debug report in terminal"""
     # Overall status
     if report.overall_success:
-        console.print(Panel(
-            "[bold green]✓ All checks passed![/bold green]",
-            border_style="green"
-        ))
+        console.print(Panel("[bold green]✓ All checks passed![/bold green]", border_style="green"))
     else:
-        console.print(Panel(
-            f"[bold red]✗ {len(report.critical_failures)} checks failed[/bold red]",
-            border_style="red"
-        ))
+        console.print(
+            Panel(
+                f"[bold red]✗ {len(report.critical_failures)} checks failed[/bold red]",
+                border_style="red",
+            )
+        )
 
     # Build context
     console.print(f"\n[bold]Build Context:[/bold]")
@@ -343,12 +352,7 @@ def _display_report(report):
             status = "[red]✗ FAIL[/red]"
             details = f"{len(result.errors)} errors"
 
-        table.add_row(
-            result.name,
-            status,
-            f"{result.duration_ms:.0f}ms",
-            details
-        )
+        table.add_row(result.name, status, f"{result.duration_ms:.0f}ms", details)
 
     console.print(table)
 

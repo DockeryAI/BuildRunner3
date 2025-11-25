@@ -70,11 +70,7 @@ class TestPRDWizard:
 
     def test_spec_state_machine(self, temp_project):
         """Test spec state transitions"""
-        spec = ProjectSpec(
-            state=SpecState.NEW,
-            industry="healthcare",
-            use_case="dashboard"
-        )
+        spec = ProjectSpec(state=SpecState.NEW, industry="healthcare", use_case="dashboard")
 
         assert spec.state == SpecState.NEW
 
@@ -171,7 +167,8 @@ class TestPRDParser:
         spec_path.parent.mkdir(parents=True)
 
         # Create minimal spec
-        spec_path.write_text("""# PROJECT_SPEC
+        spec_path.write_text(
+            """# PROJECT_SPEC
 
 **Status**: draft
 **Industry**: healthcare
@@ -187,7 +184,8 @@ class TestPRDParser:
 - As a nurse, I want to update patient records so that information stays current
 
 ---
-""")
+"""
+        )
 
         parser = PRDParser(str(spec_path))
         spec = parser.parse()
@@ -214,7 +212,7 @@ class TestPRDMapper:
             "features": [
                 {"id": "feature_1", "dependencies": []},
                 {"id": "feature_2", "dependencies": []},
-                {"id": "feature_3", "dependencies": ["feature_1"]}
+                {"id": "feature_3", "dependencies": ["feature_1"]},
             ]
         }
 
@@ -245,9 +243,7 @@ class TestPlanningMode:
         """Test strategic keyword detection"""
         detector = PlanningModeDetector(str(temp_project))
 
-        mode, confidence = detector.detect_mode(
-            "What architecture should we use for scalability?"
-        )
+        mode, confidence = detector.detect_mode("What architecture should we use for scalability?")
 
         assert mode == "planning"
         assert confidence > 0.6
@@ -289,7 +285,8 @@ class TestEndToEndIntegration:
         spec_path = temp_project / ".buildrunner" / "PROJECT_SPEC.md"
         spec_path.parent.mkdir(parents=True)
 
-        spec_path.write_text("""# PROJECT_SPEC
+        spec_path.write_text(
+            """# PROJECT_SPEC
 
 **Status**: confirmed
 **Industry**: healthcare
@@ -310,7 +307,8 @@ class TestEndToEndIntegration:
 Tech stack: React + FastAPI + PostgreSQL
 
 ---
-""")
+"""
+        )
 
         # 2. Parse spec
         parser = PRDParser(str(spec_path))

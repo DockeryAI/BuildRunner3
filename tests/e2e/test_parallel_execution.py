@@ -48,29 +48,20 @@ def test_repo(tmp_path):
     repo.mkdir()
 
     # Initialize git
-    subprocess.run(['git', 'init'], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
     subprocess.run(
-        ['git', 'config', 'user.email', 'test@test.com'],
-        cwd=repo,
-        check=True,
-        capture_output=True
+        ["git", "config", "user.email", "test@test.com"], cwd=repo, check=True, capture_output=True
     )
     subprocess.run(
-        ['git', 'config', 'user.name', 'Test User'],
-        cwd=repo,
-        check=True,
-        capture_output=True
+        ["git", "config", "user.name", "Test User"], cwd=repo, check=True, capture_output=True
     )
 
     # Initial commit
-    readme_file = repo / 'README.md'
-    readme_file.write_text('# Test Repository\n\nInitial content\n')
-    subprocess.run(['git', 'add', '.'], cwd=repo, check=True, capture_output=True)
+    readme_file = repo / "README.md"
+    readme_file.write_text("# Test Repository\n\nInitial content\n")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True)
     subprocess.run(
-        ['git', 'commit', '-m', 'Initial commit'],
-        cwd=repo,
-        check=True,
-        capture_output=True
+        ["git", "commit", "-m", "Initial commit"], cwd=repo, check=True, capture_output=True
     )
 
     yield repo
@@ -78,24 +69,24 @@ def test_repo(tmp_path):
     # Cleanup worktrees
     try:
         result = subprocess.run(
-            ['git', 'worktree', 'list', '--porcelain'],
+            ["git", "worktree", "list", "--porcelain"],
             cwd=repo,
             capture_output=True,
             text=True,
-            check=False
+            check=False,
         )
 
         if result.returncode == 0:
-            for line in result.stdout.split('\n'):
-                if line.startswith('worktree '):
-                    wt_path = line.split(' ', 1)[1]
+            for line in result.stdout.split("\n"):
+                if line.startswith("worktree "):
+                    wt_path = line.split(" ", 1)[1]
                     # Don't try to remove the main worktree
                     if wt_path != str(repo):
                         subprocess.run(
-                            ['git', 'worktree', 'remove', wt_path, '--force'],
+                            ["git", "worktree", "remove", wt_path, "--force"],
                             cwd=repo,
                             capture_output=True,
-                            check=False
+                            check=False,
                         )
     except Exception as e:
         # Cleanup is best-effort
@@ -147,10 +138,10 @@ def test_four_independent_tasks_parallel(test_repo, session_manager, worker_coor
 
     # Create tasks (different files = no conflicts)
     tasks = [
-        {'id': 't1', 'file': 'file1.txt', 'content': 'Task 1 completed\n'},
-        {'id': 't2', 'file': 'file2.txt', 'content': 'Task 2 completed\n'},
-        {'id': 't3', 'file': 'file3.txt', 'content': 'Task 3 completed\n'},
-        {'id': 't4', 'file': 'file4.txt', 'content': 'Task 4 completed\n'},
+        {"id": "t1", "file": "file1.txt", "content": "Task 1 completed\n"},
+        {"id": "t2", "file": "file2.txt", "content": "Task 2 completed\n"},
+        {"id": "t3", "file": "file3.txt", "content": "Task 3 completed\n"},
+        {"id": "t4", "file": "file4.txt", "content": "Task 4 completed\n"},
     ]
 
     # Execute tasks in parallel
@@ -160,35 +151,34 @@ def test_four_independent_tasks_parallel(test_repo, session_manager, worker_coor
         """Execute a single task."""
         try:
             # Lock file
-            session_manager.lock_files(session.session_id, [task['file']])
+            session_manager.lock_files(session.session_id, [task["file"]])
 
             # Simulate work - write to file
-            file_path = test_repo / task['file']
-            file_path.write_text(task['content'])
+            file_path = test_repo / task["file"]
+            file_path.write_text(task["content"])
 
             # Simulate processing time
             time.sleep(0.1)
 
             # Mark file as modified
-            session_manager.mark_files_modified(session.session_id, [task['file']])
+            session_manager.mark_files_modified(session.session_id, [task["file"]])
 
             # Unlock file
-            session_manager.unlock_files(session.session_id, [task['file']])
+            session_manager.unlock_files(session.session_id, [task["file"]])
 
             # Mark task complete
-            worker_coordinator.complete_task(worker.worker_id, task['id'], success=True)
+            worker_coordinator.complete_task(worker.worker_id, task["id"], success=True)
 
-            return {'task_id': task['id'], 'success': True, 'file': task['file']}
+            return {"task_id": task["id"], "success": True, "file": task["file"]}
 
         except Exception as e:
-            worker_coordinator.complete_task(worker.worker_id, task['id'], success=False)
-            return {'task_id': task['id'], 'success': False, 'error': str(e)}
+            worker_coordinator.complete_task(worker.worker_id, task["id"], success=False)
+            return {"task_id": task["id"], "success": False, "error": str(e)}
 
     # Execute in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = [
-            executor.submit(execute_task, task, worker)
-            for task, worker in zip(tasks, workers)
+            executor.submit(execute_task, task, worker) for task, worker in zip(tasks, workers)
         ]
 
         for future in as_completed(futures):
@@ -196,13 +186,13 @@ def test_four_independent_tasks_parallel(test_repo, session_manager, worker_coor
 
     # Verify all tasks completed successfully
     assert len(results) == 4
-    assert all(r['success'] for r in results), f"Some tasks failed: {results}"
+    assert all(r["success"] for r in results), f"Some tasks failed: {results}"
 
     # Verify all files were created
     for task in tasks:
-        file_path = test_repo / task['file']
+        file_path = test_repo / task["file"]
         assert file_path.exists(), f"File {task['file']} was not created"
-        assert file_path.read_text() == task['content']
+        assert file_path.read_text() == task["content"]
 
     # Verify worker statistics
     for worker in workers:
@@ -238,7 +228,7 @@ def test_eight_independent_tasks_with_three_workers(test_repo, session_manager, 
 
     # Create 8 tasks
     tasks = [
-        {'id': f't{i}', 'file': f'batch_file{i}.txt', 'content': f'Task {i} content\n'}
+        {"id": f"t{i}", "file": f"batch_file{i}.txt", "content": f"Task {i} content\n"}
         for i in range(1, 9)
     ]
 
@@ -259,25 +249,25 @@ def test_eight_independent_tasks_with_three_workers(test_repo, session_manager, 
             time.sleep(0.01)
 
         if not worker:
-            return {'task_id': task['id'], 'success': False, 'error': 'No worker available'}
+            return {"task_id": task["id"], "success": False, "error": "No worker available"}
 
         try:
             # Execute task
-            session_manager.lock_files(session.session_id, [task['file']])
-            file_path = test_repo / task['file']
-            file_path.write_text(task['content'])
+            session_manager.lock_files(session.session_id, [task["file"]])
+            file_path = test_repo / task["file"]
+            file_path.write_text(task["content"])
             time.sleep(0.05)  # Shorter processing time
-            session_manager.mark_files_modified(session.session_id, [task['file']])
-            session_manager.unlock_files(session.session_id, [task['file']])
+            session_manager.mark_files_modified(session.session_id, [task["file"]])
+            session_manager.unlock_files(session.session_id, [task["file"]])
 
             # Mark complete
-            worker_coordinator.complete_task(worker.worker_id, task['id'], success=True)
+            worker_coordinator.complete_task(worker.worker_id, task["id"], success=True)
 
-            return {'task_id': task['id'], 'success': True, 'worker_id': worker.worker_id}
+            return {"task_id": task["id"], "success": True, "worker_id": worker.worker_id}
 
         except Exception as e:
-            worker_coordinator.complete_task(worker.worker_id, task['id'], success=False)
-            return {'task_id': task['id'], 'success': False, 'error': str(e)}
+            worker_coordinator.complete_task(worker.worker_id, task["id"], success=False)
+            return {"task_id": task["id"], "success": False, "error": str(e)}
 
     # Execute tasks with limited parallelism
     with ThreadPoolExecutor(max_workers=3) as executor:
@@ -289,12 +279,12 @@ def test_eight_independent_tasks_with_three_workers(test_repo, session_manager, 
 
     # Verify all tasks completed
     assert len(results) == 8
-    successful = [r for r in results if r['success']]
+    successful = [r for r in results if r["success"]]
     assert len(successful) == 8, f"Expected 8 successful, got {len(successful)}"
 
     # Verify all files exist
     for task in tasks:
-        file_path = test_repo / task['file']
+        file_path = test_repo / task["file"]
         assert file_path.exists()
 
 
@@ -315,11 +305,11 @@ def test_file_locking_prevents_conflicts(test_repo, session_manager):
     session_manager.start_session(session1.session_id)
     session_manager.start_session(session2.session_id)
 
-    shared_file = 'shared.txt'
+    shared_file = "shared.txt"
     shared_file_path = test_repo / shared_file
 
     # Initialize file
-    shared_file_path.write_text('')
+    shared_file_path.write_text("")
 
     results = []
     lock_order = []
@@ -328,9 +318,9 @@ def test_file_locking_prevents_conflicts(test_repo, session_manager):
         """Attempt to write to shared file."""
         try:
             # Try to lock file
-            lock_order.append((session_id, 'attempt', time.time()))
+            lock_order.append((session_id, "attempt", time.time()))
             session_manager.lock_files(session_id, [shared_file])
-            lock_order.append((session_id, 'acquired', time.time()))
+            lock_order.append((session_id, "acquired", time.time()))
 
             # Read current content
             current = shared_file_path.read_text()
@@ -339,51 +329,45 @@ def test_file_locking_prevents_conflicts(test_repo, session_manager):
             time.sleep(delay)
 
             # Write new content
-            new_content = current + content + '\n'
+            new_content = current + content + "\n"
             shared_file_path.write_text(new_content)
 
             # Unlock
             session_manager.unlock_files(session_id, [shared_file])
-            lock_order.append((session_id, 'released', time.time()))
+            lock_order.append((session_id, "released", time.time()))
 
-            return {'success': True, 'session_id': session_id}
+            return {"success": True, "session_id": session_id}
 
         except ValueError as e:
             # File is locked by another session
-            return {'success': False, 'session_id': session_id, 'error': str(e)}
+            return {"success": False, "session_id": session_id, "error": str(e)}
 
     # Execute both writes concurrently
     with ThreadPoolExecutor(max_workers=2) as executor:
         future1 = executor.submit(
-            write_to_shared_file,
-            session1.session_id,
-            'Content from session 1',
-            0.2
+            write_to_shared_file, session1.session_id, "Content from session 1", 0.2
         )
         future2 = executor.submit(
-            write_to_shared_file,
-            session2.session_id,
-            'Content from session 2',
-            0.2
+            write_to_shared_file, session2.session_id, "Content from session 2", 0.2
         )
 
         results.append(future1.result())
         results.append(future2.result())
 
     # Verify exactly one succeeded
-    successes = [r for r in results if r['success']]
-    failures = [r for r in results if not r['success']]
+    successes = [r for r in results if r["success"]]
+    failures = [r for r in results if not r["success"]]
 
     assert len(successes) == 1, f"Expected exactly 1 success, got {len(successes)}"
     assert len(failures) == 1, f"Expected exactly 1 failure, got {len(failures)}"
 
     # Verify file is not corrupted
     content = shared_file_path.read_text()
-    lines = [line for line in content.split('\n') if line]
+    lines = [line for line in content.split("\n") if line]
 
     # Should have content from exactly one session
     assert len(lines) == 1
-    assert 'session' in lines[0].lower()
+    assert "session" in lines[0].lower()
 
     # Verify lock order is correct
     assert len(lock_order) >= 3  # At least one session acquired and released
@@ -399,7 +383,7 @@ def test_multiple_files_locked_together(test_repo, session_manager):
     session_manager.start_session(session.session_id)
 
     # Lock multiple files
-    files = ['file_a.txt', 'file_b.txt', 'file_c.txt']
+    files = ["file_a.txt", "file_b.txt", "file_c.txt"]
     session_manager.lock_files(session.session_id, files)
 
     # Verify files are locked in session
@@ -411,7 +395,7 @@ def test_multiple_files_locked_together(test_repo, session_manager):
     session_manager.start_session(session2.session_id)
 
     with pytest.raises(ValueError, match="already locked"):
-        session_manager.lock_files(session2.session_id, ['file_b.txt'])
+        session_manager.lock_files(session2.session_id, ["file_b.txt"])
 
     # Unlock and verify
     session_manager.unlock_files(session.session_id, files)
@@ -433,18 +417,14 @@ def test_worker_failure_recovery(worker_coordinator):
 
     # Assign tasks to workers
     tasks = [
-        {'id': 't1', 'data': 'task 1'},
-        {'id': 't2', 'data': 'task 2'},
-        {'id': 't3', 'data': 'task 3'},
+        {"id": "t1", "data": "task 1"},
+        {"id": "t2", "data": "task 2"},
+        {"id": "t3", "data": "task 3"},
     ]
 
     # Assign each task to a worker
     for task, worker in zip(tasks, workers):
-        worker_id = worker_coordinator.assign_task(
-            task['id'],
-            task,
-            session_id='test-session'
-        )
+        worker_id = worker_coordinator.assign_task(task["id"], task, session_id="test-session")
         assert worker_id == worker.worker_id
 
     # Verify all workers are busy
@@ -469,13 +449,13 @@ def test_worker_failure_recovery(worker_coordinator):
     # but doesn't have full requeue logic
 
     # Complete other tasks
-    worker_coordinator.complete_task(workers[1].worker_id, tasks[1]['id'], success=True)
-    worker_coordinator.complete_task(workers[2].worker_id, tasks[2]['id'], success=True)
+    worker_coordinator.complete_task(workers[1].worker_id, tasks[1]["id"], success=True)
+    worker_coordinator.complete_task(workers[2].worker_id, tasks[2]["id"], success=True)
 
     # Verify statistics
     stats = worker_coordinator.get_statistics()
-    assert stats['distribution']['offline_workers'] >= 1
-    assert stats['distribution']['total_completed'] == 2
+    assert stats["distribution"]["offline_workers"] >= 1
+    assert stats["distribution"]["total_completed"] == 2
 
 
 def test_worker_pool_scaling(worker_coordinator):
@@ -512,6 +492,7 @@ def test_worker_heartbeat_monitoring(worker_coordinator):
 
     # Manually set worker2's heartbeat to old time
     from datetime import timedelta
+
     worker2_obj = worker_coordinator.get_worker(worker2.worker_id)
     worker2_obj.last_heartbeat = datetime.now() - timedelta(seconds=60)
 
@@ -530,7 +511,9 @@ def test_worker_heartbeat_monitoring(worker_coordinator):
 # ===== Scenario 4: Dashboard Real-Time Updates =====
 
 
-def test_dashboard_real_time_updates(test_repo, session_manager, worker_coordinator, live_dashboard):
+def test_dashboard_real_time_updates(
+    test_repo, session_manager, worker_coordinator, live_dashboard
+):
     """
     Test that dashboard receives and displays real-time progress updates.
 
@@ -553,24 +536,24 @@ def test_dashboard_real_time_updates(test_repo, session_manager, worker_coordina
 
     # Initial state
     capture_update()
-    assert updates[0]['sessions']['active'] == 1
-    assert updates[0]['workers']['total'] == 3
-    assert updates[0]['workers']['idle'] == 3
+    assert updates[0]["sessions"]["active"] == 1
+    assert updates[0]["workers"]["total"] == 3
+    assert updates[0]["workers"]["idle"] == 3
 
     # Simulate task execution
-    tasks = [{'id': f't{i}', 'file': f'file{i}.txt'} for i in range(5)]
+    tasks = [{"id": f"t{i}", "file": f"file{i}.txt"} for i in range(5)]
 
     for i, task in enumerate(tasks[:3]):  # Complete 3 tasks
         # Assign to worker
         worker = workers[i % 3]
         worker.status = WorkerStatus.BUSY
-        worker.current_task = task['id']
+        worker.current_task = task["id"]
 
         # Capture state while busy
         capture_update()
 
         # Complete task
-        worker_coordinator.complete_task(worker.worker_id, task['id'], success=True)
+        worker_coordinator.complete_task(worker.worker_id, task["id"], success=True)
 
         # Update session progress
         session_manager.update_progress(
@@ -587,14 +570,14 @@ def test_dashboard_real_time_updates(test_repo, session_manager, worker_coordina
     assert len(updates) >= 5
 
     # Verify progression in updates
-    completed_counts = [u['tasks']['completed'] for u in updates]
+    completed_counts = [u["tasks"]["completed"] for u in updates]
     assert completed_counts[-1] >= completed_counts[0]
 
     # Verify final state
     final_summary = live_dashboard.get_summary()
-    assert final_summary['tasks']['completed'] == 3
-    assert final_summary['tasks']['failed'] == 0
-    assert final_summary['workers']['idle'] == 3  # All back to idle
+    assert final_summary["tasks"]["completed"] == 3
+    assert final_summary["tasks"]["failed"] == 0
+    assert final_summary["workers"]["idle"] == 3  # All back to idle
 
     # Verify session shows progress
     session = session_manager.get_session(session.session_id)
@@ -607,10 +590,7 @@ def test_dashboard_multi_session_display(session_manager, worker_coordinator, li
     Test that dashboard can display multiple concurrent sessions.
     """
     # Create multiple sessions
-    sessions = [
-        session_manager.create_session(f"session-{i}", total_tasks=10)
-        for i in range(3)
-    ]
+    sessions = [session_manager.create_session(f"session-{i}", total_tasks=10) for i in range(3)]
 
     # Start all sessions
     for session in sessions:
@@ -622,8 +602,8 @@ def test_dashboard_multi_session_display(session_manager, worker_coordinator, li
 
     # Render dashboard
     summary = live_dashboard.get_summary()
-    assert summary['sessions']['active'] == 3
-    assert summary['sessions']['total'] == 3
+    assert summary["sessions"]["active"] == 3
+    assert summary["sessions"]["total"] == 3
 
     # Complete one session
     session_manager.update_progress(sessions[0].session_id, completed_tasks=10)
@@ -631,8 +611,8 @@ def test_dashboard_multi_session_display(session_manager, worker_coordinator, li
 
     # Verify dashboard reflects change
     summary = live_dashboard.get_summary()
-    assert summary['sessions']['active'] == 2
-    assert summary['sessions']['total'] == 3
+    assert summary["sessions"]["active"] == 2
+    assert summary["sessions"]["total"] == 3
 
 
 def test_dashboard_statistics_panel(session_manager, worker_coordinator, live_dashboard):
@@ -652,18 +632,18 @@ def test_dashboard_statistics_panel(session_manager, worker_coordinator, live_da
     summary = live_dashboard.get_summary()
 
     # Verify worker stats
-    assert summary['workers']['total'] == 4
-    assert summary['workers']['idle'] == 4
-    assert summary['workers']['busy'] == 0
+    assert summary["workers"]["total"] == 4
+    assert summary["workers"]["idle"] == 4
+    assert summary["workers"]["busy"] == 0
 
     # Verify session stats
-    assert summary['sessions']['active'] == 2
-    assert summary['sessions']['total'] == 2
+    assert summary["sessions"]["active"] == 2
+    assert summary["sessions"]["total"] == 2
 
     # Verify task stats
-    assert summary['tasks']['completed'] == 0
-    assert summary['tasks']['failed'] == 0
-    assert summary['tasks']['queued'] == 0
+    assert summary["tasks"]["completed"] == 0
+    assert summary["tasks"]["failed"] == 0
+    assert summary["tasks"]["queued"] == 0
 
 
 # ===== Performance and Stress Tests =====
@@ -681,8 +661,7 @@ def test_high_concurrency_stress(test_repo, session_manager, worker_coordinator)
     workers = [worker_coordinator.register_worker() for _ in range(5)]
 
     tasks = [
-        {'id': f't{i}', 'file': f'stress_{i}.txt', 'content': f'Task {i}\n'}
-        for i in range(20)
+        {"id": f"t{i}", "file": f"stress_{i}.txt", "content": f"Task {i}\n"} for i in range(20)
     ]
 
     results = []
@@ -699,18 +678,18 @@ def test_high_concurrency_stress(test_repo, session_manager, worker_coordinator)
             time.sleep(0.01)
 
         if not worker:
-            return {'success': False, 'task_id': task['id']}
+            return {"success": False, "task_id": task["id"]}
 
         try:
-            file_path = test_repo / task['file']
-            file_path.write_text(task['content'])
+            file_path = test_repo / task["file"]
+            file_path.write_text(task["content"])
             time.sleep(0.01)
 
-            worker_coordinator.complete_task(worker.worker_id, task['id'], success=True)
-            return {'success': True, 'task_id': task['id']}
+            worker_coordinator.complete_task(worker.worker_id, task["id"], success=True)
+            return {"success": True, "task_id": task["id"]}
         except Exception as e:
-            worker_coordinator.complete_task(worker.worker_id, task['id'], success=False)
-            return {'success': False, 'task_id': task['id'], 'error': str(e)}
+            worker_coordinator.complete_task(worker.worker_id, task["id"], success=False)
+            return {"success": False, "task_id": task["id"], "error": str(e)}
 
     # Execute with timeout
     with ThreadPoolExecutor(max_workers=5) as executor:
@@ -720,14 +699,16 @@ def test_high_concurrency_stress(test_repo, session_manager, worker_coordinator)
             results.append(future.result())
 
     # Verify most tasks completed
-    successful = [r for r in results if r['success']]
+    successful = [r for r in results if r["success"]]
     assert len(successful) >= 15, f"Expected at least 15 successes, got {len(successful)}"
 
 
 # ===== Integration Tests =====
 
 
-def test_end_to_end_parallel_workflow(test_repo, session_manager, worker_coordinator, live_dashboard):
+def test_end_to_end_parallel_workflow(
+    test_repo, session_manager, worker_coordinator, live_dashboard
+):
     """
     Complete end-to-end test of parallel orchestration workflow.
 
@@ -736,9 +717,7 @@ def test_end_to_end_parallel_workflow(test_repo, session_manager, worker_coordin
     """
     # Step 1: Create session
     session = session_manager.create_session(
-        "e2e-workflow",
-        total_tasks=6,
-        metadata={'test': 'e2e'}
+        "e2e-workflow", total_tasks=6, metadata={"test": "e2e"}
     )
     assert session.status == SessionStatus.CREATED
 
@@ -753,8 +732,7 @@ def test_end_to_end_parallel_workflow(test_repo, session_manager, worker_coordin
 
     # Step 4: Execute tasks
     tasks = [
-        {'id': f't{i}', 'file': f'e2e_file{i}.txt', 'content': f'Content {i}\n'}
-        for i in range(6)
+        {"id": f"t{i}", "file": f"e2e_file{i}.txt", "content": f"Content {i}\n"} for i in range(6)
     ]
 
     completed = []
@@ -774,15 +752,15 @@ def test_end_to_end_parallel_workflow(test_repo, session_manager, worker_coordin
             return False
 
         try:
-            session_manager.lock_files(session.session_id, [task['file']])
-            file_path = test_repo / task['file']
-            file_path.write_text(task['content'])
-            session_manager.mark_files_modified(session.session_id, [task['file']])
-            session_manager.unlock_files(session.session_id, [task['file']])
-            worker_coordinator.complete_task(worker.worker_id, task['id'], success=True)
+            session_manager.lock_files(session.session_id, [task["file"]])
+            file_path = test_repo / task["file"]
+            file_path.write_text(task["content"])
+            session_manager.mark_files_modified(session.session_id, [task["file"]])
+            session_manager.unlock_files(session.session_id, [task["file"]])
+            worker_coordinator.complete_task(worker.worker_id, task["id"], success=True)
             return True
         except Exception:
-            worker_coordinator.complete_task(worker.worker_id, task['id'], success=False)
+            worker_coordinator.complete_task(worker.worker_id, task["id"], success=False)
             return False
 
     # Execute tasks
@@ -801,9 +779,9 @@ def test_end_to_end_parallel_workflow(test_repo, session_manager, worker_coordin
 
     # Step 6: Verify dashboard shows correct state
     summary = live_dashboard.get_summary()
-    assert summary['sessions']['active'] >= 1
-    assert summary['workers']['total'] == 3
-    assert summary['tasks']['completed'] >= 4  # At least most tasks
+    assert summary["sessions"]["active"] >= 1
+    assert summary["workers"]["total"] == 3
+    assert summary["tasks"]["completed"] >= 4  # At least most tasks
 
     # Step 7: Complete session
     if len(completed) == 6:
@@ -813,5 +791,5 @@ def test_end_to_end_parallel_workflow(test_repo, session_manager, worker_coordin
         assert session.progress_percent == 100.0
 
     # Verify all expected files were created
-    created_files = len([f for f in test_repo.iterdir() if f.name.startswith('e2e_file')])
+    created_files = len([f for f in test_repo.iterdir() if f.name.startswith("e2e_file")])
     assert created_files >= 4  # At least most files created
