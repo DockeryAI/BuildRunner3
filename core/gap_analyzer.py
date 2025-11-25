@@ -427,17 +427,27 @@ class GapAnalyzer:
         # Filter out stdlib and local imports
         stdlib_modules = self._get_stdlib_modules()
 
+        # Build set of all local module names for faster lookup
+        local_module_names = set()
+        for py_file in self.python_files:
+            try:
+                rel_path = py_file.relative_to(self.project_root)
+                # Convert path to module name: core/security/detector.py -> core.security.detector
+                module_path = str(rel_path).replace("/", ".").replace("\\", ".").replace(".py", "")
+                # Add the module and all parent packages
+                parts = module_path.split(".")
+                for i in range(len(parts)):
+                    local_module_names.add(".".join(parts[: i + 1]))
+            except ValueError:
+                pass
+
         for module in all_imports:
             # Skip stdlib modules
             if module in stdlib_modules:
                 continue
 
-            # Skip local imports (modules in project)
-            if any(
-                (self.project_root / f"{module}.py").exists()
-                or (self.project_root / module).is_dir()
-                for _ in [None]
-            ):  # Just execute once
+            # Skip local imports (check if it's in our local modules set)
+            if module in local_module_names:
                 continue
 
             # Check if in requirements (empty content means all are missing)
@@ -450,38 +460,39 @@ class GapAnalyzer:
 
     def _get_stdlib_modules(self) -> Set[str]:
         """Get set of Python stdlib module names."""
-        # Common stdlib modules (not exhaustive)
+        # Python standard library modules
         return {
-            "abc",
-            "ast",
-            "asyncio",
-            "base64",
-            "collections",
-            "dataclasses",
-            "datetime",
-            "functools",
-            "hashlib",
-            "http",
-            "inspect",
-            "io",
-            "itertools",
-            "json",
-            "logging",
-            "math",
-            "os",
-            "pathlib",
-            "pickle",
-            "re",
-            "shutil",
-            "subprocess",
-            "sys",
-            "tempfile",
-            "time",
-            "typing",
-            "unittest",
-            "uuid",
-            "warnings",
-            "yaml",
+            "abc", "aifc", "argparse", "array", "ast", "asynchat", "asyncio", "asyncore",
+            "atexit", "audioop", "base64", "bdb", "binascii", "binhex", "bisect", "builtins",
+            "bz2", "calendar", "cgi", "cgitb", "chunk", "cmath", "cmd", "code", "codecs",
+            "codeop", "collections", "colorsys", "compileall", "concurrent", "configparser",
+            "contextlib", "contextvars", "copy", "copyreg", "cProfile", "crypt", "csv",
+            "ctypes", "curses", "dataclasses", "datetime", "dbm", "decimal", "difflib",
+            "dis", "distutils", "doctest", "email", "encodings", "enum", "errno", "faulthandler",
+            "fcntl", "filecmp", "fileinput", "fnmatch", "fractions", "ftplib", "functools",
+            "gc", "getopt", "getpass", "gettext", "glob", "graphlib", "grp", "gzip",
+            "hashlib", "heapq", "hmac", "html", "http", "imaplib", "imghdr", "imp",
+            "importlib", "inspect", "io", "ipaddress", "itertools", "json", "keyword",
+            "lib2to3", "linecache", "locale", "logging", "lzma", "mailbox", "mailcap",
+            "marshal", "math", "mimetypes", "mmap", "modulefinder", "msilib", "msvcrt",
+            "multiprocessing", "netrc", "nis", "nntplib", "numbers", "operator", "optparse",
+            "os", "ossaudiodev", "parser", "pathlib", "pdb", "pickle", "pickletools",
+            "pipes", "pkgutil", "platform", "plistlib", "poplib", "posix", "posixpath",
+            "pprint", "profile", "pstats", "pty", "pwd", "py_compile", "pyclbr", "pydoc",
+            "queue", "quopri", "random", "re", "readline", "reprlib", "resource", "rlcompleter",
+            "runpy", "sched", "secrets", "select", "selectors", "shelve", "shlex", "shutil",
+            "signal", "site", "smtpd", "smtplib", "sndhdr", "socket", "socketserver",
+            "spwd", "sqlite3", "ssl", "stat", "statistics", "string", "stringprep",
+            "struct", "subprocess", "sunau", "symbol", "symtable", "sys", "sysconfig",
+            "syslog", "tabnanny", "tarfile", "telnetlib", "tempfile", "termios", "test",
+            "textwrap", "threading", "time", "timeit", "tkinter", "token", "tokenize",
+            "tomllib", "trace", "traceback", "tracemalloc", "tty", "turtle", "turtledemo",
+            "types", "typing", "typing_extensions", "unicodedata", "unittest", "urllib",
+            "uu", "uuid", "venv", "warnings", "wave", "weakref", "webbrowser", "winreg",
+            "winsound", "wsgiref", "xdrlib", "xml", "xmlrpc", "zipapp", "zipfile", "zipimport",
+            "zlib", "_thread",
+            # Also commonly confused as external
+            "dataclasses", "pathlib", "typing",
         }
 
     def _detect_circular_deps(self, imports: Dict[str, Set[str]], analysis: GapAnalysis):
@@ -496,16 +507,12 @@ class GapAnalyzer:
         # Map each file to the local modules it imports
         graph: Dict[str, Set[str]] = {}
 
-        # Get all local modules (files in this project)
-        local_modules = set()
+        # Get all local module files (not packages)
+        local_module_files = set()
         for file_path in imports.keys():
             # Convert file path to module name: core/security/secret_detector.py -> core.security.secret_detector
             module_name = file_path.replace("/", ".").replace(".py", "")
-            local_modules.add(module_name)
-            # Also add parent modules
-            parts = module_name.split(".")
-            for i in range(1, len(parts)):
-                local_modules.add(".".join(parts[:i]))
+            local_module_files.add(module_name)
 
         # Build dependency graph between local modules only
         for file_path, file_imports in imports.items():
@@ -513,14 +520,15 @@ class GapAnalyzer:
             graph[source_module] = set()
 
             for imported_module in file_imports:
-                # Check if this is a local module import
-                # Match exact module name or any child module
-                for local_mod in local_modules:
+                # Check if this imported module corresponds to a local file
+                # Match files that start with the imported module name
+                for local_mod in local_module_files:
+                    # Match if local module IS the imported module or is a submodule
+                    # e.g., import "core.agents" should match "core.agents.recommender"
+                    # e.g., import "core.agents.recommender" should match "core.agents.recommender"
                     if local_mod == imported_module or local_mod.startswith(imported_module + "."):
-                        # Only add edge if it's not importing itself or parent package
-                        if source_module != local_mod and not source_module.startswith(
-                            local_mod + "."
-                        ):
+                        # Don't add self-loops or parent->child imports (those are natural)
+                        if source_module != local_mod and not local_mod.startswith(source_module + "."):
                             graph[source_module].add(local_mod)
 
         # Find cycles using DFS
