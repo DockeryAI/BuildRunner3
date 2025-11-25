@@ -54,14 +54,23 @@ class GitClient:
     def _run(self, *args, check=True, capture_output=True) -> subprocess.CompletedProcess:
         """Run git command"""
         # Pass current environment to subprocess so BR_GITHUB_PUSH is inherited by hooks
-        return subprocess.run(
-            ['git'] + list(args),
-            cwd=self.repo_path,
-            capture_output=capture_output,
-            text=True,
-            check=check,
-            env=os.environ.copy()  # Inherit parent environment including BR_GITHUB_PUSH
-        )
+        try:
+            return subprocess.run(
+                ['git'] + list(args),
+                cwd=self.repo_path,
+                capture_output=capture_output,
+                text=True,
+                check=check,
+                env=os.environ.copy()  # Inherit parent environment including BR_GITHUB_PUSH
+            )
+        except subprocess.CalledProcessError as e:
+            # Include stderr in error message for better debugging
+            error_msg = f"git {' '.join(args)} failed"
+            if e.stderr:
+                error_msg += f"\nSTDERR: {e.stderr}"
+            if e.stdout:
+                error_msg += f"\nSTDOUT: {e.stdout}"
+            raise RuntimeError(error_msg) from e
 
     def current_branch(self) -> str:
         """Get current branch name"""
