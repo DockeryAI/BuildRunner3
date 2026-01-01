@@ -24,6 +24,7 @@ Usage:
 
 import fcntl
 import json
+import os
 import re
 import uuid
 from dataclasses import dataclass, field
@@ -67,6 +68,14 @@ class Instance:
             "progress": self.progress,
         }
 
+    @staticmethod
+    def _parse_datetime(dt_str: str) -> datetime:
+        """Parse datetime string, handling timezone if present."""
+        try:
+            return datetime.fromisoformat(dt_str.replace("Z", "+00:00")).replace(tzinfo=None)
+        except ValueError:
+            return datetime.now()
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Instance":
         """Create from dictionary."""
@@ -76,8 +85,8 @@ class Instance:
             phase=data.get("phase"),
             tasks=data.get("tasks", []),
             files_locked=data.get("files_locked", []),
-            started_at=datetime.fromisoformat(data["started_at"]),
-            last_heartbeat=datetime.fromisoformat(data["last_heartbeat"]),
+            started_at=cls._parse_datetime(data["started_at"]),
+            last_heartbeat=cls._parse_datetime(data["last_heartbeat"]),
             progress=data.get("progress", 0.0),
         )
 
@@ -150,6 +159,19 @@ class ParallelBuildCoordinator:
     # FEAT-PARA-001: Instance Lifecycle & Atomic State Management
     # =========================================================================
 
+    def _get_default_state(self) -> Dict:
+        """Return default state structure."""
+        return {
+            "version": self.STATE_VERSION,
+            "build_spec": str(self.build_spec_path),
+            "started_at": datetime.now().isoformat(),
+            "coordinator_id": None,
+            "instances": {},
+            "phase_analysis": PhaseAnalysis().to_dict(),
+            "completed_phases": [],
+            "sync_points": [],
+        }
+
     def _atomic_update(self, update_fn: Callable[[Dict], Dict]) -> Dict:
         """
         Perform atomic read-modify-write on state file.
@@ -162,18 +184,36 @@ class ParallelBuildCoordinator:
         Returns:
             Updated state dictionary
         """
-        # Create file if it doesn't exist
-        if not self.state_file.exists():
-            self._initialize_state()
+        # Handle file creation with race condition protection
+        try:
+            with open(self.state_file, "x") as f:
+                # We created it, initialize with lock
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                try:
+                    json.dump(self._get_default_state(), f, indent=2)
+                    f.flush()
+                    os.fsync(f.fileno())
+                finally:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        except FileExistsError:
+            pass  # Another process created it, that's fine
 
         # Open for read+write
         with open(self.state_file, "r+") as f:
             # Acquire exclusive lock (blocking)
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             try:
-                # Read current state
+                # Read current state with error handling
                 f.seek(0)
-                state = json.load(f)
+                content = f.read()
+                if not content.strip():
+                    state = self._get_default_state()
+                else:
+                    try:
+                        state = json.loads(content)
+                    except json.JSONDecodeError:
+                        # Corrupted file, reinitialize
+                        state = self._get_default_state()
 
                 # Apply update function
                 state = update_fn(state)
@@ -183,6 +223,7 @@ class ParallelBuildCoordinator:
                 f.truncate()
                 json.dump(state, f, indent=2)
                 f.flush()
+                os.fsync(f.fileno())
 
                 return state
             finally:
@@ -191,21 +232,19 @@ class ParallelBuildCoordinator:
 
     def _initialize_state(self) -> None:
         """Initialize empty state file."""
-        initial_state = {
-            "version": self.STATE_VERSION,
-            "build_spec": str(self.build_spec_path),
-            "started_at": datetime.now().isoformat(),
-            "coordinator_id": None,
-            "instances": {},
-            "phase_analysis": PhaseAnalysis().to_dict(),
-            "completed_phases": [],
-            "sync_points": [],
-        }
-
         with open(self.state_file, "w") as f:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             try:
-                json.dump(initial_state, f, indent=2)
+                json.dump(self._get_default_state(), f, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            except Exception:
+                # On failure, remove the partial file
+                try:
+                    self.state_file.unlink()
+                except OSError:
+                    pass
+                raise
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
@@ -217,7 +256,13 @@ class ParallelBuildCoordinator:
         with open(self.state_file, "r") as f:
             fcntl.flock(f.fileno(), fcntl.LOCK_SH)  # Shared lock for read
             try:
-                return json.load(f)
+                content = f.read()
+                if not content.strip():
+                    return self._get_default_state()
+                try:
+                    return json.loads(content)
+                except json.JSONDecodeError:
+                    return self._get_default_state()
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
@@ -281,7 +326,12 @@ class ParallelBuildCoordinator:
 
         Returns:
             True if updated, False if instance not found
+
+        Raises:
+            ValueError: If progress is not between 0.0 and 1.0
         """
+        if not 0.0 <= progress <= 1.0:
+            raise ValueError(f"Progress must be between 0.0 and 1.0, got {progress}")
 
         def update(state: Dict) -> Dict:
             if instance_id in state["instances"]:
@@ -514,7 +564,15 @@ class ParallelBuildCoordinator:
             file_list = re.findall(r"`([^`]+)`", files_match.group(1))
             files.update(file_list)
 
-        return list(files)
+        # Validate paths - reject path traversal attempts
+        validated_files = []
+        for f in files:
+            # Normalize and check for traversal
+            if ".." in f or f.startswith("/"):
+                continue  # Skip absolute paths and traversal attempts
+            validated_files.append(f)
+
+        return validated_files
 
     def detect_file_conflicts(self) -> Dict[str, List[str]]:
         """
@@ -569,6 +627,11 @@ class ParallelBuildCoordinator:
         """
         # Get phase analysis
         analysis = self.build_dependency_graph()
+
+        # Validate phase exists
+        if phase not in analysis.phases:
+            return False
+
         phase_files = self.extract_phase_files(phase)
 
         def update(state: Dict) -> Dict:
