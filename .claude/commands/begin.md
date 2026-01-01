@@ -12,6 +12,37 @@ Load context → Plan → Execute → Review → Fix → Save → Done.
 
 ---
 
+## Arguments
+
+- `--status` - Show parallel build status and exit (don't start work)
+- `join` - Explicitly join existing parallel session (auto-detected anyway)
+
+---
+
+## Step -1: Status Check (--status flag)
+
+**If `--status` is passed, show status and exit immediately:**
+
+```python
+from pathlib import Path
+import json
+
+state_file = Path(".buildrunner/parallel_state.json")
+if not state_file.exists():
+    print("No active parallel build session")
+    print("Run /begin to start a new session")
+    # EXIT HERE - don't proceed
+else:
+    # Run the CLI status command
+    import subprocess
+    subprocess.run(["br", "parallel", "build-status"])
+    # EXIT HERE - don't proceed to actual work
+```
+
+**This is a read-only operation. No work starts.**
+
+---
+
 ## What This Command Does
 
 After you approve the plan, everything else is automatic:
