@@ -1,7 +1,7 @@
 # Build 3.5 - Multi-Instance Parallel Build Execution
 
 **Created:** 2026-01-01
-**Status:** Phase 2 Complete
+**Status:** ✅ BUILD COMPLETE
 
 ---
 
@@ -117,7 +117,7 @@ Enable multiple Claude instances to work on different phases of a BUILD spec sim
 
 ## Phase 3: CLI Commands & Recovery
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Depends on:** Phase 2
 **Goal:** Full CLI control over parallel sessions with recovery
 
@@ -125,11 +125,11 @@ Enable multiple Claude instances to work on different phases of a BUILD spec sim
 
 | ID | Feature | Status | Component |
 |----|---------|--------|-----------|
-| FEAT-PARA-011 | `br parallel status` command | Not Started | `cli/parallel_build_commands.py` |
-| FEAT-PARA-012 | `br parallel release` command | Not Started | `cli/parallel_build_commands.py` |
-| FEAT-PARA-013 | `br parallel finish` command | Not Started | `cli/parallel_build_commands.py` |
-| FEAT-PARA-014 | Stale instance auto-recovery | Not Started | `core/parallel_build_coordinator.py` |
-| FEAT-PARA-015 | Documentation | Not Started | `docs/PARALLEL_BUILDS.md` |
+| FEAT-PARA-011 | `br parallel build-status` command | ✅ Complete | `cli/parallel_build_commands.py` |
+| FEAT-PARA-012 | `br parallel build-release` command | ✅ Complete | `cli/parallel_build_commands.py` |
+| FEAT-PARA-013 | `br parallel build-finish` command | ✅ Complete | `cli/parallel_build_commands.py` |
+| FEAT-PARA-014 | Stale instance auto-recovery | ✅ Complete | `core/parallel_build_coordinator.py` |
+| FEAT-PARA-015 | Documentation | ✅ Complete | `docs/PARALLEL_BUILDS.md` |
 
 ### Parallel Analysis
 
@@ -145,11 +145,21 @@ Enable multiple Claude instances to work on different phases of a BUILD spec sim
 
 ### Success Criteria
 
-- [ ] `br parallel status` shows all instances + phases + progress
-- [ ] `br parallel release <id>` frees stale instance claims
-- [ ] `br parallel finish` waits for all instances, cleans up state
-- [ ] Stale instances auto-detected and claimable
-- [ ] Usage documented with examples
+- [x] `br parallel build-status` shows all instances + phases + progress
+- [x] `br parallel build-release <id>` frees stale instance claims
+- [x] `br parallel build-finish` waits for all instances, cleans up state
+- [x] Stale instances auto-detected and claimable
+- [x] Usage documented with examples
+
+### Session Log - 2026-01-01
+
+**Completed:** All Phase 3 deliverables
+- Created `cli/parallel_build_commands.py` (280 lines)
+- Commands: build-status, build-release, build-finish
+- Added `cleanup_and_get_available()` convenience method
+- Created comprehensive docs at `docs/PARALLEL_BUILDS.md`
+- Applied review fixes (imports, clock drift, incomplete build warning)
+- Commits: e5164b4, c2e3423
 
 ---
 
