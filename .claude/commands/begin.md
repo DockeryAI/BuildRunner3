@@ -507,6 +507,33 @@ EOF
 )"
 ```
 
+### 7.6 Reset Dev Server
+
+**Always restart the dev server after completing work.** This ensures the user sees the latest changes immediately.
+
+```bash
+# Kill any existing dev server and restart
+pkill -f "vite" 2>/dev/null || true
+pkill -f "next dev" 2>/dev/null || true
+pkill -f "npm run dev" 2>/dev/null || true
+
+# Wait briefly for cleanup
+sleep 1
+
+# Restart dev server in background (detect project type)
+if [ -f "vite.config.ts" ] || [ -f "vite.config.js" ]; then
+    npm run dev &
+elif [ -f "next.config.js" ] || [ -f "next.config.ts" ]; then
+    npm run dev &
+elif [ -f "package.json" ] && grep -q '"dev"' package.json; then
+    npm run dev &
+fi
+
+echo "Dev server restarted"
+```
+
+**This step is NOT optional.** Always reset the dev server before final report.
+
 ---
 
 ## Step 8: Final Report
@@ -526,6 +553,7 @@ EOF
 ### Session Saved
 - Decisions logged: [N]
 - Spec updated: ✅
+- Dev server: ✅ Restarted
 
 ### Parallel Build Status (if applicable)
 - Mode: [Coordinator / Joined]
@@ -560,8 +588,9 @@ EOF
 - Applying fixes ← **MANDATORY, just do it**
 - Saving session ← **MANDATORY, just do it**
 - Committing
+- Resetting dev server ← **MANDATORY, always do it**
 
-**CRITICAL: Steps 5, 6, 7 are NOT optional. If Step 4 completes, you MUST execute Steps 5-7 without asking.**
+**CRITICAL: Steps 5, 6, 7 (including 7.6 dev server reset) are NOT optional. If Step 4 completes, you MUST execute Steps 5-7 without asking.**
 
 ---
 
