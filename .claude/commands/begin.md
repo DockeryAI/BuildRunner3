@@ -55,6 +55,14 @@ fi
 **If PARALLEL_MODE="coordinator":** This is the first instance - proceed to Step 0.6
 **If PARALLEL_MODE="join":** Another instance is coordinating - proceed to Step 0.7
 
+**Initialize parallel variables** (used throughout execution):
+```python
+# Initialize at script start - these are populated in Step 0.6 or 0.7
+coord = None
+instance_id = None
+claimed_phase = None
+```
+
 ---
 
 ## Step 0.6: Coordinator Setup (First Instance Only)
@@ -70,7 +78,11 @@ from pathlib import Path
 
 # Find BUILD spec
 build_spec = next(Path(".buildrunner/builds").glob("BUILD_*.md"), None)
-if build_spec:
+if not build_spec:
+    print("No BUILD spec found in .buildrunner/builds/")
+    print("Running in single-instance mode (no parallel coordination)")
+    # Proceed without parallel mode - coord stays None
+else:
     coord = ParallelBuildCoordinator(build_spec)
     instance_id = coord.register_instance()  # Creates state, becomes coordinator
     analysis = coord.build_dependency_graph()
@@ -114,8 +126,13 @@ from core.parallel_build_coordinator import ParallelBuildCoordinator
 from pathlib import Path
 
 build_spec = next(Path(".buildrunner/builds").glob("BUILD_*.md"), None)
-coord = ParallelBuildCoordinator(build_spec)
-instance_id = coord.register_instance()  # Joins existing state (not coordinator)
+if not build_spec:
+    print("ERROR: Parallel state exists but no BUILD spec found")
+    print("This should not happen - check .buildrunner/builds/")
+    # Cannot proceed - exit or fall back to single-instance mode
+else:
+    coord = ParallelBuildCoordinator(build_spec)
+    instance_id = coord.register_instance()  # Joins existing state (not coordinator)
 ```
 
 2. **Claim an available phase:**
@@ -161,11 +178,20 @@ Options:
 - Exit and check back later with `/begin`
 ```
 
-To wait for availability:
+To wait for availability (with timeout):
 ```python
 import time
+MAX_WAIT_MINUTES = 30
+wait_start = time.time()
+
 while not coord.get_available_phases():
-    print("Waiting for available phase...")
+    elapsed = (time.time() - wait_start) / 60
+    if elapsed > MAX_WAIT_MINUTES:
+        print(f"Timeout after {MAX_WAIT_MINUTES} minutes. No phases available.")
+        print("Exiting - run /begin later when phases are available.")
+        break  # Exit wait loop
+
+    print(f"Waiting for available phase... ({elapsed:.1f}/{MAX_WAIT_MINUTES} min)")
     time.sleep(30)
     coord.update_heartbeat(instance_id)  # Stay alive
     coord.cleanup_stale_instances()  # Recover abandoned phases
@@ -324,12 +350,22 @@ Before starting execution, verify dependencies are satisfied:
 if coord and claimed_phase:
     available = coord.get_available_phases()
     if claimed_phase not in available:
-        # Dependencies not yet complete - wait
+        # Dependencies not yet complete - wait with timeout
         print(f"Phase {claimed_phase} blocked on dependencies. Waiting...")
 
         import time
+        MAX_WAIT_MINUTES = 60  # Longer timeout for dependency waiting
+        wait_start = time.time()
+
         while claimed_phase not in coord.get_available_phases():
-            print("Dependencies incomplete. Checking again in 30s...")
+            elapsed = (time.time() - wait_start) / 60
+            if elapsed > MAX_WAIT_MINUTES:
+                print(f"Timeout after {MAX_WAIT_MINUTES} minutes waiting for dependencies.")
+                print("Dependencies may be stuck. Check other instances or release phases.")
+                coord.release_phase(instance_id)  # Release our claim
+                break  # Exit wait loop
+
+            print(f"Dependencies incomplete. Checking again in 30s... ({elapsed:.1f}/{MAX_WAIT_MINUTES} min)")
             time.sleep(30)
             coord.update_heartbeat(instance_id)  # Stay alive while waiting
 
@@ -338,7 +374,8 @@ if coord and claimed_phase:
             if stale:
                 print(f"Recovered {len(stale)} stale instances")
 
-        print(f"Dependencies satisfied. Starting Phase {claimed_phase}")
+        if claimed_phase in coord.get_available_phases():
+            print(f"Dependencies satisfied. Starting Phase {claimed_phase}")
 ```
 
 **Coordinator responsibility:** The coordinator instance should periodically call `cleanup_stale_instances()` to recover phases from instances that crashed or timed out.
