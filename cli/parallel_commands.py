@@ -544,3 +544,15 @@ def cleanup_sessions(
     except Exception as e:
         console.print(f"\n[red]Error cleaning up sessions: {e}[/red]")
         raise typer.Exit(1)
+
+
+# Import and register build coordination commands
+from cli.parallel_build_commands import (
+    build_status,
+    build_release,
+    build_finish,
+)
+
+parallel_app.command("build-status")(build_status)
+parallel_app.command("build-release")(build_release)
+parallel_app.command("build-finish")(build_finish)

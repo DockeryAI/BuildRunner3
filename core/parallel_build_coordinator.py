@@ -848,3 +848,24 @@ class ParallelBuildCoordinator:
             "completed_phases": state["completed_phases"],
             "stale_instances": self.get_stale_instances(),
         }
+
+    def cleanup_and_get_available(self) -> Dict[str, Any]:
+        """
+        Auto-cleanup stale instances and return available phases.
+
+        Convenience method for /begin join workflow:
+        1. Cleans up any stale instances
+        2. Returns available phases after cleanup
+
+        Returns:
+            Dict with 'cleaned' (list of cleaned IDs) and 'available' (list of phases)
+        """
+        cleaned = self.cleanup_stale_instances()
+        available = self.get_available_phases()
+
+        return {
+            "cleaned": cleaned,
+            "available": available,
+            "cleaned_count": len(cleaned),
+            "available_count": len(available),
+        }
