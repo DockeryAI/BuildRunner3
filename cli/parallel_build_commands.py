@@ -10,6 +10,7 @@ Commands:
     br parallel build-finish   - Wait for completion, cleanup
 """
 
+import json
 import time
 from datetime import datetime
 from pathlib import Path
@@ -38,8 +39,6 @@ def find_build_spec() -> Optional[Path]:
     # Check for parallel_state.json to find active build
     state_file = buildrunner_dir / "parallel_state.json"
     if state_file.exists():
-        import json
-
         try:
             with open(state_file) as f:
                 state = json.load(f)
@@ -139,7 +138,7 @@ def build_status(
 
                 # Heartbeat age
                 age = datetime.now() - inst.last_heartbeat
-                age_seconds = age.total_seconds()
+                age_seconds = max(0, age.total_seconds())  # Handle clock drift
                 if age_seconds < 60:
                     hb_text = f"{int(age_seconds)}s ago"
                 elif age_seconds < 3600:
@@ -340,7 +339,17 @@ def build_finish(
                 total_phases = phases_info.get("total", 0)
 
                 if running == 0:
-                    progress.update(task, description="All instances completed")
+                    # Check if build is actually complete or just abandoned
+                    if completed_phases < total_phases:
+                        progress.update(
+                            task,
+                            description="[yellow]No running instances but build incomplete[/yellow]",
+                        )
+                        console.print(
+                            f"\n[yellow]Warning: {total_phases - completed_phases} phase(s) remain unclaimed with no running instances[/yellow]"
+                        )
+                    else:
+                        progress.update(task, description="All instances completed")
                     break
 
                 elapsed = time.time() - start_time

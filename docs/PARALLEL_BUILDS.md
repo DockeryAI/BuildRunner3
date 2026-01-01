@@ -177,7 +177,7 @@ Location: `.buildrunner/parallel_state.json`
   },
   "phase_analysis": {
     "phases": ["1", "2", "3"],
-    "dependencies": {"2": ["1"], "3": ["2"]},
+    "dependencies": {"2": ["1"], "3": ["1"]},
     "parallel_safe": [["1"], ["2", "3"]],
     "file_conflicts": {"1->2": ["src/shared.py"]}
   },
