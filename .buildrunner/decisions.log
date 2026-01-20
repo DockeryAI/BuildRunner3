@@ -1,1 +1,2 @@
 [Sun Jan 18 12:07:56 CST 2026] [DECISION] Created build spec: begin-optimization with 5 phases - fixes /begin post-impl persistence issue
+[2026-01-20T14:27:08Z] [AMENDMENT] Phase 5 expanded: Added 8 deliverables to restore missing implementation (@ refs, 9-step workflow, code health check, pre-plan persistence). Analysis revealed Phases 1-4 marked complete but implementation incomplete.
