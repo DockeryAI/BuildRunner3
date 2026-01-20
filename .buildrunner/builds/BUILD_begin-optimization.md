@@ -2,7 +2,7 @@
 
 **Created:** 2026-01-18
 **Status:** Phases 1-4, 2.1 Complete
-**Progress:** Phases 1-4, 2.1 Complete; Phase 5 pending
+**Progress:** Phases 1-5, 2.1 Complete
 
 ## Overview
 
@@ -161,7 +161,7 @@ Fix post-implementation step loss during context compaction and align /begin ski
 ---
 
 ### Phase 5: Implementation Restoration + Validation *(amended: 2026-01-20)*
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Goal:** Restore missing implementation from Phases 1-2 (marked complete but not actually done), then validate end-to-end
 **Files:**
   - ~/.claude/commands/begin.md (MODIFY - major restoration)
@@ -175,13 +175,13 @@ Fix post-implementation step loss during context compaction and align /begin ski
 - Pre-plan persistence unclear if working
 
 **Deliverables:**
-- [ ] **5.1** Add @ references to begin.md (4 refs to ~/.claude/docs/begin-*.md)
-- [ ] **5.2** Add Step 2: Code Health Check (reference to begin-health-check.md)
-- [ ] **5.3** Verify/fix Step 2.5 pre-plan persistence (breadcrumb + TodoWrite BEFORE plan)
-- [ ] **5.4** Restore Steps 5-9 in begin.md (Auto-Review, Fixes, Complete, Release, Report)
-- [ ] **5.5** Add context recovery to Step 4 (read breadcrumb/todo if context lost)
-- [ ] **5.6** Verify language de-escalation in all 4 docs (no CRITICAL/MANDATORY/caps MUST)
-- [ ] **5.7** Verify core skill <6KB after all changes
+- [x] **5.1** Add @ references to begin.md (4 refs to ~/.claude/docs/begin-*.md)
+- [x] **5.2** Add Step 2: Code Health Check (reference to begin-health-check.md)
+- [x] **5.3** Verify/fix Step 2.5 pre-plan persistence (breadcrumb + TodoWrite BEFORE plan)
+- [x] **5.4** Restore Steps 5-9 in begin.md (Auto-Review, Fixes, Complete, Release, Report)
+- [x] **5.5** Add context recovery to Step 4 (read breadcrumb/todo if context lost)
+- [x] **5.6** Verify language de-escalation in all 4 docs (no CRITICAL/MANDATORY/caps MUST)
+- [x] **5.7** Verify core skill <6KB after all changes (3434 bytes)
 - [ ] **5.8** Test: Run /begin on real phase, force /compact mid-impl, verify Steps 5-9 execute
 
 **Success Criteria:**
