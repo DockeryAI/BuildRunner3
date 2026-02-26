@@ -1,7 +1,7 @@
 # Build: SupaLog — Supabase Operation Logger
 
 **Created:** 2026-02-26
-**Status:** Phase 1 in_progress
+**Status:** Phase 1 ✅ COMPLETE
 
 ## Overview
 Instrumented Supabase client that logs all operations (queries, auth, storage, realtime, edge functions) to `.buildrunner/supabase.log` for Claude-accessible debugging. Zero overhead — custom fetch wrapper pattern, dev-only.
@@ -17,7 +17,7 @@ Instrumented Supabase client that logs all operations (queries, auth, storage, r
 ## Phases
 
 ### Phase 1: Instrumented Supabase Client
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Supabase client exists with full request/response logging to `.buildrunner/supabase.log`
 **Files:**
   - `ui/src/lib/supabase.ts` (NEW) — client factory with instrumented fetch
@@ -26,13 +26,13 @@ Instrumented Supabase client that logs all operations (queries, auth, storage, r
   - `ui/package.json` (MODIFY) — add `@supabase/supabase-js`
 **Blocked by:** None
 **Deliverables:**
-- [ ] Install `@supabase/supabase-js`
-- [ ] Create instrumented client factory with custom `global.fetch` wrapper
-- [ ] Log format: `[timestamp] [OP_TYPE] [method] [endpoint] [status] [duration_ms] [response_size]`
-- [ ] Capture all HTTP operations (queries, RPC, auth, storage, edge functions)
-- [ ] Add auth state change listener — log all auth events
-- [ ] Add realtime logger callback — log WebSocket events
-- [ ] Smart warnings: flag empty 200s (potential RLS denial), 4xx/5xx, token refresh failures
+- [x] Install `@supabase/supabase-js`
+- [x] Create instrumented client factory with custom `global.fetch` wrapper
+- [x] Log format: `[timestamp] [OP_TYPE] [method] [endpoint] [status] [duration_ms] [response_size]`
+- [x] Capture all HTTP operations (queries, RPC, auth, storage, edge functions)
+- [x] Add auth state change listener — log all auth events
+- [x] Add realtime logger callback — log WebSocket events
+- [x] Smart warnings: flag empty 200s (potential RLS denial), 4xx/5xx, token refresh failures
 
 **Success Criteria:** Every Supabase operation produces a log line in `.buildrunner/supabase.log`
 

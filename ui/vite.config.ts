@@ -1,8 +1,33 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import fs from 'node:fs'
+import path from 'node:path'
+
+function supabaseLogPlugin(): Plugin {
+  return {
+    name: 'supabase-log',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.method === 'POST' && req.url === '/__supabase_log') {
+          let body = '';
+          req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+          req.on('end', () => {
+            const logPath = path.resolve(__dirname, '..', '.buildrunner', 'supabase.log');
+            fs.mkdirSync(path.dirname(logPath), { recursive: true });
+            fs.appendFileSync(logPath, body + '\n');
+            res.writeHead(204);
+            res.end();
+          });
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), supabaseLogPlugin()],
   server: {
     port: 3001,
     host: true,
