@@ -39,7 +39,7 @@ Instrumented Supabase client that logs all operations (queries, auth, storage, r
 ---
 
 ### Phase 2: Log Management + Dev Integration
-**Status:** not_started
+**Status:** in_progress
 **Goal:** Logs rotate automatically, stripped in prod, and accessible via `/sdb` command
 **Files:**
   - `ui/src/lib/supabaseLogger.ts` (MODIFY) — add rotation/truncation
