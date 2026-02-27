@@ -131,6 +131,24 @@ import { supabaseLogPlugin } from '${REL_IMPORT}';
     fi
 fi
 
+# ── Ensure .gitignore excludes supabase.log ──────────────
+GITIGNORE_FILE="$VITE_DIR/.gitignore"
+if [ -f "$GITIGNORE_FILE" ]; then
+    if ! grep -q "supabase.log" "$GITIGNORE_FILE" 2>/dev/null; then
+        # Check if *.log already covers it
+        if ! grep -q "^\*\.log$" "$GITIGNORE_FILE" 2>/dev/null; then
+            echo "" >> "$GITIGNORE_FILE"
+            echo "# BR3 Supabase logs" >> "$GITIGNORE_FILE"
+            echo ".buildrunner/supabase.log" >> "$GITIGNORE_FILE"
+            echo -e "  ${GREEN}✓${NC} Added supabase.log to .gitignore"
+        else
+            echo -e "  ${BLUE}ℹ${NC}  *.log in .gitignore already covers supabase.log"
+        fi
+    else
+        echo -e "  ${BLUE}ℹ${NC}  supabase.log already in .gitignore"
+    fi
+fi
+
 # ── Report ───────────────────────────────────────────────
 echo -e "  ${GREEN}✓${NC} Supabase log system activated"
 echo -e "  ${BLUE}ℹ${NC}  Logs write to: .buildrunner/supabase.log"
