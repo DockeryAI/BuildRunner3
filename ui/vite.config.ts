@@ -3,6 +3,26 @@ import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
 import path from 'node:path'
 
+const LOG_MAX_BYTES = 500 * 1024;   // 500 KB
+const LOG_KEEP_BYTES = 250 * 1024;   // keep last ~250 KB after rotation
+
+function rotateLogIfNeeded(logPath: string): void {
+  try {
+    const stat = fs.statSync(logPath);
+    if (stat.size > LOG_MAX_BYTES) {
+      const content = fs.readFileSync(logPath, 'utf-8');
+      const cutIndex = content.indexOf('\n', content.length - LOG_KEEP_BYTES);
+      if (cutIndex !== -1) {
+        fs.writeFileSync(logPath, content.slice(cutIndex + 1));
+      }
+    }
+  } catch {
+    // File doesn't exist yet — nothing to rotate
+  }
+}
+
+// DEV-ONLY: configureServer() is a Vite dev-server hook — it is never
+// called during `vite build`, so this plugin has zero production impact.
 function supabaseLogPlugin(): Plugin {
   return {
     name: 'supabase-log',
@@ -14,6 +34,7 @@ function supabaseLogPlugin(): Plugin {
           req.on('end', () => {
             const logPath = path.resolve(__dirname, '..', '.buildrunner', 'supabase.log');
             fs.mkdirSync(path.dirname(logPath), { recursive: true });
+            rotateLogIfNeeded(logPath);
             fs.appendFileSync(logPath, body + '\n');
             res.writeHead(204);
             res.end();
