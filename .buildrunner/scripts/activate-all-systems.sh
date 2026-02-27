@@ -459,7 +459,33 @@ echo -e "  ${GREEN}✓${NC} AI context management (active)"
 ((ACTIVATED_SYSTEMS+=10))
 
 # ============================================
-# PHASE 13: DOCUMENTATION GENERATION
+# PHASE 13: SUPABASE LOG SYSTEM
+# ============================================
+echo ""
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${YELLOW}Phase 13: Supabase Log System${NC}"
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+# Run supalog activation (auto-detects Vite+Supabase projects)
+SUPALOG_SCRIPT=""
+for loc in \
+    "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/scripts/activate-supalog.sh" \
+    "$HOME/.buildrunner/scripts/activate-supalog.sh"; do
+    if [ -f "$loc" ]; then
+        SUPALOG_SCRIPT="$loc"
+        break
+    fi
+done
+
+if [ -n "$SUPALOG_SCRIPT" ]; then
+    bash "$SUPALOG_SCRIPT" "$PROJECT_PATH" || echo -e "  ${YELLOW}⚠${NC} Supalog activation had warnings (non-fatal)"
+else
+    echo -e "  ${BLUE}ℹ${NC}  Supalog activation script not found — skipping"
+fi
+
+# ============================================
+# PHASE 14: DOCUMENTATION GENERATION
 # ============================================
 echo ""
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
