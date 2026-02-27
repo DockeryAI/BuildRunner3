@@ -131,6 +131,31 @@ import { supabaseLogPlugin } from '${REL_IMPORT}';
     fi
 fi
 
+# ── Deploy devLog.ts to edge functions _shared ────────────
+FUNCTIONS_SHARED=""
+for fdir in \
+    "$PROJECT_PATH/supabase/functions/_shared" \
+    "$VITE_DIR/supabase/functions/_shared"; do
+    if [ -d "$fdir" ]; then
+        FUNCTIONS_SHARED="$fdir"
+        break
+    fi
+done
+
+if [ -n "$FUNCTIONS_SHARED" ] && [ -f "$BR3_COMPONENTS/devLog.ts" ]; then
+    DEVLOG_DEST="$FUNCTIONS_SHARED/devLog.ts"
+    if [ ! -f "$DEVLOG_DEST" ] || ! diff -q "$BR3_COMPONENTS/devLog.ts" "$DEVLOG_DEST" > /dev/null 2>&1; then
+        cp "$BR3_COMPONENTS/devLog.ts" "$DEVLOG_DEST"
+        echo -e "  ${GREEN}✓${NC} Copied devLog.ts to supabase/functions/_shared/"
+    else
+        echo -e "  ${BLUE}ℹ${NC}  devLog.ts already up to date in _shared/"
+    fi
+elif [ -n "$FUNCTIONS_SHARED" ]; then
+    echo -e "  ${YELLOW}⚠${NC}  devLog.ts template not found in BR3 components"
+else
+    echo -e "  ${BLUE}ℹ${NC}  No supabase/functions/_shared/ directory found — skipping devLog"
+fi
+
 # ── Ensure .gitignore excludes supabase.log ──────────────
 GITIGNORE_FILE="$VITE_DIR/.gitignore"
 if [ -f "$GITIGNORE_FILE" ]; then
@@ -155,8 +180,10 @@ echo -e "  ${BLUE}ℹ${NC}  Logs write to: .buildrunner/supabase.log"
 echo -e "  ${BLUE}ℹ${NC}  Auto-rotation at 500KB"
 echo -e "  ${BLUE}ℹ${NC}  Debug with: /sdb"
 echo ""
-echo -e "  ${YELLOW}⚠${NC}  MANUAL STEP: Add instrumented fetch to your Supabase client."
-echo -e "     Import from .buildrunner/components/supabaseLogger.ts:"
-echo -e "       import { createInstrumentedFetch, logEvent } from '...supabaseLogger'"
-echo -e "     Then in createClient options:"
-echo -e "       global: { fetch: import.meta.env.DEV ? createInstrumentedFetch(fetch, url) : undefined }"
+echo -e "  ${YELLOW}⚠${NC}  MANUAL STEPS:"
+echo -e "     1. Add instrumented fetch to your Supabase client:"
+echo -e "        import { createInstrumentedFetch, logEvent } from '...supabaseLogger'"
+echo -e "        global: { fetch: import.meta.env.DEV ? createInstrumentedFetch(fetch, url) : undefined }"
+echo -e "     2. Wrap edge functions with withDevLogs:"
+echo -e "        import { withDevLogs, devLog } from '../_shared/devLog.ts'"
+echo -e "        Deno.serve(withDevLogs(async (req) => { ... }))"
