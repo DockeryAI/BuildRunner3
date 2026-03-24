@@ -4,7 +4,7 @@
 **Created:** 2026-03-23
 **Total Phases:** 7
 **Deploy:** N/A — global skill updates (applies to all BR3 projects)
-Progress: Phases 1, 5, 7 Complete; 4 of 7 phases remain
+Progress: Phases 1, 2, 5, 7 Complete; 3 of 7 phases remain
 
 ---
 
@@ -88,7 +88,7 @@ Insert new Step 3.5 between Plan (Step 3) and Execute (Step 4) in `/begin`.
 
 ### Phase 2: Verification-Before-Completion Gate
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Depends on:** None
 **Goal:** Require proof-of-function before marking a phase complete
 
@@ -96,7 +96,7 @@ Insert new Step 6.5 between Fixes (Step 6) and Complete Phase (Step 7).
 
 **Deliverables:**
 
-- [ ] **2.1** Create `~/.claude/docs/begin-verification.md` — verification gate reference doc
+- [x] **2.1** Create `~/.claude/docs/begin-verification.md` — verification gate reference doc
   - Evidence types by deliverable category:
     - **UI feature:** Describe what the user sees, confirm component renders without error, or run e2e test
     - **API/data:** Show query/curl output with correct response shape
@@ -105,7 +105,7 @@ Insert new Step 6.5 between Fixes (Step 6) and Complete Phase (Step 7).
   - Evidence format: plain text log in `.buildrunner/verification/phase-[N].md`
   - Pause rule: if evidence cannot be gathered automatically (e.g., requires physical device), pause and ask user to verify
   - Skip criteria: phases where all deliverables are already covered by passing tests from TDD gate AND no UI components (tests = sufficient evidence)
-- [ ] **2.2** Update `~/.claude/commands/begin.md` — add Step 6.5: Verification Gate
+- [x] **2.2** Update `~/.claude/commands/begin.md` — add Step 6.5: Verification Gate
   - Insert between Step 6 (Fixes) and Step 7 (Complete Phase)
   - Reference `@~/.claude/docs/begin-verification.md`
   - Log evidence to `.buildrunner/verification/phase-[N].md`
