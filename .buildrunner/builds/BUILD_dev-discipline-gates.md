@@ -4,7 +4,7 @@
 **Created:** 2026-03-23
 **Total Phases:** 7
 **Deploy:** N/A — global skill updates (applies to all BR3 projects)
-Progress: Phases 1, 2, 3, 5, 7 Complete; 2 of 7 phases remain
+Progress: Phases 1, 2, 3, 4, 5, 7 Complete; 1 of 7 phases remain
 
 ---
 
@@ -158,7 +158,7 @@ Replace current Step 5 (Auto-Review) with two-pass review.
 
 ### Phase 4: Parallel Subagent Task Execution
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Depends on:** Phase 1, 2, 3 (need final begin.md structure)
 **Goal:** Dispatch independent tasks within a phase as parallel subagents
 
@@ -166,19 +166,19 @@ Enhance Step 4 (Execute) with dependency analysis and parallel dispatch.
 
 **Deliverables:**
 
-- [ ] **4.1** Add dependency analysis to Step 4 in `begin.md`
+- [x] **4.1** Add dependency analysis to Step 4 in `begin.md`
   - After plan approval, analyze task file lists for overlap
   - Tasks touching different files = independent → can parallelize
   - Tasks sharing any file = dependent → must run sequentially
   - Output: dependency graph (simple text: "Tasks A, C, D parallel | Task B after A | Task E after C, D")
-- [ ] **4.2** Add parallel dispatch logic to Step 4
+- [x] **4.2** Add parallel dispatch logic to Step 4
   - Independent tasks: dispatch as parallel subagents via Agent tool
   - Each subagent gets: task description, file list, relevant plan excerpt, project CLAUDE.md rules
   - Subagent constraint prompt: "Implement this task only. Do not modify files outside your assigned list. Do not explore beyond listed files."
   - Effort guidance: simple file creation → suggest `model: "sonnet"`, complex logic → `model: "opus"`
   - Collect results, verify no file conflicts, then proceed to review
   - Fallback: if <3 tasks in phase or all share files, execute sequentially (current behavior)
-- [ ] **4.3** Update heartbeat during parallel execution — heartbeat updates after each subagent completes (not just after each commit)
+- [x] **4.3** Update heartbeat during parallel execution — heartbeat updates after each subagent completes (not just after each commit)
 
 **Files:**
 
