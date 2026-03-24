@@ -158,7 +158,7 @@ Replace current Step 5 (Auto-Review) with two-pass review.
 
 ### Phase 4: Parallel Subagent Task Execution
 
-**Status:** ⏳ PENDING
+**Status:** in_progress
 **Depends on:** Phase 1, 2, 3 (need final begin.md structure)
 **Goal:** Dispatch independent tasks within a phase as parallel subagents
 
