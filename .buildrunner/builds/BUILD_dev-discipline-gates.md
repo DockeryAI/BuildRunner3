@@ -4,7 +4,7 @@
 **Created:** 2026-03-23
 **Total Phases:** 7
 **Deploy:** N/A — global skill updates (applies to all BR3 projects)
-Progress: 0 of 7 phases complete
+Progress: Phase 1 Complete; 6 of 7 phases remain
 
 ---
 
@@ -54,7 +54,7 @@ Phases that produce testable code get gates. Phases that are pure config, migrat
 
 ### Phase 1: TDD Gate
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Depends on:** None
 **Goal:** Require failing tests before implementation code is written
 
@@ -62,7 +62,7 @@ Insert new Step 3.5 between Plan (Step 3) and Execute (Step 4) in `/begin`.
 
 **Deliverables:**
 
-- [ ] **1.1** Create `~/.claude/docs/begin-tdd-gate.md` — TDD gate reference doc
+- [x] **1.1** Create `~/.claude/docs/begin-tdd-gate.md` — TDD gate reference doc
   - Define RED-GREEN-REFACTOR cycle for BR3 context
   - Minimum: one test per deliverable that produces testable code
   - Skip criteria: deliverables that are pure config, SQL migrations, design assets, documentation
@@ -70,12 +70,12 @@ Insert new Step 3.5 between Plan (Step 3) and Execute (Step 4) in `/begin`.
   - Test file naming: match project's existing test convention (detect from `*.test.*` or `*.spec.*` patterns)
   - Gate rule: all new tests must FAIL before Step 4 begins (confirm via test runner output)
   - After Step 4 (Execute): re-run same tests, all must PASS
-- [ ] **1.2** Update `~/.claude/commands/begin.md` — add Step 3.5: TDD Gate
+- [x] **1.2** Update `~/.claude/commands/begin.md` — add Step 3.5: TDD Gate
   - Insert between Step 3 (Plan) and Step 4 (Execute)
   - Reference `@~/.claude/docs/begin-tdd-gate.md`
   - Include skip logic: "If phase deliverables are non-testable (config, migrations, design), note skip reason and proceed to Step 4"
   - After Step 4 completes, add test re-run checkpoint: "Run the tests written in Step 3.5. All must pass before proceeding to Step 5."
-- [ ] **1.3** Update plan template in Step 3 to include a "Tests" section listing what will be tested per deliverable
+- [x] **1.3** Update plan template in Step 3 to include a "Tests" section listing what will be tested per deliverable
 
 **Files:**
 
@@ -251,7 +251,7 @@ Enhance `/begin` Step 1 lock detection to offer worktree creation.
 
 ### Phase 7: Brainstorming Skill
 
-**Status:** ⏳ PENDING
+**Status:** in_progress
 **Depends on:** None
 **Goal:** New `/brainstorm` command for Socratic design exploration with hard gate
 
