@@ -1,10 +1,13 @@
-import { defineConfig, type Plugin } from 'vite'
-import react from '@vitejs/plugin-react'
-import fs from 'node:fs'
-import path from 'node:path'
+import { defineConfig, type Plugin } from 'vite';
+import react from '@vitejs/plugin-react';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const LOG_MAX_BYTES = 500 * 1024;   // 500 KB
-const LOG_KEEP_BYTES = 250 * 1024;   // keep last ~250 KB after rotation
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const LOG_MAX_BYTES = 500 * 1024; // 500 KB
+const LOG_KEEP_BYTES = 250 * 1024; // keep last ~250 KB after rotation
 
 function rotateLogIfNeeded(logPath: string): void {
   try {
@@ -30,7 +33,9 @@ function supabaseLogPlugin(): Plugin {
       server.middlewares.use((req, res, next) => {
         if (req.method === 'POST' && req.url === '/__supabase_log') {
           let body = '';
-          req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+          req.on('data', (chunk: Buffer) => {
+            body += chunk.toString();
+          });
           req.on('end', () => {
             const logPath = path.resolve(__dirname, '..', '.buildrunner', 'supabase.log');
             fs.mkdirSync(path.dirname(logPath), { recursive: true });
@@ -49,6 +54,11 @@ function supabaseLogPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [react(), supabaseLogPlugin()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   server: {
     port: 3001,
     host: true,
@@ -73,13 +83,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/',
-        'src/test/',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/mockData.ts',
-      ],
+      exclude: ['node_modules/', 'src/test/', '**/*.d.ts', '**/*.config.*', '**/mockData.ts'],
     },
   },
-})
+});
