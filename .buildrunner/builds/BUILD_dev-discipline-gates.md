@@ -4,7 +4,7 @@
 **Created:** 2026-03-23
 **Total Phases:** 7
 **Deploy:** N/A — global skill updates (applies to all BR3 projects)
-Progress: Phases 1, 5 Complete; 5 of 7 phases remain
+Progress: Phases 1, 5, 7 Complete; 4 of 7 phases remain
 
 ---
 
@@ -88,7 +88,7 @@ Insert new Step 3.5 between Plan (Step 3) and Execute (Step 4) in `/begin`.
 
 ### Phase 2: Verification-Before-Completion Gate
 
-**Status:** ⏳ PENDING
+**Status:** in_progress
 **Depends on:** None
 **Goal:** Require proof-of-function before marking a phase complete
 
@@ -251,7 +251,7 @@ Enhance `/begin` Step 1 lock detection to offer worktree creation.
 
 ### Phase 7: Brainstorming Skill
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Depends on:** None
 **Goal:** New `/brainstorm` command for Socratic design exploration with hard gate
 
@@ -259,14 +259,14 @@ Standalone new command — no changes to `/begin`.
 
 **Deliverables:**
 
-- [ ] **7.1** Create `~/.claude/commands/brainstorm.md` — new brainstorm skill
+- [x] **7.1** Create `~/.claude/commands/brainstorm.md` — new brainstorm skill
   - Socratic questioning flow: 3-5 probing questions before proposing solutions
   - Question categories (via XML tags): scope, constraints, UX/interaction model, data model, edge cases, integration points
   - Hard gate: "Do not write code, create files, or generate BUILD specs until the user explicitly approves the design"
   - Output: design document written to `.buildrunner/brainstorm/[topic].md`
   - Incremental writing: update the file as the brainstorm progresses (not all at the end)
   - Integration with `/spec`: brainstorm output becomes input — "Run /spec to convert this design into a BUILD plan"
-- [ ] **7.2** Design document format
+- [x] **7.2** Design document format
   - Sections: Problem Statement, Constraints, Proposed Architecture, Data Model, Key Decisions (with alternatives considered), Open Questions, Approval Status
   - Approval status tracks: DRAFT → APPROVED (user must explicitly approve)
 
