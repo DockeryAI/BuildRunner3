@@ -4,7 +4,7 @@
 **Created:** 2026-03-23
 **Total Phases:** 8
 **Deploy:** N/A — global skill updates (applies to all BR3 projects)
-Progress: Phases 1-7 Complete; 1 of 8 phases remain
+Progress: Phases 1-8 Complete; 0 of 8 phases remain
 
 ---
 
@@ -43,7 +43,7 @@ Phases that produce testable code get gates. Phases that are pure config, migrat
 | 5     | docs/begin-health-check.md                 | 1, 2, 3                        | —                                                | ✅ COMPLETE |
 | 6     | begin.md, docs/begin-locks.md              | —                              | 4 (worktree option references parallel dispatch) | ✅ COMPLETE |
 | 7     | commands/brainstorm.md (NEW)               | 1-6                            | —                                                | ✅ COMPLETE |
-| 8     | dashboard/ (NEW), commands/dash.md (NEW)   | 1-7                            | —                                                | ⏳ PENDING  |
+| 8     | dashboard/ (NEW), commands/dash.md (NEW)   | 1-7                            | —                                                | ✅ COMPLETE |
 
 **Phases 1+2 can run in parallel** (insert at different points in begin.md).
 **Phase 5 can run in parallel with 1-3** (different file).
@@ -282,7 +282,7 @@ Standalone new command — no changes to `/begin`.
 
 ### Phase 8: Terminal Dashboard (`/dash` skill) _(added: 2026-03-24)_
 
-**Status:** ⏳ PENDING
+**Status:** ✅ COMPLETE
 **Depends on:** None (standalone — reads existing `.buildrunner/` state files)
 **Goal:** Live-updating terminal dashboard launched via `/dash` skill, togglable in VS Code terminal tab
 
@@ -290,14 +290,14 @@ Standalone Ink-based (React for terminal) dashboard that reads `.buildrunner/` s
 
 **Deliverables:**
 
-- [ ] **8.1** Create `dashboard/` standalone package
+- [x] **8.1** Create `dashboard/` standalone package
   - Ink (React for terminal) + chokidar + zustand
   - `package.json` with `bin` entry for `br3-dash`
   - `npm run dash` script in root `package.json`
   - Auto-detects `.buildrunner/` by walking up from cwd
   - Sub-second startup — reads files, renders, watches for changes
 
-- [ ] **8.2** Build file parsers (pure functions, testable)
+- [x] **8.2** Build file parsers (pure functions, testable)
   - `parseBuildSpec(path)` → phases, deliverables, status, progress line
   - `parseDecisions(path)` → timestamped entries with tags (ARCHITECTURE, AMENDMENT, DECISION)
   - `parseFeatures(path)` → feature list with completion metrics
@@ -308,33 +308,33 @@ Standalone Ink-based (React for terminal) dashboard that reads `.buildrunner/` s
   - `parseOrchestration(path)` → batch state from `orchestration_state.json`
   - Stale state detection: orphaned locks (>30min no heartbeat), old sessions, missing verification
 
-- [ ] **8.3** Build single-screen panel layout
+- [x] **8.3** Build single-screen panel layout
   - **Left column:** Phase map with status indicators and dependency arrows (box-drawing characters), active deliverables checklist, lock/heartbeat status
   - **Right column:** Last 5 decisions with timestamps, build health metrics (feature completion %, quality gate status), stale state warnings with counts
   - **Bottom status bar:** One-line summary — current phase name, completion %, lock age, last decision timestamp, warning count
   - Color coding: green=complete/healthy, amber=in-progress/aging, red=blocked/stale/failed, dim gray=pending
   - Responsive to terminal width — collapses to single column in narrow panes
 
-- [ ] **8.4** Wire chokidar file watcher
+- [x] **8.4** Wire chokidar file watcher
   - Watch `.buildrunner/` recursively with 300ms debounce
   - On file change: re-run only affected parser, update zustand store, Ink auto-rerenders
   - Ignore: `node_modules/`, `.git/`, `telemetry.db`, `supabase.log` (large/noisy files)
   - Graceful handling: missing files return empty state (project may not have all files)
 
-- [ ] **8.5** Add scrollable detail mode
+- [x] **8.5** Add scrollable detail mode
   - Arrow keys cycle focus between panels (highlighted border)
   - Enter expands focused panel to full-screen (e.g., full decision log, full phase plan with deliverables, all features)
   - Escape returns to overview
   - Scrolling within expanded panels for long content
 
-- [ ] **8.6** Add controls and help
+- [x] **8.6** Add controls and help
   - `q` — quit cleanly
   - `r` — force refresh all parsers
   - `?` — toggle key help overlay
   - `1-9` — jump directly to panel by number
   - Header shows project name + `.buildrunner/` path being watched
 
-- [ ] **8.7** Create `/dash` skill (`~/.claude/commands/dash.md`)
+- [x] **8.7** Create `/dash` skill (`~/.claude/commands/dash.md`)
   - Launches `npm run dash` (or `npx br3-dash`) in current terminal
   - Skill detects if dashboard package is installed, offers to install if not
   - Skill markdown is minimal — just the launcher with install check
