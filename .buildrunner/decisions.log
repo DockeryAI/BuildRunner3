@@ -4,3 +4,4 @@
 [2026-02-26T23:53:53Z] [ARCHITECTURE] Phase 1: Chose Vite dev server middleware (POST /__supabase_log) for browser-to-filesystem logging. Custom fetch wrapper instruments all Supabase HTTP calls. Dev-only via import.meta.env.DEV gate.
 [Mon Mar 23 21:12:29 CDT 2026] [DECISION] Phase 7: Created /brainstorm skill — Socratic design exploration with hard gate, incremental doc writing, /spec integration
 [2026-03-24T02:31:44Z] [ARCHITECTURE] Phase 3: Split auto-review into two-stage (spec compliance + code quality) with separate subagent scopes for better signal
+[2026-03-24T19:36:14Z] [AMENDMENT] Added Phase 8 (Terminal Dashboard /dash skill) to BUILD_dev-discipline-gates. Ink-based terminal dashboard reading .buildrunner/ state files via chokidar. Standalone package, no backend. Launched via /dash skill in VS Code terminal tab.

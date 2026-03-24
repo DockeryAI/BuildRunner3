@@ -2,9 +2,9 @@
 
 **Build:** dev-discipline-gates
 **Created:** 2026-03-23
-**Total Phases:** 7
+**Total Phases:** 8
 **Deploy:** N/A — global skill updates (applies to all BR3 projects)
-Progress: Phases 1-7 Complete; 0 of 7 phases remain
+Progress: Phases 1-7 Complete; 1 of 8 phases remain
 
 ---
 
@@ -34,19 +34,21 @@ Phases that produce testable code get gates. Phases that are pure config, migrat
 
 ## Parallelization Matrix
 
-| Phase | Key Files                                  | Can Parallel With              | Blocked By                                       | Status     |
-| ----- | ------------------------------------------ | ------------------------------ | ------------------------------------------------ | ---------- |
-| 1     | begin.md, docs/begin-tdd-gate.md (NEW)     | —                              | —                                                | ⏳ PENDING |
-| 2     | begin.md, docs/begin-verification.md (NEW) | 1 (different insertion points) | —                                                | ⏳ PENDING |
-| 3     | begin.md, docs/begin-review.md (NEW)       | —                              | 1, 2 (same file, must see final step numbering)  | ⏳ PENDING |
-| 4     | begin.md                                   | —                              | 1, 2, 3 (depends on final step structure)        | ⏳ PENDING |
-| 5     | docs/begin-health-check.md                 | 1, 2, 3                        | —                                                | ⏳ PENDING |
-| 6     | begin.md, docs/begin-locks.md              | —                              | 4 (worktree option references parallel dispatch) | ⏳ PENDING |
-| 7     | commands/brainstorm.md (NEW)               | 1-6                            | —                                                | ⏳ PENDING |
+| Phase | Key Files                                  | Can Parallel With              | Blocked By                                       | Status      |
+| ----- | ------------------------------------------ | ------------------------------ | ------------------------------------------------ | ----------- |
+| 1     | begin.md, docs/begin-tdd-gate.md (NEW)     | —                              | —                                                | ✅ COMPLETE |
+| 2     | begin.md, docs/begin-verification.md (NEW) | 1 (different insertion points) | —                                                | ✅ COMPLETE |
+| 3     | begin.md, docs/begin-review.md (NEW)       | —                              | 1, 2 (same file, must see final step numbering)  | ✅ COMPLETE |
+| 4     | begin.md                                   | —                              | 1, 2, 3 (depends on final step structure)        | ✅ COMPLETE |
+| 5     | docs/begin-health-check.md                 | 1, 2, 3                        | —                                                | ✅ COMPLETE |
+| 6     | begin.md, docs/begin-locks.md              | —                              | 4 (worktree option references parallel dispatch) | ✅ COMPLETE |
+| 7     | commands/brainstorm.md (NEW)               | 1-6                            | —                                                | ✅ COMPLETE |
+| 8     | dashboard/ (NEW), commands/dash.md (NEW)   | 1-7                            | —                                                | ⏳ PENDING  |
 
 **Phases 1+2 can run in parallel** (insert at different points in begin.md).
 **Phase 5 can run in parallel with 1-3** (different file).
 **Phase 7 is fully independent** (new command, no begin.md changes).
+**Phase 8 is fully independent** (new package + skill, no existing file changes).
 
 ---
 
@@ -275,6 +277,81 @@ Standalone new command — no changes to `/begin`.
 - `~/.claude/commands/brainstorm.md` (NEW)
 
 **Success Criteria:** `/brainstorm` produces a design document with Socratic questioning. No code is written until user approves. Document integrates with `/spec` as input.
+
+---
+
+### Phase 8: Terminal Dashboard (`/dash` skill) _(added: 2026-03-24)_
+
+**Status:** ⏳ PENDING
+**Depends on:** None (standalone — reads existing `.buildrunner/` state files)
+**Goal:** Live-updating terminal dashboard launched via `/dash` skill, togglable in VS Code terminal tab
+
+Standalone Ink-based (React for terminal) dashboard that reads `.buildrunner/` state files via chokidar file watcher. No backend server, no WebSocket, no browser. Runs in a VS Code terminal tab alongside Claude Code.
+
+**Deliverables:**
+
+- [ ] **8.1** Create `dashboard/` standalone package
+  - Ink (React for terminal) + chokidar + zustand
+  - `package.json` with `bin` entry for `br3-dash`
+  - `npm run dash` script in root `package.json`
+  - Auto-detects `.buildrunner/` by walking up from cwd
+  - Sub-second startup — reads files, renders, watches for changes
+
+- [ ] **8.2** Build file parsers (pure functions, testable)
+  - `parseBuildSpec(path)` → phases, deliverables, status, progress line
+  - `parseDecisions(path)` → timestamped entries with tags (ARCHITECTURE, AMENDMENT, DECISION)
+  - `parseFeatures(path)` → feature list with completion metrics
+  - `parseLocks(dir)` → active locks with heartbeat age, staleness detection
+  - `parsePlans(dir)` → plan content keyed by phase number
+  - `parseGovernance(path)` → quality thresholds
+  - `parseCurrentWork(path)` → active status from `context/current-work.md`
+  - `parseOrchestration(path)` → batch state from `orchestration_state.json`
+  - Stale state detection: orphaned locks (>30min no heartbeat), old sessions, missing verification
+
+- [ ] **8.3** Build single-screen panel layout
+  - **Left column:** Phase map with status indicators and dependency arrows (box-drawing characters), active deliverables checklist, lock/heartbeat status
+  - **Right column:** Last 5 decisions with timestamps, build health metrics (feature completion %, quality gate status), stale state warnings with counts
+  - **Bottom status bar:** One-line summary — current phase name, completion %, lock age, last decision timestamp, warning count
+  - Color coding: green=complete/healthy, amber=in-progress/aging, red=blocked/stale/failed, dim gray=pending
+  - Responsive to terminal width — collapses to single column in narrow panes
+
+- [ ] **8.4** Wire chokidar file watcher
+  - Watch `.buildrunner/` recursively with 300ms debounce
+  - On file change: re-run only affected parser, update zustand store, Ink auto-rerenders
+  - Ignore: `node_modules/`, `.git/`, `telemetry.db`, `supabase.log` (large/noisy files)
+  - Graceful handling: missing files return empty state (project may not have all files)
+
+- [ ] **8.5** Add scrollable detail mode
+  - Arrow keys cycle focus between panels (highlighted border)
+  - Enter expands focused panel to full-screen (e.g., full decision log, full phase plan with deliverables, all features)
+  - Escape returns to overview
+  - Scrolling within expanded panels for long content
+
+- [ ] **8.6** Add controls and help
+  - `q` — quit cleanly
+  - `r` — force refresh all parsers
+  - `?` — toggle key help overlay
+  - `1-9` — jump directly to panel by number
+  - Header shows project name + `.buildrunner/` path being watched
+
+- [ ] **8.7** Create `/dash` skill (`~/.claude/commands/dash.md`)
+  - Launches `npm run dash` (or `npx br3-dash`) in current terminal
+  - Skill detects if dashboard package is installed, offers to install if not
+  - Skill markdown is minimal — just the launcher with install check
+
+**Files:**
+
+- `dashboard/` (NEW — standalone package directory)
+  - `package.json`, `tsconfig.json`
+  - `src/parsers/` — one file per parser
+  - `src/components/` — Ink components (PhaseMap, DecisionLog, HealthPanel, StatusBar, DetailView)
+  - `src/stores/` — single zustand store
+  - `src/index.tsx` — entry point with chokidar setup
+  - `src/__tests__/` — parser tests against real `.buildrunner/` fixture data
+- `~/.claude/commands/dash.md` (NEW — skill file)
+- `package.json` (MODIFY — add `dash` script)
+
+**Success Criteria:** `/dash` launches a live terminal dashboard that updates within 1 second of any `.buildrunner/` file change. All panels show accurate data from real state files. Arrow key navigation works between panels. Dashboard survives being hidden/shown in VS Code terminal tabs. `q` exits cleanly with no orphaned watchers.
 
 ---
 
