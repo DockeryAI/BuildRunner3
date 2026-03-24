@@ -4,7 +4,7 @@
 **Created:** 2026-03-23
 **Total Phases:** 7
 **Deploy:** N/A — global skill updates (applies to all BR3 projects)
-Progress: Phases 1, 2, 3, 4, 5, 7 Complete; 1 of 7 phases remain
+Progress: Phases 1-7 Complete; 0 of 7 phases remain
 
 ---
 
@@ -219,7 +219,7 @@ Extend `/dead` and `/begin` Step 2 health check.
 
 ### Phase 6: Git Worktree Integration
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Depends on:** Phase 4 (worktree option references parallel dispatch)
 **Goal:** Offer worktree isolation when parallel phases are detected
 
@@ -227,17 +227,17 @@ Enhance `/begin` Step 1 lock detection to offer worktree creation.
 
 **Deliverables:**
 
-- [ ] **6.1** Update lock detection in `~/.claude/docs/begin-locks.md`
+- [x] **6.1** Update lock detection in `~/.claude/docs/begin-locks.md`
   - When lock is found AND user chooses "1" (find parallel work):
     - Current behavior: find another unlocked phase in same tree
     - New option: "3 — Create worktree for parallel phase"
     - If user picks 3: use existing `/worktree` command to create isolated worktree for the parallel phase
   - Worktree branch naming: `br3/phase-[N]-[short-desc]`
-- [ ] **6.2** Add worktree merge guidance to `~/.claude/docs/begin-completion.md`
+- [x] **6.2** Add worktree merge guidance to `~/.claude/docs/begin-completion.md`
   - On phase completion in a worktree: prompt user to merge worktree branch back to main working branch
   - Provide merge command (not auto-execute — user confirms)
   - Clean up worktree after successful merge
-- [ ] **6.3** Update `~/.claude/commands/begin.md` — add option 3 to lock detection output block
+- [x] **6.3** Update `~/.claude/commands/begin.md` — add option 3 to lock detection output block
 
 **Files:**
 
