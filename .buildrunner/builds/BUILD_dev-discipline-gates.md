@@ -122,7 +122,7 @@ Insert new Step 6.5 between Fixes (Step 6) and Complete Phase (Step 7).
 
 ### Phase 3: Two-Stage Review
 
-**Status:** ⏳ PENDING
+**Status:** in_progress
 **Depends on:** Phase 1, Phase 2 (need final step numbering in begin.md)
 **Goal:** Split auto-review into spec compliance + code quality passes
 
