@@ -219,7 +219,7 @@ Extend `/dead` and `/begin` Step 2 health check.
 
 ### Phase 6: Git Worktree Integration
 
-**Status:** ⏳ PENDING
+**Status:** in_progress
 **Depends on:** Phase 4 (worktree option references parallel dispatch)
 **Goal:** Offer worktree isolation when parallel phases are detected
 
