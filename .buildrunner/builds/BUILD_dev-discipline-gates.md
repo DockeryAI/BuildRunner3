@@ -4,7 +4,7 @@
 **Created:** 2026-03-23
 **Total Phases:** 7
 **Deploy:** N/A — global skill updates (applies to all BR3 projects)
-Progress: Phases 1, 2, 5, 7 Complete; 3 of 7 phases remain
+Progress: Phases 1, 2, 3, 5, 7 Complete; 2 of 7 phases remain
 
 ---
 
@@ -122,7 +122,7 @@ Insert new Step 6.5 between Fixes (Step 6) and Complete Phase (Step 7).
 
 ### Phase 3: Two-Stage Review
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Depends on:** Phase 1, Phase 2 (need final step numbering in begin.md)
 **Goal:** Split auto-review into spec compliance + code quality passes
 
@@ -130,7 +130,7 @@ Replace current Step 5 (Auto-Review) with two-pass review.
 
 **Deliverables:**
 
-- [ ] **3.1** Create `~/.claude/docs/begin-review.md` — two-stage review reference doc
+- [x] **3.1** Create `~/.claude/docs/begin-review.md` — two-stage review reference doc
   - **Pass 1 — Spec Compliance** (subagent):
     - Input: BUILD spec phase section + approved plan + git diff
     - Checks: each deliverable implemented? any missing? any unplanned additions?
@@ -141,7 +141,7 @@ Replace current Step 5 (Auto-Review) with two-pass review.
     - Output: quality report (issues by severity: critical/warning/info)
   - Subagent scope constraints: each reviewer gets only its relevant context (narrow = better signal)
   - Two passes run sequentially (Pass 2 only runs if Pass 1 passes or user overrides)
-- [ ] **3.2** Update `~/.claude/commands/begin.md` — replace Step 5 with two-stage review
+- [x] **3.2** Update `~/.claude/commands/begin.md` — replace Step 5 with two-stage review
   - Reference `@~/.claude/docs/begin-review.md`
   - Pass 1 subagent prompt: focused on BUILD spec deliverables only
   - Pass 2 subagent prompt: focused on code quality only
