@@ -21,3 +21,7 @@
   - DaisCopyIntelligence type modeled with 4 optional fields matching WebsiteIntelligenceBrief
   - Copy intelligence injected as separate prompt section in design-derive (not mixed into business signals)
   - Content Structure & Voice added as section 10 in design-spec output (renumbered Implementation Notes to 11)
+[2026-03-28T22:14:46Z] Phase 12 decisions:
+  - Replaced 7-step inline Design Discovery in /appdesign with /design delegation
+  - Added .design-declined gate to /begin Step 1.5 (asks once, never again)
+  - Added /autopilot note to /begin Step 1.5 (same gate applies)
