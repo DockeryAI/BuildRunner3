@@ -184,6 +184,9 @@ TODO: Document features
         else:
             console.print("[yellow]  ⚠️ Activation script not found[/yellow]")
 
+        # Install UI components + Tailwind infrastructure
+        install_ui_components(directory)
+
         # Create shell alias
         console.print()
         console.print("Creating shell alias...")
@@ -429,6 +432,173 @@ TODO: Document features
             )
         )
 
+    console.print()
+
+
+def install_ui_components(directory: Path):
+    """Copy base UI components + Tailwind infrastructure from ~/Projects/ui-libraries/ into project.
+
+    Called automatically during br init and br attach for React/Vite projects.
+    Skips gracefully if ui-libraries not found or project is not React-based.
+    """
+    import shutil
+    import subprocess as sp
+
+    ui_libs = Path.home() / "Projects" / "ui-libraries"
+    if not ui_libs.exists():
+        console.print(f"  [yellow]⚠️  ~/Projects/ui-libraries/ not found — skipping component copy[/yellow]")
+        return
+
+    # Detect React project
+    pkg_json = directory / "package.json"
+    if not pkg_json.exists():
+        console.print(f"  [dim]No package.json — skipping UI component install[/dim]")
+        return
+
+    pkg_data = json.loads(pkg_json.read_text())
+    all_deps = {**pkg_data.get("dependencies", {}), **pkg_data.get("devDependencies", {})}
+    if "react" not in all_deps:
+        console.print(f"  [dim]Not a React project — skipping UI component install[/dim]")
+        return
+
+    console.print()
+    console.print("[bold cyan]📦 Installing UI components + Tailwind infrastructure...[/bold cyan]")
+
+    # --- 1. Copy base shadcn components ---
+    BASE_COMPONENTS = [
+        "button", "card", "input", "label", "badge", "dialog", "tabs",
+        "table", "separator", "skeleton", "toast", "select", "switch",
+        "tooltip", "scroll-area", "dropdown-menu", "textarea", "slider",
+        "popover", "progress", "sheet", "avatar",
+    ]
+
+    ui_dir = directory / "src" / "components" / "ui"
+    ui_dir.mkdir(parents=True, exist_ok=True)
+
+    shadcn_src = ui_libs / "shadcn"
+    copied = 0
+    for comp in BASE_COMPONENTS:
+        src_file = shadcn_src / f"{comp}.tsx"
+        dst_file = ui_dir / f"{comp}.tsx"
+        if src_file.exists() and not dst_file.exists():
+            shutil.copy2(src_file, dst_file)
+            copied += 1
+
+    if copied > 0:
+        console.print(f"  ✓ [green]Copied {copied} shadcn components → src/components/ui/[/green]")
+    else:
+        console.print(f"  ✓ [green]shadcn components already present[/green]")
+
+    # --- 2. Copy cn() utility ---
+    lib_dir = directory / "src" / "lib"
+    lib_dir.mkdir(parents=True, exist_ok=True)
+    utils_dst = lib_dir / "utils.ts"
+    utils_src = ui_libs / "patterns" / "utils.ts"
+    if not utils_dst.exists() and utils_src.exists():
+        shutil.copy2(utils_src, utils_dst)
+        console.print(f"  ✓ [green]Copied cn() utility → src/lib/utils.ts[/green]")
+
+    # --- 3. Copy globals.css (Tailwind directives + CSS variables) ---
+    globals_dst = directory / "src" / "globals.css"
+    globals_src = ui_libs / "patterns" / "globals.css"
+    if not globals_dst.exists() and globals_src.exists():
+        shutil.copy2(globals_src, globals_dst)
+        console.print(f"  ✓ [green]Copied globals.css with CSS variable system[/green]")
+
+    # --- 4. Create tailwind.config.ts ---
+    tw_dst = directory / "tailwind.config.ts"
+    tw_js_dst = directory / "tailwind.config.js"
+    tw_src = ui_libs / "tailwind-configs" / "buildrunner-saas.tailwind.config.js"
+    if not tw_dst.exists() and not tw_js_dst.exists() and tw_src.exists():
+        tw_content = tw_src.read_text()
+        tw_ts = tw_content.replace(
+            '/** @type {import(\'tailwindcss\').Config} */\nmodule.exports = ',
+            'import type { Config } from "tailwindcss"\n\nexport default '
+        )
+        tw_dst.write_text(tw_ts)
+        console.print(f"  ✓ [green]Created tailwind.config.ts with premium animations[/green]")
+
+    # --- 5. Create postcss.config.js ---
+    postcss_dst = directory / "postcss.config.js"
+    if not postcss_dst.exists():
+        postcss_dst.write_text(
+            'export default {\n'
+            '  plugins: {\n'
+            '    tailwindcss: {},\n'
+            '    autoprefixer: {},\n'
+            '  },\n'
+            '}\n'
+        )
+        console.print(f"  ✓ [green]Created postcss.config.js[/green]")
+
+    # --- 6. Install npm dependencies ---
+    REQUIRED_DEPS = {
+        "dev": ["tailwindcss", "postcss", "autoprefixer", "tailwindcss-animate"],
+        "prod": ["clsx", "tailwind-merge", "class-variance-authority", "lucide-react",
+                 "@radix-ui/react-slot", "@radix-ui/react-label", "@radix-ui/react-dialog",
+                 "@radix-ui/react-tabs", "@radix-ui/react-select", "@radix-ui/react-switch",
+                 "@radix-ui/react-tooltip", "@radix-ui/react-scroll-area",
+                 "@radix-ui/react-dropdown-menu", "@radix-ui/react-popover",
+                 "@radix-ui/react-separator", "@radix-ui/react-slider",
+                 "@radix-ui/react-progress", "@radix-ui/react-avatar"],
+    }
+
+    # Re-read package.json in case it changed
+    pkg_data = json.loads(pkg_json.read_text())
+    all_deps = {**pkg_data.get("dependencies", {}), **pkg_data.get("devDependencies", {})}
+
+    missing_dev = [d for d in REQUIRED_DEPS["dev"] if d not in all_deps]
+    missing_prod = [d for d in REQUIRED_DEPS["prod"] if d not in all_deps]
+
+    if missing_dev:
+        console.print(f"  [dim]Installing {len(missing_dev)} dev dependencies...[/dim]")
+        sp.run(["npm", "install", "--save-dev"] + missing_dev,
+               cwd=str(directory), capture_output=True, text=True)
+
+    if missing_prod:
+        console.print(f"  [dim]Installing {len(missing_prod)} prod dependencies...[/dim]")
+        sp.run(["npm", "install"] + missing_prod,
+               cwd=str(directory), capture_output=True, text=True)
+
+    if missing_dev or missing_prod:
+        console.print(f"  ✓ [green]Installed {len(missing_dev) + len(missing_prod)} npm packages[/green]")
+
+    # --- 7. Set up @/ path alias in tsconfig.json ---
+    tsconfig_path = directory / "tsconfig.json"
+    if tsconfig_path.exists():
+        try:
+            ts_text = tsconfig_path.read_text()
+            if '"@/*"' not in ts_text and "'@/*'" not in ts_text:
+                if '"compilerOptions": {' in ts_text and '"paths"' not in ts_text:
+                    ts_text = ts_text.replace(
+                        '"compilerOptions": {',
+                        '"compilerOptions": {\n    "baseUrl": ".",\n    "paths": {\n      "@/*": ["./src/*"]\n    },',
+                        1
+                    )
+                    tsconfig_path.write_text(ts_text)
+                    console.print(f"  ✓ [green]Added @/ path alias to tsconfig.json[/green]")
+        except Exception as e:
+            console.print(f"  [yellow]⚠️  Could not update tsconfig.json: {e}[/yellow]")
+
+    # --- 8. Set up @/ alias in vite.config ---
+    for vite_ext in ["ts", "js", "mts", "mjs"]:
+        vite_path = directory / f"vite.config.{vite_ext}"
+        if vite_path.exists():
+            vite_text = vite_path.read_text()
+            if '"@"' not in vite_text and "'@'" not in vite_text:
+                if "resolve:" not in vite_text:
+                    if 'import path' not in vite_text and "from 'path'" not in vite_text:
+                        vite_text = 'import path from "path"\n' + vite_text
+                    vite_text = vite_text.replace(
+                        'plugins:',
+                        'resolve: {\n    alias: {\n      "@": path.resolve(__dirname, "./src"),\n    },\n  },\n  plugins:',
+                        1
+                    )
+                    vite_path.write_text(vite_text)
+                    console.print(f"  ✓ [green]Added @/ alias to vite.config.{vite_ext}[/green]")
+            break
+
+    console.print(f"  ✓ [green]UI component infrastructure ready![/green]")
     console.print()
 
 

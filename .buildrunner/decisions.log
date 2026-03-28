@@ -6,3 +6,7 @@
 [2026-03-24T02:31:44Z] [ARCHITECTURE] Phase 3: Split auto-review into two-stage (spec compliance + code quality) with separate subagent scopes for better signal
 [2026-03-24T19:36:14Z] [AMENDMENT] Added Phase 8 (Terminal Dashboard /dash skill) to BUILD_dev-discipline-gates. Ink-based terminal dashboard reading .buildrunner/ state files via chokidar. Standalone package, no backend. Launched via /dash skill in VS Code terminal tab.
 [2026-03-24T19:51:19Z] [ARCHITECTURE] Phase 8: Global Ink terminal dashboard at ~/.claude/dashboard/. File-native read layer over .buildrunner/ state. 8 parsers, chokidar watcher, zustand store, 6 Ink components. /dash skill launches it.
+[2026-03-28T20:32:18Z] Phase 2 decisions:
+  - SKILL.md is outside git repo (~/.claude/skills/). File modified in place, no git commit possible for the file itself.
+  - Added Dashboard Components as new subsection under Component Mapping (not a separate top-level section) for logical grouping.
+  - Chart Theme Reference placed after Performance section, before Animation Timing, for logical flow.

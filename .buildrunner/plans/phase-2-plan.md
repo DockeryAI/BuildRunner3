@@ -1,20 +1,37 @@
-# Phase 2 Plan: Verification-Before-Completion Gate
+# Phase 2 Plan: SKILL.md Enhancement
 
-## Task 2.1: Create begin-verification.md
+## Budget: 416 current lines → 600 max = 184 lines available for additions
 
-- New reference doc at ~/.claude/docs/begin-verification.md
-- Evidence types by deliverable category
-- Skip criteria (TDD tests sufficient when no UI)
-- Evidence log format
-- Pause rule for manual verification
-- Failure loop back to Step 6
+## Tasks
 
-## Task 2.2: Update begin.md
+### T1: Add Accessibility section (new) — ~25 lines
+- Contrast table, target size, focus spec, semantic bans, chart a11y, ARIA live rule
+- All tables, no prose
 
-- Insert Step 6.5 between Step 6 and Step 7
-- Add @import at top
-- Update step count to 12
+### T2: Add Responsive section (new) — ~22 lines
+- Decision hierarchy table, Tailwind v4 container query syntax, dashboard responsive strategy, data table patterns, desktop-first note
 
-## TDD Gate: SKIP
+### T3: Add Performance section (new) — ~22 lines
+- GPU-safe animation whitelist, backdrop-filter cap, LazyMotion, image rules, route splitting, CLS prevention
 
-All deliverables are .md files. No testable code.
+### T4: Add Dashboard component mapping (extend existing tables) — ~18 lines
+- KPI card, chart container, empty state, skeleton loader, sparkline
+
+### T5: Add Chart theme reference (new subsection) — ~15 lines
+- Palette array, Recharts dark defaults, area gradient pattern
+
+### T6: Modify Glassmorphism Recipes — +1 line
+- Add performance warning comment
+
+### T7: Modify Framer Motion Patterns — +2 lines
+- Add LazyMotion note
+
+### T8: Modify Avoid section — +5 lines
+- Add 5 new items
+
+### T9: Modify 8pt Spacing System — +2 lines
+- Add fluid spacing with container query units
+
+## Tests: N/A (docs-only phase, non-testable)
+
+## Total estimated addition: ~112 lines → well within budget

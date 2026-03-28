@@ -216,6 +216,10 @@ def init(
 
             console.print(f"\n[green]✅ Created {planning_path}[/green]")
 
+            # Install UI components + Tailwind infrastructure
+            from cli.attach_commands import install_ui_components
+            install_ui_components(project_root)
+
             # Create project alias in ~/.zshrc
             import subprocess
 
