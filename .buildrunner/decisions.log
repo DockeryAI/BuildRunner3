@@ -10,3 +10,8 @@
   - SKILL.md is outside git repo (~/.claude/skills/). File modified in place, no git commit possible for the file itself.
   - Added Dashboard Components as new subsection under Component Mapping (not a separate top-level section) for logical grouping.
   - Chart Theme Reference placed after Performance section, before Animation Timing, for logical flow.
+[2026-03-28T20:34:18Z] Phase 1 decisions:
+  - Font pool: 35 fonts across 7 personality categories (geometric, humanist, rounded, serif, slab, display, mono)
+  - All fonts are variable + Fontsource self-hosted (except 3 static-only)
+  - Impeccable evaluation: merged OKLCH tinted neutrals, vertical rhythm, motion choreography, stagger patterns. Skipped GPU-safe/focus/container queries (already in BR3 SKILL.md)
+  - Added 18 new schema subjects (not 9 as spec listed — expanded to cover all new concepts)
