@@ -16,3 +16,8 @@
   - Impeccable evaluation: merged OKLCH tinted neutrals, vertical rhythm, motion choreography, stagger patterns. Skipped GPU-safe/focus/container queries (already in BR3 SKILL.md)
   - Added 18 new schema subjects (not 9 as spec listed — expanded to cover all new concepts)
 [2026-03-28T21:38:38Z] [AMENDMENT] Added 3 phases (10-12) to BUILD_dais.md: /design skill with 3-mockup flow, content structure + copy intelligence in DAIS EFs, integration rewire for appdesign/begin/autopilot. Reason: User wants mockup-first design with real rendered options, proper text presentation rules, and Synapse copy intelligence flowing into design direction.
+[2026-03-28T21:58:37Z] Phase 11 decisions:
+  - Content Structure section added to SKILL.md as table (9 rules, 16 lines)
+  - DaisCopyIntelligence type modeled with 4 optional fields matching WebsiteIntelligenceBrief
+  - Copy intelligence injected as separate prompt section in design-derive (not mixed into business signals)
+  - Content Structure & Voice added as section 10 in design-spec output (renumbered Implementation Notes to 11)
