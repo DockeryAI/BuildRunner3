@@ -1,8 +1,8 @@
 {
-  "batches": [{"id": 1, "phases": [1]}, {"id": 2, "phases": [2]}, {"id": 3, "phases": [3]}, {"id": 4, "phases": [4]}, {"id": 5, "phases": [5]}, {"id": 6, "phases": [6]}, {"id": 7, "phases": [7]}, {"id": 8, "phases": [8]}],
+  "batches": [{"id": 1, "phases": [2]}, {"id": 2, "phases": [3]}, {"id": 3, "phases": [4]}, {"id": 4, "phases": [5]}, {"id": 5, "phases": [6]}, {"id": 6, "phases": [7]}, {"id": 7, "phases": [8]}],
   "current_batch": 1,
-  "total_phases": 8,
+  "total_phases": 7,
   "completed_phases": 0,
   "mode": "autopilot",
-  "started": "2026-03-29T02:31:41Z"
+  "started": "2026-03-28T00:00:00Z"
 }

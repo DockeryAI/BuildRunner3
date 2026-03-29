@@ -27,3 +27,8 @@
   - Added /autopilot note to /begin Step 1.5 (same gate applies)
 [2026-03-29T02:26:30Z] [DECISION] Created build spec: design-skill-rebuild with 8 phases — 10-axis direction system, brand-derived colors, discovery Q&A, CSS enforcement, direction reports, content structure redesign, reflection checkpoints
 [2026-03-29T02:33:35Z] Phase 1 decisions: Added Step 1.5 between Redesign Gate and Research. 5 discovery questions, Aaker scoring table, reflection checkpoint. Step 2a updated to consume brand profile fields (notLike, densityPreference, dealbreakers).
+[2026-03-29T02:39:15Z] Phase 2 decisions:
+- Replaced Step 2b with 10-axis competitor visual scan + gap map + audience filter + not-like exclusions
+- Added 2b-reflection checkpoint after research
+- Rewrote Step 2d to derive vectors mechanically from gap map (not vibes-based)
+- Updated vector presentation format to show axis positions per vector
