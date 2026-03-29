@@ -149,7 +149,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 7: Content Structure Redesign
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 6)
