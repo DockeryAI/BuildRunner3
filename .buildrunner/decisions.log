@@ -49,3 +49,8 @@
 - Added component variety enforcement, nav variety rule, density profile enforcement
 - Added programmatic structural validation gate (4.4a-4.4e)
 - Made grayscale validation a hard gate (rebuild failures, don't just log)
+[2026-03-29T02:46:43Z] Phase 6 decisions:
+- Added Direction Report template with brand scores, color derivation chain, 10-axis positions with justifications
+- Added 'not like' trace, competitor distance, audience alignment sections
+- Simplified report for Direction D (cluster zone mirror)
+- Renumbered existing 4.5 Present to 4.6
