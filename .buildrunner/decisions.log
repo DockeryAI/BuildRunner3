@@ -54,3 +54,8 @@
 - Added 'not like' trace, competitor distance, audience alignment sections
 - Simplified report for Direction D (cluster zone mirror)
 - Renumbered existing 4.5 Present to 4.6
+[2026-03-29T02:48:32Z] Phase 7 decisions:
+- Added 3-stage redesign: content audit (6.1) → content restructure (6.2) → visual application (6.3)
+- Added pre-visual reflection checkpoint (6.2-reflection)
+- Added before/after comparison output (6.4)
+- Updated user_gates to reference new step numbers
