@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-5 Complete
+**Status:** Phases 1-6 Complete
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -128,20 +128,20 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 6: Direction Report
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 4.5)
   **Blocked by:** Phase 5
   **Deliverables:**
-- [ ] Direction report template: Brand Scores, Color Derivation, Axis Positions, Competitive Rationale, Audience Alignment
-- [ ] Brand personality scores displayed per direction
-- [ ] Color derivation chain: dimension → hue range → saturation → competitive gap → specific accent
-- [ ] All 10 axis positions with one-line justification each
-- [ ] "Not like" trace: which Q3 exclusions influenced this direction
-- [ ] Competitor distance: how direction differs from closest competitor on axis map
-- [ ] Report presented alongside each mockup
-- [ ] Reflection checkpoint: "Read each report — does the rationale make sense? If it contradicts the brand profile, something broke."
+- [x] Direction report template: Brand Scores, Color Derivation, Axis Positions, Competitive Rationale, Audience Alignment
+- [x] Brand personality scores displayed per direction
+- [x] Color derivation chain: dimension → hue range → saturation → competitive gap → specific accent
+- [x] All 10 axis positions with one-line justification each
+- [x] "Not like" trace: which Q3 exclusions influenced this direction
+- [x] Competitor distance: how direction differs from closest competitor on axis map
+- [x] Report presented alongside each mockup
+- [x] Reflection checkpoint: "Read each report — does the rationale make sense? If it contradicts the brand profile, something broke."
 
 **Success Criteria:** User reads report and understands why every choice was made, traceable to discovery answers
 
