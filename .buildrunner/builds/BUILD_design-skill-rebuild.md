@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phase 12 in progress, Phases 13-16 pending
+**Status:** Phase 12 Complete, Phases 13-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -291,7 +291,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 12: Interactive Research Dashboard _(added: 2026-03-29)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 10.5, Phase 11
 **Files:**
 
@@ -300,13 +300,13 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Visual axis grid: 10 rows of position circles, competitor dots color-coded, gap positions glowing (green=safe, amber=risky, red=excluded). Click any position for tooltip with explanation.
-- [ ] Interactive OKLCH color wheel: click to explore hues, drag direction accent dots to adjust, live swatch preview updates, competitor accents plotted, brand-appropriate arc highlighted
-- [ ] Direction comparison cards: 4 side-by-side cards with live accent swatch, rendered font samples (actual fonts loaded), archetype mini-diagram, nav pattern icon, axis position pills. Click "Swap archetype" to cycle alternatives.
-- [ ] File-based handoff: Confirm writes `research-decisions.json` (adjusted colors, swapped archetypes, final axis positions). Claude Code reads and builds mockups.
-- [ ] Mockup gallery page: after all 4 mockups are built, open a gallery landing page with 4 extra-large thumbnail cards (screenshot or live iframe preview of each direction). Each card shows direction letter, archetype name, accent swatch, and font name. Click a card → full-screen mockup loads. Persistent nav bar at top for switching between mockups and returning to gallery. "Pick this one" button on each mockup page writes selection to `selection.json`.
-- [ ] Validation badge per mockup in gallery — read validation.md and display pass/fail indicators for logo (5 touchpoints), color (hue distance), font (matches contract), nav (matches contract) on each gallery card _(added: 2026-03-29)_
-- [ ] Update design.md Steps 2b, 2d, 3.7, 4.6: Claude Code generates dashboard with research data embedded, opens browser, reads decisions on return. Step 4.6 opens gallery instead of 4 separate tabs.
+- [x] Visual axis grid: 10 rows of position circles, competitor dots color-coded, gap positions glowing (green=safe, amber=risky, red=excluded). Click any position for tooltip with explanation.
+- [x] Interactive OKLCH color wheel: click to explore hues, drag direction accent dots to adjust, live swatch preview updates, competitor accents plotted, brand-appropriate arc highlighted
+- [x] Direction comparison cards: 4 side-by-side cards with live accent swatch, rendered font samples (actual fonts loaded), archetype mini-diagram, nav pattern icon, axis position pills. Click "Swap archetype" to cycle alternatives.
+- [x] File-based handoff: Confirm writes `research-decisions.json` (adjusted colors, swapped archetypes, final axis positions). Claude Code reads and builds mockups.
+- [x] Mockup gallery page: after all 4 mockups are built, open a gallery landing page with 4 extra-large thumbnail cards (screenshot or live iframe preview of each direction). Each card shows direction letter, archetype name, accent swatch, and font name. Click a card → full-screen mockup loads. Persistent nav bar at top for switching between mockups and returning to gallery. "Pick this one" button on each mockup page writes selection to `selection.json`.
+- [x] Validation badge per mockup in gallery — read validation.md and display pass/fail indicators for logo (5 touchpoints), color (hue distance), font (matches contract), nav (matches contract) on each gallery card _(added: 2026-03-29)_
+- [x] Update design.md Steps 2b, 2d, 3.7, 4.6: Claude Code generates dashboard with research data embedded, opens browser, reads decisions on return. Step 4.6 opens gallery instead of 4 separate tabs.
 
 **Build constraints (per /opus 4.6 alignment):**
 
