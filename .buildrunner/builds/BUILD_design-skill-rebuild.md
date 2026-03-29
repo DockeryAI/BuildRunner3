@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-11 Complete, Phases 12-14 pending
+**Status:** Phases 1-11 Complete, Phases 12-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -364,11 +364,63 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ---
 
+### Phase 15: Cloud Pipeline — Supabase + Realtime Listener _(added: 2026-03-29)_
+
+**Status:** pending
+**Blocked by:** Phase 14
+**Files:**
+
+- `~/.claude/tools/design-wizard/` (MODIFY — Supabase integration, mode selection, waiting page, gallery)
+- `~/.claude/tools/design-wizard/listener.ts` (NEW — Realtime listener script)
+- `~/.claude/commands/design.md` (MODIFY — cloud job handling)
+- Supabase migrations (NEW — design_requests table)
+
+**Deliverables:**
+
+- [ ] Supabase `design_requests` table (id, discovery*data, url, status, mockup_urls, selection, created_at, updated_at) with RLS policy allowing public inserts, owner-only reads *(added: 2026-03-29)\_
+- [ ] Add mode selection screen to wizard: "Design from scratch" or "Redesign an existing site" with URL input _(added: 2026-03-29)_
+- [ ] Shortened wizard flow for URL mode — pre-fill inferable questions, skip to sliders + brand feel + not-like + constraints (~7 screens instead of 15) _(added: 2026-03-29)_
+- [ ] Swap wizard submit from local file-write to Supabase insert (keep file-write as fallback when `project_root` param is present for local mode) _(added: 2026-03-29)_
+- [ ] "Your designs are being crafted" waiting page with progress status (Crawling → Researching → Designing → Building → Deploying), powered by Supabase Realtime subscription on the row's status field _(added: 2026-03-29)_
+- [ ] Listener script (`~/.claude/tools/design-wizard/listener.ts`) — subscribes to `design_requests` inserts via Supabase Realtime, triggers Claude Code with the job data _(added: 2026-03-29)_
+- [ ] Auto-deploy each mockup direction to Netlify preview URL after build (`netlify deploy --dir`) _(added: 2026-03-29)_
+- [ ] Update Supabase row with 4 preview URLs + status "complete" when mockups are deployed _(added: 2026-03-29)_
+- [ ] Gallery page — customer's browser detects completion, shows 4 live iframe preview cards. "Pick this one" button updates the row with their selection. _(added: 2026-03-29)_
+
+**Success Criteria:** Customer fills wizard at a URL → your machine picks up the job via Realtime → Claude Code runs /design → 4 mockups deploy to live preview URLs → customer sees gallery with live iframes → picks a direction. Also works locally with `?project_root=` param (file-write fallback).
+
+---
+
+### Phase 16: Deploy + Domain Setup _(added: 2026-03-29)_
+
+**Status:** pending
+**Blocked by:** Phase 15
+**Files:**
+
+- `~/.claude/tools/design-wizard/` (MODIFY — static build, env config)
+- Netlify config (NEW)
+- Supabase edge function (NEW — notification webhook)
+
+**Deliverables:**
+
+- [ ] Static build of wizard app (`npm run build`) — works without Vite dev server _(added: 2026-03-29)_
+- [ ] Deploy to Netlify with custom domain `design.dockeryai.com` _(added: 2026-03-29)_
+- [ ] Environment config: Supabase URL + anon key injected at build time (public, read-only safe) _(added: 2026-03-29)_
+- [ ] Listener startup script for your machine — `npm run listen` starts the Realtime subscription, keeps it alive, auto-restarts on disconnect _(added: 2026-03-29)_
+- [ ] Notification when a customer submits (Supabase → edge function → email or Slack webhook to you) _(added: 2026-03-29)_
+- [ ] End-to-end test: submit from live URL → mockups deploy → gallery loads → selection saves _(added: 2026-03-29)_
+
+**Success Criteria:** Customer visits design.dockeryai.com, fills the wizard (fresh or URL redesign), gets 4 live mockup previews, picks one. You get notified. Works end-to-end without you touching anything.
+
+---
+
 ### Out of Scope (Future)
 
 - Persistent color history database across all projects
 - User-facing design system token export from chosen direction
 - A/B testing integration for chosen designs
+- Customer accounts / login (currently anonymous submissions)
+- Payment integration (charge for mockup generation)
 
 ## Session Log
 
