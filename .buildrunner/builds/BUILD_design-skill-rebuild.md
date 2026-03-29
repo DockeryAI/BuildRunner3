@@ -245,10 +245,16 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 - [ ] Scaffold Vite + React + TypeScript + Tailwind + Framer Motion app at `~/.claude/tools/design-wizard/`
 - [ ] 14-screen wizard flow (Q1-Q13 + constraints) with smooth transitions, progress bar, one question per screen
-- [ ] 4 interactive sliders (Q7-Q10) with live-morphing preview panel: each slider position changes a sample card/hero/nav showing corners, spacing, color temperature, and typography in real time — interpolated between 10 pre-defined visual states
+- [ ] 4 interactive sliders (Q7-Q10) with live-morphing preview panel: each slider maps to CSS custom properties that update on drag (border-radius, spacing scale, hue rotation, font-weight/family). The browser interpolates via CSS transitions — not JS state machines. One lookup object per slider, CSS does the rest. A sample card + hero + nav section morph live as the slider moves.
 - [ ] Visual examples per question: stage cards with illustrations (Q2), goal/emotion pills (Q3-Q4), discovery channel cards with icons (Q6), competitor URL inputs with favicon fetch (Q12), "not like" with brand reference card (Q13), constraint toggle chips (final)
 - [ ] File-based handoff: Submit writes `discovery.json` to the target project's `.buildrunner/design/` directory. "Continue in Claude Code" toast on submit.
 - [ ] Update design.md Step 1.5a: Claude Code generates the wizard with project context, opens browser, reads `discovery.json` on return
+
+**Build constraints (per /opus 4.6 alignment):**
+
+- Keep it simple. One component per screen, no premature abstractions, no wrapper utilities for things used once.
+- CSS custom properties + transitions for all live previews. No JS animation libraries for slider morphing — Framer Motion is for page transitions only.
+- No charting libraries. The color wheel and axis grid are custom SVG/canvas — they're interactive visualizations, not data charts.
 
 **Success Criteria:** Running `/design` opens a visual wizard in the browser. Dragging the Warm↔Cool slider visibly shifts the preview between warm amber tones and cool steel tones. Submitting writes discovery.json. Claude Code reads it and continues.
 
@@ -271,6 +277,12 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 - [ ] File-based handoff: Confirm writes `research-decisions.json` (adjusted colors, swapped archetypes, final axis positions). Claude Code reads and builds mockups.
 - [ ] Mockup gallery page: after all 4 mockups are built, open a gallery landing page with 4 extra-large thumbnail cards (screenshot or live iframe preview of each direction). Each card shows direction letter, archetype name, accent swatch, and font name. Click a card → full-screen mockup loads. Persistent nav bar at top for switching between mockups and returning to gallery. "Pick this one" button on each mockup page writes selection to `selection.json`.
 - [ ] Update design.md Steps 2b, 2d, 3.7, 4.6: Claude Code generates dashboard with research data embedded, opens browser, reads decisions on return. Step 4.6 opens gallery instead of 4 separate tabs.
+
+**Build constraints (per /opus 4.6 alignment):**
+
+- No charting libraries (D3, Chart.js, Recharts). The color wheel and axis grid are custom SVG — these are interactive design tools, not data charts. Keep dependencies minimal.
+- Each interactive component is self-contained. No shared state management library — React state + context is sufficient for 4 views.
+- Gallery uses iframe previews of the mockup apps, not screenshots. Live previews, zero extra build steps.
 
 **Success Criteria:** Research dashboard opens showing competitor clustering visually. You click the color wheel to explore, drag accent dots, swap archetypes on direction cards. Confirming saves decisions. Claude Code builds mockups. Gallery page opens with 4 large preview cards — click to browse each mockup, nav to switch between them, pick button to choose.
 
@@ -309,9 +321,14 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 **Deliverables:**
 
 - [ ] Run `/design` on the wizard app itself — full discovery, research, 4 directions, mockups, selection
-- [ ] Apply winning DESIGN_SPEC.md to the wizard: Dockery brand typography, accent colors, dark theme, component styling, motion language
+- [ ] Apply winning DESIGN_SPEC.md as a theme layer: update CSS custom properties, swap font imports, adjust accent colors, add motion tokens. Do not restructure components or change the wizard flow — the app works, this phase only changes how it looks.
 - [ ] Premium polish pass: micro-interactions on every interactive element (slider thumb spring, color wheel glow on hover, card flip on archetype swap, progress bar shimmer), 60fps transitions, smooth page transitions between wizard steps
 - [ ] Responsive: works on desktop (primary) and tablet. Not mobile — this is a design tool.
+
+**Build constraints (per /opus 4.6 alignment):**
+
+- This is a theming phase, not a rebuild. Apply DESIGN_SPEC.md to existing components via CSS custom properties and font swaps. Do not refactor, restructure, or add features.
+- 4.6 will want to "improve" the wizard during design application — resist. If something needs improving, note it for a future phase.
 
 **Success Criteria:** The wizard looks and feels like a premium product — Dockery-branded, smooth animations, every interaction delightful. Not a developer tool form. A $100k design experience.
 
