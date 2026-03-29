@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-10 Complete, Phases 11-14 pending
+**Status:** Phases 1-10 Complete, Phase 10.5 + Phases 11-14 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -232,10 +232,38 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ---
 
-### Phase 11: Interactive Discovery Wizard App _(added: 2026-03-29)_
+### Phase 10.5: Validation & Enforcement Fixes _(added: 2026-03-29)_
 
 **Status:** pending
 **Blocked by:** Phase 10
+**Files:**
+
+- `~/.claude/commands/design.md` (MODIFY — Steps 3, 4.3, 4.4, 4.4e, 4.4f, 4.4g)
+
+**Deliverables:**
+
+- [ ] Rewrite Step 4.4 validation to mandate Read tool on each mockup file — extract actual font-family, nav JSX, accent hex, img src; compare against constraint sheet (not plan memory) _(added: 2026-03-29)_
+- [ ] Add build-contract.json artifact after Step 3 constraint sheets — JSON with exact font*heading, font_body, nav_pattern, accent_hex, logo_touchpoints per direction; validation diffs this against actual files *(added: 2026-03-29)\_
+- [ ] Add logo enforcement multishot example to Step 4.3 — concrete JSX example showing all 5 touchpoints (hero mark, atmospheric bg, card watermark, section divider, nav icon) _(added: 2026-03-29)_
+- [ ] Soften validation language from "Hard Gate"/"ENFORCED"/"CRITICAL" to outcome-focused 4.6 phrasing per /opus anti-laziness research _(added: 2026-03-29)_
+- [ ] Add content variety build rule to Step 4.3 rule 6 — each direction uses different trending items, featured topic, and pull quote _(added: 2026-03-29)_
+- [ ] Add 60-degree minimum hue distance check to Step 3 color derivation — pairwise check on A/B/C accents, shift into nearest unoccupied quadrant if too close _(added: 2026-03-29)_
+- [ ] Add validation multishot example showing concrete PASS (actual extracted values match contract) vs FAIL (values differ, triggers rebuild) _(added: 2026-03-29)_
+
+**Build constraints (per /opus 4.6 alignment):**
+
+- Use outcome-focused language, not emphasis markers (MUST/CRITICAL/ENFORCED)
+- Multishot examples for validation and logo, not more instruction paragraphs
+- build-contract.json is a simple flat JSON, not a schema or complex structure
+
+**Success Criteria:** Run `/design` — validation.md contains actual hex values and font strings read from mockup files (not echoed from plan). All 4 mockups have flame logo in 5 touchpoints. No two creative direction accents within 60 degrees hue. Each direction has different sample content.
+
+---
+
+### Phase 11: Interactive Discovery Wizard App _(added: 2026-03-29)_
+
+**Status:** pending
+**Blocked by:** Phase 10.5
 **Files:**
 
 - `~/.claude/tools/design-wizard/` (NEW — React app)
@@ -263,7 +291,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 ### Phase 12: Interactive Research Dashboard _(added: 2026-03-29)_
 
 **Status:** pending
-**Blocked by:** Phase 11
+**Blocked by:** Phase 10.5, Phase 11
 **Files:**
 
 - `~/.claude/tools/design-wizard/` (MODIFY — add research views)
@@ -276,6 +304,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 - [ ] Direction comparison cards: 4 side-by-side cards with live accent swatch, rendered font samples (actual fonts loaded), archetype mini-diagram, nav pattern icon, axis position pills. Click "Swap archetype" to cycle alternatives.
 - [ ] File-based handoff: Confirm writes `research-decisions.json` (adjusted colors, swapped archetypes, final axis positions). Claude Code reads and builds mockups.
 - [ ] Mockup gallery page: after all 4 mockups are built, open a gallery landing page with 4 extra-large thumbnail cards (screenshot or live iframe preview of each direction). Each card shows direction letter, archetype name, accent swatch, and font name. Click a card → full-screen mockup loads. Persistent nav bar at top for switching between mockups and returning to gallery. "Pick this one" button on each mockup page writes selection to `selection.json`.
+- [ ] Validation badge per mockup in gallery — read validation.md and display pass/fail indicators for logo (5 touchpoints), color (hue distance), font (matches contract), nav (matches contract) on each gallery card _(added: 2026-03-29)_
 - [ ] Update design.md Steps 2b, 2d, 3.7, 4.6: Claude Code generates dashboard with research data embedded, opens browser, reads decisions on return. Step 4.6 opens gallery instead of 4 separate tabs.
 
 **Build constraints (per /opus 4.6 alignment):**
