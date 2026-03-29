@@ -128,7 +128,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 6: Direction Report
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 4.5)
