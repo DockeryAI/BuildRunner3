@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-2 Complete
+**Status:** Phases 1-3 Complete
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -62,21 +62,21 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 3: Color Derivation Pipeline
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 2d color sections, hue_diversity_rule)
   **Blocked by:** Phase 1, Phase 2
   **Deliverables:**
-- [ ] Brand-to-hue mapping: Aaker dimension scores → hue range (excitement=warm, competence=cool, etc.)
-- [ ] Saturation derivation: brand positioning (heritage vs innovation) → saturation level (15-90%)
-- [ ] Lightness derivation: personality dimensions → lightness level
-- [ ] Competitive gap integration: narrow hue to specific 20° window within derived range, offset by largest competitor gap
-- [ ] Per-direction saturation/lightness profiles: one vibrant, one muted, one soft
-- [ ] Random offset per session: 20° hue windows shift randomly each run
-- [ ] Color rationale template with derivation chain
-- [ ] Reflection checkpoint: "Does this accent genuinely differ from last 3 projects? Does saturation match heritage/innovation positioning?"
-- [ ] Replace current 90° quadrant system with new derivation pipeline
+- [x] Brand-to-hue mapping: Aaker dimension scores → hue range (excitement=warm, competence=cool, etc.)
+- [x] Saturation derivation: brand positioning (heritage vs innovation) → saturation level (15-90%)
+- [x] Lightness derivation: personality dimensions → lightness level
+- [x] Competitive gap integration: narrow hue to specific 20° window within derived range, offset by largest competitor gap
+- [x] Per-direction saturation/lightness profiles: one vibrant, one muted, one soft
+- [x] Random offset per session: 20° hue windows shift randomly each run
+- [x] Color rationale template with derivation chain
+- [x] Reflection checkpoint: "Does this accent genuinely differ from last 3 projects? Does saturation match heritage/innovation positioning?"
+- [x] Replace current 90° quadrant system with new derivation pipeline
 
 **Success Criteria:** Each direction's color has written rationale connecting hue, saturation, lightness to specific brand scores and competitive gaps
 
