@@ -169,7 +169,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 8: Integration + Smoke Test
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.claude/commands/appdesign.md` (MODIFY — verify research doc #7)
