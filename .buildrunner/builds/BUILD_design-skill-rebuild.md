@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phase 1 Complete
+**Status:** Phases 1-2 Complete
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -43,18 +43,18 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 2: Upgraded Research Pipeline
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 2b-2d)
   **Blocked by:** Phase 1
   **Deliverables:**
-- [ ] Competitor visual scan: map each competitor onto 10 axes (layout, color temp, density, typography, interaction, tone, weight, imagery, hierarchy, narrative)
-- [ ] Gap map output: which axis combinations are unoccupied in competitive landscape
-- [ ] Audience constraint mapping: which axis positions are appropriate vs wrong for this audience type
-- [ ] "Not like" exclusion processing: user's Q3 answer eliminates specific axis positions
-- [ ] Reflection checkpoint after research: "Check gap map — are these genuine gaps or did you miss a competitor? Does the audience constraint make sense for this user base?"
-- [ ] Updated research presentation format showing structured maps, not just prose bullets
+- [x] Competitor visual scan: map each competitor onto 10 axes (layout, color temp, density, typography, interaction, tone, weight, imagery, hierarchy, narrative)
+- [x] Gap map output: which axis combinations are unoccupied in competitive landscape
+- [x] Audience constraint mapping: which axis positions are appropriate vs wrong for this audience type
+- [x] "Not like" exclusion processing: user's Q3 answer eliminates specific axis positions
+- [x] Reflection checkpoint after research: "Check gap map — are these genuine gaps or did you miss a competitor? Does the audience constraint make sense for this user base?"
+- [x] Updated research presentation format showing structured maps, not just prose bullets
 
 **Success Criteria:** Research outputs structured gap map and competitor axis positions that mechanically feed direction generation
 
