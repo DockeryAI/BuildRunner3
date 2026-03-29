@@ -459,29 +459,113 @@ echo -e "  ${GREEN}✓${NC} AI context management (active)"
 ((ACTIVATED_SYSTEMS+=10))
 
 # ============================================
-# PHASE 13: SUPABASE LOG SYSTEM
+# PHASE 13: BR3 UNIVERSAL OBSERVABILITY (BRLogger v3)
 # ============================================
 echo ""
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${YELLOW}Phase 13: Supabase Log System${NC}"
+echo -e "${YELLOW}Phase 13: BR3 Universal Observability (BRLogger v3)${NC}"
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Run supalog activation (auto-detects Vite+Supabase projects)
-SUPALOG_SCRIPT=""
-for loc in \
-    "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/scripts/activate-supalog.sh" \
-    "$HOME/.buildrunner/scripts/activate-supalog.sh"; do
-    if [ -f "$loc" ]; then
-        SUPALOG_SCRIPT="$loc"
-        break
-    fi
-done
+# Canonical source for all BRLogger components
+BRLOGGER_SRC="$HOME/Projects/taskwatcher/.buildrunner/components"
 
-if [ -n "$SUPALOG_SCRIPT" ]; then
-    bash "$SUPALOG_SCRIPT" "$PROJECT_PATH" || echo -e "  ${YELLOW}⚠${NC} Supalog activation had warnings (non-fatal)"
+if [ -f "$BRLOGGER_SRC/BRLogger.tsx" ]; then
+    # Create components dir in project
+    mkdir -p "$PROJECT_PATH/.buildrunner/components"
+
+    # Copy all BRLogger components
+    cp "$BRLOGGER_SRC/BRLogger.tsx" "$PROJECT_PATH/.buildrunner/components/"
+    cp "$BRLOGGER_SRC/vite-br-logger-plugin.ts" "$PROJECT_PATH/.buildrunner/components/"
+    cp "$BRLOGGER_SRC/supabaseLogger.ts" "$PROJECT_PATH/.buildrunner/components/"
+    cp "$BRLOGGER_SRC/vite-supabase-log-plugin.ts" "$PROJECT_PATH/.buildrunner/components/"
+    cp "$BRLOGGER_SRC/"*.d.ts "$PROJECT_PATH/.buildrunner/components/" 2>/dev/null || true
+
+    echo -e "  ${GREEN}✓${NC} Copied BRLogger.tsx (console, network, errors — dev + prod)"
+    echo -e "  ${GREEN}✓${NC} Copied vite-br-logger-plugin.ts (dev server log receiver + prod Realtime listener)"
+    echo -e "  ${GREEN}✓${NC} Copied supabaseLogger.ts (Supabase operation logger → supabase.log)"
+    echo -e "  ${GREEN}✓${NC} Copied vite-supabase-log-plugin.ts (Supabase log receiver)"
+
+    # Auto-detect project type and wire in
+    HAS_VITE=false
+    HAS_REACT=false
+    HAS_SUPABASE=false
+
+    [ -f "$PROJECT_PATH/vite.config.ts" ] || [ -f "$PROJECT_PATH/vite.config.js" ] && HAS_VITE=true
+    [ -f "$PROJECT_PATH/src/main.tsx" ] || [ -f "$PROJECT_PATH/src/main.ts" ] && HAS_REACT=true
+    grep -q "supabase" "$PROJECT_PATH/package.json" 2>/dev/null && HAS_SUPABASE=true
+
+    if [ "$HAS_VITE" = true ]; then
+        VITE_CONFIG=$(ls "$PROJECT_PATH"/vite.config.{ts,js} 2>/dev/null | head -1)
+
+        # Add Vite plugins if not already present
+        if ! grep -q "brLoggerPlugin" "$VITE_CONFIG" 2>/dev/null; then
+            # Insert imports at top of file (after last import)
+            IMPORT_LINES="import { brLoggerPlugin } from './.buildrunner/components/vite-br-logger-plugin';\nimport { supabaseLogPlugin } from './.buildrunner/components/vite-supabase-log-plugin';"
+
+            # Find the line number of the last import statement
+            LAST_IMPORT_LINE=$(grep -n "^import " "$VITE_CONFIG" | tail -1 | cut -d: -f1)
+            if [ -n "$LAST_IMPORT_LINE" ]; then
+                sed -i '' "${LAST_IMPORT_LINE}a\\
+$(echo -e "$IMPORT_LINES")
+" "$VITE_CONFIG" 2>/dev/null || true
+            fi
+
+            # Add plugins to the plugins array
+            if grep -q "plugins:" "$VITE_CONFIG" 2>/dev/null; then
+                sed -i '' 's/plugins: \[/plugins: [brLoggerPlugin(), supabaseLogPlugin(), /' "$VITE_CONFIG" 2>/dev/null || true
+            elif grep -q "plugins\s*:" "$VITE_CONFIG" 2>/dev/null; then
+                # Handle plugins on same line with different spacing
+                sed -i '' 's/plugins\s*:\s*\[/plugins: [brLoggerPlugin(), supabaseLogPlugin(), /' "$VITE_CONFIG" 2>/dev/null || true
+            fi
+
+            echo -e "  ${GREEN}✓${NC} Added brLoggerPlugin + supabaseLogPlugin to vite.config"
+        else
+            echo -e "  ${BLUE}ℹ${NC}  Vite plugins already present"
+        fi
+    fi
+
+    if [ "$HAS_REACT" = true ]; then
+        MAIN_FILE=$(ls "$PROJECT_PATH"/src/main.{tsx,ts} 2>/dev/null | head -1)
+
+        # Add BRLogger as first import if not already present
+        if ! grep -q "BRLogger" "$MAIN_FILE" 2>/dev/null; then
+            # Prepend BRLogger import (must be FIRST import for module-scope interception)
+            sed -i '' '1i\
+import { BRLogger } from '\''../.buildrunner/components/BRLogger'\'';
+' "$MAIN_FILE" 2>/dev/null || true
+
+            echo -e "  ${GREEN}✓${NC} Added BRLogger as first import in main.tsx"
+            echo -e "  ${YELLOW}⚠${NC}  You still need to add <BRLogger /> inside your React tree"
+        else
+            echo -e "  ${BLUE}ℹ${NC}  BRLogger import already present in main"
+        fi
+    fi
+
+    echo ""
+    echo -e "  ${CYAN}Log files (auto-created on first run):${NC}"
+    echo -e "    .buildrunner/browser.log   — console, network, errors, navigation"
+    echo -e "    .buildrunner/supabase.log  — DB calls, auth, storage, edge functions"
+    echo -e "    .buildrunner/device.log    — SW, visibility, memory, network, battery"
+    echo -e "    .buildrunner/query.log     — React Query cache, invalidations, hydration"
+    echo ""
+    echo -e "  ${CYAN}Debug commands:${NC}"
+    echo -e "    /dbg     — analyze browser.log"
+    echo -e "    /sdb     — analyze supabase.log"
+    echo -e "    /device  — analyze device.log"
+    echo -e "    /query   — analyze query.log"
+    echo -e "    /diag    — cross-file correlation"
+    echo ""
+    echo -e "  ${CYAN}Prod debugging:${NC}"
+    echo -e "    /prodlog on  — activate prod debug (auto-opens URL, tails logs)"
+    echo -e "    Manual: add ?br_debug=1 to prod URL (2h window, auto-expire)"
+    echo -e "    Dev server must be running to receive Realtime broadcasts"
+
+    ((ACTIVATED_SYSTEMS++))
 else
-    echo -e "  ${BLUE}ℹ${NC}  Supalog activation script not found — skipping"
+    echo -e "  ${YELLOW}⚠${NC} BRLogger canonical source not found at $BRLOGGER_SRC"
+    echo -e "  ${BLUE}ℹ${NC}  Expected: ~/Projects/taskwatcher/.buildrunner/components/BRLogger.tsx"
+    WARNINGS+=("BRLogger not installed — canonical source not found")
 fi
 
 # ============================================

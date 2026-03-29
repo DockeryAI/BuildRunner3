@@ -25,3 +25,4 @@
   - Replaced 7-step inline Design Discovery in /appdesign with /design delegation
   - Added .design-declined gate to /begin Step 1.5 (asks once, never again)
   - Added /autopilot note to /begin Step 1.5 (same gate applies)
+[2026-03-29T02:26:30Z] [DECISION] Created build spec: design-skill-rebuild with 8 phases — 10-axis direction system, brand-derived colors, discovery Q&A, CSS enforcement, direction reports, content structure redesign, reflection checkpoints
