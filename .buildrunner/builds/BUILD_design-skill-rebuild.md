@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phase 12 Complete, Phases 13-16 pending
+**Status:** Phases 12-13 Complete, Phases 14-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -320,7 +320,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 13: Brand Profile Document Generator _(added: 2026-03-29)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 12
 **Files:**
 
@@ -329,12 +329,12 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Designed HTML brand profile page: dark theme, print-friendly, sections from research library (purpose, audience JTBD, positioning Dunford formula, archetype + personality, voice + tone, messaging hierarchy, competitive context, visual identity direction)
-- [ ] Combine all /design outputs: discovery answers, Aaker scores (visual bars), competitive axis map (visual grid), color derivation (swatches + wheel), typography pairing (rendered samples), chosen direction constraint sheet
-- [ ] Conditional Synapse section: if WebsiteIntelligenceBrief exists, include pain vocabulary, voice gap, psychology profile, competitive voice analysis. Omit cleanly if not available.
-- [ ] Conditional workfloDock section: if business plan data exists, include value proposition, target market, service tiers, financial context. Omit cleanly if not available.
-- [ ] Save to `.buildrunner/design/brand-profile.html` and auto-open in browser
-- [ ] Update design.md Step 5: after DESIGN_SPEC.md generation, also generate brand profile document
+- [x] Designed HTML brand profile page: dark theme, print-friendly, sections from research library (purpose, audience JTBD, positioning Dunford formula, archetype + personality, voice + tone, messaging hierarchy, competitive context, visual identity direction)
+- [x] Combine all /design outputs: discovery answers, Aaker scores (visual bars), competitive axis map (visual grid), color derivation (swatches + wheel), typography pairing (rendered samples), chosen direction constraint sheet
+- [x] Conditional Synapse section: if WebsiteIntelligenceBrief exists, include pain vocabulary, voice gap, psychology profile, competitive voice analysis. Omit cleanly if not available.
+- [x] Conditional workfloDock section: if business plan data exists, include value proposition, target market, service tiers, financial context. Omit cleanly if not available.
+- [x] Save to `.buildrunner/design/brand-profile.html` and auto-open in browser
+- [x] Update design.md Step 5: after DESIGN_SPEC.md generation, also generate brand profile document
 
 **Success Criteria:** After picking a direction, a polished brand profile document opens in the browser. It looks like a $100k agency deliverable. It includes visual Aaker bars, color swatches, font samples, axis positioning, and any available Synapse/workfloDock intelligence. Printable.
 
