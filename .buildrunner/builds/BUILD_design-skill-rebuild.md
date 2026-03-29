@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-3 Complete
+**Status:** Phases 1-4 Complete
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -84,22 +84,22 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 4: 10-Axis Direction System
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 3)
   **Blocked by:** Phase 2, Phase 3
   **Deliverables:**
-- [ ] 10-axis definition with 4+ positions per axis (narrative, typography, color temp, density, layout, interaction, tone, visual weight, imagery, content hierarchy)
-- [ ] Expanded layout archetype pool: 12 per project type (add broken grid, maximalist, brutalist, data-dense, card cascade, single-column scroll)
-- [ ] Direction assembly logic: pick 3 combinations maximally distant (≥3 axes different), within brand-appropriate ranges, outside competitor territory
-- [ ] Direction 4 (baseline): placed where competitors cluster on axis map
-- [ ] Random concept injection: curated word pool, one random stimulus per direction
-- [ ] Cross-domain analogy prompt per direction
-- [ ] Constraint sheet output per direction: all 10 axis positions + derived color + rationale
-- [ ] Multishot examples: 2-3 complete direction constraint sheets as examples
-- [ ] Reflection checkpoint: "Do A, B, C differ on at least 3 axes? Could you tell them apart in grayscale? If not, reassign."
-- [ ] INSTEAD pattern: pair every prohibition with a positive alternative
+- [x] 10-axis definition with 4+ positions per axis (narrative, typography, color temp, density, layout, interaction, tone, visual weight, imagery, content hierarchy)
+- [x] Expanded layout archetype pool: 12 per project type (add broken grid, maximalist, brutalist, data-dense, card cascade, single-column scroll)
+- [x] Direction assembly logic: pick 3 combinations maximally distant (≥3 axes different), within brand-appropriate ranges, outside competitor territory
+- [x] Direction 4 (baseline): placed where competitors cluster on axis map
+- [x] Random concept injection: curated word pool, one random stimulus per direction
+- [x] Cross-domain analogy prompt per direction
+- [x] Constraint sheet output per direction: all 10 axis positions + derived color + rationale
+- [x] Multishot examples: 2-3 complete direction constraint sheets as examples
+- [x] Reflection checkpoint: "Do A, B, C differ on at least 3 axes? Could you tell them apart in grayscale? If not, reassign."
+- [x] INSTEAD pattern: pair every prohibition with a positive alternative
 
 **Success Criteria:** Three directions distinguishable in grayscale, using different archetypes, density tiers, navigation, typography, and components
 
