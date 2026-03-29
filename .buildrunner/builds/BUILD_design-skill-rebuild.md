@@ -342,7 +342,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 14: Design the Wizard with /design (Dockery Brand) _(added: 2026-03-29)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 13
 **Files:**
 
