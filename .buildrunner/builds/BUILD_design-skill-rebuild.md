@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-4 Complete
+**Status:** Phases 1-5 Complete
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -107,20 +107,20 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 5: CSS Enforcement + Mockup Validation
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 4)
   **Blocked by:** Phase 4
   **Deliverables:**
-- [ ] Must-use CSS patterns table: 12 archetypes → required CSS structures
-- [ ] Must-not-use CSS patterns table: 12 archetypes → banned convergent patterns
-- [ ] Component variety enforcement: Direction A's components ban from Direction B
-- [ ] Navigation variety: each direction uses different nav pattern
-- [ ] Density profile enforcement: each direction locked to different spacing tier
-- [ ] Structural validation gate: grep mockup files for required CSS patterns, fail if two directions share display strategy
-- [ ] Grayscale validation: explicit hard gate in divergence check
-- [ ] Reflection checkpoint: "Inspect HTML — does Direction A's bento grid contain grid with span? Or did you default to flex-col?"
+- [x] Must-use CSS patterns table: 12 archetypes → required CSS structures
+- [x] Must-not-use CSS patterns table: 12 archetypes → banned convergent patterns
+- [x] Component variety enforcement: Direction A's components ban from Direction B
+- [x] Navigation variety: each direction uses different nav pattern
+- [x] Density profile enforcement: each direction locked to different spacing tier
+- [x] Structural validation gate: grep mockup files for required CSS patterns, fail if two directions share display strategy
+- [x] Grayscale validation: explicit hard gate in divergence check
+- [x] Reflection checkpoint: "Inspect HTML — does Direction A's bento grid contain grid with span? Or did you default to flex-col?"
 
 **Success Criteria:** Mockup HTML structurally matches constraint sheet — validated programmatically
 
