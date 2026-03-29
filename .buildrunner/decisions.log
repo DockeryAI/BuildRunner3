@@ -67,3 +67,11 @@
 - Verified 7 reflection checkpoints all worded as genuine self-checks
 - No deprecated 3-axis/old-quadrant code remains
 [2026-03-29T04:03:43Z] [AMENDMENT] Added Phase 9 (10 tasks): Discovery upgrade from 5→13 questions with XML tags, multishot example, softened Aaker scoring, personality slider anchors, convergence guards for all 36 archetypes, Tailwind mandate for all mockups. Reason: post-build audit + premium agency discovery research revealed gaps in discovery depth, /opus alignment, and mockup component quality.
+
+## Phase 9: Discovery Upgrade + Audit Fixes (2026-03-28)
+
+- **Slider-based Aaker derivation:** Replaced fixed personality-pick → scores lookup with soft derivation from 4 sliders (Q7-Q10). Calibration anchors (Nike, McKinsey, etc.) help sanity-check scores. Rationale: rigid lookup produced identical scores for similar inputs; sliders + soft derivation gives more nuanced brand profiles.
+- **13-question structure:** Organized into 6 XML categories. Added business context (Q1-Q2), goals/emotion (Q3-Q4), audience (Q5-Q6) that the old 5-question format lacked. These feed directly into Step 2a business signals.
+- **Convergence guards expanded to 36 archetypes:** Previous 15 rows only covered website archetypes. Dashboard and app archetypes had no INSTEAD guards, allowing structural convergence. Now all 36 have positive-direction guards.
+- **Tailwind build rule:** Made explicit as rule #15 — inline styles only for palette hex. Prevents mockups from drifting to inline-style-heavy implementations.
+- **Aligned with /opus:** All new content uses soft language per 4.6 guidelines. No MUST/CRITICAL/NEVER in caps.

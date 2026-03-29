@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-8 Complete, Phase 9 pending
+**Status:** All Phases Complete (1-9)
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -188,22 +188,22 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 9: Discovery Upgrade + Audit Fixes _(added: 2026-03-28)_
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Steps 1.5a, 1.5b, 1.5c, 4.3, 4.3b)
   **Blocked by:** Phase 8
   **Deliverables:**
-- [ ] Replace 5-question block with 13-question block in 5 XML-tagged categories (`<business>`, `<goals>`, `<audience>`, `<personality>`, `<landscape>`, `<constraints>`)
-- [ ] Add `<example_response>` multishot block showing one completed discovery for a sample project (food app or B2B SaaS)
-- [ ] Soften Aaker scoring table from fixed lookup to guided derivation with ranges ("derive considering these associations")
-- [ ] Add personality slider anchor examples (Nike, law firm) so users calibrate placements
-- [ ] Add scope constraint: "These answers feed visual direction only — not technical architecture or content strategy"
-- [ ] Rewrite Step 1.5c brand profile output to reflect all 13-question categories (business summary, goal, audience type, 4 slider positions, personality words, emotional target, competitor map, references, exclusions, constraints)
-- [ ] Expand convergence_guards table in Step 4.3b to include INSTEAD-pattern rows for all 24 dashboard + app archetypes
-- [ ] Add build rule to Step 4.3: all 4 mockups use Tailwind for layout/spacing/typography, inline styles only for palette hex values
-- [ ] Verify and update user_gates step references after Step 1.5a expansion
-- [ ] Commit all changes to `~/.claude` git repo
+- [x] Replace 5-question block with 13-question block in 5 XML-tagged categories (`<business>`, `<goals>`, `<audience>`, `<personality>`, `<landscape>`, `<constraints>`)
+- [x] Add `<example_response>` multishot block showing one completed discovery for a sample project (food app or B2B SaaS)
+- [x] Soften Aaker scoring table from fixed lookup to guided derivation with ranges ("derive considering these associations")
+- [x] Add personality slider anchor examples (Nike, law firm) so users calibrate placements
+- [x] Add scope constraint: "These answers feed visual direction only — not technical architecture or content strategy"
+- [x] Rewrite Step 1.5c brand profile output to reflect all 13-question categories (business summary, goal, audience type, 4 slider positions, personality words, emotional target, competitor map, references, exclusions, constraints)
+- [x] Expand convergence_guards table in Step 4.3b to include INSTEAD-pattern rows for all 24 dashboard + app archetypes
+- [x] Add build rule to Step 4.3: all 4 mockups use Tailwind for layout/spacing/typography, inline styles only for palette hex values
+- [x] Verify and update user_gates step references after Step 1.5a expansion
+- [x] Commit all changes to `~/.claude` git repo
 
 **Success Criteria:** `/design` prompts 13 questions, Aaker scores derive from slider inputs via soft derivation (not rigid table), brand profile shows all new categories, convergence guards cover all 36 archetypes, all mockups use Tailwind
 
