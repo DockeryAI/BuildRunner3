@@ -269,9 +269,10 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 - [ ] Interactive OKLCH color wheel: click to explore hues, drag direction accent dots to adjust, live swatch preview updates, competitor accents plotted, brand-appropriate arc highlighted
 - [ ] Direction comparison cards: 4 side-by-side cards with live accent swatch, rendered font samples (actual fonts loaded), archetype mini-diagram, nav pattern icon, axis position pills. Click "Swap archetype" to cycle alternatives.
 - [ ] File-based handoff: Confirm writes `research-decisions.json` (adjusted colors, swapped archetypes, final axis positions). Claude Code reads and builds mockups.
-- [ ] Update design.md Steps 2b, 2d, 3.7: Claude Code generates dashboard with research data embedded, opens browser, reads decisions on return
+- [ ] Mockup gallery page: after all 4 mockups are built, open a gallery landing page with 4 extra-large thumbnail cards (screenshot or live iframe preview of each direction). Each card shows direction letter, archetype name, accent swatch, and font name. Click a card → full-screen mockup loads. Persistent nav bar at top for switching between mockups and returning to gallery. "Pick this one" button on each mockup page writes selection to `selection.json`.
+- [ ] Update design.md Steps 2b, 2d, 3.7, 4.6: Claude Code generates dashboard with research data embedded, opens browser, reads decisions on return. Step 4.6 opens gallery instead of 4 separate tabs.
 
-**Success Criteria:** Research dashboard opens showing competitor clustering visually. You click the color wheel to explore, drag accent dots, swap archetypes on direction cards. Confirming saves decisions. Claude Code builds mockups from those decisions.
+**Success Criteria:** Research dashboard opens showing competitor clustering visually. You click the color wheel to explore, drag accent dots, swap archetypes on direction cards. Confirming saves decisions. Claude Code builds mockups. Gallery page opens with 4 large preview cards — click to browse each mockup, nav to switch between them, pick button to choose.
 
 ---
 
