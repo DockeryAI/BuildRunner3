@@ -62,7 +62,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 3: Color Derivation Pipeline
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 2d color sections, hue_diversity_rule)
