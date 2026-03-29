@@ -1,0 +1,1 @@
+{"phase": 2, "name": "Upgraded Research Pipeline", "claimed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "host": "$(hostname)", "build": "BUILD_design-skill-rebuild.md", "mode": "autopilot"}

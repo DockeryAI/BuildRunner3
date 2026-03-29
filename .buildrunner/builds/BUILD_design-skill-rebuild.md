@@ -43,7 +43,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 2: Upgraded Research Pipeline
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Step 2b-2d)
