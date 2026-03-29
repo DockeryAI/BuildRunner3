@@ -44,3 +44,8 @@
 - Added random concept injection, cross-domain analogy, INSTEAD pattern bans
 - Added multishot examples for constraint sheets
 - Direction assembly uses ≥3 axis distance rule
+[2026-03-29T02:45:24Z] Phase 5 decisions:
+- Added must-use and must-not-use CSS pattern tables for all 24 archetypes
+- Added component variety enforcement, nav variety rule, density profile enforcement
+- Added programmatic structural validation gate (4.4a-4.4e)
+- Made grayscale validation a hard gate (rebuild failures, don't just log)
