@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-9 Complete, Phase 10 pending
+**Status:** All Phases Complete (1-10)
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -211,19 +211,22 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 10: External Website Redesign Mode _(added: 2026-03-28)_
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Files:**
 
-- `~/.claude/commands/design.md` (MODIFY — Steps 0, 0.5, 1.5a, 3.5, 4.2, new URL detection)
+- `~/.claude/commands/design.md` (MODIFY — Steps -1, 0, 0.5, 1, 1.5a, 3.5, 4.0b, 4.2, 4.3)
   **Blocked by:** Phase 9
   **Deliverables:**
-- [ ] Add URL detection at top of file: if argument matches URL pattern → external redesign mode, skip project detection + redesign gate
-- [ ] New Step 0.5 (Site Audit): WebFetch up to 6 pages (home + 5 nav links), extract palette, typography, layout structure, component inventory, content inventory, logo URL
-- [ ] SPA detection + Playwright fallback: if WebFetch body < 500 chars real content or mostly `<script>` tags, launch Playwright to render and extract DOM + screenshots
-- [ ] Map crawled site onto 10 axes as "current state" baseline, run content audit (text walls, flat hierarchy, etc.)
-- [ ] Modified Step 1.5a: pre-fill inferable questions from crawl (Q1 business, Q2 stage, Q5-Q6 audience, Q12 competitors), user confirms/corrects
-- [ ] Modified Step 3.5 + 4.2: Direction D = current site's actual design (from audit), mockups use site's exact content + logo
-- [ ] Output scaffolding: create `~/Projects/Websites/Mockups/<domain>/` as project root, scaffold Vite+React+Tailwind if no project exists
+- [x] Add URL detection at top of file: if argument matches URL pattern → external redesign mode, skip project detection + redesign gate
+- [x] New Step 0.5 (Site Audit): WebFetch up to 6 pages (home + 5 nav links), extract palette, typography, layout structure, component inventory, content inventory, logo URL
+- [x] SPA detection + Playwright fallback: if WebFetch body < 500 chars real content or mostly `<script>` tags, launch Playwright to render and extract DOM + screenshots
+- [x] Map crawled site onto 10 axes as "current state" baseline, run content audit (text walls, flat hierarchy, etc.)
+- [x] Modified Step 1.5a: pre-fill inferable questions from crawl (Q1 business, Q2 stage, Q5-Q6 audience, Q12 competitors), user confirms/corrects
+- [x] Modified Step 3.5 + 4.2: Direction D = current site's actual design (from audit), mockups use site's exact content + logo
+- [x] Output scaffolding: create `~/Projects/Websites/Mockups/<domain>/` as project root, scaffold Vite+React+Tailwind if no project exists
+- [x] _(bonus)_ Mockup output to `~/Projects/Websites/Mockups/` for ALL modes (not just external)
+- [x] _(bonus)_ Logo + favicon on all mockups (rule 16)
+- [x] _(bonus)_ Auto-open mockups in browser after build (rule 17)
 
 **Success Criteria:** `/design stripe.com` crawls the site, presents pre-filled discovery, generates 3 redesign directions + current-site baseline using exact content, outputs working mockups to `~/Projects/Websites/Mockups/stripe/`
 

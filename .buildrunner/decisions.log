@@ -76,3 +76,12 @@
 - **Tailwind build rule:** Made explicit as rule #15 — inline styles only for palette hex. Prevents mockups from drifting to inline-style-heavy implementations.
 - **Aligned with /opus:** All new content uses soft language per 4.6 guidelines. No MUST/CRITICAL/NEVER in caps.
 [2026-03-29T04:38:09Z] [AMENDMENT] Added Phase 10: External Website Redesign Mode (7 deliverables). Reason: extend /design to accept URLs, crawl live sites, and produce redesign mockups with exact content. Removed '/design working outside BR3 projects' from out-of-scope.
+
+## Phase 10: External Website Redesign Mode (2026-03-28)
+
+- **WebFetch-first, Playwright fallback for SPAs:** Static sites use fast WebFetch; SPAs detected by low visible text content (<500 chars) trigger Playwright headless rendering. Keeps simple sites fast while handling JS-rendered pages.
+- **Pre-filled discovery from crawl:** Infer Q1, Q2, Q5, Q6, Q12 from crawled content to reduce user effort. Tagged with [inferred] so user can override.
+- **Direction D = current site in external mode:** Rather than competitor cluster, D faithfully reproduces the site being redesigned. Gives a direct before/after comparison.
+- **Mockup output moved to ~/Projects/Websites/Mockups/ for ALL modes:** Centralizes all design mockups in one browseable location, not buried in .buildrunner/.
+- **Logo on all mockups:** Extracted from crawl (external) or project files (local). Favicon as fallback. Makes mockups feel real and branded.
+- **Auto-open in browser:** Mockups auto-open after build so user can immediately browse and compare.
