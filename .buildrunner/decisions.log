@@ -59,3 +59,10 @@
 - Added pre-visual reflection checkpoint (6.2-reflection)
 - Added before/after comparison output (6.4)
 - Updated user_gates to reference new step numbers
+[2026-03-29T02:51:01Z] Phase 8 decisions:
+- Verified /appdesign references design-direction-differentiation.md (exists)
+- Removed 'old quadrant-only system' reference text
+- Softened overtriggering language (hard failure → rebuild, must be → rebuild before)
+- Fixed design_rules Step 2c ref → Step 2d
+- Verified 7 reflection checkpoints all worded as genuine self-checks
+- No deprecated 3-axis/old-quadrant code remains
