@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phase 1 Not Started
+**Status:** Phase 1 Complete
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -25,17 +25,17 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 1: Discovery Q&A + Brand Scoring
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/design.md` (MODIFY — Steps 0-2a)
   **Blocked by:** None
   **Deliverables:**
-- [ ] New Step 1.5: Discovery Q&A prompt (5 questions — personality, competitors, "not like", density, dealbreakers)
-- [ ] Structured brand profile output format (Aaker scores 0-1 across 5 dimensions, competitor list, exclusions, density preference)
-- [ ] Aaker scoring logic: map user's personality pick + tone keywords → numerical scores across Sincerity/Excitement/Competence/Sophistication/Ruggedness
-- [ ] Reflection checkpoint after scoring: "Review scores — does Excitement at 0.8 match what the user described? Would someone who knows this brand agree?"
-- [ ] User gate: wait for discovery answers before proceeding to research
+- [x] New Step 1.5: Discovery Q&A prompt (5 questions — personality, competitors, "not like", density, dealbreakers)
+- [x] Structured brand profile output format (Aaker scores 0-1 across 5 dimensions, competitor list, exclusions, density preference)
+- [x] Aaker scoring logic: map user's personality pick + tone keywords → numerical scores across Sincerity/Excitement/Competence/Sophistication/Ruggedness
+- [x] Reflection checkpoint after scoring: "Review scores — does Excitement at 0.8 match what the user described? Would someone who knows this brand agree?"
+- [x] User gate: wait for discovery answers before proceeding to research
 
 **Success Criteria:** Running `/design` prompts 5 questions, user answers in one response, brand profile with numerical scores is produced
 
