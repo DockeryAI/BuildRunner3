@@ -32,3 +32,9 @@
 - Added 2b-reflection checkpoint after research
 - Rewrote Step 2d to derive vectors mechanically from gap map (not vibes-based)
 - Updated vector presentation format to show axis positions per vector
+[2026-03-29T02:40:47Z] Phase 3 decisions:
+- Replaced quadrant-only hue system with 6-step brand-derived color pipeline
+- Brand→hue mapping via Aaker dimensions, saturation from positioning, lightness profiles per direction
+- Competitive gap integration narrows to 20° window, session randomization adds ±10°
+- Kept quadrant diversity as hard rule on top of derivation
+- Added color rationale template and reflection checkpoint
