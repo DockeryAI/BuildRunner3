@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** All Phases Complete (1-10)
+**Status:** Phases 1-10 Complete, Phases 11-14 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -229,6 +229,90 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 - [x] _(bonus)_ Auto-open mockups in browser after build (rule 17)
 
 **Success Criteria:** `/design stripe.com` crawls the site, presents pre-filled discovery, generates 3 redesign directions + current-site baseline using exact content, outputs working mockups to `~/Projects/Websites/Mockups/stripe/`
+
+---
+
+### Phase 11: Interactive Discovery Wizard App _(added: 2026-03-29)_
+
+**Status:** pending
+**Blocked by:** Phase 10
+**Files:**
+
+- `~/.claude/tools/design-wizard/` (NEW — React app)
+- `~/.claude/commands/design.md` (MODIFY — Step 1.5a to launch wizard)
+
+**Deliverables:**
+
+- [ ] Scaffold Vite + React + TypeScript + Tailwind + Framer Motion app at `~/.claude/tools/design-wizard/`
+- [ ] 14-screen wizard flow (Q1-Q13 + constraints) with smooth transitions, progress bar, one question per screen
+- [ ] 4 interactive sliders (Q7-Q10) with live-morphing preview panel: each slider position changes a sample card/hero/nav showing corners, spacing, color temperature, and typography in real time — interpolated between 10 pre-defined visual states
+- [ ] Visual examples per question: stage cards with illustrations (Q2), goal/emotion pills (Q3-Q4), discovery channel cards with icons (Q6), competitor URL inputs with favicon fetch (Q12), "not like" with brand reference card (Q13), constraint toggle chips (final)
+- [ ] File-based handoff: Submit writes `discovery.json` to the target project's `.buildrunner/design/` directory. "Continue in Claude Code" toast on submit.
+- [ ] Update design.md Step 1.5a: Claude Code generates the wizard with project context, opens browser, reads `discovery.json` on return
+
+**Success Criteria:** Running `/design` opens a visual wizard in the browser. Dragging the Warm↔Cool slider visibly shifts the preview between warm amber tones and cool steel tones. Submitting writes discovery.json. Claude Code reads it and continues.
+
+---
+
+### Phase 12: Interactive Research Dashboard _(added: 2026-03-29)_
+
+**Status:** pending
+**Blocked by:** Phase 11
+**Files:**
+
+- `~/.claude/tools/design-wizard/` (MODIFY — add research views)
+- `~/.claude/commands/design.md` (MODIFY — Steps 2b, 2d, 3.7, 4.4)
+
+**Deliverables:**
+
+- [ ] Visual axis grid: 10 rows of position circles, competitor dots color-coded, gap positions glowing (green=safe, amber=risky, red=excluded). Click any position for tooltip with explanation.
+- [ ] Interactive OKLCH color wheel: click to explore hues, drag direction accent dots to adjust, live swatch preview updates, competitor accents plotted, brand-appropriate arc highlighted
+- [ ] Direction comparison cards: 4 side-by-side cards with live accent swatch, rendered font samples (actual fonts loaded), archetype mini-diagram, nav pattern icon, axis position pills. Click "Swap archetype" to cycle alternatives.
+- [ ] File-based handoff: Confirm writes `research-decisions.json` (adjusted colors, swapped archetypes, final axis positions). Claude Code reads and builds mockups.
+- [ ] Update design.md Steps 2b, 2d, 3.7: Claude Code generates dashboard with research data embedded, opens browser, reads decisions on return
+
+**Success Criteria:** Research dashboard opens showing competitor clustering visually. You click the color wheel to explore, drag accent dots, swap archetypes on direction cards. Confirming saves decisions. Claude Code builds mockups from those decisions.
+
+---
+
+### Phase 13: Brand Profile Document Generator _(added: 2026-03-29)_
+
+**Status:** pending
+**Blocked by:** Phase 12
+**Files:**
+
+- `~/.claude/tools/design-wizard/` (MODIFY — add brand profile view)
+- `~/.claude/commands/design.md` (MODIFY — Step 5 to generate profile)
+
+**Deliverables:**
+
+- [ ] Designed HTML brand profile page: dark theme, print-friendly, sections from research library (purpose, audience JTBD, positioning Dunford formula, archetype + personality, voice + tone, messaging hierarchy, competitive context, visual identity direction)
+- [ ] Combine all /design outputs: discovery answers, Aaker scores (visual bars), competitive axis map (visual grid), color derivation (swatches + wheel), typography pairing (rendered samples), chosen direction constraint sheet
+- [ ] Conditional Synapse section: if WebsiteIntelligenceBrief exists, include pain vocabulary, voice gap, psychology profile, competitive voice analysis. Omit cleanly if not available.
+- [ ] Conditional workfloDock section: if business plan data exists, include value proposition, target market, service tiers, financial context. Omit cleanly if not available.
+- [ ] Save to `.buildrunner/design/brand-profile.html` and auto-open in browser
+- [ ] Update design.md Step 5: after DESIGN_SPEC.md generation, also generate brand profile document
+
+**Success Criteria:** After picking a direction, a polished brand profile document opens in the browser. It looks like a $100k agency deliverable. It includes visual Aaker bars, color swatches, font samples, axis positioning, and any available Synapse/workfloDock intelligence. Printable.
+
+---
+
+### Phase 14: Design the Wizard with /design (Dockery Brand) _(added: 2026-03-29)_
+
+**Status:** pending
+**Blocked by:** Phase 13
+**Files:**
+
+- `~/.claude/tools/design-wizard/` (MODIFY — apply DESIGN_SPEC)
+
+**Deliverables:**
+
+- [ ] Run `/design` on the wizard app itself — full discovery, research, 4 directions, mockups, selection
+- [ ] Apply winning DESIGN_SPEC.md to the wizard: Dockery brand typography, accent colors, dark theme, component styling, motion language
+- [ ] Premium polish pass: micro-interactions on every interactive element (slider thumb spring, color wheel glow on hover, card flip on archetype swap, progress bar shimmer), 60fps transitions, smooth page transitions between wizard steps
+- [ ] Responsive: works on desktop (primary) and tablet. Not mobile — this is a design tool.
+
+**Success Criteria:** The wizard looks and feels like a premium product — Dockery-branded, smooth animations, every interaction delightful. Not a developer tool form. A $100k design experience.
 
 ---
 

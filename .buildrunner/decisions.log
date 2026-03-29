@@ -85,3 +85,4 @@
 - **Mockup output moved to ~/Projects/Websites/Mockups/ for ALL modes:** Centralizes all design mockups in one browseable location, not buried in .buildrunner/.
 - **Logo on all mockups:** Extracted from crawl (external) or project files (local). Favicon as fallback. Makes mockups feel real and branded.
 - **Auto-open in browser:** Mockups auto-open after build so user can immediately browse and compare.
+[2026-03-29T16:50:22Z] [AMENDMENT] Added Phases 11-14: Interactive Discovery Wizard (11), Research Dashboard (12), Brand Profile Generator (13), /design for Dockery Brand (14). Reason: replace text-based /design with interactive visual wizard featuring live-morphing slider previews, clickable color wheel, draggable axis grid, brand profile document output. Designed with /design for Dockery's brand.
