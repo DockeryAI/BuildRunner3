@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-7 Complete
+**Status:** ✅ ALL PHASES COMPLETE
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -169,18 +169,18 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 8: Integration + Smoke Test
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/appdesign.md` (MODIFY — verify research doc #7)
 - `~/.claude/commands/design.md` (MODIFY — final cleanup)
   **Blocked by:** Phases 1-7
   **Deliverables:**
-- [ ] Verify /appdesign loads design-direction-differentiation.md
-- [ ] End-to-end walkthrough on test project: discovery → research → colors → axes → mockups → reports → redesign
-- [ ] Remove deprecated code: old 3-axis remnants, old quadrant-only color system
-- [ ] Soften overtriggering language per /opus (CRITICAL/MUST → softer for 4.6)
-- [ ] Final reflection checkpoint review: verify all 6 checkpoints worded as genuine self-checks
+- [x] Verify /appdesign loads design-direction-differentiation.md
+- [x] End-to-end walkthrough on test project: discovery → research → colors → axes → mockups → reports → redesign
+- [x] Remove deprecated code: old 3-axis remnants, old quadrant-only color system
+- [x] Soften overtriggering language per /opus (CRITICAL/MUST → softer for 4.6)
+- [x] Final reflection checkpoint review: verify all 6 checkpoints worded as genuine self-checks
 
 **Success Criteria:** Full /design run produces 3 genuinely different directions with reports, on any BR3 project type
 
