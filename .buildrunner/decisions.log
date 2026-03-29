@@ -38,3 +38,9 @@
 - Competitive gap integration narrows to 20° window, session randomization adds ±10°
 - Kept quadrant diversity as hard rule on top of derivation
 - Added color rationale template and reflection checkpoint
+[2026-03-29T02:43:37Z] Phase 4 decisions:
+- Replaced 4-axis system with 10-axis direction system matching Step 2b competitor scan
+- Expanded archetype pools from 6 to 12 per project type
+- Added random concept injection, cross-domain analogy, INSTEAD pattern bans
+- Added multishot examples for constraint sheets
+- Direction assembly uses ≥3 axis distance rule
