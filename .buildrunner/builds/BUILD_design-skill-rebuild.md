@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-10 Complete, Phase 10.5 + Phases 11-14 pending
+**Status:** Phase 10.5 in_progress, Phases 11-14 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -234,7 +234,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 10.5: Validation & Enforcement Fixes _(added: 2026-03-29)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 10
 **Files:**
 
