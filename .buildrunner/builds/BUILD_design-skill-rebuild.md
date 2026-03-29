@@ -262,7 +262,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 11: Interactive Discovery Wizard App _(added: 2026-03-29)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 10.5
 **Files:**
 
@@ -274,7 +274,8 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 - [ ] Scaffold Vite + React + TypeScript + Tailwind + Framer Motion app at `~/.claude/tools/design-wizard/`
 - [ ] 14-screen wizard flow (Q1-Q13 + constraints) with smooth transitions, progress bar, one question per screen
 - [ ] 4 interactive sliders (Q7-Q10) with live-morphing preview panel: each slider maps to CSS custom properties that update on drag (border-radius, spacing scale, hue rotation, font-weight/family). The browser interpolates via CSS transitions — not JS state machines. One lookup object per slider, CSS does the rest. A sample card + hero + nav section morph live as the slider moves.
-- [ ] Visual examples per question: stage cards with illustrations (Q2), goal/emotion pills (Q3-Q4), discovery channel cards with icons (Q6), competitor URL inputs with favicon fetch (Q12), "not like" with brand reference card (Q13), constraint toggle chips (final)
+- [ ] Visual examples per question: stage cards with illustrations (Q2), goal/emotion pills (Q3-Q4), discovery channel cards with icons (Q6), "not like" with brand reference card (Q13), constraint toggle chips (final)
+- [ ] Q12 curated picks + manual entry: Based on industry from Q1, present 8-12 curated website cards (name, favicon, one-line description, screenshot thumbnail) that the user can browse and toggle-select. Cards are pre-populated by Claude Code using industry context. Below the grid, a manual URL input with auto-favicon fetch lets users add their own. Selected sites highlight with accent border. This does the research for the user while still allowing custom input. _(added: 2026-03-29)_
 - [ ] File-based handoff: Submit writes `discovery.json` to the target project's `.buildrunner/design/` directory. "Continue in Claude Code" toast on submit.
 - [ ] Update design.md Step 1.5a: Claude Code generates the wizard with project context, opens browser, reads `discovery.json` on return
 
