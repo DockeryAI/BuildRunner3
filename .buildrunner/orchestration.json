@@ -1,8 +1,0 @@
-{
-  "batches": [{"id": 1, "phases": [12]}, {"id": 2, "phases": [13]}, {"id": 3, "phases": [14]}, {"id": 4, "phases": [15]}, {"id": 5, "phases": [16]}],
-  "current_batch": 1,
-  "total_phases": 5,
-  "completed_phases": 0,
-  "mode": "autopilot",
-  "started": "2026-03-29T17:59:30Z"
-}
