@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phase 10.5 in_progress, Phases 11-14 pending
+**Status:** Phases 1-10.5 Complete, Phases 11-14 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -234,7 +234,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 10.5: Validation & Enforcement Fixes _(added: 2026-03-29)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 10
 **Files:**
 
@@ -242,13 +242,13 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Rewrite Step 4.4 validation to mandate Read tool on each mockup file — extract actual font-family, nav JSX, accent hex, img src; compare against constraint sheet (not plan memory) _(added: 2026-03-29)_
-- [ ] Add build-contract.json artifact after Step 3 constraint sheets — JSON with exact font*heading, font_body, nav_pattern, accent_hex, logo_touchpoints per direction; validation diffs this against actual files *(added: 2026-03-29)\_
-- [ ] Add logo enforcement multishot example to Step 4.3 — concrete JSX example showing all 5 touchpoints (hero mark, atmospheric bg, card watermark, section divider, nav icon) _(added: 2026-03-29)_
-- [ ] Soften validation language from "Hard Gate"/"ENFORCED"/"CRITICAL" to outcome-focused 4.6 phrasing per /opus anti-laziness research _(added: 2026-03-29)_
-- [ ] Add content variety build rule to Step 4.3 rule 6 — each direction uses different trending items, featured topic, and pull quote _(added: 2026-03-29)_
-- [ ] Add 60-degree minimum hue distance check to Step 3 color derivation — pairwise check on A/B/C accents, shift into nearest unoccupied quadrant if too close _(added: 2026-03-29)_
-- [ ] Add validation multishot example showing concrete PASS (actual extracted values match contract) vs FAIL (values differ, triggers rebuild) _(added: 2026-03-29)_
+- [x] Rewrite Step 4.4 validation to mandate Read tool on each mockup file — extract actual font-family, nav JSX, accent hex, img src; compare against constraint sheet (not plan memory) _(added: 2026-03-29)_
+- [x] Add build-contract.json artifact after Step 3 constraint sheets — JSON with exact font*heading, font_body, nav_pattern, accent_hex, logo_touchpoints per direction; validation diffs this against actual files *(added: 2026-03-29)\_
+- [x] Add logo enforcement multishot example to Step 4.3 — concrete JSX example showing all 5 touchpoints (hero mark, atmospheric bg, card watermark, section divider, nav icon) _(added: 2026-03-29)_
+- [x] Soften validation language from "Hard Gate"/"ENFORCED"/"CRITICAL" to outcome-focused 4.6 phrasing per /opus anti-laziness research _(added: 2026-03-29)_
+- [x] Add content variety build rule to Step 4.3 rule 6 — each direction uses different trending items, featured topic, and pull quote _(added: 2026-03-29)_
+- [x] Add 60-degree minimum hue distance check to Step 3 color derivation — pairwise check on A/B/C accents, shift into nearest unoccupied quadrant if too close _(added: 2026-03-29)_
+- [x] Add validation multishot example showing concrete PASS (actual extracted values match contract) vs FAIL (values differ, triggers rebuild) _(added: 2026-03-29)_
 
 **Build constraints (per /opus 4.6 alignment):**
 
