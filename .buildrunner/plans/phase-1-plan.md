@@ -1,28 +1,22 @@
-# Phase 1: Research Artifacts — Implementation Plan
+# Phase 1 Plan: Discovery Q&A + Brand Scoring
 
 ## Tasks
 
-1. **Create font-personality-pool.md** — ~35 curated fonts in machine-parseable tables, Aaker bridge table, pairing rules, fluid type scale, loading strategy. Merge relevant Impeccable typography/color guidance not already in BR3.
-2. **Create dashboard-chart-design.md** — Colorblind-safe palette, sequential/diverging palettes, Recharts dark theme config, KPI card anatomy, dashboard grid, Tufte rules, empty state/skeleton patterns. Merge relevant Impeccable motion/spatial guidance.
-3. **Update index.md** — Add entries for both new docs in appropriate section.
-4. **Update schema.md** — Add new subjects: font-personality, aaker-brand-personality, kpi-cards, recharts, colorblind-safe, tufte, fluid-typography, font-loading, variable-fonts.
+1. Add Step 1.5 between Step 1 (Redesign Gate) and Step 2 (Research)
+   - 5 discovery questions (personality, competitors, "not like", density, dealbreakers)
+   - Structured brand profile output format with Aaker scores
+   - Aaker scoring logic mapping answers → 5 dimensions (0-1)
+   - Reflection checkpoint after scoring
+   - User gate: wait for answers before proceeding
 
-## Impeccable Evaluation Summary
+2. Update Step 2a to consume the brand profile from Step 1.5
+   - Reference brand profile scores in business signals extraction
+   - Feed personality/competitor data from discovery into research
 
-7 reference files fetched. Useful NEW content to merge:
-- **OKLCH color**: tinted neutrals formula oklch(15% 0.01 hue), chroma reduction rule — goes into font-personality-pool.md color section
-- **Vertical rhythm**: line-height as base spacing unit, 24px rhythm — goes into font-personality-pool.md
-- **Motion choreography**: 4-tier timing (100-800ms), cubic-bezier values, exit=75% of enter — goes into dashboard-chart-design.md
-- **Stagger patterns**: calc(var(--i) * 50ms), cap at 500ms total — goes into dashboard-chart-design.md
-- Already covered by BR3: GPU-safe whitelist, focus indicators, container queries, prefers-reduced-motion
+## Approach
+
+Insert new Step 1.5 section after Step 1's closing `---`. Update Step 2a to reference the brand profile output. Keep all other steps untouched.
 
 ## Tests
 
-Non-testable (docs only). TDD skipped.
-
-## Files Modified
-
-- ~/Projects/research-library/docs/techniques/font-personality-pool.md (NEW)
-- ~/Projects/research-library/docs/techniques/dashboard-chart-design.md (NEW)
-- ~/Projects/research-library/index.md (MODIFY)
-- ~/Projects/research-library/schema.md (MODIFY)
+Non-testable (markdown prompt file). Skip TDD.
