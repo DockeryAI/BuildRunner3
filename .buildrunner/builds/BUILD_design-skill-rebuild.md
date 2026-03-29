@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 1-11 Complete, Phases 12-16 pending
+**Status:** Phase 12 in progress, Phases 13-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -291,7 +291,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 12: Interactive Research Dashboard _(added: 2026-03-29)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 10.5, Phase 11
 **Files:**
 
