@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 12-14 Complete, Phase 14.5 paused (theming), Phase 14.6 pending (slider previews), Phase 14.8 pending (archetype fix), Phases 15-16 pending
+**Status:** Phases 12-14, 14.6, 14.8 Complete, Phase 14.5 paused (theming), Phases 15-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -400,7 +400,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 14.6: Live-Morphing Slider Previews _(added: 2026-03-30)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 14
 **Files:**
 
@@ -408,12 +408,12 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Playful/Serious preview — a greeting card that morphs from rounded/bouncy/colorful (Mailchimp) to sharp/tight/muted (McKinsey). 10 art-directed states with smooth CSS transitions between them. Dynamic heading from user's business name.
-- [ ] Minimal/Maximal preview — a page layout section where elements progressively appear (1=single centered heading with whitespace, 10=dense multi-element dashboard). Spacing compresses, font sizes shrink, secondary elements fade in. Dynamic heading from business name.
-- [ ] Warm/Cool preview — a hero block with background gradient that shifts from amber/soft-orange (Headspace) through neutral to steel-blue/slate (Stripe). Heading color, surface tint, and accent shift together. Dynamic heading from business name.
-- [ ] Classic/Cutting-edge preview — a type specimen that shifts from serif/conservative/muted (law firm) to bold geometric sans/gradient accents/high contrast (Nike). Dynamic heading from business name.
-- [ ] Each preview uses CSS custom properties mapped via a lookup object per slider position (1-10). Browser interpolates via `transition: all 0.3s`. No JS animation libraries.
-- [ ] Dynamic content injection: business name from foundation.business as heading text, goal-derived CTA text from foundation.design_goal
+- [x] Playful/Serious preview — a greeting card that morphs from rounded/bouncy/colorful (Mailchimp) to sharp/tight/muted (McKinsey). 10 art-directed states with smooth CSS transitions between them. Dynamic heading from user's business name.
+- [x] Minimal/Maximal preview — a page layout section where elements progressively appear (1=single centered heading with whitespace, 10=dense multi-element dashboard). Spacing compresses, font sizes shrink, secondary elements fade in. Dynamic heading from business name.
+- [x] Warm/Cool preview — a hero block with background gradient that shifts from amber/soft-orange (Headspace) through neutral to steel-blue/slate (Stripe). Heading color, surface tint, and accent shift together. Dynamic heading from business name.
+- [x] Classic/Cutting-edge preview — a type specimen that shifts from serif/conservative/muted (law firm) to bold geometric sans/gradient accents/high contrast (Nike). Dynamic heading from business name.
+- [x] Each preview uses CSS custom properties mapped via a lookup object per slider position (1-10). Browser interpolates via `transition: all 0.3s`. No JS animation libraries.
+- [x] Dynamic content injection: business name from foundation.business as heading text, goal-derived CTA text from foundation.design_goal
 
 **Build constraints:**
 
@@ -428,7 +428,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 14.8: Archetype Selection Algorithm _(added: 2026-03-30)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 14
 **Files:**
 
@@ -436,11 +436,11 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Add archetype affinity scoring table in Step 3.2 — each of the 12 archetypes per project type maps to 2-3 "affinity" axis positions and 2-3 "anti-affinity" positions. Selection scores candidates against the vector's axis positions instead of relying on name-matching. _(added: 2026-03-30)_
-- [ ] Add mandatory shuffle-then-pick in Step 3.2 — after affinity scoring, top 6 candidates are shuffled, then top 3 selected. Breaks LLM primacy bias (always picking first items in list) while still respecting brand fit. _(added: 2026-03-30)_
-- [ ] Rename archetype table entries to remove axis-name overlap — "Editorial scroll" and similar labels that echo Layout axis values get description-first labels to prevent semantic shortcutting (e.g., "editorial-scroll" axis → "Editorial scroll" archetype). _(added: 2026-03-30)_
-- [ ] Add structural family distance rule — define 4-5 structural families (grid-based, scroll-based, spatial, dense, minimal) and require selected archetypes to come from 3 different families. Prevents getting 3 grid variants (bento + card-cascade + tile-mosaic). _(added: 2026-03-30)_
-- [ ] Add session archetype memory — if `.buildrunner/design/session-log.md` exists from a previous run, read which archetypes were used last time and deprioritize them in scoring. _(added: 2026-03-30)_
+- [x] Add archetype affinity scoring table in Step 3.2 — each of the 12 archetypes per project type maps to 2-3 "affinity" axis positions and 2-3 "anti-affinity" positions. Selection scores candidates against the vector's axis positions instead of relying on name-matching. _(added: 2026-03-30)_
+- [x] Add mandatory shuffle-then-pick in Step 3.2 — after affinity scoring, top 6 candidates are shuffled, then top 3 selected. Breaks LLM primacy bias (always picking first items in list) while still respecting brand fit. _(added: 2026-03-30)_
+- [x] Rename archetype table entries to remove axis-name overlap — "Editorial scroll" and similar labels that echo Layout axis values get description-first labels to prevent semantic shortcutting (e.g., "editorial-scroll" axis → "Editorial scroll" archetype). _(added: 2026-03-30)_
+- [x] Add structural family distance rule — define 4-5 structural families (grid-based, scroll-based, spatial, dense, minimal) and require selected archetypes to come from 3 different families. Prevents getting 3 grid variants (bento + card-cascade + tile-mosaic). _(added: 2026-03-30)_
+- [x] Add session archetype memory — if `.buildrunner/design/session-log.md` exists from a previous run, read which archetypes were used last time and deprioritize them in scoring. _(added: 2026-03-30)_
 
 **Build constraints:**
 
