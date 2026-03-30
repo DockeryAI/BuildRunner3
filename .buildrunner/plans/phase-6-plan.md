@@ -1,23 +1,15 @@
-# Plan: Phase 6 — Git Worktree Integration
+# Phase 6: Skill Cross-Integration — Plan
 
-## 6.1 — Update begin-locks.md
+## Tasks
 
-- Add option 3 to Lock Found Prompt template
-- Add handler for option "3" → invoke /worktree with parallel phase build plan
-- Branch naming: br3/phase-[N]-[short-desc]
-- Add "Worktree Dispatch" subsection under Find Parallel Work
+### Task 6.1: /guard — Add E2E test coverage gap check
+Add a new validation section (3.6) that checks if the current phase has UI deliverables but no E2E tests. Flag as a gap with WARNING severity.
 
-## 6.2 — Update begin-completion.md
+### Task 6.2: /review — Add E2E regression run after auto-fixes
+In Step 3 (Auto-Fix), after running tests, explicitly run `npm run test:e2e` when Playwright is configured to verify no E2E regressions.
 
-- Add worktree detection (git worktree list)
-- If in worktree: output merge guidance after lock release
-- Present commands for user confirmation, do NOT auto-execute
-
-## 6.3 — Update begin.md
-
-- Add option 3 to lock detection output block in Step 1
-- Add handler for "3" or "worktree"
+### Task 6.3: /design — Add E2E Test Requirements section to DESIGN_SPEC.md
+In Step 5 (Selection + Spec Generation), add instruction to include an "E2E Test Requirements" section in DESIGN_SPEC.md documenting which user flows need testing.
 
 ## Tests
-
-TDD Gate: SKIP — all deliverables are skill/command markdown files.
+Non-testable (markdown skill files). Skip TDD.

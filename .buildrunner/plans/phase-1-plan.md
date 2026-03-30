@@ -1,22 +1,28 @@
-# Phase 1 Plan: Discovery Q&A + Brand Scoring
+# Phase 1 Plan: Wire Tests into Build Workflow
 
 ## Tasks
 
-1. Add Step 1.5 between Step 1 (Redesign Gate) and Step 2 (Research)
-   - 5 discovery questions (personality, competitors, "not like", density, dealbreakers)
-   - Structured brand profile output format with Aaker scores
-   - Aaker scoring logic mapping answers → 5 dimensions (0-1)
-   - Reflection checkpoint after scoring
-   - User gate: wait for answers before proceeding
+### Task 1.1: Add E2E execution block to /begin Step 4.5b
+- In `begin.md`, update Step 4.5 to reference the enhanced tdd-gate doc
+- Add e2e_tier1 tracking to progress output mentions
 
-2. Update Step 2a to consume the brand profile from Step 1.5
-   - Reference brand profile scores in business signals extraction
-   - Feed personality/competitor data from discovery into research
+### Task 1.2: Enhance begin-tdd-gate.md Step 4.5b with real execution logic
+- Add Playwright config detection
+- Add UI deliverable detection
+- Add npm run test:e2e:ui execution with fallback
+- Add fix loop (3 attempts max), block on failure
+- Add "do not hard-code values to pass assertions" constraint
+- Use soft 4.6 prompt language throughout
+- Track e2e_tier1 result (PASS|FAIL|SKIP)
 
-## Approach
+### Task 1.3: Update /e2e to accept phase_number argument
+- Add phase_number argument handling in Step 0
+- When phase_number provided, scope detection to that phase's deliverables
+- Look up BUILD spec for that phase
 
-Insert new Step 1.5 section after Step 1's closing `---`. Update Step 2a to reference the brand profile output. Keep all other steps untouched.
+### Task 1.4: Ensure e2e_tier1 result tracked in progress output
+- Add e2e_tier1: PASS|FAIL|SKIP to 4.5c report template
 
 ## Tests
 
-Non-testable (markdown prompt file). Skip TDD.
+- All deliverables are skill/command markdown files - TDD gate: SKIP

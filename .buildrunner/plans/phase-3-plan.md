@@ -1,34 +1,29 @@
-# Plan: Phase 3 — Two-Stage Review
+# Plan: Phase 3 — Playwright MCP + Claude Code Hooks
 
-## 3.1: Create `~/.claude/docs/begin-review.md`
+## Tasks
 
-New reference doc with two review passes:
+### 3.1: Create .mcp.json with Playwright MCP server config
 
-**Pass 1 — Spec Compliance (subagent):**
+- New file at project root, stdio transport, npx @playwright/mcp@latest
 
-- Input: BUILD spec phase section + approved plan + git diff
-- Checks: each deliverable implemented? missing? unplanned additions?
-- Output: compliance report (PASS/FAIL per deliverable, gaps, unplanned additions)
+### 3.2: Add MCP tool permissions to settings.local.json
 
-**Pass 2 — Code Quality (subagent):**
+- Restrict to 8 core Playwright tools
+- Merge with existing permissions
 
-- Input: project CLAUDE.md + git diff + test results
-- Checks: TypeScript errors, security (OWASP top 10), dead code introduced, test coverage, performance
-- Output: quality report (issues by severity: critical/warning/info)
+### 3.3: Add Stop hook for E2E test gate
 
-Sequential: Pass 2 only runs if Pass 1 passes (or user overrides).
-Scope constraints per subagent.
-Combined output template.
+- agent type, low effort, terse prompt
+- stop_hook_active guard prevents infinite loops
 
-## 3.2: Update `~/.claude/commands/begin.md` Step 5
+### 3.4: Add compact-matcher SessionStart hook
 
-Replace current single-subagent Step 5 with:
+- Re-injects test status after context compaction
 
-- Reference to `@begin-review.md`
-- Two sequential subagent launches
-- Combined report
-- Gate: Pass 1 must pass before Pass 2 runs
+### 3.5: Create /pw-test slash command
+
+- Explore-then-write pattern, XML structure, 2-3 multishot examples
 
 ## Tests
 
-TDD Gate: SKIP — all deliverables are markdown skill/doc files. No testable code.
+TDD Gate: SKIP — config files and skill templates, no testable code.

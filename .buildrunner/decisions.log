@@ -98,3 +98,15 @@
   - Direction D: redesign = current site polished (content issues fixed), first-design = competitor baseline (unchanged)
 [Mon Mar 30 09:46:21 CDT 2026] [DECISION] Created build spec: Playwright Full Integration with 6 phases (Phases 1-4,6 parallelizable, Phase 5 blocked by 4)
 [2026-03-30T15:01:11Z] [AMENDMENT] Added Phase 14.6: Live-Morphing Slider Previews. 6 tasks. Reason: Phase 11 deliverable (slider morphing) was marked complete but never implemented. 4 personality sliders need art-directed preview panels that morph as user drags.
+[2026-03-30T15:04:09Z] Phase 1 decisions:
+- Enhanced begin-tdd-gate.md 4.5b with full detection/execution/fix-loop logic instead of placeholder
+- Used soft 4.6 language ('when phase includes') not aggressive ('MUST run')
+- Added anti-patterns section to prevent hard-coding assertions
+- /e2e phase-scoped mode reads BUILD spec directly for phase deliverables
+- Reduced fix loop from 5 to 3 attempts (spec requirement) in /begin context; /e2e standalone keeps 5
+[2026-03-30T15:05:59Z] Phase 2 decisions:
+  - Added E2E regression gate to autopilot batch workflow (Step 5.4b)
+  - E2E failures block merge same as phase failures
+  - Added no-delegate and no-hardcode constraints to executor prompt
+  - Gate report now shows per-phase E2E status and full regression result
+  - FULL_SEND auto-approve requires E2E regression pass
