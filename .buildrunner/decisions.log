@@ -116,3 +116,8 @@
 - MCP permissions restricted to 8 core Playwright tools only
 - SessionStart hook only injects context when test-results/ directory exists
 - pw-test slash command uses explore-then-write pattern with 3 multishot examples
+[2026-03-30T15:05:15Z] Phase 4 decisions:
+  - Used getByRole/getByLabel/getByTestId instead of CSS selectors
+  - Auth setup saves storageState once per worker, all browser projects depend on it
+  - api-health.spec.ts kept as request-based (no POM needed for API tests)
+  - LoginPage.errorMessage uses getByRole('alert') instead of .error CSS class

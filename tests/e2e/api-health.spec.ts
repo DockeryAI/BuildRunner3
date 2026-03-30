@@ -32,8 +32,8 @@ test.describe('API Health Check', () => {
     const loginResponse = await request.post('http://localhost:8080/api/auth/login', {
       data: {
         email: 'admin@buildrunner.local',
-        password: 'admin'
-      }
+        password: 'admin',
+      },
     });
 
     expect(loginResponse.ok()).toBeTruthy();
@@ -45,8 +45,8 @@ test.describe('API Health Check', () => {
     // Use token to access protected endpoint
     const protectedResponse = await request.get('http://localhost:8080/api/orchestrator/status', {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     expect(protectedResponse.ok()).toBeTruthy();
