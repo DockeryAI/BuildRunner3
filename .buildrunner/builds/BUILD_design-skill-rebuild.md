@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 12-13 Complete, Phases 14-16 pending
+**Status:** Phases 12-13 Complete, Phase 14 pending (bifurcation), Phase 14.5 paused (theming), Phases 15-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -340,10 +340,44 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ---
 
-### Phase 14: Design the Wizard with /design (Dockery Brand) _(added: 2026-03-29)_
+### Phase 14: Bifurcate Discovery — Redesign vs First Design _(added: 2026-03-30)_
 
 **Status:** 🚧 in_progress
 **Blocked by:** Phase 13
+**Blocks:** Phase 14.5 (theming should apply AFTER new screens exist)
+**Files:**
+
+- `~/.claude/tools/design-wizard/src/types.ts` (MODIFY — mode-aware types)
+- `~/.claude/tools/design-wizard/src/App.tsx` (MODIFY — bifurcate wizard screens)
+- `~/.claude/tools/design-wizard/vite.config.ts` (MODIFY — audit-data endpoint)
+- `~/.claude/commands/design.md` (MODIFY — Steps -1 through 1.5b, 3.5)
+
+**Deliverables:**
+
+- [ ] Update `types.ts` — add `WizardMode`, `SiteAuditData`, `PainInterview`, `GutTestReaction`, `FirstDesignFoundation`, `DensityPreference`, discriminated `DiscoveryOutput` union type
+- [ ] Build redesign wizard path in `App.tsx` — 5 screens: AuditReport view, 3 pain questions, constraints, submit
+- [ ] Build first-design wizard path in `App.tsx` — 8 screens: 4 foundation questions, GutTest (6 sites, love/hate/meh), DensityPicker (3 visual options), NOT-like, constraints, submit
+- [ ] Update wizard shared infrastructure — mode-aware categories bar, `canContinue` validation per mode/screen, `submit()` produces unified `DiscoveryOutput`, progress bar adapts to screen count
+- [ ] Add `/api/audit-data` GET endpoint to `vite.config.ts` — reads `site-audit.json` from project's `.buildrunner/design/`
+- [ ] Rewrite `design.md` Steps -1 through 1.5a — three-mode detection (redesign-external, redesign-local, first-design), expand Step 0.5 for local project scanning, add Step 0.7 audit presentation, mode-aware wizard launch, remove `<external_mode_prefill>` block, update CLI fallback
+- [ ] Rewrite `design.md` Step 1.5b Aaker derivation — redesign: audit-inferred scores adjusted by pain answers; first-design: gut-test reaction weighted averaging with known site profiles
+- [ ] Update `design.md` Step 3.5 Direction D — redesign: "current site polished" (audit positions, content issues fixed); first-design: "competitor baseline" (unchanged)
+
+**Build constraints:**
+
+- Redesign path: site speaks first, client reacts. Audit → 3 pain questions → done. No re-describing the business.
+- First-design path: reactions over vocabulary. Gut test (love/hate/meh on real sites) replaces abstract personality sliders.
+- Both paths produce identical `DiscoveryOutput` schema so Steps 2-6 don't care which path created it.
+- CLI fallback for redesign: audit report → 3 questions → constraints. CLI fallback for first-design: 4 foundation questions → sliders (no gut test without images) → NOT-like → constraints.
+
+**Success Criteria:** `/design stripe.com` shows audit report + asks 3 pain questions (not 13). `/design` in empty project asks 4 business questions + gut test (not 13). Both produce valid discovery.json consumed by Steps 2+.
+
+---
+
+### Phase 14.5: Design the Wizard with /design (Dockery Brand) _(added: 2026-03-29)_
+
+**Status:** paused (waiting for Phase 14)
+**Blocked by:** Phase 14
 **Files:**
 
 - `~/.claude/tools/design-wizard/` (MODIFY — apply DESIGN_SPEC)
@@ -367,7 +401,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 ### Phase 15: Cloud Pipeline — Supabase + Realtime Listener _(added: 2026-03-29)_
 
 **Status:** pending
-**Blocked by:** Phase 14
+**Blocked by:** Phase 14.5
 **Files:**
 
 - `~/.claude/tools/design-wizard/` (MODIFY — Supabase integration, mode selection, waiting page, gallery)
