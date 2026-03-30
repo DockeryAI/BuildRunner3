@@ -1,7 +1,7 @@
 # Build: Playwright Full Integration
 
 **Created:** 2026-03-30
-**Status:** Batch 1 Complete, Batch 2 Pending (Phase 5)
+**Status:** Batch 2 In Progress (Phase 5)
 **Deploy:** web — existing BR3 skill system (no deploy step, skill files are live on save)
 
 ## Overview
@@ -115,7 +115,7 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
 
 ### Phase 5: GitHub Actions CI
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - .github/workflows/ci.yml (MODIFY)
