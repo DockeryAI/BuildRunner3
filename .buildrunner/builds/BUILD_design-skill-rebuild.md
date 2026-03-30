@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 12-14 Complete, Phase 14.5 paused (theming), Phases 15-16 pending
+**Status:** Phases 12-14 Complete, Phase 14.5 paused (theming), Phase 14.6 pending (slider previews), Phases 15-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -395,6 +395,34 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 - 4.6 will want to "improve" the wizard during design application — resist. If something needs improving, note it for a future phase.
 
 **Success Criteria:** The wizard looks and feels like a premium product — Dockery-branded, smooth animations, every interaction delightful. Not a developer tool form. A $100k design experience.
+
+---
+
+### Phase 14.6: Live-Morphing Slider Previews _(added: 2026-03-30)_
+
+**Status:** pending
+**Blocked by:** Phase 14
+**Files:**
+
+- `~/.claude/tools/design-wizard/src/App.tsx` (MODIFY — SliderRow component + 4 preview panels)
+
+**Deliverables:**
+
+- [ ] Playful/Serious preview — a greeting card that morphs from rounded/bouncy/colorful (Mailchimp) to sharp/tight/muted (McKinsey). 10 art-directed states with smooth CSS transitions between them. Dynamic heading from user's business name.
+- [ ] Minimal/Maximal preview — a page layout section where elements progressively appear (1=single centered heading with whitespace, 10=dense multi-element dashboard). Spacing compresses, font sizes shrink, secondary elements fade in. Dynamic heading from business name.
+- [ ] Warm/Cool preview — a hero block with background gradient that shifts from amber/soft-orange (Headspace) through neutral to steel-blue/slate (Stripe). Heading color, surface tint, and accent shift together. Dynamic heading from business name.
+- [ ] Classic/Cutting-edge preview — a type specimen that shifts from serif/conservative/muted (law firm) to bold geometric sans/gradient accents/high contrast (Nike). Dynamic heading from business name.
+- [ ] Each preview uses CSS custom properties mapped via a lookup object per slider position (1-10). Browser interpolates via `transition: all 0.3s`. No JS animation libraries.
+- [ ] Dynamic content injection: business name from foundation.business as heading text, goal-derived CTA text from foundation.design_goal
+
+**Build constraints:**
+
+- CSS custom properties + transitions only. No Framer Motion for slider morphing (page transitions only, per Phase 11 constraints).
+- 10 carefully art-directed states per slider, not a formula that auto-generates them. Each intermediate position should look intentional.
+- Preview quality bar: each position should look like a screenshot from a real site at that personality level, not a CSS demo.
+- Previews sit above the slider track, inside the same screen. No extra screens or modals.
+
+**Success Criteria:** Dragging Warm/Cool from 1 to 10 visibly shifts the preview from warm amber Headspace tones to cool steel Stripe tones with smooth interpolation. The heading says the user's company name. All 4 sliders have distinct, beautiful preview panels that make the slider's impact immediately obvious. Dragging back and forth feels satisfying and cinematic.
 
 ---
 

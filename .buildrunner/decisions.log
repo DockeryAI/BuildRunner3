@@ -97,3 +97,4 @@
   - Aaker derivation: redesign uses audit-inferred + pain adjustments, first-design uses gut-test weighted averaging
   - Direction D: redesign = current site polished (content issues fixed), first-design = competitor baseline (unchanged)
 [Mon Mar 30 09:46:21 CDT 2026] [DECISION] Created build spec: Playwright Full Integration with 6 phases (Phases 1-4,6 parallelizable, Phase 5 blocked by 4)
+[2026-03-30T15:01:11Z] [AMENDMENT] Added Phase 14.6: Live-Morphing Slider Previews. 6 tasks. Reason: Phase 11 deliverable (slider morphing) was marked complete but never implemented. 4 personality sliders need art-directed preview panels that morph as user drags.
