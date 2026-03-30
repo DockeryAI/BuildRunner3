@@ -426,6 +426,32 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ---
 
+### Phase 14.8: Archetype Selection Algorithm _(added: 2026-03-30)_
+
+**Status:** pending
+**Blocked by:** Phase 14
+**Files:**
+
+- `~/.claude/commands/design.md` (MODIFY — Steps 3.1, 3.2, 3.4)
+
+**Deliverables:**
+
+- [ ] Add archetype affinity scoring table in Step 3.2 — each of the 12 archetypes per project type maps to 2-3 "affinity" axis positions and 2-3 "anti-affinity" positions. Selection scores candidates against the vector's axis positions instead of relying on name-matching. _(added: 2026-03-30)_
+- [ ] Add mandatory shuffle-then-pick in Step 3.2 — after affinity scoring, top 6 candidates are shuffled, then top 3 selected. Breaks LLM primacy bias (always picking first items in list) while still respecting brand fit. _(added: 2026-03-30)_
+- [ ] Rename archetype table entries to remove axis-name overlap — "Editorial scroll" and similar labels that echo Layout axis values get description-first labels to prevent semantic shortcutting (e.g., "editorial-scroll" axis → "Editorial scroll" archetype). _(added: 2026-03-30)_
+- [ ] Add structural family distance rule — define 4-5 structural families (grid-based, scroll-based, spatial, dense, minimal) and require selected archetypes to come from 3 different families. Prevents getting 3 grid variants (bento + card-cascade + tile-mosaic). _(added: 2026-03-30)_
+- [ ] Add session archetype memory — if `.buildrunner/design/session-log.md` exists from a previous run, read which archetypes were used last time and deprioritize them in scoring. _(added: 2026-03-30)_
+
+**Build constraints:**
+
+- This fixes the "same 3 styles every time" bug. Root cause: Step 3.2 says "pick 3 different archetypes" with no algorithm, so the LLM defaults to the first 3 in the table (Full-bleed, Bento, Editorial) every run regardless of industry.
+- The 10-axis system works correctly — the bug is only in the archetype selector that sits between vector extraction and constraint sheet assembly.
+- Do not restructure the axis system or color pipeline. This phase only adds the missing bridge algorithm.
+
+**Success Criteria:** Run `/design` 3 times on the same project — get 3 different sets of archetypes each time. No run produces the Full-bleed + Bento + Editorial combination unless affinity scoring genuinely selects them. Archetypes come from different structural families.
+
+---
+
 ### Phase 15: Cloud Pipeline — Supabase + Realtime Listener _(added: 2026-03-29)_
 
 **Status:** pending

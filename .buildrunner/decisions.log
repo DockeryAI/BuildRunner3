@@ -126,3 +126,4 @@
   - /guard: Added E2E test coverage validation (Section 3.6) to catch UI phases missing tests
   - /review: Added E2E regression run (npm run test:e2e) after auto-fix step
   - /design: Added E2E Test Requirements section to DESIGN_SPEC.md output
+[Mon Mar 30 10:09:27 CDT 2026] [AMENDMENT] Added Phase 14.8 (Archetype Selection Algorithm) — 5 tasks. Reason: /design always picks same 3 archetypes (Full-bleed, Bento, Editorial) due to missing selection algorithm between 10-axis vectors and archetype table. LLM primacy bias + semantic name-matching causes deterministic convergence despite 170k theoretical combinations.
