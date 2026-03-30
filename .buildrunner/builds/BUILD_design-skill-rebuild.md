@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 12-14 Complete, Phase 14.5 paused (theming), Phase 14.6 pending (slider previews), Phases 15-16 pending
+**Status:** Phases 12-14 Complete, Phase 14.5 paused (theming), Phase 14.6 pending (slider previews), Phase 14.8 pending (archetype fix), Phases 15-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
