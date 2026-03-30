@@ -110,3 +110,9 @@
   - Added no-delegate and no-hardcode constraints to executor prompt
   - Gate report now shows per-phase E2E status and full regression result
   - FULL_SEND auto-approve requires E2E regression pass
+[2026-03-30T15:04:43Z] Phase 3 decisions:
+- Used command hook type for Stop hook (not agent) — test execution is mechanical, no LLM needed
+- Stop hook blocks completion when E2E tests fail (continue: false)
+- MCP permissions restricted to 8 core Playwright tools only
+- SessionStart hook only injects context when test-results/ directory exists
+- pw-test slash command uses explore-then-write pattern with 3 multishot examples
