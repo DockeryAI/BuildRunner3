@@ -1,7 +1,7 @@
 # Build: Playwright Full Integration
 
 **Created:** 2026-03-30
-**Status:** Batch 2 In Progress (Phase 5)
+**Status:** ✅ ALL PHASES COMPLETE
 **Deploy:** web — existing BR3 skill system (no deploy step, skill files are live on save)
 
 ## Overview
@@ -115,19 +115,19 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
 
 ### Phase 5: GitHub Actions CI
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - .github/workflows/ci.yml (MODIFY)
   **Blocked by:** Phase 4 (tests should be stable before CI runs them)
   **After:** Phase 4
   **Deliverables:**
-- [ ] Add e2e-tests job after integration-tests
-- [ ] Install browsers with npx playwright install --with-deps
-- [ ] Start frontend + backend servers
-- [ ] Run npx playwright test
-- [ ] Upload HTML report as artifact
-- [ ] Upload traces as artifact (on failure only)
+- [x] Add e2e-tests job after integration-tests
+- [x] Install browsers with npx playwright install --with-deps
+- [x] Start frontend + backend servers
+- [x] Run npx playwright test
+- [x] Upload HTML report as artifact
+- [x] Upload traces as artifact (on failure only)
 
 **Success Criteria:** CI pipeline includes Playwright step. Failed tests show traces in downloadable artifacts.
 

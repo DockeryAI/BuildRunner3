@@ -1,8 +1,0 @@
-{
-  "batches": [{"id": 1, "phases": [1, 2, 3, 4, 6]}, {"id": 2, "phases": [5]}],
-  "current_batch": 1,
-  "total_phases": 6,
-  "completed_phases": 0,
-  "mode": "autopilot-fullsend",
-  "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
