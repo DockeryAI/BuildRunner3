@@ -96,3 +96,4 @@
   - DiscoveryOutput union type unifies both paths for Steps 2+
   - Aaker derivation: redesign uses audit-inferred + pain adjustments, first-design uses gut-test weighted averaging
   - Direction D: redesign = current site polished (content issues fixed), first-design = competitor baseline (unchanged)
+[Mon Mar 30 09:46:21 CDT 2026] [DECISION] Created build spec: Playwright Full Integration with 6 phases (Phases 1-4,6 parallelizable, Phase 5 blocked by 4)

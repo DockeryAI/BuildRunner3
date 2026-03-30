@@ -1,0 +1,80 @@
+{
+  "redesignUrl": "stripe.com",
+  "type": "redesign-request",
+  "crawl": {
+    "ok": true,
+    "url": "https://stripe.com",
+    "title": "Stripe | Financial Infrastructure to Grow Your Revenue",
+    "description": "Stripe is a financial services platform that helps all types of businesses accept payments, build flexible billing models, and manage money movement.",
+    "h1": "Financial infrastructure to grow your revenue. Accept payments, offer financial services, and implement custom revenue models—from your first transaction to your billionth.",
+    "colors": [
+      "#031323",
+      "#4285f4",
+      "#34a853",
+      "#fbbc04",
+      "#ea4335",
+      "#000",
+      "#171d27",
+      "#ff6201",
+      "#76b900",
+      "#003478"
+    ],
+    "fonts": [],
+    "logo": "https://images.stripeassets.com/fzn2n1nzq965/24BNV3GGtvCprFLrYovyaa/b2eac20a1d5ec75e4bff3888b998d163/enterprise-accordion-hertz.png?w=296&amp;q=90",
+    "htmlLength": 572769,
+    "auditData": {
+      "url": "https://stripe.com",
+      "domain": "stripe.com",
+      "pages_crawled": 1,
+      "palette": {
+        "primary_accent": "#031323",
+        "secondary": "#4285f4",
+        "surface": "#34a853",
+        "text": "#fbbc04"
+      },
+      "typography": {
+        "heading_font": "system-ui",
+        "body_font": "system-ui",
+        "mono_font": "monospace"
+      },
+      "layout": {
+        "navigation": "hamburger + top bar",
+        "hero": "hero section",
+        "sections": "standard",
+        "footer": "standard",
+        "density": "balanced"
+      },
+      "axis_positions": {},
+      "content_audit": {
+        "text_walls": 0,
+        "identical_cards": 0,
+        "flat_hierarchy": false,
+        "missing_breaks": 0
+      },
+      "content": {
+        "headings": [
+          "Financial infrastructure to grow your revenue. Accept payments, offer financial services, and implement custom revenue models—from your first transaction to your billionth.",
+          "Flexible solutions for every business model.",
+          "The backbone of global commerce",
+          "Powering businesses of all sizes.",
+          "Reliable, extensible infrastructure for every stack.",
+          "What’s happening"
+        ],
+        "body_sections": [
+          "Stripe is a financial services platform that helps all types of businesses accept payments, build flexible billing models, and manage money movement."
+        ],
+        "stats": [],
+        "testimonials": [],
+        "logo_url": "https://images.stripeassets.com/fzn2n1nzq965/24BNV3GGtvCprFLrYovyaa/b2eac20a1d5ec75e4bff3888b998d163/enterprise-accordion-hertz.png?w=296&amp;q=90",
+        "ctas": [
+          "Products",
+          "Solutions",
+          "Developers",
+          "Resources",
+          "Pricing",
+          "Sign in"
+        ]
+      }
+    }
+  }
+}
