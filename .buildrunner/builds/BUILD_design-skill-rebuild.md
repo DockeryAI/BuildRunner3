@@ -400,7 +400,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 14.6: Live-Morphing Slider Previews _(added: 2026-03-30)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 14
 **Files:**
 
@@ -428,7 +428,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 14.8: Archetype Selection Algorithm _(added: 2026-03-30)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 14
 **Files:**
 
