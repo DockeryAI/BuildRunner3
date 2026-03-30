@@ -90,3 +90,9 @@
 [Sun Mar 29 11:59:41 CDT 2026] [AMENDMENT] Added Phase 10.5 (7 tasks) + 1 task to Phase 12. Reason: /design CultureCook run analysis revealed validation logged PASS without reading files, logo missing from 3/4 mockups, duplicate colors, scrambled fonts/nav/personas, identical content. Phase 10.5 fixes design.md enforcement before UI phases build on top. Phase 12 gains validation badge in gallery.
 [2026-03-29T17:57:16Z] [AMENDMENT] Added Phases 15-16: Cloud pipeline (Supabase + Realtime listener + Netlify deploy) and domain setup. Reason: customer-facing wizard at design.dockeryai.com with URL redesign mode, local mode preserved.
 [Mon Mar 30 07:44:42 CDT 2026] [AMENDMENT] Added Phase 14 (Bifurcate Discovery — 8 tasks). Renumbered old Phase 14 → Phase 14.5. Reason: /design forces redesign users through same 13-question wizard as new designs. Redesigns need audit-first flow (3 questions), new designs need gut-test flow (8 screens). Phase 14.5 (theming) paused until new screens exist.
+[2026-03-30T13:01:27Z] Phase 14 decisions:
+  - Three-mode detection: redesign-external, redesign-local, first-design
+  - Wizard bifurcated: redesign path (5 screens: audit + 3 pain + constraints/submit), first-design path (8 screens: 4 foundation + gut test + density + not-like/constraints + submit)
+  - DiscoveryOutput union type unifies both paths for Steps 2+
+  - Aaker derivation: redesign uses audit-inferred + pain adjustments, first-design uses gut-test weighted averaging
+  - Direction D: redesign = current site polished (content issues fixed), first-design = competitor baseline (unchanged)
