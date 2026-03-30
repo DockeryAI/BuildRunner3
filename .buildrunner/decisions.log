@@ -89,3 +89,7 @@
 [2026-03-29T16:52:43Z] [AMENDMENT] Added mockup gallery page to Phase 12: 4 extra-large thumbnail cards, click to view full mockup, persistent nav bar, pick button writes selection.json. Replaces opening 4 separate browser tabs.
 [Sun Mar 29 11:59:41 CDT 2026] [AMENDMENT] Added Phase 10.5 (7 tasks) + 1 task to Phase 12. Reason: /design CultureCook run analysis revealed validation logged PASS without reading files, logo missing from 3/4 mockups, duplicate colors, scrambled fonts/nav/personas, identical content. Phase 10.5 fixes design.md enforcement before UI phases build on top. Phase 12 gains validation badge in gallery.
 [2026-03-29T17:57:16Z] [AMENDMENT] Added Phases 15-16: Cloud pipeline (Supabase + Realtime listener + Netlify deploy) and domain setup. Reason: customer-facing wizard at design.dockeryai.com with URL redesign mode, local mode preserved.
+[2026-03-30T15:04:38Z] Phase 6 decisions:
+  - /guard: Added E2E test coverage validation (Section 3.6) to catch UI phases missing tests
+  - /review: Added E2E regression run (npm run test:e2e) after auto-fix step
+  - /design: Added E2E Test Requirements section to DESIGN_SPEC.md output
