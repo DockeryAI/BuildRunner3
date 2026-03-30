@@ -1,7 +1,7 @@
 # Build: Playwright Full Integration
 
 **Created:** 2026-03-30
-**Status:** Batch 1 In Progress (Phases 1,2,3,4,6)
+**Status:** Batch 1 Complete, Batch 2 Pending (Phase 5)
 **Deploy:** web — existing BR3 skill system (no deploy step, skill files are live on save)
 
 ## Overview
@@ -23,7 +23,7 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
 
 ### Phase 1: Wire Tests into Build Workflow
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/.claude/commands/begin.md (MODIFY)
@@ -31,11 +31,11 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
 - ~/.claude/commands/e2e.md (MODIFY)
   **Blocked by:** None
   **Deliverables:**
-- [ ] Add E2E execution block to /begin Step 4.5b — detect playwright config, check for UI deliverables, run `npm run test:e2e:ui`, fix loop (3 attempts), block phase on failure
-- [ ] Update /e2e skill to accept `phase_number` argument for scoped test detection
-- [ ] Use soft 4.6 prompt language ("run tests when phase includes UI deliverables" not "MUST run tests")
-- [ ] Add "do not hard-code values to pass assertions" constraint per 4.6 anti-pattern
-- [ ] Track E2E result in progress output (e2e_tier1: PASS|FAIL|SKIP)
+- [x] Add E2E execution block to /begin Step 4.5b — detect playwright config, check for UI deliverables, run `npm run test:e2e:ui`, fix loop (3 attempts), block phase on failure
+- [x] Update /e2e skill to accept `phase_number` argument for scoped test detection
+- [x] Use soft 4.6 prompt language ("run tests when phase includes UI deliverables" not "MUST run tests")
+- [x] Add "do not hard-code values to pass assertions" constraint per 4.6 anti-pattern
+- [x] Track E2E result in progress output (e2e_tier1: PASS|FAIL|SKIP)
 
 **Success Criteria:** /begin on a UI phase runs Playwright and blocks on failure. Backend-only phases skip cleanly.
 
@@ -43,7 +43,7 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
 
 ### Phase 2: Autopilot E2E Gates
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/.claude/commands/autopilot.md (MODIFY)
@@ -51,11 +51,11 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
   **Blocked by:** None (different files than Phase 1)
   **After:** Phase 1 (logical sequence, CAN parallelize)
   **Deliverables:**
-- [ ] Add E2E result aggregation to batch gate (Step 5)
-- [ ] Fail batch if any phase's E2E failed
-- [ ] Add full regression run (npm run test:e2e) after batch passes individually
-- [ ] Add "run tests directly, do not delegate to subagents" constraint in executor prompt (prevents 4.6 subagent spawning)
-- [ ] Report E2E status in batch gate summary
+- [x] Add E2E result aggregation to batch gate (Step 5)
+- [x] Fail batch if any phase's E2E failed
+- [x] Add full regression run (npm run test:e2e) after batch passes individually
+- [x] Add "run tests directly, do not delegate to subagents" constraint in executor prompt (prevents 4.6 subagent spawning)
+- [x] Report E2E status in batch gate summary
 
 **Success Criteria:** Autopilot refuses to advance past a batch when E2E tests are failing. Batch summary shows E2E pass/fail per phase.
 
@@ -63,7 +63,7 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
 
 ### Phase 3: Playwright MCP + Claude Code Hooks
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/Projects/BuildRunner3/.mcp.json (NEW)
@@ -72,12 +72,12 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
   **Blocked by:** None (all new files or different files)
   **After:** Phase 1
   **Deliverables:**
-- [ ] Create .mcp.json with Playwright MCP server config (stdio transport, npx @playwright/mcp@latest)
-- [ ] Add MCP tool permissions to settings — restrict to 8 core tools (navigate, click, type, fill, screenshot, snapshot, evaluate, close)
-- [ ] Add Stop hook (type: agent, low effort, terse prompt) that runs npm run test:e2e before Claude finishes tasks
-- [ ] Add stop_hook_active guard to prevent infinite loops
-- [ ] Create /pw-test slash command — explore-then-write pattern with XML structure and 2-3 multishot examples
-- [ ] Add compact-matcher SessionStart hook to re-inject test status after context compaction
+- [x] Create .mcp.json with Playwright MCP server config (stdio transport, npx @playwright/mcp@latest)
+- [x] Add MCP tool permissions to settings — restrict to 8 core tools (navigate, click, type, fill, screenshot, snapshot, evaluate, close)
+- [x] Add Stop hook (type: agent, low effort, terse prompt) that runs npm run test:e2e before Claude finishes tasks
+- [x] Add stop_hook_active guard to prevent infinite loops
+- [x] Create /pw-test slash command — explore-then-write pattern with XML structure and 2-3 multishot examples
+- [x] Add compact-matcher SessionStart hook to re-inject test status after context compaction
 
 **Success Criteria:** Claude can browse localhost:5173 via MCP tools. Tasks can't complete until tests pass. /pw-test produces tests grounded in observed behavior.
 
@@ -85,7 +85,7 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
 
 ### Phase 4: Test Infrastructure Upgrade
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - tests/e2e/pages/LoginPage.ts (NEW)
@@ -102,12 +102,12 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
   **Blocked by:** None (test files independent of skill files)
   **After:** Phase 1
   **Deliverables:**
-- [ ] Create Page Object Models for Login, Dashboard, Analytics pages with role-based locators
-- [ ] Create shared fixtures (authenticatedPage, dashboardPage, apiContext)
-- [ ] Create auth setup project with storageState reuse
-- [ ] Update playwright.config.ts with setup project dependency and auth state path
-- [ ] Migrate all 5 spec files from CSS selectors to POM + getByRole/getByTestId locators
-- [ ] Add playwright/.auth/ to .gitignore
+- [x] Create Page Object Models for Login, Dashboard, Analytics pages with role-based locators
+- [x] Create shared fixtures (authenticatedPage, dashboardPage, apiContext)
+- [x] Create auth setup project with storageState reuse
+- [x] Update playwright.config.ts with setup project dependency and auth state path
+- [x] Migrate all 5 spec files from CSS selectors to POM + getByRole/getByTestId locators
+- [x] Add playwright/.auth/ to .gitignore
 
 **Success Criteria:** All 25+ existing tests pass using POMs. Login happens once per worker, not once per test. No CSS selectors remain in spec files.
 
@@ -135,7 +135,7 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
 
 ### Phase 6: Skill Cross-Integration
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/.claude/commands/guard.md (MODIFY)
@@ -144,9 +144,9 @@ Wire Playwright into every stage of the BR3 build pipeline so tests run automati
   **Blocked by:** None
   **After:** Phase 1 (skills need /begin integration working first to be meaningful)
   **Deliverables:**
-- [ ] /guard — add check: "Phase has UI deliverables but no E2E tests" → flag as gap
-- [ ] /review — after auto-fixing issues, explicitly run npm run test:e2e to verify no regressions
-- [ ] /design — when producing DESIGN_SPEC.md, add "E2E Test Requirements" section documenting which flows need testing
+- [x] /guard — add check: "Phase has UI deliverables but no E2E tests" → flag as gap
+- [x] /review — after auto-fixing issues, explicitly run npm run test:e2e to verify no regressions
+- [x] /design — when producing DESIGN_SPEC.md, add "E2E Test Requirements" section documenting which flows need testing
 
 **Success Criteria:** Guard catches missing test coverage. Review verifies fixes don't break E2E. Design specs include test planning.
 
