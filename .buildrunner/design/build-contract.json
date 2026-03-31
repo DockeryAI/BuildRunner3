@@ -1,0 +1,44 @@
+{
+  "directions": {
+    "A": {
+      "font_heading": "Fraunces Variable",
+      "font_body": "DM Sans Variable",
+      "nav_pattern": "floating-pill",
+      "accent_hex": "#C47A3A",
+      "accent_oklch_hue": 65,
+      "archetype": "longform-narrative",
+      "density_tier": "Sparse minimal",
+      "logo_touchpoints": ["hero-mark", "atmospheric-bg", "card-watermark", "section-divider", "nav-icon"]
+    },
+    "B": {
+      "font_heading": "JetBrains Mono Variable",
+      "font_body": "Inter Variable",
+      "nav_pattern": "sidebar",
+      "accent_hex": "#2BD5C4",
+      "accent_oklch_hue": 185,
+      "archetype": "divided-canvas",
+      "density_tier": "Dense editorial",
+      "logo_touchpoints": ["hero-mark", "atmospheric-bg", "card-watermark", "section-divider", "nav-icon"]
+    },
+    "C": {
+      "font_heading": "Bricolage Grotesque Variable",
+      "font_body": "Source Sans 3 Variable",
+      "nav_pattern": "sticky-pills",
+      "accent_hex": "#8B5E83",
+      "accent_oklch_hue": 320,
+      "archetype": "bento-grid",
+      "density_tier": "Medium balanced",
+      "logo_touchpoints": ["hero-mark", "atmospheric-bg", "card-watermark", "section-divider", "nav-icon"]
+    },
+    "D": {
+      "font_heading": "Sofia Pro",
+      "font_body": "system-ui",
+      "nav_pattern": "sticky-top-hamburger",
+      "accent_hex": "#0023FF",
+      "accent_oklch_hue": 264,
+      "archetype": "single-column",
+      "density_tier": "Light airy",
+      "logo_touchpoints": ["nav-icon"]
+    }
+  }
+}

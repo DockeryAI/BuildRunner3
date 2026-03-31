@@ -1,54 +1,67 @@
 {
-  "url": "https://stripe.com",
-  "domain": "stripe.com",
+  "url": "https://www.opendialog.ai",
+  "domain": "opendialog",
   "pages_crawled": 1,
   "palette": {
-    "primary_accent": "#031323",
-    "secondary": "#4285f4",
-    "surface": "#34a853",
-    "text": "#fbbc04"
+    "primary_accent": "#0023FF",
+    "secondary": "#3E4563",
+    "surface": "#FFFFFF",
+    "text": "#3E4563"
   },
   "typography": {
-    "heading_font": "system-ui",
-    "body_font": "system-ui",
-    "mono_font": "monospace"
+    "heading_font": "Sofia Pro Semi Bold",
+    "body_font": "sans-serif",
+    "mono_font": "none"
   },
   "layout": {
-    "navigation": "hamburger + top bar",
-    "hero": "hero section",
-    "sections": "standard",
-    "footer": "standard",
-    "density": "balanced"
+    "navigation": "sticky top with hamburger + CTA",
+    "hero": "centered text with overlapping photo grid below",
+    "sections": "9 sections — hero, agents, SAFER, use cases, testimonials, custom agent, 4-step process, demo CTA, footer",
+    "footer": "dark blue 2-column links with certification badges",
+    "density": "light-airy"
   },
-  "axis_positions": {},
+  "axis_positions": {
+    "Layout": 7,
+    "Color Temp": 2,
+    "Density": 1,
+    "Typography": 1,
+    "Interaction": 0,
+    "Tone": 1,
+    "Visual Weight": 2,
+    "Imagery": 0,
+    "Hierarchy": 0,
+    "Narrative": 0
+  },
   "content_audit": {
     "text_walls": 0,
-    "identical_cards": 0,
-    "flat_hierarchy": false,
-    "missing_breaks": 0
+    "identical_cards": 3,
+    "flat_hierarchy": true,
+    "missing_breaks": 2
   },
   "content": {
     "headings": [
-      "Financial infrastructure to grow your revenue. Accept payments, offer financial services, and implement custom revenue models—from your first transaction to your billionth.",
-      "Flexible solutions for every business model.",
-      "The backbone of global commerce",
-      "Powering businesses of all sizes.",
-      "Reliable, extensible infrastructure for every stack.",
-      "What’s happening"
+      "AI agents that deliver outcomes",
+      "Specialised AI agents. Built for insurance outcomes.",
+      "More compliant quote conversions.",
+      "Policy questions, resolved instantly.",
+      "Smart re-engagement. Recovered revenue.",
+      "Safe, regulated AI for insurance",
+      "Trusted by the best",
+      "Get results in just weeks"
     ],
     "body_sections": [
-      "Stripe is a financial services platform that helps all types of businesses accept payments, build flexible billing models, and manage money movement."
+      "Purpose built AI agents that automate insurance journeys, increase conversion, and prove ROI in weeks.",
+      "Enterprise ready AI agents designed to operate safely across regulated, high volume insurance workflows.",
+      "SAFER ensures every AI agent operates securely, transparently and compliantly — meeting regulatory expectations while delivering consistent, auditable outcomes across live insurance journeys.",
+      "From first conversation to live agent. We use a proven process refined across dozens of deployments."
     ],
-    "stats": [],
-    "testimonials": [],
-    "logo_url": "https://images.stripeassets.com/fzn2n1nzq965/24BNV3GGtvCprFLrYovyaa/b2eac20a1d5ec75e4bff3888b998d163/enterprise-accordion-hertz.png?w=296&amp;q=90",
-    "ctas": [
-      "Products",
-      "Solutions",
-      "Developers",
-      "Resources",
-      "Pricing",
-      "Sign in"
-    ]
+    "stats": ["20% increase in quote conversions", "70% self-served policy queries", "20% recovery of lost quote journeys"],
+    "testimonials": [
+      "Our process is now a lot quicker and we have more dialogue with customers, leading to associated savings and more opportunities to capture sales. — Anthony Fletcher, COO, VRG (Part of Davies Group)",
+      "Selma has already made a tangible difference during the initial project, showing great results and strong potential for our other brands. — Robert Balls, Operations Director, Bikesure",
+      "OpenDialog is a leader in technological innovation. This partnership will help agents streamline their sales and service processes. — Dan Garzella, Garzella Group"
+    ],
+    "logo_url": "https://framerusercontent.com/images/5Dz9OF53wzURHZIE5BilP5z9w.png",
+    "ctas": ["Book a demo", "Meet our agents", "Discuss your needs", "Start your journey", "Start the conversation"]
   }
 }

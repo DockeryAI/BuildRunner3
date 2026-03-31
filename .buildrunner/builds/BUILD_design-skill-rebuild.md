@@ -486,6 +486,14 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Success Criteria:** All 10 axes in design.md match types.ts exactly. Layout has 12 positions, Hierarchy has hub-spoke + flat-uniform, Color Temp has monochrome. DirectionCards shows project-type-appropriate archetypes. 5 personality sliders in first-design flow. Gallery and research routes show waiting states when no data. Running `/design` 3 times produces directions that pass all 3 validation checks (axis distance, hue distance, family diversity).
 
+**Post-E2E amendments (2026-03-30):**
+
+- [x] Eliminated 27 old kebab-case axis labels from design.md guidance text (audience constraints, affinity table, example constraint sheets, Synapse integration)
+- [x] Fixed pre-existing build errors in wizard app (unused imports, handleEsc, font type declarations)
+- [x] Added rule 18: inline-only mockup builds — never delegate to subagents (they lack /appdesign context and produce identical generic SaaS structures per /opus 4.6 subagent orchestration research)
+- [x] Added rule 19: archetype determines page flow, not just CSS
+- [x] Added `<structural_flow_examples>` multishot section with RIGHT/WRONG examples per archetype family (per /opus: multishot > instructions for 4.6, 10.3: softer guidance prevents overtriggering)
+
 ---
 
 ### Phase 15: Cloud Pipeline — Supabase + Realtime Listener _(added: 2026-03-29)_

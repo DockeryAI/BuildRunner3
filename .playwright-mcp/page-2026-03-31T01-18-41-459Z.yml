@@ -1,0 +1,19 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img "DockeryAI" [ref=e6]
+    - generic [ref=e8]:
+      - button "Audit" [ref=e9] [cursor=pointer]
+      - button "Pain Points" [ref=e10] [cursor=pointer]
+      - button "Constraints" [ref=e11] [cursor=pointer]
+  - generic [ref=e16]:
+    - paragraph [ref=e17]: Site Audit
+    - heading "Here's what we found" [level=2] [ref=e18]
+    - paragraph [ref=e19]: We crawled your site and extracted its design DNA. Review and continue.
+    - generic [ref=e20]:
+      - paragraph [ref=e21]: Enter a URL to crawl and extract design DNA.
+      - generic [ref=e22]:
+        - textbox "yoursite.com" [ref=e23]
+        - button "Crawl" [disabled] [ref=e24]
+  - generic [ref=e25]:
+    - button "← Back" [disabled] [ref=e26]
+    - button "Continue →" [ref=e33] [cursor=pointer]

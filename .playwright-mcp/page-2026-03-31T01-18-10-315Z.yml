@@ -1,0 +1,36 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img "DockeryAI" [ref=e6]
+    - generic [ref=e8]:
+      - button "Foundation" [ref=e9] [cursor=pointer]
+      - button "Audience" [ref=e10] [cursor=pointer]
+      - button "Personality" [active] [ref=e11] [cursor=pointer]
+      - button "Gut Test" [ref=e12] [cursor=pointer]
+      - button "Density" [ref=e13] [cursor=pointer]
+      - button "Constraints" [ref=e14] [cursor=pointer]
+  - generic [ref=e57]:
+    - paragraph [ref=e58]: Personality — 1 of 5
+    - heading "Playful or Serious?" [level=2] [ref=e59]
+    - paragraph [ref=e60]: 1 = Mailchimp (quirky, fun) → 10 = McKinsey (formal, authoritative)
+    - generic [ref=e62]:
+      - generic [ref=e63]:
+        - generic [ref=e64]: D
+        - generic [ref=e65]: Dockery AI helps businesses create stunning websites using AI-powered design tools
+      - generic [ref=e66]: Welcome to Dockery AI helps businesses create stunning websites using AI-powered design tools
+      - generic [ref=e67]: We deliver reliable solutions.
+      - generic [ref=e68]: Get Started
+    - generic [ref=e69]:
+      - generic [ref=e70]: Playful ↔ Serious
+      - generic [ref=e71]:
+        - generic [ref=e72]: Playful
+        - generic [ref=e73]:
+          - slider "Playful ↔ Serious" [ref=e74] [cursor=pointer]: "5"
+          - generic: "5"
+        - generic [ref=e75]: Serious
+    - generic [ref=e77]:
+      - generic [ref=e78]: 1 — Mailchimp
+      - generic [ref=e79]: 5 — Notion
+      - generic [ref=e80]: 10 — McKinsey
+  - generic [ref=e24]:
+    - button "← Back" [ref=e25] [cursor=pointer]
+    - button "Continue →" [ref=e81] [cursor=pointer]
