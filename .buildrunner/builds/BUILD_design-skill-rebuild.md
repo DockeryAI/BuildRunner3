@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 12-14, 14.6, 14.8 Complete, Phase 14.5 paused (theming), Phases 15-16 pending
+**Status:** Phases 12-14, 14.6, 14.8 Complete, Phase 14.5 paused (theming), Phase 14.9 pending, Phases 15-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -449,6 +449,42 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 - Do not restructure the axis system or color pipeline. This phase only adds the missing bridge algorithm.
 
 **Success Criteria:** Run `/design` 3 times on the same project — get 3 different sets of archetypes each time. No run produces the Full-bleed + Bento + Editorial combination unless affinity scoring genuinely selects them. Archetypes come from different structural families.
+
+---
+
+### Phase 14.9: Axis Alignment + Variety Enforcement _(added: 2026-03-30)_
+
+**Status:** pending
+**Blocked by:** Phase 14.8
+**Files:**
+
+- `~/.claude/commands/design.md` (MODIFY — Steps 2b, 3 axis tables)
+- `~/.claude/tools/design-wizard/src/types.ts` (MODIFY — AXIS_POSITIONS)
+- `~/.claude/tools/design-wizard/src/App.tsx` (MODIFY — add 5th slider screen)
+- `~/.claude/tools/design-wizard/src/views/DirectionCards.tsx` (MODIFY — project-type archetype pools)
+- `~/.claude/tools/design-wizard/src/views/Gallery.tsx` (MODIFY — empty state)
+- `~/.claude/tools/design-wizard/src/views/ResearchDashboard.tsx` (MODIFY — empty state)
+
+**Deliverables:**
+
+- [ ] Update all 10 axis tables in `design.md` Steps 2b and 3 to use the research-backed labels from `types.ts` — Narrative (Trusted guide/Friendly helper/Expert authority/Rebellious disruptor/Elegant curator), Interaction (Conventional scroll/Horizontal scroll/Drag-explore/Command-first/Parallax reveal), etc. Remove the hyphenated-technical labels that drifted from research. _(added: 2026-03-30)_
+- [ ] Add 4 missing Layout positions to `AXIS_POSITIONS` in `types.ts`: full-bleed, card-cascade, hub-spoke, data-dense. Update Layout table in `design.md` to match (12 total). _(added: 2026-03-30)_
+- [ ] Replace Z-pattern and F-pattern with hub-spoke and flat-uniform in Hierarchy axis in `types.ts`. Update `design.md` Hierarchy table to match. _(added: 2026-03-30)_
+- [ ] Add monochrome as 6th Color Temp position in `types.ts` and `design.md`. _(added: 2026-03-30)_
+- [ ] Add `PROJECT_ARCHETYPES` record to `DirectionCards.tsx` keyed by project type (website/dashboard/app) with 12 archetypes each per research doc. Accept project type as prop, select active pool. _(added: 2026-03-30)_
+- [ ] Add 5th personality slider screen to `App.tsx` for the missing Aaker dimension (Ruggedness↔Sophistication), with a live preview component matching the existing 4 slider pattern. _(added: 2026-03-30)_
+- [ ] Add post-assembly validation section to `design.md` after Step 3 constraint sheets: programmatic checks for minimum 3-axis pairwise difference between A/B/C, minimum 60-degree pairwise hue distance, and all 3 archetypes from different structural families. Reject and regenerate if any check fails. _(added: 2026-03-30)_
+- [ ] Add empty/waiting states to `Gallery.tsx` and `ResearchDashboard.tsx` — show contextual message when no data exists instead of silently falling back to wizard. _(added: 2026-03-30)_
+
+**Build constraints:**
+
+- The UI axis labels (Title Case, emotionally descriptive) are correct per research. The spec drifted to hyphenated-technical labels — fix the spec, not the UI.
+- Narrative axis in spec used content-strategy positions (feature-list, story-driven). Research defines it as brand-personality positions (Trusted guide, Rebellious disruptor). The UI is correct.
+- Archetype pools per project type come from design-direction-differentiation.md research doc. 12 per type, organized into 4-5 structural families.
+- 5th slider follows existing pattern: art-directed preview with 10 CSS custom property states, business name injected dynamically.
+- Validation enforcement is a Claude Code prompt addition — not UI code. It instructs Claude to run 3 checks after assembling constraint sheets and regenerate if checks fail.
+
+**Success Criteria:** All 10 axes in design.md match types.ts exactly. Layout has 12 positions, Hierarchy has hub-spoke + flat-uniform, Color Temp has monochrome. DirectionCards shows project-type-appropriate archetypes. 5 personality sliders in first-design flow. Gallery and research routes show waiting states when no data. Running `/design` 3 times produces directions that pass all 3 validation checks (axis distance, hue distance, family diversity).
 
 ---
 
