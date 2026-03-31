@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 12-14, 14.6, 14.8, 14.9 Complete, Phase 14.5 paused (theming), Phase 14.10 pending, Phases 15-16 pending
+**Status:** Phases 12-14, 14.6, 14.8, 14.9, 14.10 Complete, Phase 14.5 paused (theming), Phases 15-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -498,7 +498,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 14.10: Deterministic Algorithm Engine _(added: 2026-03-30)_
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 14.9
 **Files:**
 
@@ -508,16 +508,16 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Archetype affinity scoring function — input: direction axis positions + project type, output: all 12 candidates with scores _(added: 2026-03-30)_
-- [ ] Shuffle-then-pick function — input: top 6 scored candidates, output: 3 from different structural families (randomized) _(added: 2026-03-30)_
-- [ ] Session memory deduction function — input: candidates + previous session archetypes from session-log.md, output: adjusted scores with -3 penalty _(added: 2026-03-30)_
-- [ ] Hue distance validator — input: 3 hex colors, output: pairwise angular distances + pass/fail (60° minimum) _(added: 2026-03-30)_
-- [ ] Axis distance validator — input: 3 direction axis-position objects, output: pairwise difference counts + pass/fail (3 minimum) _(added: 2026-03-30)_
-- [ ] Family diversity validator — input: 3 archetype names, output: family lookup + pass/fail (3 different families) _(added: 2026-03-30)_
-- [ ] POST `/api/select-archetypes` endpoint on wizard vite dev server _(added: 2026-03-30)_
-- [ ] POST `/api/validate-directions` endpoint on wizard vite dev server _(added: 2026-03-30)_
-- [ ] Update design.md Step 3.2 — replace algorithm instructions with endpoint call + [SCORING] log requirement _(added: 2026-03-30)_
-- [ ] Update design.md Step 3.6b — replace validation instructions with endpoint call + [VALIDATION] log requirement _(added: 2026-03-30)_
+- [x] Archetype affinity scoring function — input: direction axis positions + project type, output: all 12 candidates with scores _(added: 2026-03-30)_
+- [x] Shuffle-then-pick function — input: top 6 scored candidates, output: 3 from different structural families (randomized) _(added: 2026-03-30)_
+- [x] Session memory deduction function — input: candidates + previous session archetypes from session-log.md, output: adjusted scores with -3 penalty _(added: 2026-03-30)_
+- [x] Hue distance validator — input: 3 hex colors, output: pairwise angular distances + pass/fail (60° minimum) _(added: 2026-03-30)_
+- [x] Axis distance validator — input: 3 direction axis-position objects, output: pairwise difference counts + pass/fail (3 minimum) _(added: 2026-03-30)_
+- [x] Family diversity validator — input: 3 archetype names, output: family lookup + pass/fail (3 different families) _(added: 2026-03-30)_
+- [x] POST `/api/select-archetypes` endpoint on wizard vite dev server _(added: 2026-03-30)_
+- [x] POST `/api/validate-directions` endpoint on wizard vite dev server _(added: 2026-03-30)_
+- [x] Update design.md Step 3.2 — replace algorithm instructions with endpoint call + [SCORING] log requirement _(added: 2026-03-30)_
+- [x] Update design.md Step 3.6b — replace validation instructions with endpoint call + [VALIDATION] log requirement _(added: 2026-03-30)_
 
 **Build constraints:**
 
