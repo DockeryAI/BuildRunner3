@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 12-14, 14.6, 14.8 Complete, Phase 14.5 paused (theming), Phase 14.9 pending, Phases 15-16 pending
+**Status:** Phases 12-14, 14.6, 14.8, 14.9 Complete, Phase 14.5 paused (theming), Phases 15-16 pending
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -454,7 +454,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 14.9: Axis Alignment + Variety Enforcement _(added: 2026-03-30)_
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 14.8
 **Files:**
 
@@ -467,14 +467,14 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Update all 10 axis tables in `design.md` Steps 2b and 3 to use the research-backed labels from `types.ts` — Narrative (Trusted guide/Friendly helper/Expert authority/Rebellious disruptor/Elegant curator), Interaction (Conventional scroll/Horizontal scroll/Drag-explore/Command-first/Parallax reveal), etc. Remove the hyphenated-technical labels that drifted from research. _(added: 2026-03-30)_
-- [ ] Add 4 missing Layout positions to `AXIS_POSITIONS` in `types.ts`: full-bleed, card-cascade, hub-spoke, data-dense. Update Layout table in `design.md` to match (12 total). _(added: 2026-03-30)_
-- [ ] Replace Z-pattern and F-pattern with hub-spoke and flat-uniform in Hierarchy axis in `types.ts`. Update `design.md` Hierarchy table to match. _(added: 2026-03-30)_
-- [ ] Add monochrome as 6th Color Temp position in `types.ts` and `design.md`. _(added: 2026-03-30)_
-- [ ] Add `PROJECT_ARCHETYPES` record to `DirectionCards.tsx` keyed by project type (website/dashboard/app) with 12 archetypes each per research doc. Accept project type as prop, select active pool. _(added: 2026-03-30)_
-- [ ] Add 5th personality slider screen to `App.tsx` for the missing Aaker dimension (Ruggedness↔Sophistication), with a live preview component matching the existing 4 slider pattern. _(added: 2026-03-30)_
-- [ ] Add post-assembly validation section to `design.md` after Step 3 constraint sheets: programmatic checks for minimum 3-axis pairwise difference between A/B/C, minimum 60-degree pairwise hue distance, and all 3 archetypes from different structural families. Reject and regenerate if any check fails. _(added: 2026-03-30)_
-- [ ] Add empty/waiting states to `Gallery.tsx` and `ResearchDashboard.tsx` — show contextual message when no data exists instead of silently falling back to wizard. _(added: 2026-03-30)_
+- [x] Update all 10 axis tables in `design.md` Steps 2b and 3 to use the research-backed labels from `types.ts` — Narrative (Trusted guide/Friendly helper/Expert authority/Rebellious disruptor/Elegant curator), Interaction (Conventional scroll/Horizontal scroll/Drag-explore/Command-first/Parallax reveal), etc. Remove the hyphenated-technical labels that drifted from research. _(added: 2026-03-30)_
+- [x] Add 4 missing Layout positions to `AXIS_POSITIONS` in `types.ts`: full-bleed, card-cascade, hub-spoke, data-dense. Update Layout table in `design.md` to match (12 total). _(added: 2026-03-30)_
+- [x] Replace Z-pattern and F-pattern with hub-spoke and flat-uniform in Hierarchy axis in `types.ts`. Update `design.md` Hierarchy table to match. _(added: 2026-03-30)_
+- [x] Add monochrome as 6th Color Temp position in `types.ts` and `design.md`. _(added: 2026-03-30)_
+- [x] Add `PROJECT_ARCHETYPES` record to `DirectionCards.tsx` keyed by project type (website/dashboard/app) with 12 archetypes each per research doc. Accept project type as prop, select active pool. _(added: 2026-03-30)_
+- [x] Add 5th personality slider screen to `App.tsx` for the missing Aaker dimension (Ruggedness↔Sophistication), with a live preview component matching the existing 4 slider pattern. _(added: 2026-03-30)_
+- [x] Add post-assembly validation section to `design.md` after Step 3 constraint sheets: programmatic checks for minimum 3-axis pairwise difference between A/B/C, minimum 60-degree pairwise hue distance, and all 3 archetypes from different structural families. Reject and regenerate if any check fails. _(added: 2026-03-30)_
+- [x] Add empty/waiting states to `Gallery.tsx` and `ResearchDashboard.tsx` — show contextual message when no data exists instead of silently falling back to wizard. _(added: 2026-03-30)_
 
 **Build constraints:**
 
