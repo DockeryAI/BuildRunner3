@@ -1,8 +1,7 @@
 {
   "phase": 4,
-  "name": "Pre-Commit Cluster Gate",
-  "claimed_at": "2026-04-05T21:58:38Z",
+  "claimed_at": "2026-04-05T22:08:17Z",
   "host": "Byrons-MacBook-Pro.local",
   "build": "BUILD_cluster-build-orchestration.md",
-  "mode": "autopilot"
+  "mode": "autopilot-fullsend"
 }

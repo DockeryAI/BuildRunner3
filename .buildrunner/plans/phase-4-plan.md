@@ -1,34 +1,24 @@
-# Phase 4: Test Infrastructure Upgrade — Plan
+# Phase 4 Plan: Pre-Commit Cluster Gate
 
 ## Tasks
 
-### Task 4.1: Create Page Object Models
-- LoginPage.ts: email/password fields (getByRole), submit button, error message locator
-- DashboardPage.ts: task list, agent pool, telemetry timeline, analytics link, logout button, ws-status
-- AnalyticsPage.ts: performance chart, cost breakdown, trend analysis, export CSV, date range filter
+### Task 4.1: Add Walter + Lomax pre-push checks to commit.md
 
-### Task 4.2: Create shared fixtures (fixtures.ts)
-- authenticatedPage: extends base test with storageState from auth setup
-- dashboardPage: authenticated + navigated to /dashboard
-- apiContext: request context with auth token
+- Add a new Step 6.5 between Step 6 (Stage & Commit) and Step 7 (Push)
+- Check Walter for test failures via `cluster-check.sh test-runner` + `/api/coverage`
+- Check Lomax for build status via `cluster-check.sh staging-server` + `/api/projects/$PROJECT_LC/build/status`
+- Warnings only — never blocks the push
+- Graceful skip if nodes are offline
 
-### Task 4.3: Create auth setup project (auth.setup.ts)
-- Login once, save storageState to playwright/.auth/user.json
-- Add playwright/.auth/ to .gitignore
+### Task 4.2: Add Lomax build check + Walter test trigger to begin.md Step 6.5
 
-### Task 4.4: Update playwright.config.ts
-- Add 'setup' project that runs auth.setup.ts
-- Add dependency on 'setup' for all browser projects
-- Configure storageState path
-
-### Task 4.5: Migrate all 5 spec files to POMs
-- authentication.spec.ts: use LoginPage, remove CSS selectors
-- dashboard.spec.ts: use DashboardPage, remove beforeEach login, use fixtures
-- analytics.spec.ts: use AnalyticsPage + DashboardPage, remove beforeEach login
-- websocket.spec.ts: use DashboardPage, remove beforeEach login
-- api-health.spec.ts: use apiContext fixture for auth tests
+- In the Verification Gate section, add cluster checks
+- Trigger Walter test run via `POST /api/run` and wait for result
+- Check Lomax build status
+- Warnings only — informational, user decides
+- Graceful skip if nodes are offline
 
 ## Tests
-- All existing test assertions preserved after migration
-- No CSS selectors remain in spec files
-- Login via setup project, not per-test
+
+- Non-testable: these are markdown command files (documentation/config), not executable code
+- Verification will be structural — confirm the sections exist with correct content
