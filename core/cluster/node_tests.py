@@ -455,111 +455,139 @@ async def startup():
 @app.get("/api/results")
 async def get_results(project: Optional[str] = None, latest: bool = True):
     """Get test results. If latest=true, returns most recent run per project."""
-    conn = _get_db()
-    if latest:
-        if project:
-            runs = conn.execute(
-                "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 1",
-                (project,)
-            ).fetchall()
+    try:
+        conn = _get_db()
+    except Exception:
+        return {"results": [], "error": "database unavailable"}
+    try:
+        if latest:
+            if project:
+                runs = conn.execute(
+                    "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 1",
+                    (project,)
+                ).fetchall()
+            else:
+                runs = conn.execute(
+                    """SELECT * FROM test_runs WHERE run_id IN (
+                         SELECT MAX(run_id) FROM test_runs GROUP BY project, runner
+                       ) ORDER BY timestamp DESC"""
+                ).fetchall()
         else:
-            runs = conn.execute(
-                """SELECT * FROM test_runs WHERE run_id IN (
-                     SELECT MAX(run_id) FROM test_runs GROUP BY project, runner
-                   ) ORDER BY timestamp DESC"""
-            ).fetchall()
-    else:
-        if project:
-            runs = conn.execute(
-                "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 20",
-                (project,)
-            ).fetchall()
-        else:
-            runs = conn.execute(
-                "SELECT * FROM test_runs ORDER BY timestamp DESC LIMIT 20"
-            ).fetchall()
+            if project:
+                runs = conn.execute(
+                    "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 20",
+                    (project,)
+                ).fetchall()
+            else:
+                runs = conn.execute(
+                    "SELECT * FROM test_runs ORDER BY timestamp DESC LIMIT 20"
+                ).fetchall()
 
-    results = []
-    for run in runs:
-        run_dict = dict(run)
-        cases = conn.execute(
-            "SELECT * FROM test_cases WHERE run_id = ? AND status = 'failed'",
-            (run["run_id"],)
-        ).fetchall()
-        run_dict["failures"] = [dict(c) for c in cases]
-        results.append(run_dict)
+        results = []
+        for run in runs:
+            run_dict = dict(run)
+            cases = conn.execute(
+                "SELECT * FROM test_cases WHERE run_id = ? AND status = 'failed'",
+                (run["run_id"],)
+            ).fetchall()
+            run_dict["failures"] = [dict(c) for c in cases]
+            results.append(run_dict)
 
-    conn.close()
-    return {"results": results}
+        return {"results": results}
+    except Exception as e:
+        return {"results": [], "error": str(e)}
+    finally:
+        conn.close()
 
 
 @app.get("/api/coverage")
 async def get_coverage(project: Optional[str] = None):
     """Get pass rate as a proxy for coverage."""
-    conn = _get_db()
-    if project:
-        row = conn.execute(
-            """SELECT SUM(passed) as passed, SUM(total) as total
-               FROM test_runs WHERE project = ?
-               AND run_id IN (SELECT MAX(run_id) FROM test_runs WHERE project = ? GROUP BY runner)""",
-            (project, project)
-        ).fetchone()
-    else:
-        row = conn.execute(
-            """SELECT SUM(passed) as passed, SUM(total) as total
-               FROM test_runs WHERE run_id IN (
-                 SELECT MAX(run_id) FROM test_runs GROUP BY project, runner
-               )"""
-        ).fetchone()
-    conn.close()
+    try:
+        conn = _get_db()
+    except Exception:
+        return {"pass_rate": 0, "passed": 0, "total": 0, "error": "database unavailable"}
+    try:
+        if project:
+            row = conn.execute(
+                """SELECT SUM(passed) as passed, SUM(total) as total
+                   FROM test_runs WHERE project = ?
+                   AND run_id IN (SELECT MAX(run_id) FROM test_runs WHERE project = ? GROUP BY runner)""",
+                (project, project)
+            ).fetchone()
+        else:
+            row = conn.execute(
+                """SELECT SUM(passed) as passed, SUM(total) as total
+                   FROM test_runs WHERE run_id IN (
+                     SELECT MAX(run_id) FROM test_runs GROUP BY project, runner
+                   )"""
+            ).fetchone()
 
-    total = row["total"] or 0
-    passed = row["passed"] or 0
-    return {
-        "pass_rate": round(passed / total * 100, 1) if total > 0 else 0,
-        "passed": passed,
-        "total": total,
-    }
+        total = row["total"] or 0
+        passed = row["passed"] or 0
+        return {
+            "pass_rate": round(passed / total * 100, 1) if total > 0 else 0,
+            "passed": passed,
+            "total": total,
+        }
+    except Exception as e:
+        return {"pass_rate": 0, "passed": 0, "total": 0, "error": str(e)}
+    finally:
+        conn.close()
 
 
 @app.get("/api/flaky")
 async def get_flaky():
     """Detect flaky tests from status oscillation over last 7 days."""
-    conn = _get_db()
-    rows = conn.execute("""
-        WITH recent AS (
-            SELECT tc.full_name, tc.status, tr.timestamp,
-                   LAG(tc.status) OVER (PARTITION BY tc.full_name ORDER BY tr.timestamp) as prev
-            FROM test_cases tc JOIN test_runs tr ON tc.run_id = tr.run_id
-            WHERE tr.timestamp > datetime('now', '-7 days')
-        )
-        SELECT full_name,
-            COUNT(*) as total_runs,
-            SUM(CASE WHEN status != prev AND prev IS NOT NULL THEN 1 ELSE 0 END) as flips
-        FROM recent GROUP BY full_name HAVING total_runs >= 3 AND flips > 0
-        ORDER BY CAST(flips AS REAL) / (total_runs - 1) DESC
-    """).fetchall()
-    conn.close()
+    try:
+        conn = _get_db()
+    except Exception:
+        return {"flaky": [], "error": "database unavailable"}
+    try:
+        rows = conn.execute("""
+            WITH recent AS (
+                SELECT tc.full_name, tc.status, tr.timestamp,
+                       LAG(tc.status) OVER (PARTITION BY tc.full_name ORDER BY tr.timestamp) as prev
+                FROM test_cases tc JOIN test_runs tr ON tc.run_id = tr.run_id
+                WHERE tr.timestamp > datetime('now', '-7 days')
+            )
+            SELECT full_name,
+                COUNT(*) as total_runs,
+                SUM(CASE WHEN status != prev AND prev IS NOT NULL THEN 1 ELSE 0 END) as flips
+            FROM recent GROUP BY full_name HAVING total_runs >= 3 AND flips > 0
+            ORDER BY CAST(flips AS REAL) / (total_runs - 1) DESC
+        """).fetchall()
 
-    return {"flaky": [
-        {"test": r["full_name"], "runs": r["total_runs"], "flips": r["flips"],
-         "score": round(r["flips"] / (r["total_runs"] - 1), 3)}
-        for r in rows
-    ]}
+        return {"flaky": [
+            {"test": r["full_name"], "runs": r["total_runs"], "flips": r["flips"],
+             "score": round(r["flips"] / (r["total_runs"] - 1), 3)}
+            for r in rows
+        ]}
+    except Exception as e:
+        return {"flaky": [], "error": str(e)}
+    finally:
+        conn.close()
 
 
 @app.get("/api/history/{test_name:path}")
 async def get_history(test_name: str, limit: int = 20):
     """Get history of a specific test."""
-    conn = _get_db()
-    rows = conn.execute(
-        """SELECT tc.*, tr.timestamp, tr.git_sha, tr.project
-           FROM test_cases tc JOIN test_runs tr ON tc.run_id = tr.run_id
-           WHERE tc.full_name = ? ORDER BY tr.timestamp DESC LIMIT ?""",
-        (test_name, limit)
-    ).fetchall()
-    conn.close()
-    return {"history": [dict(r) for r in rows]}
+    try:
+        conn = _get_db()
+    except Exception:
+        return {"history": [], "error": "database unavailable"}
+    try:
+        rows = conn.execute(
+            """SELECT tc.*, tr.timestamp, tr.git_sha, tr.project
+               FROM test_cases tc JOIN test_runs tr ON tc.run_id = tr.run_id
+               WHERE tc.full_name = ? ORDER BY tr.timestamp DESC LIMIT ?""",
+            (test_name, limit)
+        ).fetchall()
+        return {"history": [dict(r) for r in rows]}
+    except Exception as e:
+        return {"history": [], "error": str(e)}
+    finally:
+        conn.close()
 
 
 @app.post("/api/run")

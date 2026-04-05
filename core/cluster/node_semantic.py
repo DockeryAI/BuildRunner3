@@ -23,6 +23,7 @@ REPOS_DIR = os.environ.get("REPOS_DIR", os.path.expanduser("~/repos"))
 CHROMA_DIR = os.environ.get("CHROMA_DIR", os.path.expanduser("~/.lockwood/chromadb"))
 EMBED_MODEL = os.environ.get("EMBED_MODEL", "nomic-ai/CodeRankEmbed")
 INDEX_INTERVAL = int(os.environ.get("INDEX_INTERVAL", "60"))  # seconds between re-index checks
+DISABLE_INDEXER = os.environ.get("DISABLE_INDEXER", "true").lower() in ("true", "1", "yes")
 
 # --- App ---
 app = create_app(role="semantic-search", version="0.1.0")
@@ -470,6 +471,9 @@ def _ingest_memory():
 
 @app.on_event("startup")
 async def startup():
+    if DISABLE_INDEXER:
+        print("DISABLE_INDEXER=true — skipping embedding model and background indexer")
+        return
     t = threading.Thread(target=_background_indexer, daemon=True)
     t.start()
 
@@ -490,6 +494,8 @@ class ImpactRequest(BaseModel):
 @app.post("/api/search")
 async def search(req: SearchRequest):
     """Hybrid search: semantic (LanceDB vectors) + keyword (text filter). Research says hybrid beats either alone."""
+    if DISABLE_INDEXER:
+        return {"query": req.query, "results": [], "error": "Indexer disabled — semantic search unavailable"}
     _, table = _get_db()
     if table is None:
         return {"query": req.query, "results": [], "method": "no_index"}
@@ -537,6 +543,8 @@ async def search(req: SearchRequest):
 @app.post("/api/impact")
 async def impact(req: ImpactRequest):
     """Find files that reference/import a given file. Combines semantic + keyword matching."""
+    if DISABLE_INDEXER:
+        return {"target": req.file_path, "impacted_files": [], "count": 0, "error": "Indexer disabled — semantic search unavailable"}
     _, table = _get_db()
     if table is None:
         return {"target": req.file_path, "impacted_files": [], "count": 0}
@@ -616,6 +624,8 @@ async def stats():
 @app.post("/api/reindex")
 async def reindex():
     """Trigger immediate re-index."""
+    if DISABLE_INDEXER:
+        return {"status": "disabled", "error": "Indexer disabled — set DISABLE_INDEXER=false to enable"}
     if _indexing:
         return {"status": "already_indexing"}
     t = threading.Thread(target=run_index, daemon=True)

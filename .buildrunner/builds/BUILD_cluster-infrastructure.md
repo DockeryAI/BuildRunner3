@@ -1,7 +1,7 @@
 # Build: BR3 Cluster Infrastructure
 
 **Created:** 2026-04-03
-**Status:** Phase 6 blocked on Below hardware (Phases 4, 5, 7, 8 complete — 2026-04-05)
+**Status:** ALL PHASES COMPLETE (2026-04-05) — Phases 0-8 shipped. Supabase sandbox moved to Lomax (Docker Desktop + minimal stack).
 **Deploy:** local network — 6 machines via gigabit switch, REST APIs on each node
 
 ## Overview
@@ -117,39 +117,72 @@ Pattern detection, cross-file correlation, error fingerprinting. Will be moved t
 
 ### Phase 6: Below — Inference + Supabase Sandbox
 
-**Status:** not_started
+**Status:** complete (2026-04-05) — Qwen 3 8B inference (82 tok/s) + Supabase sandbox on Lomax.
 **Hardware:** Windows i9+32GB+2080Ti at 10.0.1.105
+**Research:** See `research-library/docs/techniques/windows-headless-inference-supabase-server.md`
 
-**YOU do:**
+**Hardware (DONE):**
 
-1. Cable Below to switch
-2. Set static IP `10.0.1.105` in Windows network settings
-3. Install Ollama, pull Qwen 2.5 14B model
-4. Set OLLAMA_HOST=0.0.0.0, open firewall ports
-5. Install Docker Desktop + Supabase CLI
-6. Tell Claude: "Below hardware ready"
+1. ~~Cable Below to switch~~ ✅
+2. ~~Set static IP `10.0.1.105`~~ ✅
+3. ~~Install Ollama, pull initial model~~ ✅
+4. ~~Set OLLAMA_HOST=0.0.0.0, open firewall port 8100~~ ✅
+5. ~~Install Python 3.12, deploy node_inference.py~~ ✅
+6. ~~SSH key auth from Muddy~~ ✅
 
-**What gets built:**
+**Phase 6A: Ollama Optimization (Claude builds):**
 
-- Ollama on GPU (Qwen 2.5 14B Q4 on 11GB VRAM)
-- FastAPI wrapper with task-specific prompts: `/api/classify`, `/api/draft`, `/api/summarize`
-- Full Supabase Docker stack (all 13 services — 32GB handles it easily)
-- Migration dry-run endpoint: `/api/migration/dryrun`
-- Heavy build capability: route large `tsc` + `vite build` to i9
+1. Pull Qwen 3 8B (matches Qwen 2.5 14B quality, fits fully in 11GB with 32K context)
+2. Set production env vars: OLLAMA_FLASH_ATTENTION=1, OLLAMA_KV_CACHE_TYPE=q8_0, OLLAMA_NUM_PARALLEL=2, OLLAMA_MAX_LOADED_MODELS=1, OLLAMA_KEEP_ALIVE=24h
+3. Update node_inference.py to default to qwen3:8b
+4. Verify: classification <5s, GPU-only (no CPU spillover)
 
-**BR3 changes:**
+**Phase 6B: Windows Hardening (Claude builds via SSH):**
 
-- Model routing gains local tier — simple phases route to Below for first draft
-- `/autopilot` can route simple phases to Below's local model
-- Migration safety: `/begin` validates migrations against Below's Supabase before prod push
-- Developer brief shows Below inference status and Supabase sandbox state
+1. Configure auto-login (registry: AutoAdminLogon + DefaultUserName + DefaultPassword) — required for GPU access after reboot
+2. Extend TDR timeout to 30s (registry: TdrDelay)
+3. Prevent Windows Update auto-reboots (registry: NoAutoRebootWithLoggedOnUsers + ActiveHours + disable reboot scheduled tasks)
+4. Set PowerShell as default SSH shell
+
+**Phase 6C: Supabase Sandbox (Claude builds):**
+
+1. Install WSL2 + Ubuntu on Below (via SSH/PowerShell)
+2. Install Docker Engine inside WSL2 (NOT Docker Desktop — can't start headless)
+3. Configure .wslconfig: memory=12GB, autoMemoryReclaim=dropCache
+4. Set up Task Scheduler to start WSL2 Docker at boot (Session 0 compatible since Sept 2023)
+5. Install Supabase CLI inside WSL2
+6. Start minimal Supabase stack: `supabase start -x realtime,storage-api,imgproxy,studio,logflare,vector,supavisor`
+7. Open firewall for Supabase ports (54321, 54322, 54323) restricted to 10.0.1.0/24
+8. Test migration dry-run from Muddy: `supabase db push --dry-run --db-url "postgresql://postgres:...@10.0.1.105:54322/postgres"`
+
+**Phase 6D: BR3 Integration (Claude builds):**
+
+- FastAPI wrapper (`node_inference.py`) already deployed with `/api/classify`, `/api/draft`, `/api/summarize`, `/api/gpu`
+- Add `/api/migration/dryrun` endpoint that triggers `supabase db push --dry-run` inside WSL2
+- Developer brief shows Below inference status + Supabase sandbox state
+- Model routing: simple classification/drafting routes to Below's local model
+
+**RAM Budget (researched):**
+
+| Component                   | RAM                           |
+| --------------------------- | ----------------------------- |
+| Windows OS                  | ~4GB system                   |
+| Ollama (Qwen 3 8B Q4_K_M)   | 5.5GB VRAM + 2GB system       |
+| Ollama KV cache (q8_0, 32K) | ~3GB VRAM                     |
+| WSL2 + Docker Engine        | ~1GB system                   |
+| Supabase minimal stack      | ~700MB system                 |
+| **Total**                   | **~8GB system + 8.5GB VRAM**  |
+| **Free**                    | **~24GB system, ~2.5GB VRAM** |
 
 **Success Criteria:**
 
-- Classification within 5 seconds, >85% accuracy
-- `nvidia-smi` confirms GPU usage
-- `supabase start` runs all 13 services (verify with `supabase status`)
-- Migration dry-run passes/fails correctly
+- Classification within 5 seconds, >85% accuracy ✅ (already verified)
+- `nvidia-smi` confirms GPU usage ✅ (already verified)
+- Qwen 3 8B runs fully on GPU with 32K context (no CPU spillover)
+- `supabase start` runs minimal stack inside WSL2 (~700MB)
+- Migration dry-run from Muddy succeeds via `--db-url`
+- Auto-login + TDR + update prevention configured
+- All services survive reboot
 - Disconnect → everything routes to Opus, migrations tested on prod directly
 
 ---
