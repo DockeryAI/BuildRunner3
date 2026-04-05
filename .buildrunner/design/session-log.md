@@ -1,61 +1,50 @@
-# Design Session Log — 2026-03-31T01:58:13Z
+# Design Session Log — 2026-03-31T03:26:03Z
 
-**Project:** opendialog.ai redesign
-**Mode:** external (https://opendialog.ai)
+**Project:** opendialog.ai redesign (E2E test with deterministic algorithms)
+**Mode:** redesign-external
 
-### [MODE] 01:58 — redesign-external
-### [AUDIT] 02:00 — Wrote site-audit.json
-### [DISCOVERY] 02:09 — Wrote discovery.json (redesign mode, 3 pain answers + constraints)
-### [RESEARCH] 02:10 — Wrote research.md with 3 competitors + 3 vectors + gap map
+### [MODE] 03:26 — redesign-external (opendialog.ai)
+### [AUDIT] — Reusing site-audit.json from previous run
+### [DISCOVERY] — Reusing discovery.json from previous run
+### [RESEARCH] — Reusing research.md from previous run
 
-### [DIRECTIONS] — Constraint Sheets
+### [SCORING] 03:15 — Archetype selection via /api/select-archetypes
+Selected: Hub-spoke (Minimal, score 0), Divided canvas (Spatial, score 2), Bento grid (Grid-based, score 0)
+Shuffle order: Hub-spoke, Divided canvas, Bento grid, Longform narrative, Immersive sections, Focused column
+Top scorers: Immersive sections (4), Longform narrative (4), Focused column (4) — all Scroll-based family, so only one could be picked
+Session memory: read culturecook session-log.md — no previous archetypes found
+Rejected for family: none (shuffle produced 3 different families on first pass)
 
-**Direction A: Longform Narrative (Scroll-based family)**
-  Vector: Premium Editorial Authority
-  Archetype: Longform narrative (Family: Scroll-based)
+### [VALIDATION] 03:15 — Direction validation via /api/validate-directions
+Hue distance: A(28°)↔B(174°)=146°, A(28°)↔C(311°)=77°, B(174°)↔C(311°)=137° | minimum=77° | PASS
+Axis distance: A↔B=9, A↔C=10, B↔C=10 | minimum=9 | PASS
+Family diversity: A=Minimal, B=Spatial, C=Grid-based | allDifferent=true | PASS
+allPass: true
+
+### [DIRECTIONS] — Constraint Sheets (algorithm-selected archetypes)
+
+**Direction A: Hub-spoke (Minimal family)**
+  Archetype: Hub-spoke — central hub with radiating detail pages, breadcrumb nav
   Persona: Scottish whisky distiller
-  Concept: ferment
-  10-Axis: Editorial, Warm stimulating, Sparse minimal, Serif authority, Conventional scroll, Professional warm, Light airy, Data visualization, Progressive reveal, Elegant curator
-  Color: #C47A3A (warm copper) — oklch(0.65 0.12 65°)
+  Color: #C47A3A (warm copper)
   Fonts: Fraunces Variable + DM Sans Variable
-  Nav: Floating pill
+  Nav: Breadcrumb + back patterns
 
-**Direction B: Divided Canvas (Spatial family)**
-  Vector: Data-Forward Technical
-  Archetype: Divided canvas (Family: Spatial)
+**Direction B: Divided canvas (Spatial family)**
+  Archetype: Divided canvas — persistent left/right split, content + visual panels
   Persona: Antarctic researcher
-  Concept: crystallize
-  10-Axis: Split-screen, Monochrome, Dense editorial, Mono technical, Command-first, Formal serious, Heavy dramatic, Data visualization, Distributed equal, Expert authority
-  Color: #2BD5C4 (arctic teal) — oklch(0.78 0.12 185°)
+  Color: #2BD5C4 (arctic teal)
   Fonts: JetBrains Mono Variable + Inter Variable
-  Nav: Sidebar
+  Nav: Side nav or minimal top
 
-**Direction C: Immersive Sections (Scroll-based → NO, need different family)**
-  WAIT — Longform narrative is Scroll-based, Divided canvas is Spatial.
-  C needs a third family. Using Grid-based: Bento grid.
-  Archetype: Bento grid (Family: Grid-based)
+**Direction C: Bento grid (Grid-based family)**
+  Archetype: Bento grid — asymmetric cards, mixed sizes, masonry
   Persona: Provençal lavender farmer
-  Concept: bloom
-  10-Axis: Bento grid, Earth organic, Medium balanced, Mixed editorial, Parallax reveal, Casual friendly, Medium balanced, Icon-driven, Hero-driven, Friendly helper
-  Color: #6B8F3A (olive/moss green) — oklch(0.60 0.10 130°)
+  Color: #8B5E83 (dusty mauve)
   Fonts: Bricolage Grotesque Variable + Source Sans 3 Variable
   Nav: Sticky top with category pills
 
 **Direction D: CURRENT SITE — opendialog.ai**
-  Mirrors current site axis positions
   Color: #0023FF (their blue)
-  Fonts: Sofia Pro (approximated with system sans)
+  Fonts: system-ui
   Nav: Sticky top + hamburger
-
-### [VALIDATION] — Post-Assembly Checks
-
-Axis distance: A-B=8, A-C=7, B-C=8 | PASS (all ≥3)
-Hue distance: A↔B=120°, A↔C=65°, B↔C=55° → B↔C FAIL (55° < 60°)
-  Fix: Shift C from 130° to 140° → B↔C=45° still fails
-  Fix: Shift C to 300° (purple-rose range) → A↔C=235°, B↔C=115° → PASS
-  Updated C color: #8B5E83 (dusty mauve) — oklch(0.52 0.08 320°)
-Hue distance (final): A↔B=120°, A↔C=105°, B↔C=135° | PASS (all ≥60°)
-Families: A=Scroll-based, B=Spatial, C=Grid-based | PASS (3 different)
-
-ALL 3 CHECKS PASS ✅
-### [ARTIFACT] 02:10 — Wrote build-contract.json

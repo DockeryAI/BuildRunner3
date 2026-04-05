@@ -467,43 +467,48 @@ echo -e "${YELLOW}Phase 13: BR3 Universal Observability (BRLogger v3)${NC}"
 echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Canonical source for all BRLogger components
-BRLOGGER_SRC="$HOME/Projects/taskwatcher/.buildrunner/components"
+# Canonical source — BR3 framework (NOT taskwatcher or any project)
+BRLOGGER_SRC="$HOME/Projects/BuildRunner3/.buildrunner/components"
 
 if [ -f "$BRLOGGER_SRC/BRLogger.tsx" ]; then
     # Create components dir in project
     mkdir -p "$PROJECT_PATH/.buildrunner/components"
 
-    # Copy all BRLogger components
+    # Copy ALL BRLogger components (full v3 stack)
     cp "$BRLOGGER_SRC/BRLogger.tsx" "$PROJECT_PATH/.buildrunner/components/"
     cp "$BRLOGGER_SRC/vite-br-logger-plugin.ts" "$PROJECT_PATH/.buildrunner/components/"
     cp "$BRLOGGER_SRC/supabaseLogger.ts" "$PROJECT_PATH/.buildrunner/components/"
     cp "$BRLOGGER_SRC/vite-supabase-log-plugin.ts" "$PROJECT_PATH/.buildrunner/components/"
+    cp "$BRLOGGER_SRC/devLog.ts" "$PROJECT_PATH/.buildrunner/components/"
+    cp "$BRLOGGER_SRC/br-listen.mjs" "$PROJECT_PATH/.buildrunner/components/"
     cp "$BRLOGGER_SRC/"*.d.ts "$PROJECT_PATH/.buildrunner/components/" 2>/dev/null || true
+    cp "$BRLOGGER_SRC/README.md" "$PROJECT_PATH/.buildrunner/components/" 2>/dev/null || true
 
-    echo -e "  ${GREEN}✓${NC} Copied BRLogger.tsx (console, network, errors — dev + prod)"
+    echo -e "  ${GREEN}✓${NC} Copied BRLogger.tsx (console, fetch, errors, auth — dev + prod)"
     echo -e "  ${GREEN}✓${NC} Copied vite-br-logger-plugin.ts (dev server log receiver + prod Realtime listener)"
-    echo -e "  ${GREEN}✓${NC} Copied supabaseLogger.ts (Supabase operation logger → supabase.log)"
+    echo -e "  ${GREEN}✓${NC} Copied supabaseLogger.ts (Supabase SDK instrumentation + _debug[] extraction)"
     echo -e "  ${GREEN}✓${NC} Copied vite-supabase-log-plugin.ts (Supabase log receiver)"
+    echo -e "  ${GREEN}✓${NC} Copied devLog.ts (edge function server-side log capture)"
+    echo -e "  ${GREEN}✓${NC} Copied br-listen.mjs (remote device log listener)"
 
     # Auto-detect project type and wire in
     HAS_VITE=false
     HAS_REACT=false
     HAS_SUPABASE=false
+    HAS_EDGE_FN=false
 
     [ -f "$PROJECT_PATH/vite.config.ts" ] || [ -f "$PROJECT_PATH/vite.config.js" ] && HAS_VITE=true
     [ -f "$PROJECT_PATH/src/main.tsx" ] || [ -f "$PROJECT_PATH/src/main.ts" ] && HAS_REACT=true
     grep -q "supabase" "$PROJECT_PATH/package.json" 2>/dev/null && HAS_SUPABASE=true
+    [ -d "$PROJECT_PATH/supabase/functions" ] && HAS_EDGE_FN=true
 
+    # --- Wire Vite plugins ---
     if [ "$HAS_VITE" = true ]; then
         VITE_CONFIG=$(ls "$PROJECT_PATH"/vite.config.{ts,js} 2>/dev/null | head -1)
 
-        # Add Vite plugins if not already present
         if ! grep -q "brLoggerPlugin" "$VITE_CONFIG" 2>/dev/null; then
-            # Insert imports at top of file (after last import)
             IMPORT_LINES="import { brLoggerPlugin } from './.buildrunner/components/vite-br-logger-plugin';\nimport { supabaseLogPlugin } from './.buildrunner/components/vite-supabase-log-plugin';"
 
-            # Find the line number of the last import statement
             LAST_IMPORT_LINE=$(grep -n "^import " "$VITE_CONFIG" | tail -1 | cut -d: -f1)
             if [ -n "$LAST_IMPORT_LINE" ]; then
                 sed -i '' "${LAST_IMPORT_LINE}a\\
@@ -511,11 +516,9 @@ $(echo -e "$IMPORT_LINES")
 " "$VITE_CONFIG" 2>/dev/null || true
             fi
 
-            # Add plugins to the plugins array
             if grep -q "plugins:" "$VITE_CONFIG" 2>/dev/null; then
                 sed -i '' 's/plugins: \[/plugins: [brLoggerPlugin(), supabaseLogPlugin(), /' "$VITE_CONFIG" 2>/dev/null || true
             elif grep -q "plugins\s*:" "$VITE_CONFIG" 2>/dev/null; then
-                # Handle plugins on same line with different spacing
                 sed -i '' 's/plugins\s*:\s*\[/plugins: [brLoggerPlugin(), supabaseLogPlugin(), /' "$VITE_CONFIG" 2>/dev/null || true
             fi
 
@@ -525,47 +528,173 @@ $(echo -e "$IMPORT_LINES")
         fi
     fi
 
+    # --- Wire BRLogger as first import + <BRLogger /> component ---
     if [ "$HAS_REACT" = true ]; then
         MAIN_FILE=$(ls "$PROJECT_PATH"/src/main.{tsx,ts} 2>/dev/null | head -1)
 
-        # Add BRLogger as first import if not already present
         if ! grep -q "BRLogger" "$MAIN_FILE" 2>/dev/null; then
-            # Prepend BRLogger import (must be FIRST import for module-scope interception)
+            # Add BRLogger as FIRST import (module-scope interception)
             sed -i '' '1i\
 import { BRLogger } from '\''../.buildrunner/components/BRLogger'\'';
 ' "$MAIN_FILE" 2>/dev/null || true
-
             echo -e "  ${GREEN}✓${NC} Added BRLogger as first import in main.tsx"
-            echo -e "  ${YELLOW}⚠${NC}  You still need to add <BRLogger /> inside your React tree"
         else
             echo -e "  ${BLUE}ℹ${NC}  BRLogger import already present in main"
         fi
+
+        # Auto-inject <BRLogger /> into React tree if not present
+        if ! grep -q "<BRLogger" "$MAIN_FILE" 2>/dev/null; then
+            # Strategy: insert <BRLogger /> right after the first JSX opening tag (App, Router, Provider, etc.)
+            # Look for createRoot().render pattern and inject after first <
+            if grep -q "createRoot" "$MAIN_FILE" 2>/dev/null; then
+                # Find the render( call and inject BRLogger after the opening fragment or first component
+                # Insert <BRLogger /> before the closing of the render block
+                sed -i '' 's|</React.StrictMode>|<BRLogger />\n    </React.StrictMode>|' "$MAIN_FILE" 2>/dev/null || \
+                sed -i '' 's|</StrictMode>|<BRLogger />\n    </StrictMode>|' "$MAIN_FILE" 2>/dev/null || \
+                sed -i '' 's|<App |<BRLogger />\n      <App |' "$MAIN_FILE" 2>/dev/null || \
+                sed -i '' 's|<App/>|<BRLogger />\n      <App/>|' "$MAIN_FILE" 2>/dev/null || true
+                echo -e "  ${GREEN}✓${NC} Auto-injected <BRLogger /> into React tree"
+            fi
+        else
+            echo -e "  ${BLUE}ℹ${NC}  <BRLogger /> already in React tree"
+        fi
+    fi
+
+    # --- Auto-wire supabaseLogger into Supabase client ---
+    if [ "$HAS_SUPABASE" = true ]; then
+        SUPABASE_FILE=$(find "$PROJECT_PATH/src" -name "supabase.ts" -o -name "supabase.js" 2>/dev/null | head -1)
+        if [ -n "$SUPABASE_FILE" ] && ! grep -q "createInstrumentedFetch" "$SUPABASE_FILE" 2>/dev/null; then
+            # Calculate relative path from supabase.ts to .buildrunner/components/
+            SUPA_DIR=$(dirname "$SUPABASE_FILE")
+            REL_PATH=$(python3 -c "import os.path; print(os.path.relpath('$PROJECT_PATH/.buildrunner/components', '$SUPA_DIR'))")
+
+            # Add the import at the top (after existing imports)
+            LAST_IMPORT=$(grep -n "^import " "$SUPABASE_FILE" | tail -1 | cut -d: -f1)
+            if [ -n "$LAST_IMPORT" ]; then
+                sed -i '' "${LAST_IMPORT}a\\
+import { createInstrumentedFetch } from '${REL_PATH}/supabaseLogger';
+" "$SUPABASE_FILE" 2>/dev/null || true
+            fi
+
+            # Detect the Supabase URL variable name used in createClient
+            SUPA_URL_VAR=$(grep "createClient(" "$SUPABASE_FILE" | head -1 | sed 's/.*createClient(\s*//' | sed 's/,.*//' | tr -d ' ')
+            if [ -z "$SUPA_URL_VAR" ]; then
+                SUPA_URL_VAR="SUPABASE_URL"
+            fi
+
+            # Inject global.fetch option into createClient
+            if grep -q "createClient($SUPA_URL_VAR," "$SUPABASE_FILE" 2>/dev/null; then
+                # Check if createClient already has an options object (3rd argument or 2nd object)
+                if grep -q "createClient($SUPA_URL_VAR,.*{" "$SUPABASE_FILE" 2>/dev/null; then
+                    # Options object exists — inject global.fetch into it
+                    sed -i '' "s|createClient($SUPA_URL_VAR,\(.*\){|createClient($SUPA_URL_VAR,\1{ global: { fetch: import.meta.env.DEV ? createInstrumentedFetch(fetch, $SUPA_URL_VAR) : undefined },|" "$SUPABASE_FILE" 2>/dev/null || true
+                else
+                    # Bare createClient(url, key) — add options object
+                    sed -i '' "s|createClient($SUPA_URL_VAR,\([^)]*\))|createClient($SUPA_URL_VAR,\1, { global: { fetch: import.meta.env.DEV ? createInstrumentedFetch(fetch, $SUPA_URL_VAR) : undefined } })|" "$SUPABASE_FILE" 2>/dev/null || true
+                fi
+            fi
+
+            echo -e "  ${GREEN}✓${NC} Auto-wired supabaseLogger into Supabase client"
+        elif [ -n "$SUPABASE_FILE" ]; then
+            echo -e "  ${GREEN}✓${NC} supabaseLogger already wired into Supabase client"
+        fi
+    fi
+
+    # --- Copy devLog.ts to edge functions _shared ---
+    if [ "$HAS_EDGE_FN" = true ]; then
+        mkdir -p "$PROJECT_PATH/supabase/functions/_shared"
+        if [ ! -f "$PROJECT_PATH/supabase/functions/_shared/devLog.ts" ]; then
+            cp "$BRLOGGER_SRC/devLog.ts" "$PROJECT_PATH/supabase/functions/_shared/"
+        fi
+        echo -e "  ${GREEN}✓${NC} devLog.ts in supabase/functions/_shared/ (wrap handlers with withDevLogs)"
     fi
 
     echo ""
-    echo -e "  ${CYAN}Log files (auto-created on first run):${NC}"
-    echo -e "    .buildrunner/browser.log   — console, network, errors, navigation"
-    echo -e "    .buildrunner/supabase.log  — DB calls, auth, storage, edge functions"
-    echo -e "    .buildrunner/device.log    — SW, visibility, memory, network, battery"
-    echo -e "    .buildrunner/query.log     — React Query cache, invalidations, hydration"
+    echo -e "  ${CYAN}BRLogger v3 — Full Stack:${NC}"
+    echo -e "    browser.log   — console, fetch (URL+status+duration), errors, auth state"
+    echo -e "    supabase.log  — SDK ops (REST/Auth/Storage/Edge), RLS denials, edge fn _debug[]"
+    echo -e "    device.log    — remote device logs via br-listen.mjs + br_device_logs table"
+    echo -e "    query.log     — remote query logs via br-listen.mjs + br_device_logs table"
     echo ""
     echo -e "  ${CYAN}Debug commands:${NC}"
     echo -e "    /dbg     — analyze browser.log"
     echo -e "    /sdb     — analyze supabase.log"
     echo -e "    /device  — analyze device.log"
     echo -e "    /query   — analyze query.log"
-    echo -e "    /diag    — cross-file correlation"
+    echo -e "    /diag    — cross-file correlation across all 4 logs"
+    echo ""
+    echo -e "  ${CYAN}Edge function visibility:${NC}"
+    echo -e "    Wrap with withDevLogs() + set DEBUG=true → _debug[] injected in response"
+    echo -e "    supabaseLogger extracts _debug[] → supabase.log (automatic)"
     echo ""
     echo -e "  ${CYAN}Prod debugging:${NC}"
     echo -e "    /prodlog on  — activate prod debug (auto-opens URL, tails logs)"
-    echo -e "    Manual: add ?br_debug=1 to prod URL (2h window, auto-expire)"
+    echo -e "    Manual: add ?br_debug=1 to prod URL (4h window, auto-expire)"
     echo -e "    Dev server must be running to receive Realtime broadcasts"
 
     ((ACTIVATED_SYSTEMS++))
 else
     echo -e "  ${YELLOW}⚠${NC} BRLogger canonical source not found at $BRLOGGER_SRC"
-    echo -e "  ${BLUE}ℹ${NC}  Expected: ~/Projects/taskwatcher/.buildrunner/components/BRLogger.tsx"
+    echo -e "  ${BLUE}ℹ${NC}  Expected: ~/Projects/BuildRunner3/.buildrunner/components/BRLogger.tsx"
     WARNINGS+=("BRLogger not installed — canonical source not found")
+fi
+
+# ============================================
+# PHASE 13.5: CLUSTER REGISTRATION (automatic)
+# ============================================
+
+CLUSTER_CONFIG="$HOME/.buildrunner/cluster.json"
+CLUSTER_CHECK="$HOME/.buildrunner/scripts/cluster-check.sh"
+
+if [ -f "$CLUSTER_CONFIG" ] && [ -x "$CLUSTER_CHECK" ]; then
+    CLUSTER_ENABLED=$(python3 -c "import json; print(json.load(open('$CLUSTER_CONFIG')).get('enabled', False))" 2>/dev/null)
+
+    if [ "$CLUSTER_ENABLED" = "True" ]; then
+        echo ""
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${YELLOW}Phase 13.5: Cluster Registration${NC}"
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+
+        source "$HOME/.buildrunner/.env" 2>/dev/null
+
+        # Lockwood — sync repo for semantic indexing
+        LOCKWOOD_URL=$("$CLUSTER_CHECK" semantic-search 2>/dev/null)
+        if [ -n "$LOCKWOOD_URL" ]; then
+            LOCKWOOD_HOST=$(echo "$LOCKWOOD_URL" | sed 's|http://||' | cut -d: -f1)
+            echo -e "  ${GREEN}✓${NC} Syncing to Lockwood ($LOCKWOOD_HOST) for semantic indexing..."
+            sshpass -p "$CLUSTER_SSH_PASS" rsync -az \
+                --exclude='node_modules' --exclude='.next' --exclude='dist' --exclude='.git' \
+                --exclude='*.map' --exclude='.cache' --exclude='.buildrunner/crash.log' \
+                -e "sshpass -p '$CLUSTER_SSH_PASS' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no" \
+                "$PROJECT_PATH/" "$CLUSTER_SSH_USER@$LOCKWOOD_HOST:~/repos/$PROJECT_NAME/" 2>/dev/null &
+        fi
+
+        # Walter — sync repo + install deps for testing
+        WALTER_URL=$("$CLUSTER_CHECK" test-runner 2>/dev/null)
+        if [ -n "$WALTER_URL" ]; then
+            WALTER_HOST=$(echo "$WALTER_URL" | sed 's|http://||' | cut -d: -f1)
+            echo -e "  ${GREEN}✓${NC} Syncing to Walter ($WALTER_HOST) for continuous testing..."
+            sshpass -p "$CLUSTER_SSH_PASS" rsync -az \
+                --exclude='node_modules' --exclude='.next' --exclude='dist' --exclude='.git' \
+                --exclude='*.map' --exclude='.cache' \
+                -e "sshpass -p '$CLUSTER_SSH_PASS' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no" \
+                "$PROJECT_PATH/" "$CLUSTER_SSH_USER@$WALTER_HOST:~/repos/$PROJECT_NAME/" 2>/dev/null && \
+            sshpass -p "$CLUSTER_SSH_PASS" ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no -o PubkeyAuthentication=no \
+                "$CLUSTER_SSH_USER@$WALTER_HOST" \
+                "eval \"\$(/opt/homebrew/bin/brew shellenv)\" && cd ~/repos/$PROJECT_NAME && [ -f package.json ] && npm install --no-audit --no-fund 2>/dev/null || true" 2>/dev/null &
+        fi
+
+        # Crawford — auto-detects new project logs via SSH tail on next cycle
+        CRAWFORD_URL=$("$CLUSTER_CHECK" log-analysis 2>/dev/null)
+        if [ -n "$CRAWFORD_URL" ]; then
+            echo -e "  ${GREEN}✓${NC} Crawford will auto-detect logs when dev server starts"
+        fi
+
+        wait 2>/dev/null
+        echo -e "  ${GREEN}✓${NC} Project registered with cluster — indexing starts within 60s"
+        ((ACTIVATED_SYSTEMS++))
+    fi
 fi
 
 # ============================================

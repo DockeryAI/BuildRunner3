@@ -128,3 +128,82 @@
   - /design: Added E2E Test Requirements section to DESIGN_SPEC.md output
 [Mon Mar 30 10:09:27 CDT 2026] [AMENDMENT] Added Phase 14.8 (Archetype Selection Algorithm) — 5 tasks. Reason: /design always picks same 3 archetypes (Full-bleed, Bento, Editorial) due to missing selection algorithm between 10-axis vectors and archetype table. LLM primacy bias + semantic name-matching causes deterministic convergence despite 170k theoretical combinations.
 [2026-03-31T00:00:38Z] [AMENDMENT] Added Phase 14.9 (Axis Alignment + Variety Enforcement) with 8 tasks. Reason: Gap/drift analysis found Narrative axis wrong concept in spec (content-strategy vs brand-personality), Layout/Hierarchy/Interaction axes missing positions, no project-type archetype pools, missing 5th Aaker slider, no validation enforcement gate, no empty states in Gallery/Research views. UI labels are correct per research; spec drifted.
+[Fri Apr  3 19:04:20 CDT 2026] [DECISION] Created build spec: cluster-infrastructure with 7 phases (0-6). Sequential build of 6-machine local cluster for BR3. Phase 0 is foundation (software only), Phases 1-5 add one hardware node each, Phase 6 integrates all nodes.
+[2026-04-05T04:37:15Z] [DECISION] Otis auth uses Claude Max OAuth, not ANTHROPIC_API_KEY
+  WHY: API key charges per-token (~$5-20/heavy session); Max is flat-rate unlimited
+  CONTEXT: Phase 4 Otis conversion, cluster dispatch
+[2026-04-05T04:37:15Z] [DECISION] Both Muddy and Otis log into same Claude account initially
+  WHY: Simpler setup; user has 2 accounts but starting with one on both machines
+  CONTEXT: Phase 4 Otis auth
+[2026-04-05T04:37:15Z] [GOAL] Build automatic dual-account switching after Phase 4 tested
+  WHY: User has 2 accounts — wants auto-switch on both machines when session limit hits instead of manual logout/login
+  CONTEXT: Post-Phase 4 enhancement; needs testing of whether Claude Code stores multiple credentials or requires logout/login cycle (10-20s per machine)
+[2026-04-05T04:37:15Z] [CONSTRAINT] Claude Max session limits are per-account, not per-machine
+  WHY: Muddy + Otis on same account share one limit; both stop when hit
+  CONTEXT: Cluster dispatch design
+[2026-04-05T04:37:15Z] [REJECTED] Per-machine account split (Muddy=A, Otis=B)
+  WHY: User prefers automatic dual-account switching on both machines over permanent per-machine split
+  CONTEXT: Phase 4 auth strategy
+[2026-04-05T04:37:15Z] [DECISION] OAuth token auto-refreshes; no proactive auth health check needed yet
+  WHY: Tokens rarely expire; failure mode is graceful fallback to Muddy. Can add /cluster auth check later if it becomes an issue
+  CONTEXT: Phase 4 Otis headless dispatch
+[2026-04-05T05:12:36Z] [ARCHITECTURE] Added 3-tier context system for cluster memory
+  WHY: brief was too lean — no session narrative, no auto-recall when touching files
+  CONTEXT: ~/.claude/commands/save.md, ~/.buildrunner/scripts/developer-brief.sh, ~/.buildrunner/scripts/recall-on-tool.sh, ~/.claude/settings.json
+[2026-04-05T05:12:36Z] [DECISION] Session narrative packed into working_on field as pipe-delimited string
+  WHY: Lockwood /api/memory/session takes query params not JSON body; packing WORKING_ON/NEXT/BLOCKERS/INTERRUPTED_AT into one URL-encoded field avoids adding a new endpoint
+  CONTEXT: /save skill Step 3.5, developer-brief.sh Lockwood display parser
+[2026-04-05T05:12:36Z] [DECISION] Recall hook matches on basename only, not parent dir
+  WHY: parent dirs like 'src', 'components', 'scripts' are too common and produce noise; basename is specific enough
+  CONTEXT: ~/.buildrunner/scripts/recall-on-tool.sh
+[2026-04-05T05:12:36Z] [DECISION] Recall hook fires on Edit|Write|NotebookEdit, not Read
+  WHY: past decisions matter most when mutating a file, not when reading; reduces hook overhead on exploration
+  CONTEXT: ~/.claude/settings.json PreToolUse hooks
+[2026-04-05T05:12:36Z] [REJECTED] Separate /recall skill for Tier 3 deep memory queries
+  WHY: /learn already covers research docs via Lockwood semantic search; decisions.log is grep-able; adding /recall is redundant until Tier 3 feels clunky
+  CONTEXT: tiered context design
+[2026-04-05T05:12:36Z] [CONSTRAINT] developer-brief.sh had pre-existing orphan 'fi' syntax error on line 135
+  WHY: bug silently killed the Cluster/Lockwood section of every brief since it was introduced — log analysis ran but cluster data never displayed
+  CONTEXT: .buildrunner/scripts/developer-brief.sh — fixed during context system build
+[2026-04-05T05:17:11Z] [DECISION] Otis keychain unlocked via SSH password on each dispatch
+  WHY: macOS login keychain is locked in non-interactive SSH; Claude Code auth lives there. Unlocking per-dispatch is ~100ms overhead but survives reboots/sleep with zero manual intervention
+  CONTEXT: ~/.buildrunner/scripts/dispatch-to-otis.sh, ~/.buildrunner/.env CLUSTER_SSH_PASS
+[2026-04-05T05:17:11Z] [ARCHITECTURE] Added SSH fallback to cluster-check.sh for HTTP-less nodes
+  WHY: parallel-builder role (Otis) has no HTTP service on port 8100 — health check failed. SSH ping confirms reachability without adding a dummy HTTP service
+  CONTEXT: ~/.buildrunner/scripts/cluster-check.sh Layer 4
+[2026-04-05T05:17:11Z] [PATTERN] Dispatch pattern: SSH (key auth) → unlock keychain → PATH setup → claude -p
+  WHY: all 3 steps needed for reliable headless execution. Key auth = no password prompt. Keychain unlock = Max auth access. PATH = homebrew node/claude findable
+  CONTEXT: dispatch-to-otis.sh — template for Phase 7 orchestration
+[2026-04-05T05:17:11Z] [DECISION] Phase 4 COMPLETE — all spec items verified
+  WHY: Otis is now a working dispatch target; headless claude executes tool calls end-to-end; cluster-check detects it
+  CONTEXT: BUILD_cluster-infrastructure.md Phase 4
+[2026-04-05T05:26:25Z] [ARCHITECTURE] Dual-account auto-swap: keychain-backed storage + reactive swap on rate limit
+  WHY: two Claude Max accounts double daily/weekly capacity; automation avoids manual logout/login cycle when limits hit
+  CONTEXT: ~/.buildrunner/scripts/br-account-setup.sh, br-swap-accounts.sh, dispatch-to-otis.sh, ~/.buildrunner-cli.zsh (br-swap alias)
+[2026-04-05T05:26:25Z] [DECISION] Store both tokens in macOS keychain as -backup-A / -backup-B, swap active entry
+  WHY: keychain is where claude CLI reads credentials; copying between service-name slots is atomic and leaves no plaintext on disk
+  CONTEXT: security add-generic-password with service suffix pattern
+[2026-04-05T05:26:25Z] [DECISION] Otis swap is fully automatic; Muddy swap is manual via br-swap alias
+  WHY: Otis is called via headless -p (fresh process each call) — wrapper can detect rate-limit and retry. Muddy runs Claude Code interactively — a running session can't adopt new keychain auth without restart, so automation would save only the swap command, not the restart. Manual br-swap is 2 seconds.
+  CONTEXT: dispatch-to-otis.sh (auto), ~/.buildrunner-cli.zsh br-swap alias (manual)
+[2026-04-05T05:26:25Z] [DECISION] 5-minute cooldown prevents swap ping-pong when both accounts are spent
+  WHY: if A rate-limits → swap to B → B also rate-limits, another swap would waste a round-trip. Cooldown forces 'human needed' signal
+  CONTEXT: br-swap-accounts.sh COOLDOWN_SEC=300
+[2026-04-05T05:26:25Z] [PATTERN] Fail-loud on Otis desync: rollback Muddy if Otis swap fails
+  WHY: keeping Muddy and Otis on different accounts is worse than staying on one — they'd both burn through the same limit. Rollback keeps the pair consistent
+  CONTEXT: br-swap-accounts.sh OTIS_OK branch
+[2026-04-05T14:40:45Z] [ARCHITECTURE] Lomax staging server: wake-on-demand Vite dev servers + build validation API
+  WHY: 8GB RAM can't run all 11 dev servers continuously. On-demand start/stop with 10-min idle timeout gives illusion of 'always up' per project without crushing RAM
+  CONTEXT: ~/lomax-service/service.py on Lomax, FastAPI endpoints /api/projects/{name}/wake /sleep /build /preview
+[2026-04-05T14:40:45Z] [PATTERN] Port assignments: stable per project, 5173-5183
+  WHY: stable URLs let users bookmark; registry.json is single source of truth
+  CONTEXT: ~/lomax-service/registry.json on Lomax
+[2026-04-05T14:40:45Z] [DECISION] rsync with narrow includes for .buildrunner/components/ only
+  WHY: .buildrunner contains 11GB of logs per project but also BRLogger Vite plugins that vite.config imports. Must include components, exclude logs
+  CONTEXT: rsync include/exclude pattern, all 11 projects
+[2026-04-05T14:40:45Z] [CONSTRAINT] Apple Silicon clamshell requires 'pmset -a disablesleep 1' to stay awake without external display
+  WHY: Standard pmset sleep=0 isn't enough for lid-closed operation on M-series without external monitor. disablesleep=1 is the override
+  CONTEXT: Lomax clamshell operation
+[2026-04-05T14:40:45Z] [DECISION] Phase 5 COMPLETE — Lomax staging online with all 11 projects
+  WHY: wake/sleep/build/preview endpoints all work, LaunchAgent auto-start, /cluster detects node, 4/4 spot-checks passed
+  CONTEXT: BUILD_cluster-infrastructure.md Phase 5
