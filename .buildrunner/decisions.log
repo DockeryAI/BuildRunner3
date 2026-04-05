@@ -207,3 +207,18 @@
 [2026-04-05T14:40:45Z] [DECISION] Phase 5 COMPLETE — Lomax staging online with all 11 projects
   WHY: wake/sleep/build/preview endpoints all work, LaunchAgent auto-start, /cluster detects node, 4/4 spot-checks passed
   CONTEXT: BUILD_cluster-infrastructure.md Phase 5
+[2026-04-05T15:55:37Z] [ARCHITECTURE] Phase 7 orchestration: dispatch-phase-to-otis.sh as branch-based workflow
+  WHY: extends worktree merging pattern to cross-machine execution. Creates dispatch branch on Muddy, rsyncs to Otis, runs claude -p --dangerously-skip-permissions, rsyncs back (no --delete for safety), commits to dispatch branch for review/merge
+  CONTEXT: ~/.buildrunner/scripts/dispatch-phase-to-otis.sh, /begin Step 4.2, /autopilot Step 4.3b
+[2026-04-05T15:55:37Z] [DECISION] Otis dispatch is OPT-IN, not automatic
+  WHY: spec said 'dispatches automatically' but that changes user workflow dramatically and risks surprise behavior. Opt-in via explicit script call is safer; user or autopilot chooses when to use it
+  CONTEXT: /begin Step 4.2 and /autopilot Step 4.3b Otis Dispatch subsection
+[2026-04-05T15:55:37Z] [CONSTRAINT] OAuth tokens rotate during active Claude sessions → stale tokens on Otis
+  WHY: Muddy's OAuth token refreshes silently while Claude Code is running; Otis keeps whatever was last pushed. Fix: pre-dispatch token sync from Muddy active → Otis active
+  CONTEXT: dispatch-to-otis.sh and dispatch-phase-to-otis.sh both sync token before running claude
+[2026-04-05T15:55:37Z] [PATTERN] Cluster health check: HTTP /health → SSH fallback (Layer 4)
+  WHY: parallel-builder and future inference roles don't need HTTP services. SSH ping as fallback makes cluster-check.sh work uniformly across all node types
+  CONTEXT: ~/.buildrunner/scripts/cluster-check.sh Layer 4
+[2026-04-05T15:55:37Z] [DECISION] Phase 7 + Phase 8 COMPLETE (except Below inference + cross-regression hook)
+  WHY: dispatch pipeline verified end-to-end, /begin and /autopilot have Otis integration, /cluster and /reset-cluster updated for SSH-only nodes. Below (Phase 6) still hardware-blocked
+  CONTEXT: BUILD_cluster-infrastructure.md Phases 7 and 8

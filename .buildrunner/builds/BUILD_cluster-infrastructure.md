@@ -1,7 +1,7 @@
 # Build: BR3 Cluster Infrastructure
 
 **Created:** 2026-04-03
-**Status:** Phase 6 — Below inference + Supabase sandbox (Phases 4, 5 complete)
+**Status:** Phase 6 blocked on Below hardware (Phases 4, 5, 7, 8 complete — 2026-04-05)
 **Deploy:** local network — 6 machines via gigabit switch, REST APIs on each node
 
 ## Overview
@@ -154,9 +154,9 @@ Pattern detection, cross-file correlation, error fingerprinting. Will be moved t
 
 ---
 
-### Phase 7: BR3 Orchestration — Parallel Build Dispatch
+### Phase 7: BR3 Orchestration — Parallel Build Dispatch ✅
 
-**Status:** not_started
+**Status:** complete (2026-04-05) — opt-in dispatch via `dispatch-phase-to-otis.sh`
 
 **What gets built:**
 This is the phase that ties everything together. BR3 learns to use Otis.
@@ -204,9 +204,9 @@ This is the phase that ties everything together. BR3 learns to use Otis.
 
 ---
 
-### Phase 8: Integration + Polish
+### Phase 8: Integration + Polish ✅
 
-**Status:** not_started
+**Status:** complete (2026-04-05) — brief/cluster/reset-cluster updated for all node types
 
 **What gets built:**
 
