@@ -1,0 +1,13 @@
+{
+  "state": "BATCH_2_IN_PROGRESS",
+  "last_completed_phase": 1,
+  "current_task": "Phase 2+3: Below Intelligence + Lockwood Write-Back",
+  "progress": "Phase 2 complete (Below wired into spec.md, commit.md, developer-brief.sh, root.md). Phase 3 blocked on permission approvals.",
+  "next_immediate_step": "Restart session with updated .claude/settings.local.json — permissions now auto-approve ~/.claude/commands/* and ~/.buildrunner/scripts/*",
+  "next_build_step": "Resume /autopilot go which will complete Phase 3 Lockwood write-back edits (6 files: guard.md, review.md, gaps.md, dead.md, e2e.md, root.md), then proceed to Batch 3+",
+  "blockers": "Session permission reload required",
+  "settings_updated": ".claude/settings.local.json now has Edit/Write allows for external paths",
+  "commands_modified": ["spec.md", "commit.md", "root.md", "developer-brief.sh"],
+  "build_spec": "BUILD_cluster-build-orchestration.md",
+  "full_send_mode": true
+}
