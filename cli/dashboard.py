@@ -56,7 +56,9 @@ def dashboard():
     "--detail", "-d", type=str, default=None, help="Show detailed view for specific project"
 )
 @click.option("--history", is_flag=True, help="Show past plans table (with --view plan)")
-def show(path: Optional[str], watch: bool, view: str, detail: Optional[str], history: bool = False):
+@click.option("--context", is_flag=True, help="Show BUILD spec phase alongside plan (with --view plan)")
+@click.option("--diff", "show_diff", is_flag=True, help="Show plan comparison diff (with --view plan)")
+def show(path: Optional[str], watch: bool, view: str, detail: Optional[str], history: bool = False, context: bool = False, show_diff: bool = False):
     """
     Show multi-repo dashboard.
 
@@ -70,13 +72,15 @@ def show(path: Optional[str], watch: bool, view: str, detail: Optional[str], his
         br dashboard show --view alerts
         br dashboard show --view plan
         br dashboard show --view plan --history
+        br dashboard show --view plan --context
+        br dashboard show --view plan --diff
         br dashboard show --view exec
     """
     root_path = Path(path) if path else Path.cwd()
 
     # Plan view is special — doesn't need project scanning
     if view == "plan":
-        output = _render_plan_review(root_path, history)
+        output = _render_plan_review(root_path, history, context, show_diff)
         console.print(output)
         return
 
@@ -329,7 +333,7 @@ def _render_timeline_view(views: DashboardViews) -> Table:
 from rich.console import Group
 
 
-def _render_plan_review(root_path: Path, history: bool = False) -> Panel:
+def _render_plan_review(root_path: Path, history: bool = False, context: bool = False, show_diff: bool = False) -> Panel:
     """Render the plan review dashboard — the human verification gate."""
     review = PlanReviewView(root_path)
 
@@ -346,6 +350,78 @@ def _render_plan_review(root_path: Path, history: bool = False) -> Panel:
         return _render_plan_history(review)
 
     renderables = []
+
+    # --- BUILD spec context panel (--context) ---
+    if context:
+        spec_data = review.get_build_spec_context()
+        if spec_data:
+            spec_text = Text()
+            spec_text.append(f"Phase {spec_data['phase_num']}: ", style="bold cyan")
+            spec_text.append(spec_data["title"], style="bold")
+            spec_text.append(f"  ({spec_data['build_file']})\n", style="dim")
+
+            if spec_data.get("deliverables"):
+                spec_text.append("\nDeliverables:\n", style="bold")
+                for d in spec_data["deliverables"]:
+                    spec_text.append(f"  - {d}\n", style="white")
+
+            if spec_data.get("success_criteria"):
+                spec_text.append("\nSuccess Criteria: ", style="bold green")
+                spec_text.append(spec_data["success_criteria"], style="green")
+
+            renderables.append(
+                Panel(
+                    spec_text,
+                    title="BUILD Spec Context",
+                    border_style="magenta",
+                    padding=(0, 1),
+                )
+            )
+
+    # --- Plan comparison diff (--diff) ---
+    if show_diff:
+        diff_data = review.get_plan_diff()
+        if diff_data.get("has_previous"):
+            diff_text = Text()
+            diff_text.append(f"Compared with: {diff_data.get('previous_file', '')}\n\n", style="dim")
+
+            if diff_data["added"]:
+                for task in diff_data["added"]:
+                    diff_text.append(f"+ [{task['id']}] ", style="bold green")
+                    diff_text.append(f"{task['what']}\n", style="green")
+
+            if diff_data["removed"]:
+                for task in diff_data["removed"]:
+                    diff_text.append(f"- [{task['id']}] ", style="bold red")
+                    diff_text.append(f"{task['what']}\n", style="red")
+
+            if diff_data["modified"]:
+                for mod in diff_data["modified"]:
+                    diff_text.append(f"~ [{mod['id']}] ", style="bold yellow")
+                    diff_text.append(f"{mod['old_what']}", style="dim yellow")
+                    diff_text.append(" -> ", style="yellow")
+                    diff_text.append(f"{mod['new_what']}\n", style="yellow")
+
+            if not diff_data["added"] and not diff_data["removed"] and not diff_data["modified"]:
+                diff_text.append("No changes detected.", style="dim")
+
+            renderables.append(
+                Panel(
+                    diff_text,
+                    title="Plan Diff",
+                    border_style="yellow",
+                    padding=(0, 1),
+                )
+            )
+        elif show_diff:
+            renderables.append(
+                Panel(
+                    "[dim]No previous plan version found for comparison.[/dim]",
+                    title="Plan Diff",
+                    border_style="dim",
+                    padding=(0, 1),
+                )
+            )
 
     # --- Code health warning bar ---
     health = review.get_code_health_data()
@@ -382,6 +458,37 @@ def _render_plan_review(root_path: Path, history: bool = False) -> Panel:
                 task["verify"],
             )
         renderables.append(task_table)
+
+    # --- Dependency diagram (rendered as Rich Tree if present) ---
+    dep_nodes = review.get_dependency_diagram()
+    if dep_nodes:
+        from rich.tree import Tree
+        dep_tree = Tree("[bold]Dependencies[/bold]")
+        # Build lookup for which tasks have deps
+        dep_map = {n["task"]: n["depends_on"] for n in dep_nodes}
+        roots = [n["task"] for n in dep_nodes if not n["depends_on"]]
+        non_roots = [n["task"] for n in dep_nodes if n["depends_on"]]
+
+        # Add roots first, then dependents
+        tree_nodes = {}
+        for root_id in roots:
+            tree_nodes[root_id] = dep_tree.add(f"[cyan]{root_id}[/cyan]")
+        for task_id in non_roots:
+            deps = dep_map.get(task_id, [])
+            # Attach to first dependency that has a tree node, or to root
+            parent = None
+            for d in deps:
+                if d in tree_nodes:
+                    parent = tree_nodes[d]
+                    break
+            if parent is None:
+                parent = dep_tree
+            label = f"[cyan]{task_id}[/cyan] [dim](depends on {', '.join(deps)})[/dim]"
+            tree_nodes[task_id] = parent.add(label)
+
+        renderables.append(
+            Panel(dep_tree, border_style="cyan", padding=(0, 1))
+        )
 
     # --- Adversarial findings panel ---
     findings = review.get_adversarial_data()
