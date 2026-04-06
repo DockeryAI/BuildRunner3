@@ -414,7 +414,7 @@ def parse_changedetection_webhook(payload: dict) -> list[dict]:
     # Extract listings from snapshot (eBay CSS selectors)
     listings = payload.get("listings", [])
 
-    if not listings and current_snapshot:
+    if not listings and title:
         # Single item change notification
         price_str = payload.get("price", "")
         price = None
