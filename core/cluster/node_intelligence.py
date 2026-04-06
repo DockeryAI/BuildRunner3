@@ -174,7 +174,7 @@ def _verify_hmac(request_body: bytes, signature: str, secret: str) -> bool:
     """Verify HMAC-SHA256 signature from Miniflux."""
     if not secret:
         return True  # No secret configured, skip verification
-    expected = hmac.new(
+    expected = hmac.HMAC(
         secret.encode(), request_body, hashlib.sha256
     ).hexdigest()
     return hmac.compare_digest(expected, signature)
