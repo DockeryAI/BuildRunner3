@@ -11,13 +11,6 @@ import { dealsAPI } from '../services/api';
 import type { DealItem, Hunt, PriceHistoryPoint, DealFilters } from '../types';
 import './DealsTab.css';
 
-const VERDICT_ORDER: Record<string, number> = {
-  exceptional: 0,
-  good: 1,
-  fair: 2,
-  pass: 3,
-};
-
 const CATEGORY_OPTIONS = [
   { value: 'gpu', label: 'GPU' },
   { value: 'guitar', label: 'Guitar' },
@@ -197,9 +190,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
   const handleDismiss = async (id: number) => {
     try {
       await dealsAPI.dismissDeal(id);
-      setDeals((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, dismissed: true } : d))
-      );
+      setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, dismissed: true } : d)));
     } catch (err) {
       console.error('Dismiss deal failed:', err);
     }
@@ -208,9 +199,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
   const handleMarkRead = async (id: number) => {
     try {
       await dealsAPI.markDealRead(id);
-      setDeals((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, read: true } : d))
-      );
+      setDeals((prev) => prev.map((d) => (d.id === id ? { ...d, read: true } : d)));
     } catch (err) {
       console.error('Mark read failed:', err);
     }
@@ -281,10 +270,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
       <div className="hunts-panel">
         <div className="hunts-header">
           <h3>Active Hunts</h3>
-          <button
-            className="btn-add-hunt"
-            onClick={() => setShowAddHunt(!showAddHunt)}
-          >
+          <button className="btn-add-hunt" onClick={() => setShowAddHunt(!showAddHunt)}>
             {showAddHunt ? 'Cancel' : '+ Add Hunt'}
           </button>
         </div>
@@ -298,9 +284,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                 <input
                   type="text"
                   value={huntForm.name}
-                  onChange={(e) =>
-                    setHuntForm({ ...huntForm, name: e.target.value })
-                  }
+                  onChange={(e) => setHuntForm({ ...huntForm, name: e.target.value })}
                   placeholder="e.g. Fender Telecaster"
                 />
               </div>
@@ -308,9 +292,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                 <label>Category</label>
                 <select
                   value={huntForm.category}
-                  onChange={(e) =>
-                    setHuntForm({ ...huntForm, category: e.target.value })
-                  }
+                  onChange={(e) => setHuntForm({ ...huntForm, category: e.target.value })}
                 >
                   {CATEGORY_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -326,9 +308,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                 <input
                   type="text"
                   value={huntForm.keywords}
-                  onChange={(e) =>
-                    setHuntForm({ ...huntForm, keywords: e.target.value })
-                  }
+                  onChange={(e) => setHuntForm({ ...huntForm, keywords: e.target.value })}
                   placeholder="e.g. Fender Telecaster American -Squier"
                 />
               </div>
@@ -337,9 +317,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                 <input
                   type="number"
                   value={huntForm.target_price}
-                  onChange={(e) =>
-                    setHuntForm({ ...huntForm, target_price: e.target.value })
-                  }
+                  onChange={(e) => setHuntForm({ ...huntForm, target_price: e.target.value })}
                   placeholder="$"
                 />
               </div>
@@ -367,9 +345,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                 <label>Source URLs (one per line, optional)</label>
                 <textarea
                   value={huntForm.source_urls}
-                  onChange={(e) =>
-                    setHuntForm({ ...huntForm, source_urls: e.target.value })
-                  }
+                  onChange={(e) => setHuntForm({ ...huntForm, source_urls: e.target.value })}
                   placeholder="https://www.ebay.com/str/..."
                   rows={2}
                 />
@@ -394,9 +370,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
             onClick={() => setSelectedHuntId(null)}
           >
             <div className="hunt-card-name">All Hunts</div>
-            <div className="hunt-card-stat">
-              {deals.filter((d) => !d.dismissed).length} deals
-            </div>
+            <div className="hunt-card-stat">{deals.filter((d) => !d.dismissed).length} deals</div>
           </div>
           {hunts.map((hunt) => (
             <div
@@ -419,9 +393,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
               </div>
               <div className="hunt-card-meta">
                 <span className="hunt-category-badge">{hunt.category}</span>
-                <span className="hunt-target">
-                  Target: {formatPrice(hunt.target_price)}
-                </span>
+                <span className="hunt-target">Target: {formatPrice(hunt.target_price)}</span>
               </div>
               <div className="hunt-card-stats">
                 <span>{hunt.items_count ?? 0} items</span>
@@ -459,16 +431,11 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                     <span className="deal-seller">
                       {deal.seller}
                       {deal.seller_rating > 0 && (
-                        <span className="seller-rating">
-                          {' '}
-                          ({deal.seller_rating.toFixed(1)}%)
-                        </span>
+                        <span className="seller-rating"> ({deal.seller_rating.toFixed(1)}%)</span>
                       )}
                     </span>
                     <span className="deal-condition">{deal.condition}</span>
-                    <span className="deal-timestamp">
-                      {relativeTime(deal.collected_at)}
-                    </span>
+                    <span className="deal-timestamp">{relativeTime(deal.collected_at)}</span>
                   </div>
                 </div>
                 <div className="deal-card-right">
@@ -479,9 +446,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                   >
                     {deal.deal_score}
                   </span>
-                  <span className={`deal-verdict ${deal.verdict}`}>
-                    {deal.verdict}
-                  </span>
+                  <span className={`deal-verdict ${deal.verdict}`}>{deal.verdict}</span>
                 </div>
               </div>
 
@@ -501,87 +466,64 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                     </div>
                   )}
 
-                  {deal.attributes &&
-                    Object.keys(deal.attributes).length > 0 && (
-                      <div className="deal-attributes">
-                        <h4>Attributes</h4>
-                        <div className="attributes-grid">
-                          {Object.entries(deal.attributes).map(
-                            ([key, value]) => (
-                              <div key={key} className="attribute-item">
-                                <span className="attribute-key">{key}</span>
-                                <span className="attribute-value">
-                                  {String(value)}
-                                </span>
-                              </div>
-                            )
-                          )}
-                        </div>
+                  {deal.attributes && Object.keys(deal.attributes).length > 0 && (
+                    <div className="deal-attributes">
+                      <h4>Attributes</h4>
+                      <div className="attributes-grid">
+                        {Object.entries(deal.attributes).map(([key, value]) => (
+                          <div key={key} className="attribute-item">
+                            <span className="attribute-key">{key}</span>
+                            <span className="attribute-value">{String(value)}</span>
+                          </div>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  )}
 
                   {/* Price History Sparkline */}
-                  {priceHistoryDealId === deal.id &&
-                    priceHistory.length > 0 && (
-                      <div className="price-history-chart">
-                        <h4>Price History</h4>
-                        <ResponsiveContainer width="100%" height={120}>
-                          <AreaChart
-                            data={priceHistory.map((p) => ({
-                              date: new Date(p.recorded_at).toLocaleDateString(),
-                              price: p.price,
-                            }))}
-                          >
-                            <defs>
-                              <linearGradient
-                                id="priceGradient"
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                              >
-                                <stop
-                                  offset="5%"
-                                  stopColor="#0066cc"
-                                  stopOpacity={0.3}
-                                />
-                                <stop
-                                  offset="95%"
-                                  stopColor="#0066cc"
-                                  stopOpacity={0}
-                                />
-                              </linearGradient>
-                            </defs>
-                            <XAxis
-                              dataKey="date"
-                              tick={{ fontSize: 11, fill: '#999' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <Tooltip
-                              contentStyle={{
-                                background: '#0f1520',
-                                border: 'none',
-                                borderRadius: '6px',
-                                color: '#e0e0e0',
-                                fontSize: '13px',
-                              }}
-                              formatter={(value: number) => [
-                                formatPrice(value),
-                                'Price',
-                              ]}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="price"
-                              stroke="#0066cc"
-                              strokeWidth={2}
-                              fill="url(#priceGradient)"
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    )}
+                  {priceHistoryDealId === deal.id && priceHistory.length > 0 && (
+                    <div className="price-history-chart">
+                      <h4>Price History</h4>
+                      <ResponsiveContainer width="100%" height={120}>
+                        <AreaChart
+                          data={priceHistory.map((p) => ({
+                            date: new Date(p.recorded_at).toLocaleDateString(),
+                            price: p.price,
+                          }))}
+                        >
+                          <defs>
+                            <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#0066cc" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#0066cc" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <XAxis
+                            dataKey="date"
+                            tick={{ fontSize: 11, fill: '#999' }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              background: '#0f1520',
+                              border: 'none',
+                              borderRadius: '6px',
+                              color: '#e0e0e0',
+                              fontSize: '13px',
+                            }}
+                            formatter={(value: number) => [formatPrice(value), 'Price']}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="price"
+                            stroke="#0066cc"
+                            strokeWidth={2}
+                            fill="url(#priceGradient)"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
 
                   <div className="deal-actions">
                     <button
@@ -591,9 +533,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                         handleShowPriceHistory(deal.id);
                       }}
                     >
-                      {priceHistoryDealId === deal.id
-                        ? 'Hide History'
-                        : 'Price History'}
+                      {priceHistoryDealId === deal.id ? 'Hide History' : 'Price History'}
                     </button>
                     {!deal.read && (
                       <button
