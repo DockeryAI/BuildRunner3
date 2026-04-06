@@ -17,6 +17,10 @@ import type {
   IntelAlerts,
   IntelImprovement,
   IntelFilters,
+  DealItem,
+  Hunt,
+  PriceHistoryPoint,
+  DealFilters,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -247,6 +251,50 @@ export const intelAPI = {
       // Improvements endpoint may not exist yet (Phase 6)
       return { improvements: [] };
     }
+  },
+};
+
+// Deals API — talks to Lockwood intelligence service (same base URL as intel)
+export const dealsAPI = {
+  async getDealItems(filters?: DealFilters): Promise<{ items: DealItem[]; count: number }> {
+    const params: Record<string, any> = {};
+    if (filters?.hunt_id) params.hunt_id = filters.hunt_id;
+    if (filters?.min_score !== undefined) params.min_score = filters.min_score;
+    if (filters?.limit) params.limit = filters.limit;
+    const response = await intelApi.get('/api/deals/items', { params });
+    return response.data;
+  },
+
+  async getHunts(): Promise<{ hunts: Hunt[] }> {
+    const response = await intelApi.get('/api/deals/hunts');
+    return response.data;
+  },
+
+  async createHunt(
+    hunt: Omit<Hunt, 'id' | 'created_at' | 'active' | 'items_count' | 'last_checked'>
+  ): Promise<Hunt> {
+    const response = await intelApi.post('/api/deals/hunts', hunt);
+    return response.data;
+  },
+
+  async archiveHunt(id: number): Promise<{ status: string }> {
+    const response = await intelApi.post(`/api/deals/hunts/${id}/archive`);
+    return response.data;
+  },
+
+  async getPriceHistory(dealItemId: number): Promise<{ history: PriceHistoryPoint[] }> {
+    const response = await intelApi.get(`/api/deals/price-history/${dealItemId}`);
+    return response.data;
+  },
+
+  async dismissDeal(id: number): Promise<{ status: string }> {
+    const response = await intelApi.post(`/api/deals/items/${id}/dismiss`);
+    return response.data;
+  },
+
+  async markDealRead(id: number): Promise<{ status: string }> {
+    const response = await intelApi.post(`/api/deals/items/${id}/read`);
+    return response.data;
   },
 };
 
