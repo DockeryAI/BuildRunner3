@@ -111,11 +111,11 @@ class SpecParser:
 - Test validation
 
 **Acceptance Criteria:**
-- [ ] Parses markdown PROJECT_SPEC.md
-- [ ] Extracts features with metadata
-- [ ] Identifies dependencies
-- [ ] Returns structured dict
-- [ ] 90% test coverage
+- [x] Parses markdown PROJECT_SPEC.md
+- [x] Extracts features with metadata
+- [x] Identifies dependencies
+- [x] Returns structured dict
+- [x] 90% test coverage
 
 #### Task A.2: Task Decomposer (90 min)
 **File:** `core/task_decomposer.py`
@@ -155,11 +155,11 @@ class TaskDecomposer:
 - Test acceptance criteria generation
 
 **Acceptance Criteria:**
-- [ ] Breaks features into 1-2 hour chunks
-- [ ] Assigns complexity scores
-- [ ] Estimates duration
-- [ ] Adds clear acceptance criteria
-- [ ] 90% test coverage
+- [x] Breaks features into 1-2 hour chunks
+- [x] Assigns complexity scores
+- [x] Estimates duration
+- [x] Adds clear acceptance criteria
+- [x] 90% test coverage
 
 #### Task A.3: Dependency Graph Builder (60 min)
 **File:** `core/dependency_graph.py`
@@ -197,11 +197,11 @@ class DependencyGraph:
 - Test cycle detection
 
 **Acceptance Criteria:**
-- [ ] Builds valid DAG
-- [ ] Calculates execution order
-- [ ] Identifies parallel tasks
-- [ ] Detects circular dependencies
-- [ ] 90% test coverage
+- [x] Builds valid DAG
+- [x] Calculates execution order
+- [x] Identifies parallel tasks
+- [x] Detects circular dependencies
+- [x] 90% test coverage
 
 ### Verification Gate A1
 ```
@@ -282,11 +282,11 @@ class BatchOptimizer:
 - Test validation
 
 **Acceptance Criteria:**
-- [ ] Groups tasks by domain
-- [ ] Respects complexity limits
-- [ ] Max 3 tasks per batch
-- [ ] Validates batch coherence
-- [ ] 90% test coverage
+- [x] Groups tasks by domain
+- [x] Respects complexity limits
+- [x] Max 3 tasks per batch
+- [x] Validates batch coherence
+- [x] 90% test coverage
 
 #### Task B.2: Prompt Builder (90 min)
 **File:** `core/prompt_builder.py`
@@ -330,11 +330,11 @@ class PromptBuilder:
 - Test formatting
 
 **Acceptance Criteria:**
-- [ ] Generates clear, focused prompts
-- [ ] Includes relevant context only
-- [ ] Stays under token limits
-- [ ] Has explicit stop points
-- [ ] 90% test coverage
+- [x] Generates clear, focused prompts
+- [x] Includes relevant context only
+- [x] Stays under token limits
+- [x] Has explicit stop points
+- [x] 90% test coverage
 
 #### Task B.3: Context Manager (60 min)
 **File:** `core/context_manager.py`
@@ -375,11 +375,11 @@ class ContextManager:
 - Test state tracking
 
 **Acceptance Criteria:**
-- [ ] Gathers relevant context
-- [ ] Respects token limits
-- [ ] Tracks completed work
-- [ ] Compresses when needed
-- [ ] 90% test coverage
+- [x] Gathers relevant context
+- [x] Respects token limits
+- [x] Tracks completed work
+- [x] Compresses when needed
+- [x] 90% test coverage
 
 ### Verification Gate B1
 ```

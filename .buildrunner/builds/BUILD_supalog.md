@@ -48,11 +48,11 @@ Instrumented Supabase client that logs all operations (queries, auth, storage, r
   - `CLAUDE.md` (MODIFY) — add to protected files list
 **Blocked by:** Phase 1 (modifies same files)
 **Deliverables:**
-- [ ] Log rotation at 500KB (truncate oldest entries)
-- [ ] Dev-only gate — no logging in production builds
-- [ ] Create `/sdb` skill that reads and analyzes `.buildrunner/supabase.log`
-- [ ] Add `supabase.log` and `supabaseLogger.ts` to CLAUDE.md protected files
-- [ ] Update `/dbg` to also reference supabase.log when relevant
+- [x] Log rotation at 500KB (truncate oldest entries)
+- [x] Dev-only gate — no logging in production builds
+- [x] Create `/sdb` skill that reads and analyzes `.buildrunner/supabase.log`
+- [x] Add `supabase.log` and `supabaseLogger.ts` to CLAUDE.md protected files
+- [x] Update `/dbg` to also reference supabase.log when relevant
 
 **Success Criteria:** Logs stay manageable, `/sdb` returns useful diagnostics, zero presence in prod bundle
 
@@ -67,12 +67,12 @@ Instrumented Supabase client that logs all operations (queries, auth, storage, r
 **Blocked by:** Phase 1 (tests the client)
 **After:** Phase 2
 **Deliverables:**
-- [ ] Test: all HTTP operations produce log entries
-- [ ] Test: auth events logged correctly
-- [ ] Test: realtime events logged correctly
-- [ ] Test: RLS empty-result warning fires on 200 + empty data
-- [ ] Test: log rotation works at threshold
-- [ ] Confirm no measurable latency added (fetch wrapper timing)
+- [x] Test: all HTTP operations produce log entries
+- [x] Test: auth events logged correctly
+- [x] Test: realtime events logged correctly
+- [x] Test: RLS empty-result warning fires on 200 + empty data
+- [x] Test: log rotation works at threshold
+- [x] Confirm no measurable latency added (fetch wrapper timing)
 
 **Success Criteria:** Full test coverage, confirmed no overhead
 

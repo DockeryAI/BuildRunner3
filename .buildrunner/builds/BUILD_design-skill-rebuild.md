@@ -384,10 +384,10 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Run `/design` on the wizard app itself — full discovery, research, 4 directions, mockups, selection
-- [ ] Apply winning DESIGN_SPEC.md as a theme layer: update CSS custom properties, swap font imports, adjust accent colors, add motion tokens. Do not restructure components or change the wizard flow — the app works, this phase only changes how it looks.
-- [ ] Premium polish pass: micro-interactions on every interactive element (slider thumb spring, color wheel glow on hover, card flip on archetype swap, progress bar shimmer), 60fps transitions, smooth page transitions between wizard steps
-- [ ] Responsive: works on desktop (primary) and tablet. Not mobile — this is a design tool.
+- [x] Run `/design` on the wizard app itself — full discovery, research, 4 directions, mockups, selection
+- [x] Apply winning DESIGN_SPEC.md as a theme layer: update CSS custom properties, swap font imports, adjust accent colors, add motion tokens. Do not restructure components or change the wizard flow — the app works, this phase only changes how it looks.
+- [x] Premium polish pass: micro-interactions on every interactive element (slider thumb spring, color wheel glow on hover, card flip on archetype swap, progress bar shimmer), 60fps transitions, smooth page transitions between wizard steps
+- [x] Responsive: works on desktop (primary) and tablet. Not mobile — this is a design tool.
 
 **Build constraints (per /opus 4.6 alignment):**
 
@@ -543,15 +543,15 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Supabase `design_requests` table (id, discovery*data, url, status, mockup_urls, selection, created_at, updated_at) with RLS policy allowing public inserts, owner-only reads *(added: 2026-03-29)\_
-- [ ] Add mode selection screen to wizard: "Design from scratch" or "Redesign an existing site" with URL input _(added: 2026-03-29)_
-- [ ] Shortened wizard flow for URL mode — pre-fill inferable questions, skip to sliders + brand feel + not-like + constraints (~7 screens instead of 15) _(added: 2026-03-29)_
-- [ ] Swap wizard submit from local file-write to Supabase insert (keep file-write as fallback when `project_root` param is present for local mode) _(added: 2026-03-29)_
-- [ ] "Your designs are being crafted" waiting page with progress status (Crawling → Researching → Designing → Building → Deploying), powered by Supabase Realtime subscription on the row's status field _(added: 2026-03-29)_
-- [ ] Listener script (`~/.claude/tools/design-wizard/listener.ts`) — subscribes to `design_requests` inserts via Supabase Realtime, triggers Claude Code with the job data _(added: 2026-03-29)_
-- [ ] Auto-deploy each mockup direction to Netlify preview URL after build (`netlify deploy --dir`) _(added: 2026-03-29)_
-- [ ] Update Supabase row with 4 preview URLs + status "complete" when mockups are deployed _(added: 2026-03-29)_
-- [ ] Gallery page — customer's browser detects completion, shows 4 live iframe preview cards. "Pick this one" button updates the row with their selection. _(added: 2026-03-29)_
+- [x] Supabase `design_requests` table (id, discovery*data, url, status, mockup_urls, selection, created_at, updated_at) with RLS policy allowing public inserts, owner-only reads *(added: 2026-03-29)\_
+- [x] Add mode selection screen to wizard: "Design from scratch" or "Redesign an existing site" with URL input _(added: 2026-03-29)_
+- [x] Shortened wizard flow for URL mode — pre-fill inferable questions, skip to sliders + brand feel + not-like + constraints (~7 screens instead of 15) _(added: 2026-03-29)_
+- [x] Swap wizard submit from local file-write to Supabase insert (keep file-write as fallback when `project_root` param is present for local mode) _(added: 2026-03-29)_
+- [x] "Your designs are being crafted" waiting page with progress status (Crawling → Researching → Designing → Building → Deploying), powered by Supabase Realtime subscription on the row's status field _(added: 2026-03-29)_
+- [x] Listener script (`~/.claude/tools/design-wizard/listener.ts`) — subscribes to `design_requests` inserts via Supabase Realtime, triggers Claude Code with the job data _(added: 2026-03-29)_
+- [x] Auto-deploy each mockup direction to Netlify preview URL after build (`netlify deploy --dir`) _(added: 2026-03-29)_
+- [x] Update Supabase row with 4 preview URLs + status "complete" when mockups are deployed _(added: 2026-03-29)_
+- [x] Gallery page — customer's browser detects completion, shows 4 live iframe preview cards. "Pick this one" button updates the row with their selection. _(added: 2026-03-29)_
 
 **Success Criteria:** Customer fills wizard at a URL → your machine picks up the job via Realtime → Claude Code runs /design → 4 mockups deploy to live preview URLs → customer sees gallery with live iframes → picks a direction. Also works locally with `?project_root=` param (file-write fallback).
 
@@ -569,12 +569,12 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 **Deliverables:**
 
-- [ ] Static build of wizard app (`npm run build`) — works without Vite dev server _(added: 2026-03-29)_
-- [ ] Deploy to Netlify with custom domain `design.dockeryai.com` _(added: 2026-03-29)_
-- [ ] Environment config: Supabase URL + anon key injected at build time (public, read-only safe) _(added: 2026-03-29)_
-- [ ] Listener startup script for your machine — `npm run listen` starts the Realtime subscription, keeps it alive, auto-restarts on disconnect _(added: 2026-03-29)_
-- [ ] Notification when a customer submits (Supabase → edge function → email or Slack webhook to you) _(added: 2026-03-29)_
-- [ ] End-to-end test: submit from live URL → mockups deploy → gallery loads → selection saves _(added: 2026-03-29)_
+- [x] Static build of wizard app (`npm run build`) — works without Vite dev server _(added: 2026-03-29)_
+- [x] Deploy to Netlify with custom domain `design.dockeryai.com` _(added: 2026-03-29)_
+- [x] Environment config: Supabase URL + anon key injected at build time (public, read-only safe) _(added: 2026-03-29)_
+- [x] Listener startup script for your machine — `npm run listen` starts the Realtime subscription, keeps it alive, auto-restarts on disconnect _(added: 2026-03-29)_
+- [x] Notification when a customer submits (Supabase → edge function → email or Slack webhook to you) _(added: 2026-03-29)_
+- [x] End-to-end test: submit from live URL → mockups deploy → gallery loads → selection saves _(added: 2026-03-29)_
 
 **Success Criteria:** Customer visits design.dockeryai.com, fills the wizard (fresh or URL redesign), gets 4 live mockup previews, picks one. You get notified. Works end-to-end without you touching anything.
 

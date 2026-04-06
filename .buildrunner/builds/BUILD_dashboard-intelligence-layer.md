@@ -27,7 +27,7 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 ### PHASE 1: Web Terminal
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Click any node in the dashboard, get a live terminal in the browser. No SSH keys, no remembering IPs.
 
 **Files:**
@@ -41,11 +41,11 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 **Deliverables:**
 
-- [ ] WebSocket endpoint `/ws/terminal/:node` that spawns SSH session to target node
-- [ ] xterm.js terminal component in modal (opens from node detail or context menu)
-- [ ] Terminal resize handling (cols/rows sync)
-- [ ] Auto-close on disconnect, reconnect option
-- [ ] Muddy terminal connects to local shell (no SSH)
+- [x] WebSocket endpoint `/ws/terminal/:node` that spawns SSH session to target node
+- [x] xterm.js terminal component in modal (opens from node detail or context menu)
+- [x] Terminal resize handling (cols/rows sync)
+- [x] Auto-close on disconnect, reconnect option
+- [x] Muddy terminal connects to local shell (no SSH)
 
 **Success Criteria:** Click Lockwood in dashboard → terminal opens → run commands on Lockwood from the browser.
 
@@ -53,7 +53,7 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 ### PHASE 2: Session Grid
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** See every active Claude Code session across all nodes in one view.
 
 **Files:**
@@ -68,11 +68,11 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 **Deliverables:**
 
-- [ ] Integration that polls each node for active Claude Code processes via SSH (ps + session files)
-- [ ] `/api/sessions` endpoint returning session list across all nodes
-- [ ] Sessions panel showing: node, project, branch, state, elapsed time, last activity
-- [ ] Click session → detail modal with recent output, token estimate
-- [ ] Auto-refresh every 15s via SSE
+- [x] Integration that polls each node for active Claude Code processes via SSH (ps + session files)
+- [x] `/api/sessions` endpoint returning session list across all nodes
+- [x] Sessions panel showing: node, project, branch, state, elapsed time, last activity
+- [x] Click session → detail modal with recent output, token estimate
+- [x] Auto-refresh every 15s via SSE
 
 **Success Criteria:** Dashboard shows "3 active sessions: Muddy (BuildRunner3), Otis (Synapse), Below (workfloDock)" with live status.
 
@@ -80,7 +80,7 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 ### PHASE 3: Token & Cost Tracking
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Per-session and per-node token usage with budget warnings. Know before you hit the wall.
 
 **Files:**
@@ -95,12 +95,12 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 **Deliverables:**
 
-- [ ] Integration that reads `~/.buildrunner/usage-estimate.json` from each node (SSH + local)
-- [ ] `/api/usage` endpoint returning per-node token usage
-- [ ] Header stat showing total cluster token spend today
-- [ ] Per-session token estimate in session grid
-- [ ] Budget bar (green → yellow at 80% → red at 90%) with auto-pause indicator
-- [ ] SSE event `usage.warning` when any node hits 85%
+- [x] Integration that reads `~/.buildrunner/usage-estimate.json` from each node (SSH + local)
+- [x] `/api/usage` endpoint returning per-node token usage
+- [x] Header stat showing total cluster token spend today
+- [x] Per-session token estimate in session grid
+- [x] Budget bar (green → yellow at 80% → red at 90%) with auto-pause indicator
+- [x] SSE event `usage.warning` when any node hits 85%
 
 **Success Criteria:** Header shows "Tokens: 142K / 500K" with color-coded bar. Yellow warning when Otis hits 82%.
 
@@ -108,7 +108,7 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 ### PHASE 4: Diff Review Queue
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** When autopilot finishes phases on remote nodes, diffs appear in the dashboard for review. Approve or reject from the browser.
 
 **Files:**
@@ -123,12 +123,12 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 **Deliverables:**
 
-- [ ] Integration that watches `build.phase_complete` events from remote nodes
-- [ ] Auto-fetches `git diff` from remote branches via SSH
-- [ ] Review Queue panel showing pending diffs with file count, lines added/removed
-- [ ] Click review → diff viewer modal with green/red line-by-line display
-- [ ] Approve button (triggers merge on Muddy) and Reject button (marks as rejected)
-- [ ] Badge count on panel header showing pending reviews
+- [x] Integration that watches `build.phase_complete` events from remote nodes
+- [x] Auto-fetches `git diff` from remote branches via SSH
+- [x] Review Queue panel showing pending diffs with file count, lines added/removed
+- [x] Click review → diff viewer modal with green/red line-by-line display
+- [x] Approve button (triggers merge on Muddy) and Reject button (marks as rejected)
+- [x] Badge count on panel header showing pending reviews
 
 **Success Criteria:** Otis finishes Phase 3 of Synapse → "1 pending review" appears → click → see diff → approve → merged.
 
@@ -136,7 +136,7 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 ### PHASE 5: Auto Code Review on Diffs
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Claude Code automatically reviews remote diffs before you see them. Issues flagged inline.
 
 **Files:**
@@ -150,11 +150,11 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 **Deliverables:**
 
-- [ ] Script that runs Claude Code `/review` on a branch diff and outputs JSON findings
-- [ ] Auto-triggers when a new review enters the queue
-- [ ] Findings displayed as annotations in diff viewer (critical=red, warning=yellow, info=blue)
-- [ ] Summary line: "2 warnings, 0 critical" shown on review card
-- [ ] Critical findings block the Approve button (must acknowledge to override)
+- [x] Script that runs Claude Code `/review` on a branch diff and outputs JSON findings
+- [x] Auto-triggers when a new review enters the queue
+- [x] Findings displayed as annotations in diff viewer (critical=red, warning=yellow, info=blue)
+- [x] Summary line: "2 warnings, 0 critical" shown on review card
+- [x] Critical findings block the Approve button (must acknowledge to override)
 
 **Success Criteria:** Otis finishes a phase → diff appears with "1 critical: SQL injection in user input handler" pinned to line 47 → Approve button disabled until acknowledged.
 
@@ -162,7 +162,7 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 ### PHASE 6: Build Health Sparklines
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** At-a-glance health for every project — sparklines showing pass/fail, speed, frequency.
 
 **Files:**
@@ -176,11 +176,11 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 **Deliverables:**
 
-- [ ] `/api/builds/health` endpoint querying build history from events DB (last 30 per project)
-- [ ] Canvas-based sparkline renderer (30 bars: height=duration, color=pass/fail)
-- [ ] Sparklines added to Active Builds table rows
-- [ ] Reliability percentage (pass rate over 30 builds) shown per project
-- [ ] Speed trend (avg duration, arrow up/down vs previous 30)
+- [x] `/api/builds/health` endpoint querying build history from events DB (last 30 per project)
+- [x] Canvas-based sparkline renderer (30 bars: height=duration, color=pass/fail)
+- [x] Sparklines added to Active Builds table rows
+- [x] Reliability percentage (pass rate over 30 builds) shown per project
+- [x] Speed trend (avg duration, arrow up/down vs previous 30)
 
 **Success Criteria:** Each build row has a sparkline showing green/red bars. "Synapse: 87% reliability, avg 4.2m, trending faster."
 
@@ -188,7 +188,7 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 ### PHASE 7: Inline Log Actions + One-Click Rollback
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Restart and rollback buttons inside the log viewer. Deploy previous build to Lomax without rebuilding.
 
 **Files:**
@@ -200,11 +200,11 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 **Deliverables:**
 
-- [ ] Restart button inline in Prod Logs panel header (restarts project dev server or service)
-- [ ] Rollback button per build in builds table (redeploys previous successful build to Lomax)
-- [ ] `/api/projects/:name/rollback` endpoint triggering Lomax to deploy previous build
-- [ ] Confirmation dialog before rollback
-- [ ] Toast notification with rollback result
+- [x] Restart button inline in Prod Logs panel header (restarts project dev server or service)
+- [x] Rollback button per build in builds table (redeploys previous successful build to Lomax)
+- [x] `/api/projects/:name/rollback` endpoint triggering Lomax to deploy previous build
+- [x] Confirmation dialog before rollback
+- [x] Toast notification with rollback result
 
 **Success Criteria:** See error in Prod Logs → click Restart → service restarts → logs clear. Click Rollback → previous version deployed to Lomax.
 
@@ -212,7 +212,7 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 ### PHASE 8: Node Process Viewer
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** See exactly what's using CPU and memory on each node — process list with resource usage, sortable, killable.
 
 **Files:**
@@ -226,12 +226,12 @@ Research basis: `~/Projects/research-library/docs/techniques/dev-cluster-dashboa
 
 **Deliverables:**
 
-- [ ] `/api/nodes/:name/processes` endpoint that SSHs to node and runs `ps aux --sort=-%cpu | head -20`
-- [ ] Process table in node detail modal showing: PID, user, CPU%, MEM%, command
-- [ ] Sortable by CPU or MEM (client-side toggle)
-- [ ] Highlight Claude Code processes, node_semantic, node_tests etc in accent color
-- [ ] Kill button per process (with confirmation) via `ssh kill <PID>`
-- [ ] Auto-refresh button to re-poll
+- [x] `/api/nodes/:name/processes` endpoint that SSHs to node and runs `ps aux --sort=-%cpu | head -20`
+- [x] Process table in node detail modal showing: PID, user, CPU%, MEM%, command
+- [x] Sortable by CPU or MEM (client-side toggle)
+- [x] Highlight Claude Code processes, node_semantic, node_tests etc in accent color
+- [x] Kill button per process (with confirmation) via `ssh kill <PID>`
+- [x] Auto-refresh button to re-poll
 
 **Success Criteria:** Click Lockwood → node detail → see "node_semantic.py: 12% CPU, 340MB" and "chromadb: 8% CPU, 280MB" in a sortable table. Can kill a runaway process from the browser.
 

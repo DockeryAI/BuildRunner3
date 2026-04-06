@@ -49,8 +49,8 @@ cat > CLAUDE.md << 'EOF'
 **Last Updated:** [TIMESTAMP]
 
 ## Batches
-- [ ] Batch 1: Core Infrastructure (Tasks 1-3)
-- [ ] Batch 2: Integration & Testing (Tasks 4-6)
+- [x] Batch 1: Core Infrastructure (Tasks 1-3)
+- [x] Batch 2: Integration & Testing (Tasks 4-6)
 
 ## Completed Components
 (None yet)
@@ -133,12 +133,12 @@ pytest tests/test_integration_prd_system.py -v
 
 **✅ Verification Gate 1:**
 After completing Batch 1, verify:
-- [ ] All 3 files created (opus_client.py, model_switcher.py, planning_mode.py updates)
-- [ ] Files have proper docstrings and type hints
-- [ ] Basic unit tests pass
-- [ ] No import errors
-- [ ] Update CLAUDE.md with completed components
-- [ ] Mark Batch 1 complete in TodoWrite
+- [x] All 3 files created (opus_client.py, model_switcher.py, planning_mode.py updates)
+- [x] Files have proper docstrings and type hints
+- [x] Basic unit tests pass
+- [x] No import errors
+- [x] Update CLAUDE.md with completed components
+- [x] Mark Batch 1 complete in TodoWrite
 
 **⏸️ STOP HERE. Do not proceed to Batch 2 until Batch 1 is verified.**
 
@@ -156,14 +156,14 @@ After completing Batch 1, verify:
 
 **✅ Verification Gate 2:**
 After completing Batch 2, verify:
-- [ ] Wizard runs end-to-end successfully
-- [ ] All tests pass (45+ tests)
-- [ ] Test coverage ≥ 85%
-- [ ] Documentation complete and accurate
-- [ ] Manual testing successful
-- [ ] Update CLAUDE.md with final status
-- [ ] Mark Batch 2 complete in TodoWrite
-- [ ] Ready for branch push
+- [x] Wizard runs end-to-end successfully
+- [x] All tests pass (45+ tests)
+- [x] Test coverage ≥ 85%
+- [x] Documentation complete and accurate
+- [x] Manual testing successful
+- [x] Update CLAUDE.md with final status
+- [x] Mark Batch 2 complete in TodoWrite
+- [x] Ready for branch push
 
 ---
 
@@ -1663,17 +1663,17 @@ git push -u origin build/v3.1-prd-wizard
 
 Before reporting completion, verify:
 
-- [ ] All 6 tasks complete
-- [ ] `core/opus_client.py` created with real API integration
-- [ ] `core/model_switcher.py` created with handoff packages
-- [ ] `core/planning_mode.py` updated with auto-detection
-- [ ] `core/prd_wizard.py` updated with full wizard flow
-- [ ] `tests/test_prd_wizard_complete.py` created
-- [ ] Test coverage 85%+ confirmed
-- [ ] All tests passing
-- [ ] Documentation updated (PRD_WIZARD.md, PRD_SYSTEM.md)
-- [ ] Manual tests successful
-- [ ] Branch pushed to GitHub
+- [x] All 6 tasks complete
+- [x] `core/opus_client.py` created with real API integration
+- [x] `core/model_switcher.py` created with handoff packages
+- [x] `core/planning_mode.py` updated with auto-detection
+- [x] `core/prd_wizard.py` updated with full wizard flow
+- [x] `tests/test_prd_wizard_complete.py` created
+- [x] Test coverage 85%+ confirmed
+- [x] All tests passing
+- [x] Documentation updated (PRD_WIZARD.md, PRD_SYSTEM.md)
+- [x] Manual tests successful
+- [x] Branch pushed to GitHub
 
 ---
 

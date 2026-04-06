@@ -544,17 +544,17 @@ SYNAPSE_SERVICE_TOKEN=<supabase service role key or user-scoped token>
 
 ## 5. Acceptance Criteria Summary
 
-- [ ] `/design` detects `source: synapse-generated` front-matter and skips discovery wizard
-- [ ] `/design` uses Aaker 5 scores + layout archetypes from spec directly
-- [ ] `/design` still runs grayscale distinctness check on 4 directions
-- [ ] `/design` expanded from 4 sliders to 5 Aaker dimensions (backward compat)
-- [ ] `/design` writes front-matter on every DESIGN_SPEC.md it produces
-- [ ] `/website-build` fetches voice_package from Synapse API when brand_id available
-- [ ] `/website-build` uses voice_package copy verbatim when available
-- [ ] `/website-build` falls back to existing pain_vocabulary path silently on miss
-- [ ] `/website-build` enforces GEO + a11y + CWV + framework compliance gates
-- [ ] All legacy flows (first-design, redesign, no-Synapse website-build) continue working
-- [ ] Cross-skill integration test passes end-to-end
+- [x] `/design` detects `source: synapse-generated` front-matter and skips discovery wizard
+- [x] `/design` uses Aaker 5 scores + layout archetypes from spec directly
+- [x] `/design` still runs grayscale distinctness check on 4 directions
+- [x] `/design` expanded from 4 sliders to 5 Aaker dimensions (backward compat)
+- [x] `/design` writes front-matter on every DESIGN_SPEC.md it produces
+- [x] `/website-build` fetches voice_package from Synapse API when brand_id available
+- [x] `/website-build` uses voice_package copy verbatim when available
+- [x] `/website-build` falls back to existing pain_vocabulary path silently on miss
+- [x] `/website-build` enforces GEO + a11y + CWV + framework compliance gates
+- [x] All legacy flows (first-design, redesign, no-Synapse website-build) continue working
+- [x] Cross-skill integration test passes end-to-end
 
 ---
 

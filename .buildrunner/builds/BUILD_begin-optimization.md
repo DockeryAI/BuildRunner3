@@ -182,7 +182,7 @@ Fix post-implementation step loss during context compaction and align /begin ski
 - [x] **5.5** Add context recovery to Step 4 (read breadcrumb/todo if context lost)
 - [x] **5.6** Verify language de-escalation in all 4 docs (no CRITICAL/MANDATORY/caps MUST)
 - [x] **5.7** Verify core skill <6KB after all changes (3434 bytes)
-- [ ] **5.8** Test: Run /begin on real phase, force /compact mid-impl, verify Steps 5-9 execute
+- [x] **5.8** Test: Run /begin on real phase, force /compact mid-impl, verify Steps 5-9 execute
 
 **Success Criteria:**
 - @ references resolve correctly when /begin runs

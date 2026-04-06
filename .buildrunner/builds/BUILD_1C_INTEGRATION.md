@@ -9,29 +9,29 @@
 Before starting integration, verify both builds are complete:
 
 ### Build 1A Status (PRD Wizard)
-- [ ] Branch `build/v3.1-prd-wizard` exists
-- [ ] All files created in `../br3-prd-wizard`:
+- [x] Branch `build/v3.1-prd-wizard` exists
+- [x] All files created in `../br3-prd-wizard`:
   - core/opus_client.py
   - core/model_switcher.py
   - core/planning_mode.py (updated)
   - core/prd_wizard.py (updated)
   - tests/test_prd_wizard_complete.py
-- [ ] All tests passing
-- [ ] Coverage ≥ 85%
-- [ ] Branch pushed to origin
+- [x] All tests passing
+- [x] Coverage ≥ 85%
+- [x] Branch pushed to origin
 
 ### Build 1B Status (Design System)
-- [ ] Branch `build/v3.1-design-system` exists
-- [ ] All files created in `../br3-design-system`:
+- [x] Branch `build/v3.1-design-system` exists
+- [x] All files created in `../br3-design-system`:
   - 5 industry YAML files (government, legal, nonprofit, gaming, manufacturing)
   - 5 use case YAML files (chat, video, calendar, forms, search)
   - core/tailwind_generator.py
   - core/storybook_generator.py
   - core/visual_regression.py
   - tests/test_design_system_complete.py
-- [ ] All tests passing
-- [ ] Coverage ≥ 85%
-- [ ] Branch pushed to origin
+- [x] All tests passing
+- [x] Coverage ≥ 85%
+- [x] Branch pushed to origin
 
 ---
 
@@ -202,13 +202,13 @@ git push origin --delete build/v3.1-design-system
 ## Verification
 
 After integration, verify:
-- [ ] Main branch has all new files
-- [ ] All tests passing (570+)
-- [ ] Coverage ≥ 83%
-- [ ] No merge conflicts remain
-- [ ] Version updated to 3.1.0-alpha.1
-- [ ] Tag pushed to GitHub
-- [ ] Worktrees cleaned up
+- [x] Main branch has all new files
+- [x] All tests passing (570+)
+- [x] Coverage ≥ 83%
+- [x] No merge conflicts remain
+- [x] Version updated to 3.1.0-alpha.1
+- [x] Tag pushed to GitHub
+- [x] Worktrees cleaned up
 
 ---
 

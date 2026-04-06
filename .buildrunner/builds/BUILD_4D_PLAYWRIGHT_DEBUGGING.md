@@ -736,26 +736,26 @@ See `core/testing/playwright_runner.py` for full API documentation.
 ## Verification Gates
 
 ### Verification Gate 1 (After Batch 1)
-- [ ] PlaywrightRunner class created with all methods
-- [ ] VisualRegressionTester working
-- [ ] TestRecorder can record and replay
-- [ ] All unit tests passing
-- [ ] 90%+ code coverage
+- [x] PlaywrightRunner class created with all methods
+- [x] VisualRegressionTester working
+- [x] TestRecorder can record and replay
+- [x] All unit tests passing
+- [x] 90%+ code coverage
 
 ### Verification Gate 2 (After Batch 2)
-- [ ] CLI commands functional
-- [ ] Integration with error watcher working
-- [ ] Screenshot gallery generates correctly
-- [ ] Auto-testing on file changes works
-- [ ] All tests passing
+- [x] CLI commands functional
+- [x] Integration with error watcher working
+- [x] Screenshot gallery generates correctly
+- [x] Auto-testing on file changes works
+- [x] All tests passing
 
 ### Final Verification
-- [ ] All documentation complete
-- [ ] Integration tests passing
-- [ ] Example recordings created
-- [ ] CLAUDE.md updated
-- [ ] No import errors
-- [ ] Performance acceptable (tests run in < 30s)
+- [x] All documentation complete
+- [x] Integration tests passing
+- [x] Example recordings created
+- [x] CLAUDE.md updated
+- [x] No import errors
+- [x] Performance acceptable (tests run in < 30s)
 
 ---
 
