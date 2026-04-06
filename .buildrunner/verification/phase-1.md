@@ -1,15 +1,24 @@
-# Phase 1 Verification: Wire Tests into Build Workflow
+# Phase 1 Verification: Collection Infrastructure
 
-## Deliverables Verified
+## Deliverable Verification
 
-| ID | Deliverable | Status | Evidence |
-|----|-------------|--------|----------|
-| 1 | E2E execution block in /begin Step 4.5b | PASS | begin.md line 178 — references detection, npm run test:e2e:ui, fix loop (3 attempts), phase blocking |
-| 2 | /e2e accepts phase_number argument | PASS | e2e.md lines 19-34 — Phase-scoped mode with BUILD spec lookup |
-| 3 | Soft 4.6 prompt language | PASS | "when the phase includes UI deliverables" used throughout, no aggressive MUST language |
-| 4 | "do not hard-code values" constraint | PASS | begin-tdd-gate.md Anti-Patterns section, lines 149-153 |
-| 5 | Track e2e_tier1 in progress output | PASS | begin-tdd-gate.md 4.5c report template includes e2e_tier1: PASS/FAIL/SKIP |
+| Deliverable | Status | Evidence |
+|---|---|---|
+| SQLite schema (5 tables + indexes) | PASS | intel_schema.sql — 5 CREATE TABLE + 11 CREATE INDEX |
+| Miniflux webhook + HMAC | PASS | POST /api/intel/webhook/miniflux, _verify_hmac() |
+| Models API poller | PASS | poll_anthropic_models() with snapshot diffing |
+| Package version poller | PASS | poll_package_versions() for npm + PyPI |
+| NewReleases.io webhook | PASS | POST /api/intel/webhook/newreleases |
+| F5Bot webhook | PASS | POST /api/intel/webhook/f5bot |
+| changedetection.io webhook | PASS | POST /api/deals/webhook/changedetection |
+| Deal webhook handler | PASS | parse_changedetection_webhook creates deal_item + price_history |
+| FastAPI endpoints (all listed) | PASS | 14 endpoints on node_intelligence.py |
 
-## Method
+## Test Results
+- 39 tests passing (0 failures)
+- Coverage: schema, CRUD, webhook parsers, API endpoints, source classification
 
-Structural verification — all deliverables are markdown files. Confirmed content by reading modified files directly.
+## Notes
+- Docker installs (Miniflux, changedetection.io) are deployment tasks, not code deliverables
+- Feed subscription list is a Miniflux configuration task, not code
+- `package_versions` table added beyond spec for version tracking state

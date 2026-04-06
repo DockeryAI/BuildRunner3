@@ -244,3 +244,8 @@
 [2026-04-05T21:15:45Z] [PATTERN] Lockwood write-back pattern: skills save findings at end via curl POST to /api/memory/note
   WHY: Institutional memory enables future /predict, /root, /guard to find historical patterns and similar failures
   CONTEXT: root.md, guard.md, review.md, gaps.md, dead.md, e2e.md all get Lockwood save sections at end
+[2026-04-06T18:13:52Z] Phase 1 decisions:
+  - Separate intel.db from memory.db to avoid bloating existing Lockwood data
+  - Added package_versions table for tracking npm/PyPI version state
+  - changedetection parser uses title presence (not current_snapshot) for single-item fallback
+  - HMAC verification optional (skipped if no secret configured) for dev flexibility
