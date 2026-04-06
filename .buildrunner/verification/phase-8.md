@@ -1,18 +1,18 @@
-# Phase 8 Verification: Dashboard Enhancements
+# Phase 8 Verification: Node Process Viewer
 
 ## Deliverables
 
-1. **BUILD spec context panel** — `get_build_spec_context()` implemented, tested: returns phase_num=8, title="Dashboard — Enhancements", build_file="BUILD_setlist.md", deliverables list, success criteria. Scoring mechanism ensures correct BUILD file selected when multiple have same phase number.
+| # | Deliverable | Status | Evidence |
+|---|-------------|--------|----------|
+| 1 | `/api/nodes/:name/processes` endpoint | PASS | events.mjs line 879-927, SSH for remote nodes, local ps for Muddy |
+| 2 | Process table in node detail modal | PASS | index.html proc-viewer-section, proc-table-container |
+| 3 | Sortable by CPU or MEM | PASS | procSortBy toggle, sortAndRenderProcesses() |
+| 4 | Highlight BR3 processes | PASS | PROC_HIGHLIGHT_PATTERNS array, proc-highlight CSS class |
+| 5 | Kill button per process with confirmation | PASS | killNodeProcess() + /api/nodes/:name/kill endpoint, confirm() dialog |
+| 6 | Auto-refresh button | PASS | proc-refresh-btn calling loadNodeProcesses() |
 
-2. **Dependency diagram render** — `get_dependency_diagram()` implemented. Returns empty list when no dependency section (correct). Parses "depends on" and "->" syntax when present.
-
-3. **Plan comparison diff** — `get_plan_diff()` implemented. Returns has_previous=False when no previous plan (correct). Compares task IDs, detects added/removed/modified tasks.
-
-4. **CLI --context flag** — Added to `show` command, renders BUILD spec panel with phase title, deliverables, success criteria in magenta-bordered panel.
-
-5. **CLI --diff flag** — Added to `show` command, renders green/red/yellow colored diff panel. Shows "no previous version" when none exists.
-
-6. **Dependency tree rendering** — Rich Tree rendered after task table when dependency data is present.
-
-## Syntax Verification
-- Both `core/dashboard_views.py` and `cli/dashboard.py` compile cleanly with py_compile.
+## Notes
+- Files are outside git repo (~/.buildrunner/dashboard/), so cannot be committed to BuildRunner3 repo
+- PID validation rejects PID <= 1 to prevent killing init
+- Kill events are logged to events DB and broadcast via SSE
+- Process viewer uses distinct IDs (proc-*) to avoid conflicts with Phase 7's rollback/restart sections
