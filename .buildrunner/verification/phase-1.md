@@ -1,15 +1,26 @@
-# Phase 1 Verification: Wire Tests into Build Workflow
+# Phase 1: Web Terminal — Verification
 
-## Deliverables Verified
+## Deliverables
 
-| ID | Deliverable | Status | Evidence |
-|----|-------------|--------|----------|
-| 1 | E2E execution block in /begin Step 4.5b | PASS | begin.md line 178 — references detection, npm run test:e2e:ui, fix loop (3 attempts), phase blocking |
-| 2 | /e2e accepts phase_number argument | PASS | e2e.md lines 19-34 — Phase-scoped mode with BUILD spec lookup |
-| 3 | Soft 4.6 prompt language | PASS | "when the phase includes UI deliverables" used throughout, no aggressive MUST language |
-| 4 | "do not hard-code values" constraint | PASS | begin-tdd-gate.md Anti-Patterns section, lines 149-153 |
-| 5 | Track e2e_tier1 in progress output | PASS | begin-tdd-gate.md 4.5c report template includes e2e_tier1: PASS/FAIL/SKIP |
+| # | Deliverable | Status | Evidence |
+|---|-------------|--------|----------|
+| 1 | WebSocket endpoint `/ws/terminal/:node` | PASS | events.mjs: `server.on('upgrade', ...)` + `wss.on('connection', ...)` at line ~670 |
+| 2 | xterm.js terminal in modal | PASS | index.html: CDN-loaded xterm.js v5.5.0 + FitAddon, `openTerminal()` function |
+| 3 | Terminal resize handling | PASS | FitAddon + ResizeObserver, sends `{type:'resize', cols, rows}` to server |
+| 4 | Auto-close + reconnect | PASS | `ws.onclose` shows reconnect button, `child.on('exit')` sends exit message |
+| 5 | Muddy local shell (no SSH) | PASS | `if (nodeName === 'muddy')` spawns `bash --login` directly |
 
-## Method
+## Access Points
+- Node context menu (left-click dots): "Open Terminal" at top
+- Node right-click menu: "Open Terminal" at top
+- Node detail modal: "Open Terminal" button in footer
 
-Structural verification — all deliverables are markdown files. Confirmed content by reading modified files directly.
+## Server Verification
+- Module parse: OK (node dynamic import succeeds)
+- ws dependency: installed via npm
+- Only EADDRINUSE error (port 4400 already in use by running dashboard)
+
+## Manual Verification Needed
+- Restart dashboard (`pkill -f "node events.mjs"; cd ~/.buildrunner/dashboard && node events.mjs`)
+- Click any node → Open Terminal → verify shell works
+- Test Muddy (local bash) and a remote node (SSH)

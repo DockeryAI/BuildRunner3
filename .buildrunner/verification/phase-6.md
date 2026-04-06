@@ -1,16 +1,21 @@
-# Phase 6: Skill Cross-Integration — Verification
+# Phase 6 Verification: Dashboard Plan Review
 
-## Deliverable 1: /guard — E2E test coverage gap check
-- **Status:** PASS
-- **Evidence:** Section 3.6 added with 4 checklist items, Guard Report template updated with E2E section, Key Violations table includes E2E row
-- **File:** ~/.claude/commands/guard.md
+## Tests
+- 11/11 PlanReviewView tests passing
+- 27/27 existing dashboard tests passing (no regression)
+- Total: 38/38 PASS
 
-## Deliverable 2: /review — E2E regression run after auto-fixes
-- **Status:** PASS
-- **Evidence:** Step 3 item 5 added to run `npm run test:e2e` when Playwright configured, Rule 4 added for E2E after fixes
-- **File:** ~/.claude/commands/review.md
+## Deliverables Verified
+1. PlanReviewView class — PRESENT, all methods implemented
+2. Task table — Rich table with #/WHAT/WHY/VERIFY columns
+3. Adversarial findings panel — color-coded, severity sorted
+4. Test baseline panel — Walter query with graceful offline fallback
+5. Historical outcomes — Lockwood query, capped at 3
+6. Code health flags — warning bar for files < 9.5/10
+7. Actions — approve/revise/reject with shortcuts
+8. CLI wiring — --view plan and --view plan --history both work
+9. Graceful degradation — plan + adversarial always shown
 
-## Deliverable 3: /design — E2E Test Requirements in DESIGN_SPEC.md
-- **Status:** PASS
-- **Evidence:** "E2E Test Requirements" subsection added to Step 5 Final Output, documents user flows, interactions, and priority levels
-- **File:** ~/.claude/commands/design.md
+## Import Verification
+- `from core.dashboard_views import PlanReviewView` — OK
+- `from cli.dashboard import dashboard` — OK

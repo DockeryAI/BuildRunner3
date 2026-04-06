@@ -248,3 +248,12 @@
   - plan_id DESC tiebreaker added to get_recent_plan_outcomes ORDER BY for deterministic ordering within same timestamp
   - Keyword fallback in GET /api/plans/similar when DISABLE_INDEXER=true (graceful degradation)
   - embed_plan() called inline during POST /api/plans/record rather than via background indexer (plans are infrequent, immediate embedding acceptable)
+[2026-04-06T18:11:33Z] Phase 6 decisions:
+  - PlanReviewView as separate class (not extending DashboardViews) — different data sources, different lifecycle
+  - Cluster queries via subprocess→cluster-check.sh→urllib — consistent with existing cluster patterns
+  - Simple health heuristic (file exists + non-empty = 10.0) — extensible later with radon/complexity
+[2026-04-06T18:11:33Z] Phase 1 decisions:
+  - Used ws package (not socket.io) for minimal WebSocket proxy
+  - xterm.js loaded from CDN (no build step needed for vanilla HTML dashboard)
+  - child_process.spawn for terminal (not node-pty) — avoids native compile dependency
+  - SSH with sshpass for password auth on cluster nodes
