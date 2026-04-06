@@ -98,10 +98,26 @@ def _ensure_tables(conn: sqlite3.Connection):
             timestamp TEXT NOT NULL DEFAULT (datetime('now'))
         );
 
+        CREATE TABLE IF NOT EXISTS plan_outcomes (
+            plan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project TEXT NOT NULL,
+            build_name TEXT NOT NULL,
+            phase TEXT NOT NULL,
+            plan_text TEXT NOT NULL,
+            outcome TEXT NOT NULL,
+            accuracy_pct REAL,
+            drift_notes TEXT,
+            files_planned TEXT,
+            files_actual TEXT,
+            duration_seconds REAL,
+            timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
         CREATE INDEX IF NOT EXISTS idx_build_project ON build_history(project);
         CREATE INDEX IF NOT EXISTS idx_commits_repo ON commits(repo);
         CREATE INDEX IF NOT EXISTS idx_test_project ON test_results(project);
         CREATE INDEX IF NOT EXISTS idx_patterns_type ON log_patterns(pattern_type);
+        CREATE INDEX IF NOT EXISTS idx_plans_project ON plan_outcomes(project);
     """)
     conn.commit()
 
@@ -166,6 +182,42 @@ def predict_phase(project: str, phase_pattern: str) -> dict:
         "avg_duration_seconds": round(avg_duration, 1),
         "common_failures": list(set(failure_reasons))[:5],
     }
+
+
+# --- Plan Outcomes ---
+
+def record_plan_outcome(project: str, build_name: str, phase: str,
+                        plan_text: str, outcome: str,
+                        accuracy_pct: float = None, drift_notes: str = None,
+                        files_planned: list = None, files_actual: list = None,
+                        duration_seconds: float = None):
+    """Store a plan execution outcome for later retrieval and semantic search."""
+    conn = _get_db()
+    conn.execute(
+        """INSERT INTO plan_outcomes (project, build_name, phase, plan_text,
+           outcome, accuracy_pct, drift_notes, files_planned, files_actual,
+           duration_seconds)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (project, build_name, phase, plan_text, outcome, accuracy_pct,
+         drift_notes,
+         json.dumps(files_planned) if files_planned else None,
+         json.dumps(files_actual) if files_actual else None,
+         duration_seconds)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_recent_plan_outcomes(project: str, limit: int = 20) -> list[dict]:
+    """Retrieve recent plan outcomes for a project, newest first."""
+    conn = _get_db()
+    rows = conn.execute(
+        """SELECT * FROM plan_outcomes WHERE project = ?
+           ORDER BY timestamp DESC, plan_id DESC LIMIT ?""",
+        (project, limit)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 # --- Commit Indexing ---
