@@ -1,14 +1,31 @@
-# Phase 5 Plan: Dashboard — Deals Tab
+# Phase 5 Plan: Auto Code Review on Diffs
 
 ## Tasks
 
-1. **Add Deals types to types/index.ts** — DealItem, Hunt, PriceHistoryPoint, DealFilters
-2. **Add Deals API methods to api.ts** — getDealItems, getHunts, createHunt, archiveHunt, getPriceHistory, dismissDeal, markDealRead
-3. **Create DealsTab.tsx** — Hunt management panel + deal feed + price history chart + alert badge callback
-4. **Create DealsTab.css** — Dark-friendly styling matching Intelligence tab aesthetic
-5. **Update Dashboard.tsx** — Add 5th "Deals" tab with alert badge, wire DealsTab component
+### Task 5.1: Create auto-review-diff.sh script
+- New script at ~/.buildrunner/scripts/auto-review-diff.sh
+- Accepts: branch, project path, node
+- Runs claude -p with review prompt on diff content
+- Outputs structured JSON findings: [{severity, file, line, message}]
+- Fallback: if claude CLI unavailable, output empty findings with warning
+
+### Task 5.2: Modify reviews.mjs — trigger auto-review
+- Add autoReview field to review objects
+- After diff fetch in addReview, spawn auto-review-diff.sh
+- Parse JSON output, attach findings to review
+- Add summary counts (critical, warning, info)
+
+### Task 5.3: Modify index.html — annotations in diff viewer
+- Inline annotations on diff lines matching findings
+- Color-code: critical=red, warning=yellow, info=blue
+- Summary line on review card
+- Auto-review status indicator
+- Critical findings block Approve — acknowledge to override
+
+### Task 5.4: Modify styles.css — annotation styles
+- Annotation markers, severity colors
+- Review summary badges
+- Acknowledge checkbox, disabled approve button
 
 ## Tests
-
-- Unit test for DealsTab component rendering with mock data
-- Verify types compile correctly (TypeScript check)
+- Non-testable (shell scripts, HTML/CSS UI) — TDD skipped
