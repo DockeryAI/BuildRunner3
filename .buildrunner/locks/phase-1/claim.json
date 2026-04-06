@@ -1,8 +1,0 @@
-{
-  "phase": 1,
-  "name": "Setlist Skill",
-  "claimed_at": "2026-04-06T17:23:35Z",
-  "host": "Byrons-MacBook-Pro.local",
-  "build": "BUILD_setlist.md",
-  "mode": "autopilot-cluster"
-}

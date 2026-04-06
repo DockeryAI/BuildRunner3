@@ -1,7 +1,7 @@
 # Build: Setlist — Evidence-Based Planning for BR3
 
 **Created:** 2026-04-06
-**Status:** Phase 1 Not Started
+**Status:** Phases 1,2,3,5 Complete — Phase 4 In Progress
 **Deploy:** local — skill files + cluster node updates (deploy nodes via SSH after each phase)
 
 ## Overview
@@ -57,7 +57,7 @@ Planning system that prevents defects before code is written. Uses The Band for 
 
 ### Phase 1: The Setlist Skill
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/setlist.md` (NEW)
@@ -68,16 +68,16 @@ Planning system that prevents defects before code is written. Uses The Band for 
 
 **Deliverables:**
 
-- [ ] Skill file implementing the 6-phase Setlist pipeline as Claude orchestration instructions
-- [ ] Phase 0 (TUNE UP): Query Lockwood `/api/plans/similar` for 2-3 relevant past plan outcomes; read BUILD spec for current phase context; run code health pre-check on target files; curate all context to <500 tokens
-- [ ] Phase 1 (SOUNDCHECK): Dispatch 1-3 Explore subagents using the defined lenses, scaled by complexity (bug=1, feature=2, refactor=3). Each lens has a specific output template in the lenses doc
-- [ ] Phase 2 (REHEARSAL): Single-agent synthesis consuming explore results + Lockwood lessons. One Self-Refine pass (generate → critique → revise). Output in plan format doc structure
-- [ ] Phase 3 (JAM SESSION): Run `adversarial-review.sh` targeting Otis (or local subagent fallback). Query Walter `/api/testmap/baseline` for test map + current pass/fail state. Both parallel
-- [ ] Phase 4 (SHOWTIME): Present plan + adversarial findings + test baseline. Approve → hand to `/begin`. Revise → targeted re-synthesis. Reject → archive to Lockwood with reason
-- [ ] Plan format doc defining: WHAT (file + function-level intent) + WHY (requirement satisfied) + VERIFY (specific test from test map) per task. 40-line hard max. Single-function decomposition mandatory
-- [ ] Explore lenses doc defining three lenses: Feature Trace (data flow), Impact Analysis (callers + dependents + test map), Semantic Similarity (reuse candidates + clone risks). Each with output template
-- [ ] Complexity classifier: count files in BUILD spec phase → 1-3 files = simple (1 agent), 4-8 = medium (2 agents), 9+ = complex (3 agents)
-- [ ] Graceful fallback: if Lockwood offline → skip Phase 0 memory query. If Walter offline → skip test map. If Otis offline → run adversarial as local subagent. Skill always works
+- [x] Skill file implementing the 6-phase Setlist pipeline as Claude orchestration instructions
+- [x] Phase 0 (TUNE UP): Query Lockwood `/api/plans/similar` for 2-3 relevant past plan outcomes; read BUILD spec for current phase context; run code health pre-check on target files; curate all context to <500 tokens
+- [x] Phase 1 (SOUNDCHECK): Dispatch 1-3 Explore subagents using the defined lenses, scaled by complexity (bug=1, feature=2, refactor=3). Each lens has a specific output template in the lenses doc
+- [x] Phase 2 (REHEARSAL): Single-agent synthesis consuming explore results + Lockwood lessons. One Self-Refine pass (generate → critique → revise). Output in plan format doc structure
+- [x] Phase 3 (JAM SESSION): Run `adversarial-review.sh` targeting Otis (or local subagent fallback). Query Walter `/api/testmap/baseline` for test map + current pass/fail state. Both parallel
+- [x] Phase 4 (SHOWTIME): Present plan + adversarial findings + test baseline. Approve → hand to `/begin`. Revise → targeted re-synthesis. Reject → archive to Lockwood with reason
+- [x] Plan format doc defining: WHAT (file + function-level intent) + WHY (requirement satisfied) + VERIFY (specific test from test map) per task. 40-line hard max. Single-function decomposition mandatory
+- [x] Explore lenses doc defining three lenses: Feature Trace (data flow), Impact Analysis (callers + dependents + test map), Semantic Similarity (reuse candidates + clone risks). Each with output template
+- [x] Complexity classifier: count files in BUILD spec phase → 1-3 files = simple (1 agent), 4-8 = medium (2 agents), 9+ = complex (3 agents)
+- [x] Graceful fallback: if Lockwood offline → skip Phase 0 memory query. If Walter offline → skip test map. If Otis offline → run adversarial as local subagent. Skill always works
 
 **Success Criteria:** `/setlist add JWT auth to the payments service` produces a structured plan with decomposed single-function tasks, each with a verify criterion, in under 15 minutes
 
@@ -85,7 +85,7 @@ Planning system that prevents defects before code is written. Uses The Band for 
 
 ### Phase 2: Plan Memory (Lockwood)
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `core/cluster/memory_store.py` (MODIFY)
@@ -95,7 +95,7 @@ Planning system that prevents defects before code is written. Uses The Band for 
 
 **Deliverables:**
 
-- [ ] New `plan_outcomes` table in memory_store.py:
+- [x] New `plan_outcomes` table in memory_store.py:
   ```
   plan_id INTEGER PRIMARY KEY AUTOINCREMENT
   project TEXT NOT NULL
@@ -110,13 +110,13 @@ Planning system that prevents defects before code is written. Uses The Band for 
   duration_seconds REAL
   timestamp TEXT DEFAULT datetime('now')
   ```
-- [ ] `record_plan_outcome()` in memory_store.py — stores plan + execution outcome
-- [ ] `get_recent_plan_outcomes()` in memory_store.py — retrieves recent plans for a project
-- [ ] Embed plan text into LanceDB via existing CodeRankEmbed model for semantic retrieval
-- [ ] `search_similar_plans()` in node_semantic.py — vector search for semantically similar past plans, returns top 3 with outcome + accuracy + drift_notes
-- [ ] API endpoint `POST /api/plans/record` — accepts plan_text, outcome, accuracy, files arrays
-- [ ] API endpoint `GET /api/plans/similar?query=<text>&project=<name>&limit=3` — returns similar plans with outcomes
-- [ ] Index: `idx_plans_project` on project column
+- [x] `record_plan_outcome()` in memory_store.py — stores plan + execution outcome
+- [x] `get_recent_plan_outcomes()` in memory_store.py — retrieves recent plans for a project
+- [x] Embed plan text into LanceDB via existing CodeRankEmbed model for semantic retrieval
+- [x] `search_similar_plans()` in node_semantic.py — vector search for semantically similar past plans, returns top 3 with outcome + accuracy + drift_notes
+- [x] API endpoint `POST /api/plans/record` — accepts plan_text, outcome, accuracy, files arrays
+- [x] API endpoint `GET /api/plans/similar?query=<text>&project=<name>&limit=3` — returns similar plans with outcomes
+- [x] Index: `idx_plans_project` on project column
 
 **Success Criteria:** After recording 3+ plan outcomes, `GET /api/plans/similar?query=auth migration&project=synapse&limit=3` returns relevant past plans ranked by semantic similarity with pass/fail outcomes and accuracy percentages
 
@@ -124,7 +124,7 @@ Planning system that prevents defects before code is written. Uses The Band for 
 
 ### Phase 3: Test Map (Walter)
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `core/cluster/node_tests.py` (MODIFY)
@@ -133,7 +133,7 @@ Planning system that prevents defects before code is written. Uses The Band for 
 
 **Deliverables:**
 
-- [ ] New `test_file_map` table:
+- [x] New `test_file_map` table:
   ```
   id INTEGER PRIMARY KEY AUTOINCREMENT
   project TEXT NOT NULL
@@ -142,12 +142,12 @@ Planning system that prevents defects before code is written. Uses The Band for 
   confidence TEXT DEFAULT 'import' (import/convention/manual)
   last_verified TEXT DEFAULT datetime('now')
   ```
-- [ ] `build_test_map(project)` function — scans test files for: import statements referencing source files, naming conventions (foo.test.ts → foo.ts), and explicit file references. Builds source→test mapping
-- [ ] `get_test_map(files, project)` — given a list of source files, returns which test files cover them with confidence level
-- [ ] API endpoint `GET /api/testmap?files=<comma-separated>&project=<name>` — returns `{file: [test_files]}` mapping
-- [ ] API endpoint `POST /api/testmap/baseline?project=<name>&files=<comma-separated>` — runs the mapped tests, returns `{test_file: "pass"|"fail"|"skip", duration_ms: N}` baseline
-- [ ] Auto-rebuild: when file hashes change during existing poll cycle, invalidate and rebuild affected map entries
-- [ ] Index: `idx_testmap_project_source` on (project, source_file)
+- [x] `build_test_map(project)` function — scans test files for: import statements referencing source files, naming conventions (foo.test.ts → foo.ts), and explicit file references. Builds source→test mapping
+- [x] `get_test_map(files, project)` — given a list of source files, returns which test files cover them with confidence level
+- [x] API endpoint `GET /api/testmap?files=<comma-separated>&project=<name>` — returns `{file: [test_files]}` mapping
+- [x] API endpoint `POST /api/testmap/baseline?project=<name>&files=<comma-separated>` — runs the mapped tests, returns `{test_file: "pass"|"fail"|"skip", duration_ms: N}` baseline
+- [x] Auto-rebuild: when file hashes change during existing poll cycle, invalidate and rebuild affected map entries
+- [x] Index: `idx_testmap_project_source` on (project, source_file)
 
 **Success Criteria:** `GET /api/testmap?files=src/auth/middleware.ts&project=synapse` returns test files that import or reference that source file, with `POST /api/testmap/baseline` confirming their current pass/fail state
 
@@ -181,7 +181,7 @@ Planning system that prevents defects before code is written. Uses The Band for 
 
 ### Phase 5: Adversarial Review Dispatch
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/adversarial-review.sh` (NEW)
@@ -190,13 +190,13 @@ Planning system that prevents defects before code is written. Uses The Band for 
 
 **Deliverables:**
 
-- [ ] Shell script accepting: plan file path, project root path, optional target node (default: Otis)
-- [ ] If Otis online: SSH to Otis, sync relevant source files via rsync, launch `claude --print` with adversarial prompt + plan text, capture output, return to caller
-- [ ] If Otis offline: output a local adversarial prompt that the setlist skill runs as a subagent
-- [ ] Adversarial prompt targets the measured failure modes: requirement conflicts (43.53% of hallucinations), fabricated APIs (20.41%), broken execution order, missing edge cases, files that don't exist
-- [ ] Hard 3-minute timeout (`timeout 180` on SSH command). Adversarial loops have diminishing returns — survivability over completeness
-- [ ] Output format: JSON array of `{finding: "text", severity: "blocker|warning|note"}`. Blockers must be addressed before approval. Warnings are advisory. Notes are informational
-- [ ] Exit codes: 0 = review complete (findings in stdout), 1 = timeout/error (fallback message in stderr)
+- [x] Shell script accepting: plan file path, project root path, optional target node (default: Otis)
+- [x] If Otis online: SSH to Otis, sync relevant source files via rsync, launch `claude --print` with adversarial prompt + plan text, capture output, return to caller
+- [x] If Otis offline: output a local adversarial prompt that the setlist skill runs as a subagent
+- [x] Adversarial prompt targets the measured failure modes: requirement conflicts (43.53% of hallucinations), fabricated APIs (20.41%), broken execution order, missing edge cases, files that don't exist
+- [x] Hard 3-minute timeout (`timeout 180` on SSH command). Adversarial loops have diminishing returns — survivability over completeness
+- [x] Output format: JSON array of `{finding: "text", severity: "blocker|warning|note"}`. Blockers must be addressed before approval. Warnings are advisory. Notes are informational
+- [x] Exit codes: 0 = review complete (findings in stdout), 1 = timeout/error (fallback message in stderr)
 
 **Success Criteria:** `./adversarial-review.sh plan.md /path/to/project` returns findings within 3 minutes. Correctly identifies a deliberately planted fabricated API reference in a test plan
 

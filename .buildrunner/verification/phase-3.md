@@ -1,22 +1,17 @@
-# Phase 3 Verification: Playwright MCP + Claude Code Hooks
+# Phase 3 Verification: Test Map (Walter)
 
-## Deliverable Checklist
+## Deliverables Verified
 
-| # | Deliverable | Status | Evidence |
-|---|------------|--------|----------|
-| 1 | .mcp.json with Playwright MCP server config | PASS | File created, valid JSON, stdio transport with npx @playwright/mcp@latest |
-| 2 | MCP tool permissions in settings.local.json | PASS | 8 core tools allowed: navigate, click, type, fill, screenshot, snapshot, evaluate, close |
-| 3 | Stop hook with stop_hook_active guard | PASS | Command hook checks STOP_HOOK_ACTIVE env var, runs npm run test:e2e, blocks on failure |
-| 4 | stop_hook_active guard prevents infinite loops | PASS | Guard checks -n STOP_HOOK_ACTIVE before running, exits early if set |
-| 5 | /pw-test slash command | PASS | Created at ~/.claude/commands/pw-test.md with explore-then-write pattern, XML structure, 3 multishot examples |
-| 6 | SessionStart compact-matcher hook | PASS | Re-injects test status context when test-results/ exists |
+| Deliverable | Status | Evidence |
+|---|---|---|
+| test_file_map table | PASS | Table created with all columns, verified by TestTestFileMapTable |
+| idx_testmap_project_source index | PASS | Index exists, verified by test_index_exists |
+| build_test_map() | PASS | Maps imports + conventions, 3 tests passing |
+| get_test_map() | PASS | Returns correct mappings + confidence, 3 tests passing |
+| GET /api/testmap | PASS | Returns test mapping for files, verified by test_get_testmap |
+| POST /api/testmap/baseline | PASS | Returns baseline status, verified by test_post_baseline |
+| Auto-rebuild on change | PASS | Integrated into _test_loop, invalidates + rebuilds |
 
-## JSON Validation
-- .mcp.json: Valid (jq exit 0)
-- settings.local.json: Valid (jq exit 0)
-- Hook structure validated via jq selector queries
-
-## Notes
-- Stop hook uses command type (not agent type) for efficiency - running tests is mechanical and doesnt need LLM interpretation
-- SessionStart hook only fires when both playwright.config.ts and test-results/ exist
-- pw-test.md registered as skill (visible in skill list)
+## Test Results
+- 11 tests written, 11 passing
+- 0 failures
