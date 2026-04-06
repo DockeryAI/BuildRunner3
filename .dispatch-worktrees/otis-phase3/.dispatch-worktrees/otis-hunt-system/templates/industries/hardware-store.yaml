@@ -1,0 +1,12 @@
+id: hardware-store
+name: Hardware Store
+naics_code: '444130'
+category: Retail
+keywords:
+- hardware store
+- hardware
+- store
+- tools
+- supplies
+has_full_profile: false
+source: naics_only

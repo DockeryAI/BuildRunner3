@@ -1,0 +1,11 @@
+id: specialty-medical-practice
+name: Specialty Medical Practice
+naics_code: '621111'
+category: Healthcare
+keywords:
+- specialty medical practice
+- specialty
+- medical
+- practice
+has_full_profile: false
+source: naics_only

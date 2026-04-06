@@ -1,0 +1,10 @@
+id: florist
+name: Florist
+naics_code: '453110'
+category: Retail
+keywords:
+- florist
+- flowers
+- arrangements
+has_full_profile: false
+source: naics_only

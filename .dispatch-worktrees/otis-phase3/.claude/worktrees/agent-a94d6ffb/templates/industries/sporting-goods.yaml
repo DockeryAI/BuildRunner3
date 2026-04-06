@@ -1,0 +1,10 @@
+id: sporting-goods
+name: Sporting Goods
+naics_code: '451110'
+category: Retail
+keywords:
+- sporting goods
+- sporting
+- goods
+has_full_profile: false
+source: naics_only

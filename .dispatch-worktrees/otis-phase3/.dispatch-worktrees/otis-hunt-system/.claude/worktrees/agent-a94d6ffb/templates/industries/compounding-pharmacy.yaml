@@ -1,0 +1,10 @@
+id: compounding-pharmacy
+name: Compounding Pharmacy
+naics_code: '446110'
+category: Healthcare
+keywords:
+- compounding pharmacy
+- compounding
+- pharmacy
+has_full_profile: false
+source: naics_only

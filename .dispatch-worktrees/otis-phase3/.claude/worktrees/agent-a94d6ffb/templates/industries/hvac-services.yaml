@@ -1,0 +1,16 @@
+id: hvac-services
+name: HVAC Services
+naics_code: '238220'
+category: Construction
+keywords:
+- hvac services
+- hvac
+- services
+- heating
+- cooling
+- air conditioning
+- furnace
+- AC repair
+- HVAC contractor
+has_full_profile: false
+source: naics_only

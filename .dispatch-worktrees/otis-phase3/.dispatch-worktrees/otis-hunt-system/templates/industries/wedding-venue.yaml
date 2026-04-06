@@ -1,0 +1,10 @@
+id: wedding-venue
+name: Wedding Venue
+naics_code: '531120'
+category: Food Service
+keywords:
+- wedding venue
+- wedding
+- venue
+has_full_profile: false
+source: naics_only

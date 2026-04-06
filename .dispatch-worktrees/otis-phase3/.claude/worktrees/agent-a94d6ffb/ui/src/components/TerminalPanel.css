@@ -1,0 +1,47 @@
+.terminal-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1e293b;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.terminal-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.terminal-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.terminal-btn {
+  padding: 0.25rem 0.75rem;
+  background: #334155;
+  color: #e2e8f0;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.terminal-btn:hover {
+  background: #475569;
+}
+
+.terminal-container {
+  flex: 1;
+  padding: 0.5rem;
+  overflow: hidden;
+}

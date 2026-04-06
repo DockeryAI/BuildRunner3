@@ -1,0 +1,13 @@
+id: gift-shop
+name: Gift Shop
+naics_code: '453220'
+category: Retail
+keywords:
+- gift shop
+- gift
+- shop
+- gifts
+- souvenirs
+- novelties
+has_full_profile: false
+source: naics_only

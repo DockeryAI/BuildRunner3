@@ -1,0 +1,10 @@
+id: commercial-construction
+name: Commercial Construction
+naics_code: '236220'
+category: Construction
+keywords:
+- commercial construction
+- commercial
+- construction
+has_full_profile: false
+source: naics_only

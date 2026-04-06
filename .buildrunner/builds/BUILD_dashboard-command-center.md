@@ -1,7 +1,7 @@
 # Build: Dashboard Command Center
 
 **Created:** 2026-04-06
-**Status:** Phases 1-2 Complete — Phase 3 In Progress
+**Status:** Phases 1-4 Complete — Phase 3 In Progress
 **Deploy:** local-service — `pkill -f "node events.mjs"; cd ~/.buildrunner/dashboard && node events.mjs &`
 
 ## Overview
@@ -175,7 +175,7 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 
 ### Phase 6: Mobile Responsive
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/dashboard/public/styles.css` (MODIFY — media queries) ⚠️ external
@@ -185,14 +185,14 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 
 **Deliverables:**
 
-- [ ] Sidebar → bottom tab bar on `< 768px` — 4 icons with labels
-- [ ] Cluster strip: horizontal scroll, min-width 140px per card
-- [ ] KPI cards: 2×2 grid on mobile
-- [ ] Terminal: fills viewport, command toolbar docked above keyboard (position: fixed bottom)
-- [ ] Touch targets: 44px minimum on all buttons and interactive elements
-- [ ] Command toolbar buttons: 48px height for touch
-- [ ] Single column panel stack on mobile, full width
-- [ ] Replace existing breakpoints (1200px, 800px) with 768px + 480px
+- [x] Sidebar → bottom tab bar on `< 768px` — 4 icons with labels
+- [x] Cluster strip: horizontal scroll, min-width 140px per card
+- [x] KPI cards: 2×2 grid on mobile
+- [x] Terminal: fills viewport, command toolbar docked above keyboard (position: fixed bottom)
+- [x] Touch targets: 44px minimum on all buttons and interactive elements
+- [x] Command toolbar buttons: 48px height for touch
+- [x] Single column panel stack on mobile, full width
+- [x] Replace existing breakpoints (1200px, 800px) with 768px + 480px
 
 **Success Criteria:** `band.taskwatcher.ai` on iPhone → bottom bar → workspaces → terminal fills screen → toolbar works with thumb.
 
@@ -200,7 +200,7 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 
 ### Phase 7: Session Management + Node Actions
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/dashboard/public/index.html` (MODIFY — actions UI) ⚠️ external

@@ -1,0 +1,173 @@
+name: "Calendar / Scheduling"
+description: "Calendar applications, event management, appointment scheduling"
+category: "Productivity"
+
+layout:
+  structure: "sidebar-main-detail"
+  regions:
+    sidebar:
+      width: "260px"
+      contains:
+        - "Mini calendar"
+        - "Calendar list (toggle)"
+        - "Create event button"
+    main:
+      width: "flex-1"
+      contains:
+        - "Month/Week/Day/Agenda view"
+        - "Event grid"
+        - "Time slots"
+    detail:
+      width: "400px"
+      collapsible: true
+      contains:
+        - "Event details"
+        - "Attendees"
+        - "Description"
+        - "Reminders"
+
+navigation:
+  toolbar:
+    left:
+      - label: "Today"
+        action: "jump-to-today"
+      - label: "Prev"
+        icon: "chevron-left"
+      - label: "Next"
+        icon: "chevron-right"
+    center:
+      - label: "Month selector"
+        type: "dropdown"
+    right:
+      - label: "Month"
+        view: "month"
+      - label: "Week"
+        view: "week"
+      - label: "Day"
+        view: "day"
+      - label: "Agenda"
+        view: "agenda"
+
+components:
+  monthView:
+    grid: "7x5-or-6"
+    firstDay: "monday-or-sunday"
+    showWeekNumbers: optional
+    features:
+      - "Multi-event display (dots/count)"
+      - "Today highlight"
+      - "Selected date"
+  weekView:
+    columns: 7
+    timeSlots: "30min-or-1hour"
+    startHour: 8
+    endHour: 20
+    features:
+      - "All-day events row"
+      - "Time grid"
+      - "Current time indicator"
+  dayView:
+    columns: 1
+    timeSlots: "15min-or-30min"
+    features:
+      - "Hourly breakdown"
+      - "Event stacking"
+      - "Current time indicator"
+  agendaView:
+    layout: "list"
+    groupBy: "date"
+    features:
+      - "Chronological event list"
+      - "Date headers"
+      - "No events placeholder"
+  eventForm:
+    fields:
+      - "Title (required)"
+      - "Date/Time (required)"
+      - "Duration"
+      - "Location"
+      - "Description"
+      - "Attendees (with autocomplete)"
+      - "Reminders"
+      - "Repeat (daily, weekly, monthly, yearly)"
+      - "Calendar (if multiple)"
+
+interactions:
+  creating:
+    - "Click date to create event"
+    - "Drag on time grid to set duration"
+    - "Quick add (natural language)"
+  editing:
+    - "Click event to view details"
+    - "Drag to move"
+    - "Resize to change duration"
+    - "Double-click to edit"
+  navigation:
+    - "Arrow keys to navigate dates"
+    - "T for today"
+    - "N for new event"
+    - "/ for search"
+
+patterns:
+  scheduling:
+    - "Find time slot (availability check)"
+    - "Propose multiple times"
+    - "Accept/decline invites"
+    - "Tentative bookings"
+  recurring:
+    - "Repeat patterns (daily, weekly, monthly, yearly)"
+    - "Custom recurrence (every 2 weeks, etc.)"
+    - "Edit single or all occurrences"
+    - "Exceptions (skip specific dates)"
+  reminders:
+    - "Email reminders"
+    - "Push notifications"
+    - "SMS (optional)"
+    - "Multiple reminders per event"
+  conflicts:
+    - "Detect overlapping events"
+    - "Visual indicator"
+    - "Warning on save"
+
+dataFlow:
+  eventManagement:
+    - "Create/update/delete events"
+    - "Send invites (via email)"
+    - "Track RSVP status"
+    - "Sync with calendar services (Google, Outlook)"
+  availability:
+    - "Free/busy lookup"
+    - "Find available time slots"
+    - "Cross-calendar checks"
+
+performance:
+  - "Virtual scrolling for week/day views"
+  - "Lazy load events outside viewport"
+  - "Cache calendar data"
+  - "Optimistic updates"
+
+accessibility:
+  - "Keyboard navigation (arrow keys)"
+  - "Screen reader support"
+  - "ARIA grid for calendar"
+  - "Focus management"
+  - "Accessible date picker"
+
+responsiveness:
+  mobile:
+    - "Agenda view default"
+    - "Bottom sheet for event details"
+    - "Swipe between days"
+  tablet:
+    - "Week view default"
+    - "Split view (calendar + details)"
+  desktop:
+    - "Month or week view default"
+    - "Sidebar + main + detail"
+
+notes:
+  - "Timezone handling critical"
+  - "iCalendar (.ics) import/export"
+  - "CalDAV sync for cross-platform"
+  - "Recurring events use RRULE"
+  - "Conflict detection for shared calendars"

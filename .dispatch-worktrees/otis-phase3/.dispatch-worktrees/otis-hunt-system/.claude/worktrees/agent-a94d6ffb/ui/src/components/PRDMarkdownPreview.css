@@ -1,0 +1,355 @@
+/* PRD Markdown Preview Styles */
+
+.prd-markdown-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+/* Toolbar */
+.preview-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.view-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-controls button {
+  padding: 0.5rem 0.875rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.view-controls button:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.view-controls button.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.preview-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Content Area */
+.preview-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.preview-content.layout-editor {
+  display: block;
+}
+
+.preview-content.layout-preview {
+  display: block;
+}
+
+.preview-content.layout-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #e5e7eb;
+}
+
+/* Editor Pane */
+.editor-pane {
+  flex: 1;
+  overflow: hidden;
+  background: white;
+}
+
+.markdown-textarea {
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  border: none;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  resize: none;
+  background: #ffffff;
+  color: #1f2937;
+  tab-size: 2;
+}
+
+.markdown-textarea:focus {
+  outline: none;
+}
+
+.markdown-textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Preview Pane */
+.preview-pane {
+  flex: 1;
+  overflow-y: auto;
+  background: white;
+  padding: 1.5rem;
+}
+
+.markdown-rendered {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Rendered Markdown Styles */
+.markdown-rendered h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  color: #111827;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.markdown-rendered h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 2rem 0 1rem 0;
+  color: #1f2937;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 0.375rem;
+}
+
+.markdown-rendered h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem 0;
+  color: #374151;
+}
+
+.markdown-rendered p {
+  margin: 0.75rem 0;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.markdown-rendered strong {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.markdown-rendered em {
+  font-style: italic;
+  color: #6b7280;
+}
+
+.markdown-rendered code {
+  background: #f3f4f6;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 0.875em;
+  color: #dc2626;
+}
+
+.markdown-rendered pre {
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.markdown-rendered pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: 0.875rem;
+}
+
+.markdown-rendered ul {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+
+.markdown-rendered li {
+  margin: 0.375rem 0;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.markdown-rendered a {
+  color: #3b82f6;
+  text-decoration: underline;
+}
+
+.markdown-rendered a:hover {
+  color: #2563eb;
+}
+
+/* Checkboxes */
+.markdown-rendered .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.markdown-rendered .checkbox:hover {
+  background: #f9fafb;
+}
+
+.markdown-rendered .checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: not-allowed;
+}
+
+.markdown-rendered .checkbox.checked {
+  background: #f0fdf4;
+  border-left: 3px solid #22c55e;
+}
+
+.markdown-rendered .checkbox.checked span {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+
+.markdown-rendered .checkbox.unchecked {
+  border-left: 3px solid #e5e7eb;
+}
+
+/* Badges */
+.markdown-rendered .priority-badge,
+.markdown-rendered .status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 0.25rem 0.25rem 0.25rem 0;
+  border: 1px solid;
+}
+
+.markdown-rendered .status-badge {
+  background: #dbeafe;
+  color: #1e40af;
+  border-color: #3b82f6;
+  text-transform: capitalize;
+}
+
+/* Footer */
+.preview-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.help-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Scrollbar Styling */
+.preview-pane::-webkit-scrollbar,
+.markdown-textarea::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.preview-pane::-webkit-scrollbar-track,
+.markdown-textarea::-webkit-scrollbar-track {
+  background: #f9fafb;
+}
+
+.preview-pane::-webkit-scrollbar-thumb,
+.markdown-textarea::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.preview-pane::-webkit-scrollbar-thumb:hover,
+.markdown-textarea::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .preview-content.layout-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .preview-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .view-controls {
+    justify-content: center;
+  }
+
+  .preview-stats {
+    justify-content: center;
+  }
+
+  .markdown-rendered {
+    padding: 0;
+  }
+
+  .markdown-textarea {
+    padding: 1rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .preview-toolbar,
+  .preview-footer,
+  .editor-pane {
+    display: none !important;
+  }
+
+  .preview-content {
+    display: block !important;
+  }
+
+  .preview-pane {
+    padding: 0;
+    overflow: visible;
+  }
+
+  .markdown-rendered {
+    max-width: none;
+  }
+}

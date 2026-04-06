@@ -1,0 +1,13 @@
+id: financial-planning
+name: Financial Planning
+naics_code: '523930'
+category: Professional Services
+keywords:
+- financial planning
+- financial
+- planning
+- financial planner
+- financial advisor
+- wealth management
+has_full_profile: false
+source: naics_only

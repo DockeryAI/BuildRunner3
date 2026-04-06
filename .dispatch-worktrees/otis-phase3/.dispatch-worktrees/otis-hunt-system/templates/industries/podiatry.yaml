@@ -1,0 +1,13 @@
+id: podiatry
+name: Podiatry
+naics_code: '621391'
+category: Healthcare
+keywords:
+- podiatry
+- podiatry
+- podiatrist
+- foot doctor
+- foot care
+- ankle
+has_full_profile: false
+source: naics_only

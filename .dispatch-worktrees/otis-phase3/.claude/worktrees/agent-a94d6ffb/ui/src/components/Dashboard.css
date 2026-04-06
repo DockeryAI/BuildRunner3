@@ -1,0 +1,210 @@
+.dashboard {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.dashboard-header {
+  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+  color: white;
+  padding: 24px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.ws-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ccc;
+}
+
+.ws-indicator.connected {
+  background: #4caf50;
+  box-shadow: 0 0 8px #4caf50;
+}
+
+.dashboard-status {
+  background: white;
+  margin: 24px 32px;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.status-badge {
+  padding: 8px 24px;
+  border-radius: 20px;
+  font-weight: 700;
+  color: white;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.status-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+  background: #0066cc;
+  color: white;
+}
+
+.btn-secondary {
+  background: #607d8b;
+  color: white;
+}
+
+.btn-danger {
+  background: #f44336;
+  color: white;
+}
+
+.progress-section {
+  margin-top: 24px;
+}
+
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+}
+
+.stat-value.completed {
+  color: #4caf50;
+}
+
+.stat-value.in-progress {
+  color: #ff9800;
+}
+
+.stat-value.pending {
+  color: #0066cc;
+}
+
+.stat-value.failed {
+  color: #f44336;
+}
+
+.progress-bar-container {
+  height: 12px;
+  background: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0066cc, #42a5f5);
+  transition: width 0.3s ease;
+}
+
+.progress-percent {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  font-weight: 600;
+}
+
+.dashboard-tabs {
+  display: flex;
+  gap: 0;
+  margin: 0 32px;
+  border-bottom: 2px solid #ddd;
+}
+
+.tab {
+  padding: 16px 32px;
+  border: none;
+  background: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab:hover {
+  color: #0066cc;
+}
+
+.tab.active {
+  color: #0066cc;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #0066cc;
+}
+
+.dashboard-content {
+  margin: 0 32px 32px 32px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}

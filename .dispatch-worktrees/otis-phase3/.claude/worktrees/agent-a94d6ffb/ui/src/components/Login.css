@@ -1,0 +1,334 @@
+/**
+ * Login Component Styles
+ */
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.login-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.gradient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.3;
+}
+
+.gradient-blob-1 {
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.5);
+  top: -50px;
+  right: -50px;
+  animation: blob1 10s infinite;
+}
+
+.gradient-blob-2 {
+  width: 250px;
+  height: 250px;
+  background: rgba(100, 200, 255, 0.3);
+  bottom: -50px;
+  left: -50px;
+  animation: blob2 12s infinite;
+}
+
+.gradient-blob-3 {
+  width: 200px;
+  height: 200px;
+  background: rgba(200, 150, 255, 0.3);
+  top: 50%;
+  left: 50%;
+  animation: blob3 15s infinite;
+}
+
+@keyframes blob1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -50px) scale(1.1); }
+}
+
+@keyframes blob2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-30px, 50px) scale(1.1); }
+}
+
+@keyframes blob3 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.15); }
+}
+
+.login-box {
+  position: relative;
+  z-index: 2;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 450px;
+  padding: 60px 40px;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.login-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-header p {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.login-error {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 6px;
+  color: #c33;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.form-group input[type='email'],
+.form-group input[type='password'],
+.form-group input[type='text'] {
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.form-group input[type='email']:focus,
+.form-group input[type='password']:focus,
+.form-group input[type='text']:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  flex: 1;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.toggle-password:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.toggle-password:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-group.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group.checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.form-group.checkbox label {
+  margin: 0;
+  font-weight: 400;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.login-button {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.login-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.login-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.forgot-password {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0;
+  text-decoration: none;
+}
+
+.forgot-password:hover:not(:disabled) {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.forgot-password:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+.login-info {
+  background-color: #f0f4ff;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 24px;
+  font-size: 12px;
+  color: #555;
+}
+
+.login-info p {
+  margin: 4px 0;
+}
+
+.login-info p:first-child {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .login-box {
+    width: 100%;
+    margin: 20px;
+    padding: 40px 24px;
+    max-width: none;
+  }
+
+  .login-header h1 {
+    font-size: 28px;
+  }
+
+  .gradient-blob-1 {
+    width: 200px;
+    height: 200px;
+  }
+
+  .gradient-blob-2 {
+    width: 150px;
+    height: 150px;
+  }
+
+  .gradient-blob-3 {
+    width: 120px;
+    height: 120px;
+  }
+}

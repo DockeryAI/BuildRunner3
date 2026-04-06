@@ -1,0 +1,10 @@
+id: computer-repair
+name: Computer Repair
+naics_code: '811212'
+category: Technology
+keywords:
+- computer repair
+- computer
+- repair
+has_full_profile: false
+source: naics_only

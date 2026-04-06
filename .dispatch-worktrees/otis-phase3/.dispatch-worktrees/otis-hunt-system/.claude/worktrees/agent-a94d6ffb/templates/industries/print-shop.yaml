@@ -1,0 +1,10 @@
+id: print-shop
+name: Print Shop
+naics_code: '323111'
+category: Personal Services
+keywords:
+- print shop
+- print
+- shop
+has_full_profile: false
+source: naics_only

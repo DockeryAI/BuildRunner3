@@ -1,0 +1,92 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "← Gallery" [ref=e36] [cursor=pointer]
+    - button "A" [ref=e37] [cursor=pointer]
+    - button "B" [ref=e38] [cursor=pointer]
+    - button "C" [ref=e39] [cursor=pointer]
+    - button "D" [ref=e40] [cursor=pointer]
+  - generic [ref=e42]:
+    - generic [ref=e43]: "Direction A: Longform Narrative — Premium Editorial Authority · Fraunces + DM Sans · #C47A3A"
+    - navigation [ref=e44]:
+      - generic [ref=e45]: OpenDialog
+      - link "The Agents" [ref=e46] [cursor=pointer]:
+        - /url: "#the-agents"
+      - link "SAFER" [ref=e47] [cursor=pointer]:
+        - /url: "#safer"
+      - link "Process" [ref=e48] [cursor=pointer]:
+        - /url: "#process"
+      - link "Proof" [ref=e49] [cursor=pointer]:
+        - /url: "#proof"
+    - article [ref=e50]:
+      - generic:
+        - img
+      - generic [ref=e51]:
+        - img [ref=e52]
+        - generic [ref=e54]: OpenDialog
+      - paragraph [ref=e55]: Enterprise AI Agents · Insurance
+      - heading "AI agents that deliver outcomes" [level=1] [ref=e56]:
+        - text: AI agents that deliver
+        - emphasis [ref=e57]: outcomes
+      - paragraph [ref=e58]: Purpose built AI agents that automate insurance journeys, increase conversion, and prove ROI in weeks — not quarters. This is the story of how we got here, and why it matters for your business.
+      - paragraph [ref=e59]: The insurance industry has spent the last decade digitising paper. Policy admin systems went online. Claims portals got web interfaces. Customer portals became apps. But the fundamental interaction model — a human reading a screen, interpreting a customer's needs, and navigating a complex product catalogue — hasn't changed.
+      - paragraph [ref=e60]: OpenDialog changes that. We build AI agents that don't just answer questions — they complete insurance journeys. From the first quote enquiry to policy renewal, from claims notification to dispute resolution. Each agent is trained on your specific products, your underwriting guidelines, your compliance requirements.
+      - blockquote [ref=e61]: "\"The question isn't whether AI can handle insurance conversations. It's whether your AI understands what's at stake when it does.\""
+      - paragraph [ref=e62]: The results speak for themselves. Selma, our sales agent, delivers a 20% increase in quote conversions by engaging prospects at the moment of intent — answering objections, comparing options, and guiding them to purchase without losing the human warmth that insurance decisions demand.
+      - paragraph [ref=e63]: "Jamie, our claims and service agent, handles the full lifecycle: first notice of loss, document collection, status updates, resolution. The outcome? 70% of policy queries resolved without human intervention. Your team focuses on the exceptions that genuinely require human judgment."
+      - paragraph [ref=e64]: And Rhea — our re-engagement agent — identifies at-risk policyholders and reaches them at the right moment with the right message. She recovers 20% of lapsed premium revenue at a fraction of the cost of outbound calling.
+      - img [ref=e67]
+      - heading "Built on SAFER — the standard for responsible AI in regulated industries." [level=2] [ref=e70]:
+        - text: Built on SAFER —
+        - emphasis [ref=e71]: the standard for responsible AI in regulated industries.
+      - paragraph [ref=e72]: Insurance is high-stakes. Every AI interaction carries regulatory weight. SAFER is our proprietary framework — five principles that govern every agent interaction before it reaches production.
+      - paragraph [ref=e73]:
+        - strong [ref=e74]: S
+        - text: afe — guardrails prevent harmful or non-compliant outputs, auditable per jurisdiction.
+        - strong [ref=e75]: A
+        - text: ccurate — grounded in your documentation, not general knowledge.
+        - strong [ref=e76]: F
+        - text: air — bias testing across demographics, FCA and EU AI Act compliant.
+        - strong [ref=e77]: E
+        - text: xplainable — every decision traceable to source.
+        - strong [ref=e78]: R
+        - text: eliable — enterprise SLAs, graceful degradation.
+      - blockquote [ref=e79]:
+        - text: "\"What sets OpenDialog apart is the SAFER framework. The level of auditability — every decision traceable to a source — gave our compliance team the confidence to go live.\""
+        - generic [ref=e80]: — David Okonkwo, Head of Digital Transformation, Strathmore Re
+      - img [ref=e83]
+      - heading "From kickoff to ROI — in weeks, not months." [level=2] [ref=e86]:
+        - text: From kickoff to ROI —
+        - emphasis [ref=e87]: in weeks, not months.
+      - paragraph [ref=e88]:
+        - text: It starts with
+        - strong [ref=e89]: Discovery
+        - text: — two weeks of focused workshops where we map your journeys, integration landscape, and compliance requirements. No ambiguity before a single line of code.
+      - paragraph [ref=e90]:
+        - text: Then
+        - strong [ref=e91]: Design
+        - text: — conversation architecture, persona definition, safety framework configuration. Your agents sound like you, comply with your obligations, escalate with precision.
+      - paragraph [ref=e92]:
+        - strong [ref=e93]: Deployment
+        - text: follows — integration with your CRM, policy admin, and comms channels. Staging, compliance review, production launch with full observability from day one.
+      - paragraph [ref=e94]:
+        - text: And it doesn't stop.
+        - strong [ref=e95]: Optimisation
+        - text: means continuous improvement from real conversation data. Monthly reviews, A/B testing, proactive compliance monitoring as regulation evolves.
+      - blockquote [ref=e96]:
+        - text: "\"We were sceptical of the conversion claims. Twenty percent uplift sounds like marketing. It wasn't. The ROI case was clear within the first eight weeks.\""
+        - generic [ref=e97]: — Claire Hennessey, VP Digital Distribution, Nordic Shield Group
+      - blockquote [ref=e98]:
+        - text: "\"Our process is now a lot quicker and we have more dialogue with customers, leading to associated savings and more opportunities to capture sales.\""
+        - generic [ref=e99]: — Anthony Fletcher, COO, VRG (Part of Davies Group)
+      - img [ref=e102]
+      - heading "Ready to see what's possible?" [level=2] [ref=e105]:
+        - text: Ready to see
+        - emphasis [ref=e106]: what's possible?
+      - paragraph [ref=e107]: Book a 45-minute session with our team. We'll walk through your specific use case, share benchmarks from comparable deployments, and give you a realistic picture of what ROI looks like for your business.
+      - link "Start the conversation" [ref=e108] [cursor=pointer]:
+        - /url: mailto:hello@opendialog.ai
+      - generic [ref=e109]:
+        - generic [ref=e110]:
+          - img [ref=e111]
+          - generic [ref=e113]: OpenDialog
+        - generic [ref=e114]: © 2026 OpenDialog AI Ltd.

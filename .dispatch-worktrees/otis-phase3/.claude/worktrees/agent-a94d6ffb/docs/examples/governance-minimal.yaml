@@ -1,0 +1,45 @@
+# Minimal Governance Configuration Example
+# Use this for small projects or prototypes
+
+project:
+  name: "MinimalProject"
+  version: "1.0.0"
+  governance_version: "1.0"
+  description: "Minimal governance setup"
+
+workflow:
+  rules:
+    allowed_states:
+      - planned
+      - in_progress
+      - complete
+
+    transitions:
+      planned:
+        - in_progress
+      in_progress:
+        - complete
+      complete:
+        []
+
+validation:
+  required_checks:
+    - tests_pass
+
+  pre_commit: []
+  pre_push:
+    - run_tests
+
+enforcement:
+  policy: "warn"  # Relaxed enforcement
+
+  on_violation:
+    pre_commit: "warn"
+    pre_push: "warn"
+    dependency: "warn"
+
+hooks:
+  enabled: false
+
+security:
+  require_checksum: false

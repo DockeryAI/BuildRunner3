@@ -1,0 +1,14 @@
+id: personal-training
+name: Personal Training
+naics_code: '713940'
+category: Personal Services
+keywords:
+- personal training
+- personal
+- training
+- personal trainer
+- fitness trainer
+- PT
+- fitness coach
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,12 @@
+id: car-wash
+name: Car Wash
+naics_code: '811192'
+category: Personal Services
+keywords:
+- car wash
+- car
+- wash
+- auto wash
+- detailing
+has_full_profile: false
+source: naics_only

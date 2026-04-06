@@ -1,0 +1,889 @@
+- generic [active] [ref=e1]:
+  - img
+  - img
+  - img
+  - img
+  - img
+  - generic [ref=e3]:
+    - banner [ref=e7]:
+      - link "Skip to main content" [ref=e9] [cursor=pointer]:
+        - /url: "#mainContent"
+      - navigation [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e13]:
+            - text: Hi!
+            - link "Sign in" [ref=e14] [cursor=pointer]:
+              - /url: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&sgfl=gh&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F397799448336
+            - generic [ref=e15]:
+              - text: or
+              - link "register" [ref=e16] [cursor=pointer]:
+                - /url: https://signup.ebay.com/pa/crte?ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F397799448336
+          - link "Deals" [ref=e18] [cursor=pointer]:
+            - /url: https://www.ebay.com/deals
+          - link "Brand Outlet" [ref=e20] [cursor=pointer]:
+            - /url: https://www.ebay.com/b/Brand-Outlet/bn_7115532402
+          - link "Gift Cards" [ref=e22] [cursor=pointer]:
+            - /url: https://www.ebay.com/giftcards
+          - link "Help & Contact" [ref=e24] [cursor=pointer]:
+            - /url: https://www.ebay.com/help/home
+        - generic [ref=e25]:
+          - link "Sell" [ref=e28] [cursor=pointer]:
+            - /url: https://www.ebay.com/sl/sell
+          - generic [ref=e29]:
+            - link "Watchlist" [ref=e30] [cursor=pointer]:
+              - /url: https://www.ebay.com/mye/myebay/watchlist
+              - generic [ref=e31]: Watchlist
+              - img
+            - button "Expand Watch List" [ref=e32]
+          - generic [ref=e33]:
+            - link "My eBay" [ref=e34] [cursor=pointer]:
+              - /url: https://www.ebay.com/mys/home?source=GBH
+              - generic [ref=e35]: My eBay
+              - img
+            - button "Expand My eBay" [ref=e36]
+          - button "Notifications" [ref=e39] [cursor=pointer]:
+            - img
+            - generic [ref=e40]: Notifications
+          - generic [ref=e42]:
+            - link "Your shopping cart contains 0 items" [ref=e43] [cursor=pointer]:
+              - /url: https://cart.ebay.com
+              - generic "Your shopping cart contains 0 items" [ref=e44]:
+                - img
+            - button "Expand Cart" [ref=e45]
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - link "eBay Home" [ref=e48] [cursor=pointer]:
+            - /url: https://www.ebay.com
+            - img "eBay Home" [ref=e49]
+          - button "Shop by category" [ref=e57] [cursor=pointer]:
+            - generic [ref=e58]: Shop by category
+            - img
+        - generic [ref=e59]:
+          - status [ref=e60]
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - combobox "Search for anything" [ref=e64]
+              - img
+            - combobox "Select a category for search" [ref=e65]:
+              - option "All Categories" [selected]
+              - option "Antiques"
+              - option "Art"
+              - option "Baby"
+              - option "Books"
+              - option "Business & Industrial"
+              - option "Cameras & Photo"
+              - option "Cell Phones & Accessories"
+              - option "Clothing, Shoes & Accessories"
+              - option "Coins & Paper Money"
+              - option "Collectibles"
+              - option "Computers/Tablets & Networking"
+              - option "Consumer Electronics"
+              - option "Crafts"
+              - option "Dolls & Bears"
+              - option "Movies & TV"
+              - option "eBay Motors"
+              - option "Entertainment Memorabilia"
+              - option "Gift Cards & Coupons"
+              - option "Health & Beauty"
+              - option "Home & Garden"
+              - option "Jewelry & Watches"
+              - option "Music"
+              - option "Musical Instruments & Gear"
+              - option "Pet Supplies"
+              - option "Pottery & Glass"
+              - option "Real Estate"
+              - option "Specialty Services"
+              - option "Sporting Goods"
+              - option "Sports Mem, Cards & Fan Shop"
+              - option "Stamps"
+              - option "Tickets & Experiences"
+              - option "Toys & Hobbies"
+              - option "Travel"
+              - option "Video Games & Consoles"
+              - option "Everything Else"
+          - generic [ref=e66]:
+            - button "Search" [ref=e67] [cursor=pointer]:
+              - generic [ref=e68]: Search
+            - link "Advanced" [ref=e69] [cursor=pointer]:
+              - /url: https://www.ebay.com/sch/ebayadvsearch
+    - main [ref=e70]:
+      - generic [ref=e72]:
+        - generic [ref=e75]:
+          - region [ref=e77]:
+            - link "LIVE Streaming now Shop exclusive items from trusted sellers Join event" [ref=e79] [cursor=pointer]:
+              - /url: https://ebay.com/ebaylive/events/latest/stream?fallback=category:175673
+              - generic [ref=e80]:
+                - generic [ref=e81]:
+                  - img
+                - generic [ref=e83]: LIVE
+              - generic [ref=e84]: Streaming now
+              - generic [ref=e85]: Shop exclusive items from trusted sellers
+              - button "Join event" [ref=e86]
+          - generic [ref=e95]:
+            - heading "People who viewed this item also viewed" [level=2] [ref=e102]
+            - group [ref=e104]:
+              - list [ref=e107]:
+                - listitem [ref=e108]:
+                  - generic [ref=e109]:
+                    - generic [ref=e110]:
+                      - generic [ref=e116]:
+                        - heading "ASUS TUF Gaming NVIDIA GeForce RTX 3090 Graphics Card" [level=3] [ref=e117]
+                        - generic [ref=e119]: $1,000.00
+                        - generic [ref=e121]: + $8.97 delivery
+                        - generic [ref=e123]: Sponsored
+                      - link "ASUS TUF Gaming NVIDIA GeForce RTX 3090 Graphics Card" [ref=e124] [cursor=pointer]:
+                        - /url: https://www.ebay.com/itm/389817617251?_trkparms=itmf%3D0%26aid%3D1110006%26rkt%3D5%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D1%26amclksrc%3DITM%26sd%3D397799448336%26sid%3DAQALAAAAELcvMuKT0Y8qfsyxHAss9eo%3D%26itm%3D389817617251%26noa%3D0%26plcampt%3D0%3A161912281010%26algo%3DHOMESPLICE.SIM%26brand%3DASUS%26asc%3D20200818143230%26ao%3D1%26rk%3D6%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D9793a5c789344ee3aff65a63a950c1c6%26pg%3D2332490&_trksid=p2332490.c101224.m-1&itmprp=cksum%3A3898176172519793a5c789344ee3aff65a63a950c1c6%7Cenc%3AAQALAAAA4HU%252FGPBKMoWrH2cpzpvK9FDC5c4FxwFIV%252Bq0okjrJ6w9cB%252BqWqTCByXEsJeNzj%252BLPZ6Y%252Bcb%252BSNENjzLG3DpJu0nSGHlVSbT3KZLpU4OgA5FyPz7q7Vv4Wp0F9qtKnEq1VRMr7AIQwS%252FujGlrjMqeEitkNMCY%252Be33loOmTDY%252BEhq8jT9VwIzERo3RFvQmhBVZMcJW2%252FTNVuOHD7c6Hu4DYQKls8z%252FY%252FMpZnrho08TMmpBBumoHuzRkN754vO8NJ0X%252B3sEsrrhOgoKn6spcfY%252FTVQyQTGwDbQLPQt4sb%252B60aBs%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KNFDB5N5G45RH13ZJ1AKAZX7
+                    - separator [ref=e125]
+                    - button "More Options" [ref=e127] [cursor=pointer]:
+                      - generic [ref=e128]:
+                        - img
+                - listitem [ref=e129]:
+                  - generic [ref=e130]:
+                    - generic [ref=e131]:
+                      - generic [ref=e137]:
+                        - heading "ASUS TUF Gaming OC GeForce RTX 3090 24GB RAM - Graphics Card - Overheating Issue" [level=3] [ref=e138]
+                        - generic [ref=e140]: $969.09
+                        - generic [ref=e142]: Free delivery
+                      - link "ASUS TUF Gaming OC GeForce RTX 3090 24GB RAM - Graphics Card - Overheating Issue" [ref=e143] [cursor=pointer]:
+                        - /url: https://www.ebay.com/itm/277814547297?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D397799448336%26sid%3DAQALAAAAEO3dakDu0TaWZ9be4xp6X5c%3D%26itm%3D277814547297%26noa%3D1%26brand%3DASUS%26asc%3D20200818143230%26ao%3D1%26rk%3D1%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D9793a5c789344ee3aff65a63a950c1c6%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                    - separator [ref=e144]
+                    - button "More Options" [ref=e146] [cursor=pointer]:
+                      - generic [ref=e147]:
+                        - img
+                - listitem [ref=e148]:
+                  - generic [ref=e149]:
+                    - generic [ref=e150]:
+                      - generic [ref=e156]:
+                        - heading "ASUS ROG Strix GeForce RTX 3090 OC 24GB GDDR6X Graphics Card" [level=3] [ref=e157]
+                        - generic [ref=e159]: $489.98
+                        - generic [ref=e161]: Free delivery
+                      - link "ASUS ROG Strix GeForce RTX 3090 OC 24GB GDDR6X Graphics Card" [ref=e162] [cursor=pointer]:
+                        - /url: https://www.ebay.com/itm/137189096345?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D397799448336%26sid%3DAQALAAAAEAdzu0F8%2Fix%2Fr2CqNxIW87E%3D%26itm%3D137189096345%26noa%3D1%26brand%3DASUS%26asc%3D20200818143230%26ao%3D1%26rk%3D2%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D9793a5c789344ee3aff65a63a950c1c6%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                    - separator [ref=e163]
+                    - button "More Options" [ref=e165] [cursor=pointer]:
+                      - generic [ref=e166]:
+                        - img
+                - listitem [ref=e167]:
+                  - generic [ref=e168]:
+                    - generic [ref=e169]:
+                      - generic [ref=e175]:
+                        - heading "ASUS ROG Strix GeForce RTX 3090 OC 24GB GDDR6X Graphics Card" [level=3] [ref=e176]
+                        - generic [ref=e178]: $899.00
+                        - generic [ref=e180]: Free delivery
+                      - link "ASUS ROG Strix GeForce RTX 3090 OC 24GB GDDR6X Graphics Card" [ref=e181] [cursor=pointer]:
+                        - /url: https://www.ebay.com/itm/168277354934?_trkparms=itmf%3D0%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D397799448336%26sid%3DAQALAAAAEKi3u7uVj%2BUaDqasQjSYD1Q%3D%26itm%3D168277354934%26noa%3D1%26brand%3DASUS%26asc%3D20200818143230%26ao%3D1%26rk%3D3%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D9793a5c789344ee3aff65a63a950c1c6%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                    - separator [ref=e182]
+                    - button "More Options" [ref=e184] [cursor=pointer]:
+                      - generic [ref=e185]:
+                        - img
+        - generic [ref=e188]:
+          - generic [ref=e189]:
+            - generic [ref=e191]:
+              - generic [ref=e193]:
+                - generic [ref=e194]:
+                  - button "Previous image - Item images thumbnails" [disabled] [ref=e195] [cursor=pointer]:
+                    - img
+                  - generic [ref=e196]:
+                    - button "Picture 1 of 6" [ref=e197] [cursor=pointer]:
+                      - img "Picture 1 of 6" [ref=e198]
+                    - button "Picture 2 of 6" [ref=e199] [cursor=pointer]:
+                      - img "Picture 2 of 6" [ref=e200]
+                    - button "Picture 3 of 6" [ref=e201] [cursor=pointer]:
+                      - img "Picture 3 of 6" [ref=e202]
+                    - button "Picture 4 of 6" [ref=e203] [cursor=pointer]:
+                      - img "Picture 4 of 6" [ref=e204]
+                    - button "Picture 5 of 6" [ref=e205] [cursor=pointer]:
+                      - img "Picture 5 of 6" [ref=e206]
+                    - button "Picture 6 of 6" [ref=e207] [cursor=pointer]:
+                      - img "Picture 6 of 6" [ref=e208]
+                  - button "Next image - Item images thumbnails" [ref=e209] [cursor=pointer]:
+                    - img
+                - generic [ref=e210]:
+                  - heading "Picture 1 of 6" [level=2] [ref=e211]
+                  - generic [ref=e215]: 2 watched today
+                  - button "Previous image - Item images thumbnails" [ref=e217] [cursor=pointer]:
+                    - img
+                  - region "Opens image gallery dialog ASUS TUF Gaming NVIDIA GeForce RTX 3090 OC Edition - Picture 1 of 6" [ref=e218]:
+                    - group "1 of 6" [ref=e219]:
+                      - img "ASUS TUF Gaming NVIDIA GeForce RTX 3090 OC Edition - Picture 1 of 6" [ref=e220]
+                    - group "2 of 6" [ref=e221]:
+                      - img "ASUS TUF Gaming NVIDIA GeForce RTX 3090 OC Edition - Picture 2 of 6" [ref=e222]
+                    - group "3 of 6" [ref=e223]:
+                      - img "ASUS TUF Gaming NVIDIA GeForce RTX 3090 OC Edition - Picture 3 of 6" [ref=e224]
+                    - group "4 of 6" [ref=e225]:
+                      - img "ASUS TUF Gaming NVIDIA GeForce RTX 3090 OC Edition - Picture 4 of 6" [ref=e226]
+                    - group "5 of 6" [ref=e227]:
+                      - img "ASUS TUF Gaming NVIDIA GeForce RTX 3090 OC Edition - Picture 5 of 6" [ref=e228]
+                    - group "6 of 6" [ref=e229]:
+                      - img "ASUS TUF Gaming NVIDIA GeForce RTX 3090 OC Edition - Picture 6 of 6" [ref=e230]
+                  - generic [ref=e231]:
+                    - button "Opens image gallery" [ref=e232] [cursor=pointer]:
+                      - img
+                    - button "Add to watchlist - 2 watchers" [ref=e234] [cursor=pointer]:
+                      - generic [ref=e235]: "2"
+                      - img
+                  - button "Next image - Item images thumbnails" [ref=e237] [cursor=pointer]:
+                    - img
+              - generic [ref=e242]:
+                - generic [ref=e243]: Have one to sell?
+                - link "Sell one like this" [ref=e245] [cursor=pointer]:
+                  - /url: https://www.ebay.com/sl/list?mode=SellLikeItem&itemId=397799448336&rt=nc&_trksid=p4429486.m117039.l2567
+                  - generic [ref=e246]: Sell one like this
+                - link "Sell something else" [ref=e248] [cursor=pointer]:
+                  - /url: https://www.ebay.com/sl/prelist/suggest
+                  - generic [ref=e249]: Sell something else
+              - button "Share" [ref=e255] [cursor=pointer]:
+                - img
+                - generic [ref=e256]: Share
+            - generic [ref=e267]:
+              - generic [ref=e270]:
+                - generic [ref=e272]:
+                  - heading "Similar Items" [level=2] [ref=e274]
+                  - generic [ref=e277]:
+                    - generic [ref=e278]: d7c6ce4f-c6d4-42fb-9559-a7efd6dfc4d9
+                    - generic [ref=e279]: abf56b7d-48bd-448d-9e04-c6f58b4ccdab
+                    - generic [ref=e281]: cc5d5c72-fbae-4671-a9dd-c5be60b90f3f
+                    - generic [ref=e282]: S
+                    - generic [ref=e283]: d4b22e52-433f-4a6b-9118-3fa3741c8504
+                    - generic [ref=e284]: 5c9a47c9-9cb9-4000-b186-91bd98045c1f
+                    - generic [ref=e285]: p
+                    - generic [ref=e286]: 78c5ab53-6104-4462-bf13-0a8e1693dc17
+                    - generic [ref=e287]: baf335f3-709b-4f0d-8698-8c967a87cef3
+                    - generic [ref=e289]: 70db1f32-9153-4bbd-a8c7-5418319f514d
+                    - generic [ref=e290]: o
+                    - generic [ref=e291]: 41461db8-a366-4bc6-b22e-252cf4901ece
+                    - generic [ref=e292]: "n"
+                    - generic [ref=e293]: aea600e0-12a4-4460-94ad-b112e393d7d1
+                    - generic [ref=e294]: s
+                    - generic [ref=e295]: ec9899e5-ef12-4605-afb4-03d0301e286f
+                    - generic [ref=e296]: o
+                    - generic [ref=e297]: efbcb8e7-76a7-4f3a-83f0-74226b04595c
+                    - generic [ref=e298]: r
+                    - generic [ref=e299]: 1691bde5-8597-473b-b7af-2ac604657449
+                    - generic [ref=e300]: fdb40d8a-1fbf-4517-bed9-65e1dd9c7d1b
+                    - generic [ref=e301]: 222ac8c1-a359-49fc-8ed1-47029736300c
+                    - generic [ref=e303]: 2c76a851-ebf7-47ba-90a0-18953990f1a0
+                    - generic [ref=e304]: e
+                    - generic [ref=e305]: 74f55372-6eef-4d0c-b621-fbcf9d0c7703
+                    - generic [ref=e306]: a791be5f-903c-4e55-8456-1fe263908f43
+                    - generic [ref=e307]: d
+                    - generic [ref=e308]: cec971b6-bde6-47e3-8d33-62643c2940ca
+                    - generic [ref=e309]: ad242d30-1586-44c2-aeaa-2363ab35e834
+                    - generic [ref=e311]: 20903b23-02c9-48e4-8215-1e0395ccdc2f
+                    - generic [ref=e312]: 8b158f04-65cc-4bfe-a746-04523d0d49e8
+                    - generic [ref=e313]: 01863a6e-5adf-4d8a-bc16-bea9550fede6
+                    - generic [ref=e314]: 5b3754cf-bf83-4d1f-b0c0-aa1d89c7a777
+                    - generic [ref=e315]: e5438bec-2d95-43e4-bce1-fa100878c17a
+                    - generic [ref=e317]: df57fc3d-fe62-4b71-8ac8-c6257f389486
+                    - generic [ref=e318]: c7347157-2712-4a03-b7a0-624cb493ce1b
+                    - generic [ref=e319]: 948cb0e4-5f81-4ed2-b6ad-53c7b4d563f4
+                - link "See all" [ref=e322] [cursor=pointer]:
+                  - /url: https://www.ebay.com/recs?component=recs-below-hero&algos=HOMESPLICE.SIM.SimVIDwebV4WithCtxRankerV1UnifiedFeaturesWithAuctionUnificationKatReco&placement_title=i18n.Tag_SIs&placement_subTitle=i18n.ModuleSubTitle_Sponsored&sourceModuleId=101875&item_id=397799448336
+                  - generic [ref=e323]: See all
+              - generic [ref=e324]:
+                - generic [ref=e325]:
+                  - generic [ref=e326]:
+                    - generic [ref=e332]:
+                      - heading "ASUS NVIDIA GeForce RTX 3050 8GB GDDR6 Graphics Card (PHRTX30508G) Single Fan" [level=3] [ref=e333]
+                      - generic [ref=e334]:
+                        - generic [ref=e336]: Pre-owned
+                        - generic [ref=e337]: $260.99
+                      - generic [ref=e339]:
+                        - generic [ref=e340]: previous price
+                        - text: $289.99 10% off
+                      - generic [ref=e342]: + $9.99 delivery
+                      - generic [ref=e344]: Seller 99.9% positive
+                    - link "ASUS NVIDIA GeForce RTX 3050 8GB GDDR6 Graphics Card (PHRTX30508G) Single Fan" [ref=e345] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/336478735658?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeaturesWithAuctionUnificationKatReco%26pmt%3D1%26amclksrc%3DITM%26sd%3D397799448336%26sid%3DAQALAAAAEOrGz7lNMnnoH0e94n7R07Y%3D%26itm%3D336478735658%26noa%3D1%26plcampt%3D5%3AAG8017780971%26algo%3DHOMESPLICE.SIM%26brand%3DASUS%26asc%3D20231107084023%26ao%3D1%26rk%3D1%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D1ee759b8ab6e43a59f84f8bfcf1f52b2%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A3364787356581ee759b8ab6e43a59f84f8bfcf1f52b2%7Cenc%3AAQALAAABENcuE5wSiaWXUpZtpAuJty4GYCq%252BLEH%252FN8HXnEhWX0xwkDW1uDN51f72s7GsFOUQ9WFGrCI8AiSbyE6tacE%252FxpPzcbI6%252Bfuy9WmqzFcws0MbR9Y17rdBUKTkN%252FcyZNzQ%252BvuEYpl0rTs3MDLWYcBvmDplA0IP1lZLaNNv%252B1j5d4cDGIz36F4GnHlqgPjunokrKbDAbswDv9LjTKrdhhM6Yu4GhpK2UQqahvx52iBee4qIOKP2B%252BwJ%252BYCt%252FG5KZ1TAgi%252FeXzTmRLBWkzl7cUSPI1WG%252BNriY%252Fn58nDJ2VxmIOlRsmJ6C%252Bn%252BjAIcWNVgqOcEYV7%252BgcoUs4ML46hDV2TtBYKp%252F7RIRIFEphhVX8zj4WzT%7Campid%3APLP_CLK%7Cclp%3A2332490&itmmeta=01KNFDB5N5W0H4A0QJZB0W5GYY
+                    - button "Add ASUS NVIDIA GeForce RTX 3050 8GB GDDR6 Graphics Card (PHRTX30508G) Single Fan to your watch list" [ref=e348] [cursor=pointer]:
+                      - img
+                  - separator [ref=e349]
+                  - button "More Options" [ref=e351] [cursor=pointer]:
+                    - generic [ref=e352]:
+                      - img
+                - generic [ref=e353]:
+                  - generic [ref=e354]:
+                    - generic [ref=e360]:
+                      - heading "ASUS ROG Strix GeForce RTX 4090 24GB GDDR6X White OC Edition Gaming Graphics..." [level=3] [ref=e361]
+                      - generic [ref=e362]:
+                        - generic [ref=e364]: New (Other)
+                        - generic [ref=e365]: $1,250.00
+                      - generic [ref=e367]: + $22.55 delivery
+                      - generic [ref=e369]: Seller with 100% positive feedback
+                    - link "ASUS ROG Strix GeForce RTX 4090 24GB GDDR6X White OC Edition Gaming Graphics..." [ref=e370] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/206190169483?_trkparms=itmf%3D3%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeaturesWithAuctionUnificationKatReco%26pmt%3D1%26amclksrc%3DITM%26sd%3D397799448336%26sid%3DAQALAAAAEKEBMMjNFvK9XYy5AtZBxgQ%3D%26itm%3D206190169483%26noa%3D0%26plcampt%3D0%3A14634922014%26algo%3DHOMESPLICE.SIM%26brand%3DASUS%26asc%3D20231107084023%26ao%3D1%26rk%3D2%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D1ee759b8ab6e43a59f84f8bfcf1f52b2%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A2061901694831ee759b8ab6e43a59f84f8bfcf1f52b2%7Cenc%3AAQALAAABMNcuE5wSiaWXUpZtpAuJty4GYCq%252BLEH%252FN8HXnEhWX0xwkDW1uDN51f72s7GsFOUQ9WFGrCI8AiSbyE6tacE%252FxpPzcbI6%252Bfuy9WmqzFcws0MbCHwDyLjxcGgDCY%252BUZ44%252FL0tRHn%252F%252B4f%252F6qz6cIZks811BNanXJnvaYn%252BJY8i2RiAGC183bTdd2beTE%252Fu5Qwl8JrGclT8NmnZcx7w2YDSJHuDhn5XBiZ0jHboG7WqCukz89q%252BLh73R7GgoSGGvIU%252BE55GXjBYsOMN%252BNHrrNdfIQ%252FfnjHPqgN9Km8EbntSRtuAoqfmoghF0hik4L6qBLs5v9G4fmJoRn39CLAsAfQPF36soi773kVUxbqS2cBunj3fzl3mFoZ0HjZknU2%252BJPYNonGphVeQWdmIkOwoMzpeeEKc%253D%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KNFDB5PG9D51BSYVS5TM6VS0
+                    - button "Add ASUS ROG Strix GeForce RTX 4090 24GB GDDR6X White OC Edition Gaming Graphics... to your watch list" [ref=e373] [cursor=pointer]:
+                      - img
+                  - separator [ref=e374]
+                  - button "More Options" [ref=e376] [cursor=pointer]:
+                    - generic [ref=e377]:
+                      - img
+                - generic [ref=e378]:
+                  - generic [ref=e379]:
+                    - generic [ref=e385]:
+                      - heading "NVIDIA GeForce RTX 5090 FE Founders Edition 32GB GDDR7 Graphics Card - Open Box" [level=3] [ref=e386]
+                      - generic [ref=e387]:
+                        - generic [ref=e389]: New (Other)
+                        - generic [ref=e390]: $1,600.00
+                      - generic [ref=e392]: + $17.55 delivery
+                      - generic [ref=e394]: Popular
+                    - link "NVIDIA GeForce RTX 5090 FE Founders Edition 32GB GDDR7 Graphics Card - Open Box" [ref=e395] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/298189164922?_trkparms=itmf%3D3%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeaturesWithAuctionUnificationKatReco%26pmt%3D1%26amclksrc%3DITM%26sd%3D397799448336%26sid%3DAQALAAAAEOh9lClLnbays8ZGLLxfZfQ%3D%26itm%3D298189164922%26noa%3D0%26plcampt%3D0%3A162183610014%26algo%3DHOMESPLICE.SIM%26brand%3DGeforce%26asc%3D20231107084023%26ao%3D1%26rk%3D3%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3D1ee759b8ab6e43a59f84f8bfcf1f52b2%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A2981891649221ee759b8ab6e43a59f84f8bfcf1f52b2%7Cenc%3AAQALAAABMNcuE5wSiaWXUpZtpAuJty4GYCq%252BLEH%252FN8HXnEhWX0xwkDW1uDN51f72s7GsFOUQ9WFGrCI8AiSbyE6tacE%252FxpPzcbI6%252Bfuy9WmqzFcws0Mb4xZrQs0gU7OF9AHrO8ZmwRR8mNH4gbp7dVZFCFGPYzDhQsdWaybsKah3W72lPCBRz%252FFjQg14pzii6uCr7nh3R7GQ7qgUTCGiidrERy8BQQQaANj3TVD7FBDU9Ogzl8otHml7WVakM4Kx2zxWCIDZfBUIG1EgTrm998M8e7V%252B6UIXqyWi5iMqImt%252Bjh2y8AW6l%252FzSpVKo2ivavrh3J8CuKH9zpiBievyYcmVglOY2xABsG1hn%252F4WY8vtCRQGylrZLR112546vXYOFSb3u6urRFvaQSgrE5pFpHXaLhz6oZ%252BM%253D%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KNFDB5PP5PCDYW4GSA815039
+                    - button "Add NVIDIA GeForce RTX 5090 FE Founders Edition 32GB GDDR7 Graphics Card - Open Box to your watch list" [ref=e398] [cursor=pointer]:
+                      - img
+                  - separator [ref=e399]
+                  - button "More Options" [ref=e401] [cursor=pointer]:
+                    - generic [ref=e402]:
+                      - img
+          - generic [ref=e405]:
+            - heading "ASUS TUF Gaming NVIDIA GeForce RTX 3090 OC Edition" [level=1] [ref=e407]
+            - generic [ref=e409] [cursor=pointer]:
+              - generic [ref=e411]:
+                - link [ref=e413]:
+                  - /url: https://www.ebay.com/sch/twamb_75/m.html?item=397799448336&rt=nc&_trksid=p4429486.m3561.l161210
+                  - img [ref=e415]: T
+                - generic [ref=e416]:
+                  - generic [ref=e417]:
+                    - link "twamb_75" [ref=e418]:
+                      - /url: https://www.ebay.com/sch/twamb_75/m.html?item=397799448336&rt=nc&_trksid=p4429486.m3561.l161211
+                    - generic [ref=e420]: (0)
+                  - generic [ref=e421]:
+                    - link "Seller's other items" [ref=e423]:
+                      - /url: https://www.ebay.com/sch/twamb_75/m.html?item=397799448336&rt=nc&_trksid=p4429486.m3561.l170197
+                      - generic [ref=e424]: Seller's other items
+                      - generic [ref=e425]: Seller's other items
+                    - button "Message seller" [ref=e427]:
+                      - generic [ref=e428]: Message seller
+                      - generic [ref=e429]: Message seller
+              - button "See more about this seller" [ref=e431]:
+                - img
+            - generic [ref=e432]:
+              - generic [ref=e435]: US $989.99
+              - generic [ref=e437]:
+                - text: as low as $88.88/mo with
+                - img "Klarna" [ref=e438]
+                - button "Learn more" [ref=e439] [cursor=pointer]
+            - generic [ref=e440]:
+              - generic [ref=e441]: "Condition:"
+              - generic [ref=e443]:
+                - generic [ref=e444]:
+                  - generic [ref=e445]: Used
+                  - generic [ref=e446]: Used
+                - button "More information - About this item condition" [ref=e447] [cursor=pointer]:
+                  - generic [ref=e448]:
+                    - img "More information - About this item condition"
+            - list [ref=e450]:
+              - listitem [ref=e451]:
+                - button "Buy It Now" [ref=e453] [cursor=pointer]:
+                  - generic [ref=e454]: Buy It Now
+              - listitem [ref=e455]:
+                - button "Add to cart" [ref=e457] [cursor=pointer]:
+                  - generic [ref=e458]: Add to cart
+              - listitem [ref=e459]:
+                - generic [ref=e461]:
+                  - status [ref=e462]: Add to Watchlist
+                  - link "Add to Watchlist" [ref=e467] [cursor=pointer]:
+                    - /url: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F397799448336
+                    - generic [ref=e468]:
+                      - img
+                      - text: Add to Watchlist
+            - group "Additional service available" [ref=e472]:
+              - heading "Additional service available" [level=2] [ref=e474]:
+                - generic [ref=e475]: Additional service available
+              - generic [ref=e477]:
+                - generic [ref=e478]:
+                  - checkbox "1-year protection plan from Allstate - $94.99" [ref=e479]
+                  - generic [ref=e480]:
+                    - img
+                - button "1-year protection plan from Allstate - $94.99" [ref=e482] [cursor=pointer]:
+                  - text: 1-year protection plan from Allstate -
+                  - generic [ref=e483]: $94.99
+            - generic [ref=e487]:
+              - generic [ref=e488]:
+                - img
+              - generic [ref=e490]: People are checking this out. 2 have added this to their watchlist.
+            - generic [ref=e493]:
+              - heading "Shipping, returns, and payments" [level=2] [ref=e496]:
+                - generic [ref=e497]: Shipping, returns, and payments
+              - generic [ref=e499]:
+                - generic [ref=e501]:
+                  - generic [ref=e504]: "Pickup:"
+                  - generic [ref=e507]:
+                    - text: Free local pickup from
+                    - link "Las Vegas, Nevada, United States 89119" [ref=e508] [cursor=pointer]:
+                      - /url: https://www.google.com/maps/search/?api=1&query=Las Vegas+Nevada+US+89119
+                - generic [ref=e511]:
+                  - generic [ref=e514]: "Shipping:"
+                  - generic [ref=e516]:
+                    - generic [ref=e517]:
+                      - text: US $10.64 USPS Ground Advantage®.
+                      - button "See details for shipping" [ref=e518] [cursor=pointer]:
+                        - generic [ref=e519]:
+                          - text: See details
+                          - generic [ref=e520]: for shipping
+                    - generic [ref=e521]: "Located in: Las Vegas, Nevada, United States"
+                - generic [ref=e525]:
+                  - generic [ref=e528]: "Delivery:"
+                  - generic [ref=e531]:
+                    - text: Estimated between Thu, Apr 9 and Wed, Apr 15 to 78704
+                    - button "Information - Estimated delivery date - opens a layer" [ref=e537]:
+                      - img
+            - generic [ref=e544]:
+              - generic [ref=e547]: "Returns:"
+              - generic [ref=e550]:
+                - text: Seller does not accept returns.
+                - button "See details - for more information about returns" [ref=e551] [cursor=pointer]:
+                  - generic [ref=e552]:
+                    - text: See details
+                    - generic [ref=e553]: "- for more information about returns"
+            - generic [ref=e556]:
+              - generic [ref=e560]:
+                - generic [ref=e563]: "Payments:"
+                - generic [ref=e566]:
+                  - img "Klarna Installment" [ref=e567]
+                  - img "PayPal" [ref=e569]
+                  - img "Venmo" [ref=e571]
+                  - img "Google Pay" [ref=e573]
+                  - img "Visa" [ref=e575]
+                  - img "Master Card" [ref=e577]
+                  - img "Discover" [ref=e579]
+                  - img "Diners Club" [ref=e582]
+              - generic [ref=e590]:
+                - img "Paypal Credit" [ref=e592]
+                - generic [ref=e593]:
+                  - text: "*No Interest if paid in full in 6 months on $149+."
+                  - link "Learn more - for PayPal Credit, opens in a new window or tab" [ref=e594] [cursor=pointer]:
+                    - /url: https://www.billmelater.com/cm/paypal/landers/15ebayPPCNB.html
+                    - generic [ref=e595]:
+                      - text: Learn more
+                      - generic [ref=e596]: "- for PayPal Credit, opens in a new window or tab"
+            - generic [ref=e599]:
+              - heading "Shop with confidence" [level=2] [ref=e602]
+              - generic [ref=e603]:
+                - generic [ref=e605]:
+                  - img
+                - generic [ref=e606]:
+                  - generic [ref=e607]: eBay Money Back Guarantee
+                  - generic [ref=e608]:
+                    - text: Get the item you ordered or your money back.
+                    - link "Learn more eBay Money Back Guarantee - opens new window or tab" [ref=e609] [cursor=pointer]:
+                      - /url: https://www.ebay.com/ebay-money-back-guarantee/
+                      - generic [ref=e610]:
+                        - text: Learn more
+                        - generic [ref=e611]: eBay Money Back Guarantee - opens new window or tab
+        - generic [ref=e612]:
+          - generic [ref=e617]:
+            - tablist [ref=e618]:
+              - tab "About this item" [selected] [ref=e619] [cursor=pointer]:
+                - generic [ref=e620]: About this item
+            - tabpanel "About this item" [ref=e622]:
+              - generic [ref=e625]:
+                - generic [ref=e628]:
+                  - generic [ref=e632]: Seller assumes all responsibility for this listing.
+                  - generic [ref=e636]: eBay item number:397799448336
+                  - generic [ref=e640]:
+                    - text: Last updated on Apr 04, 2026 10:56:47 PDT
+                    - link "View all revisions View all revisions" [ref=e641] [cursor=pointer]:
+                      - /url: https://www.ebay.com/rvh/397799448336?rt=nc&_trksid=p4429486.m148105.l48144
+                      - generic [ref=e642]:
+                        - text: View all revisions
+                        - generic [ref=e643]: View all revisions
+                - generic [ref=e646]:
+                  - heading "Item specifics" [level=2] [ref=e649]:
+                    - generic [ref=e650]: Item specifics
+                  - generic [ref=e652]:
+                    - generic [ref=e653]:
+                      - generic [ref=e655]:
+                        - term [ref=e656]:
+                          - generic [ref=e658]: Condition
+                        - definition [ref=e659]:
+                          - generic [ref=e662]:
+                            - generic [ref=e663]: "Used: An item that has been used previously. The item may have some signs of cosmetic wear, but is ..."
+                            - button "Read more about the condition" [ref=e665]:
+                              - generic [ref=e666]:
+                                - text: Read more
+                                - generic [ref=e667]: about the condition
+                      - generic [ref=e669]:
+                        - term [ref=e670]:
+                          - generic [ref=e672]: Brand
+                        - definition [ref=e673]:
+                          - generic [ref=e675]: ASUS
+                    - generic [ref=e676]:
+                      - generic [ref=e678]:
+                        - term [ref=e679]:
+                          - generic [ref=e681]: Connectors
+                        - definition [ref=e682]:
+                          - generic [ref=e684]: HDMI, DisplayPort
+                      - generic [ref=e686]:
+                        - term [ref=e687]:
+                          - generic [ref=e689]: Chipset Manufacturer
+                        - definition [ref=e690]:
+                          - generic [ref=e692]: NVIDIA
+                    - generic [ref=e693]:
+                      - generic [ref=e695]:
+                        - term [ref=e696]:
+                          - generic [ref=e698]: Memory Size
+                        - definition [ref=e699]:
+                          - generic [ref=e701]: 24 GB
+                      - generic [ref=e703]:
+                        - term [ref=e704]:
+                          - generic [ref=e706]: APIs
+                        - definition [ref=e707]:
+                          - generic [ref=e709]: DirectX 12
+                    - generic [ref=e710]:
+                      - generic [ref=e712]:
+                        - term [ref=e713]:
+                          - generic [ref=e715]: Features
+                        - definition [ref=e716]:
+                          - generic [ref=e718]: VR Ready
+                      - generic [ref=e720]:
+                        - term [ref=e721]:
+                          - generic [ref=e723]: Compatible Slot
+                        - definition [ref=e724]:
+                          - generic [ref=e726]: PCI Express 4.0 x16
+                    - generic [ref=e727]:
+                      - generic [ref=e729]:
+                        - term [ref=e730]:
+                          - generic [ref=e732]: Cooling Component Included
+                        - definition [ref=e733]:
+                          - generic [ref=e735]: Fan with Heatsink
+                      - generic [ref=e737]:
+                        - term [ref=e738]:
+                          - generic [ref=e740]: Memory Type
+                        - definition [ref=e741]:
+                          - generic [ref=e743]: GDDR6X
+                    - generic [ref=e746]:
+                      - term [ref=e747]:
+                        - generic [ref=e749]: Chipset/GPU Model
+                      - definition [ref=e750]:
+                        - generic [ref=e752]: NVIDIA GeForce RTX 3090
+                - generic [ref=e754]:
+                  - generic [ref=e755]: Category
+                  - navigation "breadcrumb" [ref=e758]:
+                    - heading "breadcrumb" [level=2] [ref=e759]
+                    - list [ref=e760]:
+                      - listitem [ref=e761]:
+                        - link "Electronics" [ref=e762] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Electronics/bn_7000259124
+                        - img
+                      - listitem [ref=e763]:
+                        - link "Computers/Tablets & Networking" [ref=e764] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Computers-Tablets-Network-Hardware/58058/bn_1865247
+                        - img
+                      - listitem [ref=e765]:
+                        - link "Computer Components & Parts" [ref=e766] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Computer-Components-Parts/175673/bn_1643095
+                        - img
+                      - listitem [ref=e767]:
+                        - link "Graphics/Video Cards" [ref=e768] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Computer-Graphics-Cards/27386/bn_661796
+                - generic [ref=e769]:
+                  - heading "Item description from the seller" [level=2] [ref=e772]
+                  - iframe [ref=e773]:
+                    - generic [ref=f140e2]:
+                      - generic [ref=f140e4]: Product Description
+                      - generic [ref=f140e5]:
+                        - paragraph [ref=f140e6]: The TUF Gaming GeForce RTX™ 3090 features a new all-metal shroud houses three powerful axial-tech fans that utilize durable dual ball fan bearings. Fan rotation has been optimized for reduced turbulence, and a stop mode brings all three fans to a halt at low temps. Beneath, independent heatsinks for the GPU and memory keep thermals under tight control.
+                        - paragraph [ref=f140e7]
+                        - paragraph
+                        - table [ref=f140e8]:
+                          - rowgroup [ref=f140e9]:
+                            - row "Brand ASUS" [ref=f140e10]:
+                              - rowheader "Brand" [ref=f140e11]
+                              - cell "ASUS" [ref=f140e12]
+                            - row "Video Processor NVIDIA" [ref=f140e13]:
+                              - rowheader "Video Processor" [ref=f140e14]
+                              - cell "NVIDIA" [ref=f140e15]
+                            - row "Antenna Location Gaming" [ref=f140e16]:
+                              - rowheader "Antenna Location" [ref=f140e17]
+                              - cell "Gaming" [ref=f140e18]
+                            - row "Built-In Media Collection card, Speedsetup Manual, TUF-RTX3090-O24G-GAMING" [ref=f140e19]:
+                              - rowheader "Built-In Media" [ref=f140e20]
+                              - cell "Collection card, Speedsetup Manual, TUF-RTX3090-O24G-GAMING" [ref=f140e21]
+                            - row "Model Name RTX 3090 OC Edition Graphics Card" [ref=f140e22]:
+                              - rowheader "Model Name" [ref=f140e23]
+                              - cell "RTX 3090 OC Edition Graphics Card" [ref=f140e24]
+                            - row "Graphics Description Graphic Engine NVIDIA® GeForce RTX™ 3090" [ref=f140e25]:
+                              - rowheader "Graphics Description" [ref=f140e26]
+                              - cell "Graphic Engine NVIDIA® GeForce RTX™ 3090" [ref=f140e27]
+                            - row "Manufacturer ASUS" [ref=f140e28]:
+                              - rowheader "Manufacturer" [ref=f140e29]
+                              - cell "ASUS" [ref=f140e30]
+                        - paragraph [ref=f140e31]
+                      - table [ref=f140e32]:
+                        - rowgroup [ref=f140e33]:
+                          - row "Graphics Coprocessor NVIDIA GeForce RTX 3090" [ref=f140e34]:
+                            - rowheader "Graphics Coprocessor" [ref=f140e35]
+                            - cell "NVIDIA GeForce RTX 3090" [ref=f140e36]
+                          - row "Graphics Card Ram 24 GB" [ref=f140e37]:
+                            - rowheader "Graphics Card Ram" [ref=f140e38]
+                            - cell "24 GB" [ref=f140e39]
+                          - row "Video Output Interface DisplayPort, HDMI" [ref=f140e40]:
+                            - rowheader "Video Output Interface" [ref=f140e41]
+                            - cell "DisplayPort, HDMI" [ref=f140e42]
+                          - row "Graphics Ram Type GDDR6" [ref=f140e43]:
+                            - rowheader "Graphics Ram Type" [ref=f140e44]
+                            - cell "GDDR6" [ref=f140e45]
+                          - row "Compatible Devices Desktop" [ref=f140e46]:
+                            - rowheader "Compatible Devices" [ref=f140e47]
+                            - cell "Desktop" [ref=f140e48]
+                          - row "Display Resolution Maximum 7680x4320" [ref=f140e49]:
+                            - rowheader "Display Resolution Maximum" [ref=f140e50]
+                            - cell "7680x4320" [ref=f140e51]
+                          - row "Graphics Card Interface PCI-Express x16" [ref=f140e52]:
+                            - rowheader "Graphics Card Interface" [ref=f140e53]
+                            - cell "PCI-Express x16" [ref=f140e54]
+                          - row "Memory Clock Speed 15000 MHz" [ref=f140e55]:
+                            - rowheader "Memory Clock Speed" [ref=f140e56]
+                            - cell "15000 MHz" [ref=f140e57]
+                          - row "Number of Fans 3" [ref=f140e58]:
+                            - rowheader "Number of Fans" [ref=f140e59]
+                            - cell "3" [ref=f140e60]
+          - generic [ref=e776]:
+            - generic [ref=e778]:
+              - heading "About this seller" [level=2] [ref=e779]:
+                - generic [ref=e781]: About this seller
+              - generic [ref=e782]:
+                - link [ref=e784] [cursor=pointer]:
+                  - /url: https://www.ebay.com/sch/twamb_75/m.html?item=397799448336&rt=nc&_trksid=p4429486.m145687.l2562
+                  - img [ref=e786]: T
+                - generic [ref=e787]:
+                  - heading "twamb_75" [level=3] [ref=e788]:
+                    - link "twamb_75" [ref=e789] [cursor=pointer]:
+                      - /url: https://www.ebay.com/sch/twamb_75/m.html?item=397799448336&rt=nc&_trksid=p4429486.m145687.l2562
+                  - paragraph [ref=e790]: 2 items sold
+              - generic [ref=e795]:
+                - generic [ref=e796]:
+                  - img
+                - generic [ref=e797]: Joined Mar 2021
+              - generic [ref=e798]:
+                - link "Seller's other items" [ref=e799] [cursor=pointer]:
+                  - /url: https://www.ebay.com/sch/twamb_75/m.html?item=397799448336&rt=nc&_trksid=p4429486.m145687.l2562
+                  - generic [ref=e800]: Seller's other items
+                - button "Message seller - opens in a new dialog" [ref=e801] [cursor=pointer]:
+                  - generic [ref=e802]:
+                    - text: Message seller
+                    - generic [ref=e803]: "- opens in a new dialog"
+                - button "Save seller - Save this seller twamb_75" [ref=e805] [cursor=pointer]:
+                  - generic [ref=e806]:
+                    - img
+                  - generic [ref=e807]: Save seller
+            - generic [ref=e811]:
+              - heading "Seller Feedback" [level=2] [ref=e814]
+              - generic [ref=e817]: No feedback yet
+          - generic [ref=e819]:
+            - navigation "Quick Links" [ref=e820]:
+              - link "Back to home page" [ref=e821] [cursor=pointer]:
+                - /url: https://www.ebay.com
+              - button "Return to top" [ref=e822] [cursor=pointer]
+            - generic [ref=e824]:
+              - heading "More to explore :" [level=2] [ref=e827]
+              - list [ref=e829]:
+                - listitem [ref=e830]:
+                  - link "NVIDIA GeForce RTX 3090 24GB GDDR6 Graphics Cards," [ref=e831] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/NVIDIA-GeForce-RTX-3090-24GB-GDDR6-Graphics-Cards/27386/bn_7117810176
+                - listitem [ref=e832]:
+                  - link "ASUS Dual GeForce RTX 2080 OC Edition NVIDIA Computer Graphics Cards," [ref=e833] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/ASUS-Dual-GeForce-RTX-2080-OC-Edition-NVIDIA-Computer-Graphics-Cards/27386/bn_7116459407
+                - listitem [ref=e834]:
+                  - link "GIGABYTE GeForce RTX 2070 GAMING OC NVIDIA Computer Graphics Cards," [ref=e835] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/GIGABYTE-GeForce-RTX-2070-GAMING-OC-NVIDIA-Computer-Graphics-Cards/27386/bn_7116459264
+                - listitem [ref=e836]:
+                  - link "ASUS NVIDIA GeForce RTX 2060 NVIDIA Computer Graphics Cards," [ref=e837] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/ASUS-NVIDIA-GeForce-RTX-2060-NVIDIA-Computer-Graphics-Cards/27386/bn_7116821498
+                - listitem [ref=e838]:
+                  - link "ASUS NVIDIA GeForce RTX 2080 NVIDIA Computer Graphics Cards," [ref=e839] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/ASUS-NVIDIA-GeForce-RTX-2080-NVIDIA-Computer-Graphics-Cards/27386/bn_7116845404
+                - listitem [ref=e840]:
+                  - link "ASUS NVIDIA GeForce RTX 2070 NVIDIA Computer Graphics Cards," [ref=e841] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/ASUS-NVIDIA-GeForce-RTX-2070-NVIDIA-Computer-Graphics-Cards/27386/bn_7116828523
+                - listitem [ref=e842]:
+                  - link "ASUS ROG Strix GeForce RTX 2080 OC Edition Computer Graphics Cards," [ref=e843] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/ASUS-ROG-Strix-GeForce-RTX-2080-OC-Edition-Computer-Graphics-Cards/27386/bn_7115130201
+                - listitem [ref=e844]:
+                  - link "ASUS Dual GeForce RTX 2080 Ti OC Edition Computer Graphics Cards," [ref=e845] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/ASUS-Dual-GeForce-RTX-2080-Ti-OC-Edition-Computer-Graphics-Cards/27386/bn_7115118219
+                - listitem [ref=e846]:
+                  - link "NVIDIA GeForce RTX 3060 Ti," [ref=e847] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/NVIDIA-GeForce-RTX-3060-Ti/27386/bn_7117620276
+                - listitem [ref=e848]:
+                  - link "NVIDIA GeForce RTX 2070 Founders Edition NVIDIA Computer Graphics Cards" [ref=e849] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/NVIDIA-GeForce-RTX-2070-Founders-Edition-NVIDIA-Computer-Graphics-Cards/27386/bn_7116465379
+            - generic [ref=e851]:
+              - heading "Shop Top Sellers and Highly Rated Products in Graphics/Video Cards" [level=2] [ref=e852]
+              - generic [ref=e853]:
+                - generic [ref=e854]:
+                  - heading "Best Sellers" [level=3] [ref=e855]
+                  - list [ref=e856]:
+                    - listitem [ref=e857]:
+                      - link "Sapphire Pulse Radeon RX 9060 XT 16GB Graphics card Radeon RX 11350-03-20G" [ref=e858] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/6085827196
+                        - generic [ref=e859]: Sapphire Pulse Radeon RX 9060 XT 16GB Graphics card Radeon RX 11350-03-20G
+                    - listitem [ref=e860]:
+                      - link "GIGABYTE NVIDIA GeForce RTX 5080 Graphics Card 16GB GDDR7 GV-N5080WF3-16GD" [ref=e861] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/24086207863
+                        - generic [ref=e862]: GIGABYTE NVIDIA GeForce RTX 5080 Graphics Card 16GB GDDR7 GV-N5080WF3-16GD
+                    - listitem [ref=e863]:
+                      - link "ASUS TUF Gaming GeForce RTX 5090 32GB GDDR7 OC TUF-RTX5090-O32G-GAMING Graphics" [ref=e864] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/11075131712
+                        - generic [ref=e865]: ASUS TUF Gaming GeForce RTX 5090 32GB GDDR7 OC TUF-RTX5090-O32G-GAMING Graphics
+                    - listitem [ref=e866]:
+                      - link "ASUS ROG Astral GeForce RTX 5090 OC Edition 32GB GDDR7 Gaming Graphics Card" [ref=e867] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/15081043032
+                        - generic [ref=e868]: ASUS ROG Astral GeForce RTX 5090 OC Edition 32GB GDDR7 Gaming Graphics Card
+                    - listitem [ref=e869]:
+                      - link "EVGA GeForce RTX 3090 Ti FTW3 BLACK GAMING 24GB GDDR6X Graphics Card" [ref=e870] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/19058462470
+                        - generic [ref=e871]: EVGA GeForce RTX 3090 Ti FTW3 BLACK GAMING 24GB GDDR6X Graphics Card
+                - generic [ref=e872]:
+                  - heading "Top Rated" [level=3] [ref=e873]
+                  - list [ref=e874]:
+                    - listitem [ref=e875]:
+                      - link "EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card" [ref=e876] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/23040748507
+                        - generic [ref=e877]: EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card
+                    - listitem [ref=e878]:
+                      - link "NVIDIA GeForce RTX 3090 Founders Edition 24GB GDDR6 Graphics Card - Titanium/Black" [ref=e879] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/6041238838
+                        - generic [ref=e880]: NVIDIA GeForce RTX 3090 Founders Edition 24GB GDDR6 Graphics Card - Titanium/Black
+                    - listitem [ref=e881]:
+                      - link "MSI GeForce GT 710 2GB DDR3 Graphics Card (GT 710 2GD3 LP)" [ref=e882] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/18021691862
+                        - generic [ref=e883]: MSI GeForce GT 710 2GB DDR3 Graphics Card (GT 710 2GD3 LP)
+                    - listitem [ref=e884]:
+                      - link "ASUS GeForce GTX 1660 SUPER OC 6GB GDDR6 Gaming Graphics Card (TUF-GTX1660S-O6G-GAMING)" [ref=e885] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/5036279263
+                        - generic [ref=e886]: ASUS GeForce GTX 1660 SUPER OC 6GB GDDR6 Gaming Graphics Card (TUF-GTX1660S-O6G-GAMING)
+                    - listitem [ref=e887]:
+                      - link "EVGA NVIDIA GeForce 210 (01G-P3-1313-KR) 1GB DDR3 SDRAM PCI Express x16 Graphics adapter" [ref=e888] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/109579371
+                        - generic [ref=e889]: EVGA NVIDIA GeForce 210 (01G-P3-1313-KR) 1GB DDR3 SDRAM PCI Express x16 Graphics adapter
+            - generic [ref=e891]:
+              - heading "Related searches" [level=2] [ref=e892]
+              - list [ref=e893]:
+                - listitem [ref=e894]:
+                  - link "Asus Rtx 3090" [ref=e895] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/asus-rtx-3090?_nkw=asus+rtx+3090
+                    - generic [ref=e896]: Asus Rtx 3090
+                - listitem [ref=e897]:
+                  - link "Asus 3090" [ref=e898] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/asus-3090?_nkw=asus+3090
+                    - generic [ref=e899]: Asus 3090
+                - listitem [ref=e900]:
+                  - link "Asus Rog 3090" [ref=e901] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/asus-rog-3090?_nkw=asus+rog+3090
+                    - generic [ref=e902]: Asus Rog 3090
+                - listitem [ref=e903]:
+                  - link "3090 Tuf" [ref=e904] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/3090-tuf?_nkw=3090+tuf
+                    - generic [ref=e905]: 3090 Tuf
+                - listitem [ref=e906]:
+                  - link "Rtx 3090" [ref=e907] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/rtx-3090?_nkw=rtx+3090
+                    - generic [ref=e908]: Rtx 3090
+                - listitem [ref=e909]:
+                  - link "Asus 3090 Ti" [ref=e910] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/asus-3090-ti?_nkw=asus+3090+ti
+                    - generic [ref=e911]: Asus 3090 Ti
+                - listitem [ref=e912]:
+                  - link "Rog 3090" [ref=e913] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/rog-3090?_nkw=rog+3090
+                    - generic [ref=e914]: Rog 3090
+                - listitem [ref=e915]:
+                  - link "Used 3090" [ref=e916] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/used-3090?_nkw=used+3090
+                    - generic [ref=e917]: Used 3090
+                - listitem [ref=e918]:
+                  - link "Gigabyte 3090" [ref=e919] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/gigabyte-3090?_nkw=gigabyte+3090
+                    - generic [ref=e920]: Gigabyte 3090
+                - listitem [ref=e921]:
+                  - link "Nvidia 3090 24 GB" [ref=e922] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/nvidia-3090-24gb?_nkw=nvidia+3090+24gb
+                    - generic [ref=e923]: Nvidia 3090 24 GB
+                - listitem [ref=e924]:
+                  - link "Nvidia 3090 Ti" [ref=e925] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/nvidia-3090-ti?_nkw=nvidia+3090+ti
+                    - generic [ref=e926]: Nvidia 3090 Ti
+                - listitem [ref=e927]:
+                  - link "Rtx 3090 Ftw3" [ref=e928] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/rtx-3090-ftw3?_nkw=rtx+3090+ftw3
+                    - generic [ref=e929]: Rtx 3090 Ftw3
+                - listitem [ref=e930]:
+                  - link "3090 Ti" [ref=e931] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/3090-ti?_nkw=3090+ti
+                    - generic [ref=e932]: 3090 Ti
+                - listitem [ref=e933]:
+                  - link "Rtx 3090 GPU" [ref=e934] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/rtx-3090-gpu?_nkw=rtx+3090+gpu
+                    - generic [ref=e935]: Rtx 3090 GPU
+                - listitem [ref=e936]:
+                  - link "3090 24 GB" [ref=e937] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/3090-24gb?_nkw=3090+24gb
+                    - generic [ref=e938]: 3090 24 GB
+  - generic [ref=e946]:
+    - contentinfo [ref=e947]:
+      - list [ref=e948]:
+        - listitem [ref=e949]:
+          - link "About eBay" [ref=e950] [cursor=pointer]:
+            - /url: https://www.ebayinc.com
+        - listitem [ref=e951]:
+          - link "Announcements" [ref=e952] [cursor=pointer]:
+            - /url: https://community.ebay.com/t5/Announcements/bg-p/Announcements
+        - listitem [ref=e953]:
+          - link "Community" [ref=e954] [cursor=pointer]:
+            - /url: https://community.ebay.com
+        - listitem [ref=e955]:
+          - link "Security Center" [ref=e956] [cursor=pointer]:
+            - /url: https://pages.ebay.com/securitycenter/index.html
+        - listitem [ref=e957]:
+          - link "Seller Center" [ref=e958] [cursor=pointer]:
+            - /url: https://www.ebay.com/sellercenter
+        - listitem [ref=e959]:
+          - link "Policies" [ref=e960] [cursor=pointer]:
+            - /url: https://www.ebay.com/help/policies/default/ebays-rules-policies?id=4205
+        - listitem [ref=e961]:
+          - link "Affiliates" [ref=e962] [cursor=pointer]:
+            - /url: https://partnernetwork.ebay.com/
+        - listitem [ref=e963]:
+          - link "Product Safety Tips" [ref=e964] [cursor=pointer]:
+            - /url: https://pages.ebay.com/safetytips
+        - listitem [ref=e965]:
+          - link "Help & Contact" [ref=e966] [cursor=pointer]:
+            - /url: https://www.ebay.com/help/home
+        - listitem [ref=e967]:
+          - link "Site Map" [ref=e968] [cursor=pointer]:
+            - /url: https://pages.ebay.com/sitemap.html
+      - generic [ref=e969]:
+        - text: Copyright © 1995-2026 eBay Inc. All Rights Reserved.
+        - link "Accessibility" [ref=e970] [cursor=pointer]:
+          - /url: https://www.ebayinc.com/accessibility/
+        - text: ","
+        - link "User Agreement" [ref=e971] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/policies/member-behaviour-policies/user-agreement?id=4259
+        - text: ","
+        - link "Privacy" [ref=e972] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/policies/member-behaviour-policies/user-privacy-notice-privacy-policy?id=4260
+        - text: ","
+        - link "Consumer Health Data" [ref=e973] [cursor=pointer]:
+          - /url: https://www.ebayinc.com/company/privacy-center/privacy-notice/consumer-health-data-privacy-policy/
+        - text: ","
+        - link "Payments Terms of Use" [ref=e974] [cursor=pointer]:
+          - /url: https://pages.ebay.com/payment/2.0/terms.html
+        - text: ","
+        - link "Cookies" [ref=e975] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/policies/member-behaviour-policies/ebay-cookie-notice?id=4267
+        - text: ","
+        - link "CA Privacy Notice" [ref=e976] [cursor=pointer]:
+          - /url: https://www.ebayinc.com/company/privacy-center/privacy-notice/state-privacy-disclosures/#california
+        - text: ","
+        - link "Your Privacy Choices" [ref=e977] [cursor=pointer]:
+          - /url: https://www.ebay.com/adchoice/ccpa
+        - text: and
+        - link "AdChoice" [ref=e978] [cursor=pointer]:
+          - /url: https://www.ebay.com/adchoice
+          - text: AdChoice
+          - img
+    - generic "ADVERTISEMENT" [ref=e979]
+  - img
+  - img [ref=e981]

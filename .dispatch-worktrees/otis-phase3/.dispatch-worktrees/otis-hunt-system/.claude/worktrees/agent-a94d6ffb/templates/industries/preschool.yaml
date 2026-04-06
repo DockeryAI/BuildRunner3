@@ -1,0 +1,13 @@
+id: preschool
+name: Preschool
+naics_code: '611110'
+category: Personal Services
+keywords:
+- preschool
+- preschool
+- daycare
+- childcare
+- pre-school
+- early learning
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,5 @@
+[     723ms] [LOG] Meter provider shut down successfully @ https://ir.ebaystatic.com/cr/ebay-rum/cdn-assets/metrics.ebb041e86c5338dbe8f6.bundle.js:0
+[     749ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ about:blank:0
+[    1655ms] [LOG] {h: 46, w: 1099} @ https://ir.ebaystatic.com/rs/c/r1vinode/item_evo-C3HBiz6O.js:7
+[    1662ms] [LOG] done @ https://www.ebay.com/itm/127790141286:4
+[    4651ms] [WARNING] The resource https://ir.ebaystatic.com/cr/v/c1/market-sans/v1.0/MarketSans-Regular-WebS.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally. @ https://itm.ebaydesc.com/itmdesc/127790141286?t=0&category=27386&seller=usati_7&excSoj=1&ver=1&excTrk=1&lsite=2&ittenable=true&domain=ebay.com&descgauge=1&cspheader=1&oneClk=2&secureDesc=1:0

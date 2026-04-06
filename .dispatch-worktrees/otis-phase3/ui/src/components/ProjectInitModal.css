@@ -1,0 +1,577 @@
+/**
+ * ProjectInitModal Styles
+ * Production-ready modal with validation states and animations
+ * Dark theme consistent with BuildRunner
+ */
+
+/* Modal Overlay */
+.project-init-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Card */
+.project-init-modal-card {
+  position: relative;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #1e1e1e;
+  border: 1px solid #3e3e3e;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal Header */
+.project-init-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #3e3e3e;
+  background: #252526;
+}
+
+.project-init-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.project-init-modal-close {
+  background: transparent;
+  border: none;
+  color: #858585;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.project-init-modal-close:hover:not(:disabled) {
+  color: #f48771;
+  background: rgba(244, 135, 113, 0.1);
+}
+
+.project-init-modal-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Modal Form */
+.project-init-modal-form {
+  padding: 24px;
+}
+
+.project-init-form-section {
+  margin-bottom: 24px;
+}
+
+/* Labels */
+.project-init-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #d4d4d4;
+}
+
+.project-init-required {
+  color: #f48771;
+  margin-left: 2px;
+}
+
+/* Input Wrapper */
+.project-init-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Input Fields */
+.project-init-input {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 44px;
+  background: #252526;
+  color: #d4d4d4;
+  border: 2px solid #3e3e3e;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.project-init-input::placeholder {
+  color: #6a6a6a;
+}
+
+.project-init-input:focus {
+  border-color: #0e639c;
+  box-shadow: 0 0 0 3px rgba(14, 99, 156, 0.15);
+}
+
+.project-init-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #1a1a1a;
+}
+
+/* Input Validation States */
+.project-init-input-loading {
+  border-color: #3e3e3e;
+}
+
+.project-init-input-valid {
+  border-color: #4ec9b0;
+}
+
+.project-init-input-valid:focus {
+  box-shadow: 0 0 0 3px rgba(78, 201, 176, 0.15);
+}
+
+.project-init-input-invalid {
+  border-color: #f48771;
+}
+
+.project-init-input-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(244, 135, 113, 0.15);
+}
+
+/* Input Icon */
+.project-init-input-icon {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Spinner */
+.project-init-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #0e639c;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Checkmark Icon */
+.project-init-checkmark {
+  color: #4ec9b0;
+  animation: checkmarkPop 0.3s ease-out;
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Error Icon */
+.project-init-error-icon {
+  color: #f48771;
+  animation: errorShake 0.3s ease-out;
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+/* Validation Messages */
+.project-init-validation-message {
+  margin-top: 6px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.project-init-validation-success {
+  color: #4ec9b0;
+}
+
+.project-init-validation-error {
+  color: #f48771;
+}
+
+/* Path Input Group */
+.project-init-path-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.project-init-path-input-group .project-init-input-wrapper {
+  flex: 1;
+}
+
+/* File Picker Button */
+.project-init-file-picker-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #3e3e3e;
+  color: #d4d4d4;
+  border: 2px solid #3e3e3e;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.project-init-file-picker-button:hover:not(:disabled) {
+  background: #4e4e4e;
+  border-color: #4e4e4e;
+}
+
+.project-init-file-picker-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.project-init-file-picker-button svg {
+  flex-shrink: 0;
+}
+
+/* Hidden File Input */
+.project-init-file-input {
+  display: none;
+}
+
+/* Checklist */
+.project-init-checklist-title {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.project-init-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Checklist Item */
+.project-init-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #252526;
+  border: 1px solid #3e3e3e;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  animation: fadeInSlide 0.3s ease-out forwards;
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.project-init-checklist-item-checked {
+  background: rgba(78, 201, 176, 0.1);
+  border-color: #4ec9b0;
+}
+
+/* Checkbox */
+.project-init-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #3e3e3e;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  background: #1e1e1e;
+}
+
+.project-init-checklist-item-checked .project-init-checkbox {
+  background: #4ec9b0;
+  border-color: #4ec9b0;
+}
+
+.project-init-checkbox-checkmark {
+  color: #1e1e1e;
+  animation: checkmarkPop 0.3s ease-out;
+}
+
+/* Checklist Label */
+.project-init-checklist-label {
+  flex: 1;
+  font-size: 14px;
+  color: #d4d4d4;
+  font-weight: 500;
+}
+
+.project-init-checklist-item-checked .project-init-checklist-label {
+  color: #ffffff;
+}
+
+/* Modal Footer */
+.project-init-modal-footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  justify-content: flex-end;
+  padding-top: 24px;
+  border-top: 1px solid #3e3e3e;
+}
+
+/* Buttons */
+.project-init-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.project-init-button-secondary {
+  background: #3e3e3e;
+  color: #d4d4d4;
+}
+
+.project-init-button-secondary:hover:not(:disabled) {
+  background: #4e4e4e;
+}
+
+.project-init-button-primary {
+  background: #0e639c;
+  color: #ffffff;
+}
+
+.project-init-button-primary:hover:not(:disabled) {
+  background: #1177bb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 99, 156, 0.4);
+}
+
+.project-init-button-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.project-init-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Button Spinner */
+.project-init-button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Scrollbar Styling */
+.project-init-modal-card::-webkit-scrollbar {
+  width: 8px;
+}
+
+.project-init-modal-card::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.project-init-modal-card::-webkit-scrollbar-thumb {
+  background: #3e3e3e;
+  border-radius: 4px;
+}
+
+.project-init-modal-card::-webkit-scrollbar-thumb:hover {
+  background: #4e4e4e;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .project-init-modal-card {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .project-init-modal-form {
+    padding: 20px;
+  }
+
+  .project-init-modal-header {
+    padding: 20px;
+  }
+
+  .project-init-modal-header h2 {
+    font-size: 18px;
+  }
+
+  .project-init-path-input-group {
+    flex-direction: column;
+  }
+
+  .project-init-file-picker-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .project-init-modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .project-init-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-init-modal-card {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .project-init-modal-form {
+    padding: 16px;
+  }
+
+  .project-init-modal-header {
+    padding: 16px;
+  }
+
+  .project-init-form-section {
+    margin-bottom: 20px;
+  }
+}
+
+/* Focus Styles for Accessibility */
+.project-init-button:focus-visible,
+.project-init-input:focus-visible,
+.project-init-file-picker-button:focus-visible {
+  outline: 2px solid #0e639c;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .project-init-modal-card {
+    border-width: 2px;
+  }
+
+  .project-init-input {
+    border-width: 3px;
+  }
+
+  .project-init-checkbox {
+    border-width: 3px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .project-init-modal-overlay,
+  .project-init-modal-card,
+  .project-init-checklist-item,
+  .project-init-checkmark,
+  .project-init-error-icon,
+  .project-init-validation-message,
+  .project-init-spinner,
+  .project-init-button-spinner {
+    animation: none;
+  }
+
+  .project-init-button:hover:not(:disabled) {
+    transform: none;
+  }
+}

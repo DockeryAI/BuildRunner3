@@ -1,0 +1,13 @@
+id: chiropractic
+name: Chiropractic
+naics_code: '621310'
+category: Healthcare
+keywords:
+- chiropractic
+- chiropractic
+- chiropractor
+- back pain
+- adjustment
+- spine care
+has_full_profile: false
+source: naics_only

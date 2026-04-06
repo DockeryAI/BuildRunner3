@@ -1,0 +1,10 @@
+id: food-manufacturing
+name: Food Manufacturing
+naics_code: '311999'
+category: Food Service
+keywords:
+- food manufacturing
+- food
+- manufacturing
+has_full_profile: false
+source: naics_only

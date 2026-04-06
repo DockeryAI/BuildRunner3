@@ -1,0 +1,10 @@
+id: pet-boarding
+name: Pet Boarding
+naics_code: '812910'
+category: Personal Services
+keywords:
+- pet boarding
+- pet
+- boarding
+has_full_profile: false
+source: naics_only

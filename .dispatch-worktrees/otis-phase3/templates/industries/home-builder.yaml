@@ -1,0 +1,10 @@
+id: home-builder
+name: Home Builder
+naics_code: '236117'
+category: Construction
+keywords:
+- home builder
+- home
+- builder
+has_full_profile: false
+source: naics_only

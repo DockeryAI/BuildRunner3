@@ -1,0 +1,10 @@
+id: bar-pub
+name: Bar/Pub
+naics_code: '722410'
+category: Food Service
+keywords:
+- bar/pub
+- bar
+- pub
+has_full_profile: false
+source: naics_only

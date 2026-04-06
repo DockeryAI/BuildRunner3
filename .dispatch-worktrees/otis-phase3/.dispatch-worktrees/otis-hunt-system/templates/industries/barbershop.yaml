@@ -1,0 +1,13 @@
+id: barbershop
+name: Barbershop
+naics_code: '812111'
+category: Personal Services
+keywords:
+- barbershop
+- barbershop
+- barber
+- haircut
+- men
+- ','
+has_full_profile: false
+source: naics_only
