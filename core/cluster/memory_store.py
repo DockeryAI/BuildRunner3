@@ -98,10 +98,26 @@ def _ensure_tables(conn: sqlite3.Connection):
             timestamp TEXT NOT NULL DEFAULT (datetime('now'))
         );
 
+        CREATE TABLE IF NOT EXISTS plan_outcomes (
+            plan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project TEXT NOT NULL,
+            build_name TEXT NOT NULL,
+            phase TEXT NOT NULL,
+            plan_text TEXT NOT NULL,
+            outcome TEXT NOT NULL,
+            accuracy_pct REAL,
+            drift_notes TEXT,
+            files_planned TEXT,
+            files_actual TEXT,
+            duration_seconds REAL,
+            timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
         CREATE INDEX IF NOT EXISTS idx_build_project ON build_history(project);
         CREATE INDEX IF NOT EXISTS idx_commits_repo ON commits(repo);
         CREATE INDEX IF NOT EXISTS idx_test_project ON test_results(project);
         CREATE INDEX IF NOT EXISTS idx_patterns_type ON log_patterns(pattern_type);
+        CREATE INDEX IF NOT EXISTS idx_plans_project ON plan_outcomes(project);
     """)
     conn.commit()
 
@@ -166,6 +182,42 @@ def predict_phase(project: str, phase_pattern: str) -> dict:
         "avg_duration_seconds": round(avg_duration, 1),
         "common_failures": list(set(failure_reasons))[:5],
     }
+
+
+# --- Plan Outcomes ---
+
+def record_plan_outcome(project: str, build_name: str, phase: str,
+                        plan_text: str, outcome: str,
+                        accuracy_pct: float = None, drift_notes: str = None,
+                        files_planned: list = None, files_actual: list = None,
+                        duration_seconds: float = None):
+    """Store a plan execution outcome for later retrieval and semantic search."""
+    conn = _get_db()
+    conn.execute(
+        """INSERT INTO plan_outcomes (project, build_name, phase, plan_text,
+           outcome, accuracy_pct, drift_notes, files_planned, files_actual,
+           duration_seconds)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (project, build_name, phase, plan_text, outcome, accuracy_pct,
+         drift_notes,
+         json.dumps(files_planned) if files_planned else None,
+         json.dumps(files_actual) if files_actual else None,
+         duration_seconds)
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_recent_plan_outcomes(project: str, limit: int = 20) -> list[dict]:
+    """Retrieve recent plan outcomes for a project, newest first."""
+    conn = _get_db()
+    rows = conn.execute(
+        """SELECT * FROM plan_outcomes WHERE project = ?
+           ORDER BY timestamp DESC, plan_id DESC LIMIT ?""",
+        (project, limit)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 
 # --- Commit Indexing ---
@@ -466,3 +518,48 @@ def generate_brief(project: str) -> dict:
         ]
 
     return brief
+
+
+# --- Registry Sync ---
+
+def save_registry(registry_data: dict) -> dict:
+    """Save cluster-builds registry data from Muddy."""
+    conn = _get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS cluster_registry (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            data TEXT NOT NULL,
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+    existing = conn.execute("SELECT id FROM cluster_registry WHERE id = 1").fetchone()
+    if existing:
+        conn.execute(
+            "UPDATE cluster_registry SET data = ?, updated_at = datetime('now') WHERE id = 1",
+            (json.dumps(registry_data),)
+        )
+    else:
+        conn.execute(
+            "INSERT INTO cluster_registry (id, data) VALUES (1, ?)",
+            (json.dumps(registry_data),)
+        )
+    conn.commit()
+    conn.close()
+    return {"status": "synced", "builds": len(registry_data.get("builds", {}))}
+
+
+def get_registry() -> dict:
+    """Get the latest cluster-builds registry."""
+    conn = _get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS cluster_registry (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            data TEXT NOT NULL,
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+    row = conn.execute("SELECT data, updated_at FROM cluster_registry WHERE id = 1").fetchone()
+    conn.close()
+    if row:
+        return {"registry": json.loads(row["data"]), "updated_at": row["updated_at"]}
+    return {"registry": {"builds": {}}, "updated_at": None}

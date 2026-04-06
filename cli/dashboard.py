@@ -18,7 +18,7 @@ from rich.layout import Layout
 from rich.live import Live
 from rich.text import Text
 
-from core.dashboard_views import DashboardScanner, DashboardViews, ProjectStatus
+from core.dashboard_views import DashboardScanner, DashboardViews, PlanReviewView, ProjectStatus
 
 
 console = Console()
@@ -42,14 +42,15 @@ def dashboard():
 @click.option(
     "--view",
     "-v",
-    type=click.Choice(["overview", "alerts", "timeline"]),
+    type=click.Choice(["overview", "alerts", "timeline", "plan"]),
     default="overview",
     help="Dashboard view to display",
 )
 @click.option(
     "--detail", "-d", type=str, default=None, help="Show detailed view for specific project"
 )
-def show(path: Optional[str], watch: bool, view: str, detail: Optional[str]):
+@click.option("--history", is_flag=True, help="Show past plans table (with --view plan)")
+def show(path: Optional[str], watch: bool, view: str, detail: Optional[str], history: bool = False):
     """
     Show multi-repo dashboard.
 
@@ -61,8 +62,16 @@ def show(path: Optional[str], watch: bool, view: str, detail: Optional[str]):
         br dashboard show --watch
         br dashboard show --detail MyProject
         br dashboard show --view alerts
+        br dashboard show --view plan
+        br dashboard show --view plan --history
     """
     root_path = Path(path) if path else Path.cwd()
+
+    # Plan view is special — doesn't need project scanning
+    if view == "plan":
+        output = _render_plan_review(root_path, history)
+        console.print(output)
+        return
 
     if watch:
         # Auto-refresh mode
@@ -305,6 +314,216 @@ def _render_timeline_view(views: DashboardViews) -> Table:
 
 # Helper for grouping renderables
 from rich.console import Group
+
+
+def _render_plan_review(root_path: Path, history: bool = False) -> Panel:
+    """Render the plan review dashboard — the human verification gate."""
+    review = PlanReviewView(root_path)
+
+    if not review.plan_file:
+        return Panel(
+            "[yellow]No plan files found.[/yellow]\n\n"
+            f"Searched in: {root_path / '.buildrunner' / 'plans'}\n"
+            "Hint: Run /setlist to generate a plan first.",
+            title="Plan Review",
+            border_style="yellow",
+        )
+
+    if history:
+        return _render_plan_history(review)
+
+    renderables = []
+
+    # --- Code health warning bar ---
+    health = review.get_code_health_data()
+    low_health = {f: s for f, s in health.items() if s < 9.5}
+    if low_health:
+        warnings = ", ".join(f"{f} ({s}/10)" for f, s in low_health.items())
+        renderables.append(
+            Panel(
+                f"[bold yellow]Code health warning:[/bold yellow] {warnings}",
+                border_style="yellow",
+                padding=(0, 1),
+            )
+        )
+
+    # --- Task table ---
+    tasks = review.get_task_table_data()
+    if tasks:
+        task_table = Table(
+            title="Tasks",
+            show_header=True,
+            header_style="bold magenta",
+            border_style="blue",
+        )
+        task_table.add_column("#", style="cyan", no_wrap=True, width=5)
+        task_table.add_column("WHAT", style="white", ratio=3)
+        task_table.add_column("WHY", style="dim", ratio=2)
+        task_table.add_column("VERIFY", style="green", ratio=2)
+
+        for task in tasks:
+            task_table.add_row(
+                task["id"],
+                task["what"],
+                task["why"],
+                task["verify"],
+            )
+        renderables.append(task_table)
+
+    # --- Adversarial findings panel ---
+    findings = review.get_adversarial_data()
+    if findings:
+        findings_text = Text()
+        for finding in findings:
+            severity = finding.get("severity", "note")
+            text = finding.get("finding", "")
+            if severity == "blocker":
+                findings_text.append("BLOCKER ", style="bold red")
+                findings_text.append(f"{text}\n", style="red")
+            elif severity == "warning":
+                findings_text.append("WARNING ", style="bold yellow")
+                findings_text.append(f"{text}\n", style="yellow")
+            else:
+                findings_text.append("NOTE    ", style="dim")
+                findings_text.append(f"{text}\n", style="dim")
+
+        renderables.append(
+            Panel(
+                findings_text,
+                title="Adversarial Findings",
+                border_style="red" if any(f.get("severity") == "blocker" for f in findings) else "yellow",
+                padding=(0, 1),
+            )
+        )
+
+    # --- Test baseline panel ---
+    try:
+        baseline = review.get_test_baseline_data()
+        if baseline:
+            test_table = Table(
+                title="Test Baseline",
+                show_header=True,
+                header_style="bold cyan",
+                border_style="cyan",
+            )
+            test_table.add_column("Source File", style="white")
+            test_table.add_column("Test File", style="cyan")
+            test_table.add_column("Status", justify="center")
+
+            for source_file, test_info in baseline.items():
+                if isinstance(test_info, list):
+                    for t in test_info:
+                        status = "[green]PASS[/green]" if t.get("status") == "pass" else "[red]FAIL[/red]"
+                        test_table.add_row(source_file, t.get("file", ""), status)
+                elif isinstance(test_info, dict):
+                    status = "[green]PASS[/green]" if test_info.get("status") == "pass" else "[red]FAIL[/red]"
+                    test_table.add_row(source_file, test_info.get("file", ""), status)
+
+            if test_table.row_count > 0:
+                renderables.append(test_table)
+    except Exception:
+        pass  # Walter offline — skip
+
+    # --- Historical outcomes panel ---
+    try:
+        history_data = review.get_historical_data()
+        if history_data:
+            hist_table = Table(
+                title="Similar Past Plans",
+                show_header=True,
+                header_style="bold green",
+                border_style="green",
+            )
+            hist_table.add_column("Plan", style="white", ratio=3)
+            hist_table.add_column("Outcome", justify="center", width=8)
+            hist_table.add_column("Accuracy", justify="right", width=10)
+            hist_table.add_column("Lesson", style="dim", ratio=2)
+
+            for plan in history_data[:3]:
+                plan_text = str(plan.get("plan_text", ""))[:60]
+                outcome = plan.get("outcome", "?")
+                outcome_style = "green" if outcome == "pass" else "red" if outcome == "fail" else "yellow"
+                accuracy = plan.get("accuracy_pct")
+                accuracy_str = f"{accuracy:.0f}%" if accuracy else "-"
+                drift = str(plan.get("drift_notes", ""))[:40] or "-"
+
+                hist_table.add_row(
+                    plan_text,
+                    f"[{outcome_style}]{outcome}[/{outcome_style}]",
+                    accuracy_str,
+                    drift,
+                )
+
+            if hist_table.row_count > 0:
+                renderables.append(hist_table)
+    except Exception:
+        pass  # Lockwood offline — skip
+
+    # --- Actions bar ---
+    actions = review.get_actions()
+    action_text = Text()
+    action_text.append("Actions: ", style="bold")
+    for i, action in enumerate(actions):
+        if i > 0:
+            action_text.append(" | ")
+        action_text.append(f"[{action['shortcut']}] ", style="bold cyan")
+        action_text.append(action["name"].capitalize(), style="white")
+    renderables.append(
+        Panel(action_text, border_style="blue", padding=(0, 1))
+    )
+
+    plan_name = review.plan_file.name if review.plan_file else "unknown"
+    return Panel(
+        Group(*renderables),
+        title=f"Plan Review: {plan_name}",
+        border_style="blue",
+        subtitle=f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+    )
+
+
+def _render_plan_history(review: PlanReviewView) -> Panel:
+    """Render historical plans table."""
+    history_data = review.get_historical_data()
+
+    if not history_data:
+        return Panel(
+            "[yellow]No historical plans found.[/yellow]\n"
+            "Plans are recorded after execution via Lockwood.",
+            title="Plan History",
+            border_style="yellow",
+        )
+
+    table = Table(
+        title="Past Plans",
+        show_header=True,
+        header_style="bold green",
+    )
+    table.add_column("Plan", style="white", ratio=3)
+    table.add_column("Outcome", justify="center", width=8)
+    table.add_column("Accuracy", justify="right", width=10)
+    table.add_column("Lesson", style="dim", ratio=2)
+
+    for plan in history_data:
+        plan_text = str(plan.get("plan_text", ""))[:80]
+        outcome = plan.get("outcome", "?")
+        outcome_style = "green" if outcome == "pass" else "red" if outcome == "fail" else "yellow"
+        accuracy = plan.get("accuracy_pct")
+        accuracy_str = f"{accuracy:.0f}%" if accuracy else "-"
+        drift = str(plan.get("drift_notes", ""))[:60] or "-"
+
+        table.add_row(
+            plan_text,
+            f"[{outcome_style}]{outcome}[/{outcome_style}]",
+            accuracy_str,
+            drift,
+        )
+
+    return Panel(
+        table,
+        title="Plan History",
+        border_style="green",
+        subtitle=f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+    )
 
 
 if __name__ == "__main__":

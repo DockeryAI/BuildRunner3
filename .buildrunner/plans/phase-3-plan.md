@@ -1,26 +1,24 @@
-# Phase 3 Plan: Skill Write-Back to Lockwood
-
-## Approach
-
-Add a Lockwood POST step at the end of each of these 6 skills so that useful findings are saved as institutional memory. Each skill already uses `cluster-check.sh` for reads — we add a write-back at the end.
-
-Pattern (from /save which already does this):
-```
-NODE_URL=$(~/.buildrunner/scripts/cluster-check.sh semantic-search)
-[ -n "$NODE_URL" ] && curl -s -X POST "$NODE_URL/api/memory/note" ...
-```
-
-All write-backs are optional (graceful fallback if Lockwood offline).
+# Phase 3 Plan: Claude Code Reasoning Layer
 
 ## Tasks
 
-1. **root.md** — After Step 5 (report), POST root cause summary + full report to Lockwood with topic "root-cause: {summary}", source "root"
-2. **guard.md** — After Step 4 (report), POST violations found to Lockwood with topic "governance-violation: {summary}", source "guard"
-3. **review.md** — After Step 3 (auto-fix), POST review findings to Lockwood with topic "review-findings: {summary}", source "review"
-4. **gaps.md** — After Step 4 (report), POST gap analysis results to Lockwood with topic "gap-analysis: {summary}", source "gaps"
-5. **dead.md** — After Step 3 (report), POST dead code findings to Lockwood with topic "dead-code: {summary}", source "dead"
-6. **e2e.md** — After Step 5 (report), POST test results to Lockwood with topic "e2e-results: {summary}", source "e2e"
+### Task 3.1: Create /intel-review skill command
+- File: ~/.claude/commands/intel-review.md
+- Claude Code slash command for Opus reasoning pass on intel items
+
+### Task 3.2: BR3 improvement detection within intel-review
+- Improvement record generation with /setlist prompts
+
+### Task 3.3: Deal review logic within intel-review
+- Exceptional deal assessment for cluster upgrade context
+
+### Task 3.4: Create intel-digest.sh brief injection script
+- File: ~/.buildrunner/scripts/intel-digest.sh
+- Queries Lockwood for alerts, formats for developer brief
+
+### Task 3.5: Integrate intel-digest.sh into developer-brief.sh
+- Source call from existing developer-brief.sh
 
 ## Tests
-
-Non-testable (markdown skill files, no runtime code). TDD step skipped.
+- Shell script syntax validation
+- Offline graceful degradation

@@ -77,6 +77,90 @@ def _get_or_create_table(sample_dim: int):
     return _table
 
 
+_plan_table = None
+
+
+def _get_or_create_plan_table(sample_dim: int):
+    """Create or open the plan_outcomes LanceDB table for semantic plan search."""
+    global _plan_table
+    import pyarrow as pa
+    db, _ = _get_db()
+    if "plan_outcomes" in db.table_names():
+        _plan_table = db.open_table("plan_outcomes")
+        return _plan_table
+    schema = pa.schema([
+        pa.field("id", pa.string()),
+        pa.field("plan_text", pa.string()),
+        pa.field("project", pa.string()),
+        pa.field("build_name", pa.string()),
+        pa.field("phase", pa.string()),
+        pa.field("outcome", pa.string()),
+        pa.field("accuracy_pct", pa.float32()),
+        pa.field("drift_notes", pa.string()),
+        pa.field("vector", pa.list_(pa.float32(), sample_dim)),
+    ])
+    _plan_table = db.create_table("plan_outcomes", schema=schema, mode="overwrite")
+    return _plan_table
+
+
+def embed_plan(plan_id: int, project: str, build_name: str, phase: str,
+               plan_text: str, outcome: str, accuracy_pct: float = None,
+               drift_notes: str = None):
+    """Embed a plan's text into LanceDB for semantic retrieval."""
+    embedder = _get_embedder()
+    embed_dim = embedder.get_sentence_embedding_dimension()
+    table = _get_or_create_plan_table(embed_dim)
+    embedding = embedder.encode([plan_text]).tolist()[0]
+    table.add([{
+        "id": f"plan:{plan_id}",
+        "plan_text": plan_text[:5000],
+        "project": project,
+        "build_name": build_name,
+        "phase": phase,
+        "outcome": outcome,
+        "accuracy_pct": float(accuracy_pct) if accuracy_pct is not None else 0.0,
+        "drift_notes": drift_notes or "",
+        "vector": embedding,
+    }])
+
+
+def search_similar_plans(query: str, project: str = None, limit: int = 3) -> list[dict]:
+    """Vector search for semantically similar past plans. Returns top N with outcome + accuracy + drift."""
+    embedder = _get_embedder()
+    db, _ = _get_db()
+    if "plan_outcomes" not in db.table_names():
+        return []
+    table = db.open_table("plan_outcomes")
+    query_embedding = embedder.encode([query]).tolist()[0]
+
+    try:
+        search_query = table.search(query_embedding).metric("cosine").limit(limit * 2)
+        if project:
+            search_query = search_query.where(f"project = '{project}'")
+        results = search_query.to_pandas()
+    except Exception:
+        return []
+
+    hits = []
+    for _, row in results.iterrows():
+        distance = row.get("_distance", 1.0)
+        hits.append({
+            "plan_id": row.get("id", ""),
+            "project": row.get("project", ""),
+            "build_name": row.get("build_name", ""),
+            "phase": row.get("phase", ""),
+            "outcome": row.get("outcome", ""),
+            "accuracy_pct": float(row.get("accuracy_pct", 0)),
+            "drift_notes": row.get("drift_notes", ""),
+            "plan_text": str(row.get("plan_text", ""))[:300],
+            "score": round(max(0, 1 / (1 + distance)), 4),
+        })
+        if len(hits) >= limit:
+            break
+
+    return hits
+
+
 def _get_embedder():
     global _embed_model
     if _embed_model is None:
@@ -733,3 +817,84 @@ async def save_session(project: str, branch: str = None, phase: str = None,
     from core.cluster.memory_store import save_session_state
     save_session_state(project, branch, phase, build_name, working_on)
     return {"status": "saved"}
+
+
+# --- Plan Memory API Endpoints ---
+
+class PlanRecordRequest(BaseModel):
+    project: str
+    build_name: str
+    phase: str
+    plan_text: str
+    outcome: str
+    accuracy_pct: Optional[float] = None
+    drift_notes: Optional[str] = None
+    files_planned: Optional[list] = None
+    files_actual: Optional[list] = None
+    duration_seconds: Optional[float] = None
+
+
+@app.post("/api/plans/record")
+async def record_plan(req: PlanRecordRequest):
+    """Record a plan outcome — stores in SQLite and embeds in LanceDB for semantic search."""
+    from core.cluster.memory_store import record_plan_outcome, get_recent_plan_outcomes
+
+    # Store in SQLite
+    record_plan_outcome(
+        req.project, req.build_name, req.phase, req.plan_text,
+        req.outcome, req.accuracy_pct, req.drift_notes,
+        req.files_planned, req.files_actual, req.duration_seconds
+    )
+
+    # Get the plan_id of the just-inserted record
+    recent = get_recent_plan_outcomes(req.project, limit=1)
+    plan_id = recent[0]["plan_id"] if recent else 0
+
+    # Embed into LanceDB for semantic retrieval (skip if indexer disabled)
+    if not DISABLE_INDEXER:
+        try:
+            embed_plan(
+                plan_id, req.project, req.build_name, req.phase,
+                req.plan_text, req.outcome, req.accuracy_pct, req.drift_notes
+            )
+        except Exception as e:
+            return {"status": "recorded", "embedded": False, "error": str(e)}
+
+    return {"status": "recorded", "plan_id": plan_id, "embedded": not DISABLE_INDEXER}
+
+
+@app.get("/api/plans/similar")
+async def similar_plans(query: str, project: Optional[str] = None, limit: int = 3):
+    """Search for semantically similar past plans. Returns top N with outcome + accuracy."""
+    if DISABLE_INDEXER:
+        # Fallback: keyword search from SQLite
+        from core.cluster.memory_store import get_recent_plan_outcomes
+        all_plans = get_recent_plan_outcomes(project, limit=50) if project else []
+        # Simple keyword filter
+        query_lower = query.lower()
+        matches = [
+            p for p in all_plans
+            if query_lower in (p.get("plan_text") or "").lower()
+        ][:limit]
+        return {"query": query, "results": matches, "method": "keyword_fallback"}
+
+    results = search_similar_plans(query, project, limit)
+    return {"query": query, "results": results, "method": "semantic"}
+
+
+# --- Registry Sync (Phase 8) ---
+
+@app.post("/api/registry/sync")
+async def sync_registry(req: Request):
+    """Receive cluster-builds registry from Muddy and store it."""
+    from core.cluster.memory_store import save_registry
+    data = await req.json()
+    result = save_registry(data)
+    return result
+
+
+@app.get("/api/registry/sync")
+async def get_registry():
+    """Return the latest cluster-builds registry."""
+    from core.cluster.memory_store import get_registry as _get_registry
+    return _get_registry()

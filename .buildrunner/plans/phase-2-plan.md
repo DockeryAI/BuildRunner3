@@ -1,33 +1,37 @@
-# Phase 2 Plan: Autopilot E2E Gates
+# Phase 2: Plan Memory — Implementation Plan
 
 ## Tasks
 
-### Task 2.1: Add E2E result aggregation to batch gate (Step 5.5) in autopilot.md
+### T1: Add plan_outcomes table to memory_store.py
+- Add CREATE TABLE in `_ensure_tables()` with all specified columns
+- Add `CREATE INDEX idx_plans_project ON plan_outcomes(project)`
+- **VERIFY**: Table schema matches spec (all 11 columns)
 
-- In Step 5.5 gate report, add E2E status per phase row
-- Aggregate e2e_tier1 from each phase's AUTOPILOT_PHASE_RESULT
+### T2: Add record_plan_outcome() to memory_store.py
+- Insert plan record with all fields, JSON-serialize files_planned/files_actual
+- **VERIFY**: Function inserts and retrieves a round-trip record
 
-### Task 2.2: Fail batch if any phase's E2E failed in autopilot.md
+### T3: Add get_recent_plan_outcomes() to memory_store.py
+- Query by project, order by timestamp DESC, configurable limit
+- **VERIFY**: Returns recent plans filtered by project
 
-- Before merge in Step 5.1, check e2e_tier1 results
-- Treat E2E failure same as phase failure — don't merge, surface to user
+### T4: Add search_similar_plans() to node_semantic.py
+- Embed query text using existing CodeRankEmbed model via `_get_embedder()`
+- Search a new `plan_outcomes` LanceDB table for similar vectors
+- Return top N with outcome, accuracy_pct, drift_notes
+- **VERIFY**: Semantic search returns ranked results by similarity
 
-### Task 2.3: Add full regression run after batch passes in autopilot.md
+### T5: Add plan embedding pipeline to node_semantic.py
+- On plan record, embed plan_text and store in LanceDB `plan_outcomes` table
+- Reuse existing `_get_embedder()` for embedding
+- **VERIFY**: Embedded plans are retrievable via vector search
 
-- After individual phases pass and merge, run `npm run test:e2e`
-- Add between Step 5.4 and 5.5
-- Log result in gate report
-
-### Task 2.4: Add "run tests directly, do not delegate" constraint in executor prompt
-
-- Add to scope_constraints section
-- Add to do_not section
-- Prevents 4.6 subagent spawning for test execution
-
-### Task 2.5: Report E2E status in batch gate summary in autopilot.md
-
-- Add E2E regression line to gate report template in Step 5.5
+### T6: Add API endpoints to node_semantic.py
+- `POST /api/plans/record` — accepts plan data, stores in SQLite + embeds in LanceDB
+- `GET /api/plans/similar` — query param search, returns top 3 similar plans
+- **VERIFY**: Both endpoints respond correctly
 
 ## Tests
-
-Non-testable (prompt template / skill files). Skip TDD.
+- Unit tests for record_plan_outcome, get_recent_plan_outcomes
+- Integration test for embed + search_similar_plans round-trip
+- API endpoint tests for /api/plans/record and /api/plans/similar

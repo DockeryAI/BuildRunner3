@@ -6,6 +6,7 @@ Run: uvicorn core.cluster.node_tests:app --host 0.0.0.0 --port 8100
 """
 
 import os
+import re
 import time
 import json
 import sqlite3
@@ -80,6 +81,16 @@ def _ensure_tables(conn: sqlite3.Connection):
         CREATE INDEX IF NOT EXISTS idx_runs_ts ON test_runs(timestamp);
         CREATE INDEX IF NOT EXISTS idx_cases_run ON test_cases(run_id);
         CREATE INDEX IF NOT EXISTS idx_cases_name ON test_cases(full_name);
+
+        CREATE TABLE IF NOT EXISTS test_file_map (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project TEXT NOT NULL,
+            test_file TEXT NOT NULL,
+            source_file TEXT NOT NULL,
+            confidence TEXT DEFAULT 'import',
+            last_verified TEXT DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_testmap_project_source ON test_file_map(project, source_file);
     """)
     conn.commit()
 
@@ -143,6 +154,201 @@ def _detect_changes(repo_path: str) -> list[str]:
             _file_hashes[key] = mtime
 
     return changed
+
+
+# --- Test File Map ---
+# Test file patterns: *.test.ts, *.test.tsx, *.spec.ts, *.test.js, etc.
+_TEST_SUFFIXES = {".test.ts", ".test.tsx", ".test.js", ".test.jsx", ".spec.ts", ".spec.tsx", ".spec.js", ".spec.jsx", ".test.py"}
+_SOURCE_EXTENSIONS = {".ts", ".tsx", ".js", ".jsx", ".py", ".vue"}
+_SKIP_DIRS = {".git", "node_modules", ".next", "dist", "build", "__pycache__", ".cache", ".venv"}
+
+# Regex to find import/require statements that reference relative paths
+_IMPORT_RE = re.compile(
+    r"""(?:import\s+.*?from\s+['"]([^'"]+)['"]|"""
+    r"""require\s*\(\s*['"]([^'"]+)['"]\s*\)|"""
+    r"""from\s+(\S+)\s+import)""",
+    re.MULTILINE,
+)
+
+
+def _is_test_file(path: Path) -> bool:
+    """Check if a file is a test file by its name pattern."""
+    name = path.name
+    for suffix in _TEST_SUFFIXES:
+        if name.endswith(suffix):
+            return True
+    # Python test convention: test_*.py
+    if name.startswith("test_") and name.endswith(".py"):
+        return True
+    # __tests__ directory convention
+    if "__tests__" in path.parts:
+        return True
+    return False
+
+
+def _infer_source_from_convention(test_path: Path, repo: Path) -> Optional[str]:
+    """Infer source file from test file naming convention.
+
+    foo.test.ts -> foo.ts
+    foo.spec.tsx -> foo.tsx
+    test_foo.py -> foo.py
+    __tests__/foo.test.ts -> ../foo.ts
+    """
+    name = test_path.name
+
+    # Handle *.test.ext / *.spec.ext
+    for pattern in (".test.", ".spec."):
+        idx = name.find(pattern)
+        if idx > 0:
+            ext = name[idx + len(pattern) - 1:]  # includes the dot
+            source_name = name[:idx] + ext
+
+            # If in __tests__ dir, source is one level up
+            if "__tests__" in test_path.parts:
+                source_candidate = test_path.parent.parent / source_name
+            else:
+                source_candidate = test_path.parent / source_name
+
+            if source_candidate.exists():
+                return str(source_candidate.relative_to(repo))
+
+    # Handle test_*.py -> *.py
+    if name.startswith("test_") and name.endswith(".py"):
+        source_name = name[5:]  # strip 'test_'
+        source_candidate = test_path.parent / source_name
+        if source_candidate.exists():
+            return str(source_candidate.relative_to(repo))
+
+    return None
+
+
+def _extract_imports(test_path: Path, repo: Path) -> list[str]:
+    """Extract source file paths from import statements in a test file."""
+    try:
+        content = test_path.read_text(errors="ignore")
+    except (OSError, UnicodeDecodeError):
+        return []
+
+    source_files = []
+    for match in _IMPORT_RE.finditer(content):
+        # Get the first non-None group (different import styles)
+        raw = match.group(1) or match.group(2) or match.group(3)
+        if not raw or not raw.startswith("."):
+            continue  # skip non-relative imports
+
+        # Resolve relative path from test file location
+        resolved = (test_path.parent / raw).resolve()
+
+        # Try with various extensions if no extension
+        candidates = [resolved]
+        if not resolved.suffix:
+            for ext in _SOURCE_EXTENSIONS:
+                candidates.append(resolved.with_suffix(ext))
+                # Also try index files
+                candidates.append(resolved / f"index{ext}")
+
+        for candidate in candidates:
+            if candidate.exists() and candidate.is_file():
+                try:
+                    rel = str(candidate.relative_to(repo.resolve()))
+                    source_files.append(rel)
+                except ValueError:
+                    pass
+                break
+
+    return source_files
+
+
+def build_test_map(project: str, repo_path: str) -> int:
+    """Scan test files and build source->test mapping. Returns count of mappings created."""
+    repo = Path(repo_path)
+    if not repo.exists():
+        return 0
+
+    conn = _get_db()
+
+    # Clear existing entries for this project
+    conn.execute("DELETE FROM test_file_map WHERE project = ?", (project,))
+
+    mappings = []
+    seen_pairs = set()
+
+    for path in repo.rglob("*"):
+        if any(s in path.parts for s in _SKIP_DIRS):
+            continue
+        if not path.is_file():
+            continue
+        if not _is_test_file(path):
+            continue
+
+        test_rel = str(path.relative_to(repo))
+
+        # Method 1: Parse imports
+        for source_rel in _extract_imports(path, repo):
+            pair = (test_rel, source_rel)
+            if pair not in seen_pairs:
+                seen_pairs.add(pair)
+                mappings.append((project, test_rel, source_rel, "import"))
+
+        # Method 2: Naming convention
+        source_rel = _infer_source_from_convention(path, repo)
+        if source_rel:
+            pair = (test_rel, source_rel)
+            if pair not in seen_pairs:
+                seen_pairs.add(pair)
+                mappings.append((project, test_rel, source_rel, "convention"))
+
+    # Bulk insert
+    conn.executemany(
+        "INSERT INTO test_file_map (project, test_file, source_file, confidence) VALUES (?, ?, ?, ?)",
+        mappings,
+    )
+    conn.commit()
+    conn.close()
+    return len(mappings)
+
+
+def get_test_map(files: list[str], project: str) -> dict[str, list[dict]]:
+    """Given source files, return which test files cover them."""
+    conn = _get_db()
+    result = {}
+
+    for source_file in files:
+        rows = conn.execute(
+            "SELECT test_file, confidence FROM test_file_map WHERE project = ? AND source_file = ?",
+            (project, source_file),
+        ).fetchall()
+        if rows:
+            result[source_file] = [
+                {"test_file": r["test_file"], "confidence": r["confidence"]}
+                for r in rows
+            ]
+        else:
+            result[source_file] = []
+
+    conn.close()
+    return result
+
+
+def _invalidate_test_map_entries(project: str, changed_files: list[str]):
+    """Invalidate test map entries when source or test files change."""
+    if not changed_files:
+        return
+
+    conn = _get_db()
+    for f in changed_files:
+        # If a test file changed, remove its mappings (will be rebuilt)
+        conn.execute(
+            "DELETE FROM test_file_map WHERE project = ? AND test_file = ?",
+            (project, f),
+        )
+        # If a source file changed, remove its mappings (will be rebuilt)
+        conn.execute(
+            "DELETE FROM test_file_map WHERE project = ? AND source_file = ?",
+            (project, f),
+        )
+    conn.commit()
+    conn.close()
 
 
 # --- Test Runners ---
@@ -417,6 +623,11 @@ def _test_loop():
                     continue
 
                 print(f"Changes in {project_name}: {len(changed)} files")
+
+                # Auto-rebuild affected test map entries
+                _invalidate_test_map_entries(project_name, changed)
+                build_test_map(project_name, repo_path)
+
                 git_sha = _git_sha(repo_path)
                 git_branch = _git_branch(repo_path)
 
@@ -629,6 +840,67 @@ async def trigger_run(project: Optional[str] = None):
     t = threading.Thread(target=_manual_run, daemon=True)
     t.start()
     return {"status": "started"}
+
+
+@app.get("/api/testmap")
+async def api_get_testmap(files: str = "", project: str = ""):
+    """Get test file mapping for given source files."""
+    if not files or not project:
+        return {"error": "files and project params required"}
+    file_list = [f.strip() for f in files.split(",") if f.strip()]
+    return get_test_map(file_list, project)
+
+
+@app.post("/api/testmap/baseline")
+async def api_testmap_baseline(project: str = "", files: str = ""):
+    """Run mapped tests and return baseline pass/fail state."""
+    if not project:
+        return {"error": "project param required"}
+
+    file_list = [f.strip() for f in files.split(",") if f.strip()] if files else []
+    mapping = get_test_map(file_list, project) if file_list else {}
+
+    # Collect unique test files
+    test_files = set()
+    for source, tests in mapping.items():
+        for t in tests:
+            test_files.add(t["test_file"])
+
+    if not test_files:
+        return {"baseline": {}, "message": "no mapped tests found"}
+
+    # Try to find the repo path
+    repo_path = os.path.join(REPOS_DIR, project)
+    if not os.path.isdir(repo_path):
+        return {"baseline": {tf: "skip" for tf in test_files}, "message": "repo not found"}
+
+    # Run vitest on specific test files
+    baseline = {}
+    for tf in test_files:
+        test_path = os.path.join(repo_path, tf)
+        if not os.path.exists(test_path):
+            baseline[tf] = {"status": "skip", "duration_ms": 0}
+            continue
+
+        start = time.time()
+        try:
+            result = subprocess.run(
+                ["npx", "vitest", "run", tf, "--reporter=verbose", "--passWithNoTests"],
+                capture_output=True, text=True,
+                cwd=repo_path, timeout=60,
+                env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
+            )
+            duration = int((time.time() - start) * 1000)
+            baseline[tf] = {
+                "status": "pass" if result.returncode == 0 else "fail",
+                "duration_ms": duration,
+            }
+        except subprocess.TimeoutExpired:
+            baseline[tf] = {"status": "fail", "duration_ms": 60000}
+        except Exception:
+            baseline[tf] = {"status": "skip", "duration_ms": 0}
+
+    return {"baseline": baseline}
 
 
 @app.get("/api/running")
