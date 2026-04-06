@@ -249,3 +249,7 @@
   - IntelligenceTab communicates alert/improvement counts to Dashboard via callback props
   - Improvements endpoint wrapped in try/catch for graceful Phase 6 dependency
   - Clipboard API with textarea fallback for non-HTTPS contexts
+[2026-04-06T18:35:23Z] Phase 8 decisions:
+  - BUILD spec context uses scoring to find correct BUILD file among multiple candidates
+  - Dependency diagram uses Rich Tree (not ASCII art) for clean rendering
+  - Plan diff compares by task ID, not full text match

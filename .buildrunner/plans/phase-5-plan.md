@@ -1,16 +1,14 @@
-# Phase 5 Plan: Adversarial Review Dispatch
+# Phase 5 Plan: Dashboard — Deals Tab
 
 ## Tasks
 
-1. **Create adversarial-review.sh** — Shell script with argument parsing (plan file, project root, optional target node defaulting to otis)
-2. **Implement Otis online path** — Use cluster-check.sh to detect Otis, SSH + rsync plan file, run `claude --print` with adversarial prompt, capture JSON output
-3. **Implement Otis offline fallback** — Output adversarial prompt to stdout for local subagent consumption
-4. **Build adversarial prompt** — Target measured failure modes: requirement conflicts (43.53%), fabricated APIs (20.41%), broken execution order, missing edge cases, nonexistent files
-5. **Add timeout + exit codes** — `timeout 180` on SSH command, exit 0 = review complete, exit 1 = timeout/error
-6. **Output format** — JSON array of `{finding, severity}` with blocker/warning/note levels
+1. **Add Deals types to types/index.ts** — DealItem, Hunt, PriceHistoryPoint, DealFilters
+2. **Add Deals API methods to api.ts** — getDealItems, getHunts, createHunt, archiveHunt, getPriceHistory, dismissDeal, markDealRead
+3. **Create DealsTab.tsx** — Hunt management panel + deal feed + price history chart + alert badge callback
+4. **Create DealsTab.css** — Dark-friendly styling matching Intelligence tab aesthetic
+5. **Update Dashboard.tsx** — Add 5th "Deals" tab with alert badge, wire DealsTab component
 
 ## Tests
 
-- Verify script is executable and accepts correct args
-- Verify offline fallback produces valid prompt text
-- Verify exit codes
+- Unit test for DealsTab component rendering with mock data
+- Verify types compile correctly (TypeScript check)
