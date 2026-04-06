@@ -1,20 +1,51 @@
-# Phase 4 Verification: Dashboard — Intelligence Tab
+# Phase 4: Diff Review Queue — Verification
 
-## Deliverable Checklist
+## Deliverables Check
 
-- [x] TypeScript interfaces: IntelItem, IntelAlerts, IntelImprovement, IntelFilters — ui/src/types/index.ts
-- [x] IntelligenceTab component: priority-sorted feed, critical/high/medium/low border colors, expand/collapse — ui/src/components/IntelligenceTab.tsx
-- [x] Filter bar: source_type, category, priority, time range (24h/7d/30d/All) — IntelligenceTab.tsx lines 196-229
-- [x] Alert badge on tab header: red circle with unread critical+high count — Dashboard.tsx Intelligence tab button
-- [x] Item actions: Dismiss, Mark Read, Save to Library, View Source — IntelligenceTab.tsx expanded detail
-- [x] BR3 Improvement items: green "Build This" badge, /setlist prompt, complexity badge, "Copy Command" button — IntelligenceTab.tsx
-- [x] Improvement counter in tab header: "N improvements pending" — Dashboard.tsx tab + IntelligenceTab header
-- [x] API methods: getIntelItems, getIntelAlerts, dismissIntelItem, markIntelRead, saveToLibrary, getIntelImprovements — ui/src/services/api.ts
-- [x] Dashboard.css color palette followed: blue primary, green/amber/red status — IntelligenceTab.css
-- [x] Auto-refresh: items 30s, alerts 15s — IntelligenceTab.tsx useEffect intervals
-- [x] Generous internal padding on cards — IntelligenceTab.css (.intel-item padding: 16px 20px)
+1. [x] **Integration that watches `build.phase_complete` events from remote nodes**
+   - `reviews.mjs` exports `handlePhaseComplete()` which is called from events.mjs POST handler
+   - Filters out local (muddy) events, only queues remote node completions
+
+2. [x] **Auto-fetches `git diff` from remote branches via SSH**
+   - `fetchDiff()` runs `git diff --stat` and `git diff` via SSH to remote nodes
+   - `parseDiff()` parses raw diff into file objects with line-by-line type annotations
+   - `parseDiffStats()` extracts files changed, insertions, deletions
+
+3. [x] **Review Queue panel showing pending diffs with file count, lines added/removed**
+   - Panel added to index.html with badge count, refresh button
+   - `renderReviews()` renders cards with project, node, phase, stats (+/-/files)
+
+4. [x] **Click review opens diff viewer modal with green/red line-by-line display**
+   - Diff viewer modal with sidebar file navigator and line-by-line colored display
+   - Hunk headers shown in accent color, additions green, deletions red
+   - File sidebar shows per-file +/- stats, clicking switches displayed file
+
+5. [x] **Approve button (triggers merge) and Reject button (marks as rejected)**
+   - Both inline on review cards and in diff viewer modal footer
+   - Approve calls `/api/reviews/:id/approve` which triggers merge for local branches
+   - Reject calls `/api/reviews/:id/reject` which marks as rejected
+   - Events broadcast via SSE for real-time updates
+
+6. [x] **Badge count on panel header showing pending reviews**
+   - `.review-badge.has-pending` class with red dim + pulse animation
+   - Count updates automatically via SSE on phase_complete and review events
+
+## API Endpoints Added
+- `GET /api/reviews` — returns review list with pending count
+- `GET /api/reviews/:id` — returns single review with full diff data
+- `POST /api/reviews/:id/approve` — approve and merge
+- `POST /api/reviews/:id/reject` — reject
+
+## Event Types Added
+- `review.pending`, `review.approved`, `review.rejected`
+
+## Files Modified
+- `~/.buildrunner/dashboard/integrations/reviews.mjs` (NEW — 230 lines)
+- `~/.buildrunner/dashboard/events.mjs` (MODIFY — import, endpoints, event handler)
+- `~/.buildrunner/dashboard/public/index.html` (MODIFY — panel, modal, JS)
+- `~/.buildrunner/dashboard/public/styles.css` (MODIFY — review + diff styles)
 
 ## Notes
-- Tests written but cannot run in worktree (node_modules resolution). Will validate on merge to main.
-- Improvements endpoint gracefully degrades (Phase 6 adds it).
-- Lockwood URL from VITE_INTEL_API_URL env var, no hard-coded IPs.
+- Dashboard files live outside git repo (~/.buildrunner/dashboard/), no git commits possible
+- TDD skipped — no test framework in dashboard project
+- Remote merge is best-effort; notes when manual merge needed for non-local branches
