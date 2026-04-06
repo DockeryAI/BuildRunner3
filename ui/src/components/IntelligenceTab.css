@@ -454,3 +454,309 @@
   margin-bottom: 8px;
   line-height: 1.4;
 }
+
+.improvements-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.improvements-panel-header h3 {
+  margin: 0;
+}
+
+.status-filter {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+  cursor: pointer;
+}
+
+/* --- Status Badges --- */
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.status-badge.status-pending {
+  background: rgba(255, 152, 0, 0.15);
+  color: #e65100;
+}
+
+.status-badge.status-planned {
+  background: rgba(33, 150, 243, 0.15);
+  color: #1565c0;
+}
+
+.status-badge.status-built {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
+
+.status-badge.status-archived {
+  background: rgba(158, 158, 158, 0.15);
+  color: #616161;
+}
+
+/* --- Overlap Badges --- */
+
+.overlap-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.overlap-badge.overlap-adopt {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
+
+.overlap-badge.overlap-adapt {
+  background: rgba(33, 150, 243, 0.15);
+  color: #1565c0;
+}
+
+.overlap-badge.overlap-ignore {
+  background: rgba(158, 158, 158, 0.15);
+  color: #616161;
+}
+
+/* --- Improvement Card Extras --- */
+
+.improvement-card.status-built {
+  opacity: 0.7;
+  border-color: rgba(76, 175, 80, 0.1);
+}
+
+.improvement-card.status-archived {
+  opacity: 0.5;
+  border-color: rgba(158, 158, 158, 0.2);
+}
+
+.improvement-card-overlap {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  margin-bottom: 6px;
+}
+
+.improvement-card-spec {
+  font-size: 12px;
+  color: #1565c0;
+  margin-bottom: 6px;
+}
+
+.improvement-card-files {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 6px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.improvement-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(76, 175, 80, 0.1);
+}
+
+.improvement-actions button {
+  padding: 5px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: white;
+  transition: all 0.15s;
+}
+
+.btn-plan-this {
+  border-color: #4caf50 !important;
+  color: #2e7d32;
+}
+
+.btn-plan-this:hover {
+  background: #4caf50 !important;
+  color: white !important;
+}
+
+.btn-mark-built {
+  border-color: #2196f3 !important;
+  color: #1565c0;
+}
+
+.btn-mark-built:hover {
+  background: #2196f3 !important;
+  color: white !important;
+}
+
+.btn-archive {
+  color: #999;
+}
+
+.btn-archive:hover {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+/* --- Plan This Modal --- */
+
+.plan-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.plan-modal {
+  background: white;
+  border-radius: 12px;
+  width: 580px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.plan-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.plan-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #222;
+}
+
+.plan-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.plan-modal-close:hover {
+  color: #333;
+}
+
+.plan-modal-body {
+  padding: 20px 24px;
+}
+
+.plan-modal-field {
+  margin-bottom: 16px;
+}
+
+.plan-modal-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.plan-modal-value {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.plan-modal-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.plan-modal-files code {
+  padding: 2px 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #555;
+}
+
+.plan-modal-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.plan-modal-input:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.15);
+}
+
+.plan-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #eee;
+}
+
+.plan-modal-footer .btn-cancel {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.plan-modal-footer .btn-cancel:hover {
+  border-color: #999;
+  color: #333;
+}
+
+.plan-modal-footer .btn-mark-planned {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #4caf50;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.plan-modal-footer .btn-mark-planned:hover {
+  background: #43a047;
+}
+
+.plan-modal-footer .btn-mark-planned:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
