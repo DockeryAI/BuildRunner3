@@ -1,17 +1,21 @@
-# Phase 3 Verification: Test Map (Walter)
+# Phase 3 Verification: Claude Code Reasoning Layer
 
-## Deliverables Verified
+## Deliverable Verification
 
 | Deliverable | Status | Evidence |
 |---|---|---|
-| test_file_map table | PASS | Table created with all columns, verified by TestTestFileMapTable |
-| idx_testmap_project_source index | PASS | Index exists, verified by test_index_exists |
-| build_test_map() | PASS | Maps imports + conventions, 3 tests passing |
-| get_test_map() | PASS | Returns correct mappings + confidence, 3 tests passing |
-| GET /api/testmap | PASS | Returns test mapping for files, verified by test_get_testmap |
-| POST /api/testmap/baseline | PASS | Returns baseline status, verified by test_post_baseline |
-| Auto-rebuild on change | PASS | Integrated into _test_loop, invalidates + rebuilds |
+| `/intel-review` skill | PASS | `~/.claude/commands/intel-review.md` exists, valid frontmatter, model=opus, 5 steps covering all spec requirements |
+| BR3 improvement detection | PASS | Step 3.4 in intel-review.md: POSTs to `/api/intel/improvements` with title, rationale, complexity, setlist_prompt, affected_files |
+| Deal review (score 80+) | PASS | Step 4 in intel-review.md: reads exceptional deals, writes cluster-specific assessment (NVLink, PCB, seller, buy/wait) |
+| Scheduled execution (12h) | PASS | Scheduled Execution section with `/schedule create` command |
+| `intel-digest.sh` brief injection | PASS | `~/.buildrunner/scripts/intel-digest.sh` exists, executable, queries `/api/intel/alerts` + `/api/deals/items?min_score=80` |
+| Brief format matches spec | PASS | `## Intelligence Alerts (N new)` with `! [PRIORITY]` prefix, `## Deal Alerts (N new)` with `! [score]` prefix |
+| Integrated into developer-brief.sh | PASS | Source/call added before final separator line |
+| Graceful degradation | PASS | Both scripts exit 0 silently when Lockwood offline, tested with `BR3_CLUSTER=off` |
 
-## Test Results
-- 11 tests written, 11 passing
-- 0 failures
+## Validation Results
+
+- `bash -n intel-digest.sh`: syntax OK
+- `bash -n developer-brief.sh`: syntax OK  
+- intel-review.md frontmatter: valid YAML with description, allowed-tools, model
+- Offline test: intel-digest.sh returns exit 0 with no output when cluster unavailable
