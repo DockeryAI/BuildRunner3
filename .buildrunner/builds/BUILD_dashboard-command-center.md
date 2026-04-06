@@ -1,7 +1,7 @@
 # Build: Dashboard Command Center
 
 **Created:** 2026-04-06
-**Status:** Phase 1 Not Started
+**Status:** Phases 1-1 Complete — Phase 2 In Progress
 **Deploy:** local-service — `pkill -f "node events.mjs"; cd ~/.buildrunner/dashboard && node events.mjs &`
 
 ## Overview
@@ -45,7 +45,7 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 
 ### Phase 1: Cloudflare Tunnel + Auth
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.cloudflared/config.yml` (NEW) ⚠️ external
@@ -56,12 +56,12 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 
 **Deliverables:**
 
-- [ ] `cloudflared tunnel create band` + `cloudflared tunnel route dns band band.taskwatcher.ai`
-- [ ] Config file: tunnel ID, credentials path, ingress rule `localhost:4400`, WebSocket support enabled
-- [ ] launchd plist: auto-start on Muddy boot, restart on failure, keep-alive
-- [ ] Cloudflare Access application: `band.taskwatcher.ai/*`, Google IdP, Byron's email only
-- [ ] CORS in events.mjs: allow `band.taskwatcher.ai` origin on all API endpoints + WebSocket upgrade headers. Note: Cloudflare Access handles ALL auth — no OAuth, no callbacks, no middleware in events.mjs. It's a network-level gate before traffic reaches the server
-- [ ] Validation: phone → `band.taskwatcher.ai` → Google login → dashboard loads → terminal WebSocket connects over WSS
+- [x] `cloudflared tunnel create band` + `cloudflared tunnel route dns band band.taskwatcher.ai`
+- [x] Config file: tunnel ID, credentials path, ingress rule `localhost:4400`, WebSocket support enabled
+- [x] launchd plist: auto-start on Muddy boot, restart on failure, keep-alive
+- [x] Cloudflare Access application: `band.taskwatcher.ai/*`, Google IdP, Byron's email only
+- [x] CORS in events.mjs: allow `band.taskwatcher.ai` origin on all API endpoints + WebSocket upgrade headers. Note: Cloudflare Access handles ALL auth — no OAuth, no callbacks, no middleware in events.mjs. It's a network-level gate before traffic reaches the server
+- [x] Validation: phone → `band.taskwatcher.ai` → Google login → dashboard loads → terminal WebSocket connects over WSS
 
 **Success Criteria:** Open `band.taskwatcher.ai` on phone, Google login, dashboard renders, terminal connects.
 
