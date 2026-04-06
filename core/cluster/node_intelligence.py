@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 # --- Config ---
 MINIFLUX_WEBHOOK_SECRET = os.environ.get("MINIFLUX_WEBHOOK_SECRET", "")
 DISABLE_POLLERS = os.environ.get("DISABLE_POLLERS", "true").lower() in ("true", "1", "yes")
+DISABLE_SCORING = os.environ.get("DISABLE_SCORING", "true").lower() in ("true", "1", "yes")
 
 # --- App ---
 app = create_app(role="intelligence", version="0.1.0")
@@ -55,6 +56,12 @@ async def startup():
         start_pollers()
     else:
         logger.info("DISABLE_POLLERS=true — skipping background pollers")
+
+    if not DISABLE_SCORING:
+        from core.cluster.intel_scoring import start_scoring_cron
+        start_scoring_cron()
+    else:
+        logger.info("DISABLE_SCORING=true — skipping scoring cron")
 
 
 # --- Intel Endpoints ---
@@ -166,6 +173,43 @@ async def dismiss_deal_endpoint(item_id: int):
     from core.cluster.intel_collector import dismiss_deal_item
     dismiss_deal_item(item_id)
     return {"status": "ok"}
+
+
+# --- Scoring Endpoints ---
+
+@app.post("/api/intel/score")
+async def trigger_scoring():
+    """Manually trigger a scoring cycle (intel + deals via Below)."""
+    from core.cluster.intel_scoring import run_scoring_cycle
+    result = await run_scoring_cycle()
+    return {"status": "ok", "result": result}
+
+
+@app.get("/api/intel/scoring-status")
+async def scoring_status():
+    """Get scoring pipeline status — unscored counts and Below reachability."""
+    from core.cluster.intel_collector import _get_intel_db
+    conn = _get_intel_db()
+    intel_unscored = conn.execute(
+        "SELECT COUNT(*) as cnt FROM intel_items WHERE scored = 0"
+    ).fetchone()["cnt"]
+    deal_unscored = conn.execute(
+        "SELECT COUNT(*) as cnt FROM deal_items WHERE deal_score IS NULL"
+    ).fetchone()["cnt"]
+    flagged_intel = conn.execute(
+        "SELECT COUNT(*) as cnt FROM intel_items WHERE needs_opus_review = 1"
+    ).fetchone()["cnt"]
+    flagged_deals = conn.execute(
+        "SELECT COUNT(*) as cnt FROM deal_items WHERE needs_opus_review = 1"
+    ).fetchone()["cnt"]
+    conn.close()
+    return {
+        "intel_unscored": intel_unscored,
+        "deal_unscored": deal_unscored,
+        "flagged_intel": flagged_intel,
+        "flagged_deals": flagged_deals,
+        "scoring_cron_enabled": not DISABLE_SCORING,
+    }
 
 
 # --- Webhook Endpoints ---
