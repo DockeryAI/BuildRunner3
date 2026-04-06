@@ -1,24 +1,27 @@
-# Phase 4 Plan: Pre-Commit Cluster Gate
+# Phase 4 Plan: Dashboard — Intelligence Tab
 
 ## Tasks
 
-### Task 4.1: Add Walter + Lomax pre-push checks to commit.md
+### Task 4.1: TypeScript interfaces in types/index.ts
+Add IntelItem, IntelAlerts, IntelImprovement interfaces.
 
-- Add a new Step 6.5 between Step 6 (Stage & Commit) and Step 7 (Push)
-- Check Walter for test failures via `cluster-check.sh test-runner` + `/api/coverage`
-- Check Lomax for build status via `cluster-check.sh staging-server` + `/api/projects/$PROJECT_LC/build/status`
-- Warnings only — never blocks the push
-- Graceful skip if nodes are offline
+### Task 4.2: Intel API methods in api.ts
+Add intelAPI object with: getIntelItems(filters), getIntelAlerts(), dismissIntelItem(id), markIntelRead(id), getIntelImprovements(). Uses separate axios instance for Lockwood.
 
-### Task 4.2: Add Lomax build check + Walter test trigger to begin.md Step 6.5
+### Task 4.3: IntelligenceTab component
+Priority-sorted feed with critical pinned (red border), high (amber), medium/low scrollable. Each item shows priority dot, title, summary, source badge, category badge, timestamp. Click to expand: opus synthesis, raw content, source link. Filter bar: source_type, category, priority, time range. Auto-refresh 30s items, 15s alerts.
 
-- In the Verification Gate section, add cluster checks
-- Trigger Walter test run via `POST /api/run` and wait for result
-- Check Lomax build status
-- Warnings only — informational, user decides
-- Graceful skip if nodes are offline
+### Task 4.4: IntelligenceTab.css
+Styling following Dashboard.css patterns. Priority border colors, badges, filter bar, expandable cards with generous padding.
+
+### Task 4.5: Dashboard.tsx modifications
+Add 4th "Intelligence" tab with alert badge (red circle + unread count). Import IntelligenceTab.
+
+### Task 4.6: BR3 Improvement items
+Green "Build This" badge, expandable /setlist prompt, complexity badge, "Copy Command" button. Improvement counter in tab header.
 
 ## Tests
-
-- Non-testable: these are markdown command files (documentation/config), not executable code
-- Verification will be structural — confirm the sections exist with correct content
+- IntelligenceTab renders with mock data
+- Filter changes update displayed items
+- Alert badge shows correct count
+- Dismiss/read actions call API

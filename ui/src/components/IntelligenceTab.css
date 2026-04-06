@@ -1,0 +1,456 @@
+.intelligence-tab {
+  padding: 24px;
+}
+
+.intelligence-tab h2 {
+  margin: 0 0 20px 0;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- Header Badges --- */
+
+.intel-header-badges {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.alert-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f44336;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  line-height: 1;
+}
+
+.improvement-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(76, 175, 80, 0.12);
+  color: #4caf50;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+/* --- Filter Bar --- */
+
+.intel-filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.intel-filter-bar select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  min-width: 160px;
+}
+
+.intel-filter-bar select:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+/* --- Item List --- */
+
+.intel-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.intel-item {
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #ccc;
+  border-radius: 8px;
+  padding: 16px 20px;
+  background: white;
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
+}
+
+.intel-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.intel-item.priority-critical {
+  border-left-color: #f44336;
+  background: rgba(244, 67, 54, 0.02);
+}
+
+.intel-item.priority-high {
+  border-left-color: #ff9800;
+  background: rgba(255, 152, 0, 0.02);
+}
+
+.intel-item.priority-medium {
+  border-left-color: #0066cc;
+}
+
+.intel-item.priority-low {
+  border-left-color: #9e9e9e;
+}
+
+.intel-item.dismissed {
+  opacity: 0.45;
+  border-left-color: #ccc;
+  background: #fafafa;
+}
+
+.intel-item.read-item {
+  border-left-width: 3px;
+}
+
+/* --- Item Header Row --- */
+
+.intel-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.priority-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.priority-dot.critical {
+  background: #f44336;
+}
+.priority-dot.high {
+  background: #ff9800;
+}
+.priority-dot.medium {
+  background: #0066cc;
+}
+.priority-dot.low {
+  background: #9e9e9e;
+}
+
+.intel-item-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #222;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.intel-badges {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.source-badge,
+.category-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.source-badge {
+  background: rgba(0, 102, 204, 0.1);
+  color: #0066cc;
+}
+
+.source-badge.community {
+  background: rgba(156, 39, 176, 0.1);
+  color: #9c27b0;
+}
+
+.source-badge.blog {
+  background: rgba(255, 152, 0, 0.1);
+  color: #e65100;
+}
+
+.category-badge {
+  background: rgba(96, 125, 139, 0.1);
+  color: #607d8b;
+}
+
+.build-this-badge {
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.intel-timestamp {
+  font-size: 12px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+/* --- Item Summary --- */
+
+.intel-item-summary {
+  margin-top: 6px;
+  padding-left: 20px;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* --- Expanded Detail --- */
+
+.intel-item-detail {
+  margin-top: 14px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e8e8e8;
+}
+
+.opus-synthesis {
+  margin-bottom: 14px;
+}
+
+.opus-synthesis h4 {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.opus-synthesis p {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.opus-synthesis .no-synthesis {
+  font-style: italic;
+  color: #999;
+}
+
+.intel-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.intel-item-actions button {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: white;
+  color: #555;
+  transition: all 0.15s;
+}
+
+.intel-item-actions button:hover {
+  border-color: #0066cc;
+  color: #0066cc;
+}
+
+.intel-item-actions .btn-dismiss {
+  color: #999;
+}
+
+.intel-item-actions .btn-dismiss:hover {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+.intel-item-actions .btn-save {
+  color: #0066cc;
+}
+
+.intel-item-actions .btn-save:hover {
+  border-color: #0066cc;
+  background: rgba(0, 102, 204, 0.05);
+}
+
+.intel-item-actions .btn-source {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* --- Improvement Section --- */
+
+.improvement-section {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(76, 175, 80, 0.06);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  border-radius: 6px;
+}
+
+.improvement-section h4 {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.setlist-prompt {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.setlist-prompt code {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-copy {
+  padding: 4px 10px;
+  border: 1px solid #4caf50;
+  border-radius: 4px;
+  background: rgba(76, 175, 80, 0.1);
+  color: #2e7d32;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-copy:hover {
+  background: #4caf50;
+  color: white;
+}
+
+.complexity-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.complexity-badge.simple {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+}
+.complexity-badge.medium {
+  background: rgba(255, 152, 0, 0.15);
+  color: #e65100;
+}
+.complexity-badge.complex {
+  background: rgba(244, 67, 54, 0.15);
+  color: #c62828;
+}
+
+/* --- Empty / Loading / Error States --- */
+
+.intel-loading,
+.intel-error,
+.intel-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: #888;
+  font-size: 15px;
+}
+
+.intel-error {
+  color: #f44336;
+}
+
+.intel-empty-hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* --- Improvements Panel --- */
+
+.improvements-panel {
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: rgba(76, 175, 80, 0.04);
+  border: 1px solid rgba(76, 175, 80, 0.15);
+  border-radius: 8px;
+}
+
+.improvements-panel h3 {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.improvement-card {
+  padding: 12px;
+  background: white;
+  border: 1px solid rgba(76, 175, 80, 0.2);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.improvement-card:last-child {
+  margin-bottom: 0;
+}
+
+.improvement-card-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.improvement-card-rationale {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
