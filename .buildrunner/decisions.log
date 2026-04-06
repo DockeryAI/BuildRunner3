@@ -244,7 +244,7 @@
 [2026-04-05T21:15:45Z] [PATTERN] Lockwood write-back pattern: skills save findings at end via curl POST to /api/memory/note
   WHY: Institutional memory enables future /predict, /root, /guard to find historical patterns and similar failures
   CONTEXT: root.md, guard.md, review.md, gaps.md, dead.md, e2e.md all get Lockwood save sections at end
-[2026-04-06T17:29:37Z] Phase 5 decisions:
-  - adversarial-review.sh placed at ~/.buildrunner/scripts/ (global, outside repo)
-  - Falls back to local when node offline OR when claude not installed on remote
-  - Uses temp files for prompt transfer to avoid shell escaping issues
+[2026-04-06T17:31:20Z] Phase 3 decisions:
+  - Used import parsing + naming convention for test->source mapping (two complementary strategies)
+  - Auto-rebuild invalidates then rebuilds full project map on file changes (simpler than incremental)
+  - Baseline endpoint runs vitest per test file individually for isolation
