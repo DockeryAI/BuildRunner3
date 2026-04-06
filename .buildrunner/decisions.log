@@ -282,3 +282,4 @@
   - Used distinct proc-* IDs/classes to avoid Phase 7 conflicts
   - PID > 1 validation on kill endpoint
   - macOS ps aux for Muddy, Linux ps aux --sort for remote nodes
+[Mon Apr  6 15:44:21 CDT 2026] [DECISION] Created build spec: dashboard-command-center with 7 phases. Adversarial review: 4 blockers resolved (proxy endpoints, workspace container pattern, file path consistency, reconnect backoff). Architecture validation: all paths verified external.
