@@ -84,7 +84,8 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 - [ ] 4 workspace containers: `#ws-dashboard`, `#ws-intel`, `#ws-terminal`, `#ws-builds` with JS switching (no page reload)
 - [ ] Topbar: "BR3 The Band" + workspace label + token stat + SSE indicator + uptime + ⌘K shortcut
 - [ ] Dashboard workspace: cluster strip (6 node cards), KPI row (4 cards: builds/tokens/sessions/reviews), 2-column panel grid
-- [ ] Alerts panel on dashboard: empty container for Phase 3 to populate with surfaced intel/deals
+- [ ] Alerts panel on dashboard: empty container for Phase 3 to populate with surfaced intel/deals + node down/unreachable alerts
+- [ ] Node health alerting: if any node goes offline, becomes unreachable, or loses power — show a persistent red alert banner at the top of the dashboard with the node name, last seen time, and "Unreachable" status. Alert stays until the node comes back online. Check via the existing `/api/nodes` health polling (already runs every 30s). No new backend needed — frontend compares node status on each poll and triggers the alert
 - [ ] Empty workspace containers for Intel/Terminal/Builds — placeholder text until later phases fill them
 - [ ] Color system: navy-tinted dark mode (`#0b0f14`), tinted grays, colorblind-safe status colors, `rgba` borders
 - [ ] Preserve xterm.js CDN imports (xterm 5.5.0 + addon-fit 0.10.0) — these are already in the current index.html and must survive the rewrite
