@@ -749,6 +749,106 @@ def _package_poller_loop():
         time.sleep(PACKAGE_POLL_INTERVAL)
 
 
+# --- Improvement CRUD ---
+
+def create_improvement(title: str, rationale: str, complexity: str,
+                       setlist_prompt: str, affected_files: list = None,
+                       source_intel_id: int = None,
+                       overlap_action: str = None,
+                       overlap_notes: str = None) -> int:
+    """Create a new improvement record from Opus intel review."""
+    conn = _get_intel_db()
+    cursor = conn.execute(
+        """INSERT INTO intel_improvements
+           (title, rationale, complexity, setlist_prompt, affected_files,
+            source_intel_id, overlap_action, overlap_notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (title, rationale, complexity, setlist_prompt,
+         json.dumps(affected_files) if affected_files else None,
+         source_intel_id, overlap_action, overlap_notes)
+    )
+    conn.commit()
+    imp_id = cursor.lastrowid
+    conn.close()
+    return imp_id
+
+
+def get_improvements(status: str = None, limit: int = 50) -> list[dict]:
+    """Get improvements filtered by status."""
+    conn = _get_intel_db()
+    conditions = []
+    params = []
+    if status:
+        statuses = [s.strip() for s in status.split(",")]
+        placeholders = ",".join("?" * len(statuses))
+        conditions.append(f"status IN ({placeholders})")
+        params.extend(statuses)
+    where = " AND ".join(conditions) if conditions else "1=1"
+    query = f"""SELECT * FROM intel_improvements WHERE {where}
+                ORDER BY created_at DESC LIMIT ?"""
+    params.append(limit)
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    results = []
+    for r in rows:
+        d = dict(r)
+        if d.get("affected_files"):
+            try:
+                d["affected_files"] = json.loads(d["affected_files"])
+            except (json.JSONDecodeError, TypeError):
+                pass
+        results.append(d)
+    return results
+
+
+def update_improvement_status(improvement_id: int, status: str,
+                              build_spec_name: str = None) -> bool:
+    """Update improvement status (pending -> planned -> built -> archived)."""
+    conn = _get_intel_db()
+    if build_spec_name:
+        conn.execute(
+            "UPDATE intel_improvements SET status = ?, build_spec_name = ? WHERE id = ?",
+            (status, build_spec_name, improvement_id)
+        )
+    else:
+        conn.execute(
+            "UPDATE intel_improvements SET status = ? WHERE id = ?",
+            (status, improvement_id)
+        )
+    conn.commit()
+    changed = conn.total_changes > 0
+    conn.close()
+    return changed
+
+
+def opus_review_intel_item(item_id: int, opus_synthesis: str,
+                           br3_improvement: bool = False) -> bool:
+    """Write Opus review back to an intel item."""
+    conn = _get_intel_db()
+    conn.execute(
+        """UPDATE intel_items SET opus_synthesis = ?, br3_improvement = ?,
+           opus_reviewed = 1 WHERE id = ?""",
+        (opus_synthesis, 1 if br3_improvement else 0, item_id)
+    )
+    conn.commit()
+    changed = conn.total_changes > 0
+    conn.close()
+    return changed
+
+
+def opus_review_deal_item(item_id: int, opus_assessment: str) -> bool:
+    """Write Opus review back to a deal item."""
+    conn = _get_intel_db()
+    conn.execute(
+        """UPDATE deal_items SET opus_assessment = ?, opus_reviewed = 1 WHERE id = ?""",
+        (opus_assessment, item_id)
+    )
+    conn.commit()
+    changed = conn.total_changes > 0
+    conn.close()
+    return changed
+
+
 def start_pollers():
     """Start background polling threads."""
     t1 = threading.Thread(target=_models_poller_loop, daemon=True, name="models-poller")
