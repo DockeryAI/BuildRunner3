@@ -1,19 +1,19 @@
 {
   "phase": 5,
   "name": "Auto Code Review on Diffs",
-  "step": 4,
-  "step_name": "execute",
-  "step_label": "Implementing tasks",
+  "step": 5,
+  "step_name": "review",
+  "step_label": "Two-stage review",
   "status": "active",
   "tasks_total": 4,
-  "tasks_done": 0,
-  "current_task": "5.1 — Create auto-review-diff.sh",
+  "tasks_done": 4,
+  "current_task": null,
   "tests_written": 0,
   "tests_passing": 0,
-  "commits": 0,
+  "commits": 1,
   "errors": [],
   "warnings": [],
-  "started_at": "2026-04-06T18:41:46Z",
-  "updated_at": "2026-04-06T18:41:46Z",
-  "history": [{"step": 1, "name": "setup", "label": "Setup & sync", "at": "2026-04-06T18:41:46Z", "status": "done"}, {"step": 2, "name": "health_check", "label": "Code health check", "at": "2026-04-06T18:41:46Z", "status": "done"}, {"step": 3, "name": "plan", "label": "Writing implementation plan", "at": "2026-04-06T18:41:46Z", "status": "done"}, {"step": 3.5, "name": "tdd", "label": "Writing failing tests (TDD)", "at": "2026-04-06T18:41:46Z", "status": "skipped"}, {"step": 4, "name": "execute", "label": "Implementing tasks", "at": "2026-04-06T18:41:46Z", "status": "active"}]
+  "started_at": "2026-04-06T18:45:55Z",
+  "updated_at": "2026-04-06T18:45:55Z",
+  "history": [{"step": 1, "name": "setup", "label": "Setup & sync", "at": "2026-04-06T18:45:55Z", "status": "done"}, {"step": 2, "name": "health_check", "label": "Code health check", "at": "2026-04-06T18:45:55Z", "status": "done"}, {"step": 3, "name": "plan", "label": "Writing implementation plan", "at": "2026-04-06T18:45:55Z", "status": "done"}, {"step": 3.5, "name": "tdd", "label": "Writing failing tests (TDD)", "at": "2026-04-06T18:45:55Z", "status": "skipped"}, {"step": 4, "name": "execute", "label": "Implementing tasks", "at": "2026-04-06T18:45:55Z", "status": "done"}, {"step": 5, "name": "review", "label": "Two-stage review", "at": "2026-04-06T18:45:55Z", "status": "active"}]
 }

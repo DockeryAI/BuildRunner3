@@ -267,3 +267,9 @@
   - In-memory review queue (no DB) — sufficient for dashboard use case
   - Remote merge is best-effort with note when manual action needed
   - Diff parser handles unified diff format with hunk headers
+[2026-04-06T18:46:48Z] Phase 5 decisions:
+  - auto-review-diff.sh uses claude -p with --output-format json for structured output
+  - Auto-review is non-blocking (runs after diff fetch, errors caught silently)
+  - Critical findings require explicit acknowledge checkbox before Approve enabled
+  - File-level annotations (line=0) rendered as banner above diff lines
+  - Large diffs truncated at 8000 lines to respect token limits

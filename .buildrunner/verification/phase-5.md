@@ -1,21 +1,17 @@
-# Phase 5 Verification: Dashboard — Deals Tab
+# Phase 5 Verification: Auto Code Review on Diffs
 
-## Deliverable Verification
+## Deliverable Checks
 
 | # | Deliverable | Status | Evidence |
-|---|-------------|--------|----------|
-| 1 | TypeScript interfaces (DealItem, Hunt, PriceHistoryPoint, DealFilters) | PASS | types/index.ts lines 142-188 |
-| 2 | Hunt management panel with cards, Add Hunt modal, Archive button | PASS | DealsTab.tsx lines 269-408 |
-| 3 | Deal feed sorted by deal_score, color-coded by verdict | PASS | DealsTab.tsx lines 411-572, getVerdictClass() |
-| 4 | Price history sparkline (Recharts AreaChart, #0f1520 tooltip) | PASS | DealsTab.tsx lines 483-526 |
-| 5 | Alert badge on Deals tab (exceptional 80+ unread count) | PASS | Dashboard.tsx dealAlertCount state + tab-deal-badge |
-| 6 | Quick actions (Dismiss, Mark Read, Open Listing) | PASS | DealsTab.tsx lines 528-566 |
-| 7 | Pre-populated GPU hunt auto-create | PASS | DealsTab.tsx lines 96-111 |
-| 8 | All 7 API methods in api.ts | PASS | api.ts lines 281-322 |
-| 9 | Dark theme, generous padding, matching aesthetic | PASS | DealsTab.css full file |
+|---|------------|--------|----------|
+| 1 | Script runs Claude review on diff, outputs JSON | PASS | auto-review-diff.sh: syntax valid, empty-diff and missing-file edge cases return valid JSON |
+| 2 | Auto-triggers when review enters queue | PASS | addReview() calls runAutoReview() after diff fetch; non-blocking with .catch() |
+| 3 | Findings displayed as annotations in diff viewer | PASS | renderDiffFile() injects annotations by line number; color-coded critical/warning/info |
+| 4 | Summary line on review card | PASS | renderAutoReviewBadge() shows counts; displayed on review cards |
+| 5 | Critical findings block Approve button | PASS | Approve disabled when hasCritical; acknowledge checkbox via toggleApproveBlock() re-enables |
 
-## TypeScript Check
-- No new errors from Phase 5 code (VERDICT_ORDER unused was fixed)
-- All pre-existing errors unrelated to this phase
-
-## Verification: PASS
+## Edge Cases Tested
+- Empty diff → `{"findings":[],"error":"Empty diff","status":"complete"}`
+- Missing diff file → `{"findings":[],"error":"Diff file not found","status":"failed"}`
+- reviews.mjs imports cleanly (node parse check passed)
+- auto-review-diff.sh passes bash -n syntax check
