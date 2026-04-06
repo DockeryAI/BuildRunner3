@@ -11,20 +11,14 @@ import type { OrchestratorStatus, Progress, WebSocketMessage } from '../types';
 import { TaskList } from './TaskList';
 import { AgentPool } from './AgentPool';
 import { TelemetryTimeline } from './TelemetryTimeline';
-import { IntelligenceTab } from './IntelligenceTab';
-import { DealsTab } from './DealsTab';
 import './Dashboard.css';
 
 export function Dashboard() {
   const [status, setStatus] = useState<OrchestratorStatus | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [activeTab, setActiveTab] = useState<
-    'tasks' | 'agents' | 'telemetry' | 'intelligence' | 'deals'
   >('tasks');
   const [wsConnected, setWsConnected] = useState(false);
-  const [intelAlertCount, setIntelAlertCount] = useState(0);
-  const [intelImprovementCount, setIntelImprovementCount] = useState(0);
-  const [dealAlertCount, setDealAlertCount] = useState(0);
 
   // WebSocket connection
   const { isConnected, lastMessage } = useWebSocket({
@@ -200,21 +194,13 @@ export function Dashboard() {
           Telemetry
         </button>
         <button
-          className={`tab ${activeTab === 'intelligence' ? 'active' : ''}`}
-          onClick={() => setActiveTab('intelligence')}
         >
           Intelligence
-          {intelAlertCount > 0 && <span className="tab-alert-badge">{intelAlertCount}</span>}
-          {intelImprovementCount > 0 && (
-            <span className="tab-improvement-count">{intelImprovementCount}</span>
           )}
         </button>
         <button
-          className={`tab ${activeTab === 'deals' ? 'active' : ''}`}
-          onClick={() => setActiveTab('deals')}
         >
           Deals
-          {dealAlertCount > 0 && <span className="tab-deal-badge">{dealAlertCount}</span>}
         </button>
       </div>
 
@@ -222,13 +208,10 @@ export function Dashboard() {
         {activeTab === 'tasks' && <TaskList />}
         {activeTab === 'agents' && <AgentPool />}
         {activeTab === 'telemetry' && <TelemetryTimeline />}
-        {activeTab === 'intelligence' && (
-          <IntelligenceTab
             onAlertCount={setIntelAlertCount}
             onImprovementCount={setIntelImprovementCount}
           />
         )}
-        {activeTab === 'deals' && <DealsTab onAlertCount={setDealAlertCount} />}
       </div>
     </div>
   );
