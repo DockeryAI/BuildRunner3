@@ -549,7 +549,16 @@ class PlanReviewView:
         if not build_files:
             return {}
 
-        # Search each BUILD spec for the matching phase
+        # Collect plan file paths to match against BUILD spec phases
+        plan_files_mentioned = set()
+        tasks = self.get_task_table_data()
+        for task in tasks:
+            file_match = re.search(r"`([^`]+\.\w+)`", task.get("what", ""))
+            if file_match:
+                plan_files_mentioned.add(file_match.group(1))
+
+        # Search each BUILD spec for the matching phase, prefer one referencing plan files
+        candidates = []
         for build_file in build_files:
             try:
                 content = build_file.read_text()
@@ -585,15 +594,24 @@ class PlanReviewView:
             )
             success_criteria = sc_match.group(1).strip() if sc_match else ""
 
-            return {
+            # Score by how many plan files are mentioned in this phase section
+            score = sum(1 for pf in plan_files_mentioned if pf in section)
+            candidates.append({
                 "phase_num": int(phase_num),
                 "title": phase_title,
                 "build_file": build_file.name,
                 "deliverables": deliverables,
                 "success_criteria": success_criteria,
-            }
+                "_score": score,
+            })
 
-        return {}
+        if not candidates:
+            return {}
+
+        # Pick the candidate with the most file references from the plan
+        best = max(candidates, key=lambda c: c["_score"])
+        best.pop("_score", None)
+        return best
 
     def get_dependency_diagram(self) -> List[Dict[str, Any]]:
         """
