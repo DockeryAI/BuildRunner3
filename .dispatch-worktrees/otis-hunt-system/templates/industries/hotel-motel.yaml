@@ -1,0 +1,10 @@
+id: hotel-motel
+name: Hotel/Motel
+naics_code: '721110'
+category: Food Service
+keywords:
+- hotel/motel
+- hotel
+- motel
+has_full_profile: false
+source: naics_only

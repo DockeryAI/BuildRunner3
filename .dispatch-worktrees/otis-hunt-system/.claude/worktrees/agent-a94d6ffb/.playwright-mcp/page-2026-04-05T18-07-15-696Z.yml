@@ -1,0 +1,348 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - list [ref=e4]:
+      - listitem [ref=e5]:
+        - link "Resources" [ref=e6] [cursor=pointer]:
+          - /url: /troubleshooting/
+      - listitem [ref=e7]:
+        - link "About Us" [ref=e8] [cursor=pointer]:
+          - /url: /about-us/
+      - listitem [ref=e9]:
+        - link "Warranties" [ref=e10] [cursor=pointer]:
+          - /url: /pcsp-standard-warranty
+      - listitem [ref=e11]:
+        - link "Contact Us" [ref=e12] [cursor=pointer]:
+          - /url: /contact-us/
+    - navigation:
+      - list [ref=e13]:
+        - listitem [ref=e14]:
+          - link "Sign in" [ref=e15] [cursor=pointer]:
+            - /url: https://pcserverandparts.com/login.php
+          - generic [ref=e16]: or
+          - link "Register" [ref=e17] [cursor=pointer]:
+            - /url: https://pcserverandparts.com/login.php?action=create_account
+        - listitem [ref=e18]:
+          - img [ref=e19]
+          - link "Cart with 0 items" [ref=e20] [cursor=pointer]:
+            - /url: https://pcserverandparts.com/cart.php
+            - text: Cart
+    - link "SAM SAM-Approved Business Vendor" [ref=e21] [cursor=pointer]:
+      - /url: /pcsp-your-trusted-sam-approved-business-vendor
+      - img "SAM" [ref=e22]
+      - text: SAM-Approved Business Vendor
+    - group [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26] [cursor=pointer]: "Search Keyword:"
+        - generic [ref=e27]:
+          - textbox "Search Keyword:" [ref=e28]:
+            - /placeholder: Search our current inventory...
+          - button [ref=e29] [cursor=pointer]
+  - banner [ref=e30]:
+    - generic [ref=e31]:
+      - link "PCSP" [ref=e33] [cursor=pointer]:
+        - /url: https://pcserverandparts.com/
+        - img "PCSP" [ref=e35]
+      - navigation [ref=e37]:
+        - list [ref=e38]:
+          - listitem [ref=e39]:
+            - link "Workstations" [ref=e40] [cursor=pointer]:
+              - /url: https://pcserverandparts.com/refurbished-workstations/
+              - text: Workstations
+              - img [ref=e42]
+          - listitem [ref=e44]:
+            - link "Servers" [ref=e45] [cursor=pointer]:
+              - /url: https://pcserverandparts.com/refurbished-servers/
+              - text: Servers
+              - img [ref=e47]
+          - listitem [ref=e49]:
+            - link "Networking" [ref=e50] [cursor=pointer]:
+              - /url: https://pcserverandparts.com/networking/
+              - text: Networking
+              - img [ref=e52]
+          - listitem [ref=e54]:
+            - link "Components" [ref=e55] [cursor=pointer]:
+              - /url: https://pcserverandparts.com/refurbished-computer-parts-and-components/
+              - text: Components
+              - img [ref=e57]
+          - listitem [ref=e59]:
+            - link "Clearance" [ref=e60] [cursor=pointer]:
+              - /url: https://pcserverandparts.com/clearance/
+              - text: Clearance
+              - img [ref=e62]
+          - listitem [ref=e64]:
+            - link "Use Case Solutions" [ref=e65] [cursor=pointer]:
+              - /url: https://pcserverandparts.com/use-case-solutions/
+              - text: Use Case Solutions
+              - img [ref=e67]
+          - listitem [ref=e69]:
+            - link "Services" [ref=e70] [cursor=pointer]:
+              - /url: /itad-services
+              - text: Services
+              - img [ref=e72]
+          - listitem [ref=e74]:
+            - link "Maintenance" [ref=e75] [cursor=pointer]:
+              - /url: https://pcserverandparts.com/maintenance/
+    - text: 
+  - generic [ref=e77]:
+    - navigation "Breadcrumb" [ref=e79]:
+      - list [ref=e80]:
+        - listitem [ref=e81]:
+          - link "Home" [ref=e82] [cursor=pointer]:
+            - /url: https://pcserverandparts.com/
+        - listitem [ref=e83]:
+          - link "Components" [ref=e84] [cursor=pointer]:
+            - /url: https://pcserverandparts.com/refurbished-computer-parts-and-components/
+        - listitem [ref=e85]:
+          - link "Graphics Cards" [ref=e86] [cursor=pointer]:
+            - /url: https://pcserverandparts.com/refurbished-graphics-cards/
+        - listitem [ref=e87]:
+          - link "Video Cards" [ref=e88] [cursor=pointer]:
+            - /url: https://pcserverandparts.com/graphics-cards/components/video-cards/
+        - listitem [ref=e89]:
+          - link "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e90] [cursor=pointer]:
+            - /url: https://pcserverandparts.com/nvidia-geforce-rtx-3090-founders-edition-24gb-gddr6x-graphics-card-used/
+    - generic [ref=e91]:
+      - generic [ref=e92]:
+        - generic [ref=e93]:
+          - figure [ref=e94]:
+            - generic [ref=e95]:
+              - link "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used":
+                - /url: https://cdn11.bigcommerce.com/s-ym0s4rnvas/images/stencil/1280x1280/products/1811189/4628762/4363714__92685.1754673384.jpg?c=2
+                - img "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e96] [cursor=pointer]
+          - list [ref=e97]:
+            - listitem [ref=e98]:
+              - link "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e99] [cursor=pointer]:
+                - /url: https://cdn11.bigcommerce.com/s-ym0s4rnvas/images/stencil/1280x1280/products/1811189/4628762/4363714__92685.1754673384.jpg?c=2
+                - img "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e100]
+            - listitem [ref=e101]:
+              - link "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e102] [cursor=pointer]:
+                - /url: https://cdn11.bigcommerce.com/s-ym0s4rnvas/images/stencil/1280x1280/products/1811189/4628763/4363715__22468.1754673386.jpg?c=2
+                - img "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e103]
+            - listitem [ref=e104]:
+              - link "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e105] [cursor=pointer]:
+                - /url: https://cdn11.bigcommerce.com/s-ym0s4rnvas/images/stencil/1280x1280/products/1811189/4628764/4363716__72785.1754673387.jpg?c=2
+                - img "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e106]
+            - listitem [ref=e107]:
+              - link "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e108] [cursor=pointer]:
+                - /url: https://cdn11.bigcommerce.com/s-ym0s4rnvas/images/stencil/1280x1280/products/1811189/4628765/4363717__60147.1754673388.jpg?c=2
+                - img "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e109]
+            - listitem [ref=e110]:
+              - link "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e111] [cursor=pointer]:
+                - /url: https://cdn11.bigcommerce.com/s-ym0s4rnvas/images/stencil/1280x1280/products/1811189/4628766/4363711__11970.1754673389.jpg?c=2
+                - img "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [ref=e112]
+        - generic [ref=e114]:
+          - heading "NVIDIA GeForce RTX 3090 Founders Edition (24GB GDDR6X) Graphics Card - Used" [level=1] [ref=e115]
+          - term [ref=e116]: "SKU:"
+          - definition [ref=e117]: CTK 633991
+          - generic [ref=e118]:
+            - generic [ref=e119]: "Was: $1,499.99"
+            - generic [ref=e120]: $899.99
+            - generic [ref=e121]: (You save $600.00 )
+          - generic [ref=e122]:
+            - img "Product rating is 0 of 5" [ref=e123]:
+              - img [ref=e125]
+              - img [ref=e128]
+              - img [ref=e131]
+              - img [ref=e134]
+              - img [ref=e137]
+            - text: (No reviews yet)
+          - generic [ref=e139]:
+            - term [ref=e140]: "Availability:"
+            - definition [ref=e141]:
+              - generic [ref=e142]: out of stock
+            - term [ref=e143]: "Condition:"
+            - definition [ref=e144]: Used
+            - term [ref=e145]: "Brand:"
+            - definition [ref=e146]: NVIDIA
+            - term [ref=e147]: "Graphics Card Memory:"
+            - definition [ref=e148]: 24GB
+            - term [ref=e149]: "Graphics Card Memory Type:"
+            - definition [ref=e150]: GDDR6
+            - term [ref=e151]: "Video Ports:"
+            - definition [ref=e152]: 3x Display Port 1x HDMI
+        - generic [ref=e153]:
+          - generic [ref=e154]:
+            - generic [ref=e155]:
+              - generic [ref=e157] [cursor=pointer]: "Current Stock:"
+              - generic [ref=e159]:
+                - generic [ref=e160]:
+                  - generic [ref=e161] [cursor=pointer]: "Quantity:"
+                  - generic [ref=e162]:
+                    - button "Decrease Quantity of undefined" [ref=e163] [cursor=pointer]:
+                      - generic [ref=e164]: Decrease Quantity of undefined
+                      - img [ref=e166]
+                    - textbox "Quantity:" [ref=e168]: "1"
+                    - button "Increase Quantity of undefined" [ref=e169] [cursor=pointer]:
+                      - generic [ref=e170]: Increase Quantity of undefined
+                      - img [ref=e172]
+                - generic [ref=e174]:
+                  - paragraph
+                - generic [ref=e175]:
+                  - button "Add to Cart" [ref=e176] [cursor=pointer]
+                  - generic [ref=e177]: Adding to cart… The item has been added
+              - generic [ref=e178]:
+                - img [ref=e181]
+                - paragraph [ref=e183]: Out of stock
+            - link "Add to Wish List" [ref=e185] [cursor=pointer]:
+              - /url: "#"
+              - text: Add to Wish List
+              - img [ref=e187]
+            - button "Add To Quote" [ref=e190] [cursor=pointer]
+          - list [ref=e192]:
+            - listitem [ref=e193]:
+              - link "Facebook" [ref=e194] [cursor=pointer]:
+                - /url: https://facebook.com/sharer/sharer.php?u=https%3A%2F%2Fpcserverandparts.com%2Fnvidia-geforce-rtx-3090-founders-edition-24gb-gddr6x-graphics-card-used%2F
+                - generic [ref=e195]: Facebook
+                - img [ref=e196]
+            - listitem [ref=e198]:
+              - link "Email" [ref=e199] [cursor=pointer]:
+                - /url: mailto:?subject=NVIDIA%20GeForce%20RTX%203090%20Founders%20Edition%20(24GB%20GDDR6X)%20Graphics%20Card%20-%20Used&body=https%3A%2F%2Fpcserverandparts.com%2Fnvidia-geforce-rtx-3090-founders-edition-24gb-gddr6x-graphics-card-used%2F
+                - generic [ref=e200]: Email
+                - img [ref=e201]
+            - listitem [ref=e203]:
+              - generic "Print" [ref=e204]:
+                - generic [ref=e205]: Print
+                - img [ref=e206]
+            - listitem [ref=e208]:
+              - link "X" [ref=e209] [cursor=pointer]:
+                - /url: https://x.com/intent/tweet/?text=NVIDIA%20GeForce%20RTX%203090%20Founders%20Edition%20(24GB%20GDDR6X)%20Graphics%20Card%20-%20Used&url=https%3A%2F%2Fpcserverandparts.com%2Fnvidia-geforce-rtx-3090-founders-edition-24gb-gddr6x-graphics-card-used%2F
+                - generic [ref=e210]: X
+                - img [ref=e211]
+            - listitem [ref=e213]:
+              - link "Linkedin" [ref=e214] [cursor=pointer]:
+                - /url: https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fpcserverandparts.com%2Fnvidia-geforce-rtx-3090-founders-edition-24gb-gddr6x-graphics-card-used%2F&title=NVIDIA%20GeForce%20RTX%203090%20Founders%20Edition%20(24GB%20GDDR6X)%20Graphics%20Card%20-%20Used&summary=NVIDIA%20GeForce%20RTX%203090%20Founders%20Edition%20(24GB%20GDDR6X)%20Graphics%20Card%20-%20Used&source=https%3A%2F%2Fpcserverandparts.com%2Fnvidia-geforce-rtx-3090-founders-edition-24gb-gddr6x-graphics-card-used%2F
+                - generic [ref=e215]: Linkedin
+                - img [ref=e216]
+            - listitem [ref=e218]:
+              - link "Pinterest" [ref=e219] [cursor=pointer]:
+                - /url: https://pinterest.com/pin/create/button/?url=https%3A%2F%2Fpcserverandparts.com%2Fnvidia-geforce-rtx-3090-founders-edition-24gb-gddr6x-graphics-card-used%2F&media=https://cdn11.bigcommerce.com/s-ym0s4rnvas/images/stencil/1280x1280/products/1811189/4628762/4363714__92685.1754673384.jpg?c=2&description=NVIDIA%20GeForce%20RTX%203090%20Founders%20Edition%20(24GB%20GDDR6X)%20Graphics%20Card%20-%20Used
+                - generic [ref=e220]: Pinterest
+                - img [ref=e221]
+        - article [ref=e223]:
+          - heading "Description" [level=3] [ref=e224]
+          - generic [ref=e225]: Nvidia GeForce RTX 3090 Founders Edition GPU 24GB GDDR6X Graphics Card
+        - article [ref=e226]:
+          - list [ref=e227]:
+            - listitem
+            - listitem [ref=e228]:
+              - link "Full Specs" [ref=e229] [cursor=pointer]:
+                - /url: "#tab-full-specs"
+            - listitem [ref=e230]:
+              - link "Shipping" [ref=e231] [cursor=pointer]:
+                - /url: "#tab-shipping"
+            - listitem [ref=e232]:
+              - link "0 Reviews" [ref=e233] [cursor=pointer]:
+                - /url: "#tab-reviews"
+          - generic [ref=e235]:
+            - heading "Model" [level=4] [ref=e236]
+            - generic [ref=e237]:
+              - term [ref=e238]: "Brand:"
+              - definition [ref=e239]: NVIDIA
+              - term [ref=e240]: "Model Number:"
+              - definition [ref=e241]: PG136
+            - heading "Graphics Card Specs" [level=4] [ref=e242]
+            - generic [ref=e243]:
+              - term [ref=e244]: "Interface:"
+              - definition [ref=e245]: PCIe
+              - term [ref=e246]: "Graphics Card Memory:"
+              - definition [ref=e247]: 24GB
+              - term [ref=e248]: "Graphics Card Memory Type:"
+              - definition [ref=e249]: GDDR6
+              - term [ref=e250]: "Power Connectors:"
+              - definition [ref=e251]: 8-PIN + 8-PIN
+              - term [ref=e252]: "Video Ports:"
+              - definition [ref=e253]: 3x Display Port 1x HDMI
+              - term [ref=e254]: "Identifier:"
+              - definition [ref=e255]: PG136
+            - heading "Dimensions & Weight" [level=4] [ref=e256]
+            - generic [ref=e257]:
+              - term [ref=e258]: "Length:"
+              - definition [ref=e259]: in.
+              - term [ref=e260]: "Width:"
+              - definition [ref=e261]: in.
+              - term [ref=e262]: "Height:"
+              - definition [ref=e263]: in.
+              - term [ref=e264]: "Weight:"
+              - definition [ref=e265]: 0.00 LBS.
+      - tablist [ref=e266]
+  - contentinfo [ref=e267]:
+    - generic [ref=e269]:
+      - generic [ref=e270]:
+        - article [ref=e271]:
+          - heading "Customer Services" [level=5] [ref=e272]
+          - list [ref=e273]:
+            - listitem [ref=e274]:
+              - link "Contact Us" [ref=e275] [cursor=pointer]:
+                - /url: /contact-us/
+            - listitem [ref=e276]:
+              - link "Shipping Information" [ref=e277] [cursor=pointer]:
+                - /url: /shipping-information-and-details/
+            - listitem [ref=e278]:
+              - link "Returns & Refunds" [ref=e279] [cursor=pointer]:
+                - /url: /return-policy/
+            - listitem [ref=e280]:
+              - link "Methods of Payment" [ref=e281] [cursor=pointer]:
+                - /url: /payment-methods/
+        - article [ref=e282]:
+          - heading "Company Info" [level=5] [ref=e283]
+          - list [ref=e284]:
+            - listitem [ref=e285]:
+              - link "About Us" [ref=e286] [cursor=pointer]:
+                - /url: /about-us/
+            - listitem [ref=e287]:
+              - link "Privacy Policy" [ref=e288] [cursor=pointer]:
+                - /url: /privacy-policy/
+            - listitem [ref=e289]:
+              - link "Terms of Use" [ref=e290] [cursor=pointer]:
+                - /url: /terms-and-conditions/
+            - listitem [ref=e291]:
+              - link "B2B Program" [ref=e292] [cursor=pointer]:
+                - /url: /b2b-preferred-customer-program/
+        - article [ref=e293]:
+          - heading "Your Account" [level=5] [ref=e294]
+          - list [ref=e295]:
+            - listitem [ref=e296]:
+              - link "My Account" [ref=e297] [cursor=pointer]:
+                - /url: /account.php
+            - listitem [ref=e298]:
+              - link "Order Status" [ref=e299] [cursor=pointer]:
+                - /url: /orderstatus.php
+            - listitem [ref=e300]:
+              - link "Wish List" [ref=e301] [cursor=pointer]:
+                - /url: /wishlist.php
+            - listitem [ref=e302]:
+              - link "View Cart" [ref=e303] [cursor=pointer]:
+                - /url: /cart.php
+        - article [ref=e304]:
+          - heading "Stay Connected" [level=5] [ref=e305]
+          - list [ref=e306]:
+            - listitem [ref=e307]:
+              - link "LinkedIn" [ref=e308] [cursor=pointer]:
+                - /url: https://www.linkedin.com/company/pc-server-and-parts/
+            - listitem [ref=e309]:
+              - link "Facebook" [ref=e310] [cursor=pointer]:
+                - /url: https://www.facebook.com/pcserverandparts/?ref=bookmarks
+            - listitem [ref=e311]:
+              - link "Instagram" [ref=e312] [cursor=pointer]:
+                - /url: https://www.instagram.com/pcserverparts/
+            - listitem [ref=e313]:
+              - link "Twitter" [ref=e314] [cursor=pointer]:
+                - /url: https://twitter.com/PCSP_USA
+      - iframe [ref=e317]:
+        - main "Main Content Area" [ref=f2e2]:
+          - form "HubSpot Form" [ref=f2e6]:
+            - generic [ref=f2e8]:
+              - heading "Subscribe & Save $10" [level=3] [ref=f2e10]
+              - generic [ref=f2e12]:
+                - generic [ref=f2e13]: Subscribe to our newsletter and save $10 on your next order.
+                - textbox [ref=f2e14]:
+                  - /placeholder: Enter your email...
+              - button "Submit" [ref=f2e17] [cursor=pointer]
+  - paragraph [ref=e319]:
+    - text: Copyright © 2026
+    - strong [ref=e320]: PCSP - PC Server & Parts
+    - text: . All rights reserved.
+    - text: 55960 Grand River Ave. New Hudson, MI 48165
+  - generic:
+    - generic:
+      - iframe

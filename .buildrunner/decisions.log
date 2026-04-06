@@ -284,3 +284,67 @@
   - macOS ps aux for Muddy, Linux ps aux --sort for remote nodes
 [Mon Apr  6 15:44:21 CDT 2026] [DECISION] Created build spec: dashboard-command-center with 7 phases. Adversarial review: 4 blockers resolved (proxy endpoints, workspace container pattern, file path consistency, reconnect backoff). Architecture validation: all paths verified external.
 [Mon Apr  6 16:20:20 CDT 2026] [DECISION] Created build spec: hunt-system with 5 phases — /hunt skill, automated sourcing (eBay/Reddit/CL/PCPP), dashboard CRUD, changedetection auto-watch, intelligence layer
+
+[2026-04-06T22:30:00Z] [ARCHITECTURE] Autopilot --cluster must dispatch ALL ready builds before inline work
+  WHY: 4.6 optimized for "finish immediate task" and only ran 1 of 5 ready builds. --cluster means max parallelism across Muddy (4 bg agents + 1 inline) and Otis (1 dispatched build). Cross-project builds ARE possible via Agent tool or dispatch-to-node.sh
+  CONTEXT: ~/.claude/commands/autopilot.md Step 1 Multi-Build Mode
+
+[2026-04-06T22:30:01Z] [DECISION] Cloudflare Tunnel for remote dashboard access at band.taskwatcher.ai
+  WHY: Tailscale rejected (user reported instability). Cloudflare Tunnel is rock-solid, free, handles HTTPS+WSS automatically. Subdomain chosen over path-based routing to avoid SPA conflicts with taskwatcher.ai
+  CONTEXT: ~/.cloudflared/config.yml, ~/Library/LaunchAgents/com.cloudflare.band-tunnel.plist
+
+[2026-04-06T22:30:02Z] [ARCHITECTURE] Dashboard Command Center — 4 workspaces via sidebar nav
+  WHY: Current dashboard has 12+ panels in a scrolling grid — new panels (Intel, Deals, Terminal, Builds) were invisible below the fold. Sidebar + workspace switching keeps everything one click away. Intelligence is a SEPARATE workspace, not panels on main dashboard. Alerts surface to main view
+  CONTEXT: BUILD_dashboard-command-center.md, ~/.buildrunner/dashboard/public/index.html
+
+[2026-04-06T22:30:03Z] [ARCHITECTURE] Lockwood proxy endpoints required for remote access
+  WHY: When accessing via band.taskwatcher.ai (Cloudflare), browser can't reach Lockwood's local IP (10.0.1.101:8100) directly. events.mjs must proxy /api/proxy/intel/* and /api/proxy/deals/* to Lockwood. Caught by Otis adversarial review
+  CONTEXT: ~/.buildrunner/dashboard/events.mjs, Phase 3 of dashboard-command-center
+
+[2026-04-06T22:30:04Z] [DECISION] All dashboard files are external — no worktree isolation for autopilot
+  WHY: Dashboard lives at ~/.buildrunner/dashboard/ outside git repo. Worktree agents can't write there. All phases must run inline or as non-isolated agents. Learned from Phase 1 failure where worktree agent was denied writes to ~/.claude/
+  CONTEXT: BUILD_dashboard-command-center.md DO NOT section
+
+[2026-04-06T22:30:05Z] [ARCHITECTURE] Deterministic step enforcement via hooks + scripts
+  WHY: 4.6 skips steps it considers unnecessary (research §1.4 "overly agentic"). Instructions alone don't prevent this. Fixed by: validate-spec-paths.sh (architecture check), enforce-skill-steps.sh (step tracking), post-batch-enforce.sh (PostToolUse hook on git commits), update-build-header.sh (header recompute)
+  CONTEXT: ~/.buildrunner/scripts/validate-spec-paths.sh, enforce-skill-steps.sh, ~/.buildrunner/hooks/post-batch-enforce.sh, ~/.claude/settings.json PostToolUse hooks
+
+[2026-04-06T22:30:06Z] [ARCHITECTURE] Setlist pipeline wired into /spec, /amend, /begin
+  WHY: /spec and /amend were disconnected from the explore/adversarial/memory pipeline. Now: /spec runs Lockwood memory query (Step 2.1), codebase exploration (Step 2.2), adversarial review (Step 3.7 MANDATORY), architecture validation (Step 3.8 MANDATORY). /amend runs same for new phases. /begin activates execution gates when setlist plan format detected
+  CONTEXT: ~/.claude/commands/spec.md, amend.md, begin.md, ~/.claude/docs/begin-execution-gates.md
+
+[2026-04-06T22:30:07Z] [DECISION] BUILD spec header update is a script, not an instruction
+  WHY: Stale headers caused 2 builds to show "Phase 1 Not Started" when all phases were complete. Root cause: finalization regex matched per-phase "not_started" but not the top-level header (different casing). Fix: update-build-header.sh counts completed vs total and rewrites deterministically. Called by autopilot, /begin, and a PostToolUse hook
+  CONTEXT: ~/.buildrunner/scripts/update-build-header.sh, autopilot.md Step 5.2, begin.md Step 7
+
+[2026-04-06T22:30:08Z] [REJECTED] React components for Intel/Deals dashboard tabs
+  WHY: BUILD_intel-deals-dashboard spec referenced ui/src/components/ (old React dashboard from Nov 2025). Active cluster dashboard is vanilla HTML/JS at ~/.buildrunner/dashboard/. Autopilot built real React code to the wrong location. Root cause: spec was wrong, monitoring verified scope against spec (not architecture). Fixed by: architecture validation step in /spec, deleted dead React code, rebuilt as vanilla HTML panels
+  CONTEXT: ui/src/components/IntelligenceTab.tsx (DELETED), DealsTab.tsx (DELETED), ~/.buildrunner/dashboard/public/index.html
+
+[2026-04-06T22:30:09Z] [CONSTRAINT] dispatch-to-node.sh only syncs project directory
+  WHY: Phases writing to ~/.claude/ or ~/.buildrunner/ can't use cluster dispatch — rsync only copies the project dir. Otis dispatch of Phase 1 (setlist skill) failed because deliverables went to ~/.claude/ on Otis, not captured by rsync back. Documented in script header as LIMITATION
+  CONTEXT: ~/.buildrunner/scripts/dispatch-to-node.sh
+
+[2026-04-06T22:30:10Z] [CONSTRAINT] Walter and Lomax don't have Claude CLI installed
+  WHY: No brew/npm on those Mac Minis. They run Python services (node_tests.py, node_staging.py) but can't execute Claude Code for build dispatch. Cluster dispatch falls back to local worktree agents for builds assigned to those nodes
+  CONTEXT: cluster.json, dispatch-to-node.sh health check fallback
+
+[2026-04-06T22:30:11Z] [DECISION] Autopilot go uses dangerouslyDisableSandbox for external writes
+  WHY: Bash sandbox blocks writes outside project directory. Even with sentinel file (~/.buildrunner/.autopilot-go) and all hooks passing, the sandbox independently blocks external paths. Must set dangerouslyDisableSandbox=true on Bash calls that write to ~/.claude/ or ~/.buildrunner/
+  CONTEXT: Memory: feedback_autopilot_writes.md
+
+[2026-04-06T22:30:12Z] [ARCHITECTURE] 22 phases built across 3 builds in one session (BUILD_setlist 8, BUILD_intel-deals 6, BUILD_dashboard-intel 8)
+  WHY: /autopilot go --cluster ran all 3 builds with 5 waves of parallel agents. Fixed 10 infrastructure issues during the run. All deliverables verified by 3 parallel audit agents reading actual source code
+  CONTEXT: All 3 BUILD specs marked COMPLETE
+
+[2026-04-06T22:30:13Z] [GOAL] Dashboard Command Center build — 7 phases remaining (P1 complete)
+  WHY: Turn cluster dashboard into remote-accessible dev control plane. band.taskwatcher.ai live with Cloudflare Access auth. Phase 2 (full redesign) is next — sidebar nav, workspace switching, new visual design
+  CONTEXT: BUILD_dashboard-command-center.md
+
+[2026-04-06T22:30:14Z] [DECISION] Node health alerting added to Phase 2
+  WHY: User wants alert when any cluster node goes down, becomes unreachable, or loses power. Implemented as persistent red banner comparing node status on each /api/nodes poll (already runs every 30s). No new backend needed
+  CONTEXT: BUILD_dashboard-command-center.md Phase 2 deliverables
+
+[2026-04-06T22:30:15Z] [TRADE-OFF] Dashboard phases are sequential despite --cluster
+  WHY: All 7 phases modify the same external files (index.html, styles.css, events.mjs). Can't parallelize within this build. Phase 2 REWRITEs files, Phases 3-7 MODIFY. Workspace container pattern: Phase 2 creates empty containers, later phases fill them. Other builds CAN run in parallel on Otis/Muddy background agents
+  CONTEXT: BUILD_dashboard-command-center.md parallelization matrix

@@ -1,0 +1,46 @@
+# Security Scanner Ignore Patterns
+# Paths and patterns to exclude from security scanning
+
+# Dependencies (always have false positives)
+node_modules/
+.venv/
+venv/
+electron/node_modules/
+ui/node_modules/
+
+# Test files (contain example/fake secrets for testing)
+**/test_*.py
+**/*_test.py
+**/tests/
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+
+# Documentation (contains examples)
+**/docs/
+**/*.md
+**/examples/
+**/*EXAMPLE*
+SECURITY.md
+
+# Build artifacts
+dist/
+build/
+.git/
+__pycache__/
+*.pyc
+coverage/
+
+# Environment files (should be in .gitignore anyway)
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Config files with examples
+**/*.example.*
+**/*.sample.*
+
+# Comment examples in security detectors themselves
+core/security/*detector.py

@@ -1,0 +1,18 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img "DockeryAI" [ref=e6]
+    - generic [ref=e8]:
+      - button "Foundation" [ref=e9] [cursor=pointer]
+      - button "Audience" [ref=e10] [cursor=pointer]
+      - button "Personality" [ref=e11] [cursor=pointer]
+      - button "Gut Test" [ref=e12] [cursor=pointer]
+      - button "Density" [ref=e13] [cursor=pointer]
+      - button "Constraints" [ref=e14] [cursor=pointer]
+  - generic [ref=e19]:
+    - paragraph [ref=e20]: Foundation — 1 of 3
+    - heading "What does your company do?" [level=2] [ref=e21]
+    - paragraph [ref=e22]: One sentence that captures the core of your business.
+    - textbox "We build beautiful websites for customers with an intuitive AI..." [ref=e23]
+  - generic [ref=e24]:
+    - button "← Back" [disabled] [ref=e25]
+    - button "Continue" [disabled] [ref=e41]

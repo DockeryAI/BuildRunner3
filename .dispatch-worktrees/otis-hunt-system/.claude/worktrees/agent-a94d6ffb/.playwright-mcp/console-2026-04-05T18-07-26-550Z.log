@@ -1,0 +1,17 @@
+[    1038ms] [LOG] [Bread] - Start @ https://ribon-apps.mybigcommerce.com/content/ribon-scripts/416dc451-ade5-4c98-b8ad-64041c0885f3.js?s=ym0s4rnvas&t=bread:2
+[    1054ms] [LOG] [QN] initializing quote buttons @ https://cdn-v6.quoteninja.com/static/js/main.c7c566a9.js:0
+[    1055ms] [LOG] [QN] waiting for network idle to lazy load dependencies @ https://cdn-v6.quoteninja.com/static/js/main.c7c566a9.js:0
+[    1090ms] [LOG] Second breadcrumb item: Components @ https://pcserverandparts.com/msi-nvidia-rtx-3090-suprim-x-24gb-gddr6x-graphics-card-used/:3826
+[    1090ms] [LOG] BC Category: All Products, Components/Graphics Cards, Components @ https://pcserverandparts.com/msi-nvidia-rtx-3090-suprim-x-24gb-gddr6x-graphics-card-used/:3872
+[    1129ms] [ERROR] Attestation check for Attribution Reporting on https://www.facebook.com failed. @ https://pcserverandparts.com/msi-nvidia-rtx-3090-suprim-x-24gb-gddr6x-graphics-card-used/:0
+[    1131ms] [LOG] [QN] loading dependencies @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    1135ms] [LOG] [QN] initializing iframe @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    1138ms] [LOG] [QN] waiting for network idle to prefetch quote frame @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    1241ms] [LOG] [Bread] - Ribon Initialized @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    2140ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://pcserverandparts.com/customer/current.jwt?app_client_id=1o43cemeeqbnwjv3lcup5cb0fxfjv1f:0
+[    2966ms] [LOG] Response @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    4113ms] [LOG] Response @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    5189ms] [LOG] Response @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    6241ms] [LOG] Response @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    6757ms] [LOG] Response @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0
+[    7298ms] [LOG] Response @ https://omnisnippet1.com/monitoring/monitoring.js?v=2026-04-05T18:0

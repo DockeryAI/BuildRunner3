@@ -1,0 +1,11 @@
+id: private-chef-services
+name: Private Chef Services
+naics_code: '722320'
+category: Food Service
+keywords:
+- private chef services
+- private
+- chef
+- services
+has_full_profile: false
+source: naics_only

@@ -1,0 +1,1200 @@
+- generic [active] [ref=e1]:
+  - img
+  - img
+  - img
+  - img
+  - generic [ref=e3]:
+    - banner [ref=e7]:
+      - link "Skip to main content" [ref=e9] [cursor=pointer]:
+        - /url: "#mainContent"
+      - navigation [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e13]:
+            - text: Hi!
+            - link "Sign in" [ref=e14] [cursor=pointer]:
+              - /url: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&sgfl=gh&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F306504414149
+            - generic [ref=e15]:
+              - text: or
+              - link "register" [ref=e16] [cursor=pointer]:
+                - /url: https://signup.ebay.com/pa/crte?ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F306504414149
+          - link "Deals" [ref=e18] [cursor=pointer]:
+            - /url: https://www.ebay.com/deals
+          - link "Brand Outlet" [ref=e20] [cursor=pointer]:
+            - /url: https://www.ebay.com/b/Brand-Outlet/bn_7115532402
+          - link "Gift Cards" [ref=e22] [cursor=pointer]:
+            - /url: https://www.ebay.com/giftcards
+          - link "Help & Contact" [ref=e24] [cursor=pointer]:
+            - /url: https://www.ebay.com/help/home
+        - generic [ref=e25]:
+          - link "Sell" [ref=e28] [cursor=pointer]:
+            - /url: https://www.ebay.com/sl/sell
+          - generic [ref=e29]:
+            - link "Watchlist" [ref=e30] [cursor=pointer]:
+              - /url: https://www.ebay.com/mye/myebay/watchlist
+              - generic [ref=e31]: Watchlist
+              - img
+            - button "Expand Watch List" [ref=e32]
+          - generic [ref=e33]:
+            - link "My eBay" [ref=e34] [cursor=pointer]:
+              - /url: https://www.ebay.com/mys/home?source=GBH
+              - generic [ref=e35]: My eBay
+              - img
+            - button "Expand My eBay" [ref=e36]
+          - button "Notifications" [ref=e39] [cursor=pointer]:
+            - img
+            - generic [ref=e40]: Notifications
+          - generic [ref=e42]:
+            - link "Your shopping cart contains 0 items" [ref=e43] [cursor=pointer]:
+              - /url: https://cart.ebay.com
+              - generic "Your shopping cart contains 0 items" [ref=e44]:
+                - img
+            - button "Expand Cart" [ref=e45]
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - link "eBay Home" [ref=e48] [cursor=pointer]:
+            - /url: https://www.ebay.com
+            - img "eBay Home" [ref=e49]
+          - button "Shop by category" [ref=e57] [cursor=pointer]:
+            - generic [ref=e58]: Shop by category
+            - img
+        - generic [ref=e59]:
+          - status [ref=e60]
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - combobox "Search for anything" [ref=e64]
+              - img
+            - combobox "Select a category for search" [ref=e65]:
+              - option "All Categories" [selected]
+              - option "Antiques"
+              - option "Art"
+              - option "Baby"
+              - option "Books"
+              - option "Business & Industrial"
+              - option "Cameras & Photo"
+              - option "Cell Phones & Accessories"
+              - option "Clothing, Shoes & Accessories"
+              - option "Coins & Paper Money"
+              - option "Collectibles"
+              - option "Computers/Tablets & Networking"
+              - option "Consumer Electronics"
+              - option "Crafts"
+              - option "Dolls & Bears"
+              - option "Movies & TV"
+              - option "eBay Motors"
+              - option "Entertainment Memorabilia"
+              - option "Gift Cards & Coupons"
+              - option "Health & Beauty"
+              - option "Home & Garden"
+              - option "Jewelry & Watches"
+              - option "Music"
+              - option "Musical Instruments & Gear"
+              - option "Pet Supplies"
+              - option "Pottery & Glass"
+              - option "Real Estate"
+              - option "Specialty Services"
+              - option "Sporting Goods"
+              - option "Sports Mem, Cards & Fan Shop"
+              - option "Stamps"
+              - option "Tickets & Experiences"
+              - option "Toys & Hobbies"
+              - option "Travel"
+              - option "Video Games & Consoles"
+              - option "Everything Else"
+          - generic [ref=e66]:
+            - button "Search" [ref=e67] [cursor=pointer]:
+              - generic [ref=e68]: Search
+            - link "Advanced" [ref=e69] [cursor=pointer]:
+              - /url: https://www.ebay.com/sch/ebayadvsearch
+    - main [ref=e70]:
+      - generic [ref=e72]:
+        - generic [ref=e75]:
+          - region [ref=e77]:
+            - link "LIVE Streaming now Shop exclusive items from trusted sellers Join event" [ref=e79] [cursor=pointer]:
+              - /url: https://ebay.com/ebaylive/events/latest/stream?fallback=category:175673
+              - generic [ref=e80]:
+                - generic [ref=e81]:
+                  - img
+                - generic [ref=e83]: LIVE
+              - generic [ref=e84]: Streaming now
+              - generic [ref=e85]: Shop exclusive items from trusted sellers
+              - button "Join event" [ref=e86]
+          - generic [ref=e95]:
+            - heading "People who viewed this item also viewed" [level=2] [ref=e102]
+            - group [ref=e104]:
+              - list [ref=e107]:
+                - listitem [ref=e108]:
+                  - generic [ref=e109]:
+                    - generic [ref=e110]:
+                      - generic [ref=e116]:
+                        - heading "EVGA GeForce RTX 3090 Ti FTW3 Black Gaming 24G-P5-4981-KR 24GB GDDR6X" [level=3] [ref=e117]
+                        - generic [ref=e119]: $659.00
+                        - generic [ref=e121]: Free delivery
+                      - link "EVGA GeForce RTX 3090 Ti FTW3 Black Gaming 24G-P5-4981-KR 24GB GDDR6X" [ref=e122] [cursor=pointer]:
+                        - /url: https://www.ebay.com/itm/397797459867?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D306504414149%26sid%3DAQALAAAAEOvxE1gfbWb%2F47LIbEHUH5U%3D%26itm%3D397797459867%26noa%3D1%26brand%3DEVGA%26asc%3D20200818143230%26ao%3D1%26rk%3D1%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3Dc85c9f630da449899017b6aeb5e27a4b%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                    - separator [ref=e123]
+                    - button "More Options" [ref=e125] [cursor=pointer]:
+                      - generic [ref=e126]:
+                        - img
+                - listitem [ref=e127]:
+                  - generic [ref=e128]:
+                    - generic [ref=e129]:
+                      - generic [ref=e135]:
+                        - heading "EVGA GeForce RTX 3090 Ti FTW3 Black Gaming 24G-P5-4981-KR 24GB GDDR6X" [level=3] [ref=e136]
+                        - generic [ref=e138]: $609.00
+                        - generic [ref=e140]: Free delivery
+                      - link "EVGA GeForce RTX 3090 Ti FTW3 Black Gaming 24G-P5-4981-KR 24GB GDDR6X" [ref=e141] [cursor=pointer]:
+                        - /url: https://www.ebay.com/itm/188241443010?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D306504414149%26sid%3DAQALAAAAEP%2F6XXziLVI7TeOxwgb%2BHrU%3D%26itm%3D188241443010%26noa%3D1%26brand%3DEVGA%26asc%3D20200818143230%26ao%3D1%26rk%3D2%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3Dc85c9f630da449899017b6aeb5e27a4b%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                    - separator [ref=e142]
+                    - button "More Options" [ref=e144] [cursor=pointer]:
+                      - generic [ref=e145]:
+                        - img
+                - listitem [ref=e146]:
+                  - generic [ref=e147]:
+                    - generic [ref=e148]:
+                      - generic [ref=e154]:
+                        - heading "EVGA GeForce RTX 3090 FTW3 ULTRA GAMING 24GB GDDR6X Graphics Card" [level=3] [ref=e155]
+                        - generic [ref=e157]: $770.89
+                        - generic [ref=e159]: + $36.34 delivery
+                      - link "EVGA GeForce RTX 3090 FTW3 ULTRA GAMING 24GB GDDR6X Graphics Card" [ref=e160] [cursor=pointer]:
+                        - /url: https://www.ebay.com/itm/287250692645?_trkparms=itmf%3D0%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D306504414149%26sid%3DAQALAAAAEIitrcnrEAfp6F0PpygFlKQ%3D%26itm%3D287250692645%26noa%3D1%26brand%3DEVGA%26asc%3D20200818143230%26ao%3D1%26rk%3D3%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D2%26meid%3Dc85c9f630da449899017b6aeb5e27a4b%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                    - separator [ref=e161]
+                    - button "More Options" [ref=e163] [cursor=pointer]:
+                      - generic [ref=e164]:
+                        - img
+                - listitem [ref=e165]:
+                  - generic [ref=e166]:
+                    - generic [ref=e167]:
+                      - generic [ref=e173]:
+                        - heading "EVGA GeForce RTX 3090 Ti FTW3 Black Gaming 24G-P5-4981-KR 24GB GDDR6X" [level=3] [ref=e174]
+                        - generic [ref=e176]: $920.00
+                        - generic [ref=e178]: Free delivery
+                      - link "EVGA GeForce RTX 3090 Ti FTW3 Black Gaming 24G-P5-4981-KR 24GB GDDR6X" [ref=e179] [cursor=pointer]:
+                        - /url: https://www.ebay.com/itm/406810438863?_trkparms=itmf%3D1%26aid%3D1110006%26rkt%3D5%26algo%3DHOMESPLICE.SIM%26mech%3D1%26algv%3DDefaultOrganicWebV9BertRefreshRankerWithCassiniEmbRecall%26pmt%3D0%26amclksrc%3DITM%26sd%3D306504414149%26sid%3DAQALAAAAEHfjWM%2B5PNitbSQDgMjgCV8%3D%26itm%3D406810438863%26noa%3D1%26brand%3DEVGA%26asc%3D20200818143230%26ao%3D1%26rk%3D4%26pid%3D101224%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3Dc85c9f630da449899017b6aeb5e27a4b%26pg%3D2332490&_trksid=p2332490.c101224.m-1
+                    - separator [ref=e180]
+                    - button "More Options" [ref=e182] [cursor=pointer]:
+                      - generic [ref=e183]:
+                        - img
+        - generic [ref=e186]:
+          - generic [ref=e187]:
+            - generic [ref=e189]:
+              - generic [ref=e191]:
+                - generic [ref=e193]:
+                  - button "Picture 1 of 5" [ref=e194] [cursor=pointer]:
+                    - img "Picture 1 of 5" [ref=e195]
+                  - button "Picture 2 of 5" [ref=e196] [cursor=pointer]:
+                    - img "Picture 2 of 5" [ref=e197]
+                  - button "Picture 3 of 5" [ref=e198] [cursor=pointer]:
+                    - img "Picture 3 of 5" [ref=e199]
+                  - button "Picture 4 of 5" [ref=e200] [cursor=pointer]:
+                    - img "Picture 4 of 5" [ref=e201]
+                  - button "Picture 5 of 5" [ref=e202] [cursor=pointer]:
+                    - img "Picture 5 of 5" [ref=e203]
+                - generic [ref=e204]:
+                  - heading "Picture 1 of 5" [level=2] [ref=e205]
+                  - generic [ref=e209]: In 3 carts
+                  - button "Previous image - Item images thumbnails" [ref=e211] [cursor=pointer]:
+                    - img
+                  - region "Opens image gallery dialog EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card GPU - 24G-P5-3987-KR - Picture 1 of 5" [ref=e212]:
+                    - group "1 of 5" [ref=e213]:
+                      - img "EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card GPU - 24G-P5-3987-KR - Picture 1 of 5" [ref=e214]
+                    - group "2 of 5" [ref=e215]:
+                      - img "EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card GPU - 24G-P5-3987-KR - Picture 2 of 5" [ref=e216]
+                    - group "3 of 5" [ref=e217]:
+                      - img "EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card GPU - 24G-P5-3987-KR - Picture 3 of 5" [ref=e218]
+                    - group "4 of 5" [ref=e219]:
+                      - img "EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card GPU - 24G-P5-3987-KR - Picture 4 of 5" [ref=e220]
+                    - group "5 of 5" [ref=e221]:
+                      - img "EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card GPU - 24G-P5-3987-KR - Picture 5 of 5" [ref=e222]
+                  - generic [ref=e223]:
+                    - button "Opens image gallery" [ref=e224] [cursor=pointer]:
+                      - img
+                    - button "Add to watchlist - 29 watchers" [ref=e226] [cursor=pointer]:
+                      - generic [ref=e227]: "29"
+                      - img
+                  - button "Next image - Item images thumbnails" [ref=e229] [cursor=pointer]:
+                    - img
+              - generic [ref=e234]:
+                - generic [ref=e235]: Have one to sell?
+                - link "Sell one like this" [ref=e237] [cursor=pointer]:
+                  - /url: https://www.ebay.com/sl/list?mode=SellLikeItem&itemId=306504414149&rt=nc&_trksid=p4429486.m117039.l2567
+                  - generic [ref=e238]: Sell one like this
+                - link "Sell something else" [ref=e240] [cursor=pointer]:
+                  - /url: https://www.ebay.com/sl/prelist/suggest
+                  - generic [ref=e241]: Sell something else
+              - button "Share" [ref=e247] [cursor=pointer]:
+                - img
+                - generic [ref=e248]: Share
+            - generic [ref=e259]:
+              - generic [ref=e262]:
+                - generic [ref=e264]:
+                  - heading "Similar Items" [level=2] [ref=e266]
+                  - generic [ref=e269]:
+                    - generic [ref=e270]: e0646ff8-edf8-4fd1-8c53-ca611b4d6fc3
+                    - generic [ref=e271]: 629152d2-4487-45d5-9e0d-3f694e1f436e
+                    - generic [ref=e273]: 13813547-e032-465c-88ff-53121b2cd104
+                    - generic [ref=e274]: S
+                    - generic [ref=e275]: 28d63d70-8769-48b7-9694-c34da7133ec1
+                    - generic [ref=e276]: d9faeff0-e51a-434f-a75c-a1365286d30e
+                    - generic [ref=e277]: p
+                    - generic [ref=e278]: 8295e2af-796d-44e9-83ac-570ccac7e9f6
+                    - generic [ref=e279]: o
+                    - generic [ref=e280]: e0ae15dc-7e91-4d6b-8fa9-562762f708da
+                    - generic [ref=e281]: ece670d9-3fd8-4bb3-a4be-2e29f616ac7d
+                    - generic [ref=e283]: 527e57bf-14fd-4a35-a3b7-1535a78bf21b
+                    - generic [ref=e284]: 7da3bc2c-24b2-4a41-b259-a803e6842ca5
+                    - generic [ref=e285]: cab023a6-38f9-4b74-a6a5-c0620866d49e
+                    - generic [ref=e287]: 69fed4b0-eefd-4279-9e65-b6b43dd03a40
+                    - generic [ref=e288]: 6b70b636-e441-4db4-97be-00ff61c17d9b
+                    - generic [ref=e289]: "n"
+                    - generic [ref=e290]: 78d9d605-95e0-4e95-b709-662e2400f4c0
+                    - generic [ref=e291]: s
+                    - generic [ref=e292]: 3cfa1a5f-e851-4541-be66-d0694f26851b
+                    - generic [ref=e293]: 99fec0bc-1fbf-4a78-8585-72b8110730d9
+                    - generic [ref=e295]: de0b5a6c-6a98-49cd-9ab7-9dd3a20993e4
+                    - generic [ref=e296]: 42c03d01-b0a4-4b20-9e25-9a6bbf3d3e2e
+                    - generic [ref=e297]: o
+                    - generic [ref=e298]: 2741e563-d1c4-4534-827a-17c62204f89c
+                    - generic [ref=e299]: r
+                    - generic [ref=e300]: f2350531-22ef-45f9-b416-8703108c6ef0
+                    - generic [ref=e301]: e
+                    - generic [ref=e302]: 9bce50e1-d6f0-482f-b389-9f1abd3dd4b0
+                    - generic [ref=e303]: d541d915-fb80-482e-ad34-1c9871a1454d
+                    - generic [ref=e304]: d
+                    - generic [ref=e305]: a5fc0df8-b936-48a0-adf4-907f459dedcf
+                    - generic [ref=e306]: 7d78cee6-8660-4575-ad41-5bd8744b9ac1
+                    - generic [ref=e308]: 3f81ed6d-0f38-4aca-8a1b-ef38e86bcf9d
+                    - generic [ref=e309]: 45f52191-b64e-4850-af68-0f104326bec5
+                    - generic [ref=e310]: 3e19e26d-83a8-4fdc-8c69-55cd7d6010ba
+                    - generic [ref=e311]: 85a1cbcf-394c-4ad3-af7c-a54d9c8b7bb0
+                - link "See all" [ref=e314] [cursor=pointer]:
+                  - /url: https://www.ebay.com/recs?component=recs-below-hero&algos=HOMESPLICE.SIM.SimVIDwebV4WithCtxRankerV1UnifiedFeaturesWithAuctionUnificationKatReco&placement_title=i18n.Tag_SIs&placement_subTitle=i18n.ModuleSubTitle_Sponsored&sourceModuleId=101875&item_id=306504414149
+                  - generic [ref=e315]: See all
+              - generic [ref=e316]:
+                - generic [ref=e317]:
+                  - generic [ref=e318]:
+                    - generic [ref=e324]:
+                      - heading "ASUS ROG Strix GeForce RTX 4090 24GB GDDR6X White OC Edition Gaming Graphics..." [level=3] [ref=e325]
+                      - generic [ref=e326]:
+                        - generic [ref=e328]: New (Other)
+                        - generic [ref=e329]: $1,250.00
+                      - generic [ref=e331]: + $22.55 delivery
+                      - generic [ref=e333]: Seller with 100% positive feedback
+                    - link "ASUS ROG Strix GeForce RTX 4090 24GB GDDR6X White OC Edition Gaming Graphics..." [ref=e334] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/206190169483?_trkparms=itmf%3D3%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeaturesWithAuctionUnificationKatReco%26pmt%3D1%26amclksrc%3DITM%26sd%3D306504414149%26sid%3DAQALAAAAEKEBMMjNFvK9XYy5AtZBxgQ%3D%26itm%3D206190169483%26noa%3D0%26plcampt%3D0%3A14634922014%26algo%3DHOMESPLICE.SIM%26brand%3DASUS%26asc%3D20231107084023%26ao%3D1%26rk%3D1%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3Df2681a4031a84e4da1d2ac7e38e0c554%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A206190169483f2681a4031a84e4da1d2ac7e38e0c554%7Cenc%3AAQALAAABMNcuE5wSiaWXUpZtpAuJty4GYCq%252BLEH%252FN8HXnEhWX0xwkDW1uDN51f72s7GsFOUQ9WFGrCI8AiSbyE6tacE%252FxpPzcbI6%252Bfuy9WmqzFcws0MbCHwDyLjxcGgDCY%252BUZ44%252FL0tRHn%252F%252B4f%252F6qz6cIZks811BNanXJnvaYn%252BJY8i2RiAGC183bTdd2beTE%252Fu5Qwl8JrGclT8NmnZcx7w2YDSJHuDhn5XBiZ0jHboG7WqCukz84Dd%252BBAT5J5QkqWLRPdE9yXBHnick%252Bz9Ld7yW23jIb4%252BGPnKnUhcEKAOnrutH5B%252F5jeuTjocdolCHqyw4Uv6E%252Fj63p5S8HolA1p1rzBU0db2fSTzrw8sCEjJ%252Bdt8dNjiNy4rhFncU7a0RtFK3hNQLSv84%252Bcx0XlvdzA0HH0YV3JA%253D%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KNFD9WVKFXWHCHXRMSAAXVX3
+                    - button "Add ASUS ROG Strix GeForce RTX 4090 24GB GDDR6X White OC Edition Gaming Graphics... to your watch list" [ref=e337] [cursor=pointer]:
+                      - img
+                  - separator [ref=e338]
+                  - button "More Options" [ref=e340] [cursor=pointer]:
+                    - generic [ref=e341]:
+                      - img
+                - generic [ref=e342]:
+                  - generic [ref=e343]:
+                    - generic [ref=e349]:
+                      - heading "ASUS ROG Matrix Platinum GeForce RTX 5090 - 30th Anniversary Edition In hand" [level=3] [ref=e350]
+                      - generic [ref=e351]:
+                        - generic [ref=e353]: New (Other)
+                        - generic [ref=e354]: $1,650.00
+                      - generic [ref=e356]: + $50.10 delivery
+                      - generic [ref=e358]: Seller with 100% positive feedback
+                    - link "ASUS ROG Matrix Platinum GeForce RTX 5090 - 30th Anniversary Edition In hand" [ref=e359] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/206190165501?_trkparms=itmf%3D3%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeaturesWithAuctionUnificationKatReco%26pmt%3D1%26amclksrc%3DITM%26sd%3D306504414149%26sid%3DAQALAAAAEKEBMMjNFvK9XYy5AtZBxgQ%3D%26itm%3D206190165501%26noa%3D0%26plcampt%3D0%3A14634922014%26algo%3DHOMESPLICE.SIM%26brand%3DASUS%26asc%3D20231107084023%26ao%3D1%26rk%3D2%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3Df2681a4031a84e4da1d2ac7e38e0c554%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A206190165501f2681a4031a84e4da1d2ac7e38e0c554%7Cenc%3AAQALAAABMNcuE5wSiaWXUpZtpAuJty4GYCq%252BLEH%252FN8HXnEhWX0xwkDW1uDN51f72s7GsFOUQ9WFGrCI8AiSbyE6tacE%252FxpPzcbI6%252Bfuy9WmqzFcws0Mb6NYf6N3yKFotKAl3w5Aa5wJd%252Ft6wWZ3TwRWZQozKiEhIvuq%252BTK60cYL1ZZUv%252BAsj6BLzOOmNO2ZL%252BLOlc2gYkxsyVyBp0hQX9wBYOR%252FVwnZoDtxj9T7ZSg0KISC3zLc1Uf9BWrDY9L7mAKj%252BeDMLVNay9Oy21cPKkAVZaJiwKslvH86nazWzRA5q2bflkRY3Rj8f7gRV4b3vKsFRL73ZukYdQ16tWfpmdsU%252FrV4sJ57hCSxzwSMT7VxWtxx4w2pL%252BodhKgrJCruubGLWiZqRYOPqSQqC6SrpkgfzxmS0EgA%253D%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KNFD9WWVK7WVQWHG3Q9SHS70
+                    - button "Add ASUS ROG Matrix Platinum GeForce RTX 5090 - 30th Anniversary Edition In hand to your watch list" [ref=e362] [cursor=pointer]:
+                      - img
+                  - separator [ref=e363]
+                  - button "More Options" [ref=e365] [cursor=pointer]:
+                    - generic [ref=e366]:
+                      - img
+                - generic [ref=e367]:
+                  - generic [ref=e368]:
+                    - generic [ref=e374]:
+                      - heading "NVIDIA GeForce RTX 5090 FE Founders Edition 32GB GDDR7 Graphics Card - Open Box" [level=3] [ref=e375]
+                      - generic [ref=e376]:
+                        - generic [ref=e378]: New (Other)
+                        - generic [ref=e379]: $1,600.00
+                      - generic [ref=e381]: + $17.55 delivery
+                      - generic [ref=e383]: Popular
+                    - link "NVIDIA GeForce RTX 5090 FE Founders Edition 32GB GDDR7 Graphics Card - Open Box" [ref=e384] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/298189164922?_trkparms=itmf%3D3%26aid%3D1110006%26rkt%3D4%26mech%3D1%26algv%3DSimVIDwebV4WithCtxRankerV1UnifiedFeaturesWithAuctionUnificationKatReco%26pmt%3D1%26amclksrc%3DITM%26sd%3D306504414149%26sid%3DAQALAAAAEOh9lClLnbays8ZGLLxfZfQ%3D%26itm%3D298189164922%26noa%3D0%26plcampt%3D0%3A162183610014%26algo%3DHOMESPLICE.SIM%26brand%3DGeforce%26asc%3D20231107084023%26ao%3D1%26rk%3D3%26pid%3D101875%26b%3D1%26mehot%3Dnone%26lsid%3D0%26meid%3Df2681a4031a84e4da1d2ac7e38e0c554%26pg%3D2332490&_trksid=p2332490.c101875.m1851&itmprp=cksum%3A298189164922f2681a4031a84e4da1d2ac7e38e0c554%7Cenc%3AAQALAAABMNcuE5wSiaWXUpZtpAuJty4GYCq%252BLEH%252FN8HXnEhWX0xwkDW1uDN51f72s7GsFOUQ9WFGrCI8AiSbyE6tacE%252FxpPzcbI6%252Bfuy9WmqzFcws0Mb4xZrQs0gU7OF9AHrO8ZmwRR8mNH4gbp7dVZFCFGPYzDhQsdWaybsKah3W72lPCBRz%252FFjQg14pzii6uCr7nh3R7GQ7qgUTCGiidrERy8BQQQaANj3TVD7FBDU9Ogzl8otdnE5Zg4Tvnj9OSqKgQRHGMuzAz--rC9FLuPPXcbhCMkdbZb2ZdP9U1S00lgEcWGN5fVz%252BZGQAvcRDJRJC0%252BTFa2fGFsrpJuXRIK7eYEydYGAu5o8fmCAnlBx%252Bkx4oJdpF%252FU5LsHS8iG9ZN7k6sJGkpFsGalzDmd4DzfwK5pdjz8%253D%7Campid%3APL_CLK%7Cclp%3A2332490&itmmeta=01KNFD9WX3ZGM95JWMAZH34V4F
+                    - button "Add NVIDIA GeForce RTX 5090 FE Founders Edition 32GB GDDR7 Graphics Card - Open Box to your watch list" [ref=e387] [cursor=pointer]:
+                      - img
+                  - separator [ref=e388]
+                  - button "More Options" [ref=e390] [cursor=pointer]:
+                    - generic [ref=e391]:
+                      - img
+          - generic [ref=e394]:
+            - heading "EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card GPU - 24G-P5-3987-KR" [level=1] [ref=e396]
+            - generic [ref=e398] [cursor=pointer]:
+              - generic [ref=e400]:
+                - link [ref=e402]:
+                  - /url: https://www.ebay.com/str/voltagecomputers?_trksid=p4429486.m3561.l161210
+                  - img [ref=e404]
+                - generic [ref=e405]:
+                  - generic [ref=e406]:
+                    - link "Voltage Computers" [ref=e407]:
+                      - /url: https://www.ebay.com/str/voltagecomputers?_trksid=p4429486.m3561.l161211
+                    - generic [ref=e409]: (411)
+                  - generic [ref=e410]:
+                    - button "100% positive" [ref=e412]
+                    - link "Seller's other items" [ref=e414]:
+                      - /url: https://www.ebay.com/str/voltagecomputers?_trksid=p4429486.m3561.l170197
+                      - generic [ref=e415]: Seller's other items
+                      - generic [ref=e416]: Seller's other items
+                    - button "Message seller" [ref=e418]:
+                      - generic [ref=e419]: Message seller
+                      - generic [ref=e420]: Message seller
+              - button "See more about this seller" [ref=e422]:
+                - img
+            - generic [ref=e425]:
+              - generic [ref=e426]: C $1,349.00
+              - generic [ref=e427]:
+                - generic [ref=e428]: Approximately
+                - generic [ref=e429]: US $967.37
+            - generic [ref=e430]:
+              - generic [ref=e431]: "Condition:"
+              - generic [ref=e433]:
+                - generic [ref=e434]:
+                  - generic [ref=e435]: Used
+                  - generic [ref=e436]: Used
+                - button "More information - About this item condition" [ref=e437] [cursor=pointer]:
+                  - generic [ref=e438]:
+                    - img "More information - About this item condition"
+            - generic [ref=e440]:
+              - generic [ref=e441]: "Quantity:"
+              - generic [ref=e442]:
+                - textbox "Quantity:" [ref=e444]: "1"
+                - generic [ref=e445]: 2 available 2 sold
+            - list [ref=e447]:
+              - listitem [ref=e448]:
+                - button "Buy It Now" [ref=e450] [cursor=pointer]:
+                  - generic [ref=e451]: Buy It Now
+              - listitem [ref=e452]:
+                - button "Add to cart" [ref=e454] [cursor=pointer]:
+                  - generic [ref=e455]: Add to cart
+              - listitem [ref=e456]:
+                - generic [ref=e458]:
+                  - status [ref=e459]: Add to Watchlist
+                  - link "Add to Watchlist" [ref=e464] [cursor=pointer]:
+                    - /url: https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&ru=https%3A%2F%2Fwww.ebay.com%2Fitm%2F306504414149
+                    - generic [ref=e465]:
+                      - img
+                      - text: Add to Watchlist
+            - generic [ref=e468]:
+              - generic [ref=e469]:
+                - generic [ref=e470]:
+                  - img
+                - generic [ref=e472]: Popular item. 2 have already sold.
+              - generic [ref=e473]:
+                - generic [ref=e474]:
+                  - img
+                - generic [ref=e476]: People want this. 29 people are watching this.
+            - generic [ref=e479]:
+              - heading "Shipping, returns, and payments" [level=2] [ref=e482]:
+                - generic [ref=e483]: Shipping, returns, and payments
+              - generic [ref=e485]:
+                - generic [ref=e489]:
+                  - generic [ref=e492]: "Shipping:"
+                  - generic [ref=e494]:
+                    - generic [ref=e495]:
+                      - text: C $67.56 (approx US $48.45) eBay International Shipping
+                      - button "More information" [ref=e501]:
+                        - img
+                      - text: .
+                      - button "See details for shipping" [ref=e502] [cursor=pointer]:
+                        - generic [ref=e503]:
+                          - text: See details
+                          - generic [ref=e504]: for shipping
+                    - generic [ref=e505]: "Located in: Calgary, Canada"
+                - generic [ref=e513]:
+                  - text: Save on combined shipping
+                  - button "More information on Combined Shipping. Opens a layer." [ref=e519]:
+                    - img
+                - generic [ref=e523]:
+                  - generic [ref=e526]: "Import fees:"
+                  - generic [ref=e529]:
+                    - text: Est. US $484.44Final at checkout
+                    - button "More information" [ref=e535]:
+                      - img
+                - generic [ref=e539]:
+                  - generic [ref=e542]: "Delivery:"
+                  - generic [ref=e545]:
+                    - text: Estimated between Thu, Apr 23 and Wed, Apr 29 to 78704
+                    - button "Information - Estimated delivery date - opens a layer" [ref=e551]:
+                      - img
+            - generic [ref=e558]:
+              - generic [ref=e561]: "Returns:"
+              - generic [ref=e564]:
+                - text: 30 days returns. Buyer pays for return shipping. If you use an eBay shipping label, it will be deducted from your refund amount.
+                - button "See details - for more information about returns" [ref=e565] [cursor=pointer]:
+                  - generic [ref=e566]:
+                    - text: See details
+                    - generic [ref=e567]: "- for more information about returns"
+            - generic [ref=e574]:
+              - generic [ref=e577]: "Payments:"
+              - generic [ref=e580]:
+                - img "PayPal" [ref=e581]
+                - img "Google Pay" [ref=e583]
+                - img "Visa" [ref=e585]
+                - img "Master Card" [ref=e587]
+                - img "Diners Club" [ref=e590]
+            - generic [ref=e594]:
+              - heading "Shop with confidence" [level=2] [ref=e597]
+              - generic [ref=e598]:
+                - generic [ref=e600]:
+                  - img
+                - generic [ref=e601]:
+                  - generic [ref=e602]: eBay Money Back Guarantee
+                  - generic [ref=e603]:
+                    - text: Get the item you ordered or your money back.
+                    - link "Learn more eBay Money Back Guarantee - opens new window or tab" [ref=e604] [cursor=pointer]:
+                      - /url: https://www.ebay.com/ebay-money-back-guarantee/
+                      - generic [ref=e605]:
+                        - text: Learn more
+                        - generic [ref=e606]: eBay Money Back Guarantee - opens new window or tab
+        - generic [ref=e607]:
+          - generic [ref=e612]:
+            - tablist [ref=e613]:
+              - tab "About this item" [selected] [ref=e614] [cursor=pointer]:
+                - generic [ref=e615]: About this item
+            - tabpanel "About this item" [ref=e617]:
+              - generic [ref=e620]:
+                - generic [ref=e623]:
+                  - generic [ref=e627]: Seller assumes all responsibility for this listing.
+                  - generic [ref=e631]: eBay item number:306504414149
+                  - generic [ref=e635]:
+                    - text: Last updated on Apr 05, 2026 00:17:30 PDT
+                    - link "View all revisions View all revisions" [ref=e636] [cursor=pointer]:
+                      - /url: https://www.ebay.com/rvh/306504414149?rt=nc&_trksid=p4429486.m148105.l48144
+                      - generic [ref=e637]:
+                        - text: View all revisions
+                        - generic [ref=e638]: View all revisions
+                - generic [ref=e641]:
+                  - heading "Item specifics" [level=2] [ref=e644]:
+                    - generic [ref=e645]: Item specifics
+                  - generic [ref=e647]:
+                    - generic [ref=e648]:
+                      - generic [ref=e650]:
+                        - term [ref=e651]:
+                          - generic [ref=e653]: Condition
+                        - definition [ref=e654]:
+                          - generic [ref=e657]:
+                            - generic [ref=e658]: "Used: An item that has been used previously. The item may have some signs of cosmetic wear, but is ..."
+                            - button "Read more about the condition" [ref=e660]:
+                              - generic [ref=e661]:
+                                - text: Read more
+                                - generic [ref=e662]: about the condition
+                      - generic [ref=e664]:
+                        - term [ref=e665]:
+                          - generic [ref=e667]: Brand
+                        - definition [ref=e668]:
+                          - generic [ref=e670]: EVGA
+                    - generic [ref=e671]:
+                      - generic [ref=e673]:
+                        - term [ref=e674]:
+                          - generic [ref=e676]: Connectors
+                        - definition [ref=e677]:
+                          - generic [ref=e679]: DisplayPort, HDMI
+                      - generic [ref=e681]:
+                        - term [ref=e682]:
+                          - generic [ref=e684]: Chipset Manufacturer
+                        - definition [ref=e685]:
+                          - generic [ref=e687]: NVIDIA
+                    - generic [ref=e688]:
+                      - generic [ref=e690]:
+                        - term [ref=e691]:
+                          - generic [ref=e693]: Memory Size
+                        - definition [ref=e694]:
+                          - generic [ref=e696]: 24 GB
+                      - generic [ref=e698]:
+                        - term [ref=e699]:
+                          - generic [ref=e701]: Features
+                        - definition [ref=e702]:
+                          - generic [ref=e704]: RGB Lighting, Multiple Monitor Support, SLI/CrossFire Ready, LED Lighting, G-SYNC/FreeSync Compatible, VR Ready
+                    - generic [ref=e705]:
+                      - generic [ref=e707]:
+                        - term [ref=e708]:
+                          - generic [ref=e710]: Compatible Slot
+                        - definition [ref=e711]:
+                          - generic [ref=e713]: PCI Express 4.0 x16
+                      - generic [ref=e715]:
+                        - term [ref=e716]:
+                          - generic [ref=e718]: Memory Type
+                        - definition [ref=e719]:
+                          - generic [ref=e721]: GDDR6X
+                    - generic [ref=e722]:
+                      - generic [ref=e724]:
+                        - term [ref=e725]:
+                          - generic [ref=e727]: Chipset/GPU Model
+                        - definition [ref=e728]:
+                          - generic [ref=e730]: NVIDIA GeForce RTX 3090
+                      - generic [ref=e732]:
+                        - term [ref=e733]:
+                          - generic [ref=e735]: APIs
+                        - definition [ref=e736]:
+                          - generic [ref=e738]: DirectX 12 Ultimate, CUDA, DirectX 12, OpenGL 4.6, Vulkan
+                    - generic [ref=e739]:
+                      - generic [ref=e741]:
+                        - term [ref=e742]:
+                          - generic [ref=e744]: Power Cable Requirement
+                        - definition [ref=e745]:
+                          - generic [ref=e747]: 8-Pin + 8-Pin + 8-Pin PCI-E
+                      - generic [ref=e749]:
+                        - term [ref=e750]:
+                          - generic [ref=e752]: MPN
+                        - definition [ref=e753]:
+                          - generic [ref=e755]: 24G-P5-3987-RX
+                    - generic [ref=e756]:
+                      - generic [ref=e758]:
+                        - term [ref=e759]:
+                          - generic [ref=e761]: Cooling Component Included
+                        - definition [ref=e762]:
+                          - generic [ref=e764]: Fan with Heatsink
+                      - generic [ref=e766]:
+                        - term [ref=e767]:
+                          - generic [ref=e769]: Country of Origin
+                        - definition [ref=e770]:
+                          - generic [ref=e772]: China
+                - generic [ref=e773]:
+                  - generic [ref=e774]: Category
+                  - navigation "breadcrumb" [ref=e777]:
+                    - heading "breadcrumb" [level=2] [ref=e778]
+                    - list [ref=e779]:
+                      - listitem [ref=e780]:
+                        - link "Electronics" [ref=e781] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Electronics/bn_7000259124
+                        - img
+                      - listitem [ref=e782]:
+                        - link "Computers/Tablets & Networking" [ref=e783] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Computers-Tablets-Network-Hardware/58058/bn_1865247
+                        - img
+                      - listitem [ref=e784]:
+                        - link "Computer Components & Parts" [ref=e785] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Computer-Components-Parts/175673/bn_1643095
+                        - img
+                      - listitem [ref=e786]:
+                        - link "Graphics/Video Cards" [ref=e787] [cursor=pointer]:
+                          - /url: https://www.ebay.com/b/Computer-Graphics-Cards/27386/bn_661796
+                - generic [ref=e790]:
+                  - heading "About this product" [level=2] [ref=e793]:
+                    - generic [ref=e794]: About this product
+                  - generic [ref=e795]:
+                    - heading "Product Identifiers" [level=2] [ref=e798]:
+                      - generic [ref=e799]: Product Identifiers
+                    - generic [ref=e800]:
+                      - generic [ref=e801]:
+                        - generic [ref=e803]:
+                          - generic [ref=e806]: Brand
+                          - generic [ref=e809]: EVGA
+                        - generic [ref=e811]:
+                          - generic [ref=e814]: MPN
+                          - generic [ref=e817]: 24G-P5-3987-RX
+                      - generic [ref=e818]:
+                        - generic [ref=e820]:
+                          - generic [ref=e823]: Ean
+                          - generic [ref=e826]: "4250812440617"
+                        - generic [ref=e828]:
+                          - generic [ref=e831]: UPC
+                          - generic [ref=e834]: "0843368069681"
+                      - generic [ref=e837]:
+                        - generic [ref=e840]: eBay Product ID (ePID)
+                        - generic [ref=e843]: "7050650674"
+                  - generic [ref=e845]:
+                    - heading "Product Key Features" [level=2] [ref=e848]:
+                      - generic [ref=e849]: Product Key Features
+                    - generic [ref=e850]:
+                      - generic [ref=e851]:
+                        - generic [ref=e853]:
+                          - generic [ref=e856]: Memory Type
+                          - generic [ref=e859]: GDDR6X
+                        - generic [ref=e861]:
+                          - generic [ref=e864]: APIs
+                          - generic [ref=e867]: DirectX 12 Ultimate, CUDA, DirectX 12, OpenGL 4.6, Vulkan
+                      - generic [ref=e868]:
+                        - generic [ref=e870]:
+                          - generic [ref=e873]: Memory Size
+                          - generic [ref=e876]: 24 GB
+                        - generic [ref=e878]:
+                          - generic [ref=e881]: Chipset/GPU Model
+                          - generic [ref=e884]: NVIDIA GeForce RTX 3090
+                      - generic [ref=e885]:
+                        - generic [ref=e887]:
+                          - generic [ref=e890]: Chipset Manufacturer
+                          - generic [ref=e893]: NVIDIA
+                        - generic [ref=e895]:
+                          - generic [ref=e898]: Features
+                          - generic [ref=e901]: RGB Lighting, Multiple Monitor Support, SLI/CrossFire Ready, LED Lighting, G-SYNC/FreeSync Compatible, VR Ready
+                      - generic [ref=e902]:
+                        - generic [ref=e904]:
+                          - generic [ref=e907]: Cooling Component Included
+                          - generic [ref=e910]: Fan with Heatsink
+                        - generic [ref=e912]:
+                          - generic [ref=e915]: Power Cable Requirement
+                          - generic [ref=e918]: 8-Pin + 8-Pin + 8-Pin PCI-E
+                      - generic [ref=e919]:
+                        - generic [ref=e921]:
+                          - generic [ref=e924]: Connectors
+                          - generic [ref=e927]: DisplayPort, HDMI
+                        - generic [ref=e929]:
+                          - generic [ref=e932]: Compatible Slot
+                          - generic [ref=e935]: PCI Express 4.0 x16
+                - generic [ref=e936]:
+                  - heading "Item description from the seller" [level=2] [ref=e939]
+                  - iframe [ref=e940]:
+                    - generic [ref=f75e2]:
+                      - paragraph [ref=f75e3]: GPU is in great shape. Fans run quiet and card runs cool. May show minimal signs of usage, including some light dust or scratches. GPU is fully functional and works without issues
+                      - paragraph [ref=f75e4]: Shipping service may vary from what the listing describes. Shipping should generally take 2-4 business days, on top of the 3 business day handling time
+          - generic [ref=e943]:
+            - generic [ref=e944]:
+              - generic [ref=e945]:
+                - heading "About this seller" [level=2] [ref=e946]:
+                  - generic [ref=e948]: About this seller
+                - generic [ref=e949]:
+                  - link [ref=e951] [cursor=pointer]:
+                    - /url: https://www.ebay.com/str/voltagecomputers?_trksid=p4429486.m145687.l149266
+                    - img [ref=e953]
+                  - generic [ref=e954]:
+                    - heading "Voltage Computers" [level=3] [ref=e955]:
+                      - link "Voltage Computers" [ref=e956] [cursor=pointer]:
+                        - /url: https://www.ebay.com/str/voltagecomputers?_trksid=p4429486.m145687.l149267
+                    - paragraph [ref=e957]: 100% positive feedback•2.2K items sold
+                - generic [ref=e962]:
+                  - generic [ref=e963]:
+                    - img
+                  - generic [ref=e964]: Joined Feb 2018
+                - generic [ref=e965]:
+                  - link "Visit store" [ref=e966] [cursor=pointer]:
+                    - /url: https://www.ebay.com/str/voltagecomputers?_trksid=p4429486.m145687.l149086
+                    - generic [ref=e967]: Visit store
+                  - button "Message seller - opens in a new dialog" [ref=e968] [cursor=pointer]:
+                    - generic [ref=e969]:
+                      - text: Message seller
+                      - generic [ref=e970]: "- opens in a new dialog"
+                  - button "Save seller - Save this seller voltage_computers" [ref=e972] [cursor=pointer]:
+                    - generic [ref=e973]:
+                      - img
+                    - generic [ref=e974]: Save seller
+              - generic [ref=e976]:
+                - heading "Detailed seller ratings" [level=3] [ref=e977]
+                - generic [ref=e978]:
+                  - generic [ref=e979]: Average for the last 12 months
+                  - generic [ref=e980]:
+                    - generic [ref=e981]:
+                      - generic [ref=e982]: Accurate description
+                      - progressbar [ref=e983]
+                      - generic [ref=e984]: "4.9"
+                    - generic [ref=e985]:
+                      - generic [ref=e986]: Reasonable shipping cost
+                      - progressbar [ref=e987]
+                      - generic [ref=e988]: "4.8"
+                    - generic [ref=e989]:
+                      - generic [ref=e990]: Shipping speed
+                      - progressbar [ref=e991]
+                      - generic [ref=e992]: "5.0"
+                    - generic [ref=e993]:
+                      - generic [ref=e994]: Communication
+                      - progressbar [ref=e995]
+                      - generic [ref=e996]: "5.0"
+            - generic [ref=e999]:
+              - heading "Seller feedback (429)" [level=2] [ref=e1000]
+              - 'button "Filter: All ratings" [ref=e1003] [cursor=pointer]':
+                - generic [ref=e1004]:
+                  - generic [ref=e1005]: "Filter:"
+                  - generic [ref=e1006]: All ratings
+                  - img
+              - list [ref=e1007]:
+                - listitem [ref=e1008]:
+                  - generic [ref=e1009]:
+                    - generic [ref=e1011]:
+                      - generic [ref=e1012]:
+                        - img "Positive feedback rating"
+                      - generic [ref=e1013]:
+                        - text: 6***7 (12)
+                        - generic [ref=e1014]: "- Feedback left by buyer."
+                      - generic [ref=e1017]: Past month
+                      - generic [ref=e1018]: Verified purchase
+                    - generic [ref=e1020]: GPU arrived securely wrapped in bubble wrap, item has some slight cosmetic marks as described. GPU fans all function correctly, and temperatures are consistent with description.
+                    - link "Powercolor / Dataland X Serial RX 5700 XT 8GB GDDR6 RGB Graphics Card GPU - READ (#306026644409)" [ref=e1022] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/306026644409
+                      - generic [ref=e1023]: Powercolor / Dataland X Serial RX 5700 XT 8GB GDDR6 RGB Graphics Card GPU - READ (#306026644409)
+                - listitem [ref=e1024]:
+                  - generic [ref=e1025]:
+                    - generic [ref=e1027]:
+                      - generic [ref=e1028]:
+                        - img "Positive feedback rating"
+                      - generic [ref=e1029]:
+                        - text: u***a (48)
+                        - generic [ref=e1030]: "- Feedback left by buyer."
+                      - generic [ref=e1033]: Past 6 months
+                      - generic [ref=e1034]: Verified purchase
+                    - generic [ref=e1036]: The graphic card was exactly as described ... good condition. Packaging was amazingly well done. Quick shipping (eBay International) with no tariff. Excellent seller.
+                    - link "Dell OEM NVIDIA RTX 3090 24GB GDDR6X AI Graphics Card GPU - M8HMD (#306342085234)" [ref=e1038] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/306342085234
+                      - generic [ref=e1039]: Dell OEM NVIDIA RTX 3090 24GB GDDR6X AI Graphics Card GPU - M8HMD (#306342085234)
+                - listitem [ref=e1040]:
+                  - generic [ref=e1041]:
+                    - generic [ref=e1043]:
+                      - generic [ref=e1044]:
+                        - img "Positive feedback rating"
+                      - generic [ref=e1045]:
+                        - text: a***a (48)
+                        - generic [ref=e1046]: "- Feedback left by buyer."
+                      - generic [ref=e1049]: Past 6 months
+                      - generic [ref=e1050]: Verified purchase
+                    - generic [ref=e1052]: Item exactly as described and in very good condition. Runs perfectly. Seller very easy going and respond to questions within seconds. Packaging was outstanding. I am strongly recomending this seller to anyone! Very happy!
+                    - generic [ref=e1053]: ZOTAC GAMING GeForce RTX 3090 Trinity 24GB GDDR6X Graphics Card - ZT-A3090D-10P (#306508709429)
+                - listitem [ref=e1054]:
+                  - generic [ref=e1055]:
+                    - generic [ref=e1057]:
+                      - generic [ref=e1058]:
+                        - img "Neutral feedback rating"
+                      - generic [ref=e1059]:
+                        - text: 1***9 (0)
+                        - generic [ref=e1060]: "- Feedback left by buyer."
+                      - generic [ref=e1063]: Past 6 months
+                      - generic [ref=e1064]: Verified purchase
+                    - generic [ref=e1066]: Product and price very good. Delivery slow for a store. Took several days to package and ship my purchase. Likewise communication was just Ok. Took a few days to respond to texts/emails. And then the interaction was a bare minimum. Followup questions ignored.
+                    - link "NVIDIA RTX 3060M 6GB GDDR6 Graphics Card GPU (#305561562394)" [ref=e1068] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/305561562394
+                      - generic [ref=e1069]: NVIDIA RTX 3060M 6GB GDDR6 Graphics Card GPU (#305561562394)
+                - listitem [ref=e1070]:
+                  - generic [ref=e1071]:
+                    - generic [ref=e1073]:
+                      - generic [ref=e1074]:
+                        - img "Positive feedback rating"
+                      - generic [ref=e1075]:
+                        - text: k***k (1)
+                        - generic [ref=e1076]: "- Feedback left by buyer."
+                      - generic [ref=e1079]: Past year
+                      - generic [ref=e1080]: Verified purchase
+                    - generic [ref=e1082]: Took a few days to ship, but was still within their time window. Packaged extremely well, always worry about ordering delicate electronics online due to packaging but the seller took extra care. Will definitely be ordering more. Price was great too.
+                    - generic [ref=e1083]: Western Digital 22TB 7200 RPM SATA III HDD - WD220EDGZ (#306326365536)
+                - listitem [ref=e1084]:
+                  - generic [ref=e1085]:
+                    - generic [ref=e1087]:
+                      - generic [ref=e1088]:
+                        - img "Positive feedback rating"
+                      - generic [ref=e1089]:
+                        - text: 7***a (3)
+                        - generic [ref=e1090]: "- Feedback left by buyer."
+                      - generic [ref=e1093]: Past 6 months
+                      - generic [ref=e1094]: Verified purchase
+                    - generic [ref=e1096]: Super fast delivery , Condition super, exactly as described , extra bubble wrapping nice touch :-) thank you!
+                    - link "Full kit - MB / CPU / RAM / Cooler - Asus B250 Mining Expert 19 slot LGA 1151 MB (#305976090083)" [ref=e1098] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/305976090083
+                      - generic [ref=e1099]: Full kit - MB / CPU / RAM / Cooler - Asus B250 Mining Expert 19 slot LGA 1151 MB (#305976090083)
+                - listitem [ref=e1100]:
+                  - generic [ref=e1101]:
+                    - generic [ref=e1103]:
+                      - generic [ref=e1104]:
+                        - img "Positive feedback rating"
+                      - generic [ref=e1105]:
+                        - text: t***b (210)
+                        - generic [ref=e1106]: "- Feedback left by buyer."
+                      - generic [ref=e1109]: Past 6 months
+                      - generic [ref=e1110]: Verified purchase
+                    - generic [ref=e1112]: Excellent shipping, superb packing. Card was as described, excellent condition. Did a teardown and maintenance and it's up and running flawlessly. Thank you!
+                    - link "GIGABYTE AORUS GeForce RTX 3080 XTREME WATERFORCE WB 1‎0GB GDDR6X Graphics Card (#306386079777)" [ref=e1114] [cursor=pointer]:
+                      - /url: https://www.ebay.com/itm/306386079777
+                      - generic [ref=e1115]: GIGABYTE AORUS GeForce RTX 3080 XTREME WATERFORCE WB 1‎0GB GDDR6X Graphics Card (#306386079777)
+                - listitem [ref=e1116]:
+                  - generic [ref=e1117]:
+                    - generic [ref=e1119]:
+                      - generic [ref=e1120]:
+                        - img "Positive feedback rating"
+                      - generic [ref=e1121]:
+                        - text: a***n (66)
+                        - generic [ref=e1122]: "- Feedback left by buyer."
+                      - generic [ref=e1125]: Past year
+                      - generic [ref=e1126]: Verified purchase
+                    - generic [ref=e1128]: as described, quick and cheap shipping (canada), was packed with a big quantity of bubble wrap which i really appreciate as many sellers don't wrap hard drives sufficiently. very good, i'll probably buy from this seller again next time i need more hdds
+                    - generic [ref=e1129]: Western Digital 18TB UltraStar DC HC550 7200 RPM SATA III 3.5" Internal HDD (#306148258770)
+              - link "See all feedback. Opens in a new tab" [ref=e1131] [cursor=pointer]:
+                - /url: https://www.ebay.com/fdbk/mweb_profile?fdbkType=FeedbackReceivedAsSeller&item_id=306504414149&username=voltage_computers&filter=feedback_page%3ARECEIVED_AS_SELLER&sort=RELEVANCEV2
+                - text: See all feedback
+          - generic [ref=e1133]:
+            - generic [ref=e1134]:
+              - generic [ref=e1136]:
+                - heading "Product ratings and reviews" [level=2] [ref=e1139]
+                - link "Learn more" [ref=e1141] [cursor=pointer]:
+                  - /url: https://www.ebay.com/help/selling/listings/product-reviews?id=5186
+              - generic [ref=e1142]:
+                - generic [ref=e1143]:
+                  - generic [ref=e1144]: "5.0"
+                  - img "5.0 out of 5 stars based on 13 product ratings" [ref=e1147]:
+                    - img
+                    - img
+                    - img
+                    - img
+                    - img
+                  - generic [ref=e1148]: 13 product ratings
+                - list [ref=e1150]:
+                  - listitem [ref=e1151]:
+                    - generic [ref=e1152]:
+                      - generic [ref=e1153]:
+                        - img
+                        - paragraph [ref=e1154]: "5"
+                      - generic [ref=e1158]: 13 users rated this 5 out of 5 stars
+                      - generic [ref=e1159]: "13"
+                  - listitem [ref=e1160]:
+                    - generic [ref=e1161]:
+                      - generic [ref=e1162]:
+                        - img
+                        - paragraph [ref=e1163]: "4"
+                      - generic [ref=e1166]: 0 users rated this 4 out of 5 stars
+                      - generic [ref=e1167]: "0"
+                  - listitem [ref=e1168]:
+                    - generic [ref=e1169]:
+                      - generic [ref=e1170]:
+                        - img
+                        - paragraph [ref=e1171]: "3"
+                      - generic [ref=e1174]: 0 users rated this 3 out of 5 stars
+                      - generic [ref=e1175]: "0"
+                  - listitem [ref=e1176]:
+                    - generic [ref=e1177]:
+                      - generic [ref=e1178]:
+                        - img
+                        - paragraph [ref=e1179]: "2"
+                      - generic [ref=e1182]: 0 users rated this 2 out of 5 stars
+                      - generic [ref=e1183]: "0"
+                  - listitem [ref=e1184]:
+                    - generic [ref=e1185]:
+                      - generic [ref=e1186]:
+                        - img
+                        - paragraph [ref=e1187]: "1"
+                      - generic [ref=e1190]: 0 users rated this 1 out of 5 stars
+                      - generic [ref=e1191]: "0"
+                - generic [ref=e1192]:
+                  - img "100 percents of reviewers think of this product as Good value" [ref=e1193]:
+                    - generic [ref=e1194]: 100%
+                    - paragraph [ref=e1199]: Good value
+                  - img "100 percents of reviewers think of this product as Quiet" [ref=e1200]:
+                    - generic [ref=e1201]: 100%
+                    - paragraph [ref=e1206]: Quiet
+                  - img "100 percents of reviewers think of this product as Performs well" [ref=e1207]:
+                    - generic [ref=e1208]: 100%
+                    - paragraph [ref=e1213]: Performs well
+              - generic [ref=e1214]:
+                - generic [ref=e1215]:
+                  - heading "Most relevant reviews" [level=3] [ref=e1216]
+                  - link "See all 12 reviews" [ref=e1218] [cursor=pointer]:
+                    - /url: https://www.ebay.com/urw/EVGA+GeForce+RTX+3090+FTW3+ULTRA+GAMING+24GB+GDDR6X+Graphics+Card+%2824G-P5-3987-RX%29/product-reviews/7050650674?_itm=306504414149
+                - list [ref=e1219]:
+                  - listitem [ref=e1220]:
+                    - generic [ref=e1221]:
+                      - img "percents of reviewers think of this product as" [ref=e1224]:
+                        - img
+                        - img
+                        - img
+                        - img
+                        - img
+                      - generic [ref=e1225]:
+                        - text: by
+                        - link "odarch13" [ref=e1226] [cursor=pointer]:
+                          - /url: https://www.ebay.com/usr/odarch13
+                          - generic [ref=e1227]: odarch13
+                      - generic [ref=e1228]: May 14, 2024
+                      - generic [ref=e1229]: Top favorable review
+                    - generic [ref=e1230]:
+                      - heading "EVGA 3090 seems stable and reliable. Gaming and benchmarking with no crashes. It is benchmarking at average or above for the setup it is now in. Card" [level=4] [ref=e1231]
+                      - generic [ref=e1234]: EVGA 3090 seems stable and reliable. Gaming and benchmarking with no crashes. It is benchmarking at average or above for the setup it is now in. Card is very clean. I see no evidence that it has been in a crypto mining rig or other non gaming environment. Card was shipped promptly and was packaged well.
+                      - paragraph [ref=e1235]:
+                        - generic [ref=e1236]: "Verified purchase: Yes"
+                        - generic [ref=e1237]: "Condition: Pre-Owned"
+                        - generic [ref=e1238]: "Sold by: smian591"
+                  - listitem [ref=e1239]:
+                    - generic [ref=e1240]:
+                      - img "percents of reviewers think of this product as" [ref=e1243]:
+                        - img
+                        - img
+                        - img
+                        - img
+                        - img
+                      - generic [ref=e1244]:
+                        - text: by
+                        - link "scr221" [ref=e1245] [cursor=pointer]:
+                          - /url: https://www.ebay.com/usr/scr221
+                          - generic [ref=e1246]: scr221
+                      - generic [ref=e1247]: Sep 14, 2025
+                    - generic [ref=e1248]:
+                      - heading "would buy again A+" [level=4] [ref=e1249]
+                      - generic [ref=e1252]: Card works great and looks good, shows no signs of heavy use which was good. Performance and heat are baseline with the average 3090.
+                      - paragraph [ref=e1253]:
+                        - generic [ref=e1254]: "Verified purchase: Yes"
+                        - generic [ref=e1255]: "Condition: Pre-Owned"
+                  - listitem [ref=e1256]:
+                    - generic [ref=e1257]:
+                      - img "percents of reviewers think of this product as" [ref=e1260]:
+                        - img
+                        - img
+                        - img
+                        - img
+                        - img
+                      - generic [ref=e1261]:
+                        - text: by
+                        - link "mikeyx117" [ref=e1262] [cursor=pointer]:
+                          - /url: https://www.ebay.com/usr/mikeyx117
+                          - generic [ref=e1263]: mikeyx117
+                      - generic [ref=e1264]: Nov 30, 2022
+                    - generic [ref=e1265]:
+                      - heading "Now a great value" [level=4] [ref=e1266]
+                      - generic [ref=e1269]: With the recent price drops, the 3090 has become a great value in comparison to the new 40 series, especially with the FTW3. Performs amazingly as expected.
+                      - paragraph [ref=e1270]:
+                        - generic [ref=e1271]: "Verified purchase: Yes"
+                        - generic [ref=e1272]: "Condition: Pre-Owned"
+                        - generic [ref=e1273]: "Sold by: stickboy46"
+                  - listitem [ref=e1274]:
+                    - generic [ref=e1275]:
+                      - img "percents of reviewers think of this product as" [ref=e1278]:
+                        - img
+                        - img
+                        - img
+                        - img
+                        - img
+                      - generic [ref=e1279]:
+                        - text: by
+                        - link "jkf-q1" [ref=e1280] [cursor=pointer]:
+                          - /url: https://www.ebay.com/usr/jkf-q1
+                          - generic [ref=e1281]: jkf-q1
+                      - generic [ref=e1282]: Aug 15, 2022
+                    - generic [ref=e1283]:
+                      - heading "It’s very good card I Love these cards 👍" [level=4] [ref=e1284]
+                      - generic [ref=e1287]: It’s very good card I Love these cards 👍
+                      - paragraph [ref=e1288]:
+                        - generic [ref=e1289]: "Verified purchase: Yes"
+                        - generic [ref=e1290]: "Condition: New"
+                        - generic [ref=e1291]: "Sold by: dopamines1"
+                  - listitem [ref=e1292]:
+                    - generic [ref=e1293]:
+                      - img "percents of reviewers think of this product as" [ref=e1296]:
+                        - img
+                        - img
+                        - img
+                        - img
+                        - img
+                      - generic [ref=e1297]:
+                        - text: by
+                        - link "rpera95" [ref=e1298] [cursor=pointer]:
+                          - /url: https://www.ebay.com/usr/rpera95
+                          - generic [ref=e1299]: rpera95
+                      - generic [ref=e1300]: Jun 02, 2025
+                    - generic [ref=e1301]:
+                      - heading "Even though the item is used, it functio..." [level=4] [ref=e1302]
+                      - generic [ref=e1305]: Even though the item is used, it function and looks like new.
+                      - paragraph [ref=e1306]:
+                        - generic [ref=e1307]: "Verified purchase: Yes"
+                        - generic [ref=e1308]: "Condition: Pre-Owned"
+                        - generic [ref=e1309]: "Sold by: 2loud4yourears"
+            - navigation "Quick Links" [ref=e1310]:
+              - link "Back to home page" [ref=e1311] [cursor=pointer]:
+                - /url: https://www.ebay.com
+              - button "Return to top" [ref=e1312] [cursor=pointer]
+            - generic [ref=e1314]:
+              - heading "More to explore :" [level=2] [ref=e1317]
+              - list [ref=e1319]:
+                - listitem [ref=e1320]:
+                  - link "NVIDIA GeForce RTX 3090 24GB GDDR6 Graphics Cards," [ref=e1321] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/NVIDIA-GeForce-RTX-3090-24GB-GDDR6-Graphics-Cards/27386/bn_7117810176
+                - listitem [ref=e1322]:
+                  - link "NVIDIA GeForce RTX 3080 10GB GDDR6X Graphics Cards," [ref=e1323] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/NVIDIA-GeForce-RTX-3080-10GB-GDDR6X-Graphics-Cards/27386/bn_7117804425
+                - listitem [ref=e1324]:
+                  - link "EVGA GeForce RTX 2080 XC ULTRA GAMING NVIDIA Computer Graphics Cards," [ref=e1325] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/EVGA-GeForce-RTX-2080-XC-ULTRA-GAMING-NVIDIA-Computer-Graphics-Cards/27386/bn_7116458399
+                - listitem [ref=e1326]:
+                  - link "EVGA NVIDIA GeForce RTX 2070 NVIDIA Computer Graphics Cards," [ref=e1327] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/EVGA-NVIDIA-GeForce-RTX-2070-NVIDIA-Computer-Graphics-Cards/27386/bn_7116859560
+                - listitem [ref=e1328]:
+                  - link "EVGA NVIDIA GeForce RTX 2080 NVIDIA Computer Graphics Cards," [ref=e1329] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/EVGA-NVIDIA-GeForce-RTX-2080-NVIDIA-Computer-Graphics-Cards/27386/bn_7116844072
+                - listitem [ref=e1330]:
+                  - link "EVGA NVIDIA GeForce RTX 2060 NVIDIA Computer Graphics Cards," [ref=e1331] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/EVGA-NVIDIA-GeForce-RTX-2060-NVIDIA-Computer-Graphics-Cards/27386/bn_7116852732
+                - listitem [ref=e1332]:
+                  - link "EVGA NVIDIA GeForce RTX 3060 12GB GDDR6 Graphics/Video Cards," [ref=e1333] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/EVGA-NVIDIA-GeForce-RTX-3060-12GB-GDDR6-Graphics-Video-Cards/27386/bn_7117808167
+                - listitem [ref=e1334]:
+                  - link "EVGA NVIDIA GeForce GTX 1080 Computer Graphics Cards," [ref=e1335] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/EVGA-NVIDIA-GeForce-GTX-1080-Computer-Graphics-Cards/27386/bn_110676757
+                - listitem [ref=e1336]:
+                  - link "NVIDIA GeForce RTX 2070 NVIDIA Computer Graphics Cards," [ref=e1337] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/NVIDIA-GeForce-RTX-2070-NVIDIA-Computer-Graphics-Cards/27386/bn_7116853867
+                - listitem [ref=e1338]:
+                  - link "NVIDIA GeForce RTX 2080 NVIDIA Computer Graphics Cards" [ref=e1339] [cursor=pointer]:
+                    - /url: https://www.ebay.com/b/NVIDIA-GeForce-RTX-2080-NVIDIA-Computer-Graphics-Cards/27386/bn_7116851636
+            - generic [ref=e1341]:
+              - heading "Shop Top Sellers and Highly Rated Products in Graphics/Video Cards" [level=2] [ref=e1342]
+              - generic [ref=e1343]:
+                - generic [ref=e1344]:
+                  - heading "Best Sellers" [level=3] [ref=e1345]
+                  - list [ref=e1346]:
+                    - listitem [ref=e1347]:
+                      - link "Sapphire Pulse Radeon RX 9060 XT 16GB Graphics card Radeon RX 11350-03-20G" [ref=e1348] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/6085827196
+                        - generic [ref=e1349]: Sapphire Pulse Radeon RX 9060 XT 16GB Graphics card Radeon RX 11350-03-20G
+                    - listitem [ref=e1350]:
+                      - link "GIGABYTE NVIDIA GeForce RTX 5080 Graphics Card 16GB GDDR7 GV-N5080WF3-16GD" [ref=e1351] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/24086207863
+                        - generic [ref=e1352]: GIGABYTE NVIDIA GeForce RTX 5080 Graphics Card 16GB GDDR7 GV-N5080WF3-16GD
+                    - listitem [ref=e1353]:
+                      - link "ASUS TUF Gaming GeForce RTX 5090 32GB GDDR7 OC TUF-RTX5090-O32G-GAMING Graphics" [ref=e1354] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/11075131712
+                        - generic [ref=e1355]: ASUS TUF Gaming GeForce RTX 5090 32GB GDDR7 OC TUF-RTX5090-O32G-GAMING Graphics
+                    - listitem [ref=e1356]:
+                      - link "ASUS ROG Astral GeForce RTX 5090 OC Edition 32GB GDDR7 Gaming Graphics Card" [ref=e1357] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/15081043032
+                        - generic [ref=e1358]: ASUS ROG Astral GeForce RTX 5090 OC Edition 32GB GDDR7 Gaming Graphics Card
+                    - listitem [ref=e1359]:
+                      - link "EVGA GeForce RTX 3090 Ti FTW3 BLACK GAMING 24GB GDDR6X Graphics Card" [ref=e1360] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/19058462470
+                        - generic [ref=e1361]: EVGA GeForce RTX 3090 Ti FTW3 BLACK GAMING 24GB GDDR6X Graphics Card
+                - generic [ref=e1362]:
+                  - heading "Top Rated" [level=3] [ref=e1363]
+                  - list [ref=e1364]:
+                    - listitem [ref=e1365]:
+                      - link "EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card" [ref=e1366] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/23040748507
+                        - generic [ref=e1367]: EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card
+                    - listitem [ref=e1368]:
+                      - link "NVIDIA GeForce RTX 3090 Founders Edition 24GB GDDR6 Graphics Card - Titanium/Black" [ref=e1369] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/6041238838
+                        - generic [ref=e1370]: NVIDIA GeForce RTX 3090 Founders Edition 24GB GDDR6 Graphics Card - Titanium/Black
+                    - listitem [ref=e1371]:
+                      - link "MSI GeForce GT 710 2GB DDR3 Graphics Card (GT 710 2GD3 LP)" [ref=e1372] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/18021691862
+                        - generic [ref=e1373]: MSI GeForce GT 710 2GB DDR3 Graphics Card (GT 710 2GD3 LP)
+                    - listitem [ref=e1374]:
+                      - link "ASUS GeForce GTX 1660 SUPER OC 6GB GDDR6 Gaming Graphics Card (TUF-GTX1660S-O6G-GAMING)" [ref=e1375] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/5036279263
+                        - generic [ref=e1376]: ASUS GeForce GTX 1660 SUPER OC 6GB GDDR6 Gaming Graphics Card (TUF-GTX1660S-O6G-GAMING)
+                    - listitem [ref=e1377]:
+                      - link "EVGA NVIDIA GeForce 210 (01G-P3-1313-KR) 1GB DDR3 SDRAM PCI Express x16 Graphics adapter" [ref=e1378] [cursor=pointer]:
+                        - /url: https://www.ebay.com/p/109579371
+                        - generic [ref=e1379]: EVGA NVIDIA GeForce 210 (01G-P3-1313-KR) 1GB DDR3 SDRAM PCI Express x16 Graphics adapter
+            - generic [ref=e1381]:
+              - heading "Related searches" [level=2] [ref=e1382]
+              - list [ref=e1383]:
+                - listitem [ref=e1384]:
+                  - link "Evga Rtx 3090" [ref=e1385] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/evga-rtx-3090?_nkw=evga+rtx+3090
+                    - generic [ref=e1386]: Evga Rtx 3090
+                - listitem [ref=e1387]:
+                  - link "Evga 3090" [ref=e1388] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/evga-3090?_nkw=evga+3090
+                    - generic [ref=e1389]: Evga 3090
+                - listitem [ref=e1390]:
+                  - link "Rtx 3090 GPU" [ref=e1391] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/rtx-3090-gpu?_nkw=rtx+3090+gpu
+                    - generic [ref=e1392]: Rtx 3090 GPU
+                - listitem [ref=e1393]:
+                  - link "Evga 3090 Ftw3" [ref=e1394] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/evga-3090-ftw3?_nkw=evga+3090+ftw3
+                    - generic [ref=e1395]: Evga 3090 Ftw3
+                - listitem [ref=e1396]:
+                  - link "Nvidia 3090 24 GB" [ref=e1397] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/nvidia-3090-24gb?_nkw=nvidia+3090+24gb
+                    - generic [ref=e1398]: Nvidia 3090 24 GB
+                - listitem [ref=e1399]:
+                  - link "3090 24 GB" [ref=e1400] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/3090-24gb?_nkw=3090+24gb
+                    - generic [ref=e1401]: 3090 24 GB
+                - listitem [ref=e1402]:
+                  - link "Rtx 3090 Ftw3" [ref=e1403] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/rtx-3090-ftw3?_nkw=rtx+3090+ftw3
+                    - generic [ref=e1404]: Rtx 3090 Ftw3
+                - listitem [ref=e1405]:
+                  - link "3090 Ftw3 Ultra" [ref=e1406] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/3090-ftw3-ultra?_nkw=3090+ftw3+ultra
+                    - generic [ref=e1407]: 3090 Ftw3 Ultra
+                - listitem [ref=e1408]:
+                  - link "Gigabyte 3090" [ref=e1409] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/gigabyte-3090?_nkw=gigabyte+3090
+                    - generic [ref=e1410]: Gigabyte 3090
+                - listitem [ref=e1411]:
+                  - link "Rtx 3090" [ref=e1412] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/rtx-3090?_nkw=rtx+3090
+                    - generic [ref=e1413]: Rtx 3090
+                - listitem [ref=e1414]:
+                  - link "Used 3090" [ref=e1415] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/used-3090?_nkw=used+3090
+                    - generic [ref=e1416]: Used 3090
+                - listitem [ref=e1417]:
+                  - link "3090 Tuf" [ref=e1418] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/3090-tuf?_nkw=3090+tuf
+                    - generic [ref=e1419]: 3090 Tuf
+                - listitem [ref=e1420]:
+                  - link "3090 Ftw3" [ref=e1421] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/3090-ftw3?_nkw=3090+ftw3
+                    - generic [ref=e1422]: 3090 Ftw3
+                - listitem [ref=e1423]:
+                  - link "Evga 3090 Hybrid" [ref=e1424] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/evga-3090-hybrid?_nkw=evga+3090+hybrid
+                    - generic [ref=e1425]: Evga 3090 Hybrid
+                - listitem [ref=e1426]:
+                  - link "Ftw3 3090" [ref=e1427] [cursor=pointer]:
+                    - /url: https://www.ebay.com/shop/ftw3-3090?_nkw=ftw3+3090
+                    - generic [ref=e1428]: Ftw3 3090
+  - generic [ref=e1436]:
+    - contentinfo [ref=e1437]:
+      - list [ref=e1438]:
+        - listitem [ref=e1439]:
+          - link "About eBay" [ref=e1440] [cursor=pointer]:
+            - /url: https://www.ebayinc.com
+        - listitem [ref=e1441]:
+          - link "Announcements" [ref=e1442] [cursor=pointer]:
+            - /url: https://community.ebay.com/t5/Announcements/bg-p/Announcements
+        - listitem [ref=e1443]:
+          - link "Community" [ref=e1444] [cursor=pointer]:
+            - /url: https://community.ebay.com
+        - listitem [ref=e1445]:
+          - link "Security Center" [ref=e1446] [cursor=pointer]:
+            - /url: https://pages.ebay.com/securitycenter/index.html
+        - listitem [ref=e1447]:
+          - link "Seller Center" [ref=e1448] [cursor=pointer]:
+            - /url: https://www.ebay.com/sellercenter
+        - listitem [ref=e1449]:
+          - link "Policies" [ref=e1450] [cursor=pointer]:
+            - /url: https://www.ebay.com/help/policies/default/ebays-rules-policies?id=4205
+        - listitem [ref=e1451]:
+          - link "Affiliates" [ref=e1452] [cursor=pointer]:
+            - /url: https://partnernetwork.ebay.com/
+        - listitem [ref=e1453]:
+          - link "Product Safety Tips" [ref=e1454] [cursor=pointer]:
+            - /url: https://pages.ebay.com/safetytips
+        - listitem [ref=e1455]:
+          - link "Help & Contact" [ref=e1456] [cursor=pointer]:
+            - /url: https://www.ebay.com/help/home
+        - listitem [ref=e1457]:
+          - link "Site Map" [ref=e1458] [cursor=pointer]:
+            - /url: https://pages.ebay.com/sitemap.html
+      - generic [ref=e1459]:
+        - text: Copyright © 1995-2026 eBay Inc. All Rights Reserved.
+        - link "Accessibility" [ref=e1460] [cursor=pointer]:
+          - /url: https://www.ebayinc.com/accessibility/
+        - text: ","
+        - link "User Agreement" [ref=e1461] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/policies/member-behaviour-policies/user-agreement?id=4259
+        - text: ","
+        - link "Privacy" [ref=e1462] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/policies/member-behaviour-policies/user-privacy-notice-privacy-policy?id=4260
+        - text: ","
+        - link "Consumer Health Data" [ref=e1463] [cursor=pointer]:
+          - /url: https://www.ebayinc.com/company/privacy-center/privacy-notice/consumer-health-data-privacy-policy/
+        - text: ","
+        - link "Payments Terms of Use" [ref=e1464] [cursor=pointer]:
+          - /url: https://pages.ebay.com/payment/2.0/terms.html
+        - text: ","
+        - link "Cookies" [ref=e1465] [cursor=pointer]:
+          - /url: https://www.ebay.com/help/policies/member-behaviour-policies/ebay-cookie-notice?id=4267
+        - text: ","
+        - link "CA Privacy Notice" [ref=e1466] [cursor=pointer]:
+          - /url: https://www.ebayinc.com/company/privacy-center/privacy-notice/state-privacy-disclosures/#california
+        - text: ","
+        - link "Your Privacy Choices" [ref=e1467] [cursor=pointer]:
+          - /url: https://www.ebay.com/adchoice/ccpa
+        - text: and
+        - link "AdChoice" [ref=e1468] [cursor=pointer]:
+          - /url: https://www.ebay.com/adchoice
+          - text: AdChoice
+          - img
+    - generic "ADVERTISEMENT" [ref=e1469]
+  - img
+  - img [ref=e1471]

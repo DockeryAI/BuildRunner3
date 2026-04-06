@@ -1,0 +1,359 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button "← Gallery" [ref=e36] [cursor=pointer]
+    - button "A" [ref=e37] [cursor=pointer]
+    - button "B" [active] [ref=e38] [cursor=pointer]
+    - button "C" [ref=e39] [cursor=pointer]
+    - button "D" [ref=e40] [cursor=pointer]
+  - generic [ref=e306]:
+    - generic [ref=e307]: "Direction B: Divided Canvas — Data-Forward Technical"
+    - generic [ref=e308]:
+      - complementary [ref=e309]:
+        - generic [ref=e310]: OD
+        - button "Overview" [ref=e311]:
+          - img [ref=e312]
+        - button "Agents" [ref=e315]:
+          - img [ref=e316]
+        - button "SAFER" [ref=e321]:
+          - img [ref=e322]
+        - button "Process" [ref=e324]:
+          - img [ref=e325]
+        - button "Book Demo" [ref=e328]:
+          - img [ref=e329]
+        - img [ref=e333]
+      - main [ref=e336]:
+        - generic [ref=e337]:
+          - generic [ref=e338]: OpenDialog
+          - navigation [ref=e339]:
+            - link "Platform" [ref=e340] [cursor=pointer]:
+              - /url: "#"
+            - link "Agents" [ref=e341] [cursor=pointer]:
+              - /url: "#"
+            - link "Security" [ref=e342] [cursor=pointer]:
+              - /url: "#"
+            - link "Pricing" [ref=e343] [cursor=pointer]:
+              - /url: "#"
+            - link "Docs" [ref=e344] [cursor=pointer]:
+              - /url: "#"
+          - button "Book a demo →" [ref=e345]
+        - generic [ref=e346]:
+          - generic [ref=e347]:
+            - generic [ref=e348]: "SYSTEM STATUS: OPERATIONAL"
+            - heading "AI agents that deliver outcomes" [level=1] [ref=e350]:
+              - text: AI agents that
+              - text: deliver outcomes
+            - paragraph [ref=e351]: Enterprise ready AI agents designed to operate safely across regulated, high volume insurance workflows.
+            - generic [ref=e352]:
+              - generic [ref=e353]:
+                - generic [ref=e354]: 70%
+                - generic [ref=e355]: claims self-served
+              - generic [ref=e356]:
+                - generic [ref=e357]: +20%
+                - generic [ref=e358]: conversion lift
+              - generic [ref=e359]:
+                - generic [ref=e360]: 99.9%
+                - generic [ref=e361]: uptime SLA
+            - generic [ref=e362]:
+              - button "Book a demo →" [ref=e363]
+              - button "View platform" [ref=e364]
+          - generic [ref=e365]:
+            - generic [ref=e367]:
+              - generic [ref=e373]: opendialog-agent — claims-workflow v3.2.1
+              - generic [ref=e374]:
+                - generic [ref=e375]:
+                  - generic [ref=e376]: $
+                  - generic [ref=e377]: od agent deploy --env production --agent jamie
+                - generic [ref=e378]:
+                  - generic [ref=e379]: $
+                  - generic [ref=e380]: ▶ Validating SAFER compliance… ✓
+                - generic [ref=e381]:
+                  - generic [ref=e382]: $
+                  - generic [ref=e383]: ▶ Connecting to claims API endpoint… ✓
+                - generic [ref=e384]:
+                  - generic [ref=e385]: $
+                  - generic [ref=e386]: ▶ Loading knowledge base (18,342 docs)… ✓
+                - generic [ref=e387]:
+                  - generic [ref=e388]: $
+                  - generic [ref=e389]: "▶ Guardrails active: RISK_THRESHOLD=0.12"
+                - generic [ref=e390]:
+                  - generic [ref=e391]: $
+                  - generic [ref=e392]: "▶ Human escalation route: CONFIGURED"
+                - generic [ref=e393]:
+                  - generic [ref=e394]: $
+                  - generic [ref=e395]: od status --live
+                - generic [ref=e397]: $
+                - generic [ref=e398]:
+                  - generic [ref=e399]:
+                    - generic [ref=e400]: "AGENT: JAMIE"
+                    - generic [ref=e401]: ● LIVE
+                  - generic [ref=e402]:
+                    - generic [ref=e403]: Claims processed today
+                    - generic [ref=e404]: 1,847
+                  - generic [ref=e405]:
+                    - generic [ref=e406]: Self-served
+                    - generic [ref=e407]: 70.3%
+                  - generic [ref=e408]:
+                    - generic [ref=e409]: Avg. resolution time
+                    - generic [ref=e410]: 2m 14s
+                  - generic [ref=e411]:
+                    - generic [ref=e412]: Escalations
+                    - generic [ref=e413]: 12 (0.65%)
+            - generic [ref=e415]: OpenDialog
+        - generic [ref=e416]:
+          - generic [ref=e417]:
+            - generic [ref=e420]: Agent Suite
+            - generic [ref=e421]: 3 agents / production-ready
+          - generic [ref=e422]:
+            - generic [ref=e423]:
+              - generic [ref=e424]:
+                - generic [ref=e425]: SALES
+                - generic [ref=e426]: ● ACTIVE
+              - heading "Selma" [level=2] [ref=e427]
+              - generic [ref=e428]: Sales Conversion Agent
+              - paragraph [ref=e429]: Qualifies inbound insurance leads, surfaces policy recommendations, and guides prospects through quote generation — autonomously.
+            - generic [ref=e431]:
+              - generic [ref=e432]:
+                - generic [ref=e433]:
+                  - generic [ref=e434]: +20%
+                  - generic [ref=e435]: conversion lift
+                - img [ref=e436]
+              - generic [ref=e440]:
+                - generic [ref=e441]:
+                  - generic [ref=e442]: <2 wks
+                  - generic [ref=e443]: Deploy time
+                - generic [ref=e444]:
+                  - generic [ref=e445]: 50+
+                  - generic [ref=e446]: Integrations
+                - generic [ref=e447]:
+                  - generic [ref=e448]: 99.9%
+                  - generic [ref=e449]: Uptime
+          - generic [ref=e450]:
+            - generic [ref=e451]:
+              - generic [ref=e452]:
+                - generic [ref=e453]: CLAIMS
+                - generic [ref=e454]: ● ACTIVE
+              - heading "Jamie" [level=2] [ref=e455]
+              - generic [ref=e456]: Claims Self-Service Agent
+              - paragraph [ref=e457]: Handles end-to-end claims intake, triage and status updates without human intervention across high-volume regulated workflows.
+            - generic [ref=e459]:
+              - generic [ref=e460]:
+                - generic [ref=e461]:
+                  - generic [ref=e462]: 70%
+                  - generic [ref=e463]: claims self-served
+                - img [ref=e464]
+              - generic [ref=e468]:
+                - generic [ref=e469]:
+                  - generic [ref=e470]: <2 wks
+                  - generic [ref=e471]: Deploy time
+                - generic [ref=e472]:
+                  - generic [ref=e473]: 50+
+                  - generic [ref=e474]: Integrations
+                - generic [ref=e475]:
+                  - generic [ref=e476]: 99.9%
+                  - generic [ref=e477]: Uptime
+          - generic [ref=e478]:
+            - generic [ref=e479]:
+              - generic [ref=e480]:
+                - generic [ref=e481]: RECOVERY
+                - generic [ref=e482]: ● ACTIVE
+              - heading "Rhea" [level=2] [ref=e483]
+              - generic [ref=e484]: Debt Recovery Agent
+              - paragraph [ref=e485]: Engages debtors empathetically, negotiates payment plans within policy bounds, and escalates edge cases to human agents automatically.
+            - generic [ref=e487]:
+              - generic [ref=e488]:
+                - generic [ref=e489]:
+                  - generic [ref=e490]: +20%
+                  - generic [ref=e491]: recovery rate
+                - img [ref=e492]
+              - generic [ref=e496]:
+                - generic [ref=e497]:
+                  - generic [ref=e498]: <2 wks
+                  - generic [ref=e499]: Deploy time
+                - generic [ref=e500]:
+                  - generic [ref=e501]: 50+
+                  - generic [ref=e502]: Integrations
+                - generic [ref=e503]:
+                  - generic [ref=e504]: 99.9%
+                  - generic [ref=e505]: Uptime
+        - generic [ref=e506]:
+          - generic [ref=e507]:
+            - generic [ref=e508]:
+              - generic [ref=e511]: Compliance Framework
+              - heading "The SAFER Standard" [level=2] [ref=e512]
+              - paragraph [ref=e513]: Every OpenDialog agent is engineered to the SAFER framework — a five-axis compliance specification developed for regulated industries. Not a checklist. A hard constraint at inference time.
+              - generic [ref=e514]:
+                - generic [ref=e515]: FCA-ALIGNED
+                - generic [ref=e516]: GDPR Art.22
+                - generic [ref=e517]: ISO 27001
+            - generic [ref=e519]:
+              - generic [ref=e520]: "SPECIFICATION: v2.4.1 — ACTIVE"
+              - generic [ref=e521]:
+                - generic [ref=e522]: S
+                - generic [ref=e523]: A
+                - generic [ref=e524]: F
+                - generic [ref=e525]: E
+                - generic [ref=e526]: R
+              - generic [ref=e527]:
+                - generic [ref=e528]: Safe
+                - generic [ref=e529]: Accurate
+                - generic [ref=e530]: Fair
+                - generic [ref=e531]: Explainable
+                - generic [ref=e532]: Robust
+          - generic [ref=e533]:
+            - generic [ref=e534]:
+              - generic [ref=e535]: S
+              - generic [ref=e536]: Safe
+              - paragraph [ref=e537]: Guardrails prevent harmful outputs. Configurable risk thresholds per workflow.
+              - generic [ref=e538]:
+                - generic [ref=e539]:
+                  - img [ref=e540]
+                  - text: ISO 27001
+                - generic [ref=e542]:
+                  - img [ref=e543]
+                  - text: SOC 2 Type II
+            - generic [ref=e545]:
+              - generic [ref=e546]: A
+              - generic [ref=e547]: Accurate
+              - paragraph [ref=e548]: Grounded in your enterprise knowledge base. Hallucination-suppressed via RAG.
+              - generic [ref=e549]:
+                - generic [ref=e550]:
+                  - img [ref=e551]
+                  - text: RAG-Grounded
+                - generic [ref=e553]:
+                  - img [ref=e554]
+                  - text: Fact-Checked
+            - generic [ref=e556]:
+              - generic [ref=e557]: F
+              - generic [ref=e558]: Fair
+              - paragraph [ref=e559]: Bias auditing at inference time. Equal treatment across customer segments.
+              - generic [ref=e560]:
+                - generic [ref=e561]:
+                  - img [ref=e562]
+                  - text: Bias Audited
+                - generic [ref=e564]:
+                  - img [ref=e565]
+                  - text: FCA Aligned
+            - generic [ref=e567]:
+              - generic [ref=e568]: E
+              - generic [ref=e569]: Explainable
+              - paragraph [ref=e570]: Every decision traceable. Audit logs per interaction for regulator review.
+              - generic [ref=e571]:
+                - generic [ref=e572]:
+                  - img [ref=e573]
+                  - text: Full Audit Log
+                - generic [ref=e575]:
+                  - img [ref=e576]
+                  - text: GDPR Art. 22
+            - generic [ref=e578]:
+              - generic [ref=e579]: R
+              - generic [ref=e580]: Robust
+              - paragraph [ref=e581]: 99.9% uptime SLA. Fallback to human agent on confidence threshold breach.
+              - generic [ref=e582]:
+                - generic [ref=e583]:
+                  - img [ref=e584]
+                  - text: 99.9% SLA
+                - generic [ref=e586]:
+                  - img [ref=e587]
+                  - text: Human Fallback
+        - generic [ref=e589]:
+          - generic [ref=e590]:
+            - generic [ref=e593]: Deployment Process
+            - generic [ref=e596]:
+              - generic [ref=e597]:
+                - generic [ref=e598]: "01"
+                - generic [ref=e599]: Scoping
+                - generic [ref=e600]: Define workflows, risk appetite, and integration surface.
+                - generic [ref=e601]: ›
+              - generic [ref=e602]:
+                - generic [ref=e603]: "02"
+                - generic [ref=e604]: Build
+                - generic [ref=e605]: Configure agents against your knowledge base and policy rules.
+                - generic [ref=e606]: ›
+              - generic [ref=e607]:
+                - generic [ref=e608]: "03"
+                - generic [ref=e609]: Test
+                - generic [ref=e610]: Simulate edge cases, tune guardrails, run compliance checks.
+                - generic [ref=e611]: ›
+              - generic [ref=e612]:
+                - generic [ref=e613]: "04"
+                - generic [ref=e614]: Deploy
+                - generic [ref=e615]: Go live on your stack. Monitor, iterate, scale.
+          - generic [ref=e616]:
+            - heading "From scoping to production in weeks" [level=2] [ref=e617]:
+              - text: From scoping to
+              - text: production in weeks
+            - paragraph [ref=e618]: Our deployment methodology is built for regulated environments. Structured phases, compliance gates at every step, and a dedicated success team to de-risk your AI rollout.
+            - generic [ref=e619]:
+              - generic [ref=e620]:
+                - generic [ref=e621]: ›
+                - text: "Average deployment: 6–8 weeks"
+              - generic [ref=e622]:
+                - generic [ref=e623]: ›
+                - text: Dedicated compliance engineer included
+              - generic [ref=e624]:
+                - generic [ref=e625]: ›
+                - text: Full audit trail from day one
+        - generic [ref=e626]:
+          - generic [ref=e627]:
+            - generic [ref=e630]: Customer Evidence
+            - generic [ref=e631]: n=3 / enterprise tier
+          - generic [ref=e632]:
+            - generic [ref=e633]:
+              - generic [ref=e634]: "\""
+              - paragraph [ref=e635]: OpenDialog agents integrate directly with our claims management platform. Deployment was weeks, not months.
+              - generic [ref=e636]:
+                - generic [ref=e637]: SM
+                - generic [ref=e638]:
+                  - generic [ref=e639]: Sarah M.
+                  - generic [ref=e640]: Head of Digital, Tier-1 Insurer
+            - generic [ref=e641]:
+              - generic [ref=e642]: "\""
+              - paragraph [ref=e643]: The SAFER framework gave our compliance team the confidence to approve AI in regulated workflows within a single sprint.
+              - generic [ref=e644]:
+                - generic [ref=e645]: JK
+                - generic [ref=e646]:
+                  - generic [ref=e647]: James K.
+                  - generic [ref=e648]: CTO, Insurtech Scale-up
+            - generic [ref=e649]:
+              - generic [ref=e650]: "\""
+              - paragraph [ref=e651]: Jamie handles 70% of our claims volume. Our team now focuses on complex cases that actually need human judgement.
+              - generic [ref=e652]:
+                - generic [ref=e653]: PR
+                - generic [ref=e654]:
+                  - generic [ref=e655]: Priya R.
+                  - generic [ref=e656]: VP Operations, P&C Insurance
+        - generic [ref=e657]:
+          - generic [ref=e658]:
+            - generic [ref=e661]: Next Step
+            - heading "Ready to deploy your first agent?" [level=2] [ref=e662]:
+              - text: Ready to deploy
+              - text: your first agent?
+            - paragraph [ref=e663]: Speak with an enterprise solutions architect. 30-minute discovery call. No commitment required.
+            - button "Book a demo →" [ref=e665]
+          - generic [ref=e666]:
+            - generic [ref=e667]:
+              - generic [ref=e668]: Response time
+              - generic [ref=e669]: < 4 business hours
+            - generic [ref=e670]:
+              - generic [ref=e671]: Engagement model
+              - generic [ref=e672]: Enterprise / POC / Full deploy
+            - generic [ref=e673]:
+              - generic [ref=e674]: Compliance support
+              - generic [ref=e675]: FCA, GDPR, ISO 27001 included
+            - generic [ref=e676]:
+              - generic [ref=e677]: Regions
+              - generic [ref=e678]: UK · EU · APAC · North America
+        - generic [ref=e679]:
+          - generic [ref=e680]: OpenDialog
+          - generic [ref=e681]:
+            - link "Privacy" [ref=e682] [cursor=pointer]:
+              - /url: "#"
+            - link "Terms" [ref=e683] [cursor=pointer]:
+              - /url: "#"
+            - link "Security" [ref=e684] [cursor=pointer]:
+              - /url: "#"
+            - link "Docs" [ref=e685] [cursor=pointer]:
+              - /url: "#"
+            - link "Status" [ref=e686] [cursor=pointer]:
+              - /url: "#"
+          - generic [ref=e687]: © 2026 OpenDialog AI Ltd.

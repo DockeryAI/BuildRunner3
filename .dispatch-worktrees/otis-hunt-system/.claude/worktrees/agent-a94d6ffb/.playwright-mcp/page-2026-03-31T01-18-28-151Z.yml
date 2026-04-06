@@ -1,0 +1,35 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img "DockeryAI" [ref=e6]
+    - generic [ref=e8]:
+      - button "Foundation" [ref=e9] [cursor=pointer]
+      - button "Audience" [ref=e10] [cursor=pointer]
+      - button "Personality" [ref=e11] [cursor=pointer]
+      - button "Gut Test" [ref=e12] [cursor=pointer]
+      - button "Density" [ref=e13] [cursor=pointer]
+      - button "Constraints" [ref=e14] [cursor=pointer]
+  - generic [ref=e133]:
+    - paragraph [ref=e134]: Personality — 4 of 5
+    - heading "Classic or Cutting-edge?" [level=2] [ref=e135]
+    - paragraph [ref=e136]: 1 = Law firm (traditional, established) → 10 = Nike (bold, trend-setting)
+    - generic [ref=e138]:
+      - generic [ref=e139]: Dockery AI helps businesses create stunning websites using AI-powered design tools
+      - generic [ref=e140]: Modern solutions designed with care, balancing innovation with reliability.
+      - generic [ref=e141]:
+        - generic [ref=e142]: Since 2024
+        - generic [ref=e143]: Innovation meets reliability
+    - generic [ref=e144]:
+      - generic [ref=e145]: Classic ↔ Cutting-edge
+      - generic [ref=e146]:
+        - generic [ref=e147]: Classic
+        - generic [ref=e148]:
+          - slider "Classic ↔ Cutting-edge" [ref=e149] [cursor=pointer]: "5"
+          - generic: "5"
+        - generic [ref=e150]: Cutting-edge
+    - generic [ref=e152]:
+      - generic [ref=e153]: 1 — Law firm
+      - generic [ref=e154]: 5 — Figma
+      - generic [ref=e155]: 10 — Nike
+  - generic [ref=e24]:
+    - button "← Back" [ref=e25] [cursor=pointer]
+    - button "Continue →" [active] [ref=e81] [cursor=pointer]
