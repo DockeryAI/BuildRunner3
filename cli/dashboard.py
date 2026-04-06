@@ -18,7 +18,13 @@ from rich.layout import Layout
 from rich.live import Live
 from rich.text import Text
 
-from core.dashboard_views import DashboardScanner, DashboardViews, PlanReviewView, ProjectStatus
+from core.dashboard_views import (
+    DashboardScanner,
+    DashboardViews,
+    ExecutionMonitorView,
+    PlanReviewView,
+    ProjectStatus,
+)
 
 
 console = Console()
@@ -42,7 +48,7 @@ def dashboard():
 @click.option(
     "--view",
     "-v",
-    type=click.Choice(["overview", "alerts", "timeline", "plan"]),
+    type=click.Choice(["overview", "alerts", "timeline", "plan", "exec"]),
     default="overview",
     help="Dashboard view to display",
 )
@@ -64,12 +70,19 @@ def show(path: Optional[str], watch: bool, view: str, detail: Optional[str], his
         br dashboard show --view alerts
         br dashboard show --view plan
         br dashboard show --view plan --history
+        br dashboard show --view exec
     """
     root_path = Path(path) if path else Path.cwd()
 
     # Plan view is special — doesn't need project scanning
     if view == "plan":
         output = _render_plan_review(root_path, history)
+        console.print(output)
+        return
+
+    # Exec view reads lock directory progress — no project scanning needed
+    if view == "exec":
+        output = _render_exec_monitor(root_path)
         console.print(output)
         return
 
@@ -476,6 +489,159 @@ def _render_plan_review(root_path: Path, history: bool = False) -> Panel:
     return Panel(
         Group(*renderables),
         title=f"Plan Review: {plan_name}",
+        border_style="blue",
+        subtitle=f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
+    )
+
+
+def _render_exec_monitor(root_path: Path) -> Panel:
+    """Render the execution monitor dashboard — live task progress during /begin."""
+    monitor = ExecutionMonitorView(root_path)
+    data = monitor.get_execution_data()
+
+    if not data.get("phase"):
+        return Panel(
+            "[yellow]No active execution found.[/yellow]\n\n"
+            "Hint: This view shows progress during /begin execution.\n"
+            "Run /begin with a setlist plan to see live progress.",
+            title="Execution Monitor",
+            border_style="yellow",
+        )
+
+    renderables = []
+
+    # --- Phase header ---
+    phase_text = Text()
+    phase_text.append(f"Phase {data['phase']}: ", style="bold cyan")
+    phase_text.append(data.get("phase_name", ""), style="bold")
+    phase_text.append(f"  [{data.get('step_label', '')}]", style="dim")
+    renderables.append(phase_text)
+    renderables.append(Text(""))
+
+    # --- Session metrics bar ---
+    metrics = data["session_metrics"]
+    metrics_text = Text()
+
+    # Interaction count
+    i_color = {"normal": "green", "yellow": "yellow", "red": "red"}[metrics["interaction_color"]]
+    metrics_text.append("Interactions: ", style="bold")
+    metrics_text.append(
+        f"{metrics['interaction_count']}/{metrics['interaction_limit']}",
+        style=i_color,
+    )
+    metrics_text.append("  ")
+
+    # Elapsed time
+    t_color = {"normal": "green", "yellow": "yellow", "red": "red"}[metrics["time_color"]]
+    metrics_text.append("Time: ", style="bold")
+    metrics_text.append(
+        f"{metrics['elapsed_minutes']:.0f}/{metrics['time_limit']}m",
+        style=t_color,
+    )
+    metrics_text.append("  ")
+
+    # Compaction count
+    comp = metrics["compaction_count"]
+    metrics_text.append("Compactions: ", style="bold")
+    metrics_text.append(str(comp), style="red" if comp > 0 else "green")
+
+    renderables.append(
+        Panel(metrics_text, border_style="cyan", padding=(0, 1), title="Session")
+    )
+
+    # --- Task progress table ---
+    tasks = data.get("tasks", [])
+    if tasks:
+        task_table = Table(
+            title=f"Tasks: {data['tasks_done']}/{data['tasks_total']}",
+            show_header=True,
+            header_style="bold magenta",
+            border_style="blue",
+        )
+        task_table.add_column("#", style="cyan", no_wrap=True, width=5)
+        task_table.add_column("Task", style="white", ratio=3)
+        task_table.add_column("Verify", justify="center", width=8)
+
+        for task in tasks:
+            result = task.get("verify_result", "pending")
+            if result == "pass":
+                verify_display = "[green]PASS[/green]"
+            elif result == "fail":
+                verify_display = "[red]FAIL[/red]"
+            else:
+                verify_display = "[dim]...[/dim]"
+
+            # Highlight current task
+            task_style = "bold white" if task["what"] == data.get("current_task") else "white"
+            task_table.add_row(
+                task["id"],
+                Text(task["what"][:60], style=task_style),
+                verify_display,
+            )
+
+        renderables.append(task_table)
+
+    # --- Consecutive failures warning ---
+    failures = data.get("consecutive_failures", 0)
+    if failures > 0:
+        fail_style = "red" if failures >= 2 else "yellow"
+        renderables.append(
+            Panel(
+                f"[bold {fail_style}]Consecutive failures: {failures}[/bold {fail_style}]"
+                + (" — circuit breaker triggered" if failures >= 2 else ""),
+                border_style=fail_style,
+                padding=(0, 1),
+            )
+        )
+
+    # --- Drift indicator ---
+    drift = data.get("drift", {})
+    drift_pct = drift.get("drift_pct", 0)
+    if drift_pct > 0:
+        drift_color = "red" if drift_pct > 30 else "yellow" if drift_pct > 10 else "dim"
+        drift_text = Text()
+        drift_text.append(f"Drift: {drift_pct:.0f}%", style=f"bold {drift_color}")
+        if drift.get("files_unplanned"):
+            drift_text.append(f"  Unplanned: {', '.join(drift['files_unplanned'])}", style="dim")
+        if drift.get("files_missed"):
+            drift_text.append(f"  Missed: {', '.join(drift['files_missed'])}", style="dim")
+        renderables.append(
+            Panel(drift_text, border_style=drift_color, padding=(0, 1), title="Drift")
+        )
+
+    # --- Affected files ---
+    affected = data.get("affected_files", [])
+    if affected:
+        file_table = Table(
+            title="Affected Files",
+            show_header=True,
+            header_style="bold cyan",
+            border_style="cyan",
+        )
+        file_table.add_column("File", style="white", ratio=3)
+        file_table.add_column("Exists", justify="center", width=7)
+        file_table.add_column("Lines", justify="right", width=7)
+        file_table.add_column("Modified", style="dim", width=20)
+
+        for f in affected:
+            exists_display = "[green]yes[/green]" if f["exists"] else "[red]NO[/red]"
+            lines_display = str(f["lines"]) if f["exists"] else "-"
+            modified_display = f["modified"][:19] if f.get("modified") else "-"
+            file_table.add_row(f["path"], exists_display, lines_display, modified_display)
+
+        renderables.append(file_table)
+
+    # --- Errors/warnings ---
+    errors = data.get("errors", [])
+    if errors:
+        err_text = Text()
+        for err in errors:
+            err_text.append(f"ERROR: {err}\n", style="red")
+        renderables.append(Panel(err_text, border_style="red", padding=(0, 1)))
+
+    return Panel(
+        Group(*renderables),
+        title=f"Execution Monitor: Phase {data['phase']}",
         border_style="blue",
         subtitle=f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
     )
