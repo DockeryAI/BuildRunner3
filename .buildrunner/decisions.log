@@ -244,3 +244,8 @@
 [2026-04-05T21:15:45Z] [PATTERN] Lockwood write-back pattern: skills save findings at end via curl POST to /api/memory/note
   WHY: Institutional memory enables future /predict, /root, /guard to find historical patterns and similar failures
   CONTEXT: root.md, guard.md, review.md, gaps.md, dead.md, e2e.md all get Lockwood save sections at end
+[2026-04-06T18:11:22Z] Phase 3 decisions:
+  - /intel-review uses model: opus for synthesis quality
+  - intel-digest.sh lives in ~/.buildrunner/scripts/ (system-wide, not project-specific)
+  - Graceful degradation: silent exit on Lockwood offline (zero noise in brief)
+  - Deal assessment focuses on cluster upgrade context (NVLink, PCB height, seller)

@@ -1,22 +1,21 @@
-# Phase 3 Verification: Playwright MCP + Claude Code Hooks
+# Phase 3 Verification: Claude Code Reasoning Layer
 
-## Deliverable Checklist
+## Deliverable Verification
 
-| # | Deliverable | Status | Evidence |
-|---|------------|--------|----------|
-| 1 | .mcp.json with Playwright MCP server config | PASS | File created, valid JSON, stdio transport with npx @playwright/mcp@latest |
-| 2 | MCP tool permissions in settings.local.json | PASS | 8 core tools allowed: navigate, click, type, fill, screenshot, snapshot, evaluate, close |
-| 3 | Stop hook with stop_hook_active guard | PASS | Command hook checks STOP_HOOK_ACTIVE env var, runs npm run test:e2e, blocks on failure |
-| 4 | stop_hook_active guard prevents infinite loops | PASS | Guard checks -n STOP_HOOK_ACTIVE before running, exits early if set |
-| 5 | /pw-test slash command | PASS | Created at ~/.claude/commands/pw-test.md with explore-then-write pattern, XML structure, 3 multishot examples |
-| 6 | SessionStart compact-matcher hook | PASS | Re-injects test status context when test-results/ exists |
+| Deliverable | Status | Evidence |
+|---|---|---|
+| `/intel-review` skill | PASS | `~/.claude/commands/intel-review.md` exists, valid frontmatter, model=opus, 5 steps covering all spec requirements |
+| BR3 improvement detection | PASS | Step 3.4 in intel-review.md: POSTs to `/api/intel/improvements` with title, rationale, complexity, setlist_prompt, affected_files |
+| Deal review (score 80+) | PASS | Step 4 in intel-review.md: reads exceptional deals, writes cluster-specific assessment (NVLink, PCB, seller, buy/wait) |
+| Scheduled execution (12h) | PASS | Scheduled Execution section with `/schedule create` command |
+| `intel-digest.sh` brief injection | PASS | `~/.buildrunner/scripts/intel-digest.sh` exists, executable, queries `/api/intel/alerts` + `/api/deals/items?min_score=80` |
+| Brief format matches spec | PASS | `## Intelligence Alerts (N new)` with `! [PRIORITY]` prefix, `## Deal Alerts (N new)` with `! [score]` prefix |
+| Integrated into developer-brief.sh | PASS | Source/call added before final separator line |
+| Graceful degradation | PASS | Both scripts exit 0 silently when Lockwood offline, tested with `BR3_CLUSTER=off` |
 
-## JSON Validation
-- .mcp.json: Valid (jq exit 0)
-- settings.local.json: Valid (jq exit 0)
-- Hook structure validated via jq selector queries
+## Validation Results
 
-## Notes
-- Stop hook uses command type (not agent type) for efficiency - running tests is mechanical and doesnt need LLM interpretation
-- SessionStart hook only fires when both playwright.config.ts and test-results/ exist
-- pw-test.md registered as skill (visible in skill list)
+- `bash -n intel-digest.sh`: syntax OK
+- `bash -n developer-brief.sh`: syntax OK  
+- intel-review.md frontmatter: valid YAML with description, allowed-tools, model
+- Offline test: intel-digest.sh returns exit 0 with no output when cluster unavailable
