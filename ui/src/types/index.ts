@@ -121,6 +121,13 @@ export interface IntelImprovement {
   rationale: string;
   complexity: 'simple' | 'medium' | 'complex';
   setlist_prompt: string;
+  affected_files: string[] | null;
+  source_intel_id: number | null;
+  status: 'pending' | 'planned' | 'built' | 'archived';
+  build_spec_name: string | null;
+  overlap_action: 'adopt' | 'adapt' | 'ignore' | null;
+  overlap_notes: string | null;
+  created_at: string;
 }
 
 export interface IntelFilters {

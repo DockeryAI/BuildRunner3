@@ -241,15 +241,38 @@ export const intelAPI = {
     return response.data;
   },
 
-  async getIntelImprovements(): Promise<{ improvements: IntelImprovement[] }> {
+  async getIntelImprovements(
+    status?: string
+  ): Promise<{ improvements: IntelImprovement[]; count: number }> {
+    try {
+      const params: Record<string, any> = {};
+      if (status) params.status = status;
+      const response = await intelApi.get('/api/intel/improvements', { params });
+      return response.data;
+    } catch {
+      return { improvements: [], count: 0 };
+    }
+  },
+
+  async updateImprovementStatus(
+    id: number,
+    status: string,
+    buildSpecName?: string
+  ): Promise<{ status: string }> {
+    const body: Record<string, any> = { status };
+    if (buildSpecName) body.build_spec_name = buildSpecName;
+    const response = await intelApi.post(`/api/intel/improvements/${id}/status`, body);
+    return response.data;
+  },
+
+  async getImprovementHistory(): Promise<{ improvements: IntelImprovement[]; count: number }> {
     try {
       const response = await intelApi.get('/api/intel/improvements', {
-        params: { status: 'pending' },
+        params: { status: 'built' },
       });
       return response.data;
     } catch {
-      // Improvements endpoint may not exist yet (Phase 6)
-      return { improvements: [] };
+      return { improvements: [], count: 0 };
     }
   },
 };
