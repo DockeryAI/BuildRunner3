@@ -13,6 +13,10 @@ import type {
   Session,
   AgentPoolStatus,
   Statistics,
+  IntelItem,
+  IntelAlerts,
+  IntelImprovement,
+  IntelFilters,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -186,6 +190,58 @@ export const projectAPI = {
       alias: alias,
     });
     return response.data;
+  },
+};
+
+// Intel API — talks to Lockwood intelligence service
+const INTEL_API_URL = import.meta.env.VITE_INTEL_API_URL || 'http://localhost:8100';
+
+const intelApi = axios.create({
+  baseURL: INTEL_API_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+export const intelAPI = {
+  async getIntelItems(filters?: IntelFilters): Promise<{ items: IntelItem[]; count: number }> {
+    const params: Record<string, any> = {};
+    if (filters?.priority) params.priority = filters.priority;
+    if (filters?.category) params.category = filters.category;
+    if (filters?.source_type) params.source_type = filters.source_type;
+    if (filters?.read !== undefined) params.read = filters.read;
+    if (filters?.days) params.days = filters.days;
+    if (filters?.limit) params.limit = filters.limit;
+    const response = await intelApi.get('/api/intel/items', { params });
+    return response.data;
+  },
+
+  async getIntelAlerts(): Promise<IntelAlerts> {
+    const response = await intelApi.get('/api/intel/alerts');
+    return response.data;
+  },
+
+  async dismissIntelItem(id: number): Promise<{ status: string }> {
+    const response = await intelApi.post(`/api/intel/items/${id}/dismiss`);
+    return response.data;
+  },
+
+  async markIntelRead(id: number): Promise<{ status: string }> {
+    const response = await intelApi.post(`/api/intel/items/${id}/read`);
+    return response.data;
+  },
+
+  async getIntelImprovements(): Promise<{ improvements: IntelImprovement[] }> {
+    try {
+      const response = await intelApi.get('/api/intel/improvements', {
+        params: { status: 'pending' },
+      });
+      return response.data;
+    } catch {
+      // Improvements endpoint may not exist yet (Phase 6)
+      return { improvements: [] };
+    }
   },
 };
 
