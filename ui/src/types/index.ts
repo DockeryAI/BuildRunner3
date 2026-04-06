@@ -72,7 +72,14 @@ export interface AgentPoolStatus {
 }
 
 export interface WebSocketMessage {
-  type: 'connection' | 'task_update' | 'telemetry_event' | 'progress_update' | 'session_update' | 'heartbeat' | 'error';
+  type:
+    | 'connection'
+    | 'task_update'
+    | 'telemetry_event'
+    | 'progress_update'
+    | 'session_update'
+    | 'heartbeat'
+    | 'error';
   timestamp: string;
   [key: string]: any;
 }
@@ -82,4 +89,45 @@ export interface Statistics {
   events_by_type: Record<string, number>;
   oldest_event?: string;
   newest_event?: string;
+}
+
+// --- Intelligence Tab Types ---
+
+export interface IntelItem {
+  id: number;
+  title: string;
+  source: string;
+  url: string;
+  source_type: string; // Official | Community | Blog
+  category: string; // api-change | model-release | community-tool | ecosystem-news | cluster-relevant | general-news
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  score: number;
+  summary: string;
+  opus_synthesis: string | null;
+  br3_improvement: boolean;
+  read: boolean;
+  dismissed: boolean;
+  collected_at: string;
+}
+
+export interface IntelAlerts {
+  critical_count: number;
+  high_count: number;
+}
+
+export interface IntelImprovement {
+  id: number;
+  title: string;
+  rationale: string;
+  complexity: 'simple' | 'medium' | 'complex';
+  setlist_prompt: string;
+}
+
+export interface IntelFilters {
+  source_type?: string;
+  category?: string;
+  priority?: string;
+  days?: number;
+  read?: boolean;
+  limit?: number;
 }
