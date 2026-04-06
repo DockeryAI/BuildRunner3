@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS deal_items (
     seller_rating REAL,
     deal_score INTEGER,
     verdict TEXT,  -- exceptional/good/fair/pass
+    below_assessment TEXT,  -- one-line assessment from Below scoring
     opus_assessment TEXT,
     listing_url TEXT,
     collected_at TEXT NOT NULL DEFAULT (datetime('now')),

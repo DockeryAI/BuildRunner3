@@ -477,7 +477,7 @@ async def score_deal_items() -> dict:
         if parsed:
             conn.execute(
                 """UPDATE deal_items SET deal_score = ?, verdict = ?,
-                   opus_assessment = ? WHERE id = ?""",
+                   below_assessment = ? WHERE id = ?""",
                 (parsed["score"], parsed["verdict"], parsed["assessment"], item_id)
             )
             stats["scored"] += 1
