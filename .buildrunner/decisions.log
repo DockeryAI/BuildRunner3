@@ -273,3 +273,7 @@
   - Critical findings require explicit acknowledge checkbox before Approve enabled
   - File-level annotations (line=0) rendered as banner above diff lines
   - Large diffs truncated at 8000 lines to respect token limits
+[2026-04-06T18:52:31Z] Phase 7 decisions:
+  - Restart button uses prompt() for project name since Prod Logs panel is not project-scoped
+  - Rollback SSHs to Lomax and does git checkout of previous commit + rebuild
+  - Rollback button only shown for complete/failed builds to avoid rolling back active work
