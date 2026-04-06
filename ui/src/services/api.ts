@@ -232,6 +232,11 @@ export const intelAPI = {
     return response.data;
   },
 
+  async saveToLibrary(id: number): Promise<{ status: string }> {
+    const response = await intelApi.post(`/api/intel/items/${id}/save-to-library`);
+    return response.data;
+  },
+
   async getIntelImprovements(): Promise<{ improvements: IntelImprovement[] }> {
     try {
       const response = await intelApi.get('/api/intel/improvements', {

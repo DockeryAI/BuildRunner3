@@ -121,10 +121,20 @@ export function IntelligenceTab({ onAlertCount, onImprovementCount }: Intelligen
     };
   }, [loadItems, loadAlerts, loadImprovements]);
 
+  const handleSaveToLibrary = async (id: number) => {
+    try {
+      await intelAPI.saveToLibrary(id);
+    } catch (err) {
+      console.error('Save to library failed:', err);
+    }
+  };
+
   const handleDismiss = async (id: number) => {
     try {
       await intelAPI.dismissIntelItem(id);
-      setItems((prev) => prev.map((item) => (item.id === id ? { ...item, dismissed: true } : item)));
+      setItems((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, dismissed: true } : item))
+      );
     } catch (err) {
       console.error('Dismiss failed:', err);
     }
@@ -165,7 +175,11 @@ export function IntelligenceTab({ onAlertCount, onImprovementCount }: Intelligen
   const totalAlerts = alerts.critical_count + alerts.high_count;
 
   if (loading && items.length === 0) {
-    return <div className="intelligence-tab"><div className="intel-loading">Loading intelligence feed...</div></div>;
+    return (
+      <div className="intelligence-tab">
+        <div className="intel-loading">Loading intelligence feed...</div>
+      </div>
+    );
   }
 
   if (error && items.length === 0) {
@@ -314,6 +328,15 @@ export function IntelligenceTab({ onAlertCount, onImprovementCount }: Intelligen
                       }}
                     >
                       Dismiss
+                    </button>
+                    <button
+                      className="btn-save"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveToLibrary(item.id);
+                      }}
+                    >
+                      Save to Library
                     </button>
                     <a
                       href={item.url}
