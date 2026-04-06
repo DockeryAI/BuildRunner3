@@ -9,16 +9,18 @@ import os
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-# Set test DB path before importing
-os.environ["INTEL_DB"] = ":memory:"
-
-
 # --- Helpers ---
 
 def _setup_test_db():
-    """Create in-memory DB with schema for testing."""
-    from core.cluster.intel_collector import _get_intel_db
-    conn = _get_intel_db()
+    """Create temp DB with schema for testing."""
+    import tempfile
+    tmp = tempfile.mktemp(suffix=".db")
+    os.environ["INTEL_DB"] = tmp
+    # Reload module to pick up new path
+    import importlib
+    import core.cluster.intel_collector as ic
+    importlib.reload(ic)
+    conn = ic._get_intel_db()
     return conn
 
 
