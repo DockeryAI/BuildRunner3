@@ -262,3 +262,8 @@
   - intel_improvements table added to intel_schema.sql with full lifecycle fields (status, build_spec_name, overlap_action)
   - Overlap detection added to intel-review.md with adopt/adapt/ignore recommendation
   - Plan This modal in IntelligenceTab for improvement -> /setlist pipeline
+[2026-04-06T18:39:14Z] Phase 4 decisions:
+  - Created reviews.mjs integration following sessions.mjs pattern
+  - In-memory review queue (no DB) — sufficient for dashboard use case
+  - Remote merge is best-effort with note when manual action needed
+  - Diff parser handles unified diff format with hunk headers
