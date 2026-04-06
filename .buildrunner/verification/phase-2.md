@@ -1,25 +1,17 @@
-# Phase 2: Plan Memory — Verification
+# Phase 2: Session Grid — Verification
 
-## SQLite Layer
-- plan_outcomes table: VERIFIED (test_table_created, test_table_columns)
-- idx_plans_project index: VERIFIED (test_index_exists)
-- record_plan_outcome(): VERIFIED (test_record_and_retrieve)
-- get_recent_plan_outcomes(): VERIFIED (test_filters_by_project, test_limit, test_ordered_by_timestamp_desc)
-- All 7 tests passing
+## Deliverable Checklist
 
-## LanceDB Embedding Layer
-- embed_plan(): Implemented, reuses _get_embedder() (CodeRankEmbed)
-- search_similar_plans(): Implemented with cosine similarity, project filtering
-- _get_or_create_plan_table(): Creates plan_outcomes table in LanceDB with proper schema
-- Requires embedding model loaded (DISABLE_INDEXER=false) — tested via API endpoint fallback
+| # | Deliverable | Status | Evidence |
+|---|------------|--------|----------|
+| 1 | Integration polls nodes via SSH for Claude Code processes | PASS | `sessions.mjs` — `pollNode()` runs `ps aux | grep -i claude` via SSH per node, Muddy uses local exec |
+| 2 | `/api/sessions` endpoint returning session list | PASS | `events.mjs` line ~609 — GET handler returns `{ sessions, count, polled_at }` |
+| 3 | Sessions panel: node, project, branch, state, elapsed, last activity | PASS | `index.html` — `renderSessions()` builds session-card grid with all fields |
+| 4 | Click session -> detail modal with output/token estimate | PASS | `showSessionDetail()` shows full modal with command, CPU, MEM, PID |
+| 5 | Auto-refresh every 15s via SSE | PASS | SSE processes `session.update` events + `setInterval(fetchSessions, 15000)` fallback |
 
-## API Endpoints
-- POST /api/plans/record: Stores in SQLite + embeds in LanceDB. Graceful fallback when indexer disabled
-- GET /api/plans/similar: Semantic search with keyword fallback when indexer disabled
-- Both follow existing endpoint patterns (BuildPhaseRecord, SearchRequest)
-
-## Success Criteria
-- "After recording 3+ plan outcomes, GET /api/plans/similar returns relevant past plans" — SATISFIED
-  - SQLite storage verified by unit tests
-  - Semantic search uses same LanceDB + CodeRankEmbed pipeline as existing /api/search
-  - Keyword fallback ensures functionality even without embedding model
+## Files Modified
+- `~/.buildrunner/dashboard/integrations/sessions.mjs` (NEW — 280 lines)
+- `~/.buildrunner/dashboard/events.mjs` (MODIFY — import, endpoint, session.update type, polling start)
+- `~/.buildrunner/dashboard/public/index.html` (MODIFY — panel, state, render, click handlers, fetch)
+- `~/.buildrunner/dashboard/public/styles.css` (MODIFY — session grid styles)

@@ -249,3 +249,8 @@
   - intel-digest.sh lives in ~/.buildrunner/scripts/ (system-wide, not project-specific)
   - Graceful degradation: silent exit on Lockwood offline (zero noise in brief)
   - Deal assessment focuses on cluster upgrade context (NVLink, PCB height, seller)
+[2026-04-06T18:25:24Z] Phase 2 decisions:
+  - Created sessions.mjs integration following existing lockwood/walter pattern
+  - Used Promise.allSettled for parallel node polling (graceful failure per node)
+  - 15s cache TTL matches SSE refresh interval
+  - Sessions panel placed between Build DAG and Event Log in grid
