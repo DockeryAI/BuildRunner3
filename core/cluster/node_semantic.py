@@ -733,3 +733,21 @@ async def save_session(project: str, branch: str = None, phase: str = None,
     from core.cluster.memory_store import save_session_state
     save_session_state(project, branch, phase, build_name, working_on)
     return {"status": "saved"}
+
+
+# --- Registry Sync (Phase 8) ---
+
+@app.post("/api/registry/sync")
+async def sync_registry(req: Request):
+    """Receive cluster-builds registry from Muddy and store it."""
+    from core.cluster.memory_store import save_registry
+    data = await req.json()
+    result = save_registry(data)
+    return result
+
+
+@app.get("/api/registry/sync")
+async def get_registry():
+    """Return the latest cluster-builds registry."""
+    from core.cluster.memory_store import get_registry as _get_registry
+    return _get_registry()

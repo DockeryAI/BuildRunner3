@@ -1,0 +1,13 @@
+{
+  "batches": [
+    {"id": 1, "phases": [1, 2, 3, 5]},
+    {"id": 2, "phases": [4, 6]},
+    {"id": 3, "phases": [7]},
+    {"id": 4, "phases": [8]}
+  ],
+  "current_batch": 1,
+  "total_phases": 8,
+  "completed_phases": 0,
+  "mode": "autopilot-cluster-go",
+  "started": "2026-04-06T17:23:35Z"
+}

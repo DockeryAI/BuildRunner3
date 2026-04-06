@@ -466,3 +466,48 @@ def generate_brief(project: str) -> dict:
         ]
 
     return brief
+
+
+# --- Registry Sync ---
+
+def save_registry(registry_data: dict) -> dict:
+    """Save cluster-builds registry data from Muddy."""
+    conn = _get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS cluster_registry (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            data TEXT NOT NULL,
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+    existing = conn.execute("SELECT id FROM cluster_registry WHERE id = 1").fetchone()
+    if existing:
+        conn.execute(
+            "UPDATE cluster_registry SET data = ?, updated_at = datetime('now') WHERE id = 1",
+            (json.dumps(registry_data),)
+        )
+    else:
+        conn.execute(
+            "INSERT INTO cluster_registry (id, data) VALUES (1, ?)",
+            (json.dumps(registry_data),)
+        )
+    conn.commit()
+    conn.close()
+    return {"status": "synced", "builds": len(registry_data.get("builds", {}))}
+
+
+def get_registry() -> dict:
+    """Get the latest cluster-builds registry."""
+    conn = _get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS cluster_registry (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            data TEXT NOT NULL,
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    """)
+    row = conn.execute("SELECT data, updated_at FROM cluster_registry WHERE id = 1").fetchone()
+    conn.close()
+    if row:
+        return {"registry": json.loads(row["data"]), "updated_at": row["updated_at"]}
+    return {"registry": {"builds": {}}, "updated_at": None}
