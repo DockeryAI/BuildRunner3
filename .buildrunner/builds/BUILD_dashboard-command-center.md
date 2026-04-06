@@ -13,29 +13,31 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 **Adversarial review:** 4 blockers found and resolved pre-spec. Key fixes: Lockwood proxy endpoints for remote access, workspace container pattern for incremental phase fills, exponential backoff on terminal reconnect.
 
 **READ FIRST:**
+
 1. `~/.buildrunner/dashboard/events.mjs` — 49KB Node.js server, 19 endpoints, 10 integration modules
 2. `~/.buildrunner/dashboard/public/index.html` — 2,756 lines, tightly coupled render functions + inline handlers
 3. `~/.buildrunner/dashboard/public/styles.css` — CSS variables define color system
 
 **DO NOT:**
+
 - Use React, Vue, or any framework — this is vanilla HTML/JS
 - Reference `ui/src/components/` — that's an old dead React dashboard
 - Use worktree isolation — all files are external to the project
 - Break existing render functions (renderBuilds, renderNodes, renderSessions, renderReviews, etc.)
 - Break existing event handlers (dispatch, rollback, kill, approve/reject)
-- Remove CSS variables (--bg-*, --text-*, --accent-*, --green, --red, --yellow)
+- Remove CSS variables (--bg-_, --text-_, --accent-\*, --green, --red, --yellow)
 
 ## Parallelization Matrix
 
-| Phase | Key Files | Can Parallel With | Blocked By |
-|-------|-----------|-------------------|------------|
-| 1 | `~/.cloudflared/config.yml`, events.mjs (CORS) | 2 | — |
-| 2 | index.html (REWRITE), styles.css (REWRITE) | 1 | — |
-| 3 | index.html, styles.css, events.mjs | — | 2 |
-| 4 | index.html, styles.css, events.mjs | — | 2 |
-| 5 | index.html, styles.css | — | 4 |
-| 6 | styles.css, index.html | — | 2, 4 |
-| 7 | index.html, events.mjs | — | 4 |
+| Phase | Key Files                                      | Can Parallel With | Blocked By |
+| ----- | ---------------------------------------------- | ----------------- | ---------- |
+| 1     | `~/.cloudflared/config.yml`, events.mjs (CORS) | 2                 | —          |
+| 2     | index.html (REWRITE), styles.css (REWRITE)     | 1                 | —          |
+| 3     | index.html, styles.css, events.mjs             | —                 | 2          |
+| 4     | index.html, styles.css, events.mjs             | —                 | 2          |
+| 5     | index.html, styles.css                         | —                 | 4          |
+| 6     | styles.css, index.html                         | —                 | 2, 4       |
+| 7     | index.html, events.mjs                         | —                 | 4          |
 
 **Optimal:** Wave 1 (P1+P2 parallel) → Wave 2 (P3, then P4) → Wave 3 (P5+P7) → Wave 4 (P6)
 
@@ -58,7 +60,7 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 - [ ] Config file: tunnel ID, credentials path, ingress rule `localhost:4400`, WebSocket support enabled
 - [ ] launchd plist: auto-start on Muddy boot, restart on failure, keep-alive
 - [ ] Cloudflare Access application: `band.taskwatcher.ai/*`, Google IdP, Byron's email only
-- [ ] CORS in events.mjs: allow `band.taskwatcher.ai` origin on all API endpoints + WebSocket upgrade headers
+- [ ] CORS in events.mjs: allow `band.taskwatcher.ai` origin on all API endpoints + WebSocket upgrade headers. Note: Cloudflare Access handles ALL auth — no OAuth, no callbacks, no middleware in events.mjs. It's a network-level gate before traffic reaches the server
 - [ ] Validation: phone → `band.taskwatcher.ai` → Google login → dashboard loads → terminal WebSocket connects over WSS
 
 **Success Criteria:** Open `band.taskwatcher.ai` on phone, Google login, dashboard renders, terminal connects.
@@ -85,6 +87,7 @@ Remote-accessible dev control plane for The Band via `band.taskwatcher.ai`. Side
 - [ ] Alerts panel on dashboard: empty container for Phase 3 to populate with surfaced intel/deals
 - [ ] Empty workspace containers for Intel/Terminal/Builds — placeholder text until later phases fill them
 - [ ] Color system: navy-tinted dark mode (`#0b0f14`), tinted grays, colorblind-safe status colors, `rgba` borders
+- [ ] Preserve xterm.js CDN imports (xterm 5.5.0 + addon-fit 0.10.0) — these are already in the current index.html and must survive the rewrite
 - [ ] ALL existing render functions migrated: renderBuilds, renderNodes, renderSessions, renderReviews, renderDAG, renderEvents, renderSparklines, renderNodeHealth
 - [ ] ALL existing event handlers migrated: dispatch, rollback, kill, approve/reject, terminal modal, ⌘K search
 - [ ] ALL utility functions migrated: esc, timeAgo, showModal, showToast, apiAction
