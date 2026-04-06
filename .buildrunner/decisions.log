@@ -253,3 +253,8 @@
   - BUILD spec context uses scoring to find correct BUILD file among multiple candidates
   - Dependency diagram uses Rich Tree (not ASCII art) for clean rendering
   - Plan diff compares by task ID, not full text match
+[2026-04-06T18:35:41Z] Phase 5 decisions:
+  - Reused IntelligenceTab pattern for consistency (polling, card layout, expand/collapse)
+  - Recharts AreaChart for price history sparklines (already in deps)
+  - Auto-create default GPU hunt on first load if no hunts exist
+  - Alert badge counts unread deals with score >= 80 (exceptional)
