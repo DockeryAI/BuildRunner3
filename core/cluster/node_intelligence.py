@@ -40,6 +40,31 @@ class HuntCreate(BaseModel):
     source_urls: Optional[list] = None
 
 
+class ImprovementCreate(BaseModel):
+    title: str
+    rationale: str
+    complexity: str = "medium"  # simple/medium/complex
+    setlist_prompt: str
+    affected_files: Optional[list] = None
+    source_intel_id: Optional[int] = None
+    overlap_action: Optional[str] = None  # adopt/adapt/ignore
+    overlap_notes: Optional[str] = None
+
+
+class ImprovementStatusUpdate(BaseModel):
+    status: str  # pending/planned/built/archived
+    build_spec_name: Optional[str] = None
+
+
+class OpusIntelReview(BaseModel):
+    opus_synthesis: str
+    br3_improvement: bool = False
+
+
+class OpusDealReview(BaseModel):
+    opus_assessment: str
+
+
 # --- Startup ---
 
 @app.on_event("startup")
@@ -104,6 +129,54 @@ async def dismiss_item(item_id: int):
     """Dismiss an intel item."""
     from core.cluster.intel_collector import dismiss_intel_item
     dismiss_intel_item(item_id)
+    return {"status": "ok"}
+
+
+@app.post("/api/intel/items/{item_id}/opus-review")
+async def opus_review_intel(item_id: int, review: OpusIntelReview):
+    """Write Opus synthesis back to an intel item."""
+    from core.cluster.intel_collector import opus_review_intel_item
+    opus_review_intel_item(
+        item_id, review.opus_synthesis, review.br3_improvement
+    )
+    return {"status": "ok"}
+
+
+# --- Improvement Endpoints ---
+
+@app.get("/api/intel/improvements")
+async def get_improvements(
+    status: Optional[str] = Query(None, description="Comma-separated: pending,planned,built,archived"),
+    limit: int = 50,
+):
+    """Get improvements filtered by status."""
+    from core.cluster.intel_collector import get_improvements as _get_improvements
+    items = _get_improvements(status=status, limit=limit)
+    return {"improvements": items, "count": len(items)}
+
+
+@app.post("/api/intel/improvements")
+async def create_improvement(improvement: ImprovementCreate):
+    """Create a new improvement from intel-review Opus pass."""
+    from core.cluster.intel_collector import create_improvement as _create
+    imp_id = _create(
+        title=improvement.title,
+        rationale=improvement.rationale,
+        complexity=improvement.complexity,
+        setlist_prompt=improvement.setlist_prompt,
+        affected_files=improvement.affected_files,
+        source_intel_id=improvement.source_intel_id,
+        overlap_action=improvement.overlap_action,
+        overlap_notes=improvement.overlap_notes,
+    )
+    return {"id": imp_id, "status": "created"}
+
+
+@app.post("/api/intel/improvements/{improvement_id}/status")
+async def update_improvement_status(improvement_id: int, body: ImprovementStatusUpdate):
+    """Update improvement lifecycle status (pending -> planned -> built -> archived)."""
+    from core.cluster.intel_collector import update_improvement_status as _update
+    _update(improvement_id, body.status, body.build_spec_name)
     return {"status": "ok"}
 
 
@@ -172,6 +245,14 @@ async def dismiss_deal_endpoint(item_id: int):
     """Dismiss a deal item."""
     from core.cluster.intel_collector import dismiss_deal_item
     dismiss_deal_item(item_id)
+    return {"status": "ok"}
+
+
+@app.post("/api/deals/items/{item_id}/opus-review")
+async def opus_review_deal(item_id: int, review: OpusDealReview):
+    """Write Opus assessment back to a deal item."""
+    from core.cluster.intel_collector import opus_review_deal_item
+    opus_review_deal_item(item_id, review.opus_assessment)
     return {"status": "ok"}
 
 
