@@ -523,6 +523,207 @@ class PlanReviewView:
             },
         ]
 
+    def get_build_spec_context(self) -> Dict[str, Any]:
+        """
+        Extract current phase context from BUILD spec.
+
+        Finds BUILD_*.md in .buildrunner/builds/, extracts the phase matching
+        the current plan's phase number: goal, deliverables, success criteria.
+        Returns empty dict if BUILD spec not found or phase not parseable.
+        """
+        if not self.plan_file:
+            return {}
+
+        # Extract phase number from plan filename (phase-N-plan.md)
+        phase_match = re.search(r"phase-(\d+)", self.plan_file.name)
+        if not phase_match:
+            return {}
+        phase_num = phase_match.group(1)
+
+        # Find BUILD spec files
+        builds_dir = self.project_root / ".buildrunner" / "builds"
+        if not builds_dir.exists():
+            return {}
+
+        build_files = list(builds_dir.glob("BUILD_*.md"))
+        if not build_files:
+            return {}
+
+        # Search each BUILD spec for the matching phase
+        for build_file in build_files:
+            try:
+                content = build_file.read_text()
+            except OSError:
+                continue
+
+            # Find phase section: ### Phase N: Title
+            phase_pattern = re.compile(
+                rf"^###\s+Phase\s+{phase_num}:\s*(.+?)$",
+                re.MULTILINE,
+            )
+            match = phase_pattern.search(content)
+            if not match:
+                continue
+
+            phase_title = match.group(1).strip()
+            start = match.end()
+
+            # Find end of phase section (next ### Phase or end of file)
+            next_phase = re.search(r"^###\s+Phase\s+\d+:", content[start:], re.MULTILINE)
+            end = start + next_phase.start() if next_phase else len(content)
+            section = content[start:end]
+
+            # Extract deliverables (lines starting with - [ ] or - [x])
+            deliverables = re.findall(
+                r"^-\s+\[[ x]\]\s+(.+?)$", section, re.MULTILINE
+            )
+
+            # Extract success criteria
+            sc_match = re.search(
+                r"\*\*Success Criteria:\*\*\s*(.+?)(?:\n\n|\n---|\Z)",
+                section, re.DOTALL,
+            )
+            success_criteria = sc_match.group(1).strip() if sc_match else ""
+
+            return {
+                "phase_num": int(phase_num),
+                "title": phase_title,
+                "build_file": build_file.name,
+                "deliverables": deliverables,
+                "success_criteria": success_criteria,
+            }
+
+        return {}
+
+    def get_dependency_diagram(self) -> List[Dict[str, Any]]:
+        """
+        Parse dependency section from plan file into a tree structure.
+
+        Looks for a Dependencies or Dependency section in the plan.
+        Returns list of nodes: [{task, depends_on: [ids]}].
+        Returns empty list if no dependency section found.
+        """
+        if not self.plan_file or not self.plan_file.exists():
+            return []
+
+        content = self.plan_file.read_text()
+
+        # Look for a dependency section
+        dep_section_match = re.search(
+            r"^##\s+Dependenc(?:y|ies)\b.*?\n(.*?)(?=^##\s|\Z)",
+            content, re.MULTILINE | re.DOTALL,
+        )
+        if not dep_section_match:
+            return []
+
+        section = dep_section_match.group(1)
+        nodes = []
+
+        # Parse lines like: "- 8.2 depends on 8.1" or "- 8.3 -> 8.1, 8.2"
+        for line in section.strip().splitlines():
+            line = line.strip().lstrip("- ")
+            if not line:
+                continue
+
+            # Pattern: "X.Y depends on A.B, C.D" or "X.Y -> A.B, C.D"
+            dep_match = re.match(
+                r"(\d+\.\d+)\s+(?:depends\s+on|->|:)\s+(.+)",
+                line, re.IGNORECASE,
+            )
+            if dep_match:
+                task_id = dep_match.group(1)
+                deps = [d.strip() for d in dep_match.group(2).split(",")]
+                nodes.append({"task": task_id, "depends_on": deps})
+            else:
+                # Standalone task with no deps
+                id_match = re.match(r"(\d+\.\d+)", line)
+                if id_match:
+                    nodes.append({"task": id_match.group(1), "depends_on": []})
+
+        return nodes
+
+    def get_plan_diff(self) -> Dict[str, Any]:
+        """
+        Compare current plan with previous version for the same phase.
+
+        Finds plan files for the same phase number, compares task lists.
+        Returns {added: [], removed: [], modified: [], has_previous: bool}.
+        """
+        if not self.plan_file or not self.plan_file.exists():
+            return {"added": [], "removed": [], "modified": [], "has_previous": False}
+
+        # Get phase number from current plan
+        phase_match = re.search(r"phase-(\d+)", self.plan_file.name)
+        if not phase_match:
+            return {"added": [], "removed": [], "modified": [], "has_previous": False}
+
+        phase_num = phase_match.group(1)
+
+        # Find all plan files for this phase, sorted by mtime (newest first)
+        plan_files = sorted(
+            self.plans_dir.glob(f"phase-{phase_num}-plan*.md"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+
+        # Need at least 2 files (current + previous)
+        if len(plan_files) < 2:
+            return {"added": [], "removed": [], "modified": [], "has_previous": False}
+
+        previous_file = plan_files[1]
+
+        # Parse tasks from both files
+        current_tasks = self._parse_tasks_from_file(self.plan_file)
+        previous_tasks = self._parse_tasks_from_file(previous_file)
+
+        current_ids = {t["id"] for t in current_tasks}
+        previous_ids = {t["id"] for t in previous_tasks}
+
+        current_map = {t["id"]: t for t in current_tasks}
+        previous_map = {t["id"]: t for t in previous_tasks}
+
+        added = [current_map[tid] for tid in current_ids - previous_ids]
+        removed = [previous_map[tid] for tid in previous_ids - current_ids]
+
+        modified = []
+        for tid in current_ids & previous_ids:
+            if current_map[tid]["what"] != previous_map[tid]["what"]:
+                modified.append({
+                    "id": tid,
+                    "old_what": previous_map[tid]["what"],
+                    "new_what": current_map[tid]["what"],
+                })
+
+        return {
+            "added": added,
+            "removed": removed,
+            "modified": modified,
+            "has_previous": True,
+            "previous_file": previous_file.name,
+        }
+
+    def _parse_tasks_from_file(self, file_path: Path) -> List[Dict[str, str]]:
+        """Parse task list from a plan file."""
+        content = file_path.read_text()
+        tasks = []
+        task_pattern = re.compile(r"^###\s+(\d+\.\d+)\s+(.+?)$", re.MULTILINE)
+        matches = list(task_pattern.finditer(content))
+
+        for i, match in enumerate(matches):
+            task_id = match.group(1)
+            start = match.end()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(content)
+            block = content[start:end]
+
+            tasks.append({
+                "id": task_id,
+                "what": self._extract_field(block, "WHAT"),
+                "why": self._extract_field(block, "WHY"),
+                "verify": self._extract_field(block, "VERIFY"),
+            })
+
+        return tasks
+
     def get_full_review_data(self) -> Dict[str, Any]:
         """
         Aggregate all review data into a single dict for rendering.
