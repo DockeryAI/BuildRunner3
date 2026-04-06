@@ -258,3 +258,7 @@
   - Recharts AreaChart for price history sparklines (already in deps)
   - Auto-create default GPU hunt on first load if no hunts exist
   - Alert badge counts unread deals with score >= 80 (exceptional)
+[2026-04-06T18:38:19Z] Phase 6 decisions:
+  - intel_improvements table added to intel_schema.sql with full lifecycle fields (status, build_spec_name, overlap_action)
+  - Overlap detection added to intel-review.md with adopt/adapt/ignore recommendation
+  - Plan This modal in IntelligenceTab for improvement -> /setlist pipeline

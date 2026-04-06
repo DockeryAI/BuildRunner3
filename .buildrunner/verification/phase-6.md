@@ -1,21 +1,33 @@
-# Phase 6 Verification: Dashboard Plan Review
+# Phase 6 Verification: Setlist Integration
 
-## Tests
-- 11/11 PlanReviewView tests passing
-- 27/27 existing dashboard tests passing (no regression)
-- Total: 38/38 PASS
+## Schema
+- intel_improvements table: PASS (all 10 columns verified)
+- Indexes: idx_improvements_status, idx_improvements_source
 
-## Deliverables Verified
-1. PlanReviewView class — PRESENT, all methods implemented
-2. Task table — Rich table with #/WHAT/WHY/VERIFY columns
-3. Adversarial findings panel — color-coded, severity sorted
-4. Test baseline panel — Walter query with graceful offline fallback
-5. Historical outcomes — Lockwood query, capped at 3
-6. Code health flags — warning bar for files < 9.5/10
-7. Actions — approve/revise/reject with shortcuts
-8. CLI wiring — --view plan and --view plan --history both work
-9. Graceful degradation — plan + adversarial always shown
+## Backend CRUD
+- create_improvement(): PASS
+- get_improvements(): PASS (with status filter)
+- update_improvement_status(): PASS (with build_spec_name)
+- opus_review_intel_item(): PASS
+- opus_review_deal_item(): PASS
 
-## Import Verification
-- `from core.dashboard_views import PlanReviewView` — OK
-- `from cli.dashboard import dashboard` — OK
+## FastAPI Endpoints
+- GET /api/intel/improvements: PASS
+- POST /api/intel/improvements: PASS
+- POST /api/intel/improvements/{id}/status: PASS
+- POST /api/intel/items/{id}/opus-review: PASS
+- POST /api/deals/items/{id}/opus-review: PASS
+
+## Frontend
+- IntelImprovement type extended with lifecycle fields: PASS
+- updateImprovementStatus() API method: PASS
+- getImprovementHistory() API method: PASS
+- Plan This modal with title/rationale/prompt/complexity/affected files: PASS
+- Status badges (pending/planned/built/archived): PASS
+- Improvement status filter dropdown: PASS
+- Mark as Planned with BUILD spec name input: PASS
+- Copy /setlist Command button: PASS
+
+## intel-review.md
+- Overlap detection with adopt/adapt/ignore: PASS
+- Enhanced setlist_prompt generation with BUILD spec references: PASS
