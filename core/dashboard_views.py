@@ -6,6 +6,9 @@ Because one burning repository isn't enough - let's see ALL of them at once.
 
 PlanReviewView: Human verification gate for setlist plans — task table,
 adversarial findings, test baseline, historical outcomes, code health.
+
+ExecutionMonitorView: Live execution progress — task completion with verify
+results, session metrics, drift indicator, affected files preview.
 """
 
 import json
@@ -595,3 +598,285 @@ class PlanReviewView:
                 return data.get("results", [])
         except Exception:
             return None
+
+
+class ExecutionMonitorView:
+    """
+    Live execution monitor for /begin runs with setlist gates.
+
+    Reads progress.json from lock directories to show task completion,
+    session metrics, drift indicators, and affected file previews.
+    The Lusser's Law dashboard — every unverified step compounds.
+    """
+
+    # Thresholds for color coding
+    _INTERACTION_LIMIT = 70
+    _TIME_LIMIT_MINUTES = 35
+
+    def __init__(self, project_root: Path):
+        self.project_root = Path(project_root)
+        self._progress = self._load_progress()
+        self._plan_tasks = self._load_plan_tasks()
+
+    def _find_latest_progress(self) -> Optional[Path]:
+        """Find the most recent progress.json in any lock directory."""
+        locks_dir = self.project_root / ".buildrunner" / "locks"
+        if not locks_dir.exists():
+            return None
+
+        progress_files = []
+        for lock_dir in locks_dir.iterdir():
+            if lock_dir.is_dir():
+                pf = lock_dir / "progress.json"
+                if pf.exists():
+                    progress_files.append(pf)
+
+        if not progress_files:
+            return None
+
+        return max(progress_files, key=lambda p: p.stat().st_mtime)
+
+    def _load_progress(self) -> Dict[str, Any]:
+        """Load progress.json data."""
+        pf = self._find_latest_progress()
+        if not pf:
+            return {}
+        try:
+            return json.loads(pf.read_text())
+        except (json.JSONDecodeError, OSError):
+            return {}
+
+    def _load_plan_tasks(self) -> List[Dict[str, str]]:
+        """Load tasks from the plan file matching the current phase."""
+        phase = self._progress.get("phase")
+        plans_dir = self.project_root / ".buildrunner" / "plans"
+        if not plans_dir.exists():
+            return []
+
+        if phase:
+            plan_file = plans_dir / f"phase-{phase}-plan.md"
+            if not plan_file.exists():
+                plan_file = None
+        else:
+            plan_file = None
+
+        if not plan_file:
+            plan_files = sorted(
+                plans_dir.glob("phase-*-plan.md"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True,
+            )
+            plan_file = plan_files[0] if plan_files else None
+
+        if not plan_file or not plan_file.exists():
+            return []
+
+        content = plan_file.read_text()
+        tasks = []
+
+        task_pattern = re.compile(
+            r"^###\s+(\d+\.\d+)\s+(.+?)$", re.MULTILINE
+        )
+        matches = list(task_pattern.finditer(content))
+
+        for i, match in enumerate(matches):
+            task_id = match.group(1)
+            start = match.end()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(content)
+            block = content[start:end]
+
+            what = self._extract_field(block, "WHAT")
+            verify = self._extract_field(block, "VERIFY")
+
+            file_match = re.search(r"`([^`]+\.\w+)`", what)
+            file_path = file_match.group(1) if file_match else ""
+
+            tasks.append({
+                "id": task_id,
+                "what": what,
+                "verify": verify,
+                "file": file_path,
+            })
+
+        return tasks
+
+    @staticmethod
+    def _extract_field(block: str, field_name: str) -> str:
+        """Extract a field value from a task block."""
+        pattern = re.compile(
+            rf"-\s+{field_name}:\s*(.+?)$", re.MULTILINE
+        )
+        match = pattern.search(block)
+        return match.group(1).strip() if match else ""
+
+    def get_task_progress(self) -> Dict[str, Any]:
+        """
+        Task progress with verify results.
+
+        Returns dict with tasks (each with verify_result), tasks_done,
+        tasks_total, consecutive_failures, and current_task.
+        """
+        verify_results = {
+            r["task_id"]: r["result"]
+            for r in self._progress.get("verify_results", [])
+        }
+
+        tasks = []
+        for task in self._plan_tasks:
+            tasks.append({
+                "id": task["id"],
+                "what": task["what"],
+                "verify": task["verify"],
+                "verify_result": verify_results.get(task["id"], "pending"),
+            })
+
+        return {
+            "tasks": tasks,
+            "tasks_done": self._progress.get("tasks_done", 0),
+            "tasks_total": self._progress.get("tasks_total", len(self._plan_tasks)),
+            "consecutive_failures": self._progress.get("consecutive_failures", 0),
+            "current_task": self._progress.get("current_task"),
+        }
+
+    def get_session_metrics(self) -> Dict[str, Any]:
+        """
+        Session metrics: interaction count, elapsed time, compaction count.
+
+        Colors: normal (< 80%), yellow (80-99%), red (>= 100%).
+        """
+        interaction_count = self._progress.get("interaction_count", 0)
+        compaction_count = self._progress.get("compaction_count", 0)
+
+        started_at = self._progress.get("started_at")
+        if started_at:
+            try:
+                start = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+                now = datetime.now(start.tzinfo) if start.tzinfo else datetime.now()
+                elapsed = (now - start).total_seconds() / 60.0
+            except (ValueError, TypeError):
+                elapsed = 0.0
+        else:
+            elapsed = 0.0
+
+        def _color(value: float, limit: float) -> str:
+            pct = value / limit if limit > 0 else 0
+            if pct >= 1.0:
+                return "red"
+            elif pct >= 0.8:
+                return "yellow"
+            return "normal"
+
+        return {
+            "interaction_count": interaction_count,
+            "interaction_limit": self._INTERACTION_LIMIT,
+            "interaction_color": _color(interaction_count, self._INTERACTION_LIMIT),
+            "elapsed_minutes": round(elapsed, 1),
+            "time_limit": self._TIME_LIMIT_MINUTES,
+            "time_color": _color(elapsed, self._TIME_LIMIT_MINUTES),
+            "compaction_count": compaction_count,
+        }
+
+    def get_drift_data(self) -> Dict[str, Any]:
+        """
+        Drift indicator: compares planned files vs actual files touched.
+
+        Returns drift percentage. 0% = perfect alignment.
+        """
+        files_planned = set()
+        for task in self._plan_tasks:
+            if task.get("file"):
+                files_planned.add(task["file"])
+
+        files_actual = set(self._progress.get("files_actual", []))
+
+        if not files_planned and not files_actual:
+            return {
+                "drift_pct": 0.0,
+                "files_planned": [],
+                "files_actual": [],
+                "files_unplanned": [],
+                "files_missed": [],
+            }
+
+        all_files = files_planned | files_actual
+        diff_files = files_planned.symmetric_difference(files_actual)
+        drift_pct = (len(diff_files) / len(all_files) * 100) if all_files else 0.0
+
+        return {
+            "drift_pct": round(drift_pct, 1),
+            "files_planned": sorted(files_planned),
+            "files_actual": sorted(files_actual),
+            "files_unplanned": sorted(files_actual - files_planned),
+            "files_missed": sorted(files_planned - files_actual),
+        }
+
+    def get_affected_files(self) -> List[Dict[str, Any]]:
+        """
+        Affected files preview: exists, last modified, line count.
+
+        Spots stale assumptions like targeting deleted files.
+        """
+        files = []
+        seen = set()
+
+        for task in self._plan_tasks:
+            file_path = task.get("file", "")
+            if not file_path or file_path in seen:
+                continue
+            seen.add(file_path)
+
+            full_path = self.project_root / file_path
+            if full_path.exists():
+                try:
+                    stat = full_path.stat()
+                    line_count = full_path.read_text().count("\n")
+                    modified = datetime.fromtimestamp(stat.st_mtime)
+                    files.append({
+                        "path": file_path,
+                        "exists": True,
+                        "modified": modified.isoformat(),
+                        "lines": line_count,
+                    })
+                except OSError:
+                    files.append({
+                        "path": file_path,
+                        "exists": False,
+                        "modified": None,
+                        "lines": 0,
+                    })
+            else:
+                files.append({
+                    "path": file_path,
+                    "exists": False,
+                    "modified": None,
+                    "lines": 0,
+                })
+
+        return files
+
+    def get_execution_data(self) -> Dict[str, Any]:
+        """
+        Aggregate all execution monitor data into a single dict.
+
+        Graceful: returns safe defaults when no progress data exists.
+        """
+        task_progress = self.get_task_progress()
+
+        return {
+            "phase": self._progress.get("phase", 0),
+            "phase_name": self._progress.get("name", ""),
+            "step": self._progress.get("step", 0),
+            "step_label": self._progress.get("step_label", ""),
+            "status": self._progress.get("status", "unknown"),
+            "tasks": task_progress["tasks"],
+            "tasks_done": task_progress["tasks_done"],
+            "tasks_total": task_progress["tasks_total"],
+            "consecutive_failures": task_progress["consecutive_failures"],
+            "current_task": task_progress["current_task"],
+            "session_metrics": self.get_session_metrics(),
+            "drift": self.get_drift_data(),
+            "affected_files": self.get_affected_files(),
+            "commits": self._progress.get("commits", 0),
+            "errors": self._progress.get("errors", []),
+            "warnings": self._progress.get("warnings", []),
+        }
