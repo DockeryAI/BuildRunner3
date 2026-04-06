@@ -131,3 +131,51 @@ export interface IntelFilters {
   read?: boolean;
   limit?: number;
 }
+
+// --- Deals Tab Types ---
+
+export interface DealItem {
+  id: number;
+  hunt_id: number;
+  name: string;
+  category: string;
+  attributes: Record<string, any>;
+  source_url: string;
+  price: number;
+  condition: string;
+  seller: string;
+  seller_rating: number;
+  deal_score: number;
+  verdict: 'exceptional' | 'good' | 'fair' | 'pass';
+  opus_assessment: string | null;
+  listing_url: string;
+  collected_at: string;
+  read: boolean;
+  dismissed: boolean;
+}
+
+export interface Hunt {
+  id: number;
+  name: string;
+  category: string;
+  keywords: string;
+  target_price: number;
+  check_interval_minutes: number;
+  source_urls: string[];
+  active: boolean;
+  created_at: string;
+  items_count?: number;
+  last_checked?: string;
+}
+
+export interface PriceHistoryPoint {
+  price: number;
+  source: string;
+  recorded_at: string;
+}
+
+export interface DealFilters {
+  hunt_id?: number;
+  min_score?: number;
+  limit?: number;
+}
