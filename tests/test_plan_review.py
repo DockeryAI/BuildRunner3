@@ -44,27 +44,15 @@ def plan_dir(tmp_path):
 
 
 @pytest.fixture
-def adversarial_dir(tmp_path):
-    """Create adversarial findings JSON."""
-    plans_dir = tmp_path / ".buildrunner" / "plans"
-    plans_dir.mkdir(parents=True)
-
+def full_review_dir(plan_dir):
+    """Directory with both plan and adversarial findings."""
+    plans_dir = plan_dir / ".buildrunner" / "plans"
     findings = [
         {"finding": "validateJWT references non-existent jose library", "severity": "blocker"},
         {"finding": "refreshSession lacks error handling for expired tokens", "severity": "warning"},
         {"finding": "Consider adding rate limiting to auth endpoints", "severity": "note"},
     ]
     (plans_dir / "adversarial-phase-3.json").write_text(json.dumps(findings))
-    return tmp_path
-
-
-@pytest.fixture
-def full_review_dir(plan_dir, adversarial_dir):
-    """Directory with both plan and adversarial findings."""
-    # Copy adversarial file to plan_dir
-    adv_src = adversarial_dir / ".buildrunner" / "plans" / "adversarial-phase-3.json"
-    adv_dst = plan_dir / ".buildrunner" / "plans" / "adversarial-phase-3.json"
-    adv_dst.write_text(adv_src.read_text())
     return plan_dir
 
 

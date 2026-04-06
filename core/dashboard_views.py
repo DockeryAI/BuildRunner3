@@ -3,9 +3,14 @@ Dashboard Views for BuildRunner 3.0
 
 Multi-repo dashboard to aggregate status across all BuildRunner projects.
 Because one burning repository isn't enough - let's see ALL of them at once.
+
+PlanReviewView: Human verification gate for setlist plans — task table,
+adversarial findings, test baseline, historical outcomes, code health.
 """
 
 import json
+import re
+import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
@@ -312,3 +317,281 @@ Features: {overview['total_completed']}/{overview['total_features']} complete ({
 Active: {overview['active_projects']} projects in progress
 Alerts: {overview['stale_projects']} stale, {overview['blocked_projects']} blocked
 """
+
+
+class PlanReviewView:
+    """
+    Human verification gate for setlist plans.
+
+    Reads plan files, adversarial findings, and queries cluster APIs
+    to present everything a reviewer needs for an informed approve/reject.
+    Graceful degradation: plan + adversarial always shown even when
+    Walter/Lockwood are offline.
+    """
+
+    # Severity sort order — blockers first
+    _SEVERITY_ORDER = {"blocker": 0, "warning": 1, "note": 2}
+
+    def __init__(self, project_root: Path):
+        self.project_root = Path(project_root)
+        self.plans_dir = self.project_root / ".buildrunner" / "plans"
+        self.plan_file = self._find_latest_plan()
+
+    def _find_latest_plan(self) -> Optional[Path]:
+        """Find the most recently modified plan file."""
+        if not self.plans_dir.exists():
+            return None
+        plan_files = sorted(
+            self.plans_dir.glob("phase-*-plan.md"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        return plan_files[0] if plan_files else None
+
+    def get_task_table_data(self) -> List[Dict[str, str]]:
+        """
+        Parse plan file into structured task rows.
+
+        Returns list of dicts with keys: id, what, why, verify.
+        Each row is a single-function task.
+        """
+        if not self.plan_file or not self.plan_file.exists():
+            return []
+
+        content = self.plan_file.read_text()
+        tasks = []
+
+        # Parse markdown task sections: ### N.M title
+        task_pattern = re.compile(
+            r"^###\s+(\d+\.\d+)\s+(.+?)$", re.MULTILINE
+        )
+        matches = list(task_pattern.finditer(content))
+
+        for i, match in enumerate(matches):
+            task_id = match.group(1)
+            # Get the block of text until the next task or end
+            start = match.end()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(content)
+            block = content[start:end]
+
+            what = self._extract_field(block, "WHAT")
+            why = self._extract_field(block, "WHY")
+            verify = self._extract_field(block, "VERIFY")
+
+            tasks.append({
+                "id": task_id,
+                "what": what,
+                "why": why,
+                "verify": verify,
+            })
+
+        return tasks
+
+    def _extract_field(self, block: str, field_name: str) -> str:
+        """Extract a field value from a task block (e.g., WHAT, WHY, VERIFY)."""
+        pattern = re.compile(
+            rf"-\s+{field_name}:\s*(.+?)$", re.MULTILINE
+        )
+        match = pattern.search(block)
+        return match.group(1).strip() if match else ""
+
+    def get_adversarial_data(self) -> List[Dict[str, str]]:
+        """
+        Read adversarial findings JSON. Sorted: blockers first.
+
+        Returns list of dicts with keys: finding, severity.
+        """
+        if not self.plans_dir.exists():
+            return []
+
+        adv_files = sorted(
+            self.plans_dir.glob("adversarial-*.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        if not adv_files:
+            return []
+
+        try:
+            findings = json.loads(adv_files[0].read_text())
+        except (json.JSONDecodeError, OSError):
+            return []
+
+        if not isinstance(findings, list):
+            return []
+
+        # Sort by severity: blocker → warning → note
+        findings.sort(
+            key=lambda f: self._SEVERITY_ORDER.get(
+                f.get("severity", "note"), 99
+            )
+        )
+        return findings
+
+    def get_test_baseline_data(self) -> Dict[str, Any]:
+        """
+        Query Walter for test baseline: file → test mapping with pass/fail.
+
+        Returns empty dict if Walter is offline.
+        """
+        tasks = self.get_task_table_data()
+        if not tasks:
+            return {}
+
+        # Extract source files from WHAT fields
+        files = []
+        for task in tasks:
+            # Extract file path from backtick-quoted path
+            file_match = re.search(r"`([^`]+\.\w+)`", task.get("what", ""))
+            if file_match:
+                files.append(file_match.group(1))
+
+        if not files:
+            return {}
+
+        result = self._query_walter(files)
+        return result if result else {}
+
+    def get_historical_data(self) -> List[Dict[str, Any]]:
+        """
+        Query Lockwood for similar past plans. Max 3.
+
+        Returns empty list if Lockwood is offline.
+        """
+        if not self.plan_file or not self.plan_file.exists():
+            return []
+
+        # Use plan content as query
+        plan_text = self.plan_file.read_text()[:500]
+        result = self._query_lockwood(plan_text)
+        if not result:
+            return []
+        return result[:3]
+
+    def get_code_health_data(self) -> Dict[str, float]:
+        """
+        Check health scores for planned files.
+
+        Returns dict of file_path → health_score.
+        Files with health < 9.5 should trigger a warning bar.
+        """
+        tasks = self.get_task_table_data()
+        health = {}
+
+        for task in tasks:
+            file_match = re.search(r"`([^`]+\.\w+)`", task.get("what", ""))
+            if file_match:
+                file_path = file_match.group(1)
+                full_path = self.project_root / file_path
+                if full_path.exists():
+                    # Simple health heuristic: file exists and is non-empty
+                    try:
+                        size = full_path.stat().st_size
+                        health[file_path] = 10.0 if size > 0 else 0.0
+                    except OSError:
+                        health[file_path] = 0.0
+                else:
+                    # File doesn't exist yet — neutral (will be created)
+                    health[file_path] = 10.0
+
+        return health
+
+    def get_actions(self) -> List[Dict[str, str]]:
+        """
+        Available review actions.
+
+        Returns list of action dicts with name and description.
+        """
+        return [
+            {
+                "name": "approve",
+                "description": "Approve plan and hand to /begin for execution",
+                "shortcut": "a",
+            },
+            {
+                "name": "revise",
+                "description": "Add per-task comments for targeted re-synthesis",
+                "shortcut": "r",
+            },
+            {
+                "name": "reject",
+                "description": "Reject plan with reason, archive to Lockwood",
+                "shortcut": "x",
+            },
+        ]
+
+    def get_full_review_data(self) -> Dict[str, Any]:
+        """
+        Aggregate all review data into a single dict for rendering.
+
+        Graceful: plan + adversarial always present.
+        Test baseline, history, health — best-effort.
+        """
+        data = {
+            "plan_file": str(self.plan_file) if self.plan_file else None,
+            "tasks": self.get_task_table_data(),
+            "adversarial": self.get_adversarial_data(),
+            "actions": self.get_actions(),
+        }
+
+        # Best-effort cluster queries
+        try:
+            data["test_baseline"] = self.get_test_baseline_data()
+        except Exception:
+            data["test_baseline"] = {}
+
+        try:
+            data["history"] = self.get_historical_data()
+        except Exception:
+            data["history"] = []
+
+        try:
+            data["code_health"] = self.get_code_health_data()
+        except Exception:
+            data["code_health"] = {}
+
+        return data
+
+    def _query_walter(self, files: List[str]) -> Optional[Dict[str, Any]]:
+        """Query Walter node for test mapping. Returns None if offline."""
+        try:
+            result = subprocess.run(
+                ["bash", "-c",
+                 "~/.buildrunner/scripts/cluster-check.sh test-runner 2>/dev/null"],
+                capture_output=True, text=True, timeout=5,
+            )
+            walter_url = result.stdout.strip()
+            if not walter_url:
+                return None
+
+            import urllib.request
+            files_param = ",".join(files)
+            url = f"{walter_url}/api/testmap?files={files_param}"
+            req = urllib.request.Request(url, method="GET")
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                return json.loads(resp.read())
+        except Exception:
+            return None
+
+    def _query_lockwood(self, query_text: str) -> Optional[List[Dict[str, Any]]]:
+        """Query Lockwood node for similar plans. Returns None if offline."""
+        try:
+            result = subprocess.run(
+                ["bash", "-c",
+                 "~/.buildrunner/scripts/cluster-check.sh semantic-search 2>/dev/null"],
+                capture_output=True, text=True, timeout=5,
+            )
+            lockwood_url = result.stdout.strip()
+            if not lockwood_url:
+                return None
+
+            import urllib.request
+            import urllib.parse
+            encoded_query = urllib.parse.quote(query_text[:200])
+            url = f"{lockwood_url}/api/plans/similar?query={encoded_query}&limit=3"
+            req = urllib.request.Request(url, method="GET")
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                data = json.loads(resp.read())
+                return data.get("results", [])
+        except Exception:
+            return None
