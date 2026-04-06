@@ -97,6 +97,26 @@ CREATE TABLE IF NOT EXISTS active_hunts (
 
 CREATE INDEX IF NOT EXISTS idx_hunt_active ON active_hunts(active);
 
+-- Intel improvements — BR3 actionable improvements detected by Opus review
+CREATE TABLE IF NOT EXISTS intel_improvements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    rationale TEXT,
+    complexity TEXT NOT NULL DEFAULT 'medium',  -- simple/medium/complex
+    setlist_prompt TEXT NOT NULL,
+    affected_files TEXT,  -- JSON array
+    source_intel_id INTEGER,
+    status TEXT NOT NULL DEFAULT 'pending',  -- pending/planned/built/archived
+    build_spec_name TEXT,  -- linked BUILD spec when marked as planned
+    overlap_action TEXT,  -- adopt/adapt/ignore (when overlapping existing BR3 functionality)
+    overlap_notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (source_intel_id) REFERENCES intel_items(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_improvements_status ON intel_improvements(status);
+CREATE INDEX IF NOT EXISTS idx_improvements_source ON intel_improvements(source_intel_id);
+
 -- Package versions for tracking npm/PyPI updates
 CREATE TABLE IF NOT EXISTS package_versions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
