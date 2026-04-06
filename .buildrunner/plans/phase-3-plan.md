@@ -1,26 +1,28 @@
-# Phase 3 Plan: Skill Write-Back to Lockwood
-
-## Approach
-
-Add a Lockwood POST step at the end of each of these 6 skills so that useful findings are saved as institutional memory. Each skill already uses `cluster-check.sh` for reads — we add a write-back at the end.
-
-Pattern (from /save which already does this):
-```
-NODE_URL=$(~/.buildrunner/scripts/cluster-check.sh semantic-search)
-[ -n "$NODE_URL" ] && curl -s -X POST "$NODE_URL/api/memory/note" ...
-```
-
-All write-backs are optional (graceful fallback if Lockwood offline).
+# Phase 3 Plan: Test Map (Walter)
 
 ## Tasks
 
-1. **root.md** — After Step 5 (report), POST root cause summary + full report to Lockwood with topic "root-cause: {summary}", source "root"
-2. **guard.md** — After Step 4 (report), POST violations found to Lockwood with topic "governance-violation: {summary}", source "guard"
-3. **review.md** — After Step 3 (auto-fix), POST review findings to Lockwood with topic "review-findings: {summary}", source "review"
-4. **gaps.md** — After Step 4 (report), POST gap analysis results to Lockwood with topic "gap-analysis: {summary}", source "gaps"
-5. **dead.md** — After Step 3 (report), POST dead code findings to Lockwood with topic "dead-code: {summary}", source "dead"
-6. **e2e.md** — After Step 5 (report), POST test results to Lockwood with topic "e2e-results: {summary}", source "e2e"
+### 3.1 — Add test_file_map table to _ensure_tables
+Add CREATE TABLE for test_file_map (id, project, test_file, source_file, confidence, last_verified) and index idx_testmap_project_source.
+
+### 3.2 — Implement build_test_map(project) function
+Scan repo test files for import statements referencing source files and naming conventions (foo.test.ts -> foo.ts). Build source->test mapping, store in test_file_map table.
+
+### 3.3 — Implement get_test_map(files, project) function
+Given list of source files and project, query test_file_map and return {source_file: [{test_file, confidence}]} mapping.
+
+### 3.4 — Add GET /api/testmap endpoint
+Accept files (comma-separated) and project params. Call get_test_map, return JSON mapping.
+
+### 3.5 — Add POST /api/testmap/baseline endpoint
+Accept project and files params. Get test map, run mapped tests, return {test_file: status, duration_ms} baseline.
+
+### 3.6 — Add auto-rebuild on file hash change
+During existing poll cycle, invalidate and rebuild affected test_file_map entries when file hashes change.
 
 ## Tests
-
-Non-testable (markdown skill files, no runtime code). TDD step skipped.
+- test_file_map table creation
+- build_test_map correctly maps imports and conventions
+- get_test_map returns correct mappings
+- API endpoints return expected responses
+- Auto-rebuild invalidates stale entries
