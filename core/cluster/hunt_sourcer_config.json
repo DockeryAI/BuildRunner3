@@ -1,0 +1,32 @@
+{
+  "sources": {
+    "ebay_scrape": {
+      "enabled": false,
+      "_note": "eBay CAPTCHA blocks httpx — use ebay_browse with API keys instead"
+    },
+    "ebay_browse": {
+      "enabled": false,
+      "marketplace_id": "EBAY_US",
+      "limit": 50,
+      "_note": "Set EBAY_APP_ID + EBAY_SECRET env vars to enable"
+    },
+    "reddit_rss": { "enabled": true, "subreddits": ["buildapcsales", "hardwareswap"] },
+    "craigslist_rss": { "enabled": false, "_note": "IP-level 403 block — needs proxy to work" },
+    "pcpartpicker": { "enabled": true, "use_playwright": false },
+    "newegg": { "enabled": true },
+    "shopify": {
+      "enabled": true,
+      "stores": [{ "name": "Minisforum", "domain": "www.minisforum.com" }]
+    },
+    "bhphoto": { "enabled": true }
+  },
+  "dedup": {
+    "url_hash": true,
+    "title_similarity": true,
+    "similarity_threshold": 0.85
+  },
+  "pair_detection": {
+    "enabled": true,
+    "same_seller_window_hours": 72
+  }
+}

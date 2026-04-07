@@ -86,16 +86,34 @@ async def search(hunt: dict, config: dict) -> list[dict]:
 
     cities = config.get("cities", DEFAULT_CITIES)
     cl_category = config.get("cl_category", DEFAULT_CATEGORY)
-    keyword_parts = [k.lower() for k in keywords.split()]
+    # Parse keywords: required terms and exclusions (prefixed with -)
+    required = []
+    excluded = []
+    for kw in keywords.split():
+        if kw.startswith("-"):
+            excluded.append(kw[1:].lower())
+        elif len(kw) >= 2:
+            required.append(kw.lower())
+
+    core_terms = [t for t in required if len(t) >= 3 or t.isdigit()]
+    if not core_terms:
+        core_terms = required
+
+    # Build clean search query (no exclusions for CL query)
+    search_query = "+".join(t for t in keywords.split() if not t.startswith("-"))
     items = []
 
     for city in cities:
         try:
             async with httpx.AsyncClient(
                 timeout=10.0,
-                headers={"User-Agent": "BR3-HuntSourcer/1.0"},
+                follow_redirects=True,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36",
+                    "Accept": "application/rss+xml, application/xml, text/xml, */*",
+                    "Accept-Language": "en-US,en;q=0.9",
+                },
             ) as client:
-                search_query = "+".join(keywords.split())
                 url = f"https://{city}.craigslist.org/search/{cl_category}?query={search_query}&format=rss"
                 resp = await client.get(url)
 
@@ -109,8 +127,14 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                     title = entry.get("title", "")
                     title_lower = title.lower()
 
-                    # Keyword match
-                    if not any(kw in title_lower for kw in keyword_parts):
+                    # Require at least 2 core terms (or all if fewer than 2)
+                    match_count = sum(1 for ct in core_terms if ct in title_lower)
+                    min_required = min(2, len(core_terms))
+                    if match_count < min_required:
+                        continue
+
+                    # Exclusion filter
+                    if any(ex in title_lower for ex in excluded):
                         continue
 
                     price = _extract_price_from_title(title)

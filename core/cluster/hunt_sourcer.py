@@ -44,6 +44,11 @@ def _load_config() -> dict:
             "reddit_rss": {"enabled": True, "subreddits": ["buildapcsales", "hardwareswap"]},
             "craigslist_rss": {"enabled": True, "cities": ["sfbay", "losangeles", "seattle"]},
             "pcpartpicker": {"enabled": True, "use_playwright": False},
+            "newegg": {"enabled": True},
+            "shopify": {"enabled": True, "stores": [
+                {"name": "Minisforum", "domain": "www.minisforum.com"},
+            ]},
+            "bhphoto": {"enabled": True},
         },
         "dedup": {"url_hash": True, "title_similarity": True, "similarity_threshold": 0.85},
         "pair_detection": {"enabled": True, "same_seller_window_hours": 72},
@@ -57,16 +62,30 @@ def _url_hash(url: str) -> str:
 # --- Lockwood Client ---
 
 async def _get_active_hunts() -> list[dict]:
-    """Fetch active hunts from Lockwood."""
-    if not httpx:
-        return []
+    """Fetch active hunts from Lockwood API, fallback to local DB."""
+    # Try Lockwood API first
+    if httpx:
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.get(f"{LOCKWOOD_URL}/api/deals/hunts")
+                resp.raise_for_status()
+                hunts = resp.json().get("hunts", [])
+                if hunts:
+                    return hunts
+        except Exception as e:
+            logger.warning(f"Lockwood API unavailable ({e}), falling back to local DB")
+
+    # Fallback: read directly from local SQLite
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(f"{LOCKWOOD_URL}/api/deals/hunts")
-            resp.raise_for_status()
-            return resp.json().get("hunts", [])
+        from core.cluster.intel_collector import _get_intel_db
+        conn = _get_intel_db()
+        rows = conn.execute(
+            "SELECT * FROM active_hunts WHERE active = 1 ORDER BY id"
+        ).fetchall()
+        conn.close()
+        return [dict(row) for row in rows]
     except Exception as e:
-        logger.error(f"Failed to fetch hunts from Lockwood: {e}")
+        logger.error(f"Failed to fetch hunts from local DB: {e}")
         return []
 
 
@@ -110,14 +129,35 @@ async def _post_deal_item(item: dict) -> Optional[int]:
 
 # --- Batch Insert via Direct DB (Lockwood-local) or API ---
 
-async def _batch_insert_deals(items: list[dict], hunt_id: int) -> int:
-    """Insert deal items, deduplicating against existing. Returns count of new items."""
+async def _batch_insert_deals(items: list[dict], hunt_id: int, target_price: float = None, _excluded_terms: list[str] = None) -> int:
+    """Insert deal items, deduplicating against existing. Returns count of new items.
+    Filters out: out-of-stock items, items way over target price, excluded keyword matches.
+    """
+    if _excluded_terms is None:
+        _excluded_terms = []
     existing_urls = await _get_existing_deal_urls(hunt_id)
     new_count = 0
 
     for item in items:
         source_url = item.get("source_url", "")
         if source_url in existing_urls:
+            continue
+
+        # Skip out-of-stock items
+        attrs = item.get("attributes", {})
+        if isinstance(attrs, dict) and attrs.get("in_stock") is False:
+            continue
+
+        # Skip items way over budget (> 1.5x target price)
+        price = item.get("price")
+        if target_price and price and price > target_price * 1.5:
+            continue
+
+        # Apply keyword exclusions from hunt to all sources
+        # Hunt keywords like "RTX 3090 24GB -Ti -water -block -parts"
+        # The "-" prefixed words should filter results from ANY source
+        name_lower = item.get("name", "").lower()
+        if _excluded_terms and any(ex in name_lower for ex in _excluded_terms):
             continue
 
         # Use Lockwood's create_deal_item directly if running on Lockwood,
@@ -295,6 +335,12 @@ async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list
             from core.cluster.hunt_sources.craigslist_rss import search
         elif source_name == "pcpartpicker":
             from core.cluster.hunt_sources.pcpartpicker import search
+        elif source_name == "newegg":
+            from core.cluster.hunt_sources.newegg import search
+        elif source_name == "shopify":
+            from core.cluster.hunt_sources.shopify import search
+        elif source_name == "bhphoto":
+            from core.cluster.hunt_sources.bhphoto import search
         else:
             logger.warning(f"Unknown source: {source_name}")
             return []
@@ -309,6 +355,21 @@ async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list
 
 # Track last check time per hunt
 _last_checked: dict[int, float] = {}
+
+
+BELOW_NEEDS_LLM = {"ebay_scrape", "newegg", "bhphoto"}
+
+
+async def _check_below_online() -> bool:
+    """Check if Below's Ollama is reachable."""
+    if not httpx:
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(f"{BELOW_OLLAMA_URL}/api/tags")
+            return resp.status_code == 200
+    except Exception:
+        return False
 
 
 async def check_hunts_once():
@@ -333,9 +394,15 @@ async def check_hunts_once():
         logger.info(f"Checking hunt [{hunt_id}] '{hunt['name']}'")
         _last_checked[hunt_id] = now
 
+        below_online = await _check_below_online()
+        if not below_online:
+            logger.warning("Below offline — HTML adapters (eBay/Newegg/B&H) skipped, JSON-only sources running")
+
         all_items = []
         for source_name, source_config in config.get("sources", {}).items():
             if not source_config.get("enabled", True):
+                continue
+            if not below_online and source_name in BELOW_NEEDS_LLM:
                 continue
             items = await _run_source(source_name, hunt, source_config)
             all_items.extend(items)
@@ -350,8 +417,12 @@ async def check_hunts_once():
             threshold = dedup_config.get("similarity_threshold", 0.85)
             all_items = await _dedup_by_title_similarity(all_items, threshold)
 
+        # Parse exclusion terms from hunt keywords (e.g. "-Ti -water -block")
+        hunt_keywords = hunt.get("keywords", "")
+        excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
+
         # Insert into Lockwood
-        new_count = await _batch_insert_deals(all_items, hunt_id)
+        new_count = await _batch_insert_deals(all_items, hunt_id, hunt.get("target_price"), excluded)
         logger.info(f"  Hunt [{hunt_id}]: {len(all_items)} found, {new_count} new items inserted")
 
         # Pair detection

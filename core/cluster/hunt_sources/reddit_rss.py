@@ -111,14 +111,34 @@ async def search(hunt: dict, config: dict) -> list[dict]:
 
     subreddits = config.get("subreddits", DEFAULT_SUBREDDITS)
     limit = config.get("limit", 25)
-    keyword_parts = [k.lower() for k in keywords.split()]
+    # Parse keywords: required terms and exclusions (prefixed with -)
+    required = []
+    excluded = []
+    for kw in keywords.split():
+        if kw.startswith("-"):
+            excluded.append(kw[1:].lower())
+        elif len(kw) >= 2:  # skip single-char noise
+            required.append(kw.lower())
+
+    # Identify the most distinctive terms for matching:
+    # - Model numbers (contain digits): "3090", "1200w", "rm1200x", "ms-a2", "9955hx"
+    # - Brand names (4+ chars, no digits): "evga", "corsair", "minisforum", "crucial"
+    # At least one model-number term AND one brand/product term must match.
+    model_terms = [t for t in required if any(c.isdigit() for c in t)]
+    brand_terms = [t for t in required if not any(c.isdigit() for c in t) and len(t) >= 4]
+
+    # Fallback: if no clear model/brand split, require 2+ of all terms
+    core_terms = [t for t in required if len(t) >= 3 or t.isdigit()]
+    if not core_terms:
+        core_terms = required
+
     items = []
 
     for subreddit in subreddits:
         try:
             async with httpx.AsyncClient(
                 timeout=10.0,
-                headers={"User-Agent": "BR3-HuntSourcer/1.0"},
+                headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"},
             ) as client:
                 url = f"https://www.reddit.com/r/{subreddit}/new/.rss?limit={limit}"
                 resp = await client.get(url)
@@ -136,8 +156,36 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                     title = entry.get("title", "")
                     title_lower = title.lower()
 
-                    # Check if any keyword matches
-                    if not any(kw in title_lower for kw in keyword_parts):
+                    # Skip [W] want-to-buy posts from hardwareswap
+                    # These are people looking to buy, not sell
+                    if subreddit == "hardwareswap":
+                        # Format: [H] have [W] want — skip if our keywords are in the [W] section
+                        w_idx = title_lower.find("[w]")
+                        h_idx = title_lower.find("[h]")
+                        if w_idx != -1 and h_idx != -1 and h_idx < w_idx:
+                            # Keywords appear after [W] = this is a want post
+                            after_w = title_lower[w_idx:]
+                            before_w = title_lower[:w_idx]
+                            core_in_want = sum(1 for ct in core_terms if ct in after_w)
+                            core_in_have = sum(1 for ct in core_terms if ct in before_w)
+                            if core_in_want > core_in_have:
+                                continue
+
+                    # Smart matching: require model number + brand/product term
+                    if model_terms and brand_terms:
+                        has_model = any(mt in title_lower for mt in model_terms)
+                        has_brand = any(bt in title_lower for bt in brand_terms)
+                        if not (has_model and has_brand):
+                            continue
+                    else:
+                        # Fallback: require at least 2 core terms (or all if fewer)
+                        match_count = sum(1 for ct in core_terms if ct in title_lower)
+                        min_required = min(2, len(core_terms))
+                        if match_count < min_required:
+                            continue
+
+                    # None of the excluded terms may be present
+                    if any(ex in title_lower for ex in excluded):
                         continue
 
                     content = entry.get("content", "")

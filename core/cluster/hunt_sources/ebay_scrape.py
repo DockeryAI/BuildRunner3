@@ -35,23 +35,127 @@ async def _fetch_search_html(keywords: str, max_price: Optional[float] = None) -
     if max_price:
         params["_udhi"] = str(max_price)
 
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
+    }
     try:
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
             resp = await client.get(
                 EBAY_SEARCH_URL,
                 params=params,
-                headers={"User-Agent": USER_AGENT},
+                headers=headers,
             )
             resp.raise_for_status()
-            return resp.text
+            html = resp.text
+            if len(html) < 1000:
+                logger.warning(f"eBay returned suspiciously short response ({len(html)} chars) for '{keywords}'")
+                return ""
+            return html
     except Exception as e:
-        logger.error(f"eBay search fetch failed for '{keywords}': {e}")
+        logger.error(f"eBay search fetch failed for '{keywords}': {type(e).__name__}: {e}")
         return ""
 
 
+def _extract_listings_from_html(html: str) -> list[dict]:
+    """Extract listings directly from eBay HTML using regex patterns.
+    eBay embeds listing data in the HTML even though the page is JS-enhanced.
+    """
+    import re
+    import json as _json
+
+    listings = []
+
+    # Method 1: Extract from srp-results JSON-LD or structured data
+    # eBay includes item data in script tags
+    json_ld_matches = re.findall(
+        r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>',
+        html, re.DOTALL
+    )
+    for match in json_ld_matches:
+        try:
+            data = _json.loads(match)
+            if isinstance(data, dict) and data.get("@type") == "ItemList":
+                for elem in data.get("itemListElement", []):
+                    item = elem.get("item", elem)
+                    offer = item.get("offers", {})
+                    listings.append({
+                        "title": item.get("name", ""),
+                        "price": float(offer.get("price", 0)),
+                        "url": item.get("url", ""),
+                        "condition": "Unknown",
+                        "seller": "",
+                        "in_stock": offer.get("availability", "") != "OutOfStock",
+                    })
+        except Exception:
+            continue
+
+    if listings:
+        return listings
+
+    # Method 2: Parse s-item blocks (server-rendered listing cards)
+    item_blocks = re.findall(
+        r'<li[^>]*class="[^"]*s-item[^"]*"[^>]*>(.*?)</li>',
+        html, re.DOTALL
+    )
+    for block in item_blocks:
+        title_match = re.search(
+            r'<(?:span|div)[^>]*class="[^"]*s-item__title[^"]*"[^>]*>.*?<span[^>]*>(.*?)</span>',
+            block, re.DOTALL
+        )
+        price_match = re.search(
+            r'<span[^>]*class="[^"]*s-item__price[^"]*"[^>]*>\s*\$\s*([\d,]+(?:\.\d{2})?)',
+            block, re.DOTALL
+        )
+        link_match = re.search(r'<a[^>]*href="(https://www\.ebay\.com/itm/[^"?]*)', block)
+
+        if title_match and link_match:
+            title = re.sub(r'<[^>]+>', '', title_match.group(1)).strip()
+            if title.lower() in ("shop on ebay", "results matching fewer words", ""):
+                continue
+            price = None
+            if price_match:
+                try:
+                    price = float(price_match.group(1).replace(",", ""))
+                except (ValueError, TypeError):
+                    pass
+
+            # Condition
+            cond_match = re.search(r'<span[^>]*class="[^"]*SECONDARY_INFO[^"]*"[^>]*>(.*?)</span>', block, re.DOTALL)
+            condition = re.sub(r'<[^>]+>', '', cond_match.group(1)).strip() if cond_match else "Unknown"
+
+            listings.append({
+                "title": title,
+                "price": price,
+                "url": link_match.group(1),
+                "condition": condition,
+                "seller": "",
+                "in_stock": True,
+            })
+
+    return listings
+
+
 async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
-    """Send HTML to Below's LLM for structured extraction."""
-    if not httpx or not html:
+    """Extract listings from eBay HTML. Uses regex first, falls back to Below LLM."""
+    if not html:
+        return []
+
+    # Try direct HTML parsing first (faster, no LLM needed)
+    listings = _extract_listings_from_html(html)
+    if listings:
+        logger.info(f"Extracted {len(listings)} listings from HTML for '{hunt_name}'")
+        return listings
+
+    # Fallback: send to Below LLM
+    if not httpx:
         return []
 
     # Truncate HTML to ~30k chars to fit in context
@@ -59,48 +163,47 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
         html = html[:30000]
 
     prompt = f"""Extract product listings from this eBay search results HTML.
-For each listing, return a JSON array of objects with these fields:
-- title: product name
-- price: numeric price (float, USD)
-- condition: "New", "Used", "Refurbished", or "Open Box"
-- seller: seller name
-- url: listing URL (starts with https://www.ebay.com)
-- in_stock: true/false
-
-Only include real product listings, not ads or sponsored content.
-Return ONLY a JSON array, no other text.
+Return a JSON array of objects with fields: title, price (float USD), condition ("New"/"Used"/"Refurbished"/"Open Box"), seller, url (https://www.ebay.com/...), in_stock (bool).
+Only real product listings, no ads. Return ONLY the JSON array.
 
 HTML:
 {html}"""
 
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=90.0) as client:
             resp = await client.post(
                 f"{BELOW_OLLAMA_URL}/api/generate",
                 json={
                     "model": BELOW_MODEL,
                     "prompt": prompt,
                     "stream": False,
-                    "options": {"temperature": 0.1},
+                    "format": "json",
+                    "options": {"temperature": 0.1, "num_ctx": 32768},
                 },
             )
             if resp.status_code != 200:
                 logger.error(f"Below extraction failed: {resp.status_code}")
                 return []
 
-            data = resp.json()
-            text = data.get("response", "")
-
-            # Parse JSON from response
             import json
-            # Find JSON array in response
-            start = text.find("[")
-            end = text.rfind("]")
-            if start == -1 or end == -1:
-                logger.warning(f"No JSON array found in Below response for '{hunt_name}'")
-                return []
+            text = resp.json().get("response", "")
 
-            listings = json.loads(text[start : end + 1])
+            try:
+                parsed = json.loads(text)
+                if isinstance(parsed, list):
+                    listings = parsed
+                elif isinstance(parsed, dict):
+                    listings = next((v for v in parsed.values() if isinstance(v, list)), [])
+                else:
+                    listings = []
+            except json.JSONDecodeError:
+                start = text.find("[")
+                end = text.rfind("]")
+                if start == -1 or end == -1:
+                    logger.warning(f"No JSON array found in Below response for '{hunt_name}'")
+                    return []
+                listings = json.loads(text[start : end + 1])
+
             logger.info(f"Below extracted {len(listings)} listings for '{hunt_name}'")
             return listings
 

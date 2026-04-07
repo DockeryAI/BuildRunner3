@@ -84,32 +84,67 @@ async def _scrape_with_playwright(keywords: str, limit: int = 20) -> list[dict]:
         return []
 
 
-async def _search_rss_fallback(keywords: str) -> list[dict]:
-    """Fallback: search via PCPartPicker's product API (limited)."""
+async def _search_html_fallback(keywords: str) -> list[dict]:
+    """Fallback: scrape PCPartPicker search results page HTML."""
     if not httpx:
         return []
 
     results = []
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
     try:
         async with httpx.AsyncClient(
-            timeout=10.0,
-            headers={"User-Agent": "BR3-HuntSourcer/1.0"},
+            timeout=15.0,
+            follow_redirects=True,
+            headers=headers,
         ) as client:
-            # PCPartPicker autocomplete API (unofficial but stable)
-            resp = await client.get(
-                f"{PCPP_BASE}/search/internal/autocomplete/",
-                params={"search": keywords},
+            search_url = f"{PCPP_BASE}/search/?q={keywords.replace(' ', '+')}"
+            resp = await client.get(search_url)
+            if resp.status_code != 200:
+                logger.warning(f"PCPartPicker search returned {resp.status_code}")
+                return []
+
+            html = resp.text
+
+            # Extract product entries from search results HTML
+            # Each result has a link with class and product info
+            import re as _re
+            # Match product links: /product/xxx pattern with titles
+            product_blocks = _re.findall(
+                r'<a\s+href="(/product/[^"]+)"[^>]*>\s*([^<]+)</a>',
+                html,
             )
-            if resp.status_code == 200:
-                data = resp.json()
-                for item in data.get("results", []):
-                    results.append({
-                        "title": item.get("name", ""),
-                        "url": f"{PCPP_BASE}{item.get('url', '')}",
-                        "price": item.get("price"),
-                    })
+            for href, title in product_blocks:
+                title = title.strip()
+                if not title or len(title) < 5:
+                    continue
+                results.append({
+                    "title": title,
+                    "url": f"{PCPP_BASE}{href}",
+                })
+
+            # Also try to find price info near products
+            price_matches = _re.findall(
+                r'href="(/product/[^"]+)".*?\$\s*([\d,]+(?:\.\d{2})?)',
+                html,
+                _re.DOTALL,
+            )
+            price_map = {}
+            for href, price_str in price_matches:
+                try:
+                    price_map[f"{PCPP_BASE}{href}"] = float(price_str.replace(",", ""))
+                except (ValueError, TypeError):
+                    pass
+
+            for r in results:
+                if r["url"] in price_map:
+                    r["price"] = price_map[r["url"]]
+
     except Exception as e:
-        logger.warning(f"PCPartPicker fallback search failed: {e}")
+        logger.warning(f"PCPartPicker search failed: {e}")
 
     return results
 
@@ -136,7 +171,7 @@ async def search(hunt: dict, config: dict) -> list[dict]:
         raw_results = []
 
     if not raw_results:
-        raw_results = await _search_rss_fallback(keywords)
+        raw_results = await _search_html_fallback(keywords)
 
     items = []
     for result in raw_results:
