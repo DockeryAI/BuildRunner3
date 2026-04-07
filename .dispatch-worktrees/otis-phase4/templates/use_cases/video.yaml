@@ -1,0 +1,166 @@
+name: "Video Streaming"
+description: "Video playback, streaming platforms, media libraries"
+category: "Media"
+
+layout:
+  structure: "hero-grid-sidebar"
+  regions:
+    hero:
+      height: "60vh"
+      contains:
+        - "Featured video player"
+        - "Video metadata"
+        - "Action buttons (play, add to list)"
+    grid:
+      columns: "responsive"
+      contains:
+        - "Thumbnail grid"
+        - "Category rows"
+        - "Recommendations"
+    sidebar:
+      width: "320px"
+      collapsible: true
+      contains:
+        - "Up next queue"
+        - "Related videos"
+        - "Comments"
+
+navigation:
+  primary:
+    - label: "Home"
+      icon: "home"
+    - label: "Browse"
+      icon: "grid"
+    - label: "My List"
+      icon: "bookmark"
+    - label: "Search"
+      icon: "search"
+  secondary:
+    - label: "Profile"
+      icon: "user"
+    - label: "Settings"
+      icon: "settings"
+
+components:
+  videoPlayer:
+    aspectRatio: "16:9"
+    controls:
+      - "Play/Pause"
+      - "Volume"
+      - "Seek bar"
+      - "Playback speed"
+      - "Quality selector"
+      - "Fullscreen"
+      - "Picture-in-picture"
+      - "Subtitles/CC"
+    features:
+      - "Adaptive bitrate (HLS/DASH)"
+      - "Keyboard shortcuts"
+      - "Double-tap to skip (10s)"
+      - "Thumbnail preview on hover"
+  videoThumbnail:
+    aspectRatio: "16:9"
+    overlay:
+      - "Duration badge"
+      - "Progress bar (if started)"
+      - "Hover preview (animated)"
+    sizes:
+      xs: "160x90"
+      sm: "320x180"
+      md: "480x270"
+      lg: "640x360"
+  categoryRow:
+    layout: "horizontal-scroll"
+    itemsPerView: "auto"
+    gap: "1rem"
+    title: true
+  progressBar:
+    height: "4px"
+    color: "primary"
+    position: "bottom-of-thumbnail"
+
+interactions:
+  playback:
+    - "Click/tap to play"
+    - "Space bar to pause"
+    - "Arrow keys to seek"
+    - "M to mute"
+    - "F for fullscreen"
+  navigation:
+    - "Horizontal scroll for rows"
+    - "Infinite scroll vertically"
+    - "Keyboard focus management"
+  gestures:
+    - "Double-tap left: rewind 10s"
+    - "Double-tap right: forward 10s"
+    - "Swipe up: related videos"
+
+patterns:
+  browsing:
+    - "Hero featured content"
+    - "Category rows (Continue Watching, Trending, etc.)"
+    - "Personalized recommendations"
+    - "Genre-based sections"
+  playback:
+    - "Auto-play next video"
+    - "Resume from last position"
+    - "Skip intro/credits buttons"
+    - "Watch credits for post-credits scene"
+  search:
+    - "Autocomplete suggestions"
+    - "Filter by genre, year, rating"
+    - "Sort by relevance, date, popularity"
+  socialProof:
+    - "View count"
+    - "Like/dislike ratio"
+    - "Comments section"
+    - "Share functionality"
+
+dataFlow:
+  streaming:
+    - "Manifest fetch (HLS/DASH)"
+    - "Segment requests (adaptive)"
+    - "Buffer management"
+    - "Quality switching"
+  analytics:
+    - "Play events"
+    - "Watch time"
+    - "Completion rate"
+    - "Engagement (pause, seek)"
+
+performance:
+  - "Lazy loading thumbnails"
+  - "Image CDN with responsive sizes"
+  - "Video CDN with edge caching"
+  - "Preload next video segment"
+  - "Virtual scrolling for long lists"
+  - "Service worker for offline viewing"
+
+accessibility:
+  - "Keyboard controls"
+  - "Screen reader support"
+  - "Captions/subtitles (WebVTT)"
+  - "Audio descriptions"
+  - "High contrast mode"
+  - "Focus indicators"
+
+responsiveness:
+  mobile:
+    - "Vertical video player"
+    - "Swipe gestures"
+    - "Bottom navigation"
+    - "Portrait mode optimization"
+  tablet:
+    - "Grid layout (2-3 columns)"
+    - "Picture-in-picture"
+  desktop:
+    - "Grid layout (4-6 columns)"
+    - "Hover previews"
+    - "Keyboard shortcuts"
+
+notes:
+  - "HLS for iOS/Safari, DASH for others"
+  - "DRM for premium content (Widevine, FairPlay)"
+  - "CDN critical for performance"
+  - "Adaptive bitrate based on connection"
+  - "Content delivery network (Cloudflare, Fastly)"

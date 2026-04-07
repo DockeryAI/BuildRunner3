@@ -1,0 +1,196 @@
+name: "Complex Forms"
+description: "Multi-step forms, surveys, application forms, data collection"
+category: "Data Entry"
+
+layout:
+  structure: "wizard-or-single-page"
+  wizard:
+    sidebar:
+      width: "240px"
+      contains:
+        - "Step indicator (vertical)"
+        - "Progress percentage"
+        - "Section navigation"
+    main:
+      width: "flex-1"
+      maxWidth: "800px"
+      contains:
+        - "Current step fields"
+        - "Navigation buttons"
+        - "Progress bar"
+  singlePage:
+    main:
+      maxWidth: "800px"
+      contains:
+        - "Sectioned form"
+        - "Anchor navigation"
+        - "Sticky submit button"
+
+navigation:
+  wizard:
+    - label: "Previous"
+      disabled: "if-first-step"
+    - label: "Next"
+      disabled: "if-invalid"
+    - label: "Submit"
+      visible: "last-step-only"
+  singlePage:
+    - "Anchor links to sections"
+    - "Scroll spy active section"
+
+components:
+  stepIndicator:
+    layout: "vertical-or-horizontal"
+    states:
+      - "completed"
+      - "active"
+      - "pending"
+      - "error"
+    display:
+      - "Step number"
+      - "Step title"
+      - "Checkmark if completed"
+  progressBar:
+    display: "percentage"
+    position: "top-of-form"
+    color: "primary"
+  formSection:
+    title: true
+    description: optional
+    collapsible: optional
+  inputField:
+    label: true
+    placeholder: optional
+    helpText: optional
+    errorMessage: true
+    requiredIndicator: "*"
+    characterCount: "for-text-areas"
+  validationMessage:
+    position: "below-field"
+    icon: true
+    color: "error"
+  autoSave:
+    indicator: "Saving... / Saved"
+    frequency: "on-blur-or-30s"
+
+interactions:
+  validation:
+    - "Inline validation on blur"
+    - "Show errors after first submit attempt"
+    - "Block navigation if invalid"
+    - "Highlight invalid fields"
+  autoSave:
+    - "Auto-save draft every 30s"
+    - "Save on field blur"
+    - "Show save status"
+    - "Restore on return"
+  conditionalFields:
+    - "Show/hide based on answers"
+    - "Dynamic field requirements"
+    - "Skip logic"
+  autocomplete:
+    - "Address autocomplete"
+    - "Dropdown search"
+    - "Previously entered values"
+
+patterns:
+  multiStep:
+    - "Linear wizard (can't skip)"
+    - "Step validation before next"
+    - "Review step before submit"
+    - "Edit from review"
+  validation:
+    - "Required field indicators"
+    - "Format validation (email, phone, etc.)"
+    - "Custom business rules"
+    - "Error summary at top"
+  autoSave:
+    - "Draft persistence"
+    - "Resume where left off"
+    - "Clear draft after submit"
+  fileUpload:
+    - "Drag-and-drop zone"
+    - "Multiple file support"
+    - "Progress indicator"
+    - "Preview uploaded files"
+    - "File type/size validation"
+
+fieldTypes:
+  text:
+    - "Short text (single line)"
+    - "Long text (textarea)"
+    - "Rich text editor"
+  selection:
+    - "Radio buttons (single choice)"
+    - "Checkboxes (multiple choice)"
+    - "Dropdown (single select)"
+    - "Multi-select"
+    - "Autocomplete"
+  date:
+    - "Date picker"
+    - "Date range"
+    - "Time picker"
+    - "Date + time"
+  numeric:
+    - "Number input"
+    - "Slider"
+    - "Range slider"
+  file:
+    - "File upload"
+    - "Image upload (with preview)"
+    - "Document upload"
+  specialized:
+    - "Phone number"
+    - "Email"
+    - "URL"
+    - "Credit card"
+    - "Address (with autocomplete)"
+    - "SSN/Tax ID (masked)"
+
+dataFlow:
+  submission:
+    - "Client-side validation"
+    - "Submit to server"
+    - "Server-side validation"
+    - "Success/error response"
+    - "Redirect or show confirmation"
+  autoSave:
+    - "Debounce input changes"
+    - "Save draft to localStorage or server"
+    - "Restore on page load"
+
+performance:
+  - "Lazy load steps (if many)"
+  - "Debounce validation"
+  - "Optimize re-renders (React.memo)"
+  - "Code-split large forms"
+
+accessibility:
+  - "Keyboard navigation (Tab, Shift+Tab)"
+  - "ARIA labels for all fields"
+  - "Error announcements (ARIA live)"
+  - "Focus management between steps"
+  - "Clear error messages"
+  - "Required field indicators"
+
+responsiveness:
+  mobile:
+    - "Single column layout"
+    - "Native input types (tel, email, etc.)"
+    - "Bottom sticky submit button"
+    - "Mobile-optimized date/time pickers"
+  tablet:
+    - "Two-column layout (if appropriate)"
+    - "Side-by-side navigation"
+  desktop:
+    - "Multi-column layout (max 2)"
+    - "Inline validation"
+    - "Keyboard shortcuts"
+
+notes:
+  - "Auto-save prevents data loss"
+  - "Progressive disclosure (show fields as needed)"
+  - "Clear error messages (what, why, how to fix)"
+  - "Review step critical for complex forms"
+  - "Consider abandonment tracking"
+  - "A/B test form length and structure"

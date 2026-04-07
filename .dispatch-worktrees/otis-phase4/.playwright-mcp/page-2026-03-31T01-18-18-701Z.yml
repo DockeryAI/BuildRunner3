@@ -1,0 +1,39 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img "DockeryAI" [ref=e6]
+    - generic [ref=e8]:
+      - button "Foundation" [ref=e9] [cursor=pointer]
+      - button "Audience" [ref=e10] [cursor=pointer]
+      - button "Personality" [ref=e11] [cursor=pointer]
+      - button "Gut Test" [ref=e12] [cursor=pointer]
+      - button "Density" [ref=e13] [cursor=pointer]
+      - button "Constraints" [ref=e14] [cursor=pointer]
+  - generic [ref=e82]:
+    - paragraph [ref=e83]: Personality — 2 of 5
+    - heading "Minimal or Maximal?" [level=2] [ref=e84]
+    - paragraph [ref=e85]: 1 = Apple (whitespace, restrained) → 10 = Bloomberg (everything visible)
+    - generic [ref=e87]:
+      - generic [ref=e88]: Dockery AI helps businesses create stunning websites using AI-powered design tools
+      - generic [ref=e89]: Building the next generation of tools for modern teams.
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - generic [ref=e92]: 99.9%
+          - generic [ref=e93]: Uptime
+        - generic [ref=e94]:
+          - generic [ref=e95]: 10K+
+          - generic [ref=e96]: Users
+    - generic [ref=e97]:
+      - generic [ref=e98]: Minimal ↔ Maximal
+      - generic [ref=e99]:
+        - generic [ref=e100]: Minimal
+        - generic [ref=e101]:
+          - slider "Minimal ↔ Maximal" [ref=e102] [cursor=pointer]: "5"
+          - generic: "5"
+        - generic [ref=e103]: Maximal
+    - generic [ref=e105]:
+      - generic [ref=e106]: 1 — Apple
+      - generic [ref=e107]: 5 — Stripe
+      - generic [ref=e108]: 10 — Bloomberg
+  - generic [ref=e24]:
+    - button "← Back" [ref=e25] [cursor=pointer]
+    - button "Continue →" [active] [ref=e81] [cursor=pointer]

@@ -1,0 +1,10 @@
+id: dog-grooming
+name: Dog Grooming
+naics_code: '812910'
+category: Personal Services
+keywords:
+- dog grooming
+- dog
+- grooming
+has_full_profile: false
+source: naics_only

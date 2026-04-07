@@ -1,0 +1,11 @@
+id: quick-service-restaurant
+name: Quick Service Restaurant
+naics_code: '722513'
+category: Food Service
+keywords:
+- quick service restaurant
+- quick
+- service
+- restaurant
+has_full_profile: false
+source: naics_only

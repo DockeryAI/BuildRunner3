@@ -1,0 +1,10 @@
+id: food-truck
+name: Food Truck
+naics_code: '722330'
+category: Food Service
+keywords:
+- food truck
+- food
+- truck
+has_full_profile: false
+source: naics_only

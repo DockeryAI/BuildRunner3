@@ -1,0 +1,79 @@
+# BuildRunner 3.0 - Global Behavior Configuration
+# Location: ~/.buildrunner/global-behavior.yaml
+#
+# This file configures default behavior across ALL BuildRunner projects.
+# Project-specific configs (./buildrunner/behavior.yaml) override these settings.
+
+# Automated debugging settings
+debug:
+  # Enable auto-retry for transient failures
+  auto_retry: true
+
+  # Maximum number of retry attempts
+  max_retries: 3
+
+  # Retry delays in seconds (exponential backoff)
+  retry_delays: [1, 2, 4, 8]
+
+  # Capture command output automatically
+  capture_output: true
+
+  # Log debug info to context files
+  log_to_context: true
+
+# Error watcher daemon settings
+watch:
+  # Enable error watcher by default
+  enabled: false
+
+  # File patterns to monitor for errors
+  patterns:
+    - '*.log'
+    - '*.err'
+    - 'pytest.out'
+    - '*.test.log'
+
+  # Check interval in seconds
+  check_interval: 2
+
+  # Automatically update blockers.md when errors detected
+  auto_update_blockers: true
+
+# Command piping settings
+piping:
+  # Add timestamps to piped outputs
+  auto_timestamp: true
+
+  # Maximum output size to capture (characters)
+  max_output_size: 100000
+
+  # Context file for command outputs
+  context_file: '.buildrunner/context/command-outputs.md'
+
+# CLI behavior
+cli:
+  # Use rich formatting for output
+  use_rich: true
+
+  # Show progress indicators
+  show_progress: true
+
+  # Confirm destructive operations
+  confirm_destructive: true
+
+  # Show hints and tips
+  show_hints: true
+
+# Governance enforcement
+governance:
+  # Enforce rules on git commit
+  enforce_on_commit: true
+
+  # Verify checksums before operations
+  verify_checksums: true
+
+  # Strict enforcement mode
+  strict_mode: true
+
+  # Auto-generate STATUS.md on feature complete
+  auto_generate_status: true

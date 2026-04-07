@@ -1,0 +1,10 @@
+id: bed-and-breakfast
+name: Bed & Breakfast
+naics_code: '721191'
+category: Food Service
+keywords:
+- bed & breakfast
+- bed
+- breakfast
+has_full_profile: false
+source: naics_only
