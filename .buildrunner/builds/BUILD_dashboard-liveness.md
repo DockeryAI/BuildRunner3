@@ -1,7 +1,7 @@
 # Build: Dashboard Build Liveness Detection
 
 **Created:** 2026-04-07
-**Status:** BUILD COMPLETE — All 2 Phases Done
+**Status:** Phases 1-2 Complete — Phase 3 In Progress
 **Deploy:** local — dashboard event server restart (`kill $(pgrep -f "node events.mjs"); cd ~/.buildrunner/dashboard && node events.mjs &`)
 
 ## Overview
@@ -90,11 +90,34 @@ ws-builds.js:
 
 **Success Criteria:** Stalled build shows orange badge, Dispatch button (not Pause), and has separate stalled count in KPI. Running build shows blue badge with Pause button. No more ad-hoc stale detection in frontend.
 
+### Phase 3: Auto-Redispatch Watchdog _(added: 2026-04-07)_
+
+**Status:** pending
+**Blocked by:** Phase 2 (complete)
+**Goal:** When the scanner marks a build `stalled`, automatically re-dispatch it if the build opts in. Prevents dead builds sitting idle on cluster nodes.
+**Adversarial review:** 3 blockers resolved (race condition, registry field whitelist, dispatch method). 3 warnings incorporated (no count reset on auto-running, exact invocation, cooldown).
+**Files:**
+
+- `~/.buildrunner/dashboard/events.mjs` (MODIFY) — auto-redispatch in scanner
+- `~/.buildrunner/scripts/registry.mjs` (MODIFY) — add `auto-redispatch` flag to cmdUpdate whitelist
+
+**Deliverables:**
+
+- [ ] Add `auto-redispatch` flag to registry.mjs cmdUpdate whitelist _(added: 2026-04-07)_
+- [ ] Add `redispatching` Set + `redispatchCounts` map in scanner closure for in-flight tracking _(added: 2026-04-07)_
+- [ ] On stalled + `auto_redispatch === true`: add to `redispatching` Set, dispatch using `exec('bash DISPATCH_SCRIPT ... &')` for remote nodes or `spawn('claude', [...], {detached:true, stdio:['pipe','ignore','ignore']})` for local _(added: 2026-04-07)_
+- [ ] Remove from `redispatching` Set when status changes to `running` or after 5min timeout _(added: 2026-04-07)_
+- [ ] Max 3 redispatches — only reset count on manual dispatch or `complete`, NOT on auto-`running` transition _(added: 2026-04-07)_
+- [ ] After 3 failures, set status to `failed` with event `build.failed` _(added: 2026-04-07)_
+- [ ] Add `'build.redispatched'` to VALID*TYPES, emit on each auto-redispatch *(added: 2026-04-07)\_
+- [ ] Dashboard Dispatch All sets `auto_redispatch: true` on dispatched builds via registry update _(added: 2026-04-07)_
+
+**Success Criteria:** Dispatch a build with auto_redispatch, kill the Claude process. Within 90s, a new session appears. After 3 kills, build shows `failed`.
+
 ## Out of Scope (Future)
 
 - PID tracking in registry (would eliminate fuzzy matching)
 - `progress.json` consumption (step-level detail in dashboard)
-- Auto-dispatch on stall detection (user should decide)
 - Spec revert (writing `pending` back into BUILD spec markdown — feedback loop risk)
 - `agents.json` consumption (agent-level detail in dashboard)
 - workfloDock path matching fix in sessions.mjs
