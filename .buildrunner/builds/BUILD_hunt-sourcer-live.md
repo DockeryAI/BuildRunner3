@@ -88,7 +88,7 @@ Wire the existing hunt sourcer (built on Otis, synced to Muddy this session) int
 
 ### Phase 3: Dashboard Fixes + Lockwood Stability
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Timestamps display correctly, Lockwood auto-restarts on crash, deal cards show pair badges.
 **Files:**
 
@@ -99,11 +99,11 @@ Wire the existing hunt sourcer (built on Otis, synced to Muddy this session) int
 **Can parallelize with:** Phase 1, Phase 2
 **Deliverables:**
 
-- [ ] Fix `timeAgo()` — Lockwood SQLite timestamps are UTC without Z suffix; append Z or offset before calculating delta
-- [ ] Add PAIR AVAILABLE badge to deal cards — read `attributes.pair_available` from deal item data
-- [ ] Lockwood keepalive — launchd plist or cron-based watchdog that checks port 8100, restarts uvicorn if down
-- [ ] Kill existing duplicate uvicorn processes on Lockwood, ensure single instance
-- [ ] Deploy dashboard changes, deploy keepalive to Lockwood
+- [x] Fix `timeAgo()` — Lockwood SQLite timestamps are UTC without Z suffix; append Z or offset before calculating delta
+- [x] Add PAIR AVAILABLE badge to deal cards — read `attributes.pair_available` from deal item data
+- [x] Lockwood keepalive — launchd plist or cron-based watchdog that checks port 8100, restarts uvicorn if down
+- [x] Kill existing duplicate uvicorn processes on Lockwood, ensure single instance
+- [x] Deploy dashboard changes, deploy keepalive to Lockwood
 
 **Success Criteria:** Hunt timestamps show "5 minutes ago" not "-17509s ago". Kill Lockwood uvicorn, it restarts within 10 seconds. GPU deals with pair_available show badge.
 
