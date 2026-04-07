@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 MINIFLUX_WEBHOOK_SECRET = os.environ.get("MINIFLUX_WEBHOOK_SECRET", "")
 DISABLE_POLLERS = os.environ.get("DISABLE_POLLERS", "true").lower() in ("true", "1", "yes")
 DISABLE_SCORING = os.environ.get("DISABLE_SCORING", "true").lower() in ("true", "1", "yes")
+DISABLE_VERIFIER = os.environ.get("DISABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
 
 # --- Router (included by node_semantic.py) ---
 router = APIRouter()
@@ -84,6 +85,12 @@ async def intel_startup():
         start_scoring_cron()
     else:
         logger.info("DISABLE_SCORING=true — skipping scoring cron")
+
+    if not DISABLE_VERIFIER:
+        from core.cluster.intel_verifier import start_verifier_cron
+        start_verifier_cron()
+    else:
+        logger.info("DISABLE_VERIFIER=true — skipping deal verifier cron")
 
 
 # --- Manual Intel Submission ---
@@ -226,11 +233,16 @@ async def get_deal_items(
     hunt_id: Optional[int] = None,
     min_score: Optional[int] = None,
     read: Optional[bool] = None,
+    verified_only: Optional[bool] = None,
+    in_stock_only: Optional[bool] = None,
     limit: int = 50,
 ):
     """Get deal items with filters."""
     from core.cluster.intel_collector import get_deal_items as _get_deals
-    items = _get_deals(hunt_id=hunt_id, min_score=min_score, limit=limit)
+    items = _get_deals(
+        hunt_id=hunt_id, min_score=min_score, limit=limit,
+        verified_only=verified_only, in_stock_only=in_stock_only,
+    )
     return {"items": items, "count": len(items)}
 
 
@@ -285,6 +297,41 @@ async def dismiss_deal_endpoint(item_id: int):
     from core.cluster.intel_collector import dismiss_deal_item
     dismiss_deal_item(item_id)
     return {"status": "ok"}
+
+
+@router.post("/api/deals/verify")
+async def trigger_verification():
+    """Manually trigger a deal verification cycle."""
+    from core.cluster.intel_verifier import run_verification_cycle
+    result = await run_verification_cycle()
+    return {"status": "ok", "result": result}
+
+
+@router.post("/api/deals/items/{item_id}/verify")
+async def verify_single_deal(item_id: int):
+    """Verify a single deal item's link."""
+    from core.cluster.intel_collector import _get_intel_db
+    from core.cluster.intel_verifier import verify_deal_link
+    from datetime import datetime
+
+    conn = _get_intel_db()
+    row = conn.execute("SELECT listing_url FROM deal_items WHERE id = ?", (item_id,)).fetchone()
+    conn.close()
+    if not row:
+        raise HTTPException(status_code=404, detail="Deal not found")
+
+    result = await verify_deal_link(row["listing_url"])
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+    conn = _get_intel_db()
+    conn.execute(
+        "UPDATE deal_items SET verified = 1, link_status = ?, in_stock = ?, last_checked = ? WHERE id = ?",
+        (result["status"], result["in_stock"], now, item_id)
+    )
+    conn.commit()
+    conn.close()
+
+    return {"status": "ok", "link_status": result["status"], "in_stock": result["in_stock"], "reason": result["reason"]}
 
 
 @router.post("/api/deals/items/{item_id}/opus-review")

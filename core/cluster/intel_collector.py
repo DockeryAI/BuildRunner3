@@ -246,7 +246,8 @@ def create_deal_item(hunt_id: int, name: str, category: str = None,
 
 
 def get_deal_items(hunt_id: int = None, min_score: int = None,
-                   limit: int = 50) -> list[dict]:
+                   limit: int = 50, verified_only: bool = None,
+                   in_stock_only: bool = None) -> list[dict]:
     """Query deal items with filters."""
     conn = _get_intel_db()
     conditions = ["dismissed = 0"]
@@ -258,6 +259,10 @@ def get_deal_items(hunt_id: int = None, min_score: int = None,
     if min_score is not None:
         conditions.append("deal_score >= ?")
         params.append(min_score)
+    if verified_only:
+        conditions.append("verified = 1")
+    if in_stock_only:
+        conditions.append("in_stock = 1")
 
     where = " AND ".join(conditions)
     query = f"""SELECT * FROM deal_items WHERE {where}

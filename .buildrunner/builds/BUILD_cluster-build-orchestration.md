@@ -4,7 +4,7 @@
 **Created:** 2026-04-05
 **Rewritten:** 2026-04-05 — reordered for impact-first, automation-compounding execution
 **Amended:** 2026-04-06 — added Phases 35-38 (dispatch reliability, intel pipeline, Walter testing, dashboard polish)
-**Status:** Phases 1-34 mixed (many built, statuses not tracked) — Phases 35-38 not_started
+**Status:** Phases 1-36 Complete — Phase 36 In Progress
 **Impact:** GLOBAL — every BR3 project gets automatic cluster dispatch + intelligence
 
 ---
@@ -57,6 +57,8 @@ _Wire the cluster into daily workflow. Every phase here delivers value the same 
 
 ### PHASE 1: Commit-Triggered Cluster Validation
 
+**Status:** ✅ COMPLETE
+
 **Goal:** Every `git commit` on Muddy automatically triggers tests on Walter and build validation on Lomax. Results surface in the next brief or /begin call.
 
 **Files to MODIFY:**
@@ -83,6 +85,8 @@ LOMAX_URL=$("$HOME/.buildrunner/scripts/cluster-check.sh" staging-server 2>/dev/
 ---
 
 ### PHASE 2: Below Intelligence in Skills
+
+**Status:** ✅ COMPLETE
 
 **Goal:** Below's local inference replaces Claude API calls for mechanical tasks. Zero API cost, instant response, always available.
 
@@ -136,6 +140,8 @@ fi
 
 ### PHASE 3: Skill Write-Back to Lockwood
 
+**Status:** ✅ COMPLETE
+
 **Goal:** Skills that discover useful information save it to Lockwood automatically. Builds institutional memory.
 
 **Files to MODIFY (add Lockwood POST at end of each skill):**
@@ -166,6 +172,8 @@ NODE_URL=$(~/.buildrunner/scripts/cluster-check.sh semantic-search)
 ---
 
 ### PHASE 4: Pre-Commit Cluster Gate
+
+**Status:** ✅ COMPLETE
 
 **Goal:** `/commit` checks Walter + Lomax before pushing. Prevents shipping broken code.
 
@@ -250,6 +258,8 @@ fi
 
 ### PHASE 5: Migration Safety Loop
 
+**Status:** ✅ COMPLETE
+
 **Goal:** `/begin` validates database migrations against Lomax's Supabase sandbox before pushing to prod.
 
 **Files to MODIFY:**
@@ -274,6 +284,8 @@ fi
 ---
 
 ### PHASE 6: Account Swap Fix + Usage Warning
+
+**Status:** ✅ COMPLETE
 
 **Goal:** Fix the broken `/swap` command and add proactive usage monitoring.
 
@@ -313,6 +325,8 @@ _Foundation for autonomous multi-node builds. Each phase uses the automation fro
 ---
 
 ### PHASE 7: Registry Schema + Storage
+
+**Status:** ✅ COMPLETE
 
 **Goal:** Build the cluster-wide build registry.
 
@@ -388,6 +402,8 @@ const NODE_WORK_MATRIX = {
 
 ### PHASE 8: Lockwood Mirror
 
+**Status:** ✅ COMPLETE
+
 **Goal:** Mirror registry to Lockwood so any node can query cluster-wide state.
 
 **Files to CREATE:**
@@ -409,6 +425,8 @@ const NODE_WORK_MATRIX = {
 ---
 
 ### PHASE 9: `/spec` Auto-Register
+
+**Status:** ✅ COMPLETE
 
 **Goal:** `/spec` automatically registers builds with the cluster orchestrator.
 
@@ -435,6 +453,8 @@ const NODE_WORK_MATRIX = {
 
 ### PHASE 10: `/amend` Registry Update
 
+**Status:** ✅ COMPLETE
+
 **Goal:** Amendments update the registry.
 
 **Files to MODIFY:**
@@ -444,6 +464,8 @@ const NODE_WORK_MATRIX = {
 ---
 
 ### PHASE 11: Generalized Dispatch
+
+**Status:** ✅ COMPLETE
 
 **Goal:** `/autopilot` dispatches to any node, not just Otis.
 
@@ -476,6 +498,8 @@ const NODE_WORK_MATRIX = {
 
 ### PHASE 12: Progress Reporting
 
+**Status:** ✅ COMPLETE
+
 **Goal:** Running autopilot updates registry as phases complete.
 
 **Files to MODIFY:**
@@ -486,6 +510,8 @@ const NODE_WORK_MATRIX = {
 ---
 
 ### PHASE 13: `/dash` Cluster View
+
+**Status:** ✅ COMPLETE
 
 **Goal:** `/dash` shows cluster-wide build status.
 
@@ -509,6 +535,8 @@ LOMAX: 7 containers, 422MB, build OK
 
 ### PHASE 14: Dependency Resolution + Ready Queue
 
+**Status:** ✅ COMPLETE
+
 **Goal:** `/autopilot` without args picks next ready build.
 
 **Files to CREATE:**
@@ -529,6 +557,8 @@ _Self-healing, governance, cross-node coordination._
 
 ### PHASE 15: User Gates + Cross-Project Waits
 
+**Status:** ✅ COMPLETE
+
 **Goal:** Builds pause at user-defined gates. Cross-project dependencies verified.
 
 **Files to MODIFY:**
@@ -540,6 +570,8 @@ _Self-healing, governance, cross-node coordination._
 
 ### PHASE 16: Node Health Integration
 
+**Status:** ✅ COMPLETE
+
 **Files to MODIFY:**
 
 - `cluster-check.sh` — add `--health-json` returning structured health
@@ -548,6 +580,8 @@ _Self-healing, governance, cross-node coordination._
 ---
 
 ### PHASE 17: Failure Handling + Auto-Root
+
+**Status:** ✅ COMPLETE
 
 **Goal:** Failed builds auto-trigger root-cause analysis via Below + Lockwood.
 
@@ -560,6 +594,8 @@ _Self-healing, governance, cross-node coordination._
 ---
 
 ### PHASE 18: Pre-Dispatch Governance
+
+**Status:** ✅ COMPLETE
 
 **Goal:** Before any build dispatches, auto-run `/guard` + `/gaps` + `/predict` + `/impact`.
 
@@ -576,6 +612,8 @@ _Self-healing, governance, cross-node coordination._
 
 ### PHASE 19: Background Daemon
 
+**Status:** ✅ COMPLETE
+
 **Goal:** Each node polls registry and auto-picks ready builds.
 
 **Files to CREATE:**
@@ -586,6 +624,8 @@ _Self-healing, governance, cross-node coordination._
 ---
 
 ### PHASE 20: Retroactive Bulk Registration
+
+**Status:** ✅ COMPLETE
 
 **Goal:** Register all existing BUILD specs across all projects.
 
@@ -603,27 +643,39 @@ _Web UI, notifications, observability. Built on top of all the automation from B
 
 ### PHASE 21: Event-Sourced Backend
 
+**Status:** ✅ COMPLETE
+
 Append-only event log. SSE streaming. SQLite FTS5 index. Events from all nodes.
 
 Event types: `build.*`, `node.*`, `test.result` (Walter), `staging.*` (Lomax), `intelligence.*` (Below), `governance.*`
 
 ### PHASE 22: Walter Dashboard Integration
 
+**Status:** ✅ COMPLETE
+
 Walter test results as first-class dashboard data. Per-build test panel. Flaky warnings. Coverage deltas.
 
 ### PHASE 23: Lomax Dashboard Integration
+
+**Status:** ✅ COMPLETE
 
 Auto-deploy successful builds to Lomax staging. Preview URLs. Validation status badges.
 
 ### PHASE 24: Lockwood Dashboard Integration
 
+**Status:** ✅ COMPLETE
+
 Semantic search across code, builds, failures, decisions. "Similar Past Failures" panel. Cmd+K search.
 
 ### PHASE 25: Below Dashboard Integration
 
+**Status:** ✅ COMPLETE
+
 Below-powered intelligence on dashboard: failure explanations, log summaries, phase difficulty predictions, anomaly detection.
 
 ### PHASE 26: Web Dashboard UI
+
+**Status:** ✅ COMPLETE
 
 SvelteKit + React Flow. DAG view. Build detail. Node health. Live SSE log tail. Command palette.
 
@@ -631,33 +683,49 @@ Served at `http://muddy.local:4400`.
 
 ### PHASE 27: Slim TUI Refactor
 
+**Status:** ✅ COMPLETE
+
 Reduce Ink dashboard to status-only for SSH. Web dashboard handles everything else.
 
 ### PHASE 28: macOS Notifications
+
+**Status:** ✅ COMPLETE
 
 Native notifications for: user gates, build failures, governance violations, dependency unblocked.
 
 ### PHASE 29: Parallelism Recommender
 
+**Status:** ✅ COMPLETE
+
 Dashboard suggests when to parallelize. Auto-dispatch if config allows.
 
 ### PHASE 30: BRLogger Prod Debug Panel
+
+**Status:** ✅ COMPLETE
 
 Live BRLogger streams in dashboard per deployed build. Cross-correlation button.
 
 ### PHASE 31: Decisions Log Integration
 
+**Status:** ✅ COMPLETE
+
 Decisions tab per build. Global timeline. Every approve/reject/reassign recorded.
 
 ### PHASE 32: Research Library Integration
+
+**Status:** ✅ COMPLETE
 
 Auto-fetch relevant research per phase. Citation-grade references.
 
 ### PHASE 33: Dashboard Observability
 
+**Status:** ✅ COMPLETE
+
 Self-monitoring: event volume, dispatch latency, node uptime, SSE reconnects.
 
 ### PHASE 34: Documentation + Config
+
+**Status:** ✅ COMPLETE
 
 User guide. Config reference. Skill docs updated.
 

@@ -55,12 +55,18 @@ CREATE TABLE IF NOT EXISTS deal_items (
     dismissed INTEGER NOT NULL DEFAULT 0,
     opus_reviewed INTEGER NOT NULL DEFAULT 0,
     needs_opus_review INTEGER NOT NULL DEFAULT 0,
+    verified INTEGER NOT NULL DEFAULT 0,
+    link_status INTEGER,
+    in_stock INTEGER,  -- 1=yes, 0=no, NULL=unknown
+    last_checked TEXT,
     FOREIGN KEY (hunt_id) REFERENCES active_hunts(id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_deal_hunt ON deal_items(hunt_id);
 CREATE INDEX IF NOT EXISTS idx_deal_score ON deal_items(deal_score);
 CREATE INDEX IF NOT EXISTS idx_deal_read ON deal_items(read);
+CREATE INDEX IF NOT EXISTS idx_deal_verified ON deal_items(verified);
+CREATE INDEX IF NOT EXISTS idx_deal_in_stock ON deal_items(in_stock);
 
 -- Price history for tracking deals over time
 CREATE TABLE IF NOT EXISTS price_history (
