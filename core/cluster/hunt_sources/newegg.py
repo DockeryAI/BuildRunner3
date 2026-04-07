@@ -122,26 +122,51 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
         logger.warning("Below unreachable — skipping Newegg extraction")
         return []
 
-    if len(html) > 30000:
-        html = html[:30000]
+    import re as _re
+    cleaned = _re.sub(r'<(script|style|nav|footer|header|noscript)[^>]*>.*?</\1>', '', html, flags=_re.DOTALL | _re.IGNORECASE)
+    cleaned = _re.sub(r'<!--.*?-->', '', cleaned, flags=_re.DOTALL)
+    cleaned = _re.sub(r'\s+', ' ', cleaned)
+    if len(cleaned) > 20000:
+        cleaned = cleaned[:20000]
 
-    prompt = f"""Extract product listings from this Newegg search results HTML.
-Return a JSON array of objects with fields: title, price (float USD), condition ("New"/"Used"/"Refurbished"/"Open Box"), seller (default "Newegg"), url (https://www.newegg.com/...), in_stock (bool).
-Only real product listings, no ads. Return ONLY the JSON array.
-
-HTML:
-{html}"""
+    listing_schema = {
+        "type": "object",
+        "properties": {
+            "listings": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string"},
+                        "price": {"type": "number"},
+                        "condition": {"type": "string"},
+                        "seller": {"type": "string"},
+                        "url": {"type": "string"},
+                        "in_stock": {"type": "boolean"},
+                    },
+                    "required": ["title", "price", "url", "in_stock"],
+                },
+            }
+        },
+        "required": ["listings"],
+    }
 
     try:
         async with httpx.AsyncClient(timeout=90.0) as client:
             resp = await client.post(
-                f"{BELOW_OLLAMA_URL}/api/generate",
+                f"{BELOW_OLLAMA_URL}/api/chat",
                 json={
                     "model": BELOW_MODEL,
-                    "prompt": prompt,
                     "stream": False,
-                    "format": "json",
-                    "options": {"temperature": 0.1, "num_ctx": 32768},
+                    "format": listing_schema,
+                    "think": False,
+                    "messages": [
+                        {"role": "system", "content": "Extract product listings from HTML as JSON. Use null for missing fields. Return as JSON."},
+                        {"role": "user", "content": "Extract: '<a class=\"item-title\">Corsair RM1200x</a><strong>195</strong><sup>.99</sup>'"},
+                        {"role": "assistant", "content": '{"listings":[{"title":"Corsair RM1200x","price":195.99,"condition":"New","seller":"Newegg","url":"","in_stock":true}]}'},
+                        {"role": "user", "content": f"Extract product listings from this Newegg HTML. Only real products, no ads.\n\n{cleaned}"},
+                    ],
+                    "options": {"temperature": 0.2, "num_ctx": 8192, "num_predict": 2048, "presence_penalty": 1.5},
                 },
             )
             if resp.status_code != 200:
@@ -149,25 +174,16 @@ HTML:
                 return []
 
             import json
-            text = resp.json().get("response", "")
+            text = resp.json().get("message", {}).get("content", "")
 
-            # Try parsing as-is first (format:json should give clean output)
             try:
                 parsed = json.loads(text)
-                # Could be {"listings": [...]} or just [...]
-                if isinstance(parsed, list):
-                    listings = parsed
-                elif isinstance(parsed, dict):
-                    # Find the first list value
-                    listings = next((v for v in parsed.values() if isinstance(v, list)), [])
-                else:
-                    listings = []
+                listings = parsed.get("listings", []) if isinstance(parsed, dict) else parsed if isinstance(parsed, list) else []
             except json.JSONDecodeError:
-                # Fallback: extract array from text
                 start = text.find("[")
                 end = text.rfind("]")
                 if start == -1 or end == -1:
-                    logger.warning(f"No JSON array in Below response for Newegg '{hunt_name}'")
+                    logger.warning(f"No JSON in Below response for Newegg '{hunt_name}'")
                     return []
                 listings = json.loads(text[start : end + 1])
 
