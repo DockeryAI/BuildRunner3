@@ -532,7 +532,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 15: Cloud Pipeline — Supabase + Realtime Listener _(added: 2026-03-29)_
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 14.5
 **Files:**
 
@@ -559,7 +559,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 16: Deploy + Domain Setup _(added: 2026-03-29)_
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 15
 **Files:**
 
