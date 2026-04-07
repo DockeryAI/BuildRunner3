@@ -1,7 +1,7 @@
 # Build: Dashboard Build Liveness Detection
 
 **Created:** 2026-04-07
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
+**Status:** Phases 1-5 Complete — Phase 5 In Progress
 **Deploy:** local — dashboard event server restart (`kill $(pgrep -f "node events.mjs"); cd ~/.buildrunner/dashboard && node events.mjs &`)
 
 ## Overview
@@ -132,7 +132,7 @@ ws-builds.js:
 
 ### Phase 4: Build Sidecar Script _(added: 2026-04-07)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 3 (complete)
 **Goal:** Wrapper script for every Claude dispatch. Writes PID file, heartbeats every 15s, `git stash create` snapshots, exit status on death. Maximum work loss: 15 seconds.
 **Files:**
@@ -141,15 +141,15 @@ ws-builds.js:
 
 **Deliverables:**
 
-- [ ] Accept args: `BUILD_ID`, `PHASE_NUM`, `PROJECT_PATH`, plus the Claude command to wrap _(added: 2026-04-07)_
-- [ ] Start Claude as child process, capture its PID _(added: 2026-04-07)_
-- [ ] Write `sidecar.json` to `.buildrunner/locks/phase-N/`: `{ sidecar_pid, claude_pid, build_id, node, started_at }` _(added: 2026-04-07)_
-- [ ] Background loop every 15s: write heartbeat, verify Claude PID alive via `kill -0`, run `git stash create` and tag as `wip-rescue-${BUILD_ID}` (overwrite each cycle) _(added: 2026-04-07)_
-- [ ] Skip tagging if `git stash create` returns empty (clean working tree) _(added: 2026-04-07)_
-- [ ] Handle `git stash create` failure gracefully (skip, don't crash) — guards against concurrent git ops _(added: 2026-04-07)_
-- [ ] EXIT trap: final `git stash create` + tag, write `exit-status.json` with `{ exit_code, rescue_tag, timestamp }` _(added: 2026-04-07)_
-- [ ] If background loop detects Claude PID dead: final snapshot, write exit-status, exit sidecar _(added: 2026-04-07)_
-- [ ] Cross-platform: macOS (Muddy/Otis/Lomax) and Linux/WSL (Below) _(added: 2026-04-07)_
+- [x] Accept args: `BUILD_ID`, `PHASE_NUM`, `PROJECT_PATH`, plus the Claude command to wrap _(added: 2026-04-07)_
+- [x] Start Claude as child process, capture its PID _(added: 2026-04-07)_
+- [x] Write `sidecar.json` to `.buildrunner/locks/phase-N/`: `{ sidecar_pid, claude_pid, build_id, node, started_at }` _(added: 2026-04-07)_
+- [x] Background loop every 15s: write heartbeat, verify Claude PID alive via `kill -0`, run `git stash create` and tag as `wip-rescue-${BUILD_ID}` (overwrite each cycle) _(added: 2026-04-07)_
+- [x] Skip tagging if `git stash create` returns empty (clean working tree) _(added: 2026-04-07)_
+- [x] Handle `git stash create` failure gracefully (skip, don't crash) — guards against concurrent git ops _(added: 2026-04-07)_
+- [x] EXIT trap: final `git stash create` + tag, write `exit-status.json` with `{ exit_code, rescue_tag, timestamp }` _(added: 2026-04-07)_
+- [x] If background loop detects Claude PID dead: final snapshot, write exit-status, exit sidecar _(added: 2026-04-07)_
+- [x] Cross-platform: macOS (Muddy/Otis/Lomax) and Linux/WSL (Below) _(added: 2026-04-07)_
 
 **Success Criteria:** Wrap `sleep 60` in sidecar. Verify `sidecar.json` written with correct PIDs. Kill sleep. Within 15s, `exit-status.json` appears. `wip-rescue-*` tag exists if working tree was dirty.
 
