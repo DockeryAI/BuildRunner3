@@ -794,6 +794,12 @@ def _init_research_stats():
                 if docs_path.exists():
                     _research_dir_mtime = _get_dir_mtime(docs_path)
                 print(f"Research index loaded: {count} chunks from {len(files)} docs (pre-built)")
+                # Pre-load embedding model in background thread so search queries don't block GIL later
+                try:
+                    _get_research_embedder()
+                    print("Research embedding model pre-loaded")
+                except Exception as me:
+                    print(f"Research model pre-load deferred: {me}")
     except Exception as e:
         print(f"Research stats init: {e}")
 
