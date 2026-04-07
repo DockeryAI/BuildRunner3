@@ -1,7 +1,7 @@
 # Build: Dashboard Build Liveness Detection
 
 **Created:** 2026-04-07
-**Status:** Phases 1-6 Complete — Phase 6 In Progress
+**Status:** Phases 1-8 Complete — Phase 9 In Progress
 **Deploy:** local — dashboard event server restart (`kill $(pgrep -f "node events.mjs"); cd ~/.buildrunner/dashboard && node events.mjs &`)
 
 ## Overview
@@ -187,7 +187,7 @@ Dead code cleanup:
 
 ### Phase 6: Dispatch Integration + Infrastructure Hardening _(added: 2026-04-07)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 5 (both touch events.mjs)
 **Goal:** All Claude dispatch paths wrap in sidecar. Fix crash cleanup in dispatch script. Prevent double-dispatch via PID guard.
 **Adversarial review:** 6-agent analysis found 4 Claude invocations in dispatch-to-node.sh (lines 155, 166, 220, 229), 3 local spawn points in events.mjs, no EXIT trap, no double-dispatch prevention.
@@ -201,28 +201,28 @@ Dead code cleanup:
 
 dispatch-to-node.sh:
 
-- [ ] Add EXIT trap at top: clean up worktree + branch + temp files on any exit _(added: 2026-04-07)_
-- [ ] Rsync `build-sidecar.sh` to remote node before dispatch _(added: 2026-04-07)_
-- [ ] Replace `claude -p` with `build-sidecar.sh $BUILD_ID $PHASE_NUM $PROJECT_PATH claude -p --dangerously-skip-permissions '$PROMPT'` (all 4 invocation points: lines 155, 166, 220, 229) _(added: 2026-04-07)_
-- [ ] Verify return rsync includes `.buildrunner/locks/` (add explicit `--include` for clarity) _(added: 2026-04-07)_
+- [x] Add EXIT trap at top: clean up worktree + branch + temp files on any exit _(added: 2026-04-07)_
+- [x] Rsync `build-sidecar.sh` to remote node before dispatch _(added: 2026-04-07)_
+- [x] Replace `claude -p` with `build-sidecar.sh` wrapper (all 4 invocation points) _(added: 2026-04-07)_
+- [x] Verify return rsync includes `.buildrunner/locks/` (already included by default) _(added: 2026-04-07)_
 
 \_dispatch-core.sh:
 
-- [ ] Remove `dispatch_gui_claude()` (lines 229-237) — dead, never called _(added: 2026-04-07)_
-- [ ] Remove `wait_for_completion()` (lines 192-225) — dead, never called _(added: 2026-04-07)_
+- [x] Remove `dispatch_gui_claude()` — dead, never called _(added: 2026-04-07)_
+- [x] Remove `wait_for_completion()` — dead, never called _(added: 2026-04-07)_
 
 events.mjs dispatch:
 
-- [ ] `/api/builds/:id/dispatch`: wrap spawn in sidecar. Guard: if `sidecar.json` exists and PID alive, reject with 409 (double-dispatch prevention) _(added: 2026-04-07)_
-- [ ] `/api/builds/dispatch-all`: same sidecar wrapping _(added: 2026-04-07)_
-- [ ] Auto-redispatch: wrap both remote `exec()` and local `spawn()` in sidecar _(added: 2026-04-07)_
-- [ ] Pre-redispatch: clean stale `sidecar.json` + `exit-status.json`, preserve rescue tags _(added: 2026-04-07)_
+- [x] `/api/builds/:id/dispatch`: double-dispatch guard via sidecar.json PID check (409) _(added: 2026-04-07)_
+- [x] `/api/builds/dispatch-all`: uses dispatch-to-node.sh which now wraps in sidecar _(added: 2026-04-07)_
+- [x] Auto-redispatch: local spawn wrapped in sidecar, remote uses dispatch script _(added: 2026-04-07)_
+- [x] Pre-redispatch: clean stale `sidecar.json` + `exit-status.json`, preserve rescue tags _(added: 2026-04-07)_
 
 **Success Criteria:** Every dispatch path produces `sidecar.json`. No unwrapped Claude runs. Double-dispatch returns 409. Crashed dispatch cleans up worktree via trap.
 
 ### Phase 7: Resume Logic _(added: 2026-04-07)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 4
 **Goal:** Recover uncommitted work from dead sessions on resume. New executor Step 0.5 detects rescue tags and applies stashed work.
 **Files:**
@@ -231,11 +231,11 @@ events.mjs dispatch:
 
 **Deliverables:**
 
-- [ ] Add Step 0.5 before Step 1: check for `wip-rescue-${BUILD_ID}` git tag _(added: 2026-04-07)_
-- [ ] If tag found: `git stash apply $(git rev-parse wip-rescue-${BUILD_ID})` to restore working tree _(added: 2026-04-07)_
-- [ ] Log recovered files, write progress step 0.5 "rescue" _(added: 2026-04-07)_
-- [ ] If stash apply fails (conflicts): `git checkout -- .`, log warning, start fresh _(added: 2026-04-07)_
-- [ ] On phase completion (Step 7): `git tag -d wip-rescue-${BUILD_ID}` to clean up _(added: 2026-04-07)_
+- [x] Add Step 0.5 before Step 1: check for `wip-rescue-${BUILD_ID}` git tag _(added: 2026-04-07)_
+- [x] If tag found: `git stash apply $(git rev-parse wip-rescue-${BUILD_ID})` to restore working tree _(added: 2026-04-07)_
+- [x] Log recovered files, write progress step 0.5 "rescue" _(added: 2026-04-07)_
+- [x] If stash apply fails (conflicts): `git checkout -- .`, log warning, start fresh _(added: 2026-04-07)_
+- [x] On phase completion (Step 7): `git tag -d wip-rescue-${BUILD_ID}` to clean up _(added: 2026-04-07)_
 
 **Success Criteria:** Kill a build mid-work. Redispatch. New session finds rescue tag, applies it, continues with previously-written code. No manual intervention.
 
