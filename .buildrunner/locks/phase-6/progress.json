@@ -1,25 +1,27 @@
 {
   "phase": 6,
   "name": "Cluster Health Monitor",
-  "step": 4,
-  "step_name": "execute",
-  "step_label": "Implementing tasks",
+  "step": 5,
+  "step_name": "review",
+  "step_label": "Two-stage review",
   "status": "active",
   "tasks_total": 2,
-  "tasks_done": 0,
-  "current_task": "6.1 — cluster-health-monitor.mjs",
+  "tasks_done": 2,
+  "current_task": null,
   "tests_written": 0,
   "tests_passing": 0,
   "commits": 0,
   "errors": [],
   "warnings": [],
   "started_at": "2026-04-07T21:30:00Z",
-  "updated_at": "2026-04-07T21:46:56Z",
+  "updated_at": "2026-04-07T21:48:32Z",
   "history": [
-    {"step": 0.5, "name": "rescue", "label": "Recover uncommitted work", "at": "2026-04-07T21:46:56Z", "status": "skipped"},
-    {"step": 1, "name": "setup", "label": "Setup & sync", "at": "2026-04-07T21:46:56Z", "status": "done"},
-    {"step": 2, "name": "health_check", "label": "Code health check", "at": "2026-04-07T21:46:56Z", "status": "done"},
-    {"step": 3, "name": "plan", "label": "Writing implementation plan", "at": "2026-04-07T21:46:56Z", "status": "done"},
-    {"step": 3.5, "name": "tdd", "label": "Writing failing tests (TDD)", "at": "2026-04-07T21:46:56Z", "status": "skipped"}
+    {"step": 0.5, "name": "rescue", "label": "Recover uncommitted work", "at": "2026-04-07T21:48:32Z", "status": "skipped"},
+    {"step": 1, "name": "setup", "label": "Setup & sync", "at": "2026-04-07T21:48:32Z", "status": "done"},
+    {"step": 2, "name": "health_check", "label": "Code health check", "at": "2026-04-07T21:48:32Z", "status": "done"},
+    {"step": 3, "name": "plan", "label": "Writing implementation plan", "at": "2026-04-07T21:48:32Z", "status": "done"},
+    {"step": 3.5, "name": "tdd", "label": "Writing failing tests (TDD)", "at": "2026-04-07T21:48:32Z", "status": "skipped"},
+    {"step": 4, "name": "execute", "label": "Implementing tasks", "at": "2026-04-07T21:48:32Z", "status": "done"},
+    {"step": 4.5, "name": "tdd_rerun", "label": "Re-running tests", "at": "2026-04-07T21:48:32Z", "status": "skipped"}
   ]
 }

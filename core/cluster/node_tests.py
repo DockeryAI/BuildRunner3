@@ -403,23 +403,24 @@ def build_test_map(project: str, repo_path: str) -> int:
 
 def get_test_map(files: list[str], project: str) -> dict[str, list[dict]]:
     """Given source files, return which test files cover them."""
-    conn = _get_db()
-    result = {}
+    with _db_lock:
+        conn = _get_db()
+        result = {}
 
-    for source_file in files:
-        rows = conn.execute(
-            "SELECT test_file, confidence FROM test_file_map WHERE project = ? AND source_file = ?",
-            (project, source_file),
-        ).fetchall()
-        if rows:
-            result[source_file] = [
-                {"test_file": r["test_file"], "confidence": r["confidence"]}
-                for r in rows
-            ]
-        else:
-            result[source_file] = []
+        for source_file in files:
+            rows = conn.execute(
+                "SELECT test_file, confidence FROM test_file_map WHERE project = ? AND source_file = ?",
+                (project, source_file),
+            ).fetchall()
+            if rows:
+                result[source_file] = [
+                    {"test_file": r["test_file"], "confidence": r["confidence"]}
+                    for r in rows
+                ]
+            else:
+                result[source_file] = []
 
-    conn.close()
+        conn.close()
     return result
 
 
@@ -455,7 +456,7 @@ def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> 
         return None
 
     start = time.time()
-    result_file = f"/tmp/walter-vitest-{project_name}.json"
+    result_file = f"/tmp/walter-vitest-{project_name}-{uuid.uuid4().hex[:8]}.json"
 
     try:
         cmd = [
@@ -503,6 +504,11 @@ def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> 
                 }
             except (json.JSONDecodeError, KeyError):
                 pass
+            finally:
+                try:
+                    os.unlink(result_file)
+                except OSError:
+                    pass
 
         # Fallback: parse exit code
         return {
@@ -536,7 +542,7 @@ def _run_playwright(repo_path: str, project_name: str, changed_files: list[str])
         return None  # Skip E2E for non-UI changes
 
     start = time.time()
-    result_file = f"/tmp/walter-playwright-{project_name}.json"
+    result_file = f"/tmp/walter-playwright-{project_name}-{uuid.uuid4().hex[:8]}.json"
 
     try:
         cmd = [
@@ -636,82 +642,51 @@ def _extract_pw_tests(suite: dict, tests: list, prefix: str = ""):
         _extract_pw_tests(child, tests, title)
 
 
-# --- Push Results to Lockwood ---
-def _push_to_lockwood(results: dict):
-    """Push test results to Lockwood for cross-project health tracking and dashboard sparklines."""
-    import urllib.request
-    try:
-        failures = [
-            {"name": t.get("full_name", t.get("name", "")), "message": t.get("failure", "")}
-            for t in results.get("tests", [])
-            if t.get("status") == "failed"
-        ]
-        payload = json.dumps({
-            "project": results.get("project", "unknown"),
-            "passed": results.get("passed", 0),
-            "failed": results.get("failed", 0),
-            "skipped": results.get("skipped", 0),
-            "failures": failures,
-            "duration_seconds": (results.get("duration_ms", 0) or 0) / 1000.0,
-            "source": "walter",
-        }).encode()
-        req = urllib.request.Request(
-            f"{LOCKWOOD_URL}/api/memory/tests",
-            data=payload,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        urllib.request.urlopen(req, timeout=5)
-    except Exception as e:
-        print(f"Lockwood push failed (non-fatal): {e}")
-
-
 # --- Store Results ---
-def _store_results(results: dict):
-    """Store test run results in SQLite and push to Lockwood."""
+def _store_results(results: dict, trigger: str = "watch"):
+    """Store test run results in SQLite. Thread-safe via _db_lock (RC5 fix)."""
     if not results or results.get("total", 0) == 0 and not results.get("error"):
         return
 
-    conn = _get_db()
-    cursor = conn.execute(
-        """INSERT INTO test_runs (runner, project, git_sha, git_branch, duration_ms,
-           total, passed, failed, skipped, flaky, trigger)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (results.get("runner", "unknown"),
-         results.get("project", "unknown"),
-         results.get("git_sha", ""),
-         results.get("git_branch", ""),
-         results.get("duration_ms", 0),
-         results.get("total", 0),
-         results.get("passed", 0),
-         results.get("failed", 0),
-         results.get("skipped", 0),
-         results.get("flaky", 0),
-         "watch")
-    )
-    run_id = cursor.lastrowid
-
-    for test in results.get("tests", []):
-        conn.execute(
-            """INSERT INTO test_cases (run_id, suite_name, test_name, full_name,
-               file_path, status, duration_ms, retry_count, failure_message)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (run_id,
-             test.get("suite", ""),
-             test.get("name", ""),
-             test.get("full_name", ""),
-             test.get("file_path", ""),
-             test.get("status", "unknown"),
-             test.get("duration_ms", 0),
-             test.get("retry_count", 0),
-             test.get("failure", ""))
+    with _db_lock:
+        conn = _get_db()
+        cursor = conn.execute(
+            """INSERT INTO test_runs (runner, project, git_sha, git_branch, duration_ms,
+               total, passed, failed, skipped, flaky, trigger, last_tested_sha)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (results.get("runner", "unknown"),
+             results.get("project", "unknown"),
+             results.get("git_sha", ""),
+             results.get("git_branch", ""),
+             results.get("duration_ms", 0),
+             results.get("total", 0),
+             results.get("passed", 0),
+             results.get("failed", 0),
+             results.get("skipped", 0),
+             results.get("flaky", 0),
+             trigger,
+             results.get("git_sha_full", ""))
         )
+        run_id = cursor.lastrowid
 
-    conn.commit()
-    conn.close()
+        for test in results.get("tests", []):
+            conn.execute(
+                """INSERT INTO test_cases (run_id, suite_name, test_name, full_name,
+                   file_path, status, duration_ms, retry_count, failure_message)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (run_id,
+                 test.get("suite", ""),
+                 test.get("name", ""),
+                 test.get("full_name", ""),
+                 test.get("file_path", ""),
+                 test.get("status", "unknown"),
+                 test.get("duration_ms", 0),
+                 test.get("retry_count", 0),
+                 test.get("failure", ""))
+            )
 
-    # Async push to Lockwood (non-blocking)
-    threading.Thread(target=_push_to_lockwood, args=(results,), daemon=True).start()
+        conn.commit()
+        conn.close()
 
 
 # --- Background Test Loop ---

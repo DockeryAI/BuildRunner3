@@ -1,33 +1,30 @@
-# Phase 6 Verification: Setlist Integration
+# Phase 6 Verification: Cluster Health Monitor
 
-## Schema
-- intel_improvements table: PASS (all 10 columns verified)
-- Indexes: idx_improvements_status, idx_improvements_source
+## Deliverables Verified
 
-## Backend CRUD
-- create_improvement(): PASS
-- get_improvements(): PASS (with status filter)
-- update_improvement_status(): PASS (with build_spec_name)
-- opus_review_intel_item(): PASS
-- opus_review_deal_item(): PASS
+1. **Poll all 6 nodes every 60s** — PASS
+   - Reads cluster.json master + 5 worker nodes
+   - Main loop sleeps 60s between polls (1s increments for signal responsiveness)
 
-## FastAPI Endpoints
-- GET /api/intel/improvements: PASS
-- POST /api/intel/improvements: PASS
-- POST /api/intel/improvements/{id}/status: PASS
-- POST /api/intel/items/{id}/opus-review: PASS
-- POST /api/deals/items/{id}/opus-review: PASS
+2. **Structured JSON log** — PASS
+   - Writes to ~/.buildrunner/logs/cluster-health.log
+   - Fields: timestamp, node, host, role, status, cpu, memory, last_activity, ping, health, drift
 
-## Frontend
-- IntelImprovement type extended with lifecycle fields: PASS
-- updateImprovementStatus() API method: PASS
-- getImprovementHistory() API method: PASS
-- Plan This modal with title/rationale/prompt/complexity/affected files: PASS
-- Status badges (pending/planned/built/archived): PASS
-- Improvement status filter dropdown: PASS
-- Mark as Planned with BUILD spec name input: PASS
-- Copy /setlist Command button: PASS
+3. **Detection conditions** — PASS
+   - node_down: 2 consecutive ping failures → critical alert
+   - degraded: CPU>90% or memory>85% → warning alert
+   - service_crashed: ping OK + /health fails → warning alert
+   - repo_drift: HEAD differs from Muddy → info alert
 
-## intel-review.md
-- Overlap detection with adopt/adapt/ignore: PASS
-- Enhanced setlist_prompt generation with BUILD spec references: PASS
+4. **Alert mechanism** — PASS
+   - Writes JSON files to ~/.buildrunner/alerts/
+   - Fields: alert_id, type, node, severity, message, timestamp
+   - Deduplicates by checking lastStatus (no repeat alerts for same condition)
+
+5. **LaunchAgent** — PASS
+   - KeepAlive: true, RunAtLoad: true, ThrottleInterval: 60
+   - Correct node path (/opt/homebrew/bin/node)
+   - stdout/stderr to log files
+
+## Syntax Check
+- `node --check` passes with no errors

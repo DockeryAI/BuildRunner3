@@ -456,3 +456,8 @@
   - RC10: replaced setInterval with sequential poll().then(setTimeout) to prevent stacking
   - RC11: snapshot lastCoverage before await, assign synchronously before emitEvent
   - TDD skipped: infrastructure scripts, no vitest test harness
+[2026-04-07T21:49:08Z] Phase 6 decisions:
+  - Used SSH ping for macOS nodes, TCP connect for Windows (Below)
+  - Muddy (local) uses vm_stat + uptime for stats instead of SSH
+  - Alert deduplication via lastStatus tracking (no repeat alerts for same condition)
+  - Repo drift checks BuildRunner3 project only (primary project)
