@@ -356,3 +356,4 @@
   - All 10 deliverables were already implemented (pre-existing code)
   - No code changes needed — verified structural compliance of all files
   - TDD skipped: Lockwood Python/SQLite project, no local test runner in scope
+[Tue Apr  7 09:31:53 CDT 2026] [AMENDMENT] Added 18 tasks across 2 new phases (Phase 4: Hunt Requirements + Session Fixes, Phase 5: Below Prompt Alignment). Reason: Feed showed OOS/irrelevant/over-budget items. Requirements system enforces per-hunt rules mechanically. Prompts need /opus + /llm alignment (temp, format:schema, few-shot, num_ctx). All session debugging fixes included.
