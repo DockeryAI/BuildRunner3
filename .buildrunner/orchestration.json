@@ -1,0 +1,1 @@
+{"batches": [{"id": 1, "phases": ["intel-1"]}, {"id": 2, "phases": ["hunt-1"]}, {"id": 3, "phases": ["hunt-2"]}], "current_batch": 1, "total_phases": 3, "completed_phases": 0, "mode": "autopilot-go", "started": "2026-04-07T04:05:31Z"}

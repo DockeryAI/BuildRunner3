@@ -37,7 +37,7 @@ Transform the intel workspace from a maintenance feed into an innovation discove
 
 ### Phase 1: Data Layer — Schema + Tier + Types
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Lockwood API returns tier classification and improvement types so the frontend can render them properly.
 
 **Files:**

@@ -1,0 +1,2 @@
+[  170031ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/health:0
+[  170031ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/registry:0
