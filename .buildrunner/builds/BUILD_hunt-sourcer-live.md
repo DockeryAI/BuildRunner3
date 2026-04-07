@@ -1,7 +1,7 @@
 # Build: Hunt Sourcer — Go Live
 
 **Created:** 2026-04-06
-**Status:** Phase 1 In Progress
+**Status:** 🚧 in_progress
 **Deploy:** local — Lockwood FastAPI (sourcer cron), zero external API keys required
 
 ## Overview

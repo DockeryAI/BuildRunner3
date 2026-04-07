@@ -1,7 +1,7 @@
 # Build: BR3 Cluster Infrastructure
 
 **Created:** 2026-04-03
-**Status:** ALL PHASES COMPLETE (2026-04-05) — Phases 0-8 shipped. Supabase sandbox moved to Lomax (Docker Desktop + minimal stack).
+**Status:** ✅ COMPLETE
 **Deploy:** local network — 6 machines via gigabit switch, REST APIs on each node
 
 ## Overview
@@ -47,7 +47,7 @@ Pattern detection, cross-file correlation, error fingerprinting. Will be moved t
 
 ### Phase 4: Crawford → Otis Conversion + Log Analysis to Muddy ✅
 
-**Status:** complete (2026-04-05)
+**Status:** ✅ COMPLETE
 
 **What happens:**
 
@@ -83,7 +83,7 @@ Pattern detection, cross-file correlation, error fingerprinting. Will be moved t
 
 ### Phase 5: Lomax — Staging Server + Build Validation ✅
 
-**Status:** complete (2026-04-05)
+**Status:** ✅ COMPLETE
 **Hardware:** M2 #4 (Lomax) at 10.0.1.104
 
 **YOU do:**
@@ -117,7 +117,7 @@ Pattern detection, cross-file correlation, error fingerprinting. Will be moved t
 
 ### Phase 6: Below — Inference + Supabase Sandbox
 
-**Status:** complete (2026-04-05) — Qwen 3 8B inference (82 tok/s) + Supabase sandbox on Lomax.
+**Status:** ✅ COMPLETE
 **Hardware:** Windows i9+32GB+2080Ti at 10.0.1.105
 **Research:** See `research-library/docs/techniques/windows-headless-inference-supabase-server.md`
 
@@ -189,7 +189,7 @@ Pattern detection, cross-file correlation, error fingerprinting. Will be moved t
 
 ### Phase 7: BR3 Orchestration — Parallel Build Dispatch ✅
 
-**Status:** complete (2026-04-05) — opt-in dispatch via `dispatch-phase-to-otis.sh`
+**Status:** ✅ COMPLETE
 
 **What gets built:**
 This is the phase that ties everything together. BR3 learns to use Otis.
@@ -239,7 +239,7 @@ This is the phase that ties everything together. BR3 learns to use Otis.
 
 ### Phase 8: Integration + Polish ✅
 
-**Status:** complete (2026-04-05) — brief/cluster/reset-cluster updated for all node types
+**Status:** ✅ COMPLETE
 
 **What gets built:**
 

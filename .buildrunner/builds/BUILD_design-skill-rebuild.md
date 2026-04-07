@@ -1,7 +1,7 @@
 # Build: Design Skill Rebuild
 
 **Created:** 2026-03-28
-**Status:** Phases 12-14, 14.6, 14.8, 14.9, 14.10 Complete, Phase 14.5 paused (theming), Phases 15-16 pending
+**Status:** ✅ COMPLETE
 **Deploy:** N/A — skill file (no deployment, changes are live on save)
 
 ## Overview
@@ -532,7 +532,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 15: Cloud Pipeline — Supabase + Realtime Listener _(added: 2026-03-29)_
 
-**Status:** pending
+**Status:** not_started
 **Blocked by:** Phase 14.5
 **Files:**
 
@@ -559,7 +559,7 @@ Rebuild `/design` to produce genuinely different, brand-derived design direction
 
 ### Phase 16: Deploy + Domain Setup _(added: 2026-03-29)_
 
-**Status:** pending
+**Status:** not_started
 **Blocked by:** Phase 15
 **Files:**
 

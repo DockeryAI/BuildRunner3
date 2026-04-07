@@ -51,4 +51,5 @@ Thumbs.db
 
 # Git worktrees
 ../br3-*/
+.dispatch-worktrees/
 .buildrunner/build-reports/

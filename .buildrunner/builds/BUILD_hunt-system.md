@@ -1,7 +1,7 @@
 # Build: Hunt System
 
 **Created:** 2026-04-06
-**Status:** 5/5 Phases Complete — ALL COMPLETE
+**Status:** ✅ COMPLETE
 **Deploy:** local — Lockwood FastAPI + Walter sourcing service + Muddy dashboard (deploy nodes via SSH after each phase)
 
 ## Overview
@@ -43,7 +43,7 @@
 
 ### Phase 1: /hunt Skill (Claude Code Command)
 
-**Status:** COMPLETE
+**Status:** ✅ COMPLETE
 **Goal:** Type /hunt and have a strategy conversation — research a buy list, see fair prices, create hunts, review exceptional deals.
 **Files:**
 
@@ -63,7 +63,7 @@
 
 ### Phase 2: Automated Sourcing Service (Walter)
 
-**Status:** COMPLETE
+**Status:** ✅ COMPLETE
 **Goal:** Background service polls deal sources on a schedule, feeds results into Lockwood, Below scores automatically. Wake up to scored deals in the dashboard.
 **Files:**
 
@@ -91,7 +91,7 @@
 
 ### Phase 3: Dashboard Hunt Management
 
-**Status:** COMPLETE
+**Status:** ✅ COMPLETE
 **Goal:** Create, edit, filter, and visualize hunts directly from the dashboard.
 **Files:**
 
@@ -108,7 +108,7 @@
 
 ### Phase 4: changedetection.io Auto-Watch
 
-**Status:** COMPLETE
+**Status:** ✅ COMPLETE
 **Goal:** Creating a hunt with source URLs automatically starts watching those pages. Archiving removes watches.
 **Files:**
 
@@ -126,7 +126,7 @@
 
 ### Phase 5: Intelligence Layer
 
-**Status:** COMPLETE
+**Status:** ✅ COMPLETE
 **Goal:** Smarter scoring — pair awareness, timing advice, total cost of ownership, alternative suggestions.
 **Files:**
 
