@@ -1,7 +1,7 @@
 # Build: Dashboard Build Liveness Detection
 
 **Created:** 2026-04-07
-**Status:** Phases 1-5 Complete — Phase 5 In Progress
+**Status:** Phases 1-6 Complete — Phase 6 In Progress
 **Deploy:** local — dashboard event server restart (`kill $(pgrep -f "node events.mjs"); cd ~/.buildrunner/dashboard && node events.mjs &`)
 
 ## Overview
@@ -155,7 +155,7 @@ ws-builds.js:
 
 ### Phase 5: Scanner PID-Based Liveness + Dead Code Cleanup _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 4
 **Goal:** Replace fuzzy session-path matching with exact PID verification via sidecar.json. Clean dead code from integrations/. Falls back to existing behavior for non-sidecar builds.
 **Adversarial review:** Findings from 6-agent analysis (2026-04-07): scanner lines 1694-1743 contain fuzzy matching, heartbeat check, grace period — all demoted to fallback. below.mjs entirely dead. reviews.mjs and decisions.mjs have unused exports.
@@ -170,18 +170,18 @@ ws-builds.js:
 
 Scanner liveness (events.mjs):
 
-- [ ] Before session matching: check for `sidecar.json` in build's lock dir (`build.project_path + /.buildrunner/locks/phase-N/sidecar.json`) _(added: 2026-04-07)_
-- [ ] If sidecar.json exists + local node: `process.kill(claude_pid, 0)` in try/catch — alive=running, dead=stalled (no grace period) _(added: 2026-04-07)_
-- [ ] If sidecar.json exists + remote node: `execFile('ssh', [node, 'kill -0 PID'])` with 5s timeout _(added: 2026-04-07)_
-- [ ] If sidecar.json missing: fall back to existing `getActiveSessions` fuzzy matching (backward compat) _(added: 2026-04-07)_
-- [ ] Check `exit-status.json` — if present, include exit code in stalled event data _(added: 2026-04-07)_
-- [ ] Add file locking around registry write at end of scan (prevent race with registry.mjs CLI) _(added: 2026-04-07)_
+- [x] Before session matching: check for `sidecar.json` in build's lock dir (`build.project_path + /.buildrunner/locks/phase-N/sidecar.json`) _(added: 2026-04-07)_
+- [x] If sidecar.json exists + local node: `process.kill(claude_pid, 0)` in try/catch — alive=running, dead=stalled (no grace period) _(added: 2026-04-07)_
+- [x] If sidecar.json exists + remote node: `execSync('ssh ... kill -0 PID')` with 5s timeout _(added: 2026-04-07)_
+- [x] If sidecar.json missing: fall back to existing `getActiveSessions` fuzzy matching (backward compat) _(added: 2026-04-07)_
+- [x] Check `exit-status.json` — if present, include exit code in stalled event data _(added: 2026-04-07)_
+- [x] Add file locking around registry write at end of scan (prevent race with registry.mjs CLI) _(added: 2026-04-07)_
 
 Dead code cleanup:
 
-- [ ] Delete `integrations/below.mjs` — all 4 exports unused, never imported _(added: 2026-04-07)_
-- [ ] Remove `getReviewFindings()` and `retriggerAutoReview()` from `reviews.mjs` — exported but never called _(added: 2026-04-07)_
-- [ ] Remove `getAllDecisions()` and `watchDecisionFiles` export from `decisions.mjs` — never called externally _(added: 2026-04-07)_
+- [x] Delete `integrations/below.mjs` — all 4 exports unused, never imported _(added: 2026-04-07)_
+- [x] Remove `getReviewFindings()` and `retriggerAutoReview()` from `reviews.mjs` — exported but never called _(added: 2026-04-07)_
+- [x] Remove `getAllDecisions()` and `watchDecisionFiles` export from `decisions.mjs` — never called externally _(added: 2026-04-07)_
 
 **Success Criteria:** Sidecar-wrapped build detected via PID in one scan cycle (30s). Kill Claude — stalled in 30s not 60s. Non-sidecar builds still work via fallback. Dead integrations removed without breaking imports.
 
