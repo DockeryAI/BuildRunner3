@@ -360,3 +360,91 @@
 [Tue Apr  7 11:09:44 CDT 2026] [AMENDMENT] Added 26 tasks across 3 new phases (Phase 6: Market Price Collection, Phase 7: Market Stats + Purchase Tracking, Phase 8: Deals Page Redesign). Adversarial review: 13 blockers found and resolved. Hook enforcement built and tested.
 [Tue Apr  7 13:14:42 CDT 2026] [DECISION] Created build spec: dashboard-liveness with 2 phases. Reason: dashboard lies about build status — scanner trusts BUILD spec without checking process liveness
 [Tue Apr  7 13:38:08 CDT 2026] [AMENDMENT] Added Phase 3: Auto-Redispatch Watchdog. Reason: cluster nodes die from context limits and nobody restarts them
+[Tue Apr  7 14:02:08 CDT 2026] [DECISION] Created build spec: research-vectorization with 4 phases — vectorize research library on Lockwood for ambient context injection
+[2026-04-07T16:47:00Z] [GOAL] Shift research injection from pull (manual /learn, /opus, /chet) to push (ambient context)
+  WHY: User requested automatic research loading without skill invocation; improves discoverability and context injection timing
+  CONTEXT: Overall research-vectorization project objective
+
+[2026-04-07T16:47:01Z] [ARCHITECTURE] Three-point ambient research injection: brief (session start), recall hook (on edit), /begin (on phase start)
+  WHY: Captures research at multiple user interaction points; dedup prevents redundancy
+  CONTEXT: Phases 2-3, recall-on-tool.sh, developer-brief.sh, /begin enhancement
+
+[2026-04-07T16:47:02Z] [DECISION] Embedding model: nomic-embed-text-v1.5 (not all-MiniLM or bge-base)
+  WHY: Text-optimized, same Nomic family as existing CodeRankEmbed, 768-dim, fits M2 8GB with ~275MB RAM, lazy-loaded on first query
+  CONTEXT: Phase 1, text embedding strategy; decision point to re-evaluate after 10 test queries if recall poor
+
+[2026-04-07T16:47:03Z] [ARCHITECTURE] Separate LanceDB tables: codebase (CodeRankEmbed) and research_library (nomic-embed-text)
+  WHY: Code vs prose are semantically different; separate models avoid embedding space confusion; code table unchanged
+  CONTEXT: Phase 1, multi-model indexing strategy
+
+[2026-04-07T16:47:04Z] [DECISION] Research library path: ~/repos/research-library/ on Lockwood (not ~/Projects/)
+  WHY: Lockwood already syncs repos from Muddy; consistent with REPOS_DIR variable and code indexing pattern; verified path exists
+  CONTEXT: Phase 1, batch indexer configuration
+
+[2026-04-07T16:47:05Z] [ARCHITECTURE] GET /api/research/search?query=X&limit=N (not POST with JSON body)
+  WHY: Consistent with existing Lockwood endpoints (/api/memory/notes?query=X); recall-on-tool.sh uses curl GET; simpler shell integration
+  CONTEXT: Phase 1, API endpoint design
+
+[2026-04-07T16:47:06Z] [DECISION] Directory mtime check before batch indexing, skip entirely when unchanged
+  WHY: 300s reindex cycle would re-embed ~1800 chunks on every cycle; M2 CPU/IO load unacceptable; hash detection still catches file changes
+  CONTEXT: Phase 1, indexer optimization; addresses Otis warning about reindex overhead
+
+[2026-04-07T16:47:07Z] [REJECTED] Running semantic search on code table (CodeRankEmbed) for research queries
+  WHY: CodeRankEmbed optimized for code, not prose; nomic-embed-text is prose-optimized; separate tables avoid semantic drift
+  CONTEXT: Phase 1, embedding model strategy
+
+[2026-04-07T16:47:08Z] [CONSTRAINT] Lockwood M2 8GB memory budget for two embedding models + LanceDB + FastAPI
+  WHY: Both CodeRankEmbed (~275MB) + nomic-embed-text-v1.5 (~275MB) must fit; mitigation is lazy-loading text model on first query
+  CONTEXT: Phase 1, deployment requirement; addresses Otis memory warning
+
+[2026-04-07T16:47:09Z] [TRADE-OFF] Hook implementation complexity vs context injection quality
+  WHY: recall-on-tool.sh requires ~20 lines (temp file, trap, curl, PID wait, Python parse), not 5; provides correct async behavior and JSON parsing without latency
+  CONTEXT: Phase 2, recall-on-tool.sh enhancement; Otis warned about underestimated complexity
+
+[2026-04-07T16:47:10Z] [ARCHITECTURE] Session-scoped deduplication via temp file ($TMPDIR/br3-research-seen-$$.txt)
+  WHY: Brief writes chunk IDs first (session start), recall hook and /begin filter against it; per-PID file auto-cleans on shell exit; simple, stateless
+  CONTEXT: Phase 2, deduplication mechanism; prevents duplicate context injection across brief+recall+begin
+
+[2026-04-07T16:47:11Z] [DECISION] Markdown-aware chunking: split on H2/H3 headers, prepend frontmatter (domain, subjects, priority)
+  WHY: Preserves doc organization, improves embedding quality by grounding chunks in metadata context, enables retrieval by domain/priority
+  CONTEXT: Phase 1, research_chunker.py implementation
+
+[2026-04-07T16:47:12Z] [DECISION] Relevance score threshold 0.3 (not 0.5) for Phase 1 success criteria
+  WHY: nomic-embed-text typical relevant range is 0.3-0.6; 0.5 threshold would be unrealistic and fail valid results
+  CONTEXT: Phase 1, success criteria; Otis adversarial review finding
+
+[2026-04-07T16:47:13Z] [ARCHITECTURE] Standard "Lockwood Research Query" block for all research-loading skills
+  WHY: Ensures consistency across 12 skills (/opus, /chet, /geo, /social, /prompt, /llm, /recraft, /perplexity, /appdesign, /br3-frontend-design + chet SKILL + br3-frontend-design SKILL)
+  CONTEXT: Phase 3, skill enhancement pattern; template block defined once, copied 12 times with only domain parameter changed
+
+[2026-04-07T16:47:14Z] [DECISION] /learn semantic guidance (lines 39-122) kept as fallback, not structured lookup table
+  WHY: Existing section is prompt guidance, not discrete data structure; acts as interpretation fallback when Lockwood offline
+  CONTEXT: Phase 3, /learn overhaul; Otis clarified that "synonym table" is actually inline guidance
+
+[2026-04-07T16:47:15Z] [DECISION] Four phases (not two or three) to maximize parallelization
+  WHY: Phase 1 (Lockwood engine) blocks both 2+3 but they run in parallel (different files); Phase 4 waits for 2+3; enables cluster saturation
+  CONTEXT: Parallelization matrix; Phase structure
+
+[2026-04-07T16:47:16Z] [REJECTED] Deduping by content hash or embedding similarity
+  WHY: Too computationally expensive for session-scope dedup; temp file with chunk IDs is lightweight, sufficient, and auto-expires
+  CONTEXT: Phase 2, deduplication strategy discussion
+
+[2026-04-07T16:47:17Z] [CONSTRAINT] Research library already synced to Lockwood (~/repos/research-library/)
+  WHY: Muddy→Lockwood sync already handles repos/; no special sync mechanism needed in spec
+  CONTEXT: Phase 1, blocker finding from Otis resolved by path verification
+
+[2026-04-07T16:47:18Z] [DECISION] Dashboard workspace path: ~/.buildrunner/dashboard/public/js/ws-research.js
+  WHY: Follows existing modular pattern (ws-builds.js, ws-intel.js, ws-terminal.js all in public/js/); not in js/ directly
+  CONTEXT: Phase 4, dashboard integration; Otis blocker — path correction
+
+[2026-04-07T16:47:19Z] [GOAL] New research immediately discoverable after creation
+  WHY: /research skill should auto-trigger /api/research/reindex so output is searchable within 30s
+  CONTEXT: Phase 4, /research skill enhancement
+
+[2026-04-07T16:47:20Z] [DECISION] Gates 3.7 (adversarial review) + 3.8 (architecture validation) both passed before BUILD spec written
+  WHY: Otis reviewed, blockers fixed (paths, memory, complexity), gates marked complete; prevents downstream rework
+  CONTEXT: Spec creation gating, pre-write validation
+
+[2026-04-07T16:47:21Z] [ARCHITECTURE] Recall hook query construction: file basename + project name + active BUILD phase description
+  WHY: Sufficient semantic signal without reading file contents (adds latency); enables research-phase correlation
+  CONTEXT: Phase 2, recall-on-tool.sh query design

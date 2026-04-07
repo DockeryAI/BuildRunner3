@@ -1,38 +1,12 @@
 # Build: Research Library Vectorization
 
 **Created:** 2026-04-07
-**Status:** Draft
+**Status:** Phase 1 In Progress
 **Deploy:** cluster — Lockwood (10.0.1.101) service restart
 
 ## Overview
 
 Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research context surfaces automatically during work — no manual skill invocation needed. Extends existing LanceDB + FastAPI infrastructure with a new `research_library` table, markdown-aware chunking, and integration into the recall hook + developer brief + skills.
-
-## What Changes
-
-**The core shift:** Research goes from "pull" (user invokes /learn, /opus, /chet, etc.) to "push" (Lockwood auto-surfaces relevant chunks when you edit files, start sessions, or begin build phases).
-
-**Skills that need updating:**
-
-- `/learn` — semantic search becomes primary, synonym table becomes fallback, chunk-level retrieval replaces whole-file loading
-- `/begin` — phase starts query Lockwood for research relevant to phase deliverables
-- `/opus`, `/chet`, `/geo`, `/social`, `/prompt`, `/llm`, `/recraft`, `/perplexity`, `/appdesign` — still work as manual deep-dive overrides, but gain cross-domain discovery (e.g., /opus also surfaces related hallucination-prevention and claude-automation chunks)
-- `/research` — new research output auto-indexes into Lockwood immediately
-- `/br3-frontend-design`, `/design`, `/website-build` — auto-pull relevant design research from Lockwood
-
-**Hooks that need updating:**
-
-- `recall-on-tool.sh` — add research query as 4th parallel source (~20 lines: temp file, trap update, curl, PID wait, Python parse)
-- `developer-brief.sh` — add research context section at session start
-
-**New infrastructure:**
-
-- Markdown section chunker (splits on H2/H3, preserves frontmatter metadata)
-- Text embedding model (nomic-embed-text-v1.5 alongside existing CodeRankEmbed)
-- LanceDB `research_library` table (~1,800 vectors)
-- Batch + incremental indexer for ~/repos/research-library/ (already synced to Lockwood)
-- API endpoints: /api/research/search, /api/research/reindex, /api/research/stats
-- Dashboard workspace for research index health
 
 ## Parallelization Matrix
 
@@ -43,12 +17,11 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 | 3     | ~/.claude/commands/learn.md, begin.md, opus.md, etc.           | 2                 | 1 (needs API) |
 | 4     | ~/.claude/commands/research.md, public/js/ws-research.js (NEW) | -                 | 1 (needs API) |
 
----
-
 ## Phases
 
 ### Phase 1: Vectorization Engine (Lockwood)
 
+**Status:** in_progress
 **Goal:** Research library indexed in LanceDB with semantic search API working on Lockwood.
 
 **Files:**
@@ -62,7 +35,7 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 **Deliverables:**
 
 - [ ] Markdown-aware chunker: splits docs on H2/H3 headers, each chunk gets doc title + section header + content + frontmatter metadata (domain, subjects, priority)
-- [ ] Text embedding model: load nomic-embed-text-v1.5 as second SentenceTransformer (text-optimized, ~275MB RAM), keep CodeRankEmbed for code table
+- [ ] Text embedding model: load nomic-embed-text-v1.5 as second SentenceTransformer (text-optimized, ~275MB RAM, lazy-loaded), keep CodeRankEmbed for code table
 - [ ] LanceDB `research_library` table: schema with id, title, section, domain, subjects, priority, source_file, content, vector
 - [ ] Batch indexer: discover .md files in ~/repos/research-library/docs/ (Lockwood's synced copy). Directory mtime check before file scan — skip entirely when unchanged. File-level hash detection for incremental updates
 - [ ] API endpoint GET /api/research/search?query=X&limit=N: semantic query returning top-k chunks with source file, section, score (GET with query params, consistent with existing Lockwood endpoints)
@@ -77,6 +50,7 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 
 ### Phase 2: Ambient Research (Hooks)
 
+**Status:** not_started
 **Goal:** Research automatically surfaces during editing and session starts without any skill invocation.
 
 **Files:**
@@ -85,25 +59,26 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 - ~/.buildrunner/scripts/developer-brief.sh (MODIFY) — add research context section
 
 **Blocked by:** Phase 1 (needs /api/research/search endpoint)
-**After:** Phase 1
+**After:** Phase 1 (can run in parallel with Phase 3 — different files)
 **Deliverables:**
 
-- [ ] recall-on-tool.sh: add parallel curl to /api/research/search using file basename + project context as query. Parse top 2 chunks, inject as "Research Context" section. Same 2s timeout pattern as existing queries.
+- [ ] recall-on-tool.sh: add parallel curl to /api/research/search using file basename + project context as query (~20 lines: temp file, trap update, curl, PID wait, Python parse). Parse top 2 chunks, inject as "Research Context" section. Same 2s timeout pattern as existing queries.
 - [ ] developer-brief.sh: at session start, query Lockwood with current BUILD phase description (if active build exists) to surface relevant research. Add "## Relevant Research" section to brief output.
 - [ ] Dedup mechanism: session-scoped temp file (`$TMPDIR/br3-research-seen-$$.txt`) tracks injected chunk IDs. Brief writes first, recall hook and /begin filter against it. Auto-cleans on shell exit.
 - [ ] Test: edit a React component file, verify design research chunks appear in recall. Start a new session on a project with an active build, verify relevant research shows in brief. Verify same chunk doesn't appear twice across brief + recall.
 
-**Success Criteria:** Editing `src/components/Hero.tsx` auto-surfaces chunks from agency-website-design, residential-real-estate-broker-website-design, or relevant design research without invoking any skill.
+**Success Criteria:** Editing `src/components/Hero.tsx` auto-surfaces chunks from agency-website-design, residential-real-estate-broker-website-design, or relevant design research without invoking any skill. No duplicate chunks across injection points.
 
 ---
 
 ### Phase 3: Skill Enhancement
 
+**Status:** not_started
 **Goal:** Research-loading skills become semantic-aware with chunk-level retrieval and cross-domain discovery.
 
 **Files:**
 
-- ~/.claude/commands/learn.md (MODIFY) — semantic search primary, synonym table fallback
+- ~/.claude/commands/learn.md (MODIFY) — semantic search primary, existing guidance as fallback
 - ~/.claude/commands/begin.md (MODIFY) — add research query at phase start
 - ~/.claude/commands/opus.md (MODIFY) — add cross-domain chunk discovery
 - ~/.claude/commands/geo.md (MODIFY) — add cross-domain chunk discovery
@@ -121,7 +96,7 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 **Deliverables:**
 
 - [ ] /learn overhaul: Step 0 queries Lockwood research table (not code table). Returns chunk-level results with source file + section + score. Loads only the relevant sections, not whole files. Existing semantic guidance section (lines 39-122) kept as fallback interpretation logic when Lockwood is offline.
-- [ ] /begin enhancement: at phase start, extract phase deliverable text, query Lockwood for relevant research, inject top 3-5 chunks as context before building. Adds ~2s to phase start.
+- [ ] /begin enhancement: at phase start, extract phase deliverable text, query Lockwood for relevant research, inject top 3-5 chunks as context before building. Adds ~2s to phase start. Uses dedup temp file from Phase 2.
 - [ ] Research skill pattern: define a standard "Lockwood Research Query" template block (curl GET to /api/research/search with skill domain as query context, parse JSON results, present top 3 chunks with source + section). Copy this identical block into each skill (/opus, /chet, /geo, etc.) with only the domain parameter changed. Skills still load their primary docs as before, but also surface cross-domain chunks.
 - [ ] Test: invoke /learn "website hero copy" and verify it returns chunks from multiple docs (agency design, buyer psychology, content strategy) instead of just keyword matches.
 
@@ -131,6 +106,7 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 
 ### Phase 4: Research Pipeline + Dashboard
 
+**Status:** not_started
 **Goal:** New research auto-indexes into Lockwood. Dashboard shows research index health.
 
 **Files:**
@@ -181,10 +157,8 @@ The recall hook fires on Edit/Write/NotebookEdit with a file path. The research 
 
 ### Research Injection Deduplication
 
-Three injection points (brief, recall hook, /begin) can surface the same chunks in one session. Dedup via a session-scoped temp file:
+Three injection points (brief, recall hook, /begin) can surface the same chunks in one session. Dedup via a session-scoped temp file: `$TMPDIR/br3-research-seen-$$.txt` lists chunk IDs already injected. Each injection point appends chunk IDs after surfacing them. Before injecting, check the file and skip already-seen IDs. File is per-PID so it auto-cleans when the shell session ends. The brief (session start) always writes first, recall hook and /begin filter against it.
 
-- `$TMPDIR/br3-research-seen-$$.txt` — lists chunk IDs already injected this session
-- Each injection point appends chunk IDs after surfacing them
-- Before injecting, check the file and skip already-seen IDs
-- File is per-PID so it auto-cleans when the shell session ends
-- The brief (session start) always writes first, recall hook and /begin filter against it
+## Session Log
+
+[Will be updated by /begin]
