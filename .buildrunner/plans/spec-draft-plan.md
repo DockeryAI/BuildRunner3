@@ -1,39 +1,44 @@
-# Spec Draft: Dashboard Command Center
+# DRAFT: Self-QA Enforcement Layer
 
-## Phase 1: Cloudflare Tunnel + Auth
-Files: ~/.cloudflared/config.yml (NEW), ~/.buildrunner/dashboard/events.mjs (MODIFY CORS), ~/Library/LaunchAgents/com.cloudflare.band-tunnel.plist (NEW)
-Goal: band.taskwatcher.ai serves dashboard with Google auth
-Dependencies: None
+## Summary
+Add enforcement hooks, autonomous browser exploration, visual regression baselines, and a mandatory self-QA verification step to BR3 so Claude cannot mark work done without visually verifying it in a browser.
 
-## Phase 2: Dashboard Redesign — Layout + Navigation
-Files: ~/.buildrunner/dashboard/public/index.html (REWRITE), ~/.buildrunner/dashboard/public/styles.css (REWRITE)
-Goal: Sidebar nav, workspace switching, new visual design, preserve all existing functionality
-Dependencies: None (can parallel Phase 1)
+## Phases
 
-## Phase 3: Intelligence Workspace
-Files: ~/.buildrunner/dashboard/public/index.html (MODIFY), ~/.buildrunner/dashboard/public/styles.css (MODIFY), ~/.buildrunner/dashboard/events.mjs (MODIFY — add proxy endpoints)
-Goal: Full intel feed + deals as separate workspace with sub-tabs fetching from Lockwood via proxy
-Dependencies: Phase 2 (workspace containers must exist)
-Proxy endpoints: GET /api/proxy/intel/items, /api/proxy/intel/alerts, /api/proxy/deals/items, /api/proxy/deals/hunts — forward to Lockwood http://10.0.1.101:8100
+### Phase 1: Enforcement Hooks
+- Add Stop hook (agent type) that forces Playwright MCP browser verification before Claude can finish
+- Add PreCompact hook that re-injects testing/verification rules after context compaction
+- Add stop_hook_active guard to prevent infinite loops
+- Verify all hooks actually persist in settings.json (PLAYWRIGHT_INTEGRATION Phase 3 claimed complete but hooks missing)
+- Files: ~/.claude/settings.json (MODIFY)
 
-## Phase 4: Terminal Workspace
-Files: ~/.buildrunner/dashboard/public/index.html (MODIFY), ~/.buildrunner/dashboard/public/styles.css (MODIFY), ~/.buildrunner/dashboard/events.mjs (MODIFY — session tracking)
-Goal: Full-screen multi-tab xterm.js terminal with command toolbar and split view
-Dependencies: Phase 2 (workspace containers)
-Existing: WebSocket terminal endpoint already exists at /ws/terminal/:node in events.mjs
+### Phase 2: Explore-QA Command
+- Create /explore-qa slash command
+- Claude autonomously crawls entire app via Playwright MCP
+- Visits every page, clicks every interactive element, fills forms, checks console errors
+- Tests mobile viewport (375x667)
+- Outputs structured qa-report.md
+- Files: ~/.claude/commands/explore-qa.md (NEW)
 
-## Phase 5: Build Workspace
-Files: ~/.buildrunner/dashboard/public/index.html (MODIFY), ~/.buildrunner/dashboard/public/styles.css (MODIFY)
-Goal: Build management with phase detail, dispatch, and terminal-integrated actions
-Dependencies: Phase 4 (build actions open terminal)
-Existing endpoints: GET /api/registry, POST /api/builds/:id/dispatch, POST /api/builds/:id/status
+### Phase 3: Self-QA Step in /begin
+- Add Step 4.7 Visual Browser Verification between TDD Re-run (4.5) and Two-Stage Review (5)
+- Claude opens browser via Playwright MCP, navigates all pages touched by the phase
+- Takes screenshots, checks for visual issues, console errors, broken layouts
+- Blocks phase on visual issues (fix loop, max 3 attempts)
+- Create reference doc for the step
+- Files: ~/.claude/commands/begin.md (MODIFY), ~/.claude/docs/begin-self-qa.md (NEW)
 
-## Phase 6: Mobile Responsive
-Files: ~/.buildrunner/dashboard/public/styles.css (MODIFY), ~/.buildrunner/dashboard/public/index.html (MODIFY)
-Goal: Touch-friendly dashboard from phone — bottom tab bar, responsive terminal
-Dependencies: Phases 2, 4
+### Phase 4: Visual Regression Baselines
+- Add toHaveScreenshot() infrastructure to BR3 project template
+- Create baseline screenshot tests for all major pages/views
+- Configure odiff for fast comparison (6.6x faster than pixelmatch)
+- Add animation disabling, font loading waits, dynamic content masking
+- Docker-based baseline generation for cross-platform consistency
+- Files: playwright.config.ts (MODIFY), tests/e2e/visual/*.spec.ts (NEW), Dockerfile.playwright (NEW)
 
-## Phase 7: Session Management + Node Actions
-Files: ~/.buildrunner/dashboard/public/index.html (MODIFY), ~/.buildrunner/dashboard/events.mjs (MODIFY)
-Goal: Session clone/kill, node context menus with terminal integration
-Dependencies: Phase 4
+### Phase 5: Visual Regression Tracker on Lomax
+- Deploy VRT via Docker Compose on Lomax (10.0.1.104)
+- Configure odiff as comparison engine
+- Wire Playwright integration
+- Branch-based baselines per git branch
+- Files: cluster scripts, Lomax Docker Compose (remote)

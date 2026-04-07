@@ -697,7 +697,7 @@ _Issues discovered during 2026-04-06 session. Dispatch reliability, node expansi
 
 ### PHASE 35: Dispatch Reliability + Node Expansion _(added: 2026-04-06)_
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Make remote dispatch reliable (retry on no-work), expand builder pool to 3 nodes (Muddy + Otis + Lomax), fix Below WSL dispatch, and make autopilot chain all phases in one agent.
 **Blocked by:** None
 
