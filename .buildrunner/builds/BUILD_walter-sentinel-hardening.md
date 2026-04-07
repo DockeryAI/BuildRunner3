@@ -1,7 +1,7 @@
 # Build: Walter Sentinel Hardening + Cluster Monitoring
 
 **Created:** 2026-04-07
-**Status:** Phases 1-7 Complete — Phase 8 In Progress
+**Status:** BUILD COMPLETE — All 8 Phases Done
 **Deploy:** cluster — Walter (10.0.1.102), Lockwood (10.0.1.101), Muddy (local)
 
 ## Overview
@@ -229,7 +229,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 8: Auto-Remediation + Dashboard Workspace
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Common failures auto-fix. All monitoring visible in dashboard.
 
 **Files:**
@@ -241,11 +241,11 @@ Walter has never successfully tested a single build despite being wired into 39 
 **Blocked by:** Phase 6, Phase 7 (needs monitor alerts to respond to)
 **Deliverables:**
 
-- [ ] Auto-remediate: watch `~/.buildrunner/alerts/` for new alert files. Actions: node service down → SSH restart. Repo drift → `git push` from Muddy. Walter stale → trigger `/api/run`. Build stalled + node dead → flag for re-dispatch to next available node.
-- [ ] All remediation actions logged with full audit trail in `~/.buildrunner/logs/remediation.log`: timestamp, alert_id, action_taken, result (success/fail), duration.
-- [ ] Config: `~/.buildrunner/monitor-config.json` controls which auto-fixes are enabled per action type. Default: service restart ON, repo sync ON, build re-dispatch OFF (requires manual).
-- [ ] Dashboard workspace `ws-monitor.js`: cluster topology view (green/yellow/red per node), active build progress bars, test pipeline waterfall visualization, alert history with remediation actions. Follows existing `ws-*.js` modular pattern.
-- [ ] New event types in events.mjs: `monitor.health`, `monitor.build`, `monitor.pipeline`, `monitor.fix` — workspace subscribes to these via SSE.
+- [x] Auto-remediate: watch `~/.buildrunner/alerts/` for new alert files. Actions: node service down → SSH restart. Repo drift → `git push` from Muddy. Walter stale → trigger `/api/run`. Build stalled + node dead → flag for re-dispatch to next available node.
+- [x] All remediation actions logged with full audit trail in `~/.buildrunner/logs/remediation.log`: timestamp, alert_id, action_taken, result (success/fail), duration.
+- [x] Config: `~/.buildrunner/monitor-config.json` controls which auto-fixes are enabled per action type. Default: service restart ON, repo sync ON, build re-dispatch OFF (requires manual).
+- [x] Dashboard workspace `ws-monitor.js`: cluster topology view (green/yellow/red per node), active build progress bars, test pipeline waterfall visualization, alert history with remediation actions. Follows existing `ws-*.js` modular pattern.
+- [x] New event types in events.mjs: `monitor.health`, `monitor.build`, `monitor.pipeline`, `monitor.fix` — workspace subscribes to these via SSE.
 
 **Success Criteria:** Walter service killed → auto-restarted within 2 minutes without human intervention. Dashboard shows live cluster topology with correct status colors. Alert → remediation → resolution visible in dashboard.
 
