@@ -544,9 +544,39 @@ def _extract_pw_tests(suite: dict, tests: list, prefix: str = ""):
         _extract_pw_tests(child, tests, title)
 
 
+# --- Push Results to Lockwood ---
+def _push_to_lockwood(results: dict):
+    """Push test results to Lockwood for cross-project health tracking and dashboard sparklines."""
+    import urllib.request
+    try:
+        failures = [
+            {"name": t.get("full_name", t.get("name", "")), "message": t.get("failure", "")}
+            for t in results.get("tests", [])
+            if t.get("status") == "failed"
+        ]
+        payload = json.dumps({
+            "project": results.get("project", "unknown"),
+            "passed": results.get("passed", 0),
+            "failed": results.get("failed", 0),
+            "skipped": results.get("skipped", 0),
+            "failures": failures,
+            "duration_seconds": (results.get("duration_ms", 0) or 0) / 1000.0,
+            "source": "walter",
+        }).encode()
+        req = urllib.request.Request(
+            f"{LOCKWOOD_URL}/api/memory/tests",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        urllib.request.urlopen(req, timeout=5)
+    except Exception as e:
+        print(f"Lockwood push failed (non-fatal): {e}")
+
+
 # --- Store Results ---
 def _store_results(results: dict):
-    """Store test run results in SQLite."""
+    """Store test run results in SQLite and push to Lockwood."""
     if not results or results.get("total", 0) == 0 and not results.get("error"):
         return
 
@@ -587,6 +617,9 @@ def _store_results(results: dict):
 
     conn.commit()
     conn.close()
+
+    # Async push to Lockwood (non-blocking)
+    threading.Thread(target=_push_to_lockwood, args=(results,), daemon=True).start()
 
 
 # --- Background Test Loop ---

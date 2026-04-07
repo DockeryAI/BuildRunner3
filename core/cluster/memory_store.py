@@ -313,6 +313,22 @@ def ingest_test_results_from_muddy(project: str, project_path: str):
     return data
 
 
+def save_test_results(project: str, passed: int, failed: int, skipped: int,
+                      failures: list = None, duration_seconds: float = None,
+                      source: str = "walter") -> dict:
+    """Save test results pushed from Walter or other nodes."""
+    conn = _get_db()
+    conn.execute(
+        """INSERT INTO test_results (project, passed, failed, skipped, failures, duration_seconds, source)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (project, passed, failed, skipped,
+         json.dumps(failures or []), duration_seconds, source)
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "saved", "project": project, "passed": passed, "failed": failed}
+
+
 def get_latest_test_results(project: str = None) -> list[dict]:
     conn = _get_db()
     if project:

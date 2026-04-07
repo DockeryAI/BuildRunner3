@@ -789,6 +789,27 @@ async def get_tests(project: Optional[str] = None):
     return {"results": get_latest_test_results(project)}
 
 
+class TestResultRecord(BaseModel):
+    project: str
+    passed: int = 0
+    failed: int = 0
+    skipped: int = 0
+    failures: list = []
+    duration_seconds: float = None
+    source: str = "walter"
+
+
+@app.post("/api/memory/tests")
+async def save_tests(req: TestResultRecord):
+    """Receive test results from Walter or other nodes."""
+    from core.cluster.memory_store import save_test_results
+    return save_test_results(
+        project=req.project, passed=req.passed, failed=req.failed,
+        skipped=req.skipped, failures=req.failures,
+        duration_seconds=req.duration_seconds, source=req.source
+    )
+
+
 @app.get("/api/memory/patterns")
 async def get_patterns():
     """Get active log patterns."""
