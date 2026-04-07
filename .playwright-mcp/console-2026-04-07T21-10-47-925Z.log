@@ -54,3 +54,54 @@
 [  270098ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
 [  270131ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/brief:0
 [  300360ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/proxy/intel/brief:0
+[  443709ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://10.0.1.101:8100/api/research/stats:0
+[  443709ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://10.0.1.101:8100/api/research/stats:0
+[  443710ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://10.0.1.101:8100/api/research/stats:0
+[  443710ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  443710ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  443710ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/alerts:0
+[  443711ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  443711ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/improvements:0
+[  443741ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://10.0.1.101:8100/api/research/stats:0
+[  443744ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  443745ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  443745ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  443753ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  443755ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/alerts:0
+[  443777ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  443777ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  443779ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  443787ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  443788ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/improvements:0
+[  443809ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  443811ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  443812ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/alerts:0
+[  443820ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  443822ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  443843ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/improvements:0
+[  443843ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  443844ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  443853ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  443859ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  443876ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  443876ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  443876ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/alerts:0
+[  443890ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  443891ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  443909ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  443909ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/improvements:0
+[  443910ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/brief:0
+[  443943ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/brief:0
+[  443975ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/brief:0
+[  444008ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/brief:0
+[  450075ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/proxy/intel/brief:0
+[  487572ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://10.0.1.101:8100/api/research/stats:0
+[  487574ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  487574ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  487574ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/alerts:0
+[  487575ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  487576ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/improvements:0
+[  487609ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  487609ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[  487610ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  487643ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/brief:0

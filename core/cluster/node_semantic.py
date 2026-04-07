@@ -247,8 +247,6 @@ def run_research_index():
             _research_dir_mtime = current_mtime
 
         files = discover_research_docs(RESEARCH_DIR)
-        embedder = _get_research_embedder()
-        embed_dim = embedder.get_sentence_embedding_dimension()
 
         new_hashes = {}
         chunks_to_add = []
@@ -264,6 +262,9 @@ def run_research_index():
 
         if chunks_to_add:
             print(f"Research index: {len(chunks_to_add)} chunks from {len(files)} docs...")
+            # Only load the embedding model when we actually have chunks to embed
+            embedder = _get_research_embedder()
+            embed_dim = embedder.get_sentence_embedding_dimension()
 
             if not _research_file_hashes:
                 table = _get_or_create_research_table(embed_dim)
