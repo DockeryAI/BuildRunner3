@@ -4,7 +4,7 @@
   "step": 7,
   "step_name": "finalize",
   "step_label": "Final commit & summary",
-  "status": "active",
+  "status": "COMPLETE",
   "tasks_total": 5,
   "tasks_done": 5,
   "current_task": null,
@@ -13,11 +13,11 @@
   "commits": 1,
   "errors": [],
   "warnings": [],
-  "started_at": "2026-04-07T22:07:13Z",
-  "updated_at": "2026-04-07T22:07:13Z",
+  "started_at": "2026-04-07T22:07:37Z",
+  "updated_at": "2026-04-07T22:07:37Z",
   "history": [
-    {"step": 1, "name": "setup", "label": "Setup & sync", "at": "2026-04-07T22:07:13Z", "status": "done"},
-    {"step": 4, "name": "execute", "label": "Implementing tasks", "at": "2026-04-07T22:07:13Z", "status": "done"},
-    {"step": 7, "name": "finalize", "label": "Final commit & summary", "at": "2026-04-07T22:07:13Z", "status": "active"}
+    {"step": 1, "name": "setup", "label": "Setup & sync", "at": "2026-04-07T22:07:37Z", "status": "done"},
+    {"step": 4, "name": "execute", "label": "Implementing tasks", "at": "2026-04-07T22:07:37Z", "status": "done"},
+    {"step": 7, "name": "finalize", "label": "Final commit & summary", "at": "2026-04-07T22:07:37Z", "status": "done"}
   ]
 }
