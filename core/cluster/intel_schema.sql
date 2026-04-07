@@ -99,6 +99,7 @@ CREATE TABLE IF NOT EXISTS active_hunts (
     target_price REAL,
     check_interval_minutes INTEGER NOT NULL DEFAULT 60,
     source_urls TEXT,  -- JSON array
+    requirements TEXT,  -- JSON: filters, pair_rules, notes (see hunt_sourcer.py)
     active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

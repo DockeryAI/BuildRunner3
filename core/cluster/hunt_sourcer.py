@@ -127,14 +127,97 @@ async def _post_deal_item(item: dict) -> Optional[int]:
         return None
 
 
+# --- Requirements Validation ---
+
+def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> tuple[bool, str]:
+    """Validate a deal item against hunt requirements.
+    Returns (passed, reason). Reason is empty string if passed.
+    """
+    if not requirements:
+        # Legacy hunts without requirements — apply basic keyword exclusion only
+        excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
+        name_lower = item.get("name", "").lower()
+        if excluded and any(ex in name_lower for ex in excluded):
+            return False, f"excluded term in title"
+        return True, ""
+
+    filters = requirements.get("filters", {})
+    name_lower = item.get("name", "").lower()
+    price = item.get("price")
+    attrs = item.get("attributes", {})
+    if isinstance(attrs, str):
+        try:
+            attrs = json.loads(attrs)
+        except (json.JSONDecodeError, TypeError):
+            attrs = {}
+
+    # In-stock check
+    if filters.get("in_stock_only", True):
+        if isinstance(attrs, dict) and attrs.get("in_stock") is False:
+            return False, "out of stock"
+
+    # Price range
+    if price is not None:
+        price_min = filters.get("price_min")
+        price_max = filters.get("price_max")
+        if price_min and price < price_min:
+            return False, f"price ${price} below min ${price_min}"
+        if price_max and price > price_max:
+            return False, f"price ${price} above max ${price_max}"
+
+    # Title must contain (AND — all must be present)
+    must_contain = filters.get("title_must_contain", [])
+    if must_contain:
+        missing = [t for t in must_contain if t.lower() not in name_lower]
+        if missing:
+            return False, f"title missing required terms: {missing}"
+
+    # Title must contain ANY (OR — at least one must be present)
+    must_contain_any = filters.get("title_must_contain_any", [])
+    if must_contain_any:
+        if not any(t.lower() in name_lower for t in must_contain_any):
+            return False, f"title missing any of: {must_contain_any}"
+
+    # Title must NOT contain
+    must_not_contain = filters.get("title_must_not_contain", [])
+    if must_not_contain:
+        for term in must_not_contain:
+            if term.lower() in name_lower:
+                return False, f"title contains excluded term: {term}"
+
+    # Condition accept/reject
+    condition = item.get("condition", "").lower()
+    condition_accept = filters.get("condition_accept", [])
+    if condition_accept and condition:
+        if not any(c.lower() in condition for c in condition_accept):
+            return False, f"condition '{condition}' not in accepted: {condition_accept}"
+
+    condition_reject = filters.get("condition_reject", [])
+    if condition_reject and condition:
+        for c in condition_reject:
+            if c.lower() in condition:
+                return False, f"condition '{condition}' is rejected"
+
+    # Seller minimums
+    seller_rating = item.get("seller_rating")
+    min_rating = filters.get("min_seller_rating")
+    if min_rating and seller_rating is not None and seller_rating < min_rating:
+        return False, f"seller rating {seller_rating}% below min {min_rating}%"
+
+    # Also check keyword-based exclusions as fallback
+    excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
+    if excluded and any(ex in name_lower for ex in excluded):
+        return False, f"keyword exclusion: matched excluded term"
+
+    return True, ""
+
+
 # --- Batch Insert via Direct DB (Lockwood-local) or API ---
 
-async def _batch_insert_deals(items: list[dict], hunt_id: int, target_price: float = None, _excluded_terms: list[str] = None) -> int:
+async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dict = None, hunt_keywords: str = "") -> int:
     """Insert deal items, deduplicating against existing. Returns count of new items.
-    Filters out: out-of-stock items, items way over target price, excluded keyword matches.
+    Validates every item against hunt requirements before insert.
     """
-    if _excluded_terms is None:
-        _excluded_terms = []
     existing_urls = await _get_existing_deal_urls(hunt_id)
     new_count = 0
 
@@ -143,21 +226,9 @@ async def _batch_insert_deals(items: list[dict], hunt_id: int, target_price: flo
         if source_url in existing_urls:
             continue
 
-        # Skip out-of-stock items
-        attrs = item.get("attributes", {})
-        if isinstance(attrs, dict) and attrs.get("in_stock") is False:
-            continue
-
-        # Skip items way over budget (> 1.5x target price)
-        price = item.get("price")
-        if target_price and price and price > target_price * 1.5:
-            continue
-
-        # Apply keyword exclusions from hunt to all sources
-        # Hunt keywords like "RTX 3090 24GB -Ti -water -block -parts"
-        # The "-" prefixed words should filter results from ANY source
-        name_lower = item.get("name", "").lower()
-        if _excluded_terms and any(ex in name_lower for ex in _excluded_terms):
+        # Validate against hunt requirements
+        passed, reason = _validate_item(item, requirements, hunt_keywords)
+        if not passed:
             continue
 
         # Use Lockwood's create_deal_item directly if running on Lockwood,
@@ -417,12 +488,18 @@ async def check_hunts_once():
             threshold = dedup_config.get("similarity_threshold", 0.85)
             all_items = await _dedup_by_title_similarity(all_items, threshold)
 
-        # Parse exclusion terms from hunt keywords (e.g. "-Ti -water -block")
+        # Load hunt requirements (JSON column, may be None for legacy hunts)
         hunt_keywords = hunt.get("keywords", "")
-        excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
+        requirements_raw = hunt.get("requirements")
+        requirements = None
+        if requirements_raw:
+            try:
+                requirements = json.loads(requirements_raw) if isinstance(requirements_raw, str) else requirements_raw
+            except (json.JSONDecodeError, TypeError):
+                pass
 
-        # Insert into Lockwood
-        new_count = await _batch_insert_deals(all_items, hunt_id, hunt.get("target_price"), excluded)
+        # Insert into Lockwood — validates every item against requirements
+        new_count = await _batch_insert_deals(all_items, hunt_id, requirements, hunt_keywords)
         logger.info(f"  Hunt [{hunt_id}]: {len(all_items)} found, {new_count} new items inserted")
 
         # Pair detection
