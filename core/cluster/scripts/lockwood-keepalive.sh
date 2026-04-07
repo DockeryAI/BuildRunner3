@@ -9,7 +9,18 @@ PORT=8100
 LOG="$HOME/.buildrunner/keepalive.log"
 MODULE="core.cluster.node_semantic"
 
+GRACE_FILE="/tmp/lockwood-restart-grace"
+
 check_and_restart() {
+  # Grace period after restart — don't kill a process that just started
+  if [ -f "$GRACE_FILE" ]; then
+    GRACE_AGE=$(( $(date +%s) - $(stat -f %m "$GRACE_FILE" 2>/dev/null || echo 0) ))
+    if [ "$GRACE_AGE" -lt 30 ]; then
+      return 0  # within 30s grace period
+    fi
+    rm -f "$GRACE_FILE"
+  fi
+
   if curl -sf --max-time 5 "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
     return 0
   fi
@@ -32,6 +43,7 @@ check_and_restart() {
   cd "$LOCKWOOD_DIR"
   nohup "$PYTHON" -m uvicorn "$MODULE:app" --host 0.0.0.0 --port $PORT >> "$LOG" 2>&1 &
   echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Restarted uvicorn (PID $!)" >> "$LOG"
+  touch "$GRACE_FILE"  # 30s grace period before next health check
 }
 
 check_and_restart

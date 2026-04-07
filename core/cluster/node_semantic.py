@@ -767,8 +767,39 @@ def _ingest_memory():
                         pass
 
 
+def _init_research_stats():
+    """Load stats from existing research_library table on startup (pre-built index).
+    Also populates file hashes so the indexer skips the first reindex."""
+    global _research_stats, _research_file_hashes, _research_dir_mtime
+    try:
+        db, _ = _get_db()
+        if "research_library" in db.table_names():
+            table = db.open_table("research_library")
+            count = table.count_rows()
+            if count > 0:
+                from core.cluster.research_chunker import discover_research_docs
+                files = discover_research_docs(RESEARCH_DIR)
+                _research_stats = {
+                    "total_files": len(files),
+                    "total_chunks": count,
+                    "last_duration": 0.0,
+                    "changed_files": 0,
+                }
+                # Populate file hashes so indexer skips first run (index is pre-built)
+                for f in files:
+                    _research_file_hashes[str(f)] = file_hash(f)
+                # Set dir mtime so mtime check passes
+                docs_path = Path(RESEARCH_DIR) / "docs"
+                if docs_path.exists():
+                    _research_dir_mtime = _get_dir_mtime(docs_path)
+                print(f"Research index loaded: {count} chunks from {len(files)} docs (pre-built)")
+    except Exception as e:
+        print(f"Research stats init: {e}")
+
+
 def _background_research_indexer():
     """Periodically re-index research library (separate from code indexer, longer interval)."""
+    _init_research_stats()
     # Delay first run so uvicorn can serve health checks during model load
     time.sleep(15)
     while True:
