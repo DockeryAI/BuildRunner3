@@ -47,6 +47,9 @@ _last_index_time = 0.0
 _index_stats = {"total_files": 0, "total_chunks": 0, "last_duration": 0.0}
 
 LANCE_DIR = os.environ.get("LANCE_DIR", os.path.expanduser("~/.lockwood/lancedb"))
+RESEARCH_DIR = os.environ.get("RESEARCH_DIR", os.path.expanduser("~/repos/research-library"))
+RESEARCH_EMBED_MODEL = os.environ.get("RESEARCH_EMBED_MODEL", "nomic-ai/nomic-embed-text-v1.5")
+RESEARCH_INDEX_INTERVAL = int(os.environ.get("RESEARCH_INDEX_INTERVAL", "300"))
 
 
 def _get_db():
@@ -86,6 +89,13 @@ def _get_or_create_table(sample_dim: int):
 
 
 _plan_table = None
+_research_table = None
+_research_embed_model = None
+_research_file_hashes: dict[str, str] = {}
+_research_indexing = False
+_research_last_index_time = 0.0
+_research_dir_mtime = 0.0
+_research_stats = {"total_files": 0, "total_chunks": 0, "last_duration": 0.0}
 
 
 def _get_or_create_plan_table(sample_dim: int):
@@ -175,6 +185,202 @@ def _get_embedder():
         from sentence_transformers import SentenceTransformer
         _embed_model = SentenceTransformer(EMBED_MODEL, trust_remote_code=True)
     return _embed_model
+
+
+def _get_research_embedder():
+    """Lazy-load text-optimized embedding model for research (separate from code embedder)."""
+    global _research_embed_model
+    if _research_embed_model is None:
+        from sentence_transformers import SentenceTransformer
+        _research_embed_model = SentenceTransformer(RESEARCH_EMBED_MODEL, trust_remote_code=True)
+    return _research_embed_model
+
+
+def _get_or_create_research_table(sample_dim: int):
+    """Create or open the research_library LanceDB table."""
+    global _research_table
+    import pyarrow as pa
+    db, _ = _get_db()
+    if "research_library" in db.table_names():
+        _research_table = db.open_table("research_library")
+        return _research_table
+    schema = pa.schema([
+        pa.field("id", pa.string()),
+        pa.field("text", pa.string()),
+        pa.field("title", pa.string()),
+        pa.field("section", pa.string()),
+        pa.field("domain", pa.string()),
+        pa.field("subjects", pa.string()),
+        pa.field("priority", pa.string()),
+        pa.field("techniques", pa.string()),
+        pa.field("source_file", pa.string()),
+        pa.field("vector", pa.list_(pa.float32(), sample_dim)),
+    ])
+    _research_table = db.create_table("research_library", schema=schema, mode="overwrite")
+    return _research_table
+
+
+def run_research_index():
+    """Index research library docs into LanceDB. Uses directory mtime to skip when unchanged."""
+    global _research_file_hashes, _research_indexing, _research_last_index_time
+    global _research_dir_mtime, _research_stats, _research_table
+
+    if _research_indexing:
+        return
+    _research_indexing = True
+    start = time.time()
+
+    try:
+        from core.cluster.research_chunker import discover_research_docs, chunk_research_doc
+
+        research_path = Path(RESEARCH_DIR)
+        if not research_path.exists():
+            print(f"Research dir not found: {RESEARCH_DIR}")
+            return
+
+        # Directory mtime check — skip entirely if unchanged
+        docs_path = research_path / "docs"
+        if docs_path.exists():
+            current_mtime = _get_dir_mtime(docs_path)
+            if current_mtime == _research_dir_mtime and _research_file_hashes:
+                return  # nothing changed
+            _research_dir_mtime = current_mtime
+
+        files = discover_research_docs(RESEARCH_DIR)
+        embedder = _get_research_embedder()
+        embed_dim = embedder.get_sentence_embedding_dimension()
+
+        new_hashes = {}
+        chunks_to_add = []
+
+        for f in files:
+            fh = file_hash(f)
+            key = str(f)
+            new_hashes[key] = fh
+            if _research_file_hashes.get(key) == fh:
+                continue
+            chunks = chunk_research_doc(f)
+            chunks_to_add.extend(chunks)
+
+        if chunks_to_add:
+            print(f"Research index: {len(chunks_to_add)} chunks from {len(files)} docs...")
+
+            if not _research_file_hashes:
+                table = _get_or_create_research_table(embed_dim)
+            else:
+                db, _ = _get_db()
+                if "research_library" in db.table_names():
+                    table = db.open_table("research_library")
+                else:
+                    table = _get_or_create_research_table(embed_dim)
+
+            batch_size = 16  # smaller batches to yield GIL for health checks
+            rows = []
+            for i in range(0, len(chunks_to_add), batch_size):
+                batch = chunks_to_add[i:i + batch_size]
+                texts = [c["text"] for c in batch]
+                try:
+                    embeddings = embedder.encode(texts, show_progress_bar=False).tolist()
+                    for j, c in enumerate(batch):
+                        meta = c.get("metadata", {})
+                        rows.append({
+                            "id": c["id"],
+                            "text": c["text"][:5000],
+                            "title": meta.get("title", ""),
+                            "section": meta.get("section", ""),
+                            "domain": meta.get("domain", ""),
+                            "subjects": meta.get("subjects", ""),
+                            "priority": meta.get("priority", ""),
+                            "techniques": meta.get("techniques", ""),
+                            "source_file": meta.get("source_file", ""),
+                            "vector": embeddings[j],
+                        })
+                except Exception as e:
+                    print(f"  Research batch error at {i}: {e}")
+                # Yield GIL between batches so uvicorn can serve health checks
+                time.sleep(0.1)
+
+            if rows:
+                try:
+                    if not _research_file_hashes:
+                        table = _get_or_create_research_table(embed_dim)
+                    table.add(rows)
+                    _research_table = table
+                    print(f"  Added {len(rows)} research chunks to LanceDB")
+                except Exception as e:
+                    print(f"  Research LanceDB insert error: {e}")
+
+        _research_file_hashes = new_hashes
+        _research_last_index_time = time.time()
+        db, _ = _get_db()
+        chunk_count = 0
+        if "research_library" in db.table_names():
+            chunk_count = db.open_table("research_library").count_rows()
+        _research_stats = {
+            "total_files": len(files),
+            "total_chunks": chunk_count,
+            "last_duration": round(time.time() - start, 1),
+            "changed_files": len(chunks_to_add),
+        }
+    finally:
+        _research_indexing = False
+
+
+def _get_dir_mtime(dir_path: Path) -> float:
+    """Get the max mtime across all files in a directory (recursive)."""
+    max_mtime = 0.0
+    try:
+        for p in dir_path.rglob("*.md"):
+            try:
+                mt = p.stat().st_mtime
+                if mt > max_mtime:
+                    max_mtime = mt
+            except OSError:
+                continue
+    except Exception:
+        pass
+    return max_mtime
+
+
+def search_research(query: str, domain: str = None, limit: int = 5) -> list[dict]:
+    """Semantic search over research library chunks."""
+    embedder = _get_research_embedder()
+    db, _ = _get_db()
+    if "research_library" not in db.table_names():
+        return []
+    table = db.open_table("research_library")
+    query_embedding = embedder.encode([query]).tolist()[0]
+
+    try:
+        search_query = table.search(query_embedding).metric("cosine").limit(limit * 2)
+        if domain:
+            search_query = search_query.where(f"domain LIKE '%{domain}%'")
+        results = search_query.to_pandas()
+    except Exception:
+        return []
+
+    hits = []
+    seen_sections = set()
+    for _, row in results.iterrows():
+        section_key = f"{row.get('source_file', '')}:{row.get('section', '')}"
+        if section_key in seen_sections:
+            continue
+        seen_sections.add(section_key)
+        distance = row.get("_distance", 1.0)
+        hits.append({
+            "id": row.get("id", ""),
+            "title": row.get("title", ""),
+            "section": row.get("section", ""),
+            "domain": row.get("domain", ""),
+            "subjects": row.get("subjects", ""),
+            "priority": row.get("priority", ""),
+            "source_file": row.get("source_file", ""),
+            "score": round(max(0, 1 / (1 + distance)), 4),
+            "snippet": str(row.get("text", ""))[:400],
+        })
+        if len(hits) >= limit:
+            break
+    return hits
 
 
 # --- File Discovery ---
@@ -561,13 +767,29 @@ def _ingest_memory():
                         pass
 
 
+def _background_research_indexer():
+    """Periodically re-index research library (separate from code indexer, longer interval)."""
+    while True:
+        try:
+            run_research_index()
+        except Exception as e:
+            print(f"Research index error: {e}")
+        time.sleep(RESEARCH_INDEX_INTERVAL)
+
+
 @app.on_event("startup")
 async def startup():
     if DISABLE_INDEXER:
         print("DISABLE_INDEXER=true — skipping embedding model and background indexer")
+        # Still start research indexer — it uses its own model and is independent
+        t2 = threading.Thread(target=_background_research_indexer, daemon=True)
+        t2.start()
+        print("Research indexer started (independent of code indexer)")
         return
     t = threading.Thread(target=_background_indexer, daemon=True)
     t.start()
+    t2 = threading.Thread(target=_background_research_indexer, daemon=True)
+    t2.start()
 
 
 # --- API Models ---
@@ -909,6 +1131,37 @@ async def similar_plans(query: str, project: Optional[str] = None, limit: int = 
 
     results = search_similar_plans(query, project, limit)
     return {"query": query, "results": results, "method": "semantic"}
+
+
+# --- Research Library API Endpoints ---
+
+@app.get("/api/research/search")
+async def research_search(query: str, limit: int = 5, domain: Optional[str] = None):
+    """Semantic search over research library chunks. Returns top-k with source, section, score."""
+    results = search_research(query, domain, limit)
+    return {"query": query, "results": results, "count": len(results), "method": "semantic"}
+
+
+@app.post("/api/research/reindex")
+async def research_reindex():
+    """Trigger immediate research library re-index."""
+    if _research_indexing:
+        return {"status": "already_indexing"}
+    t = threading.Thread(target=run_research_index, daemon=True)
+    t.start()
+    return {"status": "started"}
+
+
+@app.get("/api/research/stats")
+async def research_stats():
+    """Research index statistics."""
+    return {
+        "indexing": _research_indexing,
+        "last_index": _research_last_index_time,
+        "research_dir": RESEARCH_DIR,
+        "embed_model": RESEARCH_EMBED_MODEL,
+        **_research_stats,
+    }
 
 
 # --- Registry Sync (Phase 8) ---

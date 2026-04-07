@@ -10,7 +10,7 @@ LOG="$HOME/.buildrunner/keepalive.log"
 MODULE="core.cluster.node_semantic"
 
 check_and_restart() {
-  if curl -sf --max-time 3 "http://127.0.0.1:${PORT}/" >/dev/null 2>&1; then
+  if curl -sf --max-time 5 "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
     return 0
   fi
 
