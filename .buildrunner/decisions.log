@@ -448,3 +448,4 @@
 [2026-04-07T16:47:21Z] [ARCHITECTURE] Recall hook query construction: file basename + project name + active BUILD phase description
   WHY: Sufficient semantic signal without reading file contents (adds latency); enables research-phase correlation
   CONTEXT: Phase 2, recall-on-tool.sh query design
+[Tue Apr  7 14:17:18 CDT 2026] [AMENDMENT] Added 6 phases (4-9) to dashboard-liveness BUILD. Sidecar PID tracking, scanner rewrite, dispatch integration, resume logic, frontend fixes, integration test.

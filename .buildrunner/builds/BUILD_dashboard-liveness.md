@@ -132,7 +132,7 @@ ws-builds.js:
 
 ### Phase 4: Build Sidecar Script _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 3 (complete)
 **Goal:** Wrapper script for every Claude dispatch. Writes PID file, heartbeats every 15s, `git stash create` snapshots, exit status on death. Maximum work loss: 15 seconds.
 **Files:**
@@ -241,7 +241,7 @@ events.mjs dispatch:
 
 ### Phase 8: Frontend Status Consistency _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 3 (complete)
 **Goal:** Fix Phase 2 gaps found by code analysis: incomplete badge mapping, inconsistent dispatch buttons, missing CSS across both dashboard views.
 **Adversarial review:** 6-agent analysis found stalled missing from 2 dispatch paths, modal badge only handles 4/9 statuses, 5 CSS classes missing, paused incorrectly in dispatch list.
