@@ -6,6 +6,11 @@
 # Usage: ~/.buildrunner/scripts/developer-brief.sh [project_path]
 # Output: stdout (meant to be captured by SessionStart hook)
 
+# Portable timeout (works on macOS without coreutils)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/_portable-timeout.sh"
+
 PROJECT_PATH="${1:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 CLUSTER_CHECK="$HOME/.buildrunner/scripts/cluster-check.sh"
 
@@ -98,12 +103,27 @@ for r in d.get('results', []):
         print(f'    FAIL: {f[\"full_name\"]}: {f.get(\"failure_message\", \"\")[:80]}')
 " 2>/dev/null
   fi
+
+  # Runtime alerts (pushed by log analyzer)
+  WALTER_ALERTS=$(curl -s --max-time 3 "$WALTER_URL/api/alerts?limit=5" 2>/dev/null)
+  if [ -n "$WALTER_ALERTS" ] && [ "$WALTER_ALERTS" != '{"alerts":[]}' ]; then
+    echo ""
+    echo "## Runtime Alerts"
+    echo "$WALTER_ALERTS" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+for a in d.get('alerts', []):
+    sev = a.get('severity', '?')
+    icon = '🔴' if sev == 'critical' else '🟠' if sev == 'high' else '⚠'
+    print(f'  {icon} {a[\"pattern_type\"]}: {a[\"description\"][:100]} ({a.get(\"received_at\", \"?\")[:16]})')
+" 2>/dev/null
+  fi
 fi
 echo ""
 
 # --- Open TODOs (fast — 3 second cap) ---
 echo "## TODOs in Recent Changes"
-timeout 3 bash -c '
+portable_timeout 3 bash -c '
   git diff HEAD~5 --name-only 2>/dev/null | head -10 | while read -r file; do
     if [ -f "'"$PROJECT_PATH"'/$file" ] && [ "$(stat -f%z "'"$PROJECT_PATH"'/$file" 2>/dev/null || echo 999999)" -lt 50000 ]; then
       TODOS=$(grep -rnI "TODO\|FIXME\|HACK\|XXX" "'"$PROJECT_PATH"'/$file" 2>/dev/null | head -2)
@@ -116,13 +136,14 @@ timeout 3 bash -c '
 ' 2>/dev/null
 echo ""
 
-# --- Log Analysis ---
-# Check Crawford first for pre-analyzed patterns, fall back to raw log stats
-CRAWFORD_URL=$("$CLUSTER_CHECK" log-analysis 2>/dev/null)
-if [ -n "$CRAWFORD_URL" ]; then
-  ANALYSIS=$(curl -s --max-time 3 "$CRAWFORD_URL/api/logs/analyze" 2>/dev/null)
-  if [ -n "$ANALYSIS" ] && [ "$ANALYSIS" != "null" ]; then
-    echo "## Crawford (Log Analysis)"
+# --- Below Log Summarization (optional, instant, zero API cost) ---
+BELOW_URL=$("$CLUSTER_CHECK" inference 2>/dev/null)
+
+# --- Log Analysis (runs locally on Muddy) ---
+ANALYSIS_URL="http://127.0.0.1:8200"
+ANALYSIS=$(curl -s --max-time 2 "$ANALYSIS_URL/api/logs/analyze" 2>/dev/null)
+if [ -n "$ANALYSIS" ] && [ "$ANALYSIS" != "null" ] && [ "$ANALYSIS" != '{"summary":"No active patterns","patterns":[],"total_patterns":0,"last_analysis":0.0}' ]; then
+  echo "## Log Analysis"
     echo "$ANALYSIS" | python3 -c "
 import json, sys
 d = json.load(sys.stdin)
@@ -134,7 +155,6 @@ else:
     print('  No active patterns')
 " 2>/dev/null
     echo ""
-  fi
 else
   # Fallback: raw log file stats
   if [ -d "$PROJECT_PATH/.buildrunner" ]; then
@@ -152,6 +172,67 @@ else
   fi
 fi
 
+# --- Relevant Research (if Lockwood + BUILD spec available) ---
+if [ "${BR3_CLUSTER:-}" != "off" ]; then
+  RESEARCH_LOCKWOOD=$("$CLUSTER_CHECK" semantic-search 2>/dev/null)
+  if [ -n "$RESEARCH_LOCKWOOD" ] && [ -n "${LATEST_BUILD:-}" ]; then
+    # Extract current phase description from BUILD spec
+    PHASE_DESC=$(python3 -c "
+import re, sys
+with open('$LATEST_BUILD') as f:
+    text = f.read()
+# Find the first IN_PROGRESS or next PLANNED phase
+phases = re.findall(r'### Phase \d+[^\n]*\n(.*?)(?=### Phase|\Z)', text, re.DOTALL)
+for p in phases:
+    if 'IN_PROGRESS' in p or 'PLANNED' in p:
+        # Get first meaningful line
+        for line in p.strip().split('\n'):
+            line = line.strip()
+            if line and not line.startswith('**Status') and not line.startswith('---'):
+                print(line[:200])
+                break
+        break
+" 2>/dev/null || true)
+
+    if [ -n "$PHASE_DESC" ]; then
+      ENCODED_QUERY=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$PHASE_DESC'))" 2>/dev/null || echo "$PHASE_DESC")
+      RESEARCH_DATA=$(curl -s --max-time 3 "$RESEARCH_LOCKWOOD/api/research/search?query=$ENCODED_QUERY&limit=3" 2>/dev/null)
+      if [ -n "$RESEARCH_DATA" ] && [ "$RESEARCH_DATA" != "null" ]; then
+        DEDUP_FILE="${TMPDIR:-/tmp}/br3-research-seen-$$.txt"
+        RESEARCH_OUTPUT=$(python3 -c "
+import json, sys, os
+try:
+    data = json.loads('''$RESEARCH_DATA''')
+    results = data.get('results', [])[:3]
+    dedup_file = '$DEDUP_FILE'
+    new_ids = []
+    for r in results:
+        rid = r.get('id', '')
+        title = r.get('title', '')
+        section = r.get('section', '')
+        score = r.get('score', 0)
+        print(f'  [{score:.2f}] {title}')
+        if section:
+            print(f'    Section: {section}')
+        if rid:
+            new_ids.append(rid)
+    if new_ids:
+        with open(dedup_file, 'a') as f:
+            for nid in new_ids:
+                f.write(nid + '\n')
+except: pass
+" 2>/dev/null || true)
+
+        if [ -n "$RESEARCH_OUTPUT" ]; then
+          echo "## Relevant Research"
+          echo "$RESEARCH_OUTPUT"
+          echo ""
+        fi
+      fi
+    fi
+  fi
+fi
+
 # --- Cluster Status (if available) ---
 if [ -x "$CLUSTER_CHECK" ]; then
   # Only check Lockwood (semantic-search) — it's the memory node.
@@ -161,11 +242,18 @@ if [ -x "$CLUSTER_CHECK" ]; then
 
   TOTAL=$(python3 -c "import json; print(len(json.load(open('$HOME/.buildrunner/cluster.json')).get('nodes', {})))" 2>/dev/null || echo "0")
   ONLINE=0
-  [ -n "$SEMANTIC_URL" ] && ONLINE=1
+  ONLINE_LIST=""
+  for ROLE in semantic-search test-runner parallel-builder staging-server inference; do
+    RURL=$("$CLUSTER_CHECK" "$ROLE" 2>/dev/null)
+    if [ -n "$RURL" ]; then
+      ONLINE=$((ONLINE + 1))
+      ONLINE_LIST="$ONLINE_LIST $ROLE"
+    fi
+  done
 
   if [ "$TOTAL" -gt 0 ]; then
     echo "## Cluster"
-    echo "  Nodes online: $ONLINE/$TOTAL"
+    echo "  Nodes online: $ONLINE/$TOTAL ($ONLINE_LIST )"
 
     # Pull Lockwood's persistent memory
     if [ -n "$SEMANTIC_URL" ]; then
@@ -180,7 +268,27 @@ d = json.load(sys.stdin)
 
 if 'last_session' in d and d['last_session']:
     s = d['last_session']
-    print(f'  Last session: {s.get(\"working_on\", \"unknown\")} ({s.get(\"when\", \"?\")})')
+    import urllib.parse
+    raw = urllib.parse.unquote(s.get('working_on', 'unknown'))
+    when = s.get('when', '?')
+    # Parse structured narrative: WORKING_ON: x | NEXT: y | BLOCKERS: z | INTERRUPTED_AT: w
+    if ' | ' in raw and 'WORKING_ON:' in raw:
+        parts = {}
+        for seg in raw.split(' | '):
+            if ':' in seg:
+                k, _, v = seg.partition(':')
+                parts[k.strip()] = v.strip()
+        print(f'  Last session ({when}):')
+        if parts.get('WORKING_ON'):
+            print(f'    Was doing: {parts[\"WORKING_ON\"]}')
+        if parts.get('INTERRUPTED_AT') and parts['INTERRUPTED_AT'].lower() not in ('', 'none', 'n/a'):
+            print(f'    Interrupted at: {parts[\"INTERRUPTED_AT\"]}')
+        if parts.get('NEXT'):
+            print(f'  ▶ NEXT STEP: {parts[\"NEXT\"]}')
+        if parts.get('BLOCKERS') and parts['BLOCKERS'].lower() not in ('', 'none'):
+            print(f'    Blockers: {parts[\"BLOCKERS\"]}')
+    else:
+        print(f'  Last session: {raw} ({when})')
     if s.get('todos'):
         for t in s['todos'][:3]:
             print(f'    TODO: {t}')
@@ -205,6 +313,10 @@ if 'log_patterns' in d and d['log_patterns']:
 
 if 'architecture_notes' in d and d['architecture_notes']:
     print(f'  Architecture notes: {len(d[\"architecture_notes\"])} stored')
+    for n in d['architecture_notes'][:5]:
+        topic = n.get('topic', '?')
+        content = n.get('content', '')[:120]
+        print(f'    • {topic}: {content}')
 " 2>/dev/null
       fi
 
@@ -219,8 +331,63 @@ print(f'  Index: {d.get(\"total_files\", 0)} files, {d.get(\"total_chunks\", 0)}
       fi
     fi
 
-    # Other nodes (Walter, Crawford, Lomax, Below) are checked by individual skills
-    # when they need them, not at startup. Keeps the brief fast.
+    # Lomax (staging) — fast 2s check for last build status of current project
+    STAGING_URL=$("$CLUSTER_CHECK" staging-server 2>/dev/null)
+    if [ -n "$STAGING_URL" ]; then
+      PROJECT_LC=$(basename "$PROJECT_PATH" | tr '[:upper:]' '[:lower:]')
+      BUILD_STATUS=$(curl -s --max-time 2 "$STAGING_URL/api/projects/$PROJECT_LC/build/status" 2>/dev/null)
+      if [ -n "$BUILD_STATUS" ] && echo "$BUILD_STATUS" | grep -q '"passed"'; then
+        echo ""
+        echo "## Lomax (staging)"
+        echo "$BUILD_STATUS" | python3 -c "
+import json, sys, time
+d = json.load(sys.stdin)
+icon = '✓' if d.get('passed') else '✗'
+ts = d.get('timestamp', 0)
+age = int((time.time() - ts) / 60) if ts else 0
+print(f'  Last build: {icon} {\"passed\" if d.get(\"passed\") else \"FAILED\"} ({age}m ago, {d.get(\"duration_sec\",0)}s)')
+if not d.get('tsc_ok'):
+    print(f'    ✗ tsc --noEmit failed')
+if not d.get('vite_ok'):
+    print(f'    ✗ vite build failed')
+" 2>/dev/null
+      fi
+    fi
+    echo ""
+  fi
+fi
+
+# --- Below Log Summary (if active patterns exist and Below is online) ---
+if [ -n "$BELOW_URL" ] && [ -n "$ANALYSIS" ] && [ "$ANALYSIS" != "null" ]; then
+  LOG_PATTERNS=$(echo "$ANALYSIS" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+s = d.get('summary', '')
+if s and s != 'No active patterns':
+    print(s[:500])
+" 2>/dev/null)
+  if [ -n "$LOG_PATTERNS" ]; then
+    SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+      -H "Content-Type: application/json" \
+      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
+    if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+      echo "## Below Analysis"
+      echo "$SUMMARY" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+print(f'  {d.get(\"summary\", d) if isinstance(d, dict) else d}')
+" 2>/dev/null
+      echo ""
+    fi
+  fi
+fi
+
+# --- Intelligence & Deals Alerts (if intel-digest.sh exists) ---
+INTEL_DIGEST="$HOME/.buildrunner/scripts/intel-digest.sh"
+if [ -x "$INTEL_DIGEST" ]; then
+  INTEL_OUTPUT=$("$INTEL_DIGEST" 2>/dev/null)
+  if [ -n "$INTEL_OUTPUT" ]; then
+    echo "$INTEL_OUTPUT"
     echo ""
   fi
 fi
