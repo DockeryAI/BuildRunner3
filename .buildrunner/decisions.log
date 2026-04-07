@@ -481,3 +481,4 @@
   - Added _push_to_lockwood() to node_tests.py using stdlib urllib (no extra deps), 1 retry with 2s pause
   - Created backfill script at core/cluster/scripts/backfill-lockwood-tests.sh
   - Trigger marking: watch/manual already correct, 'hook' passed via /api/run?trigger=hook from auto-save dispatch
+[2026-04-07T22:07:21Z] Phase 7 decisions: Created build-monitor.mjs (30s poll, 10min stall detection, SSH checks for Claude process + git log + sidecar) and test-pipeline-monitor.mjs (parses walter-dispatch.log, traces commit->dispatch->walter->lockwood chain, 2min gap alerts). Both follow cluster-health-monitor.mjs patterns: structured JSON lines, alert file writing, graceful shutdown.
