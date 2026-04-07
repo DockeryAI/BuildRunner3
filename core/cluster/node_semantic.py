@@ -48,7 +48,7 @@ _index_stats = {"total_files": 0, "total_chunks": 0, "last_duration": 0.0}
 
 LANCE_DIR = os.environ.get("LANCE_DIR", os.path.expanduser("~/.lockwood/lancedb"))
 RESEARCH_DIR = os.environ.get("RESEARCH_DIR", os.path.expanduser("~/repos/research-library"))
-RESEARCH_EMBED_MODEL = os.environ.get("RESEARCH_EMBED_MODEL", "nomic-ai/nomic-embed-text-v1.5")
+RESEARCH_EMBED_MODEL = os.environ.get("RESEARCH_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 RESEARCH_INDEX_INTERVAL = int(os.environ.get("RESEARCH_INDEX_INTERVAL", "300"))
 
 
@@ -769,6 +769,8 @@ def _ingest_memory():
 
 def _background_research_indexer():
     """Periodically re-index research library (separate from code indexer, longer interval)."""
+    # Delay first run so uvicorn can serve health checks during model load
+    time.sleep(15)
     while True:
         try:
             run_research_index()
