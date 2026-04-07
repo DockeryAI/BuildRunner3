@@ -1,7 +1,7 @@
 # Build: Research Library Vectorization
 
 **Created:** 2026-04-07
-**Status:** Phase 1 In Progress
+**Status:** Phases 1-1 Complete — Phase 2 In Progress
 **Deploy:** cluster — Lockwood (10.0.1.101) service restart
 
 ## Overview
@@ -21,7 +21,7 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 
 ### Phase 1: Vectorization Engine (Lockwood)
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Research library indexed in LanceDB with semantic search API working on Lockwood.
 
 **Files:**
@@ -34,15 +34,15 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] Markdown-aware chunker: splits docs on H2/H3 headers, each chunk gets doc title + section header + content + frontmatter metadata (domain, subjects, priority)
-- [ ] Text embedding model: load nomic-embed-text-v1.5 as second SentenceTransformer (text-optimized, ~275MB RAM, lazy-loaded), keep CodeRankEmbed for code table
-- [ ] LanceDB `research_library` table: schema with id, title, section, domain, subjects, priority, source_file, content, vector
-- [ ] Batch indexer: discover .md files in ~/repos/research-library/docs/ (Lockwood's synced copy). Directory mtime check before file scan — skip entirely when unchanged. File-level hash detection for incremental updates
-- [ ] API endpoint GET /api/research/search?query=X&limit=N: semantic query returning top-k chunks with source file, section, score (GET with query params, consistent with existing Lockwood endpoints)
-- [ ] API endpoint POST /api/research/reindex: trigger manual reindexing
-- [ ] API endpoint GET /api/research/stats: table size, last indexed, file count, chunk count
-- [ ] Background indexer thread: reindex research library on configurable interval (default: 300s, research changes rarely)
-- [ ] Deploy to Lockwood, restart service, verify with curl test
+- [x] Markdown-aware chunker: splits docs on H2/H3 headers, each chunk gets doc title + section header + content + frontmatter metadata (domain, subjects, priority)
+- [x] Text embedding model (switched to all-MiniLM-L6-v2 — nomic too heavy for M2 8GB): load nomic-embed-text-v1.5 as second SentenceTransformer (text-optimized, ~275MB RAM, lazy-loaded), keep CodeRankEmbed for code table
+- [x] LanceDB `research_library` table: schema with id, title, section, domain, subjects, priority, source_file, content, vector
+- [x] Batch indexer: discover .md files in ~/repos/research-library/docs/ (Lockwood's synced copy). Directory mtime check before file scan — skip entirely when unchanged. File-level hash detection for incremental updates
+- [x] API endpoint GET /api/research/search?query=X&limit=N: semantic query returning top-k chunks with source file, section, score (GET with query params, consistent with existing Lockwood endpoints)
+- [x] API endpoint POST /api/research/reindex: trigger manual reindexing
+- [x] API endpoint GET /api/research/stats: table size, last indexed, file count, chunk count
+- [x] Background indexer thread: reindex research library on configurable interval (default: 300s, research changes rarely)
+- [x] Deploy to Lockwood (initial index built on Muddy in 22.7s, synced to Lockwood), restart service, verify with curl test
 
 **Success Criteria:** `curl -s "http://10.0.1.101:8100/api/research/search?query=prompting+best+practices&limit=5"` returns relevant chunks from opus/prompting research docs with scores > 0.3 (nomic-embed-text typical relevant range is 0.3-0.6).
 
