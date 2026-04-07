@@ -1,7 +1,7 @@
 # Build: Self-QA Enforcement Layer
 
 **Created:** 2026-04-06
-**Status:** Phase 1 In Progress
+**Status:** Phases 1-4 Complete — Phase 5 In Progress
 **Deploy:** web — global skill updates (applies to all BR3 projects)
 
 ## Overview
@@ -22,18 +22,18 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ### Phase 1: Enforcement Hooks
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/.claude/settings.json (MODIFY)
   **Blocked by:** None
   **Deliverables:**
-- [ ] Add Stop hook (type: agent) that spawns a subagent to run `npm test` and verify results — blocks completion on failure
-- [ ] Add Stop hook (type: agent) for Playwright MCP visual verification — opens localhost, navigates main pages, checks rendering
-- [ ] Add `stop_hook_active` guard in both hooks to prevent infinite loops
-- [ ] Add PreCompact hook that re-injects a condensed 30-line testing/verification reminder into context
-- [ ] Add SessionStart compact-matcher hook for post-compaction test status injection
-- [ ] Audit existing hooks in settings.json to confirm nothing from PLAYWRIGHT_INTEGRATION Phase 3 was lost
+- [x] Add Stop hook (type: agent) that spawns a subagent to run `npm test` and verify results — blocks completion on failure
+- [x] Add Stop hook (type: agent) for Playwright MCP visual verification — opens localhost, navigates main pages, checks rendering
+- [x] Add `stop_hook_active` guard in both hooks to prevent infinite loops
+- [x] Add PreCompact hook that re-injects a condensed 30-line testing/verification reminder into context
+- [x] Add SessionStart compact-matcher hook for post-compaction test status injection
+- [x] Audit existing hooks in settings.json to confirm nothing from PLAYWRIGHT_INTEGRATION Phase 3 was lost
 
 **Success Criteria:** Start a conversation, write some code, try to stop — Claude is forced to run tests and open the browser first. Trigger compaction — testing rules survive. The `stop_hook_active` guard prevents infinite blocking.
 
@@ -41,20 +41,20 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ### Phase 2: Explore-QA Command
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/.claude/commands/explore-qa.md (NEW)
   **Blocked by:** None
   **After:** Phase 1 (logical sequence, CAN parallelize)
   **Deliverables:**
-- [ ] Create `/explore-qa` slash command with Playwright MCP exploration prompt
-- [ ] Crawl logic: discover navigation, visit every reachable page, interact with all elements
-- [ ] Console error detection after every action via `browser_console_messages`
-- [ ] Mobile viewport test (375x667 resize + re-crawl)
-- [ ] Dead link detection (click every link, check for 404/error pages)
-- [ ] Form filling with valid and invalid data
-- [ ] Output: structured `qa-report.md` with pages visited, errors found, screenshots of issues
+- [x] Create `/explore-qa` slash command with Playwright MCP exploration prompt
+- [x] Crawl logic: discover navigation, visit every reachable page, interact with all elements
+- [x] Console error detection after every action via `browser_console_messages`
+- [x] Mobile viewport test (375x667 resize + re-crawl)
+- [x] Dead link detection (click every link, check for 404/error pages)
+- [x] Form filling with valid and invalid data
+- [x] Output: structured `qa-report.md` with pages visited, errors found, screenshots of issues
 
 **Success Criteria:** Run `/explore-qa` on a live app — it visits every page, finds console errors and broken layouts, produces a report without human guidance.
 
@@ -62,7 +62,7 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ### Phase 3: Self-QA Step in /begin
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/.claude/commands/begin.md (MODIFY)
@@ -70,13 +70,13 @@ Make it impossible for Claude to mark work done without visually verifying it in
   **Blocked by:** None (different insertion point in begin.md than Phase 1's hooks)
   **After:** Phase 1
   **Deliverables:**
-- [ ] Create `begin-self-qa.md` reference doc defining the visual verification procedure
-- [ ] Insert Step 4.7 "Visual Browser Verification" in begin.md between Step 4.5 (TDD Re-run) and Step 5 (Review)
-- [ ] Step logic: identify all pages/routes touched by this phase's deliverables, open each via Playwright MCP, take snapshots, check for rendering issues and console errors
-- [ ] Fix loop: if visual issues found, fix and re-verify (max 3 attempts)
-- [ ] Block phase on persistent visual failures
-- [ ] Skip criteria: phases with no UI deliverables (backend-only, migrations, config)
-- [ ] Track result as `visual_qa: PASS|FAIL|SKIP` in progress output
+- [x] Create `begin-self-qa.md` reference doc defining the visual verification procedure
+- [x] Insert Step 4.7 "Visual Browser Verification" in begin.md between Step 4.5 (TDD Re-run) and Step 5 (Review)
+- [x] Step logic: identify all pages/routes touched by this phase's deliverables, open each via Playwright MCP, take snapshots, check for rendering issues and console errors
+- [x] Fix loop: if visual issues found, fix and re-verify (max 3 attempts)
+- [x] Block phase on persistent visual failures
+- [x] Skip criteria: phases with no UI deliverables (backend-only, migrations, config)
+- [x] Track result as `visual_qa: PASS|FAIL|SKIP` in progress output
 
 **Success Criteria:** Run `/begin` on a UI phase — after tests pass, Claude opens the browser and visually verifies before proceeding to review. Backend phases skip cleanly.
 
@@ -84,7 +84,7 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ### Phase 4: Visual Regression Baselines
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - playwright.config.ts (MODIFY)
@@ -97,14 +97,14 @@ Make it impossible for Claude to mark work done without visually verifying it in
   **Blocked by:** None (test files are independent)
   **After:** Phase 3
   **Deliverables:**
-- [ ] Add `toHaveScreenshot()` config to playwright.config.ts with maxDiffPixelRatio, animation disabling, caret hiding
-- [ ] Install and configure `playwright-odiff` for 6.6x faster comparison than default pixelmatch
-- [ ] Create screenshot.css with animation/transition disabling rules
-- [ ] Create visual spec files for each major page (dashboard, login, analytics) with dynamic content masking
-- [ ] Create Dockerfile.playwright for consistent baseline generation (font rendering parity)
-- [ ] Add `test:visual`, `test:visual:docker`, `test:visual:update` npm scripts
-- [ ] Generate initial baselines inside Docker
-- [ ] Tag visual tests with `@visual` and exclude from normal `test:e2e:ui` runs
+- [x] Add `toHaveScreenshot()` config to playwright.config.ts with maxDiffPixelRatio, animation disabling, caret hiding
+- [x] Install and configure `playwright-odiff` for 6.6x faster comparison than default pixelmatch
+- [x] Create screenshot.css with animation/transition disabling rules
+- [x] Create visual spec files for each major page (dashboard, login, analytics) with dynamic content masking
+- [x] Create Dockerfile.playwright for consistent baseline generation (font rendering parity)
+- [x] Add `test:visual`, `test:visual:docker`, `test:visual:update` npm scripts
+- [x] Generate initial baselines inside Docker
+- [x] Tag visual tests with `@visual` and exclude from normal `test:e2e:ui` runs
 
 **Success Criteria:** Change a CSS property that breaks layout — `npm run test:visual:docker` catches it automatically. Baselines generated in Docker are consistent across machines.
 

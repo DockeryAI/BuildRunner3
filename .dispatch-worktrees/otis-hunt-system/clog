@@ -1,4 +1,0 @@
-#!/bin/bash
-# BuildRunner Debug Logger - Quick wrapper
-source .buildrunner/scripts/debug-aliases.sh
-tlog "$@"
