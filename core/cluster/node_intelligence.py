@@ -13,10 +13,8 @@ import json
 import logging
 from typing import Optional
 
-from fastapi import FastAPI, Request, HTTPException, Query
+from fastapi import APIRouter, Request, HTTPException, Query
 from pydantic import BaseModel
-
-from core.cluster.base_service import create_app
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +23,8 @@ MINIFLUX_WEBHOOK_SECRET = os.environ.get("MINIFLUX_WEBHOOK_SECRET", "")
 DISABLE_POLLERS = os.environ.get("DISABLE_POLLERS", "true").lower() in ("true", "1", "yes")
 DISABLE_SCORING = os.environ.get("DISABLE_SCORING", "true").lower() in ("true", "1", "yes")
 
-# --- App ---
-app = create_app(role="intelligence", version="0.1.0")
+# --- Router (included by node_semantic.py) ---
+router = APIRouter()
 
 
 # --- Pydantic Models ---
@@ -67,9 +65,8 @@ class OpusDealReview(BaseModel):
 
 # --- Startup ---
 
-@app.on_event("startup")
-async def startup():
-    """Initialize DB tables and start pollers if enabled."""
+async def intel_startup():
+    """Initialize DB tables and start pollers if enabled. Called by node_semantic on startup."""
     from core.cluster.intel_collector import _get_intel_db
     # Ensure tables exist on startup
     conn = _get_intel_db()
@@ -91,7 +88,7 @@ async def startup():
 
 # --- Intel Endpoints ---
 
-@app.get("/api/intel/items")
+@router.get("/api/intel/items")
 async def get_intel_items(
     priority: Optional[str] = Query(None, description="Comma-separated: critical,high,medium,low"),
     category: Optional[str] = None,
@@ -109,14 +106,14 @@ async def get_intel_items(
     return {"items": items, "count": len(items)}
 
 
-@app.get("/api/intel/alerts")
+@router.get("/api/intel/alerts")
 async def get_intel_alerts():
     """Get count of unread critical + high intel items."""
     from core.cluster.intel_collector import get_intel_alerts as _get_alerts
     return _get_alerts()
 
 
-@app.post("/api/intel/items/{item_id}/read")
+@router.post("/api/intel/items/{item_id}/read")
 async def mark_read(item_id: int):
     """Mark an intel item as read."""
     from core.cluster.intel_collector import mark_intel_read
@@ -124,7 +121,7 @@ async def mark_read(item_id: int):
     return {"status": "ok"}
 
 
-@app.post("/api/intel/items/{item_id}/dismiss")
+@router.post("/api/intel/items/{item_id}/dismiss")
 async def dismiss_item(item_id: int):
     """Dismiss an intel item."""
     from core.cluster.intel_collector import dismiss_intel_item
@@ -132,7 +129,7 @@ async def dismiss_item(item_id: int):
     return {"status": "ok"}
 
 
-@app.post("/api/intel/items/{item_id}/opus-review")
+@router.post("/api/intel/items/{item_id}/opus-review")
 async def opus_review_intel(item_id: int, review: OpusIntelReview):
     """Write Opus synthesis back to an intel item."""
     from core.cluster.intel_collector import opus_review_intel_item
@@ -144,7 +141,7 @@ async def opus_review_intel(item_id: int, review: OpusIntelReview):
 
 # --- Improvement Endpoints ---
 
-@app.get("/api/intel/improvements")
+@router.get("/api/intel/improvements")
 async def get_improvements(
     status: Optional[str] = Query(None, description="Comma-separated: pending,planned,built,archived"),
     limit: int = 50,
@@ -155,7 +152,7 @@ async def get_improvements(
     return {"improvements": items, "count": len(items)}
 
 
-@app.post("/api/intel/improvements")
+@router.post("/api/intel/improvements")
 async def create_improvement(improvement: ImprovementCreate):
     """Create a new improvement from intel-review Opus pass."""
     from core.cluster.intel_collector import create_improvement as _create
@@ -172,7 +169,7 @@ async def create_improvement(improvement: ImprovementCreate):
     return {"id": imp_id, "status": "created"}
 
 
-@app.post("/api/intel/improvements/{improvement_id}/status")
+@router.post("/api/intel/improvements/{improvement_id}/status")
 async def update_improvement_status(improvement_id: int, body: ImprovementStatusUpdate):
     """Update improvement lifecycle status (pending -> planned -> built -> archived)."""
     from core.cluster.intel_collector import update_improvement_status as _update
@@ -182,7 +179,7 @@ async def update_improvement_status(improvement_id: int, body: ImprovementStatus
 
 # --- Deal Endpoints ---
 
-@app.get("/api/deals/items")
+@router.get("/api/deals/items")
 async def get_deal_items(
     hunt_id: Optional[int] = None,
     min_score: Optional[int] = None,
@@ -195,7 +192,7 @@ async def get_deal_items(
     return {"items": items, "count": len(items)}
 
 
-@app.get("/api/deals/hunts")
+@router.get("/api/deals/hunts")
 async def get_hunts():
     """Get all active hunts."""
     from core.cluster.intel_collector import get_hunts as _get_hunts
@@ -203,7 +200,7 @@ async def get_hunts():
     return {"hunts": hunts}
 
 
-@app.post("/api/deals/hunts")
+@router.post("/api/deals/hunts")
 async def create_hunt(hunt: HuntCreate):
     """Create a new hunt."""
     from core.cluster.intel_collector import create_hunt as _create_hunt
@@ -216,7 +213,7 @@ async def create_hunt(hunt: HuntCreate):
     return {"id": hunt_id, "status": "created"}
 
 
-@app.post("/api/deals/hunts/{hunt_id}/archive")
+@router.post("/api/deals/hunts/{hunt_id}/archive")
 async def archive_hunt(hunt_id: int):
     """Archive a hunt."""
     from core.cluster.intel_collector import archive_hunt as _archive
@@ -224,7 +221,7 @@ async def archive_hunt(hunt_id: int):
     return {"status": "archived"}
 
 
-@app.get("/api/deals/price-history/{deal_item_id}")
+@router.get("/api/deals/price-history/{deal_item_id}")
 async def get_price_history(deal_item_id: int):
     """Get price history for a deal item."""
     from core.cluster.intel_collector import get_price_history as _get_history
@@ -232,7 +229,7 @@ async def get_price_history(deal_item_id: int):
     return {"history": history, "count": len(history)}
 
 
-@app.post("/api/deals/items/{item_id}/read")
+@router.post("/api/deals/items/{item_id}/read")
 async def mark_deal_read_endpoint(item_id: int):
     """Mark a deal item as read."""
     from core.cluster.intel_collector import mark_deal_read
@@ -240,7 +237,7 @@ async def mark_deal_read_endpoint(item_id: int):
     return {"status": "ok"}
 
 
-@app.post("/api/deals/items/{item_id}/dismiss")
+@router.post("/api/deals/items/{item_id}/dismiss")
 async def dismiss_deal_endpoint(item_id: int):
     """Dismiss a deal item."""
     from core.cluster.intel_collector import dismiss_deal_item
@@ -248,7 +245,7 @@ async def dismiss_deal_endpoint(item_id: int):
     return {"status": "ok"}
 
 
-@app.post("/api/deals/items/{item_id}/opus-review")
+@router.post("/api/deals/items/{item_id}/opus-review")
 async def opus_review_deal(item_id: int, review: OpusDealReview):
     """Write Opus assessment back to a deal item."""
     from core.cluster.intel_collector import opus_review_deal_item
@@ -258,7 +255,7 @@ async def opus_review_deal(item_id: int, review: OpusDealReview):
 
 # --- Scoring Endpoints ---
 
-@app.post("/api/intel/score")
+@router.post("/api/intel/score")
 async def trigger_scoring():
     """Manually trigger a scoring cycle (intel + deals via Below)."""
     from core.cluster.intel_scoring import run_scoring_cycle
@@ -266,7 +263,7 @@ async def trigger_scoring():
     return {"status": "ok", "result": result}
 
 
-@app.get("/api/intel/scoring-status")
+@router.get("/api/intel/scoring-status")
 async def scoring_status():
     """Get scoring pipeline status — unscored counts and Below reachability."""
     from core.cluster.intel_collector import _get_intel_db
@@ -305,7 +302,7 @@ def _verify_hmac(request_body: bytes, signature: str, secret: str) -> bool:
     return hmac.compare_digest(expected, signature)
 
 
-@app.post("/api/intel/webhook/miniflux")
+@router.post("/api/intel/webhook/miniflux")
 async def webhook_miniflux(request: Request):
     """Receive Miniflux RSS webhook notifications.
     Verifies HMAC-SHA256 signature if MINIFLUX_WEBHOOK_SECRET is set.
@@ -327,7 +324,7 @@ async def webhook_miniflux(request: Request):
     return {"status": "ok", "items_created": len(items), "items": items}
 
 
-@app.post("/api/intel/webhook/newreleases")
+@router.post("/api/intel/webhook/newreleases")
 async def webhook_newreleases(request: Request):
     """Receive NewReleases.io webhook notifications."""
     try:
@@ -340,7 +337,7 @@ async def webhook_newreleases(request: Request):
     return {"status": "ok", "items_created": len(items), "items": items}
 
 
-@app.post("/api/intel/webhook/f5bot")
+@router.post("/api/intel/webhook/f5bot")
 async def webhook_f5bot(request: Request):
     """Receive F5Bot keyword alert webhook."""
     try:
@@ -353,7 +350,7 @@ async def webhook_f5bot(request: Request):
     return {"status": "ok", "items_created": len(items), "items": items}
 
 
-@app.post("/api/deals/webhook/changedetection")
+@router.post("/api/deals/webhook/changedetection")
 async def webhook_changedetection(request: Request):
     """Receive changedetection.io webhook notifications."""
     try:

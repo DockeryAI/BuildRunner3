@@ -3,11 +3,14 @@
   "version": "3.2.0",
   "description": "BuildRunner 3.2 - Self-orchestrating development platform",
   "scripts": {
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
+    "test:e2e": "playwright test --ignore-pattern=visual/",
+    "test:e2e:ui": "playwright test --ui --ignore-pattern=visual/",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
+    "test:visual": "playwright test --project=visual",
+    "test:visual:update": "playwright test --project=visual --update-snapshots",
+    "test:visual:docker": "docker build -f Dockerfile.playwright -t br3-visual . && docker run --rm -v $(pwd)/tests:/app/tests br3-visual",
     "dash": "npx tsx ~/.claude/dashboard/src/index.tsx"
   },
   "devDependencies": {

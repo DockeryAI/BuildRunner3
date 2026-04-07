@@ -2,6 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Playwright Configuration for BuildRunner 3.2 E2E Tests
+ *
+ * Visual regression tests live in tests/e2e/visual/ and are tagged @visual.
+ * They run via the 'visual' project and are excluded from normal test:e2e:ui runs.
  */
 export default defineConfig({
   testDir: './tests/e2e',
@@ -23,6 +26,19 @@ export default defineConfig({
 
   /* Reporter to use */
   reporter: [['html'], ['list'], ['json', { outputFile: 'test-results/results.json' }]],
+
+  /* Screenshot comparison settings for toHaveScreenshot() */
+  expect: {
+    toHaveScreenshot: {
+      /* Allow 0.5% pixel difference to handle sub-pixel rendering variance */
+      maxDiffPixelRatio: 0.005,
+      /* Animation-related settings */
+      animations: 'disabled',
+      caret: 'hide',
+      /* Scale to CSS pixels for consistency across HiDPI displays */
+      scale: 'css',
+    },
+  },
 
   /* Shared settings for all the projects below */
   use: {
@@ -54,6 +70,8 @@ export default defineConfig({
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],
+      /* Exclude visual tests from normal E2E runs */
+      testIgnore: /visual\//,
     },
 
     {
@@ -63,6 +81,7 @@ export default defineConfig({
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],
+      testIgnore: /visual\//,
     },
 
     {
@@ -72,6 +91,7 @@ export default defineConfig({
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],
+      testIgnore: /visual\//,
     },
 
     /* Test against mobile viewports */
@@ -82,6 +102,7 @@ export default defineConfig({
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],
+      testIgnore: /visual\//,
     },
     {
       name: 'Mobile Safari',
@@ -90,6 +111,19 @@ export default defineConfig({
         storageState: 'playwright/.auth/user.json',
       },
       dependencies: ['setup'],
+      testIgnore: /visual\//,
+    },
+
+    /* Visual regression project — only runs visual/ specs */
+    {
+      name: 'visual',
+      testDir: './tests/e2e/visual',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+      grep: /@visual/,
     },
   ],
 

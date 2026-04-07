@@ -28,9 +28,13 @@ DISABLE_INDEXER = os.environ.get("DISABLE_INDEXER", "true").lower() in ("true", 
 # --- App ---
 app = create_app(role="semantic-search", version="0.1.0")
 
-# --- Mount Intelligence Service (intel + deals routes share this port) ---
-from core.cluster.node_intelligence import app as intel_app
-app.mount("", intel_app)
+# --- Include Intelligence Service routes (intel + deals share this port) ---
+from core.cluster.node_intelligence import router as intel_router, intel_startup
+app.include_router(intel_router)
+
+@app.on_event("startup")
+async def _intel_startup():
+    await intel_startup()
 
 
 # --- Lazy-loaded globals (heavy imports deferred) ---
