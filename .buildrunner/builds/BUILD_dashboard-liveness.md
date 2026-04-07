@@ -1,7 +1,7 @@
 # Build: Dashboard Build Liveness Detection
 
 **Created:** 2026-04-07
-**Status:** Phases 1-1 Complete — Phase 2 In Progress
+**Status:** BUILD COMPLETE — All 2 Phases Done
 **Deploy:** local — dashboard event server restart (`kill $(pgrep -f "node events.mjs"); cd ~/.buildrunner/dashboard && node events.mjs &`)
 
 ## Overview
@@ -61,7 +61,7 @@ This build connects them: the scanner cross-references sessions with builds, int
 
 ### Phase 2: Frontend Stalled State
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Dashboard renders `stalled` builds with distinct styling and correct action buttons in both views.
 **Files:**
 
