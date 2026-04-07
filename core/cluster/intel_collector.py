@@ -372,6 +372,156 @@ def dismiss_deal_item(item_id: int) -> bool:
     return True
 
 
+def get_market_stats(hunt_id: int, days: int = 90) -> dict:
+    """Compute market statistics for a hunt from price_history data.
+    Returns: median, p25, p75, min, max, sample_count, sold_count, trend.
+    Trend computed via linear regression on 30-day window.
+    """
+    import statistics
+
+    conn = _get_intel_db()
+    rows = conn.execute(
+        """SELECT price, is_sold, recorded_at FROM price_history
+           WHERE hunt_id = ? AND recorded_at >= datetime('now', ?)
+           ORDER BY recorded_at ASC""",
+        (hunt_id, f"-{days} days")
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return {
+            "hunt_id": hunt_id,
+            "median": None, "p25": None, "p75": None,
+            "min": None, "max": None,
+            "sample_count": 0, "sold_count": 0,
+            "trend": "unknown",
+        }
+
+    prices = [r["price"] for r in rows]
+    sold_count = sum(1 for r in rows if r["is_sold"])
+
+    median = statistics.median(prices)
+    p25, p75 = None, None
+    if len(prices) >= 4:
+        quartiles = statistics.quantiles(prices, n=4)
+        p25 = quartiles[0]
+        p75 = quartiles[2]
+
+    # Trend: linear regression on 30-day window
+    trend = _compute_trend(rows)
+
+    return {
+        "hunt_id": hunt_id,
+        "median": round(median, 2),
+        "p25": round(p25, 2) if p25 is not None else None,
+        "p75": round(p75, 2) if p75 is not None else None,
+        "min": round(min(prices), 2),
+        "max": round(max(prices), 2),
+        "sample_count": len(prices),
+        "sold_count": sold_count,
+        "trend": trend,
+    }
+
+
+def _compute_trend(rows: list) -> str:
+    """Compute price trend via linear regression on recent data.
+    Returns: 'rising', 'falling', or 'stable'.
+    """
+    if len(rows) < 3:
+        return "unknown"
+
+    # Use last 30 days only for trend
+    from datetime import datetime
+    now = datetime.utcnow()
+    recent = []
+    for r in rows:
+        try:
+            ts = datetime.fromisoformat(r["recorded_at"].replace("Z", "+00:00").replace("+00:00", ""))
+        except (ValueError, AttributeError):
+            try:
+                ts = datetime.strptime(r["recorded_at"], "%Y-%m-%d %H:%M:%S")
+            except (ValueError, AttributeError):
+                continue
+        days_ago = (now - ts).total_seconds() / 86400
+        if days_ago <= 30:
+            recent.append((days_ago, r["price"]))
+
+    if len(recent) < 3:
+        return "unknown"
+
+    # Simple linear regression: slope of price vs time
+    n = len(recent)
+    sum_x = sum(t for t, _ in recent)
+    sum_y = sum(p for _, p in recent)
+    sum_xy = sum(t * p for t, p in recent)
+    sum_x2 = sum(t * t for t, _ in recent)
+
+    denom = n * sum_x2 - sum_x * sum_x
+    if denom == 0:
+        return "stable"
+
+    slope = (n * sum_xy - sum_x * sum_y) / denom
+    mean_price = sum_y / n
+
+    # Normalize slope as percentage of mean price per day
+    if mean_price > 0:
+        pct_per_day = (slope / mean_price) * 100
+    else:
+        return "stable"
+
+    # Thresholds: >0.5%/day = rising, <-0.5%/day = falling
+    # Note: days_ago is inverted (higher = older), so negative slope = prices rising over time
+    if pct_per_day < -0.5:
+        return "rising"
+    elif pct_per_day > 0.5:
+        return "falling"
+    return "stable"
+
+
+def update_deal_item(item_id: int, **fields) -> bool:
+    """General-purpose update for a deal item.
+    Supported fields: purchased, purchased_price, notes, dismissed, read.
+    Returns True if row was updated.
+    """
+    allowed = {"purchased", "purchased_price", "notes", "dismissed", "read",
+               "deal_score", "verdict", "below_assessment", "opus_assessment"}
+    updates = []
+    params = []
+    for key, value in fields.items():
+        if key in allowed:
+            updates.append(f"{key} = ?")
+            params.append(value)
+
+    if not updates:
+        return False
+
+    params.append(item_id)
+    conn = _get_intel_db()
+    conn.execute(
+        f"UPDATE deal_items SET {', '.join(updates)} WHERE id = ?",
+        params
+    )
+    conn.commit()
+    changed = conn.total_changes > 0
+    conn.close()
+    return changed
+
+
+def mark_purchased(item_id: int, purchased_price: float = None) -> bool:
+    """Mark a deal item as purchased with optional price override."""
+    fields = {"purchased": 1}
+    if purchased_price is not None:
+        fields["purchased_price"] = purchased_price
+    else:
+        # Use the item's current price if no override
+        conn = _get_intel_db()
+        row = conn.execute("SELECT price FROM deal_items WHERE id = ?", (item_id,)).fetchone()
+        conn.close()
+        if row and row["price"]:
+            fields["purchased_price"] = row["price"]
+    return update_deal_item(item_id, **fields)
+
+
 # --- Hunt CRUD ---
 
 def create_hunt(name: str, category: str = "other", keywords: str = None,

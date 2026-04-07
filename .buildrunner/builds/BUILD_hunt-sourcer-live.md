@@ -247,7 +247,7 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 
 ### Phase 7: Market Stats Engine + Purchase Tracking _(added: 2026-04-07)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 6 (needs market data to compute stats)
 **Goal:** Compute per-hunt market statistics and deal quality scoring. Add purchase tracking.
 

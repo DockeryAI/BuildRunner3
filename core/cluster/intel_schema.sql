@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS deal_items (
     in_stock INTEGER,  -- 1=yes, 0=no, NULL=unknown
     last_checked TEXT,
     listing_url_hash TEXT,  -- SHA256[:16] of listing_url for dedup
+    purchased INTEGER NOT NULL DEFAULT 0,  -- 1=bought this item
+    purchased_price REAL,  -- actual purchase price (may differ from listing)
     FOREIGN KEY (hunt_id) REFERENCES active_hunts(id)
 );
 

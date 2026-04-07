@@ -419,6 +419,109 @@ async def opus_review_deal(item_id: int, review: OpusDealReview):
     return {"status": "ok"}
 
 
+# --- Market Stats & Purchase Tracking Endpoints ---
+
+
+class DealItemUpdate(BaseModel):
+    purchased: Optional[int] = None
+    purchased_price: Optional[float] = None
+    notes: Optional[str] = None
+    dismissed: Optional[int] = None
+    deal_score: Optional[int] = None
+    verdict: Optional[str] = None
+
+
+@router.get("/api/deals/market/{hunt_id}")
+async def get_market_stats(hunt_id: int, days: int = Query(90, description="Lookback window in days")):
+    """Get market statistics for a hunt — median, percentiles, trend, sample count."""
+    from core.cluster.intel_collector import get_market_stats as _get_stats
+    stats = _get_stats(hunt_id, days=days)
+    return stats
+
+
+@router.patch("/api/deals/items/{item_id}")
+async def update_deal_item_endpoint(item_id: int, body: DealItemUpdate):
+    """Update a deal item — toggle purchased, set price, add notes."""
+    from core.cluster.intel_collector import update_deal_item
+    fields = {k: v for k, v in body.model_dump().items() if v is not None}
+    if not fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    success = update_deal_item(item_id, **fields)
+    if not success:
+        raise HTTPException(status_code=404, detail="Deal item not found")
+    return {"status": "ok", "updated_fields": list(fields.keys())}
+
+
+@router.get("/api/deals/summary")
+async def get_deals_summary():
+    """Per-hunt spend summary — budget (sum of target_price), spent (sum of purchased_price), counts."""
+    from core.cluster.intel_collector import _get_intel_db
+    conn = _get_intel_db()
+
+    # Get per-hunt stats
+    hunts = conn.execute(
+        "SELECT id, name, category, target_price FROM active_hunts WHERE active = 1 ORDER BY id"
+    ).fetchall()
+
+    hunt_stats = []
+    total_budget = 0
+    total_spent = 0
+    total_bought = 0
+    total_deals = 0
+
+    for hunt in hunts:
+        hunt_id = hunt["id"]
+        target = hunt["target_price"] or 0
+
+        # Count deals and purchased for this hunt
+        deal_row = conn.execute(
+            """SELECT COUNT(*) as deal_count,
+                      SUM(CASE WHEN purchased = 1 THEN 1 ELSE 0 END) as bought_count,
+                      SUM(CASE WHEN purchased = 1 THEN purchased_price ELSE 0 END) as spent
+               FROM deal_items WHERE hunt_id = ? AND dismissed = 0""",
+            (hunt_id,)
+        ).fetchone()
+
+        # Market data count
+        market_row = conn.execute(
+            "SELECT COUNT(*) as cnt FROM price_history WHERE hunt_id = ?",
+            (hunt_id,)
+        ).fetchone()
+
+        deal_count = deal_row["deal_count"] or 0
+        bought_count = deal_row["bought_count"] or 0
+        spent = deal_row["spent"] or 0
+
+        hunt_stats.append({
+            "hunt_id": hunt_id,
+            "name": hunt["name"],
+            "category": hunt["category"],
+            "budget": target,
+            "spent": round(spent, 2),
+            "bought_count": bought_count,
+            "deal_count": deal_count,
+            "market_data_points": market_row["cnt"] or 0,
+        })
+
+        total_budget += target
+        total_spent += spent
+        total_bought += bought_count
+        total_deals += deal_count
+
+    conn.close()
+
+    return {
+        "hunts": hunt_stats,
+        "totals": {
+            "budget": round(total_budget, 2),
+            "spent": round(total_spent, 2),
+            "bought_count": total_bought,
+            "deal_count": total_deals,
+            "hunt_count": len(hunt_stats),
+        },
+    }
+
+
 # --- Scoring Endpoints ---
 
 @router.post("/api/intel/score")
