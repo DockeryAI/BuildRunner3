@@ -10,23 +10,24 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ## Parallelization Matrix
 
-| Phase | Key Files                                        | Can Parallel With | Blocked By           |
-| ----- | ------------------------------------------------ | ----------------- | -------------------- |
-| 1     | ~/.claude/settings.json                          | —                 | —                    |
-| 2     | ~/.claude/commands/explore-qa.md (NEW)           | 1                 | —                    |
-| 3     | begin.md, begin-self-qa.md (NEW)                 | 1, 2              | —                    |
-| 4     | playwright.config.ts, tests/e2e/visual/* (NEW)   | 1, 2, 3           | —                    |
-| 5     | Lomax remote, deploy script (NEW)                | 1, 2, 3           | 4 (needs baselines)  |
+| Phase | Key Files                                       | Can Parallel With | Blocked By          |
+| ----- | ----------------------------------------------- | ----------------- | ------------------- |
+| 1     | ~/.claude/settings.json                         | —                 | —                   |
+| 2     | ~/.claude/commands/explore-qa.md (NEW)          | 1                 | —                   |
+| 3     | begin.md, begin-self-qa.md (NEW)                | 1, 2              | —                   |
+| 4     | playwright.config.ts, tests/e2e/visual/\* (NEW) | 1, 2, 3           | —                   |
+| 5     | Lomax remote, deploy script (NEW)               | 1, 2, 3           | 4 (needs baselines) |
 
 ## Phases
 
 ### Phase 1: Enforcement Hooks
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
+
 - ~/.claude/settings.json (MODIFY)
-**Blocked by:** None
-**Deliverables:**
+  **Blocked by:** None
+  **Deliverables:**
 - [ ] Add Stop hook (type: agent) that spawns a subagent to run `npm test` and verify results — blocks completion on failure
 - [ ] Add Stop hook (type: agent) for Playwright MCP visual verification — opens localhost, navigates main pages, checks rendering
 - [ ] Add `stop_hook_active` guard in both hooks to prevent infinite loops
@@ -40,12 +41,13 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ### Phase 2: Explore-QA Command
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
+
 - ~/.claude/commands/explore-qa.md (NEW)
-**Blocked by:** None
-**After:** Phase 1 (logical sequence, CAN parallelize)
-**Deliverables:**
+  **Blocked by:** None
+  **After:** Phase 1 (logical sequence, CAN parallelize)
+  **Deliverables:**
 - [ ] Create `/explore-qa` slash command with Playwright MCP exploration prompt
 - [ ] Crawl logic: discover navigation, visit every reachable page, interact with all elements
 - [ ] Console error detection after every action via `browser_console_messages`
@@ -60,13 +62,14 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ### Phase 3: Self-QA Step in /begin
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
+
 - ~/.claude/commands/begin.md (MODIFY)
 - ~/.claude/docs/begin-self-qa.md (NEW)
-**Blocked by:** None (different insertion point in begin.md than Phase 1's hooks)
-**After:** Phase 1
-**Deliverables:**
+  **Blocked by:** None (different insertion point in begin.md than Phase 1's hooks)
+  **After:** Phase 1
+  **Deliverables:**
 - [ ] Create `begin-self-qa.md` reference doc defining the visual verification procedure
 - [ ] Insert Step 4.7 "Visual Browser Verification" in begin.md between Step 4.5 (TDD Re-run) and Step 5 (Review)
 - [ ] Step logic: identify all pages/routes touched by this phase's deliverables, open each via Playwright MCP, take snapshots, check for rendering issues and console errors
@@ -81,8 +84,9 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ### Phase 4: Visual Regression Baselines
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
+
 - playwright.config.ts (MODIFY)
 - tests/e2e/visual/dashboard.visual.spec.ts (NEW)
 - tests/e2e/visual/login.visual.spec.ts (NEW)
@@ -90,9 +94,9 @@ Make it impossible for Claude to mark work done without visually verifying it in
 - tests/e2e/visual/screenshot.css (NEW)
 - Dockerfile.playwright (NEW)
 - package.json (MODIFY — add visual test scripts)
-**Blocked by:** None (test files are independent)
-**After:** Phase 3
-**Deliverables:**
+  **Blocked by:** None (test files are independent)
+  **After:** Phase 3
+  **Deliverables:**
 - [ ] Add `toHaveScreenshot()` config to playwright.config.ts with maxDiffPixelRatio, animation disabling, caret hiding
 - [ ] Install and configure `playwright-odiff` for 6.6x faster comparison than default pixelmatch
 - [ ] Create screenshot.css with animation/transition disabling rules
@@ -110,11 +114,12 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 **Status:** not_started
 **Files:**
+
 - ~/.buildrunner/scripts/deploy-vrt-lomax.sh (NEW)
 - Cluster remote files on Lomax (10.0.1.104)
-**Blocked by:** Phase 4 (need baselines first)
-**After:** Phase 4
-**Deliverables:**
+  **Blocked by:** Phase 4 (need baselines first)
+  **After:** Phase 4
+  **Deliverables:**
 - [ ] Write deployment script for VRT Docker Compose on Lomax
 - [ ] Configure VRT with odiff comparison provider
 - [ ] Wire `@visual-regression-tracker/agent-playwright` integration into BR3 projects
