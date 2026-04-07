@@ -1,9 +1,8 @@
 # Build: Dashboard Build Liveness Detection
 
 **Created:** 2026-04-07
-**Purpose:** Make the dashboard know whether builds are actually running or stalled, with self-correcting status and accurate dispatch buttons.
-**Target Users:** Byron (cluster operator)
-**Tech Stack:** Node.js event server (events.mjs), vanilla JS dashboard, existing session polling (sessions.mjs)
+**Status:** Phases 1-1 Complete — Phase 2 In Progress
+**Deploy:** local — dashboard event server restart (`kill $(pgrep -f "node events.mjs"); cd ~/.buildrunner/dashboard && node events.mjs &`)
 
 ## Overview
 
@@ -12,27 +11,15 @@ The dashboard's BUILD spec scanner reads markdown status lines every 30s and mar
 This build connects them: the scanner cross-references sessions with builds, introduces a `stalled` status for builds with no live process, and updates the frontend to show accurate state and dispatch buttons.
 
 **Builds On:** Existing dashboard event server, session polling, BUILD spec scanner
-**DO NOT:** Add new polling loops, modify sessions.mjs, add new files, change registry.mjs
 
-## Adversarial Review
+**DO NOT:**
 
-**Reviewed by:** Local subagent (Otis offline)
-**Blockers found:** 4 (all resolved below)
-**Warnings found:** 9 (key ones incorporated)
+- Add new polling loops
+- Modify sessions.mjs
+- Add new files
+- Change registry.mjs
 
-### Blocker Resolutions
-
-1. **Re-entrancy** — async scan() can overlap with setInterval. Fix: add `let scanning = false` guard.
-2. **Remote heartbeats** — Heartbeat files only exist on the node running the build. Fix: skip heartbeat for remote builds, session matching is sufficient for v1.
-3. **Session matching ambiguity** — Multiple builds share project name "BuildRunner3". Fix: match by `project_path` (full path) instead of `project` (name). sessions.mjs resolves CWD paths with full paths.
-4. **Empty assigned_node** — Builds with no assigned_node were never dispatched. Fix: skip liveness check for unassigned builds.
-
-### Key Warnings Incorporated
-
-- **Dispatch flapping** — Grace period: require 2 consecutive stalled scans before marking stalled (prevents false stall on fresh dispatch when session cache is 15s stale)
-- **index.html actions** — Must update actions column AND remove ad-hoc `stale` detection (now handled server-side)
-- **Both KPIs** — Two KPI renderers exist (index.html + ws-builds.js), both need stalled handling
-- **workfloDock paths** — sessions.mjs regex `Projects\/` misses `/Users/byronhudson/workfloDock`. Note: acceptable for v1, can tighten later.
+**Adversarial Review:** Completed 2026-04-07 via local subagent. 4 blockers found and resolved (re-entrancy guard, remote heartbeat skip, project_path matching, empty assigned_node). 9 warnings incorporated (grace period, both KPIs, ad-hoc stale removal, workfloDock paths).
 
 ## Parallelization Matrix
 
@@ -47,7 +34,7 @@ This build connects them: the scanner cross-references sessions with builds, int
 
 ### Phase 1: Scanner Liveness Check + Stalled Status
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Scanner detects dead builds and marks them `stalled` in the registry. Self-corrects when processes return.
 **Files:**
 
@@ -84,7 +71,7 @@ This build connects them: the scanner cross-references sessions with builds, int
 **Blocked by:** Phase 1 (needs `stalled` status in registry)
 **Deliverables:**
 
-**index.html:**
+index.html:
 
 - [ ] Add `.badge-stalled` CSS (orange/amber to distinguish from pending)
 - [ ] Add `stalled` to badge class mapping in renderBuilds()
@@ -92,7 +79,7 @@ This build connects them: the scanner cross-references sessions with builds, int
 - [ ] Remove ad-hoc `stale` detection (`const stale = status === 'running' && !hasSession`) — backend handles this now
 - [ ] KPI (~line 1277): add stalled count display (separate from active, like failed)
 
-**ws-builds.js:**
+ws-builds.js:
 
 - [ ] Add `.bws-build-card.status-stalled` CSS (orange border)
 - [ ] `statusColor()`: stalled returns `var(--orange)`
@@ -110,10 +97,14 @@ This build connects them: the scanner cross-references sessions with builds, int
 - Auto-dispatch on stall detection (user should decide)
 - Spec revert (writing `pending` back into BUILD spec markdown — feedback loop risk)
 - `agents.json` consumption (agent-level detail in dashboard)
-- workfloDock path matching fix in sessions.mjs (acceptable for v1)
+- workfloDock path matching fix in sessions.mjs
 
 ## Prereqs
 
 - [x] Session polling operational (sessions.mjs already running)
 - [x] Scanner operational (events.mjs already running)
 - [x] `getActiveSessions` already imported in events.mjs (line 12)
+
+## Session Log
+
+- 2026-04-07: Root cause found — `claude -p` (single-turn) kills orchestrator after first response, orphaning background agents. Scanner trusts BUILD spec `in_progress` status without checking process liveness. Adversarial review found 4 blockers (re-entrancy, remote heartbeats, session matching ambiguity, empty assigned_node) — all resolved. Fixed dispatch-all to use interactive mode, fixed individual dispatch status mismatch.
