@@ -461,3 +461,9 @@
   - Muddy (local) uses vm_stat + uptime for stats instead of SSH
   - Alert deduplication via lastStatus tracking (no repeat alerts for same condition)
   - Repo drift checks BuildRunner3 project only (primary project)
+[2026-04-07T21:53:13Z] Phase 1 decisions:
+  - Replaced mtime change detection with git SHA diff (more reliable, no false positives)
+  - Single queue consumer thread instead of dual trigger paths (eliminates RC4)
+  - _db_lock wraps ALL SQLite operations (reads + writes) for full serialization
+  - Removed _hash_lock and _file_hashes since mtime detection replaced by git SHA
+  - /api/alert endpoint kept as /api/alerts (read-only, used by developer-brief.sh) but AlertPayload removed

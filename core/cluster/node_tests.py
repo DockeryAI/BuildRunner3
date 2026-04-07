@@ -20,9 +20,6 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from fastapi import FastAPI
-from pydantic import BaseModel
-
 from core.cluster.base_service import create_app
 
 # --- Config ---
@@ -37,13 +34,11 @@ app = create_app(role="test-runner", version=SERVICE_VERSION)
 
 # --- Thread-Safe State (RC1-RC3 fixes) ---
 _state_lock = threading.Lock()       # Protects _running, _last_run_time, _last_results
-_hash_lock = threading.Lock()        # Protects _file_hashes (RC2)
 _db_lock = threading.Lock()          # Serializes all SQLite writes (RC5)
 
 _running = False
 _last_run_time = 0.0
 _last_results = {}
-_file_hashes: dict[str, str] = {}
 
 # --- Queue-based execution (RC4 fix) ---
 # Single consumer thread pulls from queue, deduplicates by project+SHA, runs tests serially
@@ -689,23 +684,150 @@ def _store_results(results: dict, trigger: str = "watch"):
         conn.close()
 
 
-# --- Background Test Loop ---
-def _test_loop():
-    """Main loop: pull repos, detect changes, run affected tests."""
-    global _running, _last_run_time, _last_results
+# --- Queue Consumer (RC4 fix: single execution path) ---
+def _queue_consumer():
+    """Single consumer thread that processes test runs serially from the queue.
+    Deduplicates by project+SHA — if a newer SHA is queued for the same project,
+    skip the older entry.
+    """
+    while True:
+        try:
+            item = _test_queue.get(timeout=5)
+        except queue.Empty:
+            continue
 
-    # First run: populate file hashes without running tests
+        run_id = item["run_id"]
+        project = item["project"]
+        repo_path = item["repo_path"]
+        trigger = item.get("trigger", "watch")
+        changed = item.get("changed", [])
+
+        # Dedup: check if a newer entry for same project is already queued
+        # by peeking at the queue (drain and re-add non-dupes)
+        current_sha = _git_sha_full(repo_path)
+        skip = False
+        pending = []
+        try:
+            while True:
+                next_item = _test_queue.get_nowait()
+                if next_item["project"] == project:
+                    # Newer entry for same project — skip current, keep newer
+                    skip = True
+                    pending.append(next_item)
+                else:
+                    pending.append(next_item)
+        except queue.Empty:
+            pass
+        for p in pending:
+            _test_queue.put(p)
+
+        if skip:
+            with _run_status_lock:
+                _run_status[run_id] = {
+                    "status": "skipped", "project": project,
+                    "reason": "superseded by newer SHA",
+                    "completed_at": datetime.now().isoformat()
+                }
+            _test_queue.task_done()
+            continue
+
+        # Mark as running
+        with _run_status_lock:
+            _run_status[run_id] = {
+                "status": "running", "project": project,
+                "started_at": datetime.now().isoformat()
+            }
+        with _state_lock:
+            global _running
+            _running = True
+
+        try:
+            _execute_test_run(run_id, project, repo_path, trigger, changed)
+        except Exception as e:
+            print(f"Test run error for {project}: {e}")
+            with _run_status_lock:
+                _run_status[run_id] = {
+                    "status": "error", "project": project,
+                    "error": str(e),
+                    "completed_at": datetime.now().isoformat()
+                }
+        finally:
+            with _state_lock:
+                _running = False
+            _test_queue.task_done()
+
+
+def _execute_test_run(run_id: str, project: str, repo_path: str, trigger: str, changed: list[str]):
+    """Execute a single test run for a project."""
+    global _last_run_time, _last_results
+
+    git_sha = _git_sha(repo_path)
+    git_sha_full = _git_sha_full(repo_path)
+    git_branch = _git_branch(repo_path)
+
+    # Auto-rebuild affected test map entries
+    _invalidate_test_map_entries(project, changed)
+    build_test_map(project, repo_path)
+
+    results_collected = []
+
+    # Run vitest first (fast, per research: stagger, don't parallel)
+    vitest_results = _run_vitest(repo_path, project, changed)
+    if vitest_results:
+        vitest_results["git_sha"] = git_sha
+        vitest_results["git_sha_full"] = git_sha_full
+        vitest_results["git_branch"] = git_branch
+        _store_results(vitest_results, trigger=trigger)
+        with _state_lock:
+            _last_results[f"{project}_vitest"] = vitest_results
+        results_collected.append(vitest_results)
+        print(f"  vitest: {vitest_results.get('passed', 0)}/{vitest_results.get('total', 0)} passed")
+
+    # Then Playwright (slower, only for UI changes)
+    pw_results = _run_playwright(repo_path, project, changed)
+    if pw_results:
+        pw_results["git_sha"] = git_sha
+        pw_results["git_sha_full"] = git_sha_full
+        pw_results["git_branch"] = git_branch
+        _store_results(pw_results, trigger=trigger)
+        with _state_lock:
+            _last_results[f"{project}_playwright"] = pw_results
+        results_collected.append(pw_results)
+        print(f"  playwright: {pw_results.get('passed', 0)}/{pw_results.get('total', 0)} passed")
+
+    # Update tested SHA after successful run
+    if git_sha_full:
+        _update_tested_sha(project, git_sha_full)
+
+    with _state_lock:
+        _last_run_time = time.time()
+
+    # Update run status
+    with _run_status_lock:
+        _run_status[run_id] = {
+            "status": "complete", "project": project,
+            "results": [
+                {"runner": r.get("runner"), "passed": r.get("passed", 0),
+                 "failed": r.get("failed", 0), "total": r.get("total", 0)}
+                for r in results_collected
+            ],
+            "completed_at": datetime.now().isoformat()
+        }
+
+
+# --- Background Watch Loop ---
+def _watch_loop():
+    """Polls repos for changes and enqueues test runs."""
     repos_path = Path(REPOS_DIR)
+
+    # First run: seed SHA tracking
     for repo_dir in repos_path.iterdir():
         if repo_dir.is_dir() and not repo_dir.name.startswith("."):
-            _detect_changes(str(repo_dir))
+            project = repo_dir.name
+            _detect_changes(str(repo_dir), project)
 
     while True:
         time.sleep(POLL_INTERVAL)
-        if _running:
-            continue
-
-        _running = True
         try:
             for repo_dir in repos_path.iterdir():
                 if not repo_dir.is_dir() or repo_dir.name.startswith("."):
@@ -717,49 +839,77 @@ def _test_loop():
                 # Pull latest
                 _git_pull(repo_path)
 
-                # Detect changes
-                changed = _detect_changes(repo_path)
+                # Detect changes via git SHA
+                changed = _detect_changes(repo_path, project_name)
                 if not changed:
                     continue
 
                 print(f"Changes in {project_name}: {len(changed)} files")
 
-                # Auto-rebuild affected test map entries
-                _invalidate_test_map_entries(project_name, changed)
-                build_test_map(project_name, repo_path)
-
-                git_sha = _git_sha(repo_path)
-                git_branch = _git_branch(repo_path)
-
-                # Run vitest first (fast, per research: stagger, don't parallel)
-                vitest_results = _run_vitest(repo_path, project_name, changed)
-                if vitest_results:
-                    vitest_results["git_sha"] = git_sha
-                    vitest_results["git_branch"] = git_branch
-                    _store_results(vitest_results)
-                    _last_results[f"{project_name}_vitest"] = vitest_results
-                    print(f"  vitest: {vitest_results.get('passed', 0)}/{vitest_results.get('total', 0)} passed")
-
-                # Then Playwright (slower, only for UI changes)
-                pw_results = _run_playwright(repo_path, project_name, changed)
-                if pw_results:
-                    pw_results["git_sha"] = git_sha
-                    pw_results["git_branch"] = git_branch
-                    _store_results(pw_results)
-                    _last_results[f"{project_name}_playwright"] = pw_results
-                    print(f"  playwright: {pw_results.get('passed', 0)}/{pw_results.get('total', 0)} passed")
-
-            _last_run_time = time.time()
+                # Enqueue test run
+                run_id = f"watch-{uuid.uuid4().hex[:8]}"
+                with _run_status_lock:
+                    _run_status[run_id] = {
+                        "status": "queued", "project": project_name,
+                        "queued_at": datetime.now().isoformat()
+                    }
+                _test_queue.put({
+                    "run_id": run_id,
+                    "project": project_name,
+                    "repo_path": repo_path,
+                    "trigger": "watch",
+                    "changed": changed,
+                })
         except Exception as e:
-            print(f"Test loop error: {e}")
-        finally:
-            _running = False
+            print(f"Watch loop error: {e}")
 
 
 @app.on_event("startup")
 async def startup():
-    t = threading.Thread(target=_test_loop, daemon=True)
-    t.start()
+    # Start queue consumer (single thread — serializes all test runs)
+    consumer = threading.Thread(target=_queue_consumer, daemon=True, name="test-consumer")
+    consumer.start()
+    # Start watch loop (enqueues runs when changes detected)
+    watcher = threading.Thread(target=_watch_loop, daemon=True, name="repo-watcher")
+    watcher.start()
+
+
+# --- Extended /health (overrides base_service /health with Walter-specific data) ---
+_service_start_time = time.time()
+
+
+@app.get("/api/health")
+async def walter_health():
+    """Extended health endpoint with Walter-specific operational data."""
+    repos_path = Path(REPOS_DIR)
+    repo_heads = {}
+    for repo_dir in repos_path.iterdir():
+        if repo_dir.is_dir() and not repo_dir.name.startswith("."):
+            sha = _git_sha(str(repo_dir))
+            if sha:
+                repo_heads[repo_dir.name] = sha
+
+    with _state_lock:
+        running = _running
+        last_run = _last_run_time
+
+    mem = psutil.virtual_memory()
+
+    return {
+        "status": "healthy",
+        "role": "test-runner",
+        "version": SERVICE_VERSION,
+        "uptime": round(time.time() - _service_start_time, 1),
+        "last_test_run": datetime.fromtimestamp(last_run).isoformat() if last_run > 0 else None,
+        "running": running,
+        "queue_depth": _test_queue.qsize(),
+        "repo_heads": repo_heads,
+        "memory": {
+            "total_gb": round(mem.total / (1024**3), 1),
+            "available_gb": round(mem.available / (1024**3), 1),
+            "percent_used": mem.percent,
+        },
+    }
 
 
 # --- API Endpoints ---
@@ -767,72 +917,68 @@ async def startup():
 async def get_results(project: Optional[str] = None, latest: bool = True):
     """Get test results. If latest=true, returns most recent run per project."""
     try:
-        conn = _get_db()
-    except Exception:
-        return {"results": [], "error": "database unavailable"}
-    try:
-        if latest:
-            if project:
-                runs = conn.execute(
-                    "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 1",
-                    (project,)
-                ).fetchall()
+        with _db_lock:
+            conn = _get_db()
+            if latest:
+                if project:
+                    runs = conn.execute(
+                        "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 1",
+                        (project,)
+                    ).fetchall()
+                else:
+                    runs = conn.execute(
+                        """SELECT * FROM test_runs WHERE run_id IN (
+                             SELECT MAX(run_id) FROM test_runs GROUP BY project, runner
+                           ) ORDER BY timestamp DESC"""
+                    ).fetchall()
             else:
-                runs = conn.execute(
-                    """SELECT * FROM test_runs WHERE run_id IN (
-                         SELECT MAX(run_id) FROM test_runs GROUP BY project, runner
-                       ) ORDER BY timestamp DESC"""
-                ).fetchall()
-        else:
-            if project:
-                runs = conn.execute(
-                    "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 20",
-                    (project,)
-                ).fetchall()
-            else:
-                runs = conn.execute(
-                    "SELECT * FROM test_runs ORDER BY timestamp DESC LIMIT 20"
-                ).fetchall()
+                if project:
+                    runs = conn.execute(
+                        "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 20",
+                        (project,)
+                    ).fetchall()
+                else:
+                    runs = conn.execute(
+                        "SELECT * FROM test_runs ORDER BY timestamp DESC LIMIT 20"
+                    ).fetchall()
 
-        results = []
-        for run in runs:
-            run_dict = dict(run)
-            cases = conn.execute(
-                "SELECT * FROM test_cases WHERE run_id = ? AND status = 'failed'",
-                (run["run_id"],)
-            ).fetchall()
-            run_dict["failures"] = [dict(c) for c in cases]
-            results.append(run_dict)
+            results = []
+            for run in runs:
+                run_dict = dict(run)
+                cases = conn.execute(
+                    "SELECT * FROM test_cases WHERE run_id = ? AND status = 'failed'",
+                    (run["run_id"],)
+                ).fetchall()
+                run_dict["failures"] = [dict(c) for c in cases]
+                results.append(run_dict)
 
+            conn.close()
         return {"results": results}
     except Exception as e:
         return {"results": [], "error": str(e)}
-    finally:
-        conn.close()
 
 
 @app.get("/api/coverage")
 async def get_coverage(project: Optional[str] = None):
     """Get pass rate as a proxy for coverage."""
     try:
-        conn = _get_db()
-    except Exception:
-        return {"pass_rate": 0, "passed": 0, "total": 0, "error": "database unavailable"}
-    try:
-        if project:
-            row = conn.execute(
-                """SELECT SUM(passed) as passed, SUM(total) as total
-                   FROM test_runs WHERE project = ?
-                   AND run_id IN (SELECT MAX(run_id) FROM test_runs WHERE project = ? GROUP BY runner)""",
-                (project, project)
-            ).fetchone()
-        else:
-            row = conn.execute(
-                """SELECT SUM(passed) as passed, SUM(total) as total
-                   FROM test_runs WHERE run_id IN (
-                     SELECT MAX(run_id) FROM test_runs GROUP BY project, runner
-                   )"""
-            ).fetchone()
+        with _db_lock:
+            conn = _get_db()
+            if project:
+                row = conn.execute(
+                    """SELECT SUM(passed) as passed, SUM(total) as total
+                       FROM test_runs WHERE project = ?
+                       AND run_id IN (SELECT MAX(run_id) FROM test_runs WHERE project = ? GROUP BY runner)""",
+                    (project, project)
+                ).fetchone()
+            else:
+                row = conn.execute(
+                    """SELECT SUM(passed) as passed, SUM(total) as total
+                       FROM test_runs WHERE run_id IN (
+                         SELECT MAX(run_id) FROM test_runs GROUP BY project, runner
+                       )"""
+                ).fetchone()
+            conn.close()
 
         total = row["total"] or 0
         passed = row["passed"] or 0
@@ -843,31 +989,28 @@ async def get_coverage(project: Optional[str] = None):
         }
     except Exception as e:
         return {"pass_rate": 0, "passed": 0, "total": 0, "error": str(e)}
-    finally:
-        conn.close()
 
 
 @app.get("/api/flaky")
 async def get_flaky():
     """Detect flaky tests from status oscillation over last 7 days."""
     try:
-        conn = _get_db()
-    except Exception:
-        return {"flaky": [], "error": "database unavailable"}
-    try:
-        rows = conn.execute("""
-            WITH recent AS (
-                SELECT tc.full_name, tc.status, tr.timestamp,
-                       LAG(tc.status) OVER (PARTITION BY tc.full_name ORDER BY tr.timestamp) as prev
-                FROM test_cases tc JOIN test_runs tr ON tc.run_id = tr.run_id
-                WHERE tr.timestamp > datetime('now', '-7 days')
-            )
-            SELECT full_name,
-                COUNT(*) as total_runs,
-                SUM(CASE WHEN status != prev AND prev IS NOT NULL THEN 1 ELSE 0 END) as flips
-            FROM recent GROUP BY full_name HAVING total_runs >= 3 AND flips > 0
-            ORDER BY CAST(flips AS REAL) / (total_runs - 1) DESC
-        """).fetchall()
+        with _db_lock:
+            conn = _get_db()
+            rows = conn.execute("""
+                WITH recent AS (
+                    SELECT tc.full_name, tc.status, tr.timestamp,
+                           LAG(tc.status) OVER (PARTITION BY tc.full_name ORDER BY tr.timestamp) as prev
+                    FROM test_cases tc JOIN test_runs tr ON tc.run_id = tr.run_id
+                    WHERE tr.timestamp > datetime('now', '-7 days')
+                )
+                SELECT full_name,
+                    COUNT(*) as total_runs,
+                    SUM(CASE WHEN status != prev AND prev IS NOT NULL THEN 1 ELSE 0 END) as flips
+                FROM recent GROUP BY full_name HAVING total_runs >= 3 AND flips > 0
+                ORDER BY CAST(flips AS REAL) / (total_runs - 1) DESC
+            """).fetchall()
+            conn.close()
 
         return {"flaky": [
             {"test": r["full_name"], "runs": r["total_runs"], "flips": r["flips"],
@@ -876,70 +1019,53 @@ async def get_flaky():
         ]}
     except Exception as e:
         return {"flaky": [], "error": str(e)}
-    finally:
-        conn.close()
-
-
-@app.get("/api/history/{test_name:path}")
-async def get_history(test_name: str, limit: int = 20):
-    """Get history of a specific test."""
-    try:
-        conn = _get_db()
-    except Exception:
-        return {"history": [], "error": "database unavailable"}
-    try:
-        rows = conn.execute(
-            """SELECT tc.*, tr.timestamp, tr.git_sha, tr.project
-               FROM test_cases tc JOIN test_runs tr ON tc.run_id = tr.run_id
-               WHERE tc.full_name = ? ORDER BY tr.timestamp DESC LIMIT ?""",
-            (test_name, limit)
-        ).fetchall()
-        return {"history": [dict(r) for r in rows]}
-    except Exception as e:
-        return {"history": [], "error": str(e)}
-    finally:
-        conn.close()
 
 
 @app.post("/api/run")
-async def trigger_run(project: Optional[str] = None):
-    """Trigger manual test run."""
-    if _running:
-        return {"status": "already_running"}
+async def trigger_run(project: Optional[str] = None, trigger: str = "manual"):
+    """Enqueue a test run. Returns run_id for status polling."""
+    repos_path = Path(REPOS_DIR)
+    run_ids = []
 
-    def _manual_run():
-        global _running
-        _running = True
-        try:
-            repos_path = Path(REPOS_DIR)
-            for repo_dir in repos_path.iterdir():
-                if not repo_dir.is_dir() or repo_dir.name.startswith("."):
-                    continue
-                if project and repo_dir.name != project:
-                    continue
+    for repo_dir in repos_path.iterdir():
+        if not repo_dir.is_dir() or repo_dir.name.startswith("."):
+            continue
+        if project and repo_dir.name != project:
+            continue
 
-                name = repo_dir.name
-                path = str(repo_dir)
-                sha = _git_sha(path)
-                branch = _git_branch(path)
+        name = repo_dir.name
+        repo_path = str(repo_dir)
+        run_id = f"{trigger}-{uuid.uuid4().hex[:8]}"
 
-                vr = _run_vitest(path, name, [])
-                if vr:
-                    vr["git_sha"] = sha
-                    vr["git_branch"] = branch
-                    _store_results(vr)
+        with _run_status_lock:
+            _run_status[run_id] = {
+                "status": "queued", "project": name,
+                "queued_at": datetime.now().isoformat()
+            }
 
-                pr = _run_playwright(path, name, [])
-                if pr:
-                    pr["git_sha"] = sha
-                    pr["git_branch"] = branch
-                    _store_results(pr)
-        finally:
-            _running = False
+        _test_queue.put({
+            "run_id": run_id,
+            "project": name,
+            "repo_path": repo_path,
+            "trigger": trigger,
+            "changed": [],  # manual runs test everything
+        })
+        run_ids.append(run_id)
 
-    t = threading.Thread(target=_manual_run, daemon=True)
-    t.start()
-    return {"status": "started"}
+    if not run_ids:
+        return {"status": "error", "message": "no matching projects found"}
+
+    return {"status": "queued", "run_ids": run_ids, "run_id": run_ids[0]}
+
+
+@app.get("/api/run/{run_id}/status")
+async def get_run_status(run_id: str):
+    """Poll status of a queued/running test run."""
+    with _run_status_lock:
+        status = _run_status.get(run_id)
+    if not status:
+        return {"error": "run_id not found", "run_id": run_id}
+    return {"run_id": run_id, **status}
 
 
 @app.get("/api/testmap")
@@ -951,93 +1077,9 @@ async def api_get_testmap(files: str = "", project: str = ""):
     return get_test_map(file_list, project)
 
 
-@app.post("/api/testmap/baseline")
-async def api_testmap_baseline(project: str = "", files: str = ""):
-    """Run mapped tests and return baseline pass/fail state."""
-    if not project:
-        return {"error": "project param required"}
-
-    file_list = [f.strip() for f in files.split(",") if f.strip()] if files else []
-    mapping = get_test_map(file_list, project) if file_list else {}
-
-    # Collect unique test files
-    test_files = set()
-    for source, tests in mapping.items():
-        for t in tests:
-            test_files.add(t["test_file"])
-
-    if not test_files:
-        return {"baseline": {}, "message": "no mapped tests found"}
-
-    # Try to find the repo path
-    repo_path = os.path.join(REPOS_DIR, project)
-    if not os.path.isdir(repo_path):
-        return {"baseline": {tf: "skip" for tf in test_files}, "message": "repo not found"}
-
-    # Run vitest on specific test files
-    baseline = {}
-    for tf in test_files:
-        test_path = os.path.join(repo_path, tf)
-        if not os.path.exists(test_path):
-            baseline[tf] = {"status": "skip", "duration_ms": 0}
-            continue
-
-        start = time.time()
-        try:
-            result = subprocess.run(
-                ["npx", "vitest", "run", tf, "--reporter=verbose", "--passWithNoTests"],
-                capture_output=True, text=True,
-                cwd=repo_path, timeout=60,
-                env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
-            )
-            duration = int((time.time() - start) * 1000)
-            baseline[tf] = {
-                "status": "pass" if result.returncode == 0 else "fail",
-                "duration_ms": duration,
-            }
-        except subprocess.TimeoutExpired:
-            baseline[tf] = {"status": "fail", "duration_ms": 60000}
-        except Exception:
-            baseline[tf] = {"status": "skip", "duration_ms": 0}
-
-    return {"baseline": baseline}
-
-
-@app.get("/api/running")
-async def is_running():
-    return {"running": _running, "last_run": _last_run_time}
-
-
 # --- Runtime Alerts (pushed by node_analysis.py) ---
 _runtime_alerts: list[dict] = []
 _MAX_ALERTS = 50
-
-
-class AlertPayload(BaseModel):
-    pattern_type: str
-    severity: str
-    description: str
-    count: int = 1
-    fingerprint: Optional[str] = None
-
-
-@app.post("/api/alert")
-async def receive_alert(alert: AlertPayload):
-    """Receive a runtime alert from the log analyzer."""
-    entry = {
-        "pattern_type": alert.pattern_type,
-        "severity": alert.severity,
-        "description": alert.description,
-        "count": alert.count,
-        "fingerprint": alert.fingerprint,
-        "received_at": datetime.now().isoformat(),
-    }
-    _runtime_alerts.append(entry)
-    # Keep bounded
-    if len(_runtime_alerts) > _MAX_ALERTS:
-        _runtime_alerts.pop(0)
-    print(f"[ALERT] {alert.severity}: {alert.pattern_type} — {alert.description}")
-    return {"status": "received", "total_alerts": len(_runtime_alerts)}
 
 
 @app.get("/api/alerts")

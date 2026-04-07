@@ -1,24 +1,22 @@
-# Phase 1 Verification: Collection Infrastructure
+# Phase 1 Verification — Walter Service Hardening
 
-## Deliverable Verification
+## Deliverable Status
 
-| Deliverable | Status | Evidence |
-|---|---|---|
-| SQLite schema (5 tables + indexes) | PASS | intel_schema.sql — 5 CREATE TABLE + 11 CREATE INDEX |
-| Miniflux webhook + HMAC | PASS | POST /api/intel/webhook/miniflux, _verify_hmac() |
-| Models API poller | PASS | poll_anthropic_models() with snapshot diffing |
-| Package version poller | PASS | poll_package_versions() for npm + PyPI |
-| NewReleases.io webhook | PASS | POST /api/intel/webhook/newreleases |
-| F5Bot webhook | PASS | POST /api/intel/webhook/f5bot |
-| changedetection.io webhook | PASS | POST /api/deals/webhook/changedetection |
-| Deal webhook handler | PASS | parse_changedetection_webhook creates deal_item + price_history |
-| FastAPI endpoints (all listed) | PASS | 14 endpoints on node_intelligence.py |
+| # | Deliverable | Status | Evidence |
+|---|-------------|--------|----------|
+| 1 | Threading locks (RC1-RC5) | PASS | _state_lock, _db_lock, _run_status_lock — 3 locks protecting all shared state |
+| 2 | Queue-based execution (RC4) | PASS | queue.Queue with single _queue_consumer thread, dedup by project |
+| 3 | Git SHA change detection | PASS | _detect_changes uses git diff, project_sha_tracking table, _update_tested_sha |
+| 4 | /health endpoint | PASS | GET /api/health returns uptime, last_test_run, repo_heads, memory, queue_depth, version |
+| 5 | Unique temp files (RC6) | PASS | UUID-based: /tmp/walter-{runner}-{project}-{uuid}.json |
+| 6 | /api/run returns queued + polling | PASS | POST /api/run returns run_id, GET /api/run/{run_id}/status for polling |
+| 7 | Dead code removed | PASS | /api/history, /api/running, /api/testmap/baseline, _push_to_lockwood, AlertPayload all removed |
+| 8 | walter-setup.sh | PASS | LaunchAgent plist with KeepAlive+RunAtLoad, deploy+verify via /health |
 
-## Test Results
-- 39 tests passing (0 failures)
-- Coverage: schema, CRUD, webhook parsers, API endpoints, source classification
+## Code Quality
 
-## Notes
-- Docker installs (Miniflux, changedetection.io) are deployment tasks, not code deliverables
-- Feed subscription list is a Miniflux configuration task, not code
-- `package_versions` table added beyond spec for version tracking state
+- Python syntax verified (ast.parse)
+- Bash syntax verified (bash -n)
+- No unused imports (BaseModel, FastAPI removed)
+- No dead state variables (_file_hashes, _hash_lock removed)
+- All DB operations serialized via _db_lock
