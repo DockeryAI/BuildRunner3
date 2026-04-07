@@ -1,7 +1,7 @@
 # Build: Walter Sentinel Hardening + Cluster Monitoring
 
 **Created:** 2026-04-07
-**Status:** Phase 1 In Progress
+**Status:** Phases 1-3 Complete — Phase 2 In Progress
 **Deploy:** cluster — Walter (10.0.1.102), Lockwood (10.0.1.101), Muddy (local)
 
 ## Overview
@@ -66,7 +66,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 1: Walter Service Hardening
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Walter's test service is crash-proof, thread-safe, and uses git SHAs instead of mtimes for change detection.
 
 **Files:**
@@ -77,14 +77,14 @@ Walter has never successfully tested a single build despite being wired into 39 
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] Add `threading.Lock` for `_running`, `_file_hashes`, `_last_results`, `_db_lock` — wraps all shared state access (fixes RC1-RC5)
-- [ ] Replace dual trigger paths (loop + /api/run) with `queue.Queue` — single consumer thread pulls from queue, deduplicates by project+SHA, runs tests serially
-- [ ] Add `last_tested_sha` column to SQLite `test_runs` table. Replace `_detect_changes()` mtime logic with `git diff --name-only $last_tested_sha..HEAD`. Update `last_tested_sha` after each test run.
-- [ ] Add `GET /health` endpoint returning: uptime, last_test_run timestamp, repo HEADs per project, memory usage, queue depth, service version
-- [ ] Unique temp files: `/tmp/walter-{runner}-{project}-{uuid}.json` — prevents RC6
-- [ ] `/api/run` returns `{"status":"queued","run_id":"..."}`. Add `GET /api/run/{run_id}/status` for polling.
-- [ ] Remove dead code: `/api/history` endpoint (lines 816-834), `/api/running` endpoint (lines 939-941), `/api/testmap/baseline` endpoint (lines 887-936), dead `_push_to_lockwood()` (lines 548-574 — will be rewritten in Phase 5)
-- [ ] Create `walter-setup.sh`: SSH to Walter, deploy updated node_tests.py, create `~/Library/LaunchAgents/com.br3.walter-sentinel.plist` with KeepAlive+RunAtLoad, load LaunchAgent, verify via /health curl
+- [x] Add `threading.Lock` for `_running`, `_file_hashes`, `_last_results`, `_db_lock` — wraps all shared state access (fixes RC1-RC5)
+- [x] Replace dual trigger paths (loop + /api/run) with `queue.Queue` — single consumer thread pulls from queue, deduplicates by project+SHA, runs tests serially
+- [x] Add `last_tested_sha` column to SQLite `test_runs` table. Replace `_detect_changes()` mtime logic with `git diff --name-only $last_tested_sha..HEAD`. Update `last_tested_sha` after each test run.
+- [x] Add `GET /health` endpoint returning: uptime, last_test_run timestamp, repo HEADs per project, memory usage, queue depth, service version
+- [x] Unique temp files: `/tmp/walter-{runner}-{project}-{uuid}.json` — prevents RC6
+- [x] `/api/run` returns `{"status":"queued","run_id":"..."}`. Add `GET /api/run/{run_id}/status` for polling.
+- [x] Remove dead code: `/api/history` endpoint (lines 816-834), `/api/running` endpoint (lines 939-941), `/api/testmap/baseline` endpoint (lines 887-936), dead `_push_to_lockwood()` (lines 548-574 — will be rewritten in Phase 5)
+- [x] Create `walter-setup.sh`: SSH to Walter, deploy updated node_tests.py, create `~/Library/LaunchAgents/com.br3.walter-sentinel.plist` with KeepAlive+RunAtLoad, load LaunchAgent, verify via /health curl
 
 **Success Criteria:** Walter restarts automatically after `kill -9`. `/health` shows fresh data. Queue prevents concurrent test runs. Git-SHA detection catches every commit.
 
@@ -117,7 +117,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 3: Race Condition Fixes (Dashboard Layer)
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Dashboard and integrations are race-free.
 
 **Files:**
@@ -128,10 +128,10 @@ Walter has never successfully tested a single build despite being wired into 39 
 **Blocked by:** None (independent of Phases 1-2)
 **Deliverables:**
 
-- [ ] events.mjs: registry read-modify-write atomicity — write to temp file, then `fs.renameSync()` to `cluster-builds.json` (fixes RC17)
-- [ ] events.mjs: SSE broadcast safety — `const clients = [...sseClients]` before iterating (fixes RC21)
-- [ ] walter.mjs: replace `setInterval(poll, 30000)` with sequential `poll().then(() => setTimeout(poll, 30000))` — prevents stacking (fixes RC10)
-- [ ] walter.mjs: lock `lastCoverage` updates — read+compute+assign in single synchronous block (fixes RC11)
+- [x] events.mjs: registry read-modify-write atomicity — write to temp file, then `fs.renameSync()` to `cluster-builds.json` (fixes RC17)
+- [x] events.mjs: SSE broadcast safety — `const clients = [...sseClients]` before iterating (fixes RC21)
+- [x] walter.mjs: replace `setInterval(poll, 30000)` with sequential `poll().then(() => setTimeout(poll, 30000))` — prevents stacking (fixes RC10)
+- [x] walter.mjs: lock `lastCoverage` updates — read+compute+assign in single synchronous block (fixes RC11)
 
 **Success Criteria:** Parallel API calls to events.mjs don't corrupt registry. SSE broadcast doesn't crash on client disconnect. Walter polling never stacks.
 
@@ -183,7 +183,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 6: Cluster Health Monitor
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Every node is watched 24/7. Failures detected within 120 seconds.
 
 **Files:**
@@ -194,11 +194,11 @@ Walter has never successfully tested a single build despite being wired into 39 
 **Blocked by:** None (reads cluster.json, hits /health endpoints)
 **Deliverables:**
 
-- [ ] Poll all 6 nodes every 60s: ping + /health endpoint (where available). Read node list from `~/.buildrunner/cluster.json`.
-- [ ] Log to `~/.buildrunner/logs/cluster-health.log`: structured JSON lines — timestamp, node, status (online/degraded/offline), CPU, memory, last_activity
-- [ ] Detect conditions: node down (2 consecutive fails), degraded (CPU>90% or memory>85%), service crashed (ping OK but /health fails), repo drift (HEAD behind Muddy)
-- [ ] Alert mechanism: write to `~/.buildrunner/alerts/` directory — one JSON file per alert with type, node, severity, message, timestamp. Dashboard events.mjs scans this directory.
-- [ ] LaunchAgent plist: KeepAlive, RunAtLoad, stdout/stderr to log file, ThrottleInterval 60
+- [x] Poll all 6 nodes every 60s: ping + /health endpoint (where available). Read node list from `~/.buildrunner/cluster.json`.
+- [x] Log to `~/.buildrunner/logs/cluster-health.log`: structured JSON lines — timestamp, node, status (online/degraded/offline), CPU, memory, last_activity
+- [x] Detect conditions: node down (2 consecutive fails), degraded (CPU>90% or memory>85%), service crashed (ping OK but /health fails), repo drift (HEAD behind Muddy)
+- [x] Alert mechanism: write to `~/.buildrunner/alerts/` directory — one JSON file per alert with type, node, severity, message, timestamp. Dashboard events.mjs scans this directory.
+- [x] LaunchAgent plist: KeepAlive, RunAtLoad, stdout/stderr to log file, ThrottleInterval 60
 
 **Success Criteria:** Kill Walter's service → alert file within 120s. Node goes offline → alert within 120s. Logs show continuous 60s polling.
 
