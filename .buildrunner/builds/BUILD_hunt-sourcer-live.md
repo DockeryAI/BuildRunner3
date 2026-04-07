@@ -219,7 +219,7 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 
 ### Phase 6: Market Price Collection _(added: 2026-04-07)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 5 (complete)
 **Goal:** Accumulate historical price data from sold listings, Reddit history, and ongoing sourcer runs. Build the dataset for deal quality scoring.
 **Adversarial review:** 13 blockers found and resolved (price_history reuse, migration pattern, eBay API dual-key check, budget from target_price). Findings: `.buildrunner/plans/amend-adversarial-findings.json`

@@ -18,7 +18,8 @@
       "enabled": true,
       "stores": [{ "name": "Minisforum", "domain": "www.minisforum.com" }]
     },
-    "bhphoto": { "enabled": true }
+    "bhphoto": { "enabled": true },
+    "ebay_sold": { "enabled": true, "_note": "Completed/sold listings for market price data" }
   },
   "dedup": {
     "url_hash": true,

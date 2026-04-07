@@ -70,17 +70,26 @@ CREATE INDEX IF NOT EXISTS idx_deal_verified ON deal_items(verified);
 CREATE INDEX IF NOT EXISTS idx_deal_in_stock ON deal_items(in_stock);
 CREATE INDEX IF NOT EXISTS idx_deal_url_hash ON deal_items(listing_url_hash);
 
--- Price history for tracking deals over time
+-- Price history for tracking deals over time + market price collection
 CREATE TABLE IF NOT EXISTS price_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    deal_item_id INTEGER NOT NULL,
+    deal_item_id INTEGER,  -- nullable for market-only entries (no deal item)
+    hunt_id INTEGER,       -- which hunt this price belongs to
     price REAL NOT NULL,
     source TEXT,
+    title TEXT,            -- listing title for market context
+    url TEXT,              -- listing URL
+    is_sold INTEGER DEFAULT 0,  -- 1=completed/sold transaction, 0=active listing
+    condition TEXT,         -- New/Used/Refurbished etc
     recorded_at TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (deal_item_id) REFERENCES deal_items(id)
+    FOREIGN KEY (deal_item_id) REFERENCES deal_items(id),
+    FOREIGN KEY (hunt_id) REFERENCES active_hunts(id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_price_deal ON price_history(deal_item_id);
+CREATE INDEX IF NOT EXISTS idx_price_hunt ON price_history(hunt_id);
+CREATE INDEX IF NOT EXISTS idx_price_sold ON price_history(is_sold);
+CREATE INDEX IF NOT EXISTS idx_price_recorded ON price_history(recorded_at);
 
 -- Model snapshots for Anthropic API model tracking
 CREATE TABLE IF NOT EXISTS model_snapshots (

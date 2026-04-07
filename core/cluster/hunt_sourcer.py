@@ -226,6 +226,23 @@ async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dic
         if source_url in existing_urls:
             continue
 
+        # Log every price to market data BEFORE validation — rejected items are valid market data
+        item_price = item.get("price")
+        if item_price and item_price > 0:
+            try:
+                from core.cluster.intel_collector import log_market_price
+                log_market_price(
+                    hunt_id=hunt_id,
+                    price=item_price,
+                    source=item.get("attributes", {}).get("source", source_url[:50] if source_url else "unknown"),
+                    title=item.get("name"),
+                    url=item.get("listing_url") or source_url,
+                    is_sold=0,
+                    condition=item.get("condition"),
+                )
+            except Exception as e:
+                logger.debug(f"Market price log failed: {e}")
+
         # Validate against hunt requirements
         passed, reason = _validate_item(item, requirements, hunt_keywords)
         if not passed:
@@ -398,7 +415,15 @@ async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list
     try:
         if source_name == "ebay_scrape":
             from core.cluster.hunt_sources.ebay_scrape import search
+        elif source_name == "ebay_sold":
+            from core.cluster.hunt_sources.ebay_sold import search
         elif source_name == "ebay_browse":
+            # Only enable when BOTH API keys present
+            app_id = os.environ.get("EBAY_APP_ID", "")
+            secret = os.environ.get("EBAY_SECRET", "")
+            if not (app_id and secret):
+                logger.debug("ebay_browse skipped — requires EBAY_APP_ID + EBAY_SECRET env vars")
+                return []
             from core.cluster.hunt_sources.ebay_browse import search
         elif source_name == "reddit_rss":
             from core.cluster.hunt_sources.reddit_rss import search
@@ -501,6 +526,15 @@ async def check_hunts_once():
         # Insert into Lockwood — validates every item against requirements
         new_count = await _batch_insert_deals(all_items, hunt_id, requirements, hunt_keywords)
         logger.info(f"  Hunt [{hunt_id}]: {len(all_items)} found, {new_count} new items inserted")
+
+        # Run Reddit historical search for market data collection
+        try:
+            from core.cluster.hunt_sources.reddit_rss import search_historical
+            reddit_config = config.get("sources", {}).get("reddit_rss", {})
+            if reddit_config.get("enabled", True):
+                await search_historical(hunt, reddit_config)
+        except Exception as e:
+            logger.debug(f"Reddit historical search failed for hunt [{hunt_id}]: {e}")
 
         # Pair detection
         await _detect_pairs(hunt_id, config)

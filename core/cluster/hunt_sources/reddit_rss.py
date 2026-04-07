@@ -216,3 +216,91 @@ async def search(hunt: dict, config: dict) -> list[dict]:
 
     logger.info(f"Reddit search for '{keywords}' returned {len(items)} items across {len(subreddits)} subreddits")
     return items
+
+
+async def search_historical(hunt: dict, config: dict) -> list[dict]:
+    """Search Reddit's JSON search API for historical price data (last 30 days).
+    Different from the RSS feed — uses /search.json which returns more results
+    and allows time filtering. Logs prices to market data.
+    """
+    if not httpx:
+        logger.warning("httpx not installed — Reddit historical search unavailable")
+        return []
+
+    keywords = hunt.get("keywords", hunt.get("name", ""))
+    if not keywords:
+        return []
+
+    subreddits = config.get("subreddits", DEFAULT_SUBREDDITS)
+    prices_logged = 0
+
+    for subreddit in subreddits:
+        try:
+            async with httpx.AsyncClient(
+                timeout=10.0,
+                headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"},
+            ) as client:
+                # Reddit search JSON API — last 30 days
+                # Clean keywords for search: remove exclusion terms (-)
+                search_terms = " ".join(
+                    kw for kw in keywords.split() if not kw.startswith("-")
+                )
+                url = f"https://www.reddit.com/r/{subreddit}/search.json"
+                params = {
+                    "q": search_terms,
+                    "restrict_sr": "on",
+                    "sort": "new",
+                    "t": "month",  # last 30 days
+                    "limit": 100,
+                }
+                resp = await client.get(url, params=params)
+
+                if resp.status_code == 429:
+                    logger.warning(f"Reddit rate limit on r/{subreddit} search")
+                    continue
+                if resp.status_code != 200:
+                    logger.warning(f"Reddit r/{subreddit} search returned {resp.status_code}")
+                    continue
+
+                data = resp.json()
+                children = data.get("data", {}).get("children", [])
+
+                for child in children:
+                    post = child.get("data", {})
+                    title = post.get("title", "")
+                    if not title:
+                        continue
+
+                    # Extract price from title
+                    price = _extract_price(title)
+                    if not price or price <= 0:
+                        continue
+
+                    permalink = post.get("permalink", "")
+                    post_url = f"https://www.reddit.com{permalink}" if permalink else ""
+
+                    # Log to market data
+                    try:
+                        from core.cluster.intel_collector import log_market_price
+                        # r/hardwareswap posts are completed sales (is_sold=1)
+                        # r/buildapcsales are active deals (is_sold=0)
+                        is_sold = 1 if subreddit == "hardwareswap" else 0
+                        result = log_market_price(
+                            hunt_id=hunt["id"],
+                            price=price,
+                            source=f"reddit/{subreddit}",
+                            title=title,
+                            url=post_url,
+                            is_sold=is_sold,
+                            condition=_extract_condition(title),
+                        )
+                        if result:
+                            prices_logged += 1
+                    except ImportError:
+                        pass
+
+        except Exception as e:
+            logger.error(f"Reddit historical search failed for r/{subreddit}: {e}")
+
+    logger.info(f"Reddit historical: logged {prices_logged} prices for '{keywords}'")
+    return []  # Historical search only logs market data, doesn't return deal items

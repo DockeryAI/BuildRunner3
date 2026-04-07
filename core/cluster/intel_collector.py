@@ -83,6 +83,15 @@ def _ensure_intel_tables(conn: sqlite3.Connection):
         ("intel_improvements", "auto_acted", "INTEGER DEFAULT 0"),
         ("intel_improvements", "auto_act_log", "TEXT"),
         ("deal_items", "listing_url_hash", "TEXT"),
+        # Phase 6: price_history market data columns
+        ("price_history", "hunt_id", "INTEGER"),
+        ("price_history", "is_sold", "INTEGER DEFAULT 0"),
+        ("price_history", "condition", "TEXT"),
+        ("price_history", "title", "TEXT"),
+        ("price_history", "url", "TEXT"),
+        # Phase 7: deal_items purchase tracking
+        ("deal_items", "purchased", "INTEGER DEFAULT 0"),
+        ("deal_items", "purchased_price", "REAL"),
     ]
     for table, col, col_def in _migrate_columns:
         try:
@@ -262,8 +271,8 @@ def create_deal_item(hunt_id: int, name: str, category: str = None,
         # Create initial price history entry
         if price is not None:
             conn.execute(
-                "INSERT INTO price_history (deal_item_id, price, source) VALUES (?, ?, ?)",
-                (deal_id, price, source_url)
+                "INSERT INTO price_history (deal_item_id, hunt_id, price, source, title, url, condition) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (deal_id, hunt_id, price, source_url, name, listing_url or source_url, condition)
             )
             conn.commit()
 
@@ -311,6 +320,40 @@ def get_price_history(deal_item_id: int) -> list[dict]:
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+
+def log_market_price(hunt_id: int, price: float, source: str,
+                     title: str = None, url: str = None,
+                     is_sold: int = 0, condition: str = None) -> Optional[int]:
+    """Log a market price data point for a hunt (no deal_item required).
+    Used for building market stats: every price seen, including rejected items and sold listings.
+    Returns price_history row ID or None on error.
+    """
+    if price is None or price <= 0:
+        return None
+    conn = _get_intel_db()
+    try:
+        # Dedup: skip if same url already recorded for this hunt
+        if url:
+            existing = conn.execute(
+                "SELECT id FROM price_history WHERE hunt_id = ? AND url = ?",
+                (hunt_id, url)
+            ).fetchone()
+            if existing:
+                return None
+
+        cursor = conn.execute(
+            """INSERT INTO price_history (deal_item_id, hunt_id, price, source, title, url, is_sold, condition)
+               VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)""",
+            (hunt_id, price, source, title, url, is_sold, condition)
+        )
+        conn.commit()
+        return cursor.lastrowid
+    except Exception as e:
+        logger.error(f"log_market_price failed: {e}")
+        return None
+    finally:
+        conn.close()
 
 
 def mark_deal_read(item_id: int) -> bool:
