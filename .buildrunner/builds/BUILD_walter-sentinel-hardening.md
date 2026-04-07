@@ -1,7 +1,7 @@
 # Build: Walter Sentinel Hardening + Cluster Monitoring
 
 **Created:** 2026-04-07
-**Status:** Phases 1-5 Complete — Phase 4 In Progress
+**Status:** Phases 1-7 Complete — Phase 8 In Progress
 **Deploy:** cluster — Walter (10.0.1.102), Lockwood (10.0.1.101), Muddy (local)
 
 ## Overview
@@ -139,7 +139,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 4: Blocking Test Gates
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Failing tests actually block phase completion and pushes. Governance is enforced, not advisory.
 
 **Files:**
@@ -150,9 +150,9 @@ Walter has never successfully tested a single build despite being wired into 39 
 **Blocked by:** Phase 1 (Walter must return accurate results), Phase 2 (dispatch must be reliable)
 **Deliverables:**
 
-- [ ] begin.md Step 6.5: query Walter `/api/coverage?project=$PROJECT`. If `pass_rate < 1.0` → output `BLOCK: Walter reports N failing tests` with failure list. Require explicit user confirmation to override.
-- [ ] commit.md: query Walter `/api/coverage?project=$PROJECT` before push. If `pass_rate < 1.0` → block push with failure details. Allow `--force` flag for emergency override.
-- [ ] Both gates: if Walter offline → WARN but don't block (graceful degradation). Log gate result to `~/.buildrunner/logs/test-pipeline.log`.
+- [x] begin.md Step 6.5: query Walter `/api/coverage?project=$PROJECT`. If `pass_rate < 1.0` → output `BLOCK: Walter reports N failing tests` with failure list. Require explicit user confirmation to override.
+- [x] commit.md: query Walter `/api/coverage?project=$PROJECT` before push. If `pass_rate < 1.0` → block push with failure details. Allow `--force` flag for emergency override.
+- [x] Both gates: if Walter offline → WARN but don't block (graceful degradation). Log gate result to `~/.buildrunner/logs/test-pipeline.log`.
 
 **Success Criteria:** Phase completion with failing tests requires explicit user override. Push with failing tests blocked unless --force.
 
@@ -206,7 +206,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 7: Build Monitor + Test Pipeline Monitor
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Every active build is watched. The full test pipeline is traced end-to-end.
 
 **Files:**
@@ -217,11 +217,11 @@ Walter has never successfully tested a single build despite being wired into 39 
 **Blocked by:** Phase 2 (needs walter-dispatch.log), Phase 6 (needs health data)
 **Deliverables:**
 
-- [ ] Build monitor: read `cluster-builds.json` every 30s. For each active build: SSH to assigned node, check Claude process running, check `git log --oneline -1`, check sidecar.json status.
-- [ ] Stall detection: no new commit in 10 min on active build → write alert. Node offline mid-build → write alert + log which build is orphaned.
-- [ ] Test pipeline monitor: parse `~/.buildrunner/logs/walter-dispatch.log`, trace chain: commit_timestamp → dispatch_timestamp → run_id → /api/run/{id}/status complete → Lockwood POST.
-- [ ] Gap detection: any pipeline step >2 min or missing from chain → write alert with gap details.
-- [ ] Logs: `~/.buildrunner/logs/monitor.log` (build monitor) and `~/.buildrunner/logs/test-pipeline.log` (pipeline tracer). Same structured JSON line format as health monitor.
+- [x] Build monitor: read `cluster-builds.json` every 30s. For each active build: SSH to assigned node, check Claude process running, check `git log --oneline -1`, check sidecar.json status.
+- [x] Stall detection: no new commit in 10 min on active build → write alert. Node offline mid-build → write alert + log which build is orphaned.
+- [x] Test pipeline monitor: parse `~/.buildrunner/logs/walter-dispatch.log`, trace chain: commit_timestamp → dispatch_timestamp → run_id → /api/run/{id}/status complete → Lockwood POST.
+- [x] Gap detection: any pipeline step >2 min or missing from chain → write alert with gap details.
+- [x] Logs: `~/.buildrunner/logs/monitor.log` (build monitor) and `~/.buildrunner/logs/test-pipeline.log` (pipeline tracer). Same structured JSON line format as health monitor.
 
 **Success Criteria:** Active build stalls 10 min → alert fires. Commit-to-results pipeline gap >2 min → flagged in pipeline log.
 
