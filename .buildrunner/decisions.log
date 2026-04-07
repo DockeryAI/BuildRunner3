@@ -352,3 +352,7 @@
 [2026-04-07T01:33:44Z] [AMENDMENT] Added 4 phases (35-38) to BUILD_cluster-build-orchestration: dispatch reliability + node expansion, intel pipeline activation, Walter commit-triggered testing, dashboard polish + spec hygiene. Reason: session revealed dispatch unreliability, Below/Lomax underutilization, mock data in intel workspace, no commit-triggered testing.
 [2026-04-07T01:48:58Z] Phase 4 decisions: visual regression uses Playwright toHaveScreenshot() with maxDiffPixelRatio=0.005, animations disabled, caret hidden. Visual tests tagged @visual and excluded from normal E2E runs via testIgnore. Docker baseline generation uses mcr.microsoft.com/playwright:v1.40.1-jammy with Noto+Liberation+DejaVu fonts for cross-platform parity.
 [Mon Apr  6 21:30:18 CDT 2026] [DECISION] Created build spec: intel-innovation-engine with 4 phases — tiered auto-action system, innovation discovery, categorized dashboard
+[2026-04-07T04:08:32Z] Phase 1 decisions:
+  - All 10 deliverables were already implemented (pre-existing code)
+  - No code changes needed — verified structural compliance of all files
+  - TDD skipped: Lockwood Python/SQLite project, no local test runner in scope
