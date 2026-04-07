@@ -1,7 +1,7 @@
 # Build: Dashboard Build Liveness Detection
 
 **Created:** 2026-04-07
-**Status:** Phases 1-8 Complete — Phase 9 In Progress
+**Status:** BUILD COMPLETE — All 9 Phases Done
 **Deploy:** local — dashboard event server restart (`kill $(pgrep -f "node events.mjs"); cd ~/.buildrunner/dashboard && node events.mjs &`)
 
 ## Overview
@@ -274,7 +274,7 @@ styles.css:
 
 ### Phase 9: Integration Test _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Blocked by:** Phases 6, 7
 **Goal:** End-to-end validation of full sidecar lifecycle: PID detection, stall marking, rescue tag recovery.
 **Files:**
@@ -283,12 +283,12 @@ styles.css:
 
 **Deliverables:**
 
-- [ ] Create dummy BUILD, dispatch locally with sidecar, verify sidecar.json + heartbeat + rescue tag _(added: 2026-04-07)_
-- [ ] Kill Claude process, verify exit-status.json within 15s _(added: 2026-04-07)_
-- [ ] Verify scanner detects stalled via PID within one scan cycle _(added: 2026-04-07)_
-- [ ] Verify rescue tag contains uncommitted changes _(added: 2026-04-07)_
-- [ ] Simulate redispatch, verify stash applied and code recovered _(added: 2026-04-07)_
-- [ ] Clean up: remove test build, tags, locks _(added: 2026-04-07)_
+- [x] Create dummy BUILD, dispatch locally with sidecar, verify sidecar.json + heartbeat + rescue tag _(added: 2026-04-07)_
+- [x] Kill Claude process, verify exit-status.json within 15s _(added: 2026-04-07)_
+- [x] Verify scanner detects stalled via PID within one scan cycle _(added: 2026-04-07)_
+- [x] Verify rescue tag contains uncommitted changes _(added: 2026-04-07)_
+- [x] Simulate redispatch, verify stash applied and code recovered _(added: 2026-04-07)_
+- [x] Clean up: remove test build, tags, locks _(added: 2026-04-07)_
 
 **Success Criteria:** `test-sidecar.sh` exits 0. All assertions pass.
 
