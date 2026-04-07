@@ -1,0 +1,7 @@
+{
+  "apiUrl": "http://10.0.1.104:4200",
+  "branchName": "main",
+  "enableSoftAssert": false,
+  "ciBuildId": "",
+  "project": ""
+}

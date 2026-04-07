@@ -1,7 +1,7 @@
 # Build: Self-QA Enforcement Layer
 
 **Created:** 2026-04-06
-**Status:** Phases 1-4 Complete — Phase 5 In Progress
+**Status:** BUILD COMPLETE — All 5 Phases Done
 **Deploy:** web — global skill updates (applies to all BR3 projects)
 
 ## Overview
@@ -112,7 +112,7 @@ Make it impossible for Claude to mark work done without visually verifying it in
 
 ### Phase 5: Visual Regression Tracker on Lomax
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/.buildrunner/scripts/deploy-vrt-lomax.sh (NEW)
@@ -120,11 +120,11 @@ Make it impossible for Claude to mark work done without visually verifying it in
   **Blocked by:** Phase 4 (need baselines first)
   **After:** Phase 4
   **Deliverables:**
-- [ ] Write deployment script for VRT Docker Compose on Lomax
-- [ ] Configure VRT with odiff comparison provider
-- [ ] Wire `@visual-regression-tracker/agent-playwright` integration into BR3 projects
-- [ ] Configure branch-based baselines (separate per git branch)
-- [ ] Add VRT dashboard URL to BR3 cluster dashboard
+- [x] Write deployment script for VRT Docker Compose on Lomax
+- [x] Configure VRT with odiff comparison provider
+- [x] Wire `@visual-regression-tracker/agent-playwright` integration into BR3 projects
+- [x] Configure branch-based baselines (separate per git branch)
+- [x] Add VRT dashboard URL to BR3 cluster dashboard
 - [ ] Test end-to-end: code change on Muddy → visual test runs → diff appears in VRT on Lomax
 
 **Success Criteria:** Push a CSS change — VRT dashboard on Lomax shows the visual diff with approve/reject buttons. Branch baselines are isolated.

@@ -86,6 +86,48 @@ async def intel_startup():
         logger.info("DISABLE_SCORING=true — skipping scoring cron")
 
 
+# --- Manual Intel Submission ---
+
+class IntelCreate(BaseModel):
+    title: str
+    source: str = "claude-code-collector"
+    url: Optional[str] = None
+    raw_content: Optional[str] = None
+    source_type: str = "official"
+    category: str = "ecosystem-news"
+    priority: Optional[str] = None
+    summary: Optional[str] = None
+
+
+@router.post("/api/intel/items")
+async def create_intel_endpoint(item: IntelCreate):
+    """Create an intel item directly (used by Claude Code collector)."""
+    from core.cluster.intel_collector import create_intel_item, _get_intel_db
+    item_id = create_intel_item(
+        title=item.title, source=item.source, url=item.url,
+        raw_content=item.raw_content, source_type=item.source_type,
+        category=item.category,
+    )
+    if item_id and (item.priority or item.summary):
+        conn = _get_intel_db()
+        updates = []
+        params = []
+        if item.priority:
+            updates.append("priority = ?")
+            params.append(item.priority)
+            updates.append("scored = 1")
+        if item.summary:
+            updates.append("summary = ?")
+            params.append(item.summary)
+        params.append(item_id)
+        conn.execute(f"UPDATE intel_items SET {', '.join(updates)} WHERE id = ?", params)
+        conn.commit()
+        conn.close()
+    if item_id is None:
+        return {"status": "duplicate", "id": None}
+    return {"status": "created", "id": item_id}
+
+
 # --- Intel Endpoints ---
 
 @router.get("/api/intel/items")
