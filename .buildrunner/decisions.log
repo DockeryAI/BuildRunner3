@@ -482,3 +482,8 @@
   - Created backfill script at core/cluster/scripts/backfill-lockwood-tests.sh
   - Trigger marking: watch/manual already correct, 'hook' passed via /api/run?trigger=hook from auto-save dispatch
 [2026-04-07T22:07:21Z] Phase 7 decisions: Created build-monitor.mjs (30s poll, 10min stall detection, SSH checks for Claude process + git log + sidecar) and test-pipeline-monitor.mjs (parses walter-dispatch.log, traces commit->dispatch->walter->lockwood chain, 2min gap alerts). Both follow cluster-health-monitor.mjs patterns: structured JSON lines, alert file writing, graceful shutdown.
+[2026-04-07T22:14:52Z] Phase 8 decisions:
+  - auto-remediate.mjs: alert→action mapping (service_restart, repo_sync, walter_trigger, build_redispatch), cooldown per node+action, processed alerts moved to subdirectory
+  - monitor-config.json: service_restart/repo_sync/walter_trigger ON by default, build_redispatch OFF (manual)
+  - ws-monitor.js: 4 tabs (topology/alerts/remediation/pipeline), SSE auto-refresh on monitor.* events, 30s poll
+  - events.mjs: 7 new /api/monitor/* endpoints for alerts, health, remediation, pipeline, builds, config, event emit
