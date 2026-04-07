@@ -187,7 +187,7 @@ Dead code cleanup:
 
 ### Phase 6: Dispatch Integration + Infrastructure Hardening _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 5 (both touch events.mjs)
 **Goal:** All Claude dispatch paths wrap in sidecar. Fix crash cleanup in dispatch script. Prevent double-dispatch via PID guard.
 **Adversarial review:** 6-agent analysis found 4 Claude invocations in dispatch-to-node.sh (lines 155, 166, 220, 229), 3 local spawn points in events.mjs, no EXIT trap, no double-dispatch prevention.
@@ -222,7 +222,7 @@ events.mjs dispatch:
 
 ### Phase 7: Resume Logic _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 4
 **Goal:** Recover uncommitted work from dead sessions on resume. New executor Step 0.5 detects rescue tags and applies stashed work.
 **Files:**
