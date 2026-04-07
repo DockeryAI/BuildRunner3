@@ -1,7 +1,7 @@
 # Build: Hunt Sourcer — Go Live
 
 **Created:** 2026-04-06
-**Status:** BUILD COMPLETE — All 5 Phases Done
+**Status:** Phases 1-5 Complete — Phase 6 In Progress
 **Deploy:** local — Lockwood FastAPI (sourcer cron), zero external API keys required
 
 ## Overview
@@ -219,7 +219,7 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 
 ### Phase 6: Market Price Collection _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 5 (complete)
 **Goal:** Accumulate historical price data from sold listings, Reddit history, and ongoing sourcer runs. Build the dataset for deal quality scoring.
 **Adversarial review:** 13 blockers found and resolved (price_history reuse, migration pattern, eBay API dual-key check, budget from target_price). Findings: `.buildrunner/plans/amend-adversarial-findings.json`
@@ -247,7 +247,7 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 
 ### Phase 7: Market Stats Engine + Purchase Tracking _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 6 (needs market data to compute stats)
 **Goal:** Compute per-hunt market statistics and deal quality scoring. Add purchase tracking.
 
@@ -282,7 +282,7 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 **Deliverables:**
 
 - [ ] Fetch market stats per hunt — separate call to `GET /api/deals/market/{hunt_id}` per active hunt _(added: 2026-04-07)_
-- [ ] Compute deal*percentile at render time: `(prices_above_this / total_prices) * 100` from market stats response *(added: 2026-04-07)\_
+- [ ] Compute deal*percentile at render time: `(prices_above_this / total_prices) * 100` from market stats response \*(added: 2026-04-07)\_
 - [ ] Sort deals by deal*percentile ascending (best deals first) *(added: 2026-04-07)\_
 - [ ] Deal card redesign: title + price (large), tags (source/condition/stock), market position bar showing price vs P25/median/P75 range _(added: 2026-04-07)_
 - [ ] Highlight tiers: exceptional (below P25) green glow + label, good (below median) green border, fair (above median) neutral, pass (above budget) muted _(added: 2026-04-07)_
