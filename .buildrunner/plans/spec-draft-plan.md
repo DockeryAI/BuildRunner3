@@ -1,190 +1,122 @@
-# Build: Research Library Vectorization
+# Draft Plan: Walter Sentinel Hardening + Cluster Monitoring
 
-**Created:** 2026-04-07
-**Status:** Draft
-**Deploy:** cluster — Lockwood (10.0.1.101) service restart
+## Problem Statement
 
-## Overview
+Walter (test-runner sentinel, 10.0.1.102) has never successfully tested a single build despite being "wired in" across 39 phases of cluster-build-orchestration. Root cause analysis found 5 compounding failures:
 
-Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research context surfaces automatically during work — no manual skill invocation needed. Extends existing LanceDB + FastAPI infrastructure with a new `research_library` table, markdown-aware chunking, and integration into the recall hook + developer brief + skills.
+1. **Walter crashes and never restarts** — no LaunchAgent, empty PID file, no auto-recovery
+2. **Repos on Walter are stale** — git pull silently fails, mtime-based change detection misses everything
+3. **Trigger fires into the void** — auto-save-session.sh curls Walter in background with output to /dev/null, no logging, no verification
+4. **Results never block anything** — governance says "block on test failure" but all gates are warnings-only
+5. **Phase 37 marked complete but unbuilt** — no post-receive hook, no Lockwood reporting, no sparklines
 
-## What Changes
+Additionally, deep code scan found:
 
-**The core shift:** Research goes from "pull" (user invokes /learn, /opus, /chet, etc.) to "push" (Lockwood auto-surfaces relevant chunks when you edit files, start sessions, or begin build phases).
+- **22 race conditions** (7 critical) in node_tests.py, events.mjs, dispatch-to-node.sh, walter.mjs
+- **8 dead code blocks** including endpoints nobody calls and functions pushing to non-existent Lockwood endpoints
+- **3 duplicate test dispatch paths** that can race against each other
 
-**Skills that need updating:**
+## Scope
 
-- `/learn` — semantic search becomes primary, synonym table becomes fallback, chunk-level retrieval replaces whole-file loading
-- `/begin` — phase starts query Lockwood for research relevant to phase deliverables
-- `/opus`, `/chet`, `/geo`, `/social`, `/prompt`, `/llm`, `/recraft`, `/perplexity`, `/appdesign` — still work as manual deep-dive overrides, but gain cross-domain discovery (e.g., /opus also surfaces related hallucination-prevention and claude-automation chunks)
-- `/research` — new research output auto-indexes into Lockwood immediately
-- `/br3-frontend-design`, `/design`, `/website-build` — auto-pull relevant design research from Lockwood
+Fix Walter permanently. Add cluster-wide monitoring. Make the test pipeline bulletproof from commit to gate.
 
-**Hooks that need updating:**
+### In Scope
 
-- `recall-on-tool.sh` — add research query as 4th parallel source (~20 lines: temp file, trap update, curl, PID wait, Python parse)
-- `developer-brief.sh` — add research context section at session start
+- Walter service hardening (LaunchAgent, health, auto-restart)
+- Race condition fixes in node_tests.py (threading locks, queue-based dispatch)
+- Race condition fixes in events.mjs (registry atomicity, SSE safety, dispatch locking)
+- Push-based repo sync replacing broken pull-based polling
+- Git SHA-based change detection replacing fragile mtime detection
+- Dispatch logging and verification (walter-dispatch.log)
+- Blocking test gates in /begin and /commit
+- Phase 37 completion (Lockwood reporting endpoint + Walter push)
+- Dead code removal from node_tests.py and dispatch-to-node.sh
+- Cluster health monitor (LaunchAgent, all 6 nodes, 60s interval)
+- Build monitor (active builds, stall detection, 30s interval)
+- Test pipeline monitor (end-to-end tracing: commit → dispatch → run → results)
+- Auto-remediation agent (restart services, fix repo drift, re-dispatch stalled builds)
+- Dashboard monitoring workspace (ws-monitor.js)
 
-**New infrastructure:**
+### Out of Scope
 
-- Markdown section chunker (splits on H2/H3, preserves frontmatter metadata)
-- Text embedding model (nomic-embed-text-v1.5 alongside existing CodeRankEmbed)
-- LanceDB `research_library` table (~1,800 vectors)
-- Batch + incremental indexer for ~/repos/research-library/ (already synced to Lockwood)
-- API endpoints: /api/research/search, /api/research/reindex, /api/research/stats
-- Dashboard workspace for research index health
+- Rewriting the entire dashboard
+- Changing the cluster topology
+- Adding new cluster nodes
+- Rewriting /autopilot or /begin from scratch
+- Intel pipeline (Phase 36 — separate build)
 
-## Parallelization Matrix
+## Technical Approach
 
-| Phase | Key Files                                                      | Can Parallel With | Blocked By    |
-| ----- | -------------------------------------------------------------- | ----------------- | ------------- |
-| 1     | core/cluster/node_semantic.py, research_chunker.py (NEW)       | -                 | -             |
-| 2     | ~/.buildrunner/scripts/recall-on-tool.sh, developer-brief.sh   | 3                 | 1 (needs API) |
-| 3     | ~/.claude/commands/learn.md, begin.md, opus.md, etc.           | 2                 | 1 (needs API) |
-| 4     | ~/.claude/commands/research.md, public/js/ws-research.js (NEW) | -                 | 1 (needs API) |
+### Walter Service (node_tests.py)
 
----
+- Add `threading.Lock` for `_running`, `_file_hashes`, `_last_results`
+- Replace dual trigger paths (loop + /api/run) with single queue consumer
+- Unique temp files per run (include run_id in path)
+- SQLite write serialization via `_db_lock`
+- Git SHA-based change detection: `git diff --name-only $last_tested_sha..HEAD`
+- Store `last_tested_sha` per repo in SQLite
+- Remove dead endpoints: /api/history, /api/running, /api/testmap/baseline
+- Fix `_push_to_lockwood()` to target correct Lockwood endpoint
 
-## Phases
+### Cluster Infrastructure
 
-### Phase 1: Vectorization Engine (Lockwood)
+- Push-based sync: git remote `walter` on Muddy, push before /api/run trigger
+- Enhanced auto-save-session.sh: log dispatches, verify health, capture response
+- LaunchAgent on Walter: KeepAlive, RunAtLoad, log rotation
+- Enhanced /health endpoint: uptime, last_test_run, repo HEADs, memory
 
-**Goal:** Research library indexed in LanceDB with semantic search API working on Lockwood.
+### Events & Dispatch (events.mjs, dispatch-to-node.sh)
 
-**Files:**
+- Registry read-modify-write atomicity (temp-file-then-rename)
+- Dispatch lock files per node+project
+- SSE broadcast: copy Set before iterating
+- Unique prompt file paths (include buildId + timestamp)
+- Walter.mjs: sequential polling (prevents stacking)
 
-- core/cluster/node_semantic.py (MODIFY) — add research table, text embedder, search/reindex endpoints
-- core/cluster/memory_store.py (MODIFY) — add research metadata SQLite table
-- core/cluster/research_chunker.py (NEW) — markdown section chunker with frontmatter extraction
-- core/cluster/scripts/reindex-research.sh (NEW) — CLI trigger for batch reindexing
+### Gates
 
-**Blocked by:** None
-**Deliverables:**
+- /begin Step 6.5: BLOCK on pass_rate < 1.0 (not just warn)
+- /commit: BLOCK on test failures (allow --force override)
 
-- [ ] Markdown-aware chunker: splits docs on H2/H3 headers, each chunk gets doc title + section header + content + frontmatter metadata (domain, subjects, priority)
-- [ ] Text embedding model: load nomic-embed-text-v1.5 as second SentenceTransformer (text-optimized, ~275MB RAM), keep CodeRankEmbed for code table
-- [ ] LanceDB `research_library` table: schema with id, title, section, domain, subjects, priority, source_file, content, vector
-- [ ] Batch indexer: discover .md files in ~/repos/research-library/docs/ (Lockwood's synced copy). Directory mtime check before file scan — skip entirely when unchanged. File-level hash detection for incremental updates
-- [ ] API endpoint GET /api/research/search?query=X&limit=N: semantic query returning top-k chunks with source file, section, score (GET with query params, consistent with existing Lockwood endpoints)
-- [ ] API endpoint POST /api/research/reindex: trigger manual reindexing
-- [ ] API endpoint GET /api/research/stats: table size, last indexed, file count, chunk count
-- [ ] Background indexer thread: reindex research library on configurable interval (default: 300s, research changes rarely)
-- [ ] Deploy to Lockwood, restart service, verify with curl test
+### Monitoring (NEW)
 
-**Success Criteria:** `curl -s "http://10.0.1.101:8100/api/research/search?query=prompting+best+practices&limit=5"` returns relevant chunks from opus/prompting research docs with scores > 0.3 (nomic-embed-text typical relevant range is 0.3-0.6).
+- cluster-health-monitor.mjs — LaunchAgent, 60s, all nodes, logs to .buildrunner/logs/cluster-health.log
+- build-monitor.mjs — LaunchAgent, 30s, active builds, logs to .buildrunner/logs/monitor.log
+- test-pipeline-monitor.mjs — hooks into dispatch log, traces full chain
+- auto-remediate.mjs — triggered by alerts, restarts/syncs/re-dispatches
+- ws-monitor.js — dashboard workspace for all monitoring data
 
----
+## Files
 
-### Phase 2: Ambient Research (Hooks)
+### MODIFY
 
-**Goal:** Research automatically surfaces during editing and session starts without any skill invocation.
+- `core/cluster/node_tests.py` — race fixes, queue, git-SHA detection, dead code removal, /health enhancement
+- `~/.buildrunner/scripts/auto-save-session.sh` — push-based sync, logging, health verification
+- `~/.buildrunner/dashboard/integrations/walter.mjs` — sequential polling, coverage delta fix
+- `~/.buildrunner/dashboard/events.mjs` — registry atomicity, SSE safety, dispatch locking, prompt uniqueness
+- `~/.buildrunner/scripts/dispatch-to-node.sh` — dispatch lock files, remove dead keychain code
+- `~/.claude/commands/begin.md` — blocking test gate at Step 6.5
+- `~/.claude/commands/commit.md` — blocking pre-push test gate
+- `core/cluster/node_semantic.py` — add /api/memory/tests endpoint on Lockwood
 
-**Files:**
+### CREATE (NEW)
 
-- ~/.buildrunner/scripts/recall-on-tool.sh (MODIFY) — add 4th parallel curl to /api/research/search
-- ~/.buildrunner/scripts/developer-brief.sh (MODIFY) — add research context section
+- `~/.buildrunner/scripts/cluster-health-monitor.mjs` — node health polling
+- `~/.buildrunner/scripts/build-monitor.mjs` — active build monitoring
+- `~/.buildrunner/scripts/test-pipeline-monitor.mjs` — end-to-end test tracing
+- `~/.buildrunner/scripts/auto-remediate.mjs` — auto-fix detected issues
+- `~/.buildrunner/dashboard/public/js/ws-monitor.js` — monitoring dashboard workspace
+- `~/Library/LaunchAgents/com.br3.walter-sentinel.plist` — Walter auto-restart (deployed to Walter)
+- `~/Library/LaunchAgents/com.br3.cluster-monitor.plist` — monitoring LaunchAgent on Muddy
+- `~/.buildrunner/scripts/walter-setup.sh` — one-shot Walter deployment script
 
-**Blocked by:** Phase 1 (needs /api/research/search endpoint)
-**After:** Phase 1
-**Deliverables:**
+## Risk Assessment
 
-- [ ] recall-on-tool.sh: add parallel curl to /api/research/search using file basename + project context as query. Parse top 2 chunks, inject as "Research Context" section. Same 2s timeout pattern as existing queries.
-- [ ] developer-brief.sh: at session start, query Lockwood with current BUILD phase description (if active build exists) to surface relevant research. Add "## Relevant Research" section to brief output.
-- [ ] Dedup mechanism: session-scoped temp file (`$TMPDIR/br3-research-seen-$$.txt`) tracks injected chunk IDs. Brief writes first, recall hook and /begin filter against it. Auto-cleans on shell exit.
-- [ ] Test: edit a React component file, verify design research chunks appear in recall. Start a new session on a project with an active build, verify relevant research shows in brief. Verify same chunk doesn't appear twice across brief + recall.
-
-**Success Criteria:** Editing `src/components/Hero.tsx` auto-surfaces chunks from agency-website-design, residential-real-estate-broker-website-design, or relevant design research without invoking any skill.
-
----
-
-### Phase 3: Skill Enhancement
-
-**Goal:** Research-loading skills become semantic-aware with chunk-level retrieval and cross-domain discovery.
-
-**Files:**
-
-- ~/.claude/commands/learn.md (MODIFY) — semantic search primary, synonym table fallback
-- ~/.claude/commands/begin.md (MODIFY) — add research query at phase start
-- ~/.claude/commands/opus.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/commands/geo.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/commands/social.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/commands/prompt.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/commands/llm.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/commands/appdesign.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/commands/recraft.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/commands/perplexity.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/skills/chet/SKILL.md (MODIFY) — add cross-domain chunk discovery
-- ~/.claude/skills/br3-frontend-design/SKILL.md (MODIFY) — add cross-domain chunk discovery
-
-**Blocked by:** Phase 1 (needs /api/research/search endpoint)
-**After:** Phase 1 (can run in parallel with Phase 2 — different files)
-**Deliverables:**
-
-- [ ] /learn overhaul: Step 0 queries Lockwood research table (not code table). Returns chunk-level results with source file + section + score. Loads only the relevant sections, not whole files. Existing semantic guidance section (lines 39-122) kept as fallback interpretation logic when Lockwood is offline.
-- [ ] /begin enhancement: at phase start, extract phase deliverable text, query Lockwood for relevant research, inject top 3-5 chunks as context before building. Adds ~2s to phase start.
-- [ ] Research skill pattern: define a standard "Lockwood Research Query" template block (curl GET to /api/research/search with skill domain as query context, parse JSON results, present top 3 chunks with source + section). Copy this identical block into each skill (/opus, /chet, /geo, etc.) with only the domain parameter changed. Skills still load their primary docs as before, but also surface cross-domain chunks.
-- [ ] Test: invoke /learn "website hero copy" and verify it returns chunks from multiple docs (agency design, buyer psychology, content strategy) instead of just keyword matches.
-
-**Success Criteria:** /learn returns semantically relevant chunks from across domains. /begin loads research context automatically. Research skills discover cross-domain content.
-
----
-
-### Phase 4: Research Pipeline + Dashboard
-
-**Goal:** New research auto-indexes into Lockwood. Dashboard shows research index health.
-
-**Files:**
-
-- ~/.claude/commands/research.md (MODIFY) — auto-index output into Lockwood
-- ~/.buildrunner/dashboard/public/js/ws-research.js (NEW) — dashboard workspace for research index
-
-**Blocked by:** Phase 1 (needs /api/research/reindex and /api/research/stats endpoints)
-**After:** Phases 2, 3
-**Deliverables:**
-
-- [ ] /research skill: after writing a new research doc to ~/Projects/research-library/, auto-trigger /api/research/reindex on Lockwood so the new doc is immediately searchable
-- [ ] Dashboard workspace: show research index stats (total docs, total chunks, last indexed, top domains by chunk count), recent search queries, and index health. Follows existing ws-\*.js modular pattern.
-- [ ] Test: run /research on a new topic and verify the output doc appears in Lockwood search results within 30 seconds
-
-**Success Criteria:** New research is searchable immediately after creation. Dashboard shows live index stats.
-
----
-
-## Out of Scope (Future)
-
-- Relevance feedback loop (tracking which surfaced research is actually useful)
-- Research content consolidation (some GEO content spans 29 files — could merge into fewer docs)
-- Cross-project research sharing (other BR3 projects accessing the same research index)
-- Research versioning (tracking how docs evolve over time)
-- Embedding model fine-tuning on the research corpus
-- Natural language research queries via dashboard (search UI)
-
----
-
-## Technical Notes
-
-### Embedding Model Decision
-
-Start with nomic-embed-text-v1.5 (text-optimized, same Nomic family as CodeRankEmbed). ~275MB RAM on Lockwood M2 8GB — headroom alongside CodeRankEmbed. 768-dim embeddings. If prose recall is poor, evaluate: all-MiniLM-L6-v2 (fastest), bge-base-en-v1.5 (balanced). Decision point: after Phase 1 indexing, run 10 test queries and verify relevance.
-
-### Chunking Strategy
-
-Split on H2 headers as primary boundaries. If a section exceeds 2000 chars, split on H3 sub-headers. Each chunk inherits doc title + frontmatter fields (domain, subjects, priority, techniques). Frontmatter metadata prepended to chunk text before embedding. Chunks under 100 chars merged with next section.
-
-### Memory Budget (Lockwood M2 8GB)
-
-Estimated concurrent RAM: macOS baseline (~2GB) + Python/FastAPI (~200MB) + CodeRankEmbed (~275MB) + nomic-embed-text-v1.5 (~275MB) + LanceDB tables (~100MB) = ~2.85GB application. Leaves ~3GB for OS file cache and headroom. Mitigation: lazy-load text model on first research query, not at startup. If OOM occurs under concurrent search+reindex, add a lock to prevent simultaneous embedding operations.
-
-### Recall Hook Query Design
-
-The recall hook fires on Edit/Write/NotebookEdit with a file path. The research query uses: file basename + project name + any active BUILD phase description. This gives enough semantic signal to surface relevant research without reading file contents (which would add latency). Example: editing "HeroSection.tsx" in project "synapse" with Phase 3 "Sales landing page" → query captures design + sales + landing page context.
-
-### Research Injection Deduplication
-
-Three injection points (brief, recall hook, /begin) can surface the same chunks in one session. Dedup via a session-scoped temp file:
-
-- `$TMPDIR/br3-research-seen-$$.txt` — lists chunk IDs already injected this session
-- Each injection point appends chunk IDs after surfacing them
-- Before injecting, check the file and skip already-seen IDs
-- File is per-PID so it auto-cleans when the shell session ends
-- The brief (session start) always writes first, recall hook and /begin filter against it
+| Risk                                                  | Mitigation                                               |
+| ----------------------------------------------------- | -------------------------------------------------------- |
+| Walter offline during deployment                      | Deploy via SSH script, verify with health check          |
+| Race fix breaks existing API consumers                | Run existing tests before/after, maintain API contract   |
+| Blocking gates too aggressive                         | --force override on /commit, user confirmation on /begin |
+| Monitor LaunchAgents add CPU overhead                 | Lightweight polling (curl + jq), <1% CPU                 |
+| Registry atomicity change breaks concurrent dashboard | Test with parallel API calls                             |
+| Dead code removal breaks undiscovered callers         | Grep entire codebase before removing                     |

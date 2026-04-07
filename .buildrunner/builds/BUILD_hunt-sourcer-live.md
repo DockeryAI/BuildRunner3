@@ -1,7 +1,7 @@
 # Build: Hunt Sourcer — Go Live
 
 **Created:** 2026-04-06
-**Status:** Phases 1-7 Complete — Phase 8 In Progress
+**Status:** BUILD COMPLETE — All 8 Phases Done
 **Deploy:** local — Lockwood FastAPI (sourcer cron), zero external API keys required
 
 ## Overview
@@ -271,7 +271,7 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 
 ### Phase 8: Deals Page Redesign _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 7 (needs stats API + purchase endpoint)
 **Goal:** Single deal feed sorted by quality vs market, market position on every card, purchase tracking, exceptional deals highlighted.
 
@@ -281,16 +281,16 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 
 **Deliverables:**
 
-- [ ] Fetch market stats per hunt — separate call to `GET /api/deals/market/{hunt_id}` per active hunt _(added: 2026-04-07)_
-- [ ] Compute deal*percentile at render time: `(prices_above_this / total_prices) * 100` from market stats response \*(added: 2026-04-07)\_
-- [ ] Sort deals by deal*percentile ascending (best deals first) *(added: 2026-04-07)\_
-- [ ] Deal card redesign: title + price (large), tags (source/condition/stock), market position bar showing price vs P25/median/P75 range _(added: 2026-04-07)_
-- [ ] Highlight tiers: exceptional (below P25) green glow + label, good (below median) green border, fair (above median) neutral, pass (above budget) muted _(added: 2026-04-07)_
-- [ ] "Mark Bought" button — calls `PATCH /api/deals/items/{id}` with `{purchased: 1, purchased_price: price}`, card moves to bought section _(added: 2026-04-07)_
-- [ ] Inline edit — click price to edit, click to add notes _(added: 2026-04-07)_
-- [ ] KPI bar: total deals, bought count, total spent vs total budget (from /api/deals/summary), hunt count _(added: 2026-04-07)_
-- [ ] Empty state per hunt: "No deals found — N market prices tracked, median $X" _(added: 2026-04-07)_
-- [ ] Remove dead fields: MSRP, savings, score when 0, verdict when empty _(added: 2026-04-07)_
+- [x] Fetch market stats per hunt — separate call to `GET /api/deals/market/{hunt_id}` per active hunt _(added: 2026-04-07)_
+- [x] Compute deal percentile at render time from market stats response _(added: 2026-04-07)_
+- [x] Sort deals by deal percentile ascending (best deals first) _(added: 2026-04-07)_
+- [x] Deal card redesign: title + price (large), tags (source/condition/stock), market position bar showing price vs P25/median/P75 range _(added: 2026-04-07)_
+- [x] Highlight tiers: exceptional (below P25) green glow + label, good (below median) green border, fair (above median) neutral, pass (above budget) muted _(added: 2026-04-07)_
+- [x] "Mark Bought" button — calls `PATCH /api/deals/items/{id}` with `{purchased: 1, purchased_price: price}`, card moves to bought section _(added: 2026-04-07)_
+- [x] Inline edit — click price to edit, click to add notes _(added: 2026-04-07)_
+- [x] KPI bar: total deals, bought count, total spent vs total budget (from /api/deals/summary), hunt count _(added: 2026-04-07)_
+- [x] Empty state per hunt: "No deals found — N market prices tracked, median $X" _(added: 2026-04-07)_
+- [x] Remove dead fields: MSRP, savings, score when 0, verdict when empty _(added: 2026-04-07)_
 
 **Success Criteria:** Deals page shows market median + percentile on every card. Best deals at top. "Mark Bought" persists. Budget tracker shows spent vs total.
 
