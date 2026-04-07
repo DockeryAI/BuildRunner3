@@ -1,0 +1,41 @@
+# Dockerfile.playwright — Consistent Visual Regression Baseline Generation
+#
+# Ensures font rendering parity across developer machines by running
+# visual regression tests inside a controlled Linux environment.
+#
+# Usage:
+#   docker build -f Dockerfile.playwright -t br3-visual .
+#   docker run --rm -v $(pwd)/tests:/app/tests br3-visual npm run test:visual:update
+#
+# The container generates baselines with identical font rendering regardless
+# of host OS (macOS, Linux, Windows). All baselines committed to git come
+# from this container.
+
+FROM mcr.microsoft.com/playwright:v1.40.1-jammy
+
+WORKDIR /app
+
+# Install system fonts for consistent rendering
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fonts-noto \
+    fonts-noto-cjk \
+    fonts-noto-color-emoji \
+    fonts-liberation \
+    fonts-dejavu-core \
+    fontconfig \
+    && fc-cache -fv \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files first for layer caching
+COPY package.json package-lock.json* ./
+RUN npm ci --ignore-scripts 2>/dev/null || npm install
+
+# Copy playwright config and test files
+COPY playwright.config.ts ./
+COPY tests/ ./tests/
+
+# Install Playwright browsers inside the container
+RUN npx playwright install chromium
+
+# Default: update visual baselines
+CMD ["npx", "playwright", "test", "--project=visual", "--update-snapshots"]

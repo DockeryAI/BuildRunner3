@@ -1,0 +1,43 @@
+name: react-fastapi-postgres
+description: React + FastAPI + PostgreSQL stack
+
+frontend:
+  framework: React
+  language: TypeScript
+  build_tool: Vite
+  styling: Tailwind CSS
+  state_management: Redux Toolkit or Zustand
+  routing: React Router
+  testing: Vitest + React Testing Library
+
+backend:
+  framework: FastAPI
+  language: Python 3.11+
+  orm: SQLAlchemy
+  migrations: Alembic
+  async: asyncio + asyncpg
+  testing: pytest + pytest-asyncio
+
+database:
+  primary: PostgreSQL 15+
+  cache: Redis (optional)
+  search: PostgreSQL Full-Text (or Elasticsearch)
+
+api:
+  protocol: REST
+  documentation: OpenAPI (automatic with FastAPI)
+  authentication: JWT tokens
+  cors: Enabled
+
+deployment:
+  containerization: Docker
+  orchestration: Docker Compose (dev) / Kubernetes (prod)
+  frontend_hosting: Vercel or Netlify
+  backend_hosting: AWS ECS or Railway
+  database_hosting: AWS RDS or Supabase
+
+development:
+  version_control: Git
+  ci_cd: GitHub Actions
+  code_quality: Black, Ruff, ESLint, Prettier
+  type_checking: mypy, TypeScript strict mode

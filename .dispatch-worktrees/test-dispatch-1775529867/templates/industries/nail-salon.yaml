@@ -1,0 +1,15 @@
+id: nail-salon
+name: Nail Salon
+naics_code: '812113'
+category: Personal Services
+keywords:
+- nail salon
+- nail
+- salon
+- nail tech
+- manicure
+- pedicure
+- nails
+- nail technician
+has_full_profile: false
+source: naics_only

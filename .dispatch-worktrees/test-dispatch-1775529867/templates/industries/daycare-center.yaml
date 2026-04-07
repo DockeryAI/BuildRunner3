@@ -1,0 +1,13 @@
+id: daycare-center
+name: Daycare Center
+naics_code: '624410'
+category: Personal Services
+keywords:
+- daycare center
+- daycare
+- center
+- childcare
+- child care
+- day care
+has_full_profile: false
+source: naics_only

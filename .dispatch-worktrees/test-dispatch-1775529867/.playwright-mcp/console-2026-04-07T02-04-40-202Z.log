@@ -1,0 +1,43 @@
+[     107ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/favicon.ico:0
+[   13869ms] TypeError: hunt.sources.map is not a function
+    at http://localhost:4400/js/ws-intel.js:1074:41
+    at Array.map (<anonymous>)
+    at renderHunts (http://localhost:4400/js/ws-intel.js:1063:8)
+    at renderActivePanel (http://localhost:4400/js/ws-intel.js:1165:9)
+    at HTMLButtonElement.<anonymous> (http://localhost:4400/js/ws-intel.js:614:7)
+[   30061ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: hunt.sources.map is not a function
+    at http://localhost:4400/js/ws-intel.js:1074:41
+    at Array.map (<anonymous>)
+    at renderHunts (http://localhost:4400/js/ws-intel.js:1063:8)
+    at renderActivePanel (http://localhost:4400/js/ws-intel.js:1165:9)
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:431:7) @ http://localhost:4400/js/ws-intel.js:433
+[   60059ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: hunt.sources.map is not a function
+    at http://localhost:4400/js/ws-intel.js:1074:41
+    at Array.map (<anonymous>)
+    at renderHunts (http://localhost:4400/js/ws-intel.js:1063:8)
+    at renderActivePanel (http://localhost:4400/js/ws-intel.js:1165:9)
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:431:7) @ http://localhost:4400/js/ws-intel.js:433
+[   90061ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: hunt.sources.map is not a function
+    at http://localhost:4400/js/ws-intel.js:1074:41
+    at Array.map (<anonymous>)
+    at renderHunts (http://localhost:4400/js/ws-intel.js:1063:8)
+    at renderActivePanel (http://localhost:4400/js/ws-intel.js:1165:9)
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:431:7) @ http://localhost:4400/js/ws-intel.js:433
+[  120060ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: hunt.sources.map is not a function
+    at http://localhost:4400/js/ws-intel.js:1074:41
+    at Array.map (<anonymous>)
+    at renderHunts (http://localhost:4400/js/ws-intel.js:1063:8)
+    at renderActivePanel (http://localhost:4400/js/ws-intel.js:1165:9)
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:431:7) @ http://localhost:4400/js/ws-intel.js:433
+[  150059ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: hunt.sources.map is not a function
+    at http://localhost:4400/js/ws-intel.js:1074:41
+    at Array.map (<anonymous>)
+    at renderHunts (http://localhost:4400/js/ws-intel.js:1063:8)
+    at renderActivePanel (http://localhost:4400/js/ws-intel.js:1165:9)
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:431:7) @ http://localhost:4400/js/ws-intel.js:433
+[  180582ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: hunt.sources.map is not a function
+    at http://localhost:4400/js/ws-intel.js:1074:41
+    at Array.map (<anonymous>)
+    at renderHunts (http://localhost:4400/js/ws-intel.js:1063:8)
+    at renderActivePanel (http://localhost:4400/js/ws-intel.js:1165:9)
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:431:7) @ http://localhost:4400/js/ws-intel.js:433

@@ -1,0 +1,176 @@
+name: "Nonprofit"
+description: "Charitable organizations, NGOs, foundations"
+category: "Social Impact"
+
+colors:
+  primary:
+    main: "#2e7d32"        # Mission green (growth, hope)
+    light: "#4caf50"
+    dark: "#1b5e20"
+  secondary:
+    main: "#1976d2"        # Trust blue
+    light: "#42a5f5"
+    dark: "#0d47a1"
+  accent:
+    main: "#f57c00"        # Action orange (warmth, urgency)
+    light: "#ff9800"
+    dark: "#e65100"
+  neutral:
+    50: "#fafafa"
+    100: "#f5f5f5"
+    200: "#eeeeee"
+    300: "#e0e0e0"
+    400: "#bdbdbd"
+    500: "#9e9e9e"
+    600: "#757575"
+    700: "#616161"
+    800: "#424242"
+    900: "#212121"
+  semantic:
+    success: "#4caf50"
+    warning: "#ff9800"
+    error: "#f44336"
+    info: "#2196f3"
+
+typography:
+  fonts:
+    primary: "'Inter', 'Helvetica Neue', sans-serif"
+    secondary: "'Merriweather', 'Georgia', serif"
+    monospace: "'Roboto Mono', monospace"
+  sizes:
+    xs: "0.75rem"
+    sm: "0.875rem"
+    base: "1rem"
+    lg: "1.125rem"
+    xl: "1.25rem"
+    "2xl": "1.5rem"
+    "3xl": "1.875rem"
+    "4xl": "2.25rem"
+    "5xl": "3rem"      # Large impact headlines
+  weights:
+    normal: 400
+    medium: 500
+    semibold: 600
+    bold: 700
+    extrabold: 800    # For impact statements
+  lineHeights:
+    tight: 1.25
+    normal: 1.5
+    relaxed: 1.75
+
+spacing:
+  scale: [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80, 96, 128]
+  container:
+    padding: "1rem"
+    maxWidth: "1280px"
+
+borders:
+  radius:
+    none: "0"
+    sm: "0.125rem"
+    base: "0.25rem"
+    md: "0.5rem"
+    lg: "0.75rem"
+    xl: "1rem"
+    full: "9999px"
+  width:
+    default: "1px"
+    medium: "2px"
+    thick: "3px"
+
+shadows:
+  sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)"
+  base: "0 1px 3px 0 rgba(0, 0, 0, 0.1)"
+  md: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+  lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+  xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1)"
+
+breakpoints:
+  sm: "640px"
+  md: "768px"
+  lg: "1024px"
+  xl: "1280px"
+  "2xl": "1536px"
+
+compliance:
+  standards:
+    - "501(c)(3) IRS Requirements"
+    - "State Charity Registration"
+    - "Financial Transparency (Form 990)"
+    - "Donor Privacy Regulations"
+    - "Charitable Solicitation Laws"
+    - "GDPR (for international donors)"
+  requirements:
+    - "Transparent financial reporting"
+    - "Donor acknowledgment letters (tax deductible)"
+    - "Privacy policy for donor information"
+    - "Secure donation processing (PCI DSS)"
+    - "Mission statement prominently displayed"
+    - "Impact metrics and outcomes reporting"
+    - "Board of directors listing"
+  accessibility:
+    - "WCAG 2.1 AA minimum (inclusive mission)"
+    - "Multi-language support for global reach"
+
+components:
+  buttons:
+    padding: "0.875rem 2rem"
+    fontSize: "1rem"
+    fontWeight: 700
+    borderRadius: "0.5rem"
+    textTransform: "uppercase"  # Strong calls-to-action
+  donationButton:
+    padding: "1rem 2.5rem"
+    fontSize: "1.125rem"
+    fontWeight: 800
+    borderRadius: "0.75rem"
+    backgroundColor: "#f57c00"
+    hoverScale: "1.05"
+  forms:
+    inputPadding: "0.875rem 1rem"
+    inputBorderRadius: "0.5rem"
+    labelFontWeight: 600
+    requiredIndicator: "*"
+    helpTextSize: "0.875rem"
+  cards:
+    padding: "1.5rem"
+    borderRadius: "0.75rem"
+    shadow: "md"
+    border: "none"
+  impactMetric:
+    numberSize: "3rem"
+    numberWeight: 800
+    numberColor: "#2e7d32"
+    labelSize: "1rem"
+    labelWeight: 600
+
+security:
+  level: "high"
+  features:
+    - "PCI DSS Level 1 for donations"
+    - "SSL/TLS encryption"
+    - "Donor data protection"
+    - "Secure payment processing (Stripe, PayPal)"
+    - "GDPR compliance for international donors"
+    - "Recurring donation management"
+    - "Donor communication preferences"
+
+patterns:
+  - "Prominent donation call-to-action"
+  - "Impact stories with photos/videos"
+  - "Progress bars for fundraising goals"
+  - "Volunteer sign-up forms"
+  - "Event calendar and registration"
+  - "Newsletter subscription"
+  - "Social proof (testimonials, donor count)"
+  - "Mission-driven homepage"
+  - "Transparency section (financials, annual reports)"
+
+notes:
+  - "Emotional connection crucial - use storytelling"
+  - "Mobile-first (many donors on mobile)"
+  - "Fast donation process (minimize friction)"
+  - "Social sharing built-in"
+  - "Email campaigns for donor retention"
+  - "Monthly recurring donations emphasized"
+  - "Tax receipt generation automated"

@@ -1,0 +1,153 @@
+name: "Chat / Messaging"
+description: "Real-time messaging, chat applications, communication platforms"
+category: "Communication"
+
+layout:
+  structure: "sidebar-main-detail"
+  regions:
+    sidebar:
+      width: "280px"
+      contains:
+        - "Conversation list"
+        - "Search"
+        - "Filters (unread, favorites)"
+        - "User status"
+    main:
+      width: "flex-1"
+      contains:
+        - "Message thread"
+        - "Input composer"
+        - "File attachments"
+        - "Emoji picker"
+    detail:
+      width: "320px"
+      collapsible: true
+      contains:
+        - "Conversation info"
+        - "Participant list"
+        - "Shared media"
+        - "Settings"
+
+navigation:
+  primary:
+    - label: "Direct Messages"
+      icon: "message"
+    - label: "Channels"
+      icon: "hash"
+    - label: "Groups"
+      icon: "users"
+  secondary:
+    - label: "Search"
+      icon: "search"
+      shortcut: "Cmd+K"
+    - label: "Settings"
+      icon: "settings"
+
+components:
+  messageList:
+    layout: "vertical"
+    grouping: "by-sender-and-time"
+    virtualScroll: true
+    infiniteScroll: "top"
+    dateMarkers: true
+  messageComposer:
+    multiline: true
+    autoGrow: true
+    maxHeight: "200px"
+    features:
+      - "Rich text formatting"
+      - "Emoji picker"
+      - "File upload"
+      - "Mentions (@user)"
+      - "Slash commands"
+  conversationListItem:
+    height: "72px"
+    preview: "last-message"
+    indicators:
+      - "Unread badge"
+      - "Typing indicator"
+      - "User status"
+      - "Timestamp"
+  userAvatar:
+    sizes: ["sm", "md", "lg"]
+    statusIndicator: true
+    fallback: "initials"
+
+interactions:
+  realTime:
+    - "Message delivery (WebSocket)"
+    - "Typing indicators"
+    - "Read receipts"
+    - "Presence (online/offline)"
+  optimistic:
+    - "Send message immediately"
+    - "Show pending state"
+    - "Retry on failure"
+  gestures:
+    - "Swipe to reply"
+    - "Long-press for options"
+    - "Pull to refresh"
+
+patterns:
+  messaging:
+    - "Bubble layout for messages"
+    - "Sender on right, recipient on left"
+    - "Timestamps on hover"
+    - "Grouping consecutive messages"
+  notifications:
+    - "Desktop notifications"
+    - "Badge count on tab/icon"
+    - "Sound on new message"
+    - "Do not disturb mode"
+  search:
+    - "Full-text search across conversations"
+    - "Filter by sender, date, type"
+    - "Jump to message in context"
+  media:
+    - "Inline image/video preview"
+    - "Lightbox for full view"
+    - "File download"
+    - "Link previews with og:image"
+
+dataFlow:
+  messageDelivery:
+    - "Client sends message"
+    - "Server validates and stores"
+    - "WebSocket broadcasts to recipients"
+    - "Clients update UI optimistically"
+  presence:
+    - "Heartbeat every 30s"
+    - "Online/away/offline status"
+    - "Last seen timestamp"
+
+performance:
+  - "Virtual scrolling for long threads"
+  - "Lazy loading of media"
+  - "Message pagination (50 per page)"
+  - "WebSocket for real-time updates"
+  - "IndexedDB for offline storage"
+
+accessibility:
+  - "Keyboard navigation (Tab, Arrow keys)"
+  - "Screen reader announcements for new messages"
+  - "Focus management"
+  - "ARIA live regions for updates"
+
+responsiveness:
+  mobile:
+    - "Full-screen message view"
+    - "Bottom navigation"
+    - "Swipe gestures"
+  tablet:
+    - "Split view (list + detail)"
+    - "Adaptive sidebar"
+  desktop:
+    - "Three-column layout"
+    - "Keyboard shortcuts"
+
+notes:
+  - "WebSocket required for real-time"
+  - "Offline support with service workers"
+  - "End-to-end encryption considerations (Signal Protocol)"
+  - "Message history retention policies"
+  - "Rate limiting for spam prevention"

@@ -1,0 +1,14 @@
+id: physical-therapy
+name: Physical Therapy
+naics_code: '621340'
+category: Healthcare
+keywords:
+- physical therapy
+- physical
+- therapy
+- physical therapist
+- PT
+- rehab
+- rehabilitation
+has_full_profile: false
+source: naics_only

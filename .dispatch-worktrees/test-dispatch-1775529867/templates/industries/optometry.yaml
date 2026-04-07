@@ -1,0 +1,14 @@
+id: optometry
+name: Optometry
+naics_code: '621320'
+category: Healthcare
+keywords:
+- optometry
+- optometry
+- optometrist
+- eye doctor
+- glasses
+- vision care
+- eye exam
+has_full_profile: false
+source: naics_only
