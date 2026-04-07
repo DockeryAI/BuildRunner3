@@ -139,7 +139,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 4: Blocking Test Gates
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Failing tests actually block phase completion and pushes. Governance is enforced, not advisory.
 
 **Files:**
@@ -206,7 +206,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 7: Build Monitor + Test Pipeline Monitor
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Every active build is watched. The full test pipeline is traced end-to-end.
 
 **Files:**
