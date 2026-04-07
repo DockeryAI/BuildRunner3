@@ -1,38 +1,22 @@
-# Phase 3 Plan: Token & Cost Tracking
+# Phase 3 Plan: Race Condition Fixes (Dashboard Layer)
 
 ## Tasks
 
-### Task 3.1: Create usage.mjs integration
-- New file: ~/.buildrunner/dashboard/integrations/usage.mjs
-- Read ~/.buildrunner/usage-estimate.json locally for Muddy
-- SSH to remote nodes to read their usage-estimate.json
-- Cache results with 15s TTL, export getUsageData() and startPolling()
-- Emit usage.warning SSE event when any node hits 85%
+1. **RC17 — Registry write atomicity (events.mjs)**
+   - Replace `fs.writeFileSync(REGISTRY_PATH, ...)` with write-to-temp + `fs.renameSync`
+   - Helper function `writeRegistryAtomic(reg)` used at both write sites (lines 612, 2025)
 
-### Task 3.2: Add /api/usage endpoint to events.mjs
-- Import getUsageData from ./integrations/usage.mjs
-- Add GET /api/usage endpoint returning per-node token usage
-- Add usage.warning to VALID_TYPES set
-- Start usage polling on server boot
+2. **RC21 — SSE broadcast safety (events.mjs)**
+   - Copy client set before iterating: `const clients = [...sseClients]`
+   - Apply in `broadcastEvent()` (line 245) and shutdown handler (line 2060)
 
-### Task 3.3: Add token stats to header in index.html
-- Add "Tokens: X / Y" stat to header-stats div
-- Color-coded budget bar (green -> yellow at 80% -> red at 90%)
-- Auto-pause indicator when swap-suggested
+3. **RC10 — Walter polling stacking (walter.mjs)**
+   - Replace `setInterval(poll, 30000)` with sequential `poll().then(() => setTimeout(poll, 30000))`
+   - Track timeout handle instead of interval
 
-### Task 3.4: Add per-session token estimate in session grid
-- Extend session card rendering to show token estimate
-- Pull from usage data matched by node
-
-### Task 3.5: Add budget bar CSS to styles.css
-- Token bar styles for header
-- Color transitions for budget thresholds
-
-### Task 3.6: Wire up SSE usage.warning handling + auto-refresh
-- Process usage.warning events in processEvent()
-- Show toast notification on warning
-- Fetch usage data on initial load and refresh periodically
+4. **RC11 — Lock lastCoverage updates (walter.mjs)**
+   - Ensure lastCoverage read+compute+assign happens in single synchronous block (RC10 fix prevents concurrent overlap)
 
 ## Tests
-- Non-testable (integration with SSH/local files, no vitest in dashboard project)
-- Verification via manual endpoint testing
+
+These are runtime infrastructure files (Node.js scripts, not app code). No vitest — verification via code review.

@@ -1,6 +1,7 @@
 """
 BR3 Cluster — Node 2: Walter (Sentinel)
 Continuous testing. Watches repos, runs affected tests, stores results in SQLite.
+Thread-safe queue-based execution with git SHA change detection.
 
 Run: uvicorn core.cluster.node_tests:app --host 0.0.0.0 --port 8100
 """
@@ -9,9 +10,12 @@ import os
 import re
 import time
 import json
+import uuid
 import sqlite3
 import subprocess
 import threading
+import queue
+import psutil
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
@@ -26,21 +30,36 @@ REPOS_DIR = os.environ.get("REPOS_DIR", os.path.expanduser("~/repos"))
 DB_PATH = os.environ.get("TEST_DB", os.path.expanduser("~/.walter/test_results.db"))
 POLL_INTERVAL = int(os.environ.get("POLL_INTERVAL", "60"))
 LOCKWOOD_URL = os.environ.get("LOCKWOOD_URL", "http://10.0.1.101:8100")
+SERVICE_VERSION = "0.2.0"
 
 # --- App ---
-app = create_app(role="test-runner", version="0.1.0")
+app = create_app(role="test-runner", version=SERVICE_VERSION)
 
-# --- State ---
+# --- Thread-Safe State (RC1-RC3 fixes) ---
+_state_lock = threading.Lock()       # Protects _running, _last_run_time, _last_results
+_hash_lock = threading.Lock()        # Protects _file_hashes (RC2)
+_db_lock = threading.Lock()          # Serializes all SQLite writes (RC5)
+
 _running = False
 _last_run_time = 0.0
 _last_results = {}
 _file_hashes: dict[str, str] = {}
 
+# --- Queue-based execution (RC4 fix) ---
+# Single consumer thread pulls from queue, deduplicates by project+SHA, runs tests serially
+_test_queue: queue.Queue = queue.Queue()
+_run_status: dict[str, dict] = {}   # run_id -> {status, project, queued_at, started_at, completed_at, result}
+_run_status_lock = threading.Lock()
+
+# Track last tested SHA per project for git-based change detection
+_last_tested_sha: dict[str, str] = {}
+
 
 # --- SQLite Setup ---
 def _get_db() -> sqlite3.Connection:
+    """Get a SQLite connection. Caller must use _db_lock for write operations."""
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
@@ -63,7 +82,8 @@ def _ensure_tables(conn: sqlite3.Connection):
             failed INTEGER DEFAULT 0,
             skipped INTEGER DEFAULT 0,
             flaky INTEGER DEFAULT 0,
-            trigger TEXT DEFAULT 'watch'
+            trigger TEXT DEFAULT 'watch',
+            last_tested_sha TEXT
         );
         CREATE TABLE IF NOT EXISTS test_cases (
             case_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -91,7 +111,18 @@ def _ensure_tables(conn: sqlite3.Connection):
             last_verified TEXT DEFAULT (datetime('now'))
         );
         CREATE INDEX IF NOT EXISTS idx_testmap_project_source ON test_file_map(project, source_file);
+
+        CREATE TABLE IF NOT EXISTS project_sha_tracking (
+            project TEXT PRIMARY KEY,
+            last_tested_sha TEXT NOT NULL,
+            updated_at TEXT DEFAULT (datetime('now'))
+        );
     """)
+    # Migration: add last_tested_sha column if missing (existing DBs)
+    try:
+        conn.execute("SELECT last_tested_sha FROM test_runs LIMIT 1")
+    except sqlite3.OperationalError:
+        conn.execute("ALTER TABLE test_runs ADD COLUMN last_tested_sha TEXT")
     conn.commit()
 
 
@@ -100,6 +131,17 @@ def _git_sha(repo_path: str) -> str:
     try:
         return subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, cwd=repo_path, timeout=5
+        ).stdout.strip()
+    except Exception:
+        return ""
+
+
+def _git_sha_full(repo_path: str) -> str:
+    """Get full git SHA for reliable comparison."""
+    try:
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD"],
             capture_output=True, text=True, cwd=repo_path, timeout=5
         ).stdout.strip()
     except Exception:
@@ -128,32 +170,85 @@ def _git_pull(repo_path: str) -> bool:
         return False
 
 
-def _detect_changes(repo_path: str) -> list[str]:
-    """Detect changed files since last check using file modification times."""
-    changed = []
-    repo = Path(repo_path)
-    skip_dirs = {".git", "node_modules", ".next", "dist", "build", "__pycache__", ".cache"}
+def _detect_changes(repo_path: str, project: str) -> list[str]:
+    """Detect changed files since last tested SHA using git diff.
 
-    for path in repo.rglob("*"):
-        if any(s in path.parts for s in skip_dirs):
-            continue
-        if not path.is_file():
-            continue
-        if path.suffix not in {".ts", ".tsx", ".js", ".jsx", ".py", ".vue"}:
-            continue
+    Returns list of changed file paths relative to repo root.
+    Uses git SHA tracking instead of mtime for reliable detection.
+    """
+    current_sha = _git_sha_full(repo_path)
+    if not current_sha:
+        return []
 
-        key = str(path)
+    # Get last tested SHA for this project
+    last_sha = _last_tested_sha.get(project)
+
+    # If no previous SHA, try loading from DB
+    if not last_sha:
         try:
-            mtime = str(path.stat().st_mtime)
-        except OSError:
-            continue
+            with _db_lock:
+                conn = _get_db()
+                row = conn.execute(
+                    "SELECT last_tested_sha FROM project_sha_tracking WHERE project = ?",
+                    (project,)
+                ).fetchone()
+                conn.close()
+            if row and row["last_tested_sha"]:
+                last_sha = row["last_tested_sha"]
+                _last_tested_sha[project] = last_sha
+        except Exception:
+            pass
 
-        if _file_hashes.get(key) != mtime:
-            if key in _file_hashes:  # skip first run (everything is "new")
-                changed.append(str(path.relative_to(repo)))
-            _file_hashes[key] = mtime
+    # First run: record SHA, return empty (no changes to test yet)
+    if not last_sha:
+        _last_tested_sha[project] = current_sha
+        return []
 
-    return changed
+    # Same SHA: no changes
+    if last_sha == current_sha:
+        return []
+
+    # Get changed files between SHAs
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", f"{last_sha}..{current_sha}"],
+            capture_output=True, text=True, cwd=repo_path, timeout=10
+        )
+        if result.returncode == 0:
+            return [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
+    except Exception:
+        pass
+
+    # Fallback: if git diff fails (e.g., force push), return all tracked files
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD~1..HEAD"],
+            capture_output=True, text=True, cwd=repo_path, timeout=10
+        )
+        if result.returncode == 0:
+            return [f.strip() for f in result.stdout.strip().split("\n") if f.strip()]
+    except Exception:
+        pass
+
+    return []
+
+
+def _update_tested_sha(project: str, sha: str):
+    """Update the last tested SHA for a project after a successful test run."""
+    _last_tested_sha[project] = sha
+    try:
+        with _db_lock:
+            conn = _get_db()
+            conn.execute(
+                """INSERT INTO project_sha_tracking (project, last_tested_sha, updated_at)
+                   VALUES (?, ?, datetime('now'))
+                   ON CONFLICT(project) DO UPDATE SET last_tested_sha = ?, updated_at = datetime('now')""",
+                (project, sha, sha)
+            )
+            conn.commit()
+            conn.close()
+    except Exception as e:
+        print(f"SHA tracking update failed: {e}")
 
 
 # --- Test File Map ---
@@ -265,11 +360,6 @@ def build_test_map(project: str, repo_path: str) -> int:
     if not repo.exists():
         return 0
 
-    conn = _get_db()
-
-    # Clear existing entries for this project
-    conn.execute("DELETE FROM test_file_map WHERE project = ?", (project,))
-
     mappings = []
     seen_pairs = set()
 
@@ -298,13 +388,16 @@ def build_test_map(project: str, repo_path: str) -> int:
                 seen_pairs.add(pair)
                 mappings.append((project, test_rel, source_rel, "convention"))
 
-    # Bulk insert
-    conn.executemany(
-        "INSERT INTO test_file_map (project, test_file, source_file, confidence) VALUES (?, ?, ?, ?)",
-        mappings,
-    )
-    conn.commit()
-    conn.close()
+    # Bulk insert with db lock (RC5 fix)
+    with _db_lock:
+        conn = _get_db()
+        conn.execute("DELETE FROM test_file_map WHERE project = ?", (project,))
+        conn.executemany(
+            "INSERT INTO test_file_map (project, test_file, source_file, confidence) VALUES (?, ?, ?, ?)",
+            mappings,
+        )
+        conn.commit()
+        conn.close()
     return len(mappings)
 
 
@@ -335,20 +428,19 @@ def _invalidate_test_map_entries(project: str, changed_files: list[str]):
     if not changed_files:
         return
 
-    conn = _get_db()
-    for f in changed_files:
-        # If a test file changed, remove its mappings (will be rebuilt)
-        conn.execute(
-            "DELETE FROM test_file_map WHERE project = ? AND test_file = ?",
-            (project, f),
-        )
-        # If a source file changed, remove its mappings (will be rebuilt)
-        conn.execute(
-            "DELETE FROM test_file_map WHERE project = ? AND source_file = ?",
-            (project, f),
-        )
-    conn.commit()
-    conn.close()
+    with _db_lock:
+        conn = _get_db()
+        for f in changed_files:
+            conn.execute(
+                "DELETE FROM test_file_map WHERE project = ? AND test_file = ?",
+                (project, f),
+            )
+            conn.execute(
+                "DELETE FROM test_file_map WHERE project = ? AND source_file = ?",
+                (project, f),
+            )
+        conn.commit()
+        conn.close()
 
 
 # --- Test Runners ---
