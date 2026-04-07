@@ -1,7 +1,7 @@
 # Build: Research Library Vectorization
 
 **Created:** 2026-04-07
-**Status:** Phases 1-1 Complete — Phase 2 In Progress
+**Status:** Phases 1-3 Complete — Phase 4 In Progress
 **Deploy:** cluster — Lockwood (10.0.1.101) service restart
 
 ## Overview
@@ -50,7 +50,7 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 
 ### Phase 2: Ambient Research (Hooks)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Research automatically surfaces during editing and session starts without any skill invocation.
 
 **Files:**
@@ -62,10 +62,10 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 **After:** Phase 1 (can run in parallel with Phase 3 — different files)
 **Deliverables:**
 
-- [ ] recall-on-tool.sh: add parallel curl to /api/research/search using file basename + project context as query (~20 lines: temp file, trap update, curl, PID wait, Python parse). Parse top 2 chunks, inject as "Research Context" section. Same 2s timeout pattern as existing queries.
-- [ ] developer-brief.sh: at session start, query Lockwood with current BUILD phase description (if active build exists) to surface relevant research. Add "## Relevant Research" section to brief output.
-- [ ] Dedup mechanism: session-scoped temp file (`$TMPDIR/br3-research-seen-$$.txt`) tracks injected chunk IDs. Brief writes first, recall hook and /begin filter against it. Auto-cleans on shell exit.
-- [ ] Test: edit a React component file, verify design research chunks appear in recall. Start a new session on a project with an active build, verify relevant research shows in brief. Verify same chunk doesn't appear twice across brief + recall.
+- [x] recall-on-tool.sh: add parallel curl to /api/research/search using file basename + project context as query (~20 lines: temp file, trap update, curl, PID wait, Python parse). Parse top 2 chunks, inject as "Research Context" section. Same 2s timeout pattern as existing queries.
+- [x] developer-brief.sh: at session start, query Lockwood with current BUILD phase description (if active build exists) to surface relevant research. Add "## Relevant Research" section to brief output.
+- [x] Dedup mechanism: session-scoped temp file (`$TMPDIR/br3-research-seen-$$.txt`) tracks injected chunk IDs. Brief writes first, recall hook and /begin filter against it. Auto-cleans on shell exit.
+- [x] Test: edit a React component file, verify design research chunks appear in recall. Start a new session on a project with an active build, verify relevant research shows in brief. Verify same chunk doesn't appear twice across brief + recall.
 
 **Success Criteria:** Editing `src/components/Hero.tsx` auto-surfaces chunks from agency-website-design, residential-real-estate-broker-website-design, or relevant design research without invoking any skill. No duplicate chunks across injection points.
 
@@ -73,7 +73,7 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 
 ### Phase 3: Skill Enhancement
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Research-loading skills become semantic-aware with chunk-level retrieval and cross-domain discovery.
 
 **Files:**
@@ -95,10 +95,10 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 **After:** Phase 1 (can run in parallel with Phase 2 — different files)
 **Deliverables:**
 
-- [ ] /learn overhaul: Step 0 queries Lockwood research table (not code table). Returns chunk-level results with source file + section + score. Loads only the relevant sections, not whole files. Existing semantic guidance section (lines 39-122) kept as fallback interpretation logic when Lockwood is offline.
-- [ ] /begin enhancement: at phase start, extract phase deliverable text, query Lockwood for relevant research, inject top 3-5 chunks as context before building. Adds ~2s to phase start. Uses dedup temp file from Phase 2.
-- [ ] Research skill pattern: define a standard "Lockwood Research Query" template block (curl GET to /api/research/search with skill domain as query context, parse JSON results, present top 3 chunks with source + section). Copy this identical block into each skill (/opus, /chet, /geo, etc.) with only the domain parameter changed. Skills still load their primary docs as before, but also surface cross-domain chunks.
-- [ ] Test: invoke /learn "website hero copy" and verify it returns chunks from multiple docs (agency design, buyer psychology, content strategy) instead of just keyword matches.
+- [x] /learn overhaul: Step 0 queries Lockwood research table (not code table). Returns chunk-level results with source file + section + score. Loads only the relevant sections, not whole files. Existing semantic guidance section (lines 39-122) kept as fallback interpretation logic when Lockwood is offline.
+- [x] /begin enhancement: at phase start, extract phase deliverable text, query Lockwood for relevant research, inject top 3-5 chunks as context before building. Adds ~2s to phase start. Uses dedup temp file from Phase 2.
+- [x] Research skill pattern: define a standard "Lockwood Research Query" template block (curl GET to /api/research/search with skill domain as query context, parse JSON results, present top 3 chunks with source + section). Copy this identical block into each skill (/opus, /chet, /geo, etc.) with only the domain parameter changed. Skills still load their primary docs as before, but also surface cross-domain chunks.
+- [x] Test: invoke /learn "website hero copy" and verify it returns chunks from multiple docs (agency design, buyer psychology, content strategy) instead of just keyword matches.
 
 **Success Criteria:** /learn returns semantically relevant chunks from across domains. /begin loads research context automatically. Research skills discover cross-domain content.
 
