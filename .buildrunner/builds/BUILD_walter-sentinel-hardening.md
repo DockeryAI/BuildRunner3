@@ -92,7 +92,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 2: Push-Based Repo Sync + Dispatch Logging
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Walter always has the exact code that was just committed. Every dispatch is logged and verifiable.
 
 **Files:**
@@ -160,7 +160,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 5: Lockwood Test Reporting (Phase 37 Completion)
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Walter's test results flow to Lockwood for cross-project health tracking. Actually completes the unfinished Phase 37 from cluster-build-orchestration.
 
 **Files:**
