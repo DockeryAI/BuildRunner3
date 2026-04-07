@@ -217,6 +217,83 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 
 **Success Criteria:** Below extraction returns valid JSON with seller_feedback, seller_rating, location fields. 0 json_repair invocations on clean HTML. All items pass requirement validation.
 
+### Phase 6: Market Price Collection _(added: 2026-04-07)_
+
+**Status:** pending
+**Blocked by:** Phase 5 (complete)
+**Goal:** Accumulate historical price data from sold listings, Reddit history, and ongoing sourcer runs. Build the dataset for deal quality scoring.
+**Adversarial review:** 13 blockers found and resolved (price_history reuse, migration pattern, eBay API dual-key check, budget from target_price). Findings: `.buildrunner/plans/amend-adversarial-findings.json`
+
+**Files:**
+
+- `core/cluster/intel_schema.sql` (MODIFY) — extend `price_history` table with hunt_id, is_sold, condition, title columns
+- `core/cluster/intel_collector.py` (MODIFY) — add `log_market_price()`, extend `_ensure_intel_tables()` with ALTER TABLE migrations
+- `core/cluster/hunt_sourcer.py` (MODIFY) — log every price to price_history before requirements filtering
+- `core/cluster/hunt_sources/ebay_sold.py` (NEW) — eBay completed/sold listings via `LH_Sold=1&LH_Complete=1`, new adapter function (not reuse of ebay_scrape)
+- `core/cluster/hunt_sources/reddit_rss.py` (MODIFY) — add `search_historical()` with new JSON parsing (different API from RSS)
+
+**Deliverables:**
+
+- [ ] Extend `price_history` table: add `hunt_id INTEGER`, `is_sold INTEGER DEFAULT 0`, `condition TEXT`, `title TEXT`, `url TEXT` columns via ALTER TABLE migrations _(added: 2026-04-07)_
+- [ ] Build `log_market_price(hunt_id, price, source, title, url, is_sold, condition)` in intel*collector.py *(added: 2026-04-07)\_
+- [ ] Modify sourcer to call `log_market_price()` for every item BEFORE `_validate_item()` — rejected items are valid market data _(added: 2026-04-07)_
+- [ ] Build `ebay_sold.py` — new adapter with `LH_Sold=1&LH_Complete=1` params, regex parser for sold price extraction, `is_sold=1` on all entries _(added: 2026-04-07)_
+- [ ] Add `search_historical()` to reddit*rss.py — hits `/search.json` (JSON response, not RSS), extracts prices from titles, last 30 days *(added: 2026-04-07)\_
+- [ ] Wire eBay Browse API — enable when BOTH `EBAY_APP_ID` AND `EBAY_SECRET` env vars present _(added: 2026-04-07)_
+- [ ] Run initial seeding pass for all 9 existing hunts _(added: 2026-04-07)_
+- [ ] Sync DB to Lockwood via scp (market data lives in same intel.db file) _(added: 2026-04-07)_
+
+**Success Criteria:** `price_history` has 50+ data points for GPU hunts, 10+ for commodity items. eBay sold adapter returns actual transaction prices with `is_sold=1`.
+
+### Phase 7: Market Stats Engine + Purchase Tracking _(added: 2026-04-07)_
+
+**Status:** pending
+**Blocked by:** Phase 6 (needs market data to compute stats)
+**Goal:** Compute per-hunt market statistics and deal quality scoring. Add purchase tracking.
+
+**Files:**
+
+- `core/cluster/intel_collector.py` (MODIFY) — add `get_market_stats()` (NEW function), `update_deal_item()` (NEW function), `mark_purchased()` (NEW function)
+- `core/cluster/intel_schema.sql` (MODIFY) — add `purchased`, `purchased_price` to deal_items via ALTER TABLE
+- `core/cluster/node_intelligence.py` (MODIFY) — add `GET /api/deals/market/{hunt_id}` (NEW endpoint), `PATCH /api/deals/items/{id}` (NEW endpoint), `GET /api/deals/summary` (NEW endpoint)
+
+**Deliverables:**
+
+- [ ] Add `purchased INTEGER DEFAULT 0` and `purchased_price REAL` to deal*items via ALTER TABLE migration *(added: 2026-04-07)\_
+- [ ] Build `get_market_stats(hunt_id, days=90)` in intel*collector.py (NEW function) — uses Python `statistics.median`, `statistics.quantiles` on price_history rows. Returns: median, p25, p75, min, max, sample_count, sold_count, trend *(added: 2026-04-07)\_
+- [ ] Build `update_deal_item(item_id, **fields)` in intel*collector.py (NEW function) — general-purpose update for purchased, purchased_price, notes *(added: 2026-04-07)\_
+- [ ] Add `GET /api/deals/market/{hunt_id}` endpoint (NEW) — returns market stats JSON from get*market_stats() *(added: 2026-04-07)\_
+- [ ] Add `PATCH /api/deals/items/{id}` endpoint (NEW) — calls update*deal_item() *(added: 2026-04-07)\_
+- [ ] Add `GET /api/deals/summary` endpoint (NEW) — per-hunt spend totals using SUM(target*price) as budget, SUM(purchased_price) as spent *(added: 2026-04-07)\_
+- [ ] Trend computation: linear regression on 30-day price*history window → rising/falling/stable *(added: 2026-04-07)\_
+
+**Success Criteria:** `GET /api/deals/market/2` returns median price for RTX 3090 with sample count. `PATCH` toggles purchased. `GET /api/deals/summary` shows budget vs spent.
+
+### Phase 8: Deals Page Redesign _(added: 2026-04-07)_
+
+**Status:** pending
+**Blocked by:** Phase 7 (needs stats API + purchase endpoint)
+**Goal:** Single deal feed sorted by quality vs market, market position on every card, purchase tracking, exceptional deals highlighted.
+
+**Files:**
+
+- `~/.buildrunner/dashboard/public/js/ws-intel.js` (MODIFY) — rewrite deals rendering section (lines 1133-1232)
+
+**Deliverables:**
+
+- [ ] Fetch market stats per hunt — separate call to `GET /api/deals/market/{hunt_id}` per active hunt _(added: 2026-04-07)_
+- [ ] Compute deal*percentile at render time: `(prices_above_this / total_prices) * 100` from market stats response *(added: 2026-04-07)\_
+- [ ] Sort deals by deal*percentile ascending (best deals first) *(added: 2026-04-07)\_
+- [ ] Deal card redesign: title + price (large), tags (source/condition/stock), market position bar showing price vs P25/median/P75 range _(added: 2026-04-07)_
+- [ ] Highlight tiers: exceptional (below P25) green glow + label, good (below median) green border, fair (above median) neutral, pass (above budget) muted _(added: 2026-04-07)_
+- [ ] "Mark Bought" button — calls `PATCH /api/deals/items/{id}` with `{purchased: 1, purchased_price: price}`, card moves to bought section _(added: 2026-04-07)_
+- [ ] Inline edit — click price to edit, click to add notes _(added: 2026-04-07)_
+- [ ] KPI bar: total deals, bought count, total spent vs total budget (from /api/deals/summary), hunt count _(added: 2026-04-07)_
+- [ ] Empty state per hunt: "No deals found — N market prices tracked, median $X" _(added: 2026-04-07)_
+- [ ] Remove dead fields: MSRP, savings, score when 0, verdict when empty _(added: 2026-04-07)_
+
+**Success Criteria:** Deals page shows market median + percentile on every card. Best deals at top. "Mark Bought" persists. Budget tracker shows spent vs total.
+
 ## Out of Scope (Future)
 
 - Keepa API (paid, excluded)
@@ -239,3 +316,4 @@ Example 3 (user): "Extract: '{actual HTML content}'"
 - 2026-04-06: eBay Browse API requires affiliate approval (eBay Partner Network) — no guarantee, 10+ business day wait. Switched to HTML scrape + Below extraction as default. Browse API kept as optional upgrade. Zero external API keys required for full pipeline.
 - 2026-04-07: Feed and hunts empty after DB wipe. Restored from Lockwood. Fixed: Reddit keyword matching (model+brand, exclusions, [W] filter), Newegg regex extraction (skip OOS), eBay/B&H browser headers (403→200), PCPartPicker HTML fallback, Shopify removed Crucial (not Shopify), Lockwood API fallback to local DB, schema migration (listing_url_hash), added 2 missing hunts (NVMe + bridge alt). Disabled: eBay scrape (CAPTCHA), Craigslist (IP block). 48 deals inserted, purged garbage, 6 clean items remaining.
 - 2026-04-07: Designed hunt requirements system — per-hunt JSON rules enforced at insert time. Researched local LLM prompting (8 Opus sub-agents, 2 rounds, 55+ sources). Created /llm skill + research library doc. Amended BUILD spec with Phase 4 (requirements) + Phase 5 (prompt alignment).
+- 2026-04-07: Amended BUILD spec with Phase 6 (market price collection), Phase 7 (market stats + purchase tracking), Phase 8 (deals page redesign). Adversarial review: 13 blockers found and resolved — key fixes: reuse price_history table instead of new market_prices, ALTER TABLE migrations, deal_percentile computed at render time not stored, budget from target_price. Built enforce-build-gates.sh hook to enforce adversarial review on all future amendments.
