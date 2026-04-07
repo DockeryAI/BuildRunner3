@@ -1,31 +1,35 @@
-# Phase 2: Session Grid — Implementation Plan
+# Phase 2 Plan: Push-Based Repo Sync + Dispatch Logging
 
 ## Tasks
 
-### Task 1: Create `integrations/sessions.mjs`
-- Poll each node for active Claude Code processes via SSH (ps aux | grep claude)
-- Parse session files from ~/.claude/projects/ on each node
-- For Muddy: use local exec, no SSH
-- Cache results with 15s TTL
-- Export getActiveSessions() function
-- Return: node, project, branch, state, elapsed time, last activity, pid
+### T1: auto-save-session.sh — Walter git remote auto-setup
 
-### Task 2: Add `/api/sessions` endpoint to `events.mjs`
-- Import sessions integration
-- GET endpoint returning session list across all nodes
-- Add session.update to VALID_TYPES for SSE broadcasting
+Add `walter` remote if missing before push.
 
-### Task 3: Add Sessions panel to `index.html`
-- New panel in the grid between Build DAG and Event Log
-- Session grid: node, project, branch, state, elapsed, last activity
-- Click session -> detail modal with recent output info
-- Auto-refresh via SSE every 15s
-- Session count badge in panel title
+### T2: auto-save-session.sh — Push code before /api/run
 
-### Task 4: Add session grid styles to `styles.css`
-- Session card/row styles
-- State badges (active, idle, waiting)
-- Color coding per node
+`git push walter HEAD:refs/heads/current --force-with-lease` before the curl to /api/run
+
+### T3: auto-save-session.sh — Dispatch logging
+
+Log every dispatch to `~/.buildrunner/logs/walter-dispatch.log`
+
+### T4: auto-save-session.sh — Health check before dispatch
+
+Verify Walter /health freshness before dispatching; skip with log if degraded
+
+### T5: dispatch-to-node.sh — Lock files for dispatch exclusivity
+
+`/tmp/dispatch-lock-${NODE}-${PROJECT}` with PID check, EXIT trap cleanup
+
+### T6: dispatch-to-node.sh — Remove dead code
+
+Remove keychain unlock lines. Fix DISPATCH_USER -> SSH_USER in rsync.
+
+### T7: dispatch-to-node.sh — Unique prompt file paths
+
+Use unique pattern for temp prompt files
 
 ## Tests
-- Non-testable (dashboard UI + SSH integration). Skip TDD.
+
+Shell scripts — non-testable with vitest. TDD skipped.

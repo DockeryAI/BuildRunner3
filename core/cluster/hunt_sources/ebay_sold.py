@@ -157,6 +157,16 @@ async def search(hunt: dict, source_config: dict) -> list[dict]:
         logger.info(f"eBay sold: no listings found for '{hunt.get('name', keywords)}'")
         return []
 
+    # Filter out obvious non-products (accessories priced far below target)
+    target_price = hunt.get("target_price")
+    price_floor = target_price * 0.1 if target_price else 0
+    if price_floor:
+        before = len(sold_listings)
+        sold_listings = [l for l in sold_listings if l.get("price", 0) >= price_floor]
+        filtered = before - len(sold_listings)
+        if filtered:
+            logger.info(f"eBay sold: filtered {filtered} items below ${price_floor:.0f} floor for '{hunt.get('name', keywords)}'")
+
     # Log all sold prices directly to market data (these are confirmed transactions)
     try:
         from core.cluster.intel_collector import log_market_price

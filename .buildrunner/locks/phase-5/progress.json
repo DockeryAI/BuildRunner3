@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "name": "Lockwood Test Reporting",
+  "step": 1,
+  "step_name": "setup",
+  "step_label": "Setup & sync",
+  "status": "active",
+  "tasks_total": 5,
+  "tasks_done": 0,
+  "current_task": null,
+  "tests_written": 0,
+  "tests_passing": 0,
+  "commits": 0,
+  "errors": [],
+  "warnings": [],
+  "started_at": "2026-04-07T21:30:00Z",
+  "updated_at": "2026-04-07T21:30:00Z",
+  "history": []
+}

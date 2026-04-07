@@ -1039,30 +1039,48 @@ async def commit_search(req: CommitSearchRequest):
 
 
 @app.get("/api/memory/tests")
-async def get_tests(project: Optional[str] = None):
-    """Get latest test results."""
-    from core.cluster.memory_store import get_latest_test_results
-    return {"results": get_latest_test_results(project)}
+async def get_tests(project: Optional[str] = None, limit: int = 20):
+    """Get recent test health data for sparklines and dashboard.
+
+    Returns detailed per-run records from the test_health table (Phase 37 completion).
+    Falls back to legacy test_results if test_health is empty.
+    """
+    from core.cluster.memory_store import get_test_health, get_latest_test_results
+    results = get_test_health(project, limit)
+    if not results:
+        # Fallback to legacy table for backward compat
+        results = get_latest_test_results(project)
+    return {"results": results}
 
 
-class TestResultRecord(BaseModel):
+class TestHealthRecord(BaseModel):
     project: str
+    sha: Optional[str] = None
+    branch: Optional[str] = None
+    pass_rate: float = 0.0
+    total: int = 0
     passed: int = 0
     failed: int = 0
     skipped: int = 0
     failures: list = []
-    duration_seconds: float = None
-    source: str = "walter"
+    duration_ms: Optional[int] = None
+    runner: str = "vitest"
+    trigger: str = "watch"
 
 
 @app.post("/api/memory/tests")
-async def save_tests(req: TestResultRecord):
-    """Receive test results from Walter or other nodes."""
-    from core.cluster.memory_store import save_test_results
-    return save_test_results(
-        project=req.project, passed=req.passed, failed=req.failed,
-        skipped=req.skipped, failures=req.failures,
-        duration_seconds=req.duration_seconds, source=req.source
+async def save_tests(req: TestHealthRecord):
+    """Receive test health data from Walter or other test runners.
+
+    Stores in test_health table with full SHA tracking, runner info, and trigger source.
+    Also writes to legacy test_results for backward compat.
+    """
+    from core.cluster.memory_store import save_test_health
+    return save_test_health(
+        project=req.project, sha=req.sha, branch=req.branch,
+        pass_rate=req.pass_rate, total=req.total, passed=req.passed,
+        failed=req.failed, skipped=req.skipped, failures=req.failures,
+        duration_ms=req.duration_ms, runner=req.runner, trigger=req.trigger
     )
 
 

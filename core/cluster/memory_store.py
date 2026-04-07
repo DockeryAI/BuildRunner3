@@ -113,11 +113,30 @@ def _ensure_tables(conn: sqlite3.Connection):
             timestamp TEXT NOT NULL DEFAULT (datetime('now'))
         );
 
+        CREATE TABLE IF NOT EXISTS test_health (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project TEXT NOT NULL,
+            sha TEXT,
+            branch TEXT,
+            pass_rate REAL NOT NULL DEFAULT 0.0,
+            total INTEGER NOT NULL DEFAULT 0,
+            passed INTEGER NOT NULL DEFAULT 0,
+            failed INTEGER NOT NULL DEFAULT 0,
+            skipped INTEGER NOT NULL DEFAULT 0,
+            failures TEXT,
+            duration_ms INTEGER,
+            runner TEXT NOT NULL DEFAULT 'vitest',
+            trigger TEXT NOT NULL DEFAULT 'watch',
+            timestamp TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
         CREATE INDEX IF NOT EXISTS idx_build_project ON build_history(project);
         CREATE INDEX IF NOT EXISTS idx_commits_repo ON commits(repo);
         CREATE INDEX IF NOT EXISTS idx_test_project ON test_results(project);
         CREATE INDEX IF NOT EXISTS idx_patterns_type ON log_patterns(pattern_type);
         CREATE INDEX IF NOT EXISTS idx_plans_project ON plan_outcomes(project);
+        CREATE INDEX IF NOT EXISTS idx_test_health_project ON test_health(project);
+        CREATE INDEX IF NOT EXISTS idx_test_health_ts ON test_health(timestamp);
     """)
     conn.commit()
 
@@ -346,6 +365,75 @@ def get_latest_test_results(project: str = None) -> list[dict]:
         ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+
+# --- Test Health (Phase 37 completion — rich test reporting from Walter) ---
+
+def save_test_health(project: str, sha: str = None, branch: str = None,
+                     pass_rate: float = 0.0, total: int = 0, passed: int = 0,
+                     failed: int = 0, skipped: int = 0, failures: list = None,
+                     duration_ms: int = None, runner: str = "vitest",
+                     trigger: str = "watch") -> dict:
+    """Save detailed test health record from Walter or other test runners.
+
+    This is the Phase 37 completion endpoint — richer than the legacy test_results table.
+    Stores per-run data with SHA tracking for cross-project health sparklines.
+    """
+    conn = _get_db()
+    conn.execute(
+        """INSERT INTO test_health
+           (project, sha, branch, pass_rate, total, passed, failed, skipped,
+            failures, duration_ms, runner, trigger)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (project, sha, branch, pass_rate, total, passed, failed, skipped,
+         json.dumps(failures or []), duration_ms, runner, trigger)
+    )
+    conn.commit()
+    conn.close()
+
+    # Also write to legacy test_results for backward compat
+    save_test_results(
+        project=project, passed=passed, failed=failed, skipped=skipped,
+        failures=failures, duration_seconds=(duration_ms / 1000.0) if duration_ms else None,
+        source=runner
+    )
+
+    return {"status": "saved", "project": project, "sha": sha, "pass_rate": pass_rate}
+
+
+def get_test_health(project: str = None, limit: int = 20) -> list[dict]:
+    """Get recent test health records for sparkline rendering.
+
+    Returns last N records per project, ordered by timestamp descending.
+    """
+    conn = _get_db()
+    if project:
+        rows = conn.execute(
+            """SELECT * FROM test_health WHERE project = ?
+               ORDER BY timestamp DESC LIMIT ?""",
+            (project, limit)
+        ).fetchall()
+    else:
+        # Latest N per project (for dashboard overview)
+        rows = conn.execute(
+            """SELECT * FROM test_health WHERE id IN (
+                 SELECT id FROM test_health ORDER BY timestamp DESC LIMIT ?
+               ) ORDER BY timestamp DESC""",
+            (limit,)
+        ).fetchall()
+    conn.close()
+
+    results = []
+    for r in rows:
+        d = dict(r)
+        # Parse failures JSON
+        if d.get("failures") and isinstance(d["failures"], str):
+            try:
+                d["failures"] = json.loads(d["failures"])
+            except (json.JSONDecodeError, TypeError):
+                d["failures"] = []
+        results.append(d)
+    return results
 
 
 # --- Log Patterns ---

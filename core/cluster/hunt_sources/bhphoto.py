@@ -100,8 +100,9 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
                         "seller": {"type": "string"},
                         "url": {"type": "string"},
                         "in_stock": {"type": "boolean"},
+                        "relevant": {"type": "boolean"},
                     },
-                    "required": ["title", "price", "url", "in_stock"],
+                    "required": ["title", "price", "url", "in_stock", "relevant"],
                 },
             }
         },
@@ -118,10 +119,17 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
                     "format": listing_schema,
                     "think": False,
                     "messages": [
-                        {"role": "system", "content": "Extract product listings from HTML as JSON. Use null for missing fields. Return as JSON."},
-                        {"role": "user", "content": "Extract: '<div class=\"product\">NVLink Bridge 3-Slot $149.99 In Stock</div>'"},
-                        {"role": "assistant", "content": '{"listings":[{"title":"NVLink Bridge 3-Slot","price":149.99,"condition":"New","seller":"B&H Photo","url":"","in_stock":true}]}'},
-                        {"role": "user", "content": f"Extract product listings from this B&H Photo HTML. Only real products, no ads.\n\n{cleaned}"},
+                        {"role": "system", "content": f"Extract product listings from B&H Photo HTML as JSON. Only include listings that match the search intent: '{hunt_name}'. Mark accessories, cables, adapters, and unrelated products as relevant: false. Use null for missing fields."},
+                        # Example 1: relevant product
+                        {"role": "user", "content": "Extract: '<div class=\"product\">PNY NVLink Bridge 3-Slot for RTX A6000 $149.99 In Stock</div>'"},
+                        {"role": "assistant", "content": '{"listings":[{"title":"PNY NVLink Bridge 3-Slot for RTX A6000","price":149.99,"condition":"New","seller":"B&H Photo","url":"","in_stock":true,"relevant":true}]}'},
+                        # Example 2: irrelevant accessory
+                        {"role": "user", "content": "Extract: '<div class=\"product\">NVLink Bridge Protective Cover $9.99 In Stock</div>'"},
+                        {"role": "assistant", "content": '{"listings":[{"title":"NVLink Bridge Protective Cover","price":9.99,"condition":"New","seller":"B&H Photo","url":"","in_stock":true,"relevant":false}]}'},
+                        # Example 3: empty
+                        {"role": "user", "content": "Extract: '<div>No results</div>'"},
+                        {"role": "assistant", "content": '{"listings":[]}'},
+                        {"role": "user", "content": f"Extract product listings from this B&H Photo HTML. Only mark actual '{hunt_name}' products as relevant — not accessories, covers, cables, or unrelated items.\n\n{cleaned}"},
                     ],
                     "options": {"temperature": 0.2, "num_ctx": 8192, "num_predict": 2048, "presence_penalty": 1.5},
                 },
@@ -144,8 +152,12 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
                     return []
                 listings = json.loads(text[start : end + 1])
 
-            logger.info(f"Below extracted {len(listings)} B&H listings for '{hunt_name}'")
-            return listings
+            relevant = [l for l in listings if l.get("relevant", True)]
+            filtered = len(listings) - len(relevant)
+            if filtered:
+                logger.info(f"Below filtered {filtered} irrelevant B&H items for '{hunt_name}'")
+            logger.info(f"Below extracted {len(relevant)} relevant B&H listings for '{hunt_name}'")
+            return relevant
 
     except Exception as e:
         logger.error(f"Below extraction failed for B&H '{hunt_name}': {e}")

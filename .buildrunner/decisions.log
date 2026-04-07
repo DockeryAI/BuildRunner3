@@ -467,3 +467,11 @@
   - _db_lock wraps ALL SQLite operations (reads + writes) for full serialization
   - Removed _hash_lock and _file_hashes since mtime detection replaced by git SHA
   - /api/alert endpoint kept as /api/alerts (read-only, used by developer-brief.sh) but AlertPayload removed
+
+[2026-04-07T21:20:00Z] Phase 2 decisions:
+- auto-save-session.sh: Walter dispatch is now synchronous (not backgrounded) to capture HTTP response code and run_id for logging. Git push remains backgrounded since we don't need its result.
+- auto-save-session.sh: Health check uses /health endpoint's last_test_run field — if null, Walter is degraded (fresh install, never ran tests). Unreachable also triggers skip.
+- dispatch-to-node.sh: Lock file uses PID + kill -0 for liveness check, auto-cleans stale locks from crashed processes.
+- dispatch-to-node.sh: Replaced all DISPATCH_USER refs with SSH_USER (per-node resolved). DISPATCH_USER was always the default user, SSH_USER correctly handles Below's different username.
+- dispatch-to-node.sh: Removed keychain unlock lines — SSH key auth is enforced via -o PasswordAuthentication=no, making keychain unlock dead code.
+- dispatch-to-node.sh: Prompt file now uses SESSION_NAME (includes timestamp) + PID for uniqueness, matching existing cleanup glob pattern.

@@ -179,10 +179,14 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
                         "price": {"type": "number"},
                         "condition": {"type": "string"},
                         "seller": {"type": "string"},
+                        "seller_feedback": {"type": "number"},
+                        "seller_rating": {"type": "number"},
+                        "location": {"type": "string"},
                         "url": {"type": "string"},
                         "in_stock": {"type": "boolean"},
+                        "relevant": {"type": "boolean"},
                     },
-                    "required": ["title", "price", "url", "in_stock"],
+                    "required": ["title", "price", "url", "in_stock", "relevant"],
                 },
             }
         },
@@ -199,12 +203,17 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
                     "format": listing_schema,
                     "think": False,
                     "messages": [
-                        {"role": "system", "content": "Extract product listings from HTML as JSON. Use null for missing fields. Return as JSON."},
-                        {"role": "user", "content": "Extract: '<div class=\"s-item\"><span class=\"s-item__title\">EVGA RTX 3090 FTW3</span><span class=\"s-item__price\">$899.99</span></div>'"},
-                        {"role": "assistant", "content": '{"listings":[{"title":"EVGA RTX 3090 FTW3","price":899.99,"condition":"Unknown","seller":"","url":"","in_stock":true}]}'},
+                        {"role": "system", "content": f"Extract product listings from eBay HTML as JSON. Only include listings that match the search intent: '{hunt_name}'. Mark accessories, cables, cases, adapters, and unrelated products as relevant: false. Use null for missing fields."},
+                        # Example 1: relevant GPU listing with seller data
+                        {"role": "user", "content": "Extract: '<div class=\"s-item\"><span class=\"s-item__title\">EVGA RTX 3090 FTW3 Ultra 24GB</span><span class=\"s-item__price\">$899.99</span><span>Pre-Owned</span><span>outworld_systems (994) 99.6%</span><span>Ships from United States</span></div>'"},
+                        {"role": "assistant", "content": '{"listings":[{"title":"EVGA RTX 3090 FTW3 Ultra 24GB","price":899.99,"condition":"Pre-Owned","seller":"outworld_systems","seller_feedback":994,"seller_rating":99.6,"location":"United States","url":"","in_stock":true,"relevant":true}]}'},
+                        # Example 2: irrelevant accessory — must be rejected
+                        {"role": "user", "content": "Extract: '<div class=\"s-item\"><span class=\"s-item__title\">RTX 3090 Backplate RGB Cover</span><span class=\"s-item__price\">$12.99</span></div>'"},
+                        {"role": "assistant", "content": '{"listings":[{"title":"RTX 3090 Backplate RGB Cover","price":12.99,"condition":"New","seller":"","seller_feedback":null,"seller_rating":null,"location":"","url":"","in_stock":true,"relevant":false}]}'},
+                        # Example 3: no results
                         {"role": "user", "content": "Extract: '<div>No items found</div>'"},
                         {"role": "assistant", "content": '{"listings":[]}'},
-                        {"role": "user", "content": f"Extract product listings from this eBay HTML. Only real products, no ads.\n\n{cleaned}"},
+                        {"role": "user", "content": f"Extract product listings from this eBay HTML. Only mark actual '{hunt_name}' products as relevant — not accessories, covers, cables, brackets, or unrelated items.\n\n{cleaned}"},
                     ],
                     "options": {"temperature": 0.2, "num_ctx": 8192, "num_predict": 2048, "presence_penalty": 1.5},
                 },
@@ -228,8 +237,13 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
                     return []
                 listings = json.loads(text[start : end + 1])
 
-            logger.info(f"Below extracted {len(listings)} listings for '{hunt_name}'")
-            return listings
+            # Filter out irrelevant items (accessories, cables, covers)
+            relevant = [l for l in listings if l.get("relevant", True)]
+            filtered = len(listings) - len(relevant)
+            if filtered:
+                logger.info(f"Below filtered {filtered} irrelevant items for '{hunt_name}'")
+            logger.info(f"Below extracted {len(relevant)} relevant listings for '{hunt_name}'")
+            return relevant
 
     except Exception as e:
         logger.error(f"Below extraction failed for '{hunt_name}': {e}")
@@ -252,12 +266,18 @@ async def search(hunt: dict, source_config: dict) -> list[dict]:
     if not listings:
         return []
 
-    # Convert to deal item format
+    # Convert to deal item format — filter obvious non-products
+    target_price = hunt.get("target_price")
+    price_floor = target_price * 0.1 if target_price else 0  # items below 10% of target are accessories
     items = []
     for listing in listings:
         title = listing.get("title", "")
         url = listing.get("url", "")
         if not title or not url:
+            continue
+        price = listing.get("price")
+        if price and price_floor and price < price_floor:
+            logger.debug(f"Skipping likely accessory: '{title}' at ${price} (floor ${price_floor:.0f})")
             continue
 
         items.append({
@@ -269,9 +289,12 @@ async def search(hunt: dict, source_config: dict) -> list[dict]:
             "price": listing.get("price"),
             "condition": listing.get("condition", "Unknown"),
             "seller": listing.get("seller", ""),
+            "seller_rating": listing.get("seller_rating"),
             "attributes": {
                 "source": "ebay_scrape",
                 "in_stock": listing.get("in_stock", True),
+                "seller_feedback": listing.get("seller_feedback"),
+                "location": listing.get("location", ""),
             },
         })
 

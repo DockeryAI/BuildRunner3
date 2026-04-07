@@ -15,6 +15,8 @@ import sqlite3
 import subprocess
 import threading
 import queue
+import urllib.request
+import urllib.error
 import psutil
 from pathlib import Path
 from typing import Optional
@@ -684,6 +686,60 @@ def _store_results(results: dict, trigger: str = "watch"):
         conn.close()
 
 
+# --- Push Results to Lockwood (Phase 37 completion) ---
+def _push_to_lockwood(results: dict, trigger: str = "watch"):
+    """Push test results to Lockwood's /api/memory/tests endpoint.
+
+    Sends rich test health data (SHA, branch, runner, trigger) for cross-project
+    sparklines and health tracking. Retries once on failure.
+    """
+    if not results:
+        return
+
+    total = results.get("total", 0)
+    passed = results.get("passed", 0)
+    pass_rate = round((passed / total * 100), 1) if total > 0 else 0.0
+
+    # Collect failure names from test results
+    failures = [
+        t.get("full_name", t.get("name", "unknown"))
+        for t in results.get("tests", [])
+        if t.get("status") == "failed"
+    ]
+
+    payload = json.dumps({
+        "project": results.get("project", "unknown"),
+        "sha": results.get("git_sha", ""),
+        "branch": results.get("git_branch", ""),
+        "pass_rate": pass_rate,
+        "total": total,
+        "passed": passed,
+        "failed": results.get("failed", 0),
+        "skipped": results.get("skipped", 0),
+        "failures": failures,
+        "duration_ms": results.get("duration_ms"),
+        "runner": results.get("runner", "unknown"),
+        "trigger": trigger,
+    }).encode("utf-8")
+
+    url = f"{LOCKWOOD_URL}/api/memory/tests"
+    req = urllib.request.Request(url, data=payload, method="POST",
+                                headers={"Content-Type": "application/json"})
+
+    for attempt in range(2):
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                resp_data = resp.read().decode("utf-8")
+                print(f"  Lockwood push OK (attempt {attempt + 1}): {results.get('project')} -> {resp_data}")
+                return True
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, TimeoutError) as e:
+            print(f"  Lockwood push FAIL (attempt {attempt + 1}): {results.get('project')} -> {e}")
+            if attempt == 0:
+                time.sleep(2)  # brief pause before retry
+
+    return False
+
+
 # --- Queue Consumer (RC4 fix: single execution path) ---
 def _queue_consumer():
     """Single consumer thread that processes test runs serially from the queue.
@@ -778,6 +834,7 @@ def _execute_test_run(run_id: str, project: str, repo_path: str, trigger: str, c
         vitest_results["git_sha_full"] = git_sha_full
         vitest_results["git_branch"] = git_branch
         _store_results(vitest_results, trigger=trigger)
+        _push_to_lockwood(vitest_results, trigger=trigger)
         with _state_lock:
             _last_results[f"{project}_vitest"] = vitest_results
         results_collected.append(vitest_results)
@@ -790,6 +847,7 @@ def _execute_test_run(run_id: str, project: str, repo_path: str, trigger: str, c
         pw_results["git_sha_full"] = git_sha_full
         pw_results["git_branch"] = git_branch
         _store_results(pw_results, trigger=trigger)
+        _push_to_lockwood(pw_results, trigger=trigger)
         with _state_lock:
             _last_results[f"{project}_playwright"] = pw_results
         results_collected.append(pw_results)
