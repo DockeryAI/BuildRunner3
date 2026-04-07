@@ -348,3 +348,5 @@
 [2026-04-06T22:30:15Z] [TRADE-OFF] Dashboard phases are sequential despite --cluster
   WHY: All 7 phases modify the same external files (index.html, styles.css, events.mjs). Can't parallelize within this build. Phase 2 REWRITEs files, Phases 3-7 MODIFY. Workspace container pattern: Phase 2 creates empty containers, later phases fill them. Other builds CAN run in parallel on Otis/Muddy background agents
   CONTEXT: BUILD_dashboard-command-center.md parallelization matrix
+[Mon Apr  6 20:33:25 CDT 2026] [DECISION] Created build spec: self-qa-enforcement with 5 phases — enforcement hooks, explore-qa command, /begin self-QA step, visual regression baselines, VRT on Lomax
+[2026-04-07T01:33:44Z] [AMENDMENT] Added 4 phases (35-38) to BUILD_cluster-build-orchestration: dispatch reliability + node expansion, intel pipeline activation, Walter commit-triggered testing, dashboard polish + spec hygiene. Reason: session revealed dispatch unreliability, Below/Lomax underutilization, mock data in intel workspace, no commit-triggered testing.

@@ -3,6 +3,8 @@
 **Project:** BuildRunner3 (BR3 framework)
 **Created:** 2026-04-05
 **Rewritten:** 2026-04-05 — reordered for impact-first, automation-compounding execution
+**Amended:** 2026-04-06 — added Phases 35-38 (dispatch reliability, intel pipeline, Walter testing, dashboard polish)
+**Status:** Phases 1-34 mixed (many built, statuses not tracked) — Phases 35-38 not_started
 **Impact:** GLOBAL — every BR3 project gets automatic cluster dispatch + intelligence
 
 ---
@@ -687,6 +689,77 @@ User guide. Config reference. Skill docs updated.
 
 ---
 
+## BLOCK 6: SESSION FIXES (Phases 35-38)
+
+_Issues discovered during 2026-04-06 session. Dispatch reliability, node expansion, pipeline activation, dashboard polish._
+
+---
+
+### PHASE 35: Dispatch Reliability + Node Expansion _(added: 2026-04-06)_
+
+**Status:** not_started
+**Goal:** Make remote dispatch reliable (retry on no-work), expand builder pool to 3 nodes (Muddy + Otis + Lomax), fix Below WSL dispatch, and make autopilot chain all phases in one agent.
+**Blocked by:** None
+
+**Deliverables:**
+
+- [ ] Add retry logic to `dispatch-to-node.sh` — after `claude -p`, check remote `git diff --stat`; if no changes, retry once with hardened prompt including "Do NOT ask questions, commit when done"; if still nothing, exit 5 (no-work) so autopilot falls back to local _(added: 2026-04-06)_
+- [ ] Install Claude CLI on Lomax (`npm install -g @anthropic-ai/claude-code`), sync OAuth credentials via `sync_credentials "lomax"`, add `parallel-builder` as secondary role in `cluster.json` _(added: 2026-04-06)_
+- [ ] Add `parallel-builder` as secondary role for Below in `cluster.json`, fix WSL dispatch path to use root user (not byron) _(added: 2026-04-06)_
+- [ ] Update `/autopilot` skill agent dispatch to pass ALL remaining phases to a single agent with chaining instructions, instead of spawning one agent per phase _(added: 2026-04-06)_
+
+**Success Criteria:** Dispatch to Otis/Lomax/Below with retry. Autopilot chains 5+ phases in one agent without manual re-launch.
+
+---
+
+### PHASE 36: Intel Pipeline Activation _(added: 2026-04-06)_
+
+**Status:** not_started
+**Goal:** Wire the intelligence workspace to live data from Lockwood/Below instead of mock data. Activate the full intel pipeline.
+**Blocked by:** Phase 35 (Below must be dispatchable for classification)
+
+**Deliverables:**
+
+- [ ] Add Lockwood proxy endpoints to `events.mjs`: `/api/proxy/intel/items`, `/api/proxy/deals/items`, `/api/proxy/intel/items/:id/read`, `/api/proxy/deals/items/:id/dismiss` — all forward to Lockwood `http://10.0.1.101:8100` _(added: 2026-04-06)_
+- [ ] Replace mock data arrays in `~/.buildrunner/dashboard/public/js/ws-intel.js` with fetch calls to proxy endpoints, with fallback to empty state when Lockwood offline _(added: 2026-04-06)_
+- [ ] Activate intel pipeline scheduled jobs — source scraping → Below classification → Lockwood storage → dashboard display _(added: 2026-04-06)_
+
+**Success Criteria:** Intelligence workspace shows live data from Lockwood. New intel items appear within 30s of pipeline run. Mock data removed.
+
+---
+
+### PHASE 37: Walter Commit-Triggered Testing _(added: 2026-04-06)_
+
+**Status:** not_started
+**Goal:** Wire Walter to automatically run tests on commit and report results to Lockwood for dashboard health tracking.
+**Blocked by:** None
+
+**Deliverables:**
+
+- [ ] Set up git post-receive hook or file watcher on Walter that runs `vitest run` + `playwright test` against changed projects when commits land _(added: 2026-04-06)_
+- [ ] Report test results back to Lockwood via `POST /api/memory/tests` for build health tracking and dashboard sparklines _(added: 2026-04-06)_
+
+**Success Criteria:** Commit on Muddy → Walter runs tests within 30s → results visible in dashboard health sparklines.
+
+---
+
+### PHASE 38: Dashboard Polish + Spec Hygiene _(added: 2026-04-06)_
+
+**Status:** not_started
+**Goal:** Fix dashboard console errors, backfill health data, standardize BUILD spec formats, clean up stale dispatch artifacts.
+**Blocked by:** None
+
+**Deliverables:**
+
+- [ ] Fix 4 console errors in dashboard `index.html` / `events.mjs` (identified in Playwright screenshots throughout session) _(added: 2026-04-06)_
+- [ ] Backfill existing health events in `events.db` with phase names extracted from BUILD specs _(added: 2026-04-06)_
+- [ ] Standardize BUILD spec status format across all 13 specs: `✅ COMPLETE` for done, `not_started` for pending, `🚧 in_progress` for active _(added: 2026-04-06)_
+- [ ] Clean up stale `.dispatch-worktrees/` from all repos on Muddy and Otis; add `.dispatch-worktrees` to `.gitignore` in all projects _(added: 2026-04-06)_
+
+**Success Criteria:** Zero console errors in Playwright. All BUILD specs use canonical status format. No stale worktree directories.
+
+---
+
 ## Acceptance Criteria Summary
 
 - [x] Every commit triggers Walter tests + Lomax build validation (Phase 1)
@@ -702,3 +775,7 @@ User guide. Config reference. Skill docs updated.
 - [x] Failed builds auto-analyze via Below + Lockwood (Phase 17)
 - [x] Governance checks run before every dispatch (Phase 18)
 - [x] Web dashboard with live SSE updates (Phase 26)
+- [ ] Dispatch retries on no-work, Lomax + Below as builders (Phase 35)
+- [ ] Intel workspace wired to live Lockwood/Below data (Phase 36)
+- [ ] Walter commit-triggered testing with Lockwood reporting (Phase 37)
+- [ ] Dashboard console errors fixed, spec formats standardized (Phase 38)
