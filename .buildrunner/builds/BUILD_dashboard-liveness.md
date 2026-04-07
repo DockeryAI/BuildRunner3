@@ -92,7 +92,7 @@ ws-builds.js:
 
 ### Phase 3: Auto-Redispatch Watchdog _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** 🚧 in_progress
 **Blocked by:** Phase 2 (complete)
 **Goal:** When the scanner marks a build `stalled`, automatically re-dispatch it if the build opts in. Prevents dead builds sitting idle on cluster nodes.
 **Adversarial review:** 3 blockers resolved (race condition, registry field whitelist, dispatch method). 3 warnings incorporated (no count reset on auto-running, exact invocation, cooldown).
