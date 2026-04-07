@@ -162,7 +162,7 @@ Wire the existing hunt sourcer (built on Otis, synced to Muddy this session) int
 
 ### Phase 5: Below Prompt Alignment _(added: 2026-04-07)_
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 4 (requirements must exist to inform prompts)
 **Goal:** All Below LLM extraction prompts aligned with /opus + /llm research. Few-shot examples, JSON schema format parameter, correct temperature per model, seller/location extraction for requirement validation.
 
