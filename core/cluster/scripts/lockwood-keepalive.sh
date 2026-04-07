@@ -12,17 +12,17 @@ MODULE="core.cluster.node_semantic"
 GRACE_FILE="/tmp/lockwood-restart-grace"
 
 check_and_restart() {
-  # Grace period after restart — don't kill a process that just started
-  if [ -f "$GRACE_FILE" ]; then
-    GRACE_AGE=$(( $(date +%s) - $(stat -f %m "$GRACE_FILE" 2>/dev/null || echo 0) ))
-    if [ "$GRACE_AGE" -lt 30 ]; then
-      return 0  # within 30s grace period
-    fi
-    rm -f "$GRACE_FILE"
-  fi
-
   if curl -sf --max-time 5 "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
     return 0
+  fi
+
+  # Health check failed — but if process exists and is within grace period, skip (still starting)
+  if [ -f "$GRACE_FILE" ]; then
+    GRACE_AGE=$(( $(date +%s) - $(stat -f %m "$GRACE_FILE" 2>/dev/null || echo 0) ))
+    if [ "$GRACE_AGE" -lt 60 ] && pgrep -f "uvicorn.*node_semantic" >/dev/null 2>&1; then
+      return 0  # process exists and still starting up
+    fi
+    rm -f "$GRACE_FILE"
   fi
 
   echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Port $PORT not responding — restarting uvicorn" >> "$LOG"
