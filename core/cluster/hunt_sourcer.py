@@ -39,7 +39,8 @@ def _load_config() -> dict:
         return json.loads(CONFIG_PATH.read_text())
     return {
         "sources": {
-            "ebay_browse": {"enabled": True, "marketplace_id": "EBAY_US", "limit": 50},
+            "ebay_scrape": {"enabled": True},
+            "ebay_browse": {"enabled": False, "marketplace_id": "EBAY_US", "limit": 50},
             "reddit_rss": {"enabled": True, "subreddits": ["buildapcsales", "hardwareswap"]},
             "craigslist_rss": {"enabled": True, "cities": ["sfbay", "losangeles", "seattle"]},
             "pcpartpicker": {"enabled": True, "use_playwright": False},
@@ -284,7 +285,9 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
 async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list[dict]:
     """Run a single source search for a hunt."""
     try:
-        if source_name == "ebay_browse":
+        if source_name == "ebay_scrape":
+            from core.cluster.hunt_sources.ebay_scrape import search
+        elif source_name == "ebay_browse":
             from core.cluster.hunt_sources.ebay_browse import search
         elif source_name == "reddit_rss":
             from core.cluster.hunt_sources.reddit_rss import search
@@ -366,6 +369,39 @@ async def run_forever():
         except Exception as e:
             logger.error(f"Hunt check cycle error: {e}")
         await asyncio.sleep(CHECK_HUNTS_INTERVAL)
+
+
+_sourcer_thread = None
+
+
+def start_sourcer_cron():
+    """Start the sourcer as a background thread (for embedding in node_intelligence).
+    Thread-safe: only one sourcer runs at a time.
+    """
+    global _sourcer_thread
+    import threading
+
+    if _sourcer_thread and _sourcer_thread.is_alive():
+        logger.info("Sourcer cron already running")
+        return
+
+    def _run():
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
+        )
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(run_forever())
+        except Exception as e:
+            logger.error(f"Sourcer cron crashed: {e}")
+        finally:
+            loop.close()
+
+    _sourcer_thread = threading.Thread(target=_run, daemon=True, name="hunt-sourcer")
+    _sourcer_thread.start()
+    logger.info("Hunt sourcer cron started in background thread")
 
 
 def main():

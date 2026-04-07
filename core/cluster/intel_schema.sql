@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS deal_items (
     link_status INTEGER,
     in_stock INTEGER,  -- 1=yes, 0=no, NULL=unknown
     last_checked TEXT,
+    listing_url_hash TEXT,  -- SHA256[:16] of listing_url for dedup
     FOREIGN KEY (hunt_id) REFERENCES active_hunts(id)
 );
 
@@ -67,6 +68,7 @@ CREATE INDEX IF NOT EXISTS idx_deal_score ON deal_items(deal_score);
 CREATE INDEX IF NOT EXISTS idx_deal_read ON deal_items(read);
 CREATE INDEX IF NOT EXISTS idx_deal_verified ON deal_items(verified);
 CREATE INDEX IF NOT EXISTS idx_deal_in_stock ON deal_items(in_stock);
+CREATE INDEX IF NOT EXISTS idx_deal_url_hash ON deal_items(listing_url_hash);
 
 -- Price history for tracking deals over time
 CREATE TABLE IF NOT EXISTS price_history (
@@ -116,6 +118,9 @@ CREATE TABLE IF NOT EXISTS intel_improvements (
     build_spec_name TEXT,  -- linked BUILD spec when marked as planned
     overlap_action TEXT,  -- adopt/adapt/ignore (when overlapping existing BR3 functionality)
     overlap_notes TEXT,
+    type TEXT NOT NULL DEFAULT 'fix',  -- fix/upgrade/new_capability/new_skill/research
+    auto_acted INTEGER NOT NULL DEFAULT 0,  -- 1 if auto-act ran on this improvement
+    auto_act_log TEXT,  -- log output from auto-act execution
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (source_intel_id) REFERENCES intel_items(id)
 );

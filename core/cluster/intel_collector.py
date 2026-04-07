@@ -71,11 +71,25 @@ def _get_intel_db() -> sqlite3.Connection:
 
 
 def _ensure_intel_tables(conn: sqlite3.Connection):
-    """Create tables from schema file."""
+    """Create tables from schema file, then migrate existing DBs."""
     if SCHEMA_PATH.exists():
         schema_sql = SCHEMA_PATH.read_text()
         conn.executescript(schema_sql)
     conn.commit()
+
+    # Migration fallback for existing databases — add new columns if missing
+    _migrate_columns = [
+        ("intel_improvements", "type", "TEXT DEFAULT 'fix'"),
+        ("intel_improvements", "auto_acted", "INTEGER DEFAULT 0"),
+        ("intel_improvements", "auto_act_log", "TEXT"),
+        ("deal_items", "listing_url_hash", "TEXT"),
+    ]
+    for table, col, col_def in _migrate_columns:
+        try:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}")
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass  # Column already exists
 
 
 def _url_hash(url: str) -> str:
@@ -219,15 +233,28 @@ def create_deal_item(hunt_id: int, name: str, category: str = None,
                      price: float = None, condition: str = None,
                      seller: str = None, seller_rating: float = None,
                      listing_url: str = None) -> Optional[int]:
-    """Insert a new deal item. Returns item ID."""
+    """Insert a new deal item. Returns item ID. Deduplicates by listing_url hash."""
     conn = _get_intel_db()
     try:
+        # Listing URL dedup — reject if same URL already exists for this hunt
+        dedup_url = listing_url or source_url
+        if dedup_url:
+            import hashlib
+            url_hash = hashlib.sha256(dedup_url.strip().lower().encode()).hexdigest()[:16]
+            existing = conn.execute(
+                "SELECT id FROM deal_items WHERE hunt_id = ? AND listing_url_hash = ?",
+                (hunt_id, url_hash)
+            ).fetchone()
+            if existing:
+                return None  # duplicate
+
         cursor = conn.execute(
             """INSERT INTO deal_items (hunt_id, name, category, attributes,
-               source_url, price, condition, seller, seller_rating, listing_url)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               source_url, price, condition, seller, seller_rating, listing_url, listing_url_hash)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (hunt_id, name, category, json.dumps(attributes) if attributes else None,
-             source_url, price, condition, seller, seller_rating, listing_url)
+             source_url, price, condition, seller, seller_rating, listing_url,
+             hashlib.sha256((dedup_url or "").strip().lower().encode()).hexdigest()[:16] if dedup_url else None)
         )
         conn.commit()
         deal_id = cursor.lastrowid
@@ -754,23 +781,69 @@ def _package_poller_loop():
         time.sleep(PACKAGE_POLL_INTERVAL)
 
 
+# --- Tier Classification ---
+
+VALID_IMPROVEMENT_TYPES = {"fix", "upgrade", "new_capability", "new_skill", "research"}
+
+
+def compute_tier(item: dict, kind: str = "item") -> int:
+    """Classify an intel item or improvement into tiers 1-4.
+
+    kind="item" — uses intel_items fields (priority, category, br3_improvement)
+    kind="improvement" — uses intel_improvements fields (complexity, type) + optional source item
+    """
+    if kind == "item":
+        priority = (item.get("priority") or "").lower()
+        category = (item.get("category") or "").lower()
+        br3_improvement = item.get("br3_improvement", 0)
+        item_type = (item.get("type") or "").lower()
+
+        if priority == "critical" and category == "security":
+            return 1
+        if br3_improvement and priority in ("critical", "high"):
+            return 2
+        if category == "new_capability" or item_type == "community-tool":
+            return 3
+        return 4
+
+    elif kind == "improvement":
+        complexity = (item.get("complexity") or "medium").lower()
+        imp_type = (item.get("type") or "fix").lower()
+        # Source item priority (caller should join if needed)
+        src_priority = (item.get("source_priority") or "").lower()
+        has_deadline = bool(item.get("has_deadline"))
+
+        if complexity == "simple" and (src_priority == "critical" or has_deadline):
+            return 1
+        if complexity in ("simple", "medium") and src_priority in ("critical", "high"):
+            return 2
+        if imp_type in ("new_capability", "new_skill", "research"):
+            return 3
+        return 4
+
+    return 4
+
+
 # --- Improvement CRUD ---
 
 def create_improvement(title: str, rationale: str, complexity: str,
                        setlist_prompt: str, affected_files: list = None,
                        source_intel_id: int = None,
                        overlap_action: str = None,
-                       overlap_notes: str = None) -> int:
+                       overlap_notes: str = None,
+                       type: str = "fix") -> int:
     """Create a new improvement record from Opus intel review."""
+    if type not in VALID_IMPROVEMENT_TYPES:
+        type = "fix"
     conn = _get_intel_db()
     cursor = conn.execute(
         """INSERT INTO intel_improvements
            (title, rationale, complexity, setlist_prompt, affected_files,
-            source_intel_id, overlap_action, overlap_notes)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            source_intel_id, overlap_action, overlap_notes, type)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (title, rationale, complexity, setlist_prompt,
          json.dumps(affected_files) if affected_files else None,
-         source_intel_id, overlap_action, overlap_notes)
+         source_intel_id, overlap_action, overlap_notes, type)
     )
     conn.commit()
     imp_id = cursor.lastrowid
@@ -804,6 +877,19 @@ def get_improvements(status: str = None, limit: int = 50) -> list[dict]:
                 pass
         results.append(d)
     return results
+
+
+def mark_improvement_auto_acted(improvement_id: int, log: str) -> bool:
+    """Mark an improvement as auto-acted and store the execution log."""
+    conn = _get_intel_db()
+    conn.execute(
+        "UPDATE intel_improvements SET auto_acted = 1, auto_act_log = ? WHERE id = ?",
+        (log, improvement_id)
+    )
+    conn.commit()
+    changed = conn.total_changes > 0
+    conn.close()
+    return changed
 
 
 def update_improvement_status(improvement_id: int, status: str,

@@ -23,6 +23,7 @@ MINIFLUX_WEBHOOK_SECRET = os.environ.get("MINIFLUX_WEBHOOK_SECRET", "")
 DISABLE_POLLERS = os.environ.get("DISABLE_POLLERS", "true").lower() in ("true", "1", "yes")
 DISABLE_SCORING = os.environ.get("DISABLE_SCORING", "true").lower() in ("true", "1", "yes")
 DISABLE_VERIFIER = os.environ.get("DISABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
+DISABLE_SOURCER = os.environ.get("DISABLE_SOURCER", "false").lower() in ("true", "1", "yes")
 
 # --- Router (included by node_semantic.py) ---
 router = APIRouter()
@@ -48,6 +49,11 @@ class ImprovementCreate(BaseModel):
     source_intel_id: Optional[int] = None
     overlap_action: Optional[str] = None  # adopt/adapt/ignore
     overlap_notes: Optional[str] = None
+    type: str = "fix"  # fix/upgrade/new_capability/new_skill/research
+
+
+class AutoActLog(BaseModel):
+    log: str
 
 
 class ImprovementStatusUpdate(BaseModel):
@@ -91,6 +97,12 @@ async def intel_startup():
         start_verifier_cron()
     else:
         logger.info("DISABLE_VERIFIER=true — skipping deal verifier cron")
+
+    if not DISABLE_SOURCER:
+        from core.cluster.hunt_sourcer import start_sourcer_cron
+        start_sourcer_cron()
+    else:
+        logger.info("DISABLE_SOURCER=true — skipping hunt sourcer cron")
 
 
 # --- Manual Intel Submission ---
@@ -147,11 +159,13 @@ async def get_intel_items(
     days: Optional[int] = None,
 ):
     """Get intelligence items with filters."""
-    from core.cluster.intel_collector import get_intel_items as _get_items
+    from core.cluster.intel_collector import get_intel_items as _get_items, compute_tier
     items = _get_items(
         priority=priority, category=category, source_type=source_type,
         read=read, limit=limit, days=days,
     )
+    for item in items:
+        item["tier"] = compute_tier(item, kind="item")
     return {"items": items, "count": len(items)}
 
 
@@ -196,8 +210,10 @@ async def get_improvements(
     limit: int = 50,
 ):
     """Get improvements filtered by status."""
-    from core.cluster.intel_collector import get_improvements as _get_improvements
+    from core.cluster.intel_collector import get_improvements as _get_improvements, compute_tier
     items = _get_improvements(status=status, limit=limit)
+    for item in items:
+        item["tier"] = compute_tier(item, kind="improvement")
     return {"improvements": items, "count": len(items)}
 
 
@@ -214,6 +230,7 @@ async def create_improvement(improvement: ImprovementCreate):
         source_intel_id=improvement.source_intel_id,
         overlap_action=improvement.overlap_action,
         overlap_notes=improvement.overlap_notes,
+        type=improvement.type,
     )
     return {"id": imp_id, "status": "created"}
 
@@ -223,6 +240,66 @@ async def update_improvement_status(improvement_id: int, body: ImprovementStatus
     """Update improvement lifecycle status (pending -> planned -> built -> archived)."""
     from core.cluster.intel_collector import update_improvement_status as _update
     _update(improvement_id, body.status, body.build_spec_name)
+    return {"status": "ok"}
+
+
+# --- Brief & Auto-Act Endpoints ---
+
+@router.get("/api/intel/brief")
+async def get_intel_brief():
+    """Morning summary: auto-acted count, suggested count, new capabilities, awareness, last run."""
+    from core.cluster.intel_collector import _get_intel_db, compute_tier, get_improvements
+    conn = _get_intel_db()
+
+    # Auto-acted count (improvements auto-fixed overnight)
+    auto_acted_count = conn.execute(
+        "SELECT COUNT(*) as cnt FROM intel_improvements WHERE auto_acted = 1"
+    ).fetchone()["cnt"]
+
+    # Get auto-act results for expandable detail
+    auto_act_rows = conn.execute(
+        "SELECT id, title, auto_act_log FROM intel_improvements WHERE auto_acted = 1 ORDER BY created_at DESC LIMIT 20"
+    ).fetchall()
+    auto_act_results = [dict(r) for r in auto_act_rows]
+
+    # Get all pending/planned improvements to compute tier counts
+    improvements = get_improvements(status="pending,planned", limit=500)
+    suggested_count = 0
+    new_capabilities_count = 0
+    awareness_count = 0
+    for imp in improvements:
+        tier = compute_tier(imp, kind="improvement")
+        if tier == 2:
+            suggested_count += 1
+        elif tier == 3:
+            new_capabilities_count += 1
+        elif tier == 4:
+            awareness_count += 1
+
+    # Last nightly run timestamp (most recent intel item collected)
+    last_row = conn.execute(
+        "SELECT collected_at FROM intel_items ORDER BY collected_at DESC LIMIT 1"
+    ).fetchone()
+    last_run = last_row["collected_at"] if last_row else None
+
+    conn.close()
+    return {
+        "auto_acted_count": auto_acted_count,
+        "suggested_count": suggested_count,
+        "new_capabilities_count": new_capabilities_count,
+        "awareness_count": awareness_count,
+        "last_run": last_run,
+        "auto_act_results": auto_act_results,
+    }
+
+
+@router.post("/api/intel/improvements/{improvement_id}/auto-act")
+async def auto_act_improvement(improvement_id: int, body: AutoActLog):
+    """Mark an improvement as auto-acted and store the execution log."""
+    from core.cluster.intel_collector import mark_improvement_auto_acted
+    success = mark_improvement_auto_acted(improvement_id, body.log)
+    if not success:
+        raise HTTPException(status_code=404, detail="Improvement not found")
     return {"status": "ok"}
 
 
@@ -450,3 +527,16 @@ async def webhook_changedetection(request: Request):
     from core.cluster.intel_collector import parse_changedetection_webhook
     items = parse_changedetection_webhook(payload)
     return {"status": "ok", "items_created": len(items), "items": items}
+
+
+@router.post("/api/deals/source")
+async def trigger_sourcer():
+    """Manually trigger one sourcer check cycle."""
+    import asyncio
+    try:
+        from core.cluster.hunt_sourcer import check_hunts_once
+        await check_hunts_once()
+        return {"status": "ok", "message": "Sourcer check completed"}
+    except Exception as e:
+        logger.error(f"Manual sourcer trigger failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
