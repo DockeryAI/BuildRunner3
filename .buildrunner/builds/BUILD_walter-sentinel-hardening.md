@@ -1,7 +1,7 @@
 # Build: Walter Sentinel Hardening + Cluster Monitoring
 
 **Created:** 2026-04-07
-**Status:** Phases 1-3 Complete — Phase 2 In Progress
+**Status:** Phases 1-5 Complete — Phase 4 In Progress
 **Deploy:** cluster — Walter (10.0.1.102), Lockwood (10.0.1.101), Muddy (local)
 
 ## Overview
@@ -92,7 +92,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 2: Push-Based Repo Sync + Dispatch Logging
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Walter always has the exact code that was just committed. Every dispatch is logged and verifiable.
 
 **Files:**
@@ -103,13 +103,13 @@ Walter has never successfully tested a single build despite being wired into 39 
 **Blocked by:** Phase 1 (Walter must be running with /health endpoint)
 **Deliverables:**
 
-- [ ] auto-save-session.sh: add git remote `walter` auto-setup (create if missing: `git remote add walter ssh://10.0.1.102/~/repos/$PROJECT`)
-- [ ] auto-save-session.sh: before /api/run curl, push code: `git push walter HEAD:refs/heads/current --force-with-lease 2>/dev/null`
-- [ ] auto-save-session.sh: log every dispatch to `~/.buildrunner/logs/walter-dispatch.log` — timestamp, project, SHA, Walter response code, run_id
-- [ ] auto-save-session.sh: verify /health freshness before dispatching (check last_test_run is not null), skip with log entry if Walter degraded
-- [ ] dispatch-to-node.sh: add lock files `/tmp/dispatch-lock-${NODE}-${PROJECT}` with PID — check before dispatch, clean on EXIT trap (fixes RC12-RC15)
-- [ ] dispatch-to-node.sh: remove dead `DISPATCH_KEYCHAIN_PW` references (lines 200, 263) and undefined `DISPATCH_USER` references
-- [ ] dispatch-to-node.sh: unique prompt file paths `/tmp/dispatch-prompt-${buildId}-${Date.now()}.txt` (fixes RC18)
+- [x] auto-save-session.sh: add git remote `walter` auto-setup (create if missing: `git remote add walter ssh://10.0.1.102/~/repos/$PROJECT`)
+- [x] auto-save-session.sh: before /api/run curl, push code: `git push walter HEAD:refs/heads/current --force-with-lease 2>/dev/null`
+- [x] auto-save-session.sh: log every dispatch to `~/.buildrunner/logs/walter-dispatch.log` — timestamp, project, SHA, Walter response code, run_id
+- [x] auto-save-session.sh: verify /health freshness before dispatching (check last_test_run is not null), skip with log entry if Walter degraded
+- [x] dispatch-to-node.sh: add lock files `/tmp/dispatch-lock-${NODE}-${PROJECT}` with PID — check before dispatch, clean on EXIT trap (fixes RC12-RC15)
+- [x] dispatch-to-node.sh: remove dead `DISPATCH_KEYCHAIN_PW` references (lines 200, 263) and undefined `DISPATCH_USER` references
+- [x] dispatch-to-node.sh: unique prompt file paths `/tmp/dispatch-prompt-${buildId}-${Date.now()}.txt` (fixes RC18)
 
 **Success Criteria:** `git commit` on Muddy → Walter has the commit within 5s → dispatch logged with response code. No two dispatches to same node+project can overlap.
 
@@ -160,7 +160,7 @@ Walter has never successfully tested a single build despite being wired into 39 
 
 ### PHASE 5: Lockwood Test Reporting (Phase 37 Completion)
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Walter's test results flow to Lockwood for cross-project health tracking. Actually completes the unfinished Phase 37 from cluster-build-orchestration.
 
 **Files:**
@@ -171,11 +171,11 @@ Walter has never successfully tested a single build despite being wired into 39 
 **Blocked by:** Phase 1 (Walter must store results correctly)
 **Deliverables:**
 
-- [ ] Lockwood: add `POST /api/memory/tests` endpoint — accepts `{project, sha, branch, pass_rate, failures[], duration_ms, runner, trigger}`, stores in `test_health` SQLite table
-- [ ] Lockwood: add `GET /api/memory/tests?project=X` — returns recent test health for dashboard sparklines
-- [ ] Walter: rewrite `_push_to_lockwood()` targeting correct endpoint `POST /api/memory/tests`, add 1 retry on failure, log both attempts
-- [ ] Walter: mark trigger correctly per source: `'watch'` (background loop), `'manual'` (/api/run), `'hook'` (auto-save dispatch)
-- [ ] One-time backfill script: query Walter's SQLite history, bulk-POST to Lockwood to seed sparkline data
+- [x] Lockwood: add `POST /api/memory/tests` endpoint — accepts `{project, sha, branch, pass_rate, failures[], duration_ms, runner, trigger}`, stores in `test_health` SQLite table
+- [x] Lockwood: add `GET /api/memory/tests?project=X` — returns recent test health for dashboard sparklines
+- [x] Walter: rewrite `_push_to_lockwood()` targeting correct endpoint `POST /api/memory/tests`, add 1 retry on failure, log both attempts
+- [x] Walter: mark trigger correctly per source: `'watch'` (background loop), `'manual'` (/api/run), `'hook'` (auto-save dispatch)
+- [x] One-time backfill script: query Walter's SQLite history, bulk-POST to Lockwood to seed sparkline data
 
 **Success Criteria:** Test results appear on Lockwood within 30s of test completion. `GET /api/memory/tests?project=buildrunner3` returns real data.
 
