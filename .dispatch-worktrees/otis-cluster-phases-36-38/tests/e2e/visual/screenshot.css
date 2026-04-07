@@ -1,0 +1,58 @@
+/**
+ * Visual Regression Screenshot Stabilization
+ *
+ * Injected into pages before visual regression screenshots to eliminate
+ * non-deterministic rendering: animations, transitions, blinking carets,
+ * smooth scrolling, and auto-playing media.
+ *
+ * Usage: page.addStyleTag({ path: 'tests/e2e/visual/screenshot.css' })
+ */
+
+/* Disable all animations and transitions */
+*,
+*::before,
+*::after {
+  animation-delay: -1ms !important;
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  animation-play-state: paused !important;
+  transition-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-property: none !important;
+}
+
+/* Hide blinking carets */
+* {
+  caret-color: transparent !important;
+}
+
+/* Disable smooth scrolling */
+html {
+  scroll-behavior: auto !important;
+}
+
+/* Pause all video and animated images */
+video,
+img[src$='.gif'],
+img[src$='.webp'] {
+  animation-play-state: paused !important;
+}
+
+/* Force consistent scrollbar rendering */
+::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Prevent flicker from lazy-loaded images */
+img[loading='lazy'] {
+  content-visibility: visible !important;
+}
+
+/* Stabilize skeleton loaders and shimmer effects */
+[class*='skeleton'],
+[class*='shimmer'],
+[class*='loading'],
+[class*='pulse'] {
+  animation: none !important;
+  opacity: 1 !important;
+}

@@ -1,0 +1,35 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img "DockeryAI" [ref=e6]
+    - generic [ref=e8]:
+      - button "Foundation" [ref=e9] [cursor=pointer]
+      - button "Audience" [ref=e10] [cursor=pointer]
+      - button "Personality" [ref=e11] [cursor=pointer]
+      - button "Gut Test" [ref=e12] [cursor=pointer]
+      - button "Density" [ref=e13] [cursor=pointer]
+      - button "Constraints" [ref=e14] [cursor=pointer]
+  - generic [ref=e95]:
+    - paragraph [ref=e96]: Personality — 3 of 5
+    - heading "Warm or Cool?" [level=2] [ref=e97]
+    - paragraph [ref=e98]: 1 = Headspace (soft, comforting) → 10 = Stripe (precise, technical)
+    - generic [ref=e100]:
+      - generic [ref=e102]: DockeryAI builds stunning websites using AI-powered design
+      - generic [ref=e103]: Balanced design that feels both approachable and capable.
+      - generic [ref=e104]:
+        - generic [ref=e105]: Get Started
+        - generic [ref=e106]: Learn More
+    - generic [ref=e107]:
+      - generic [ref=e108]: Warm ↔ Cool
+      - generic [ref=e109]:
+        - generic [ref=e110]: Warm
+        - generic [ref=e111]:
+          - slider "Warm ↔ Cool" [ref=e112] [cursor=pointer]: "5"
+          - generic: "5"
+        - generic [ref=e113]: Cool
+    - generic [ref=e115]:
+      - generic [ref=e116]: 1 — Headspace
+      - generic [ref=e117]: 5 — GitHub
+      - generic [ref=e118]: 10 — Stripe
+  - generic [ref=e24]:
+    - button "← Back" [ref=e25] [cursor=pointer]
+    - button "Continue →" [active] [ref=e42] [cursor=pointer]

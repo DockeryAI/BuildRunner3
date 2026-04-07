@@ -1,0 +1,11 @@
+id: fine-dining-restaurant
+name: Fine Dining Restaurant
+naics_code: '722511'
+category: Food Service
+keywords:
+- fine dining restaurant
+- fine
+- dining
+- restaurant
+has_full_profile: false
+source: naics_only

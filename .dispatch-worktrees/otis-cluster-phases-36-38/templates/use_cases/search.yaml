@@ -1,0 +1,206 @@
+name: "Search / Discovery"
+description: "Search interfaces, product discovery, content exploration"
+category: "Navigation"
+
+layout:
+  structure: "filters-results-detail"
+  regions:
+    filters:
+      width: "280px"
+      position: "left"
+      collapsible: true
+      contains:
+        - "Search input"
+        - "Faceted filters"
+        - "Active filters"
+        - "Clear all"
+    results:
+      width: "flex-1"
+      contains:
+        - "Results count"
+        - "Sort options"
+        - "Grid/List toggle"
+        - "Results (grid or list)"
+        - "Pagination"
+    detail:
+      width: "400px"
+      collapsible: true
+      position: "right"
+      contains:
+        - "Selected item details"
+        - "Quick preview"
+        - "Actions"
+
+navigation:
+  toolbar:
+    - label: "Sort by"
+      options: ["Relevance", "Date", "Price", "Rating"]
+    - label: "View"
+      options: ["Grid", "List"]
+    - label: "Filters"
+      action: "toggle-sidebar"
+
+components:
+  searchInput:
+    width: "100%"
+    placeholder: "Search..."
+    features:
+      - "Autocomplete dropdown"
+      - "Recent searches"
+      - "Suggested searches"
+      - "Clear button"
+      - "Search button (optional)"
+    debounce: "300ms"
+  autocompleteDropdown:
+    sections:
+      - "Suggestions (based on input)"
+      - "Recent searches"
+      - "Popular searches"
+      - "Categories"
+    maxItems: 10
+    keyboard: true
+  facetedFilters:
+    types:
+      - "Checkbox (multi-select)"
+      - "Radio (single-select)"
+      - "Range slider (price, date)"
+      - "Toggle"
+    display:
+      - "Filter name"
+      - "Count per option (if applicable)"
+      - "Expand/collapse"
+    behavior:
+      - "Apply filters on change"
+      - "Show loading state"
+      - "Update counts dynamically"
+  activeFilters:
+    display: "chips-or-tags"
+    features:
+      - "Remove individual filter"
+      - "Clear all filters"
+  resultsGrid:
+    columns: "responsive"
+    gap: "1rem"
+    itemSize: "uniform"
+  resultsList:
+    layout: "vertical"
+    itemHeight: "auto"
+  resultItem:
+    grid:
+      - "Image (thumbnail)"
+      - "Title"
+      - "Description (truncated)"
+      - "Metadata (price, rating, date)"
+      - "Actions (quick view, add to cart)"
+    list:
+      - "Image (larger)"
+      - "Title + description"
+      - "Extended metadata"
+      - "Actions"
+  pagination:
+    type: "numbered-or-infinite-scroll"
+    itemsPerPage: [20, 50, 100]
+    display:
+      - "Previous/Next"
+      - "Page numbers"
+      - "Jump to page"
+
+interactions:
+  search:
+    - "Instant search (as-you-type)"
+    - "Debounced API calls"
+    - "Cancel previous requests"
+    - "Highlight matching terms"
+  filtering:
+    - "Apply filters immediately"
+    - "Update URL with filter params"
+    - "Show loading spinner"
+    - "Disable filters if no results"
+  sorting:
+    - "Dropdown or button group"
+    - "Default: relevance"
+    - "Remember sort preference"
+  quickView:
+    - "Hover or click for preview"
+    - "Modal or slide-out panel"
+    - "Navigate between items"
+
+patterns:
+  instantSearch:
+    - "Search as user types"
+    - "Show loading indicator"
+    - "Debounce input (300ms)"
+    - "Cancel stale requests"
+  facetedNavigation:
+    - "Multiple filter dimensions"
+    - "OR within category, AND across categories"
+    - "Show result count per filter"
+    - "Disable unavailable options"
+  suggestions:
+    - "Autocomplete from search index"
+    - "Recent searches (localStorage)"
+    - "Trending searches"
+    - "Did you mean... (typo correction)"
+  noResults:
+    - "Clear message"
+    - "Suggestions (broaden search, check spelling)"
+    - "Related categories"
+    - "Contact support"
+  savedSearches:
+    - "Save search + filters"
+    - "Alert on new results"
+    - "Manage saved searches"
+
+dataFlow:
+  search:
+    - "User types query"
+    - "Debounce 300ms"
+    - "Send API request"
+    - "Parse response"
+    - "Update results"
+  filtering:
+    - "User selects filter"
+    - "Add to URL params"
+    - "Send API request"
+    - "Update results and filter counts"
+  pagination:
+    - "Load next page"
+    - "Append to results (infinite scroll)"
+    - "Or replace results (numbered pagination)"
+
+performance:
+  - "Debounce search input"
+  - "Cancel stale API requests"
+  - "Virtual scrolling for large result sets"
+  - "Lazy load images"
+  - "Cache search results"
+  - "Use search index (Elasticsearch, Algolia)"
+
+accessibility:
+  - "Keyboard navigation"
+  - "Screen reader announcements (X results found)"
+  - "ARIA live region for results"
+  - "Focus management"
+  - "Skip to results link"
+
+responsiveness:
+  mobile:
+    - "Full-width search"
+    - "Filters in bottom sheet or modal"
+    - "List view default"
+    - "Infinite scroll"
+  tablet:
+    - "Collapsible filter sidebar"
+    - "Grid view (2 columns)"
+  desktop:
+    - "Persistent filter sidebar"
+    - "Grid view (3-4 columns)"
+    - "Keyboard shortcuts (/ to focus search)"
+
+notes:
+  - "Search index critical for performance (Elasticsearch, Algolia, Typesense)"
+  - "Typo tolerance (fuzzy matching)"
+  - "Synonyms and related terms"
+  - "Boost certain fields (title > description)"
+  - "Track search analytics (popular queries, no-result queries)"
+  - "A/B test search relevance"

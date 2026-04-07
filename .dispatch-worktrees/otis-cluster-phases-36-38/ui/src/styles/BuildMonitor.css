@@ -1,0 +1,495 @@
+/**
+ * BuildMonitor Styles
+ * Dark theme matching VS Code aesthetic
+ */
+
+.build-monitor {
+  display: grid;
+  grid-template-rows: 10% auto auto;
+  height: 100vh;
+  width: 100%;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  overflow: hidden;
+}
+
+/* Header - 10% */
+.monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: #2d2d2d;
+  border-bottom: 2px solid #3e3e3e;
+  min-height: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.project-name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-indicator {
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.elapsed-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.time-label {
+  font-size: 11px;
+  color: #858585;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.time-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+}
+
+.ws-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: #252526;
+}
+
+.ws-status.connected {
+  background: #1a3d1a;
+}
+
+.ws-status.disconnected {
+  background: #5a1d1d;
+}
+
+.ws-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #858585;
+}
+
+.ws-status.connected .ws-indicator {
+  background: #4ec9b0;
+  box-shadow: 0 0 8px #4ec9b0;
+}
+
+.ws-status.disconnected .ws-indicator {
+  background: #f48771;
+}
+
+.ws-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #d4d4d4;
+}
+
+/* Canvas Zone - 60% default */
+.canvas-zone {
+  position: relative;
+  overflow: hidden;
+  background: #1e1e1e;
+  border-bottom: 1px solid #3e3e3e;
+}
+
+.canvas-content {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.placeholder-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px;
+}
+
+.placeholder-text {
+  text-align: center;
+}
+
+.placeholder-text h2 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.placeholder-text p {
+  margin: 0 0 32px 0;
+  font-size: 14px;
+  color: #858585;
+}
+
+.canvas-stats {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.canvas-stats .stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: #252526;
+  border-radius: 8px;
+  border: 1px solid #3e3e3e;
+}
+
+.canvas-stats .stat-label {
+  font-size: 11px;
+  color: #858585;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.canvas-stats .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #4ec9b0;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+}
+
+/* Resize Handle */
+.resize-handle {
+  height: 8px;
+  background: #2d2d2d;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid #3e3e3e;
+  border-bottom: 1px solid #3e3e3e;
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+.resize-handle:hover,
+.resize-handle.resizing {
+  background: #3e3e3e;
+}
+
+.resize-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.resize-handle:hover .resize-indicator,
+.resize-handle.resizing .resize-indicator {
+  opacity: 1;
+}
+
+.resize-indicator span {
+  width: 20px;
+  height: 2px;
+  background: #858585;
+  border-radius: 1px;
+}
+
+/* Loading and Error States */
+.monitor-loading,
+.monitor-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  gap: 24px;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #3e3e3e;
+  border-top-color: #4ec9b0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  font-size: 16px;
+  color: #858585;
+}
+
+.error-icon {
+  font-size: 64px;
+}
+
+.error-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #f48771;
+}
+
+.error-message {
+  font-size: 14px;
+  color: #858585;
+  max-width: 500px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.error-retry {
+  padding: 12px 24px;
+  background: #4ec9b0;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.error-retry:hover {
+  background: #5ed9c0;
+}
+
+/* Terminal Zone - 30% default */
+.terminal-zone {
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  overflow: hidden;
+}
+
+/* Terminal Panel - 30% default (legacy support) */
+.terminal-panel {
+  display: flex;
+  flex-direction: column;
+  background: #1e1e1e;
+  overflow: hidden;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #2d2d2d;
+  border-bottom: 1px solid #3e3e3e;
+}
+
+.terminal-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.terminal-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.terminal-btn {
+  padding: 6px 14px;
+  background: #3e3e3e;
+  color: #d4d4d4;
+  border: 1px solid #5a5a5a;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.terminal-btn:hover {
+  background: #4e4e4e;
+  border-color: #6e6e6e;
+}
+
+.terminal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+  background: #1e1e1e;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.terminal-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #858585;
+  font-size: 14px;
+}
+
+.terminal-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.terminal-line {
+  display: flex;
+  gap: 16px;
+  padding: 4px 0;
+  transition: background 0.2s ease;
+}
+
+.terminal-line:hover {
+  background: #252526;
+}
+
+.line-timestamp {
+  min-width: 80px;
+  color: #858585;
+  font-size: 11px;
+  user-select: none;
+}
+
+.line-content {
+  flex: 1;
+  color: #d4d4d4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.terminal-line.stdout .line-content {
+  color: #d4d4d4;
+}
+
+.terminal-line.stderr .line-content {
+  color: #f48771;
+}
+
+.terminal-line.info .line-content {
+  color: #569cd6;
+}
+
+.terminal-line.error .line-content {
+  color: #f48771;
+  font-weight: 500;
+}
+
+.terminal-line.success .line-content {
+  color: #4ec9b0;
+}
+
+/* Scrollbar styling */
+.canvas-content::-webkit-scrollbar,
+.terminal-content::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.canvas-content::-webkit-scrollbar-track,
+.terminal-content::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.canvas-content::-webkit-scrollbar-thumb,
+.terminal-content::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 5px;
+}
+
+.canvas-content::-webkit-scrollbar-thumb:hover,
+.terminal-content::-webkit-scrollbar-thumb:hover {
+  background: #4e4e4e;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .monitor-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .header-left,
+  .header-right {
+    width: 100%;
+  }
+
+  .header-right {
+    justify-content: flex-end;
+  }
+
+  .project-name {
+    font-size: 18px;
+  }
+
+  .canvas-stats {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .build-monitor {
+    grid-template-rows: auto auto auto;
+  }
+
+  .terminal-header {
+    padding: 8px 16px;
+  }
+
+  .terminal-content {
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+
+  .canvas-stats .stat {
+    padding: 12px 16px;
+  }
+
+  .canvas-stats .stat-value {
+    font-size: 20px;
+  }
+}

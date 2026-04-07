@@ -1,0 +1,11 @@
+id: specialty-food-products
+name: Specialty Food Products
+naics_code: '311919'
+category: Food Service
+keywords:
+- specialty food products
+- specialty
+- food
+- products
+has_full_profile: false
+source: naics_only

@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-06
 **Status:** Phase 1 In Progress
-**Deploy:** local — Lockwood FastAPI (sourcer cron) + env config (eBay keys)
+**Deploy:** local — Lockwood FastAPI (sourcer cron), zero external API keys required
 
 ## Overview
 
@@ -34,30 +34,31 @@ Wire the existing hunt sourcer (built on Otis, synced to Muddy this session) int
 
 ## Phases
 
-### Phase 1: Wire Sourcer Into Lockwood + Fix Gaps
+### Phase 1: Wire Sourcer Into Lockwood + eBay Scrape Adapter
 
 **Status:** not_started
-**Goal:** Sourcer runs as a background cron on Lockwood, eBay searches execute on schedule, deals appear in dashboard scored by Below.
+**Goal:** Sourcer runs as a background cron on Lockwood, searches eBay via HTML scrape + Below extraction (no API keys needed), deals appear in dashboard scored by Below.
 **Files:**
 
 - `core/cluster/node_intelligence.py` (MODIFY) — add sourcer cron startup + `POST /api/deals/source` trigger
-- `core/cluster/hunt_sourcer.py` (MODIFY) — add `start_sourcer_cron()` for threading (currently only has `run_forever()` for standalone), add `POST /api/deals/items` endpoint call for deal creation
+- `core/cluster/hunt_sourcer.py` (MODIFY) — add `start_sourcer_cron()` for threading (currently only has `run_forever()` for standalone)
 - `core/cluster/intel_collector.py` (MODIFY) — add listing_url hash dedup to `create_deal_item()`
-- `core/cluster/hunt_sources/ebay_browse.py` (EXISTING — no changes, needs EBAY_APP_ID + EBAY_SECRET env vars)
+- `core/cluster/hunt_sources/ebay_scrape.py` (NEW) — fetch eBay search page HTML, Below extracts listings. Default adapter — works with zero credentials.
+- `core/cluster/hunt_sources/ebay_browse.py` (EXISTING — optional upgrade path if eBay API ever approved, not required)
 
 **Blocked by:** None
 **Deliverables:**
 
+- [ ] Build `ebay_scrape.py` adapter — fetch eBay search URL with hunt keywords, send product listing HTML to Below qwen3:8b for structured extraction (title, price, condition, seller, seller rating, URL, stock status)
+- [ ] Register `ebay_scrape` as default eBay adapter in `_run_source()`, keep `ebay_browse` as optional fallback if API keys present
 - [ ] Add `start_sourcer_cron()` to hunt_sourcer.py — threading wrapper like scoring/verifier crons
 - [ ] Wire sourcer cron into `intel_startup()` in node_intelligence.py with `DISABLE_SOURCER` toggle
 - [ ] Add `POST /api/deals/source` endpoint to manually trigger `check_hunts_once()`
-- [ ] Add `POST /api/deals/items` endpoint for sourcer to POST new deals (sourcer uses this when not on Lockwood)
 - [ ] Add listing_url dedup in `create_deal_item()` — hash listing_url, reject if exists
-- [ ] Configure EBAY_APP_ID + EBAY_SECRET on Lockwood (user must register eBay developer account first)
 - [ ] Deploy updated files to Lockwood via SCP, restart uvicorn
 - [ ] Verify: trigger `/api/deals/source`, confirm eBay results appear as deal_items, confirm Below scores them
 
-**Success Criteria:** `curl -X POST http://10.0.1.101:8100/api/deals/source` returns found deals. Dashboard Deals tab shows real eBay listings with prices, sellers, scores, and IN STOCK badges.
+**Success Criteria:** `curl -X POST http://10.0.1.101:8100/api/deals/source` returns found deals. Dashboard Deals tab shows real eBay listings with prices, sellers, scores, and IN STOCK badges. No API keys required.
 
 ### Phase 2: Newegg + Shopify + B&H Adapters
 
@@ -77,10 +78,10 @@ Wire the existing hunt sourcer (built on Otis, synced to Muddy this session) int
 - [ ] Newegg adapter — search URL fetch, send product grid HTML to Below for structured extraction (title, price, seller, condition, URL, stock)
 - [ ] Shopify adapter — `search/suggest.json?q=KEYWORDS&resources[type]=product` for Minisforum/Crucial (pure JSON, no LLM)
 - [ ] B&H adapter — search URL fetch, Below extraction
-- [ ] Below-offline fallback — if Below unreachable, skip HTML adapters (Newegg/B&H), eBay + Shopify JSON sources still run
+- [ ] Below-offline fallback — if Below unreachable, skip all HTML adapters (eBay/Newegg/B&H), only Shopify JSON runs
 - [ ] Register all 3 new adapters in hunt_sourcer.py `_run_source()` dispatch
 - [ ] Rate limiting — 2 sec delay between requests for scraped sites
-- [ ] Write hunt_sourcer_config.json with all 7 sources (ebay, reddit, craigslist, pcpartpicker, newegg, shopify, bhphoto) and default settings
+- [ ] Write hunt_sourcer_config.json with all 8 sources (ebay_scrape, ebay_browse, reddit, craigslist, pcpartpicker, newegg, shopify, bhphoto) — ebay_scrape enabled by default, ebay_browse disabled unless API keys present
 - [ ] Deploy to Lockwood, verify multi-source results
 
 **Success Criteria:** PSU hunt finds Corsair RM1200x on Newegg. MS-A2 hunt finds listing on Minisforum store. RAM hunt finds DDR5 on Crucial. All appear in dashboard alongside eBay results.
@@ -114,14 +115,15 @@ Wire the existing hunt sourcer (built on Otis, synced to Muddy this session) int
 - Slickdeals integration
 - Mobile push notifications (Discord webhook sufficient)
 - changedetection.io (wrong tool — we search, not watch)
-- New source adapters beyond Phase 2 (Amazon PA-API requires affiliate account)
+- eBay Browse API approval process (scrape adapter works without it)
+- Amazon PA-API (requires affiliate account with sales)
 
 ## Prereqs
 
-- [ ] eBay developer account registered at developer.ebay.com (user action)
-- [ ] EBAY_APP_ID + EBAY_SECRET configured in Lockwood environment
-- [ ] Below (10.0.1.105) online for HTML extraction + scoring (eBay/Shopify work without it)
+- [ ] Below (10.0.1.105) online for HTML extraction + scoring (only Shopify JSON works without it)
+- [ ] eBay Browse API keys (OPTIONAL — ebay_scrape adapter works without them, ebay_browse is an upgrade path if approved later)
 
 ## Session Log
 
 - 2026-04-06: Adversarial review via Otis found existing sourcer code (381 lines) + 4 adapters on Otis never synced to Muddy. Pulled code. Rewrote spec to extend, not replace. 4 blockers resolved, 6 warnings incorporated.
+- 2026-04-06: eBay Browse API requires affiliate approval (eBay Partner Network) — no guarantee, 10+ business day wait. Switched to HTML scrape + Below extraction as default. Browse API kept as optional upgrade. Zero external API keys required for full pipeline.

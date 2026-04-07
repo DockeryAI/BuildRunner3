@@ -1,0 +1,17 @@
+[     147ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/intel/items?limit=50:0
+[     147ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/intel/alerts:0
+[     147ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/deals/items?limit=50:0
+[     147ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/deals/hunts:0
+[     163ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/favicon.ico:0
+[   30169ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/intel/items?limit=50:0
+[   30169ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/intel/alerts:0
+[   30170ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/deals/items?limit=50:0
+[   30170ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/deals/hunts:0
+[   60155ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/intel/items?limit=50:0
+[   60156ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/deals/hunts:0
+[   60156ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/deals/items?limit=50:0
+[   60156ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/intel/alerts:0
+[   90161ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/intel/items?limit=50:0
+[   90162ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/intel/alerts:0
+[   90163ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/deals/items?limit=50:0
+[   90164ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://10.0.1.101:8100/api/deals/hunts:0
