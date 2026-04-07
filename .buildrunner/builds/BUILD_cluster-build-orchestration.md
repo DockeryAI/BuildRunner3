@@ -782,7 +782,7 @@ _Issues discovered during 2026-04-06 session. Dispatch reliability, node expansi
 
 ### PHASE 36: Intel Pipeline Activation _(added: 2026-04-06)_
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Wire the intelligence workspace to live data from Lockwood/Below instead of mock data. Activate the full intel pipeline.
 **Blocked by:** Phase 35 (Below must be dispatchable for classification)
 
