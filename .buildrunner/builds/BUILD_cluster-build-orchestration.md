@@ -202,6 +202,50 @@ fi
 
 ---
 
+### PHASE 4.5: Runtime Error Detection + Auto-Fix
+
+**Status:** COMPLETE (built 2026-04-06)
+
+**Goal:** BRLogger catches runtime errors. The log analyzer detects them within 30 seconds. macOS notification fires immediately. Alert pushed to Walter. If the error is a known fixable pattern (e.g. edge function not deployed), auto-fix runs automatically.
+
+**Files MODIFIED:**
+
+- `core/cluster/node_analysis.py` — Added:
+  - `edge_function_error` pattern detection (400 from `/functions/v1/`)
+  - `_send_macos_notification()` — fires macOS notification on critical/high patterns
+  - `_push_alert_to_walter()` — pushes alert to Walter for brief integration
+  - `_attempt_auto_fix()` — rule engine for automatic remediation
+  - Rule 1: "Unknown action" + action exists in local code → `supabase functions deploy` automatically
+  - `_alerted_fingerprints` set prevents duplicate alerts
+
+- `core/cluster/node_tests.py` (Walter) — Added:
+  - `POST /api/alert` — receives runtime alerts from log analyzer
+  - `GET /api/alerts` — serves alerts for developer brief
+
+- `~/.buildrunner/scripts/developer-brief.sh` — Added:
+  - Queries Walter `/api/alerts` after test results
+  - Shows runtime alerts with severity icons in session brief
+
+**Auto-fix rules implemented:**
+
+| Pattern                      | Diagnostic                               | Auto-Fix                     |
+| ---------------------------- | ---------------------------------------- | ---------------------------- |
+| Edge fn 400 "Unknown action" | Check if action exists in local index.ts | `supabase functions deploy`  |
+| Auth refresh loop (>50x)     | Logged for investigation                 | Manual (needs investigation) |
+
+**Flow:** `BRLogger → browser.log → node_analysis.py (30s) → detect → macOS notification + Walter alert + auto-fix attempt`
+
+**Acceptance:**
+
+- [x] Edge function 400 errors detected as `edge_function_error` pattern
+- [x] macOS notification fires within 30 seconds of error
+- [x] Alert pushed to Walter and visible via `/api/alerts`
+- [x] Developer brief shows runtime alerts section
+- [x] Auto-deploy fires when "Unknown action" detected and code exists locally
+- [x] All verified end-to-end
+
+---
+
 ### PHASE 5: Migration Safety Loop
 
 **Goal:** `/begin` validates database migrations against Lomax's Supabase sandbox before pushing to prod.

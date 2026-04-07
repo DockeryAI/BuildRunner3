@@ -906,3 +906,43 @@ async def api_testmap_baseline(project: str = "", files: str = ""):
 @app.get("/api/running")
 async def is_running():
     return {"running": _running, "last_run": _last_run_time}
+
+
+# --- Runtime Alerts (pushed by node_analysis.py) ---
+_runtime_alerts: list[dict] = []
+_MAX_ALERTS = 50
+
+
+class AlertPayload(BaseModel):
+    pattern_type: str
+    severity: str
+    description: str
+    count: int = 1
+    fingerprint: Optional[str] = None
+
+
+@app.post("/api/alert")
+async def receive_alert(alert: AlertPayload):
+    """Receive a runtime alert from the log analyzer."""
+    entry = {
+        "pattern_type": alert.pattern_type,
+        "severity": alert.severity,
+        "description": alert.description,
+        "count": alert.count,
+        "fingerprint": alert.fingerprint,
+        "received_at": datetime.now().isoformat(),
+    }
+    _runtime_alerts.append(entry)
+    # Keep bounded
+    if len(_runtime_alerts) > _MAX_ALERTS:
+        _runtime_alerts.pop(0)
+    print(f"[ALERT] {alert.severity}: {alert.pattern_type} — {alert.description}")
+    return {"status": "received", "total_alerts": len(_runtime_alerts)}
+
+
+@app.get("/api/alerts")
+async def get_alerts(project: Optional[str] = None, limit: int = 10):
+    """Get runtime alerts. Called by developer-brief.sh."""
+    alerts = _runtime_alerts[-limit:]
+    alerts.reverse()  # newest first
+    return {"alerts": alerts}

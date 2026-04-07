@@ -1,0 +1,228 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic "Dashboard" [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+    - generic "Intelligence" [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "4"
+    - generic "Terminal" [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+    - generic "Builds" [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+  - generic [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]: BR3 The Band
+        - generic [ref=e27]: Intelligence
+      - generic [ref=e28]:
+        - generic [ref=e30]: "Tokens: --"
+        - generic [ref=e32]: "SSE: 3"
+        - generic [ref=e33]: "Uptime: 31m"
+        - generic [ref=e34]: ⌘K
+    - generic [ref=e2309]:
+      - generic [ref=e2310]:
+        - generic [ref=e2311]:
+          - generic [ref=e2312]: Intelligence
+          - generic [ref=e2313]:
+            - generic [ref=e2314]:
+              - strong [ref=e2315]: "10"
+              - text: total
+            - generic [ref=e2316]:
+              - strong [ref=e2317]: "2"
+              - text: critical
+            - generic [ref=e2318]:
+              - strong [ref=e2319]: "3"
+              - text: high
+            - generic [ref=e2320]:
+              - strong [ref=e2321]: "6"
+              - text: improve
+            - generic [ref=e2322]:
+              - strong [ref=e2323]: "6"
+              - text: unread
+        - generic [ref=e2326]: 6s
+      - generic [ref=e2327]:
+        - button "Feed 6" [ref=e2328] [cursor=pointer]:
+          - text: Feed
+          - generic [ref=e2329]: "6"
+        - button "Deals 2" [ref=e2330] [cursor=pointer]:
+          - text: Deals
+          - generic [ref=e2331]: "2"
+        - button "Improvements 4" [ref=e2332] [cursor=pointer]:
+          - text: Improvements
+          - generic [ref=e2333]: "4"
+        - button "Hunts" [ref=e2334] [cursor=pointer]
+      - generic [ref=e2335]:
+        - generic [ref=e2336]:
+          - textbox "Search intel..." [ref=e2337]
+          - combobox [ref=e2338] [cursor=pointer]:
+            - option "All priority" [selected]
+            - option "Critical"
+            - option "High"
+            - option "Medium"
+            - option "Low"
+          - combobox [ref=e2339] [cursor=pointer]:
+            - option "All sources" [selected]
+            - option "Official"
+            - option "Community"
+            - option "Blog"
+          - combobox [ref=e2340] [cursor=pointer]:
+            - option "All types" [selected]
+            - option "Release"
+            - option "Breaking"
+            - option "Security"
+            - option "Feature"
+            - option "Tool"
+            - option "Article"
+        - generic [ref=e2341]:
+          - generic [ref=e2342]:
+            - generic [ref=e2343]:
+              - generic [ref=e2344]: "Security: npm package \"event-source-polyfill\" compromised — supply chain attack confirmed"
+              - generic [ref=e2345]:
+                - generic [ref=e2346]: NEW
+                - generic [ref=e2347]: critical
+                - generic [ref=e2348]: security
+            - generic [ref=e2349]: Versions 1.0.28-1.0.31 contain obfuscated exfiltration code targeting CI env variables. Check all BR3 projects for this dependency immediately. CVE-2026-2847.
+            - generic [ref=e2350]:
+              - generic [ref=e2351]: official
+              - generic [ref=e2352]: 15m ago
+            - generic [ref=e2353]:
+              - button "Mark Read" [ref=e2354] [cursor=pointer]
+              - button "Dismiss" [ref=e2355] [cursor=pointer]
+              - button "Source" [ref=e2356] [cursor=pointer]
+              - button "Build This" [ref=e2357] [cursor=pointer]
+          - generic [ref=e2358]:
+            - generic [ref=e2359]:
+              - generic [ref=e2360]: Claude Code SDK v2.1 — streaming agent loops now support tool_result injection mid-stream
+              - generic [ref=e2361]:
+                - generic [ref=e2362]: NEW
+                - generic [ref=e2363]: critical
+                - generic [ref=e2364]: release
+            - generic [ref=e2365]: New SDK release allows injecting tool results into an active streaming agent loop without restarting the turn. This changes how we handle long-running builds with intermediate validation steps. Immediate impact on /autopilot dispatch logic.
+            - generic [ref=e2366]:
+              - generic [ref=e2367]: official
+              - generic [ref=e2368]: 30m ago
+            - generic [ref=e2369]:
+              - button "Mark Read" [ref=e2370] [cursor=pointer]
+              - button "Dismiss" [ref=e2371] [cursor=pointer]
+              - button "Source" [ref=e2372] [cursor=pointer]
+              - button "Build This" [ref=e2373] [cursor=pointer]
+          - generic [ref=e2374]:
+            - generic [ref=e2375]:
+              - generic [ref=e2376]: Tailwind v4.1 — @theme directive replaces tailwind.config.js entirely
+              - generic [ref=e2377]:
+                - generic [ref=e2378]: NEW
+                - generic [ref=e2379]: high
+                - generic [ref=e2380]: breaking
+            - generic [ref=e2381]: Full migration path from config-based to CSS-native theme. All BR3 projects using Tailwind need audit. The @theme directive in globals.css becomes the single source of truth for design tokens.
+            - generic [ref=e2382]:
+              - generic [ref=e2383]: official
+              - generic [ref=e2384]: 1h ago
+            - generic [ref=e2385]:
+              - button "Mark Read" [ref=e2386] [cursor=pointer]
+              - button "Dismiss" [ref=e2387] [cursor=pointer]
+              - button "Source" [ref=e2388] [cursor=pointer]
+              - button "Build This" [ref=e2389] [cursor=pointer]
+          - generic [ref=e2390]:
+            - generic [ref=e2391]:
+              - generic [ref=e2392]: "Anthropic: Extended thinking now available in Claude Agent SDK for tool-use heavy workflows"
+              - generic [ref=e2393]:
+                - generic [ref=e2394]: NEW
+                - generic [ref=e2395]: high
+                - generic [ref=e2396]: feature
+            - generic [ref=e2397]: Extended thinking can now be enabled per-turn in agent loops. Particularly useful for complex multi-file refactoring where the model needs to reason about cross-file dependencies before acting.
+            - generic [ref=e2398]:
+              - generic [ref=e2399]: official
+              - generic [ref=e2400]: 1h ago
+            - generic [ref=e2401]:
+              - button "Mark Read" [ref=e2402] [cursor=pointer]
+              - button "Dismiss" [ref=e2403] [cursor=pointer]
+              - button "Source" [ref=e2404] [cursor=pointer]
+              - button "Build This" [ref=e2405] [cursor=pointer]
+          - generic [ref=e2406]:
+            - generic [ref=e2407]:
+              - generic [ref=e2408]: Playwright v1.50 — network-level request interception per browser context
+              - generic [ref=e2409]:
+                - generic [ref=e2410]: NEW
+                - generic [ref=e2411]: medium
+                - generic [ref=e2412]: release
+            - generic [ref=e2413]: Per-context network mocking eliminates test isolation issues Walter has been hitting. Flaky E2E rate should drop significantly with this upgrade.
+            - generic [ref=e2414]:
+              - generic [ref=e2415]: official
+              - generic [ref=e2416]: 4h ago
+            - generic [ref=e2417]:
+              - button "Mark Read" [ref=e2418] [cursor=pointer]
+              - button "Dismiss" [ref=e2419] [cursor=pointer]
+              - button "Source" [ref=e2420] [cursor=pointer]
+              - button "Build This" [ref=e2421] [cursor=pointer]
+          - generic [ref=e2422]:
+            - generic [ref=e2423]:
+              - generic [ref=e2424]: Vite 7 beta — Rolldown bundler integration, 10x build speed on large projects
+              - generic [ref=e2425]:
+                - generic [ref=e2426]: NEW
+                - generic [ref=e2427]: medium
+                - generic [ref=e2428]: release
+            - generic [ref=e2429]: Vite 7 beta now uses Rolldown (Rust-based Rollup replacement) by default. BR3 projects with complex chunk splitting should see dramatic build time improvements. Currently beta — not production ready.
+            - generic [ref=e2430]:
+              - generic [ref=e2431]: official
+              - generic [ref=e2432]: 12h ago
+            - generic [ref=e2433]:
+              - button "Mark Read" [ref=e2434] [cursor=pointer]
+              - button "Dismiss" [ref=e2435] [cursor=pointer]
+              - button "Source" [ref=e2436] [cursor=pointer]
+              - button "Build This" [ref=e2437] [cursor=pointer]
+          - generic [ref=e2438]:
+            - generic [ref=e2439]:
+              - generic [ref=e2440]: "Supabase Edge Runtime v2 — Deno 2.0 with npm: specifier support and 2x cold start improvement"
+              - generic [ref=e2441]:
+                - generic [ref=e2442]: high
+                - generic [ref=e2443]: release
+            - generic [ref=e2444]: "Edge functions now boot in ~50ms cold. npm: imports work natively. All existing functions compatible. New withDevLogs() wrapper sees 40% less overhead."
+            - generic [ref=e2445]:
+              - generic [ref=e2446]: official
+              - generic [ref=e2447]: 2h ago
+            - generic [ref=e2448]:
+              - button "Dismiss" [ref=e2449] [cursor=pointer]
+              - button "Source" [ref=e2450] [cursor=pointer]
+              - button "Build This" [ref=e2451] [cursor=pointer]
+          - generic [ref=e2452]:
+            - generic [ref=e2453]:
+              - generic [ref=e2454]: "Community: xterm.js alternative \"Terminal.js\" claims 60% smaller bundle, WebGL2 renderer"
+              - generic [ref=e2455]:
+                - generic [ref=e2456]: medium
+                - generic [ref=e2457]: tool
+            - generic [ref=e2458]: New terminal emulator project gaining traction on GitHub (2.4k stars in 2 weeks). Claims feature parity with xterm.js at fraction of bundle size. Worth evaluating for dashboard terminal workspace.
+            - generic [ref=e2459]:
+              - generic [ref=e2460]: community
+              - generic [ref=e2461]: 8h ago
+            - generic [ref=e2462]:
+              - button "Dismiss" [ref=e2463] [cursor=pointer]
+              - button "Source" [ref=e2464] [cursor=pointer]
+              - button "Build This" [ref=e2465] [cursor=pointer]
+          - generic [ref=e2466]:
+            - generic [ref=e2467]:
+              - generic [ref=e2468]: "Blog: Building a 6-node dev cluster with Apple Silicon — lessons learned"
+              - generic [ref=e2469]:
+                - generic [ref=e2470]: low
+                - generic [ref=e2471]: article
+            - generic [ref=e2472]: Developer documents building a heterogeneous Mac Mini cluster for AI-assisted development. Similar architecture to The Band. Some useful networking and thermal management insights.
+            - generic [ref=e2473]:
+              - generic [ref=e2474]: blog
+              - generic [ref=e2475]: 1d ago
+            - generic [ref=e2476]:
+              - button "Dismiss" [ref=e2477] [cursor=pointer]
+              - button "Source" [ref=e2478] [cursor=pointer]
+          - generic [ref=e2479]:
+            - generic [ref=e2480]:
+              - generic [ref=e2481]: "Netlify: New deploy preview API supports programmatic A/B testing without additional config"
+              - generic [ref=e2482]:
+                - generic [ref=e2483]: low
+                - generic [ref=e2484]: feature
+            - generic [ref=e2485]: Deploy previews can now be served to percentage-based traffic splits via API. Could replace our manual Lomax staging workflow for user-facing A/B tests.
+            - generic [ref=e2486]:
+              - generic [ref=e2487]: official
+              - generic [ref=e2488]: 2d ago
+            - generic [ref=e2489]:
+              - button "Dismiss" [ref=e2490] [cursor=pointer]
+              - button "Source" [ref=e2491] [cursor=pointer]
+              - button "Build This" [ref=e2492] [cursor=pointer]

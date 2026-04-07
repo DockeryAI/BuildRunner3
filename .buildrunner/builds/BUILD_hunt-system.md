@@ -1,7 +1,7 @@
 # Build: Hunt System
 
 **Created:** 2026-04-06
-**Status:** 4/5 Phases Complete — Phase 1 Remaining
+**Status:** 5/5 Phases Complete — ALL COMPLETE
 **Deploy:** local — Lockwood FastAPI + Walter sourcing service + Muddy dashboard (deploy nodes via SSH after each phase)
 
 ## Overview
@@ -43,7 +43,7 @@
 
 ### Phase 1: /hunt Skill (Claude Code Command)
 
-**Status:** not_started
+**Status:** COMPLETE
 **Goal:** Type /hunt and have a strategy conversation — research a buy list, see fair prices, create hunts, review exceptional deals.
 **Files:**
 

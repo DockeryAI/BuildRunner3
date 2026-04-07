@@ -165,6 +165,11 @@ def _parse_supabase_log(filepath: str) -> list[dict]:
     return entries
 
 
+NET_RE = re.compile(
+    r'\[NET\]\s+(\w+)\s+(https?://\S+)\s+(\w+)\s+(\d+)ms'
+)
+
+
 def _parse_browser_log(filepath: str) -> list[dict]:
     entries = []
     try:
@@ -174,17 +179,54 @@ def _parse_browser_log(filepath: str) -> list[dict]:
 
     for line in lines[-500:]:
         m = BROWSER_RE.match(line)
-        if m:
-            level = m.group(2).lower()
-            if level in ("error", "err"):
-                level = "error"
-            elif level in ("warn", "warning"):
-                level = "warn"
-            entries.append({
-                "timestamp": m.group(1), "log_type": "browser",
-                "event_type": "console", "level": level,
-                "message": m.group(3),
-            })
+        if not m:
+            continue
+
+        raw_level = m.group(2).lower()
+        message = m.group(3)
+
+        # --- Parse [NET] lines specially to extract status, URL, method ---
+        if raw_level == "net":
+            net_match = NET_RE.match(f"[NET] {message}")
+            if net_match:
+                method = net_match.group(1)
+                url = net_match.group(2)
+                status_raw = net_match.group(3)
+                duration = int(net_match.group(4))
+
+                # Determine level from status
+                if status_raw == "ERR":
+                    level = "error"
+                    status_code = 0  # network failure / timeout
+                elif status_raw.isdigit():
+                    status_code = int(status_raw)
+                    level = "error" if status_code >= 500 else "warn" if status_code >= 400 else "info"
+                else:
+                    status_code = 0
+                    level = "warn"
+
+                entries.append({
+                    "timestamp": m.group(1), "log_type": "browser",
+                    "event_type": "network", "level": level,
+                    "message": message,
+                    "method": method, "url": url,
+                    "status_code": status_code, "duration_ms": duration,
+                })
+            continue
+
+        # --- Regular console entries ---
+        if raw_level in ("error", "err"):
+            level = "error"
+        elif raw_level in ("warn", "warning"):
+            level = "warn"
+        else:
+            level = raw_level
+
+        entries.append({
+            "timestamp": m.group(1), "log_type": "browser",
+            "event_type": "console", "level": level,
+            "message": message,
+        })
     return entries
 
 
@@ -258,7 +300,7 @@ def _detect_patterns(entries: list[dict]) -> list[dict]:
             "count": len(empty_200s),
         })
 
-    # --- Server errors ---
+    # --- Server errors (5xx) from any source ---
     server_errors = [e for e in entries if e.get("status_code", 0) >= 500]
     if server_errors:
         patterns.append({
@@ -266,6 +308,53 @@ def _detect_patterns(entries: list[dict]) -> list[dict]:
             "severity": "high",
             "description": f"{len(server_errors)} server errors (5xx)",
             "count": len(server_errors),
+        })
+
+    # --- Edge function errors (400 OR timeout from /functions/v1/) ---
+    edge_fn_errors = [
+        e for e in entries
+        if "/functions/v1/" in (e.get("url") or e.get("message") or "")
+        and (
+            (e.get("status_code", 0) >= 400)  # 400, 401, 500, etc.
+            or e.get("status_code") == 0  # network timeout (ERR)
+            or e.get("level") == "error"  # any error level
+        )
+    ]
+    if edge_fn_errors:
+        # Distinguish timeout vs HTTP error
+        timeouts = [e for e in edge_fn_errors if e.get("status_code") == 0 or (e.get("duration_ms", 0) > 30000)]
+        http_errors = [e for e in edge_fn_errors if e.get("status_code", 0) >= 400]
+
+        if timeouts:
+            patterns.append({
+                "pattern_type": "edge_function_timeout",
+                "severity": "critical",
+                "description": f"{len(timeouts)} edge function timeouts — function exceeded execution limit",
+                "count": len(timeouts),
+            })
+        if http_errors:
+            patterns.append({
+                "pattern_type": "edge_function_error",
+                "severity": "high",
+                "description": f"{len(http_errors)} edge function errors ({', '.join(set(str(e.get('status_code')) for e in http_errors))})",
+                "count": len(http_errors),
+            })
+
+    # --- Browser [ERROR] lines (catch-all for any runtime error) ---
+    # Catch things like "[plan-ai] generateX failed: {}"
+    browser_errors = [
+        e for e in entries
+        if e.get("log_type") == "browser"
+        and e.get("level") == "error"
+        and e.get("event_type") == "console"
+        and "vite" not in (e.get("message") or "").lower()  # skip HMR noise
+    ]
+    if browser_errors:
+        patterns.append({
+            "pattern_type": "runtime_error",
+            "severity": "high",
+            "description": f"{len(browser_errors)} runtime errors: {browser_errors[0].get('message', '')[:80]}",
+            "count": len(browser_errors),
         })
 
     # --- Latency degradation ---
@@ -409,6 +498,163 @@ def _discover_projects() -> list[str]:
 
 
 _known_projects: set[str] = set()
+_alerted_fingerprints: set[str] = set()
+
+CLUSTER_CHECK = os.path.expanduser("~/.buildrunner/scripts/cluster-check.sh")
+
+
+# --- Alert + Auto-Fix ---
+def _send_macos_notification(pattern: dict):
+    """Fire macOS notification for critical/high patterns."""
+    try:
+        title = f"BR3: {pattern['pattern_type']}"
+        msg = pattern["description"][:100]
+        subprocess.Popen(
+            ["osascript", "-e", f'display notification "{msg}" with title "{title}" sound name "Basso"'],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        print(f"  [ALERT] macOS notification: {title}")
+    except Exception as e:
+        print(f"  [ALERT] notification failed: {e}")
+
+
+def _push_alert_to_walter(pattern: dict):
+    """Push alert to Walter so it shows in developer brief alongside test results."""
+    try:
+        walter_url = subprocess.run(
+            [CLUSTER_CHECK, "test-runner"],
+            capture_output=True, text=True, timeout=3,
+        ).stdout.strip()
+        if walter_url:
+            import urllib.request
+            data = json.dumps(pattern).encode()
+            req = urllib.request.Request(
+                f"{walter_url}/api/alert",
+                data=data,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            urllib.request.urlopen(req, timeout=3)
+            print(f"  [ALERT] pushed to Walter: {pattern['pattern_type']}")
+    except Exception as e:
+        print(f"  [ALERT] Walter push failed: {e}")
+
+
+def _attempt_auto_fix(pattern: dict, entries: list[dict]):
+    """Attempt automatic fixes for known error patterns."""
+    ptype = pattern["pattern_type"]
+    desc = pattern.get("description", "")
+
+    # --- Rule 1: Edge function "Unknown action" → auto-deploy ---
+    if ptype == "edge_function_error":
+        for e in entries:
+            msg = e.get("message", "")
+            if "Unknown action:" in msg:
+                action_match = re.search(r"Unknown action:\s*(\w+)", msg)
+                fn_url = e.get("url", "")
+                fn_match = re.search(r"/functions/v1/([\w-]+)", fn_url or msg)
+                if action_match and fn_match:
+                    _auto_fix_deploy_edge_function(fn_match.group(1), action_match.group(1))
+                    return
+
+    # --- Rule 2: Edge function timeout → redeploy (may fix cold start / stuck deploy) ---
+    if ptype == "edge_function_timeout":
+        for e in entries:
+            url = e.get("url", "")
+            fn_match = re.search(r"/functions/v1/([\w-]+)", url)
+            if fn_match:
+                fn_name = fn_match.group(1)
+                print(f"  [AUTO-FIX] Edge function timeout on '{fn_name}' — redeploying to clear stale worker...")
+                _auto_fix_redeploy_edge_function(fn_name)
+                return
+
+    # --- Rule 3: Runtime error matching "failed: {}" → likely empty error body, check edge fn ---
+    if ptype == "runtime_error" and "failed: {}" in desc:
+        # Empty error body usually means edge function returned non-JSON or timed out
+        for e in entries:
+            msg = e.get("message", "")
+            fn_name_match = re.search(r"generate(\w+)\s+failed", msg)
+            if fn_name_match:
+                print(f"  [AUTO-FIX] Runtime error with empty body — likely edge function issue. Check Supabase dashboard logs.")
+                return
+
+    # --- Rule 4: Auth refresh loop → log for investigation ---
+    if ptype == "auth_refresh_loop" and pattern.get("count", 0) > 50:
+        print(f"  [AUTO-FIX] Auth refresh loop detected ({pattern['count']}x) — needs manual investigation")
+        return
+
+
+def _auto_fix_deploy_edge_function(fn_name: str, action_name: str):
+    """Auto-deploy an edge function when 'Unknown action' is detected but code exists locally."""
+    print(f"  [AUTO-FIX] Checking if '{action_name}' exists in local edge function '{fn_name}'...")
+
+    # Search all BR3 projects for the edge function source
+    projects_dir = Path(PROJECTS_DIR)
+    for project_dir in projects_dir.iterdir():
+        if not project_dir.is_dir():
+            continue
+        index_path = project_dir / "supabase" / "functions" / fn_name / "index.ts"
+        if not index_path.exists():
+            continue
+
+        # Check if the action exists in the local code
+        try:
+            code = index_path.read_text()
+        except Exception:
+            continue
+
+        if f"'{action_name}'" in code or f'"{action_name}"' in code:
+            print(f"  [AUTO-FIX] Found '{action_name}' in {index_path} — deploying...")
+            result = subprocess.run(
+                ["supabase", "functions", "deploy", fn_name, "--no-verify-jwt"],
+                capture_output=True, text=True, cwd=str(project_dir), timeout=120,
+                env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"},
+            )
+            if result.returncode == 0:
+                print(f"  [AUTO-FIX] ✓ Deployed {fn_name} successfully")
+                _send_macos_notification({
+                    "pattern_type": "auto_fix_applied",
+                    "severity": "info",
+                    "description": f"Auto-deployed {fn_name} (missing action: {action_name})",
+                })
+            else:
+                print(f"  [AUTO-FIX] ✗ Deploy failed: {result.stderr[:200]}")
+            return
+        else:
+            print(f"  [AUTO-FIX] '{action_name}' NOT found in {index_path} — code is missing, cannot auto-fix")
+            return
+
+    print(f"  [AUTO-FIX] No edge function '{fn_name}' found in any project")
+
+
+def _auto_fix_redeploy_edge_function(fn_name: str):
+    """Redeploy an edge function to clear stale workers (fixes some timeout issues)."""
+    projects_dir = Path(PROJECTS_DIR)
+    for project_dir in projects_dir.iterdir():
+        if not project_dir.is_dir():
+            continue
+        fn_dir = project_dir / "supabase" / "functions" / fn_name
+        if not fn_dir.exists():
+            continue
+
+        print(f"  [AUTO-FIX] Redeploying '{fn_name}' from {project_dir}...")
+        result = subprocess.run(
+            ["supabase", "functions", "deploy", fn_name, "--no-verify-jwt"],
+            capture_output=True, text=True, cwd=str(project_dir), timeout=120,
+            env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"},
+        )
+        if result.returncode == 0:
+            print(f"  [AUTO-FIX] ✓ Redeployed {fn_name}")
+            _send_macos_notification({
+                "pattern_type": "auto_fix_applied",
+                "severity": "info",
+                "description": f"Redeployed {fn_name} after timeout",
+            })
+        else:
+            print(f"  [AUTO-FIX] ✗ Redeploy failed: {result.stderr[:200]}")
+        return
+
+    print(f"  [AUTO-FIX] No edge function '{fn_name}' found in any project")
 
 
 # --- Analysis Loop ---
@@ -505,6 +751,15 @@ def _analysis_loop():
 
             if patterns:
                 print(f"Analysis: {len(patterns)} patterns, {len(correlations)} correlations")
+
+            # --- Alert + Auto-Fix for critical/high patterns ---
+            for p in patterns:
+                fp = p.get("fingerprint") or hashlib.md5(f"{p['pattern_type']}:{p.get('description','')}".encode()).hexdigest()[:12]
+                if p["severity"] in ("critical", "high") and fp not in _alerted_fingerprints:
+                    _alerted_fingerprints.add(fp)
+                    _send_macos_notification(p)
+                    _push_alert_to_walter(p)
+                    _attempt_auto_fix(p, all_entries)
 
         except Exception as e:
             print(f"Analysis error: {e}")
