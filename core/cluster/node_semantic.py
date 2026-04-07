@@ -1176,6 +1176,55 @@ async def research_search(query: str, limit: int = 5, domain: Optional[str] = No
     return {"query": query, "results": results, "count": len(results), "method": "semantic"}
 
 
+@app.post("/api/research/vsearch")
+async def research_vsearch(req: Request):
+    """Vector search — accepts a pre-encoded query vector (embed on client, search on Lockwood).
+    Use this when Lockwood can't load the embedding model (M2 8GB constraint).
+    Body: {"vector": [float,...], "limit": int, "domain": str|null}"""
+    data = await req.json()
+    vector = data.get("vector", [])
+    limit = data.get("limit", 5)
+    domain = data.get("domain")
+    if not vector:
+        return {"error": "vector required", "results": []}
+
+    db, _ = _get_db()
+    if "research_library" not in db.table_names():
+        return {"results": [], "count": 0}
+    table = db.open_table("research_library")
+
+    try:
+        search_query = table.search(vector).metric("cosine").limit(limit * 2)
+        if domain:
+            search_query = search_query.where(f"domain LIKE '%{domain}%'")
+        results = search_query.to_pandas()
+    except Exception:
+        return {"results": [], "count": 0}
+
+    hits = []
+    seen = set()
+    for _, row in results.iterrows():
+        key = f"{row.get('source_file', '')}:{row.get('section', '')}"
+        if key in seen:
+            continue
+        seen.add(key)
+        distance = row.get("_distance", 1.0)
+        hits.append({
+            "id": row.get("id", ""),
+            "title": row.get("title", ""),
+            "section": row.get("section", ""),
+            "domain": row.get("domain", ""),
+            "subjects": row.get("subjects", ""),
+            "priority": row.get("priority", ""),
+            "source_file": row.get("source_file", ""),
+            "score": round(max(0, 1 / (1 + distance)), 4),
+            "snippet": str(row.get("text", ""))[:400],
+        })
+        if len(hits) >= limit:
+            break
+    return {"results": hits, "count": len(hits), "method": "vsearch"}
+
+
 @app.post("/api/research/reindex")
 async def research_reindex():
     """Trigger immediate research library re-index."""
