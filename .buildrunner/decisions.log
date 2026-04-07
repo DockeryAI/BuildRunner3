@@ -475,3 +475,9 @@
 - dispatch-to-node.sh: Replaced all DISPATCH_USER refs with SSH_USER (per-node resolved). DISPATCH_USER was always the default user, SSH_USER correctly handles Below's different username.
 - dispatch-to-node.sh: Removed keychain unlock lines — SSH key auth is enforced via -o PasswordAuthentication=no, making keychain unlock dead code.
 - dispatch-to-node.sh: Prompt file now uses SESSION_NAME (includes timestamp) + PID for uniqueness, matching existing cleanup glob pattern.
+[2026-04-07T22:02:27Z] Phase 5 decisions:
+  - Added test_health table to memory_store.py with full SHA/branch/runner/trigger tracking
+  - Upgraded POST/GET /api/memory/tests endpoints with TestHealthRecord schema, backward compat via legacy test_results write
+  - Added _push_to_lockwood() to node_tests.py using stdlib urllib (no extra deps), 1 retry with 2s pause
+  - Created backfill script at core/cluster/scripts/backfill-lockwood-tests.sh
+  - Trigger marking: watch/manual already correct, 'hook' passed via /api/run?trigger=hook from auto-save dispatch

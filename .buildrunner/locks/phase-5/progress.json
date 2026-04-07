@@ -1,19 +1,25 @@
 {
   "phase": 5,
   "name": "Lockwood Test Reporting",
-  "step": 1,
-  "step_name": "setup",
-  "step_label": "Setup & sync",
+  "step": 7,
+  "step_name": "finalize",
+  "step_label": "Final commit & summary",
   "status": "active",
   "tasks_total": 5,
-  "tasks_done": 0,
+  "tasks_done": 5,
   "current_task": null,
-  "tests_written": 0,
-  "tests_passing": 0,
-  "commits": 0,
+  "tests_written": 8,
+  "tests_passing": 8,
+  "commits": 1,
   "errors": [],
   "warnings": [],
   "started_at": "2026-04-07T21:30:00Z",
-  "updated_at": "2026-04-07T21:30:00Z",
-  "history": []
+  "updated_at": "2026-04-07T22:02:18Z",
+  "history": [
+    {"step": 1, "name": "setup", "label": "Setup & sync", "at": "2026-04-07T21:30:00Z", "status": "done"},
+    {"step": 3, "name": "plan", "label": "Writing implementation plan", "at": "2026-04-07T21:31:00Z", "status": "done"},
+    {"step": 4, "name": "execute", "label": "Implementing tasks", "at": "2026-04-07T21:32:00Z", "status": "done"},
+    {"step": 4.5, "name": "tdd_rerun", "label": "Re-running tests", "at": "2026-04-07T22:02:18Z", "status": "done"},
+    {"step": 7, "name": "finalize", "label": "Final commit & summary", "at": "2026-04-07T22:02:18Z", "status": "active"}
+  ]
 }

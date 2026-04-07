@@ -4,17 +4,17 @@
   "step": 7,
   "step_name": "finalize",
   "step_label": "Final commit & summary",
-  "status": "active",
+  "status": "COMPLETE",
   "tasks_total": 7,
   "tasks_done": 7,
   "current_task": null,
   "tests_written": 0,
   "tests_passing": 0,
-  "commits": 0,
+  "commits": 1,
   "errors": [],
   "warnings": [],
   "started_at": "2026-04-07T21:15:00Z",
-  "updated_at": "2026-04-07T22:01:12Z",
+  "updated_at": "2026-04-07T22:01:28Z",
   "history": [
     {"step": 0.5, "name": "rescue", "label": "Recover uncommitted work", "at": "2026-04-07T21:15:00Z", "status": "skipped"},
     {"step": 1, "name": "setup", "label": "Setup & sync", "at": "2026-04-07T21:15:00Z", "status": "done"},
@@ -23,6 +23,7 @@
     {"step": 3.5, "name": "tdd", "label": "Writing failing tests (TDD)", "at": "2026-04-07T21:15:00Z", "status": "skipped"},
     {"step": 4, "name": "execute", "label": "Implementing tasks", "at": "2026-04-07T21:16:00Z", "status": "done"},
     {"step": 5, "name": "review", "label": "Two-stage review", "at": "2026-04-07T21:19:00Z", "status": "done"},
-    {"step": 6, "name": "verification", "label": "Verification gate", "at": "2026-04-07T21:19:30Z", "status": "done"}
+    {"step": 6, "name": "verification", "label": "Verification gate", "at": "2026-04-07T21:19:30Z", "status": "done"},
+    {"step": 7, "name": "finalize", "label": "Final commit & summary", "at": "2026-04-07T22:01:28Z", "status": "done"}
   ]
 }

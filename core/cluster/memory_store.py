@@ -410,15 +410,15 @@ def get_test_health(project: str = None, limit: int = 20) -> list[dict]:
     if project:
         rows = conn.execute(
             """SELECT * FROM test_health WHERE project = ?
-               ORDER BY timestamp DESC LIMIT ?""",
+               ORDER BY timestamp DESC, id DESC LIMIT ?""",
             (project, limit)
         ).fetchall()
     else:
         # Latest N per project (for dashboard overview)
         rows = conn.execute(
             """SELECT * FROM test_health WHERE id IN (
-                 SELECT id FROM test_health ORDER BY timestamp DESC LIMIT ?
-               ) ORDER BY timestamp DESC""",
+                 SELECT id FROM test_health ORDER BY timestamp DESC, id DESC LIMIT ?
+               ) ORDER BY timestamp DESC, id DESC""",
             (limit,)
         ).fetchall()
     conn.close()
