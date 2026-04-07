@@ -90,7 +90,7 @@ Improvements:
 
 ### Phase 2: Feed Redesign — Categories + Tiers + Morning Brief
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Feed tab shows items grouped by category with tier badges and a morning brief banner at the top.
 
 **Files:**
@@ -117,7 +117,7 @@ Improvements:
 
 ### Phase 3: Improvements Redesign — Typed Sections + Drilldown + Actions
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Improvements tab organized by type with clickable drilldown modals and type-appropriate action buttons.
 
 **Files:**
@@ -149,7 +149,7 @@ Improvements:
 
 ### Phase 4: Deals Tab Polish — Consistency Pass
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Deals and hunts tabs match the visual redesign of feed and improvements.
 
 **Files:**
