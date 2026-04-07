@@ -1,7 +1,7 @@
 # Build: Research Library Vectorization
 
 **Created:** 2026-04-07
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
+**Status:** BUILD COMPLETE — All 4 Phases Done
 **Deploy:** cluster — Lockwood (10.0.1.101) service restart
 
 ## Overview
@@ -106,7 +106,7 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 
 ### Phase 4: Research Pipeline + Dashboard
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** New research auto-indexes into Lockwood. Dashboard shows research index health.
 
 **Files:**
@@ -118,9 +118,9 @@ Vectorize the 182-doc research library (~10.2 MB) on Lockwood so research contex
 **After:** Phases 2, 3
 **Deliverables:**
 
-- [ ] /research skill: after writing a new research doc to ~/Projects/research-library/, auto-trigger /api/research/reindex on Lockwood so the new doc is immediately searchable
-- [ ] Dashboard workspace: show research index stats (total docs, total chunks, last indexed, top domains by chunk count), recent search queries, and index health. Follows existing ws-\*.js modular pattern.
-- [ ] Test: run /research on a new topic and verify the output doc appears in Lockwood search results within 30 seconds
+- [x] /research skill: after writing a new research doc to ~/Projects/research-library/, auto-trigger /api/research/reindex on Lockwood so the new doc is immediately searchable
+- [x] Dashboard workspace: show research index stats (total docs, total chunks, last indexed, top domains by chunk count), recent search queries, and index health. Follows existing ws-\*.js modular pattern.
+- [x] Test: run /research on a new topic and verify the output doc appears in Lockwood search results within 30 seconds
 
 **Success Criteria:** New research is searchable immediately after creation. Dashboard shows live index stats.
 
