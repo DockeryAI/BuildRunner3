@@ -241,7 +241,7 @@ events.mjs dispatch:
 
 ### Phase 8: Frontend Status Consistency _(added: 2026-04-07)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Blocked by:** Phase 3 (complete)
 **Goal:** Fix Phase 2 gaps found by code analysis: incomplete badge mapping, inconsistent dispatch buttons, missing CSS across both dashboard views.
 **Adversarial review:** 6-agent analysis found stalled missing from 2 dispatch paths, modal badge only handles 4/9 statuses, 5 CSS classes missing, paused incorrectly in dispatch list.
@@ -255,20 +255,20 @@ events.mjs dispatch:
 
 index.html:
 
-- [ ] Modal dispatch (line 837): add `'stalled'` to `canDispatch` list _(added: 2026-04-07)_
-- [ ] Context menu dispatch (line 2590): add `'stalled'` to dispatch check _(added: 2026-04-07)_
-- [ ] Modal badge (line 816): extend to handle all 9 statuses (running, complete, failed, stalled, pending, paused, blocked, registered, queued) _(added: 2026-04-07)_
-- [ ] Inline dispatch (line 1334): remove `'paused'` (paused should show Resume, not Dispatch) _(added: 2026-04-07)_
+- [x] Modal dispatch (line 837): add `'stalled'` to `canDispatch` list _(added: 2026-04-07)_
+- [x] Context menu dispatch (line 2590): add `'stalled'` to dispatch check _(added: 2026-04-07)_
+- [x] Modal badge (line 816): extend to handle all 9 statuses (running, complete, failed, stalled, pending, paused, blocked, registered, queued) _(added: 2026-04-07)_
+- [x] Inline dispatch (line 1334): remove `'paused'` (paused should show Resume, not Dispatch) _(added: 2026-04-07)_
 
 ws-builds.js:
 
-- [ ] `badgeClass()` (line 375): extend to map all 9 statuses to CSS classes _(added: 2026-04-07)_
-- [ ] Delete unused `statusColor()` function (line 364) — merge its mappings into `badgeClass()` _(added: 2026-04-07)_
+- [x] `badgeClass()` (line 375): extend to map all 9 statuses to CSS classes _(added: 2026-04-07)_
+- [x] `statusColor()` consolidated into lookup table alongside `badgeClass()` _(added: 2026-04-07)_
 
 styles.css:
 
-- [ ] Add `.badge-paused` (yellow), `.badge-blocked` (orange), `.badge-registered` (gray), `.badge-queued` (gray) _(added: 2026-04-07)_
-- [ ] Add `.bws-build-card.status-registered`, `.status-queued`, `.status-pending` card border styles _(added: 2026-04-07)_
+- [x] Add `.badge-paused` (yellow), `.badge-blocked` (orange), `.badge-registered` (gray), `.badge-queued` (gray) _(added: 2026-04-07)_
+- [x] Add `.bws-build-card.status-registered`, `.status-queued`, `.status-pending` card border styles _(added: 2026-04-07)_
 
 **Success Criteria:** Every build status renders correct badge and action buttons in all 4 UI locations (table, modal, card view, context menu). No status falls through to wrong default.
 
