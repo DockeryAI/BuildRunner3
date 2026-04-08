@@ -1,7 +1,7 @@
 # Build: walter-auto-provision
 
 **Created:** 2026-04-08
-**Status:** Phase 1 In Progress
+**Status:** COMPLETE
 **Deploy:** cluster — `~/.buildrunner/scripts/walter-setup.sh` redeploy to 10.0.1.102
 
 ## Overview
@@ -20,7 +20,7 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 
 ### Phase 1: Server-Side Auto-Provision
 
-**Status:** not_started
+**Status:** COMPLETE
 **Goal:** Walter creates bare repos on demand when it receives requests for unknown projects
 **Files:**
 
@@ -29,11 +29,11 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] `_ensure_repo(project_name)` helper — `git init --bare ~/repos/{project}` if directory doesn't exist, returns path
-- [ ] `POST /api/provision` endpoint — accepts project name, calls `_ensure_repo`, idempotent, returns status
-- [ ] Modify `/api/run` — when `project` param set and directory missing, call `_ensure_repo` before iterating
-- [ ] `repo_provisions` table added to `_ensure_tables()` in test_results.db — tracks project, provisioned_at
-- [ ] Enhance `/api/health` response — add `repo_count` and `watched_repos` list
+- [x] `_ensure_repo(project_name)` helper — `git init --bare ~/repos/{project}` if directory doesn't exist, returns path
+- [x] `POST /api/provision` endpoint — accepts project name, calls `_ensure_repo`, idempotent, returns status
+- [x] Modify `/api/run` — when `project` param set and directory missing, call `_ensure_repo` before iterating
+- [x] `repo_provisions` table added to `_ensure_tables()` in test_results.db — tracks project, provisioned_at
+- [x] Enhance `/api/health` response — add `repo_count` and `watched_repos` list
 
 **Success Criteria:** `POST /api/provision?project=trailsync` creates `~/repos/trailsync` as bare repo. `/api/run?project=newproject` provisions then queues instead of returning error.
 
@@ -41,7 +41,7 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 
 ### Phase 2: Client-Side Error Surfacing
 
-**Status:** not_started
+**Status:** COMPLETE
 **Goal:** auto-save-session.sh provisions before pushing, surfaces errors instead of swallowing them
 **Files:**
 
@@ -51,11 +51,11 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 **After:** Phase 1 (needs /api/provision endpoint)
 **Deliverables:**
 
-- [ ] Before git push: call `$WALTER_URL/api/provision?project=$PROJECT` to ensure bare repo exists on Walter
-- [ ] Remove `2>/dev/null` from git push (line 54) — redirect stderr to `$WALTER_LOG`
-- [ ] Remove `&` backgrounding from git push — make synchronous so dispatch only fires after push succeeds
-- [ ] Add push exit code check — if push fails after provision, log error and skip `/api/run` dispatch
-- [ ] Parse `/api/run` response — log warning when status is "error"
+- [x] Before git push: call `$WALTER_URL/api/provision?project=$PROJECT` to ensure bare repo exists on Walter
+- [x] Remove `2>/dev/null` from git push (line 54) — redirect stderr to `$WALTER_LOG`
+- [x] Remove `&` backgrounding from git push — make synchronous so dispatch only fires after push succeeds
+- [x] Add push exit code check — if push fails after provision, log error and skip `/api/run` dispatch
+- [x] Parse `/api/run` response — log warning when status is "error"
 
 **Success Criteria:** First commit in any project provisions repo on Walter, pushes code, triggers tests. Failures logged to walter-dispatch.log with context.
 
@@ -63,7 +63,7 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 
 ### Phase 3: Bulk Seed + Verification
 
-**Status:** not_started
+**Status:** COMPLETE
 **Goal:** All existing projects provisioned on Walter with verification
 **Files:**
 
@@ -72,11 +72,11 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 **Blocked by:** Phase 1, Phase 2
 **Deliverables:**
 
-- [ ] `walter-seed.sh` — reads projects.json AND scans ~/Projects/ for completeness, inits bare repos on Walter for each missing project, pushes HEAD from Muddy
-- [ ] `--dry-run` flag — reports what would be provisioned without acting
-- [ ] `--verify` flag — compares ~/Projects/ dirs against Walter ~/repos/, reports gaps
-- [ ] Run seed for all missing projects (sequential, 1s delay between)
-- [ ] Verify via `/api/health` watched_repos count matches total projects
+- [x] `walter-seed.sh` — reads projects.json AND scans ~/Projects/ for completeness, inits bare repos on Walter for each missing project, pushes HEAD from Muddy
+- [x] `--dry-run` flag — reports what would be provisioned without acting
+- [x] `--verify` flag — compares ~/Projects/ dirs against Walter ~/repos/, reports gaps
+- [x] Run seed for all missing projects (sequential, 1s delay between)
+- [x] Verify via `/api/health` watched_repos count matches total projects
 
 **Success Criteria:** `walter-seed.sh --verify` reports zero gaps. `/api/health` shows all projects in watched_repos.
 
