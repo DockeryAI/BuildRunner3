@@ -225,7 +225,7 @@ These frameworks already govern the skills — this spec enforces them more stri
 
 ### PHASE 2: [REMOVED] Expand Discovery from 4-Slider to 5-Slider Aaker
 
-**Status:** 🗑️ REMOVED 2026-04-05 — already delivered by `BUILD_design-skill-rebuild.md` Phase 1 + Phase 14 (both COMPLETE). /design wizard already captures all 5 Aaker dimensions.
+**Status:** Phases 1-10 Complete — Phase 1 In Progress
 
 ---
 
