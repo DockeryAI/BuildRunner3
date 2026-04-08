@@ -114,6 +114,11 @@ def _ensure_tables(conn: sqlite3.Connection):
             last_tested_sha TEXT NOT NULL,
             updated_at TEXT DEFAULT (datetime('now'))
         );
+
+        CREATE TABLE IF NOT EXISTS repo_provisions (
+            project TEXT PRIMARY KEY,
+            provisioned_at TEXT DEFAULT (datetime('now'))
+        );
     """)
     # Migration: add last_tested_sha column if missing (existing DBs)
     try:
@@ -246,6 +251,31 @@ def _update_tested_sha(project: str, sha: str):
             conn.close()
     except Exception as e:
         print(f"SHA tracking update failed: {e}")
+
+
+# --- Auto-Provision ---
+def _ensure_repo(project_name: str) -> str:
+    """Create a bare repo for project if it doesn't exist. Returns repo path."""
+    repo_path = os.path.join(REPOS_DIR, project_name)
+    if not os.path.isdir(repo_path):
+        subprocess.run(
+            ["git", "init", "--bare", repo_path],
+            capture_output=True, text=True, timeout=10
+        )
+        # Track provision in DB
+        try:
+            with _db_lock:
+                conn = _get_db()
+                conn.execute(
+                    "INSERT OR IGNORE INTO repo_provisions (project) VALUES (?)",
+                    (project_name,)
+                )
+                conn.commit()
+                conn.close()
+        except Exception as e:
+            print(f"Provision tracking failed: {e}")
+        print(f"Provisioned bare repo: {repo_path}")
+    return repo_path
 
 
 # --- Test File Map ---
@@ -963,6 +993,8 @@ async def walter_health():
 
     mem = psutil.virtual_memory()
 
+    watched_repos = sorted(repo_heads.keys())
+
     return {
         "status": "healthy",
         "role": "test-runner",
@@ -971,6 +1003,8 @@ async def walter_health():
         "last_test_run": datetime.fromtimestamp(last_run).isoformat() if last_run > 0 else None,
         "running": running,
         "queue_depth": _test_queue.qsize(),
+        "repo_count": len(watched_repos),
+        "watched_repos": watched_repos,
         "repo_heads": repo_heads,
         "memory": {
             "total_gb": round(mem.total / (1024**3), 1),
@@ -1089,10 +1123,25 @@ async def get_flaky():
         return {"flaky": [], "error": str(e)}
 
 
+@app.post("/api/provision")
+async def provision_repo(project: str = ""):
+    """Ensure a bare repo exists for the given project. Idempotent."""
+    if not project:
+        return {"status": "error", "message": "project param required"}
+    already_existed = os.path.isdir(os.path.join(REPOS_DIR, project))
+    repo_path = _ensure_repo(project)
+    return {"status": "ok", "project": project, "repo_path": repo_path, "created": not already_existed}
+
+
 @app.post("/api/run")
 async def trigger_run(project: Optional[str] = None, trigger: str = "manual"):
     """Enqueue a test run. Returns run_id for status polling."""
     repos_path = Path(REPOS_DIR)
+
+    # Auto-provision if project specified but repo directory doesn't exist
+    if project and not (repos_path / project).is_dir():
+        _ensure_repo(project)
+
     run_ids = []
 
     for repo_dir in repos_path.iterdir():
