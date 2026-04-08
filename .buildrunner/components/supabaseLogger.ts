@@ -39,7 +39,7 @@ function formatLine(entry: LogEntry): string {
 }
 
 function detectWarnings(entry: LogEntry): string | null {
-  if (entry.status === 200 && entry.responseSize === 0) {
+  if (entry.status === 200 && entry.responseSize === 0 && entry.method !== 'HEAD') {
     return '⚠ EMPTY_200 — possible RLS denial (200 OK but no data returned)';
   }
   if (entry.status >= 400 && entry.status < 500) {
@@ -90,11 +90,8 @@ export function createInstrumentedFetch(
   supabaseUrl: string
 ): typeof globalThis.fetch {
   return async (input, init) => {
-    const url = typeof input === 'string'
-      ? input
-      : input instanceof URL
-        ? input.toString()
-        : input.url;
+    const url =
+      typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
     // Only instrument requests to our Supabase instance
     if (!url.startsWith(supabaseUrl)) {
@@ -121,7 +118,9 @@ export function createInstrumentedFetch(
           if (Array.isArray(json._debug)) {
             debugLogs = json._debug;
           }
-        } catch { /* not JSON or no _debug */ }
+        } catch {
+          /* not JSON or no _debug */
+        }
       }
     } catch {
       // If clone/read fails, log 0
@@ -132,7 +131,7 @@ export function createInstrumentedFetch(
     // Flush edge function internal logs
     if (debugLogs && debugLogs.length > 0) {
       const fnName = url.split('/functions/v1/')[1]?.split('?')[0] || 'unknown';
-      const lines = debugLogs.map(l => `  [EDGE_FN:${fnName}] ${l}`).join('\n');
+      const lines = debugLogs.map((l) => `  [EDGE_FN:${fnName}] ${l}`).join('\n');
       fetch('/__supabase_log', {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
