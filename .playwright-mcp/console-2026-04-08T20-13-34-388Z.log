@@ -1,0 +1,6 @@
+[    7826ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_TIMED_OUT @ http://10.0.1.101:8100/api/research/search?query=*&limit=50:0
+[    7826ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_TIMED_OUT @ http://10.0.1.101:8100/api/research/stats:0
+[    8008ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/items?limit=50:0
+[   15790ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[   23577ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/improvements:0
+[   31361ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0

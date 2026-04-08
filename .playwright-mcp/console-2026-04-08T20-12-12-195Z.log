@@ -1,0 +1,3 @@
+[   57822ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_TIMED_OUT @ http://10.0.1.101:8100/api/research/stats:0
+[   73965ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/proxy/intel/brief:0
+[   73965ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/proxy/deals/summary:0
