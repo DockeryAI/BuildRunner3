@@ -770,7 +770,9 @@ def _ingest_memory():
 
 def _init_research_stats():
     """Load stats from existing research_library table on startup (pre-built index).
-    Also populates file hashes so the indexer skips the first reindex."""
+    Also populates file hashes so the indexer skips unchanged files on first reindex.
+    Only hashes files that have source_file entries in the existing index — new files
+    added after index was built will be detected as missing and indexed."""
     global _research_stats, _research_file_hashes, _research_dir_mtime
     try:
         db, _ = _get_db()
@@ -780,20 +782,36 @@ def _init_research_stats():
             if count > 0:
                 from core.cluster.research_chunker import discover_research_docs
                 files = discover_research_docs(RESEARCH_DIR)
+                # Get indexed file paths from LanceDB to only hash known files
+                try:
+                    indexed_df = table.to_pandas()
+                    indexed_paths = set(indexed_df["source_file"].unique()) if "source_file" in indexed_df.columns else set()
+                except Exception:
+                    indexed_paths = set()
                 _research_stats = {
                     "total_files": len(files),
                     "total_chunks": count,
                     "last_duration": 0.0,
                     "changed_files": 0,
                 }
-                # Populate file hashes so indexer skips first run (index is pre-built)
+                # Only hash files that are already in the index — new files will
+                # have no hash entry and will be picked up on next reindex
                 for f in files:
-                    _research_file_hashes[str(f)] = file_hash(f)
+                    rel = str(f)
+                    try:
+                        parts = f.parts
+                        idx = parts.index("research-library")
+                        rel_check = "/".join(parts[idx:])
+                    except (ValueError, IndexError):
+                        rel_check = rel
+                    if indexed_paths and rel_check not in indexed_paths:
+                        continue  # new file — don't hash, so indexer picks it up
+                    _research_file_hashes[rel] = file_hash(f)
                 # Set dir mtime so mtime check passes
                 docs_path = Path(RESEARCH_DIR) / "docs"
                 if docs_path.exists():
                     _research_dir_mtime = _get_dir_mtime(docs_path)
-                print(f"Research index loaded: {count} chunks from {len(files)} docs (pre-built)")
+                print(f"Research index loaded: {count} chunks from {len(indexed_paths)} indexed / {len(files)} total docs")
     except Exception as e:
         print(f"Research stats init: {e}")
 
@@ -1245,9 +1263,12 @@ async def research_vsearch(req: Request):
 
 @app.post("/api/research/reindex")
 async def research_reindex():
-    """Trigger immediate research library re-index."""
+    """Trigger immediate research library re-index. Clears mtime cache so new files are detected."""
+    global _research_dir_mtime
     if _research_indexing:
         return {"status": "already_indexing"}
+    # Clear mtime cache so the indexer doesn't skip based on stale directory mtime
+    _research_dir_mtime = 0.0
     t = threading.Thread(target=run_research_index, daemon=True)
     t.start()
     return {"status": "started"}
