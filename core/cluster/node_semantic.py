@@ -226,9 +226,11 @@ def run_research_index():
     global _research_dir_mtime, _research_stats, _research_table
 
     if _research_indexing:
+        print("Research index: already running, skipping")
         return
     _research_indexing = True
     start = time.time()
+    print("Research index: starting...")
 
     try:
         from core.cluster.research_chunker import discover_research_docs, chunk_research_doc
@@ -769,11 +771,10 @@ def _ingest_memory():
 
 
 def _init_research_stats():
-    """Load stats from existing research_library table on startup (pre-built index).
-    Also populates file hashes so the indexer skips unchanged files on first reindex.
-    Only hashes files that have source_file entries in the existing index — new files
-    added after index was built will be detected as missing and indexed."""
-    global _research_stats, _research_file_hashes, _research_dir_mtime
+    """Load stats from existing research_library table on startup.
+    Does NOT populate file hashes — the first reindex will do a full scan
+    to ensure new files added while Lockwood was down are always detected."""
+    global _research_stats
     try:
         db, _ = _get_db()
         if "research_library" in db.table_names():
@@ -782,36 +783,15 @@ def _init_research_stats():
             if count > 0:
                 from core.cluster.research_chunker import discover_research_docs
                 files = discover_research_docs(RESEARCH_DIR)
-                # Get indexed file paths from LanceDB to only hash known files
-                try:
-                    indexed_df = table.to_pandas()
-                    indexed_paths = set(indexed_df["source_file"].unique()) if "source_file" in indexed_df.columns else set()
-                except Exception:
-                    indexed_paths = set()
                 _research_stats = {
                     "total_files": len(files),
                     "total_chunks": count,
                     "last_duration": 0.0,
                     "changed_files": 0,
                 }
-                # Only hash files that are already in the index — new files will
-                # have no hash entry and will be picked up on next reindex
-                for f in files:
-                    rel = str(f)
-                    try:
-                        parts = f.parts
-                        idx = parts.index("research-library")
-                        rel_check = "/".join(parts[idx:])
-                    except (ValueError, IndexError):
-                        rel_check = rel
-                    if indexed_paths and rel_check not in indexed_paths:
-                        continue  # new file — don't hash, so indexer picks it up
-                    _research_file_hashes[rel] = file_hash(f)
-                # Set dir mtime so mtime check passes
-                docs_path = Path(RESEARCH_DIR) / "docs"
-                if docs_path.exists():
-                    _research_dir_mtime = _get_dir_mtime(docs_path)
-                print(f"Research index loaded: {count} chunks from {len(indexed_paths)} indexed / {len(files)} total docs")
+                # Don't populate _research_file_hashes — let first reindex scan all files
+                # This ensures any files added while Lockwood was down get indexed
+                print(f"Research index loaded: {count} chunks, {len(files)} docs on disk (full scan on first reindex)")
     except Exception as e:
         print(f"Research stats init: {e}")
 

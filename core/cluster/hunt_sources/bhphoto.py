@@ -6,6 +6,7 @@ Fetches B&H search results, sends to Below for structured extraction.
 import asyncio
 import os
 import logging
+import re
 
 try:
     import httpx
@@ -40,13 +41,19 @@ async def _fetch_search_html(keywords: str, max_price: float = None) -> str:
         "Accept-Encoding": "gzip, deflate, br",
         "Sec-Fetch-Dest": "document",
         "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-Site": "same-origin",
         "Sec-Fetch-User": "?1",
         "Upgrade-Insecure-Requests": "1",
-        "Cache-Control": "max-age=0",
+        "Referer": "https://www.bhphotovideo.com/",
+        "DNT": "1",
     }
     try:
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            # Hit homepage first to get session cookies (avoids 403 on direct search)
+            try:
+                await client.get("https://www.bhphotovideo.com/", headers={"User-Agent": USER_AGENT})
+            except Exception:
+                pass  # Best effort — search may still work without
             resp = await client.get(
                 BH_SEARCH_URL,
                 params=params,
@@ -156,6 +163,19 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
             filtered = len(listings) - len(relevant)
             if filtered:
                 logger.info(f"Below filtered {filtered} irrelevant B&H items for '{hunt_name}'")
+
+            # Hallucination guard: filter individual items lacking tech indicators
+            if relevant:
+                tech_indicators = re.compile(r'\d|GB|TB|MHz|GHz|DDR|RTX|GTX|NVLink|USB|SSD|NVMe|PCIe|HDMI|Corsair|EVGA|ASUS|MSI|Gigabyte|Crucial|Minisforum|PNY', re.IGNORECASE)
+                real = [l for l in relevant if tech_indicators.search(l.get("title", ""))]
+                hallucinated = len(relevant) - len(real)
+                if hallucinated:
+                    logger.warning(f"B&H '{hunt_name}': dropped {hallucinated}/{len(relevant)} titles lacking tech indicators")
+                    for l in relevant:
+                        if not tech_indicators.search(l.get("title", "")):
+                            logger.debug(f"  Hallucination: '{l.get('title', '')}'")
+                relevant = real
+
             logger.info(f"Below extracted {len(relevant)} relevant B&H listings for '{hunt_name}'")
             return relevant
 

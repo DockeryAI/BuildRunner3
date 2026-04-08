@@ -1,0 +1,903 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e4]: BR3
+      - generic [ref=e5] [cursor=pointer]:
+        - img [ref=e6]
+        - text: Dashboard
+      - generic [ref=e11] [cursor=pointer]:
+        - img [ref=e12]
+        - text: Intelligence
+      - generic [ref=e15] [cursor=pointer]:
+        - img [ref=e16]
+        - text: Terminal
+      - generic [ref=e18] [cursor=pointer]:
+        - img [ref=e19]
+        - text: Builds
+      - generic [ref=e22] [cursor=pointer]:
+        - img [ref=e23]
+        - text: Research
+      - generic [ref=e26] [cursor=pointer]:
+        - img [ref=e27]
+        - text: Monitor
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - generic [ref=e32]: BR3 The Band
+          - generic [ref=e33]: Dashboard
+        - generic [ref=e34]:
+          - generic [ref=e36]: "Tokens: 204k"
+          - generic [ref=e39]: "SSE: 2"
+          - generic [ref=e40]: "Uptime: 10m"
+          - generic [ref=e41]: ⌘K
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - generic [ref=e44]: Cluster
+          - button "Reset All" [ref=e45] [cursor=pointer]
+        - generic [ref=e46]:
+          - generic [ref=e47] [cursor=pointer]:
+            - button "⋮ Actions" [ref=e48]
+            - generic [ref=e49]:
+              - generic [ref=e50]: Online
+              - generic [ref=e51]: Muddy
+              - img [ref=e52]: Muddy online — click to reset
+              - img [ref=e54]: Plugged in
+              - generic [ref=e56]: M5
+            - generic [ref=e57]: Command · 10.0.1.100
+            - generic [ref=e58]: idle
+            - generic [ref=e60]:
+              - generic [ref=e61]: CPU
+              - generic [ref=e62]: 3.474%
+            - generic [ref=e66]:
+              - generic [ref=e67]: MEM
+              - generic [ref=e68]: 56%
+          - generic [ref=e71] [cursor=pointer]:
+            - button "⋮ Actions" [ref=e72]
+            - generic [ref=e73]:
+              - generic [ref=e74]: Online
+              - generic [ref=e75]: Lockwood
+              - img [ref=e76]: Lockwood online — click to reset
+              - img [ref=e78]: Plugged in
+              - generic [ref=e80]: M2
+            - generic [ref=e81]: Memory · 10.0.1.101
+            - generic [ref=e82]: idle
+            - generic [ref=e84]:
+              - generic [ref=e85]: CPU
+              - generic [ref=e86]: 2.07%
+            - generic [ref=e90]:
+              - generic [ref=e91]: MEM
+              - generic [ref=e92]: 49%
+          - generic [ref=e95] [cursor=pointer]:
+            - button "⋮ Actions" [ref=e96]
+            - generic [ref=e97]:
+              - generic [ref=e98]: Online
+              - generic [ref=e99]: Walter
+              - img [ref=e100]: Walter online — click to reset
+              - img [ref=e102]: Plugged in
+              - generic [ref=e104]: M2
+            - generic [ref=e105]: Sentinel · 10.0.1.102
+            - generic [ref=e106]: idle
+            - generic [ref=e108]:
+              - generic [ref=e109]: CPU
+              - generic [ref=e110]: 1.3%
+            - generic [ref=e114]:
+              - generic [ref=e115]: MEM
+              - generic [ref=e116]: 49%
+          - generic [ref=e119] [cursor=pointer]:
+            - button "⋮ Actions" [ref=e120]
+            - generic [ref=e121]:
+              - generic [ref=e122]: Online
+              - generic [ref=e123]: Otis
+              - img [ref=e124]: Otis online — click to reset
+              - img [ref=e126]: Plugged in
+              - generic [ref=e128]: M2
+            - generic [ref=e129]: Builder · 10.0.1.103
+            - generic [ref=e130]: idle
+            - generic [ref=e132]:
+              - generic [ref=e133]: CPU
+              - generic [ref=e134]: 1.23%
+            - generic [ref=e138]:
+              - generic [ref=e139]: MEM
+              - generic [ref=e140]: 39%
+          - generic [ref=e143] [cursor=pointer]:
+            - button "⋮ Actions" [ref=e144]
+            - generic [ref=e145]:
+              - generic [ref=e146]: Online
+              - generic [ref=e147]: Lomax
+              - img [ref=e148]: Lomax online — click to reset
+              - img [ref=e150]: Plugged in
+              - generic [ref=e152]: M2
+            - generic [ref=e153]: Forge · 10.0.1.104
+            - generic [ref=e154]: idle
+            - generic [ref=e156]:
+              - generic [ref=e157]: CPU
+              - generic [ref=e158]: 1.74%
+            - generic [ref=e162]:
+              - generic [ref=e163]: MEM
+              - generic [ref=e164]: 35%
+          - generic [ref=e167] [cursor=pointer]:
+            - button "⋮ Actions" [ref=e168]
+            - generic [ref=e169]:
+              - generic [ref=e170]: Online
+              - generic [ref=e171]: Below
+              - img [ref=e172]: Below online — click to reset
+              - img [ref=e174]: Plugged in
+              - generic [ref=e176]: Win
+            - generic [ref=e177]: Workhorse · 10.0.1.105
+            - generic [ref=e178]: idle
+            - generic [ref=e180]:
+              - generic [ref=e181]: CPU
+              - generic [ref=e182]: 0%
+            - generic [ref=e185]:
+              - generic [ref=e186]: MEM
+              - generic [ref=e187]: 14.7%
+        - generic [ref=e190]:
+          - generic [ref=e191]:
+            - generic [ref=e192]: Active Builds
+            - generic [ref=e193]: "3"
+            - generic [ref=e194]: 24 total
+          - generic "Click for account details" [ref=e195] [cursor=pointer]:
+            - generic [ref=e196]:
+              - generic [ref=e197]: Tokens Used
+              - button "SWAP" [ref=e198]
+            - generic [ref=e199]: 40%
+            - generic [ref=e200]: B · B:40% B:243% B:133%
+          - generic [ref=e201]:
+            - generic [ref=e202]: Sessions
+            - generic [ref=e203]: "0"
+            - generic [ref=e204]: none
+          - generic [ref=e205]:
+            - generic [ref=e206]: Reviews
+            - generic [ref=e207]: "0"
+            - generic [ref=e208]: pending
+        - generic [ref=e209]:
+          - generic [ref=e210]:
+            - generic [ref=e211]:
+              - text: Alerts
+              - generic [ref=e212]: "0"
+            - generic [ref=e214]: No alerts
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - text: Active Builds
+              - generic [ref=e217]: 7 (+17 done)
+              - button "Dispatch All" [ref=e218] [cursor=pointer]
+              - button "Show completed (17)" [ref=e219] [cursor=pointer]
+            - table [ref=e221]:
+              - rowgroup [ref=e231]:
+                - row "Build Status Phase Node Progress Updated Health" [ref=e232]:
+                  - columnheader "Build" [ref=e233]
+                  - columnheader "Status" [ref=e234]
+                  - columnheader "Phase" [ref=e235]
+                  - columnheader "Node" [ref=e236]
+                  - columnheader "Progress" [ref=e237]
+                  - columnheader "Updated" [ref=e238]
+                  - columnheader "Health" [ref=e239]
+                  - columnheader [ref=e240]
+              - rowgroup [ref=e241]:
+                - row "design-spec-consumer pending 2/12 muddy 17% 5m ago 100% − -- Dispatch ⋮" [ref=e242]:
+                  - cell "design-spec-consumer" [ref=e243]:
+                    - link "design-spec-consumer" [ref=e244] [cursor=pointer]:
+                      - /url: "#"
+                  - cell "pending" [ref=e245]:
+                    - generic [ref=e246]: pending
+                  - cell "2/12" [ref=e247]
+                  - cell "muddy" [ref=e248]
+                  - cell "17%" [ref=e249]: 17%
+                  - cell "5m ago" [ref=e252]
+                  - cell "100% − --" [ref=e253]:
+                    - generic [ref=e256] [cursor=pointer]: 100% − --
+                  - cell "Dispatch ⋮" [ref=e257]:
+                    - button "Dispatch" [ref=e258] [cursor=pointer]
+                    - button "⋮" [ref=e259] [cursor=pointer]
+                - row "workflodock-intake registered -- muddy 0% 17m ago 0% − -- Dispatch ⋮" [ref=e260]:
+                  - cell "workflodock-intake" [ref=e261]:
+                    - link "workflodock-intake" [ref=e262] [cursor=pointer]:
+                      - /url: "#"
+                  - cell "registered" [ref=e263]:
+                    - generic [ref=e264]: registered
+                  - cell "--" [ref=e265]
+                  - cell "muddy" [ref=e266]
+                  - cell "0%" [ref=e267]: 0%
+                  - cell "17m ago" [ref=e269]
+                  - cell "0% − --" [ref=e270]:
+                    - generic [ref=e273] [cursor=pointer]: 0% − --
+                  - cell "Dispatch ⋮" [ref=e274]:
+                    - button "Dispatch" [ref=e275] [cursor=pointer]
+                    - button "⋮" [ref=e276] [cursor=pointer]
+                - row "workfloDock:synapse-integration registered -- muddy 0% 17m ago 100% − -- Dispatch ⋮" [ref=e277]:
+                  - cell "workfloDock:synapse-integration" [ref=e278]:
+                    - link "workfloDock:synapse-integration" [ref=e279] [cursor=pointer]:
+                      - /url: "#"
+                  - cell "registered" [ref=e280]:
+                    - generic [ref=e281]: registered
+                  - cell "--" [ref=e282]
+                  - cell "muddy" [ref=e283]
+                  - cell "0%" [ref=e284]: 0%
+                  - cell "17m ago" [ref=e286]
+                  - cell "100% − --" [ref=e287]:
+                    - generic [ref=e290] [cursor=pointer]: 100% − --
+                  - cell "Dispatch ⋮" [ref=e291]:
+                    - button "Dispatch" [ref=e292] [cursor=pointer]
+                    - button "⋮" [ref=e293] [cursor=pointer]
+                - row "sales-assistant:BUILD_outreach-engine pending 16/24 -- 67% 17m ago 100% − -- Dispatch ⋮" [ref=e294]:
+                  - cell "sales-assistant:BUILD_outreach-engine" [ref=e295]:
+                    - link "sales-assistant:BUILD_outreach-engine" [ref=e296] [cursor=pointer]:
+                      - /url: "#"
+                  - cell "pending" [ref=e297]:
+                    - generic [ref=e298]: pending
+                  - cell "16/24" [ref=e299]
+                  - cell "--" [ref=e300]
+                  - cell "67%" [ref=e301]: 67%
+                  - cell "17m ago" [ref=e304]
+                  - cell "100% − --" [ref=e305]:
+                    - generic [ref=e308] [cursor=pointer]: 100% − --
+                  - cell "Dispatch ⋮" [ref=e309]:
+                    - button "Dispatch" [ref=e310] [cursor=pointer]
+                    - button "⋮" [ref=e311] [cursor=pointer]
+                - row "geo-command-center:BUILD_geo-command-center pending 37/38 -- 97% 17m ago 100% − -- Dispatch ⋮" [ref=e312]:
+                  - cell "geo-command-center:BUILD_geo-command-center" [ref=e313]:
+                    - link "geo-command-center:BUILD_geo-command-center" [ref=e314] [cursor=pointer]:
+                      - /url: "#"
+                  - cell "pending" [ref=e315]:
+                    - generic [ref=e316]: pending
+                  - cell "37/38" [ref=e317]
+                  - cell "--" [ref=e318]
+                  - cell "97%" [ref=e319]: 97%
+                  - cell "17m ago" [ref=e322]
+                  - cell "100% − --" [ref=e323]:
+                    - generic [ref=e326] [cursor=pointer]: 100% − --
+                  - cell "Dispatch ⋮" [ref=e327]:
+                    - button "Dispatch" [ref=e328] [cursor=pointer]
+                    - button "⋮" [ref=e329] [cursor=pointer]
+                - row "geo-command-center:BUILD_geo-coach registered -- -- 0% 17m ago 100% − -- Dispatch ⋮" [ref=e330]:
+                  - cell "geo-command-center:BUILD_geo-coach" [ref=e331]:
+                    - link "geo-command-center:BUILD_geo-coach" [ref=e332] [cursor=pointer]:
+                      - /url: "#"
+                  - cell "registered" [ref=e333]:
+                    - generic [ref=e334]: registered
+                  - cell "--" [ref=e335]
+                  - cell "--" [ref=e336]
+                  - cell "0%" [ref=e337]: 0%
+                  - cell "17m ago" [ref=e339]
+                  - cell "100% − --" [ref=e340]:
+                    - generic [ref=e343] [cursor=pointer]: 100% − --
+                  - cell "Dispatch ⋮" [ref=e344]:
+                    - button "Dispatch" [ref=e345] [cursor=pointer]
+                    - button "⋮" [ref=e346] [cursor=pointer]
+                - row "BuildRunner3:BUILD_walter-auto-provision registered -- -- 0% 17m ago 100% − -- Dispatch ⋮" [ref=e347]:
+                  - cell "BuildRunner3:BUILD_walter-auto-provision" [ref=e348]:
+                    - link "BuildRunner3:BUILD_walter-auto-provision" [ref=e349] [cursor=pointer]:
+                      - /url: "#"
+                  - cell "registered" [ref=e350]:
+                    - generic [ref=e351]: registered
+                  - cell "--" [ref=e352]
+                  - cell "--" [ref=e353]
+                  - cell "0%" [ref=e354]: 0%
+                  - cell "17m ago" [ref=e356]
+                  - cell "100% − --" [ref=e357]:
+                    - generic [ref=e360] [cursor=pointer]: 100% − --
+                  - cell "Dispatch ⋮" [ref=e361]:
+                    - button "Dispatch" [ref=e362] [cursor=pointer]
+                    - button "⋮" [ref=e363] [cursor=pointer]
+          - generic [ref=e364]:
+            - generic [ref=e365]: Build DAG
+            - generic [ref=e366]:
+              - generic [ref=e367]:
+                - generic [ref=e368]:
+                  - generic [ref=e369] [cursor=pointer]: workfloDock:synapse-..
+                  - generic [ref=e370] [cursor=pointer]: sales-assistant:BUIL..
+                  - generic [ref=e372] [cursor=pointer]: geo-command-center:B..
+                  - generic [ref=e374] [cursor=pointer]: geo-command-center:B..
+                  - generic [ref=e375] [cursor=pointer]: BuildRunner3:BUILD_w..
+                - generic [ref=e376]: →
+                - generic [ref=e378] [cursor=pointer]: workflodock-intake
+                - generic [ref=e379]: →
+                - generic [ref=e381] [cursor=pointer]: design-spec-consumer
+              - generic [ref=e383]: workflodock-intake → design-spec-consumer synapse-integration → workflodock-intake
+          - generic [ref=e384]:
+            - generic [ref=e385]:
+              - text: Sessions
+              - generic [ref=e386]: "8"
+              - button "Refresh" [ref=e387] [cursor=pointer]
+            - generic [ref=e389]:
+              - generic [ref=e390] [cursor=pointer]:
+                - generic [ref=e391]:
+                  - generic [ref=e392]: muddy
+                  - generic [ref=e393]: active
+                - generic [ref=e394]: BuildRunner3
+                - generic [ref=e395]:
+                  - generic [ref=e396]: main
+                  - generic [ref=e397]: 2:53.71
+                - generic [ref=e398]: CPU 13.1% · MEM 1.4%
+              - generic [ref=e399] [cursor=pointer]:
+                - generic [ref=e400]:
+                  - generic [ref=e401]: muddy
+                  - generic [ref=e402]: active
+                - generic [ref=e403]: BuildRunner3
+                - generic [ref=e404]:
+                  - generic [ref=e405]: main
+                  - generic [ref=e406]: 1:23.76
+                - generic [ref=e407]: CPU 5.3% · MEM 1.4%
+              - generic [ref=e408] [cursor=pointer]:
+                - generic [ref=e409]:
+                  - generic [ref=e410]: muddy
+                  - generic [ref=e411]: active
+                - generic [ref=e412]: BuildRunner3
+                - generic [ref=e413]:
+                  - generic [ref=e414]: main
+                  - generic [ref=e415]: 4:38.58
+                - generic [ref=e416]: CPU 4% · MEM 0.3%
+              - generic [ref=e417] [cursor=pointer]:
+                - generic [ref=e418]:
+                  - generic [ref=e419]: muddy
+                  - generic [ref=e420]: active
+                - generic [ref=e421]: BuildRunner3
+                - generic [ref=e422]:
+                  - generic [ref=e423]: main
+                  - generic [ref=e424]: 2:38.99
+                - generic [ref=e425]: CPU 0.4% · MEM 0.8%
+              - generic [ref=e426] [cursor=pointer]:
+                - generic [ref=e427]:
+                  - generic [ref=e428]: muddy
+                  - generic [ref=e429]: zombie
+                - generic [ref=e430]: trailsync
+                - generic [ref=e431]:
+                  - generic [ref=e432]: fix/trip-detail-lightweight-query
+                  - generic [ref=e433]: 0:33.65
+                - generic [ref=e434]: CPU 0% · MEM 0.6%
+              - generic [ref=e435] [cursor=pointer]:
+                - generic [ref=e436]:
+                  - generic [ref=e437]: muddy
+                  - generic [ref=e438]: zombie
+                - generic [ref=e439]: workfloDock
+                - generic [ref=e440]:
+                  - generic [ref=e441]: main
+                  - generic [ref=e442]: 1:05.08
+                - generic [ref=e443]: CPU 0% · MEM 0.3%
+              - generic [ref=e444] [cursor=pointer]:
+                - generic [ref=e445]:
+                  - generic [ref=e446]: muddy
+                  - generic [ref=e447]: zombie
+                - generic [ref=e448]: BuildRunner3
+                - generic [ref=e449]:
+                  - generic [ref=e450]: main
+                  - generic [ref=e451]: 0:54.61
+                - generic [ref=e452]: CPU 0% · MEM 0.3%
+              - generic [ref=e453] [cursor=pointer]:
+                - generic [ref=e454]:
+                  - generic [ref=e455]: muddy
+                  - generic [ref=e456]: zombie
+                - generic [ref=e457]: workfloDock
+                - generic [ref=e458]:
+                  - generic [ref=e459]: main
+                  - generic [ref=e460]: 1:25.68
+                - generic [ref=e461]: CPU 0% · MEM 0.3%
+          - generic [ref=e462]:
+            - generic [ref=e463]:
+              - text: Review Queue
+              - generic [ref=e464]: "0"
+              - button "Refresh" [ref=e465] [cursor=pointer]
+            - generic [ref=e467]: No pending reviews
+          - generic [ref=e468]:
+            - generic [ref=e469]:
+              - text: Event Log
+              - generic [ref=e470]: "100"
+              - generic [ref=e471]:
+                - combobox [ref=e472] [cursor=pointer]:
+                  - option "All types" [selected]
+                  - option "dashboard.action"
+                  - option "log.analysis.alert"
+                  - option "session.update"
+                  - option "usage.warning"
+                - combobox [ref=e473] [cursor=pointer]:
+                  - option "All time" [selected]
+                  - option "Last 1h"
+                  - option "Last 6h"
+                  - option "Last 24h"
+            - generic [ref=e475]:
+              - generic [ref=e476] [cursor=pointer]:
+                - generic [ref=e477]: 15:01:18
+                - generic [ref=e478]: session.update
+                - generic [ref=e479]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e480] [cursor=pointer]:
+                - generic [ref=e481]: 15:01:03
+                - generic [ref=e482]: session.update
+                - generic [ref=e483]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e484] [cursor=pointer]:
+                - generic [ref=e485]: 15:00:48
+                - generic [ref=e486]: session.update
+                - generic [ref=e487]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e488] [cursor=pointer]:
+                - generic [ref=e489]: 15:00:33
+                - generic [ref=e490]: session.update
+                - generic [ref=e491]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e492] [cursor=pointer]:
+                - generic [ref=e493]: 15:00:18
+                - generic [ref=e494]: session.update
+                - generic [ref=e495]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e496] [cursor=pointer]:
+                - generic [ref=e497]: 15:00:03
+                - generic [ref=e498]: session.update
+                - generic [ref=e499]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e500] [cursor=pointer]:
+                - generic [ref=e501]: 14:59:48
+                - generic [ref=e502]: session.update
+                - generic [ref=e503]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e504] [cursor=pointer]:
+                - generic [ref=e505]: 14:59:33
+                - generic [ref=e506]: session.update
+                - generic [ref=e507]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e508] [cursor=pointer]:
+                - generic [ref=e509]: 14:59:18
+                - generic [ref=e510]: session.update
+                - generic [ref=e511]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e512] [cursor=pointer]:
+                - generic [ref=e513]: 14:59:03
+                - generic [ref=e514]: session.update
+                - generic [ref=e515]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e516] [cursor=pointer]:
+                - generic [ref=e517]: 14:58:48
+                - generic [ref=e518]: session.update
+                - generic [ref=e519]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e520] [cursor=pointer]:
+                - generic [ref=e521]: 14:58:33
+                - generic [ref=e522]: session.update
+                - generic [ref=e523]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e524] [cursor=pointer]:
+                - generic [ref=e525]: 14:58:18
+                - generic [ref=e526]: session.update
+                - generic [ref=e527]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e528] [cursor=pointer]:
+                - generic [ref=e529]: 14:58:03
+                - generic [ref=e530]: session.update
+                - generic [ref=e531]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e532] [cursor=pointer]:
+                - generic [ref=e533]: 14:57:48
+                - generic [ref=e534]: session.update
+                - generic [ref=e535]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e536] [cursor=pointer]:
+                - generic [ref=e537]: 14:57:33
+                - generic [ref=e538]: session.update
+                - generic [ref=e539]: "sessions-integration · {\"count\":9,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e540] [cursor=pointer]:
+                - generic [ref=e541]: 14:57:18
+                - generic [ref=e542]: session.update
+                - generic [ref=e543]: "sessions-integration · {\"count\":9,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e544] [cursor=pointer]:
+                - generic [ref=e545]: 14:57:04
+                - generic [ref=e546]: session.update
+                - generic [ref=e547]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner..."
+              - generic [ref=e548] [cursor=pointer]:
+                - generic [ref=e549]: 14:56:48
+                - generic [ref=e550]: session.update
+                - generic [ref=e551]: "sessions-integration · {\"count\":9,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e552] [cursor=pointer]:
+                - generic [ref=e553]: 14:56:33
+                - generic [ref=e554]: session.update
+                - generic [ref=e555]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner..."
+              - generic [ref=e556] [cursor=pointer]:
+                - generic [ref=e557]: 14:56:18
+                - generic [ref=e558]: session.update
+                - generic [ref=e559]: "sessions-integration · {\"count\":16,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e560] [cursor=pointer]:
+                - generic [ref=e561]: 14:56:04
+                - generic [ref=e562]: session.update
+                - generic [ref=e563]: "sessions-integration · {\"count\":16,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e564] [cursor=pointer]:
+                - generic [ref=e565]: 14:56:01
+                - generic [ref=e566]: dashboard.action
+                - generic [ref=e567]: "dashboard · {\"action\":\"builds.dispatch-all\",\"method\":\"dispatch-to-node\",\"dispatched\":[{\"buil..."
+              - generic [ref=e568] [cursor=pointer]:
+                - generic [ref=e569]: 14:55:48
+                - generic [ref=e570]: session.update
+                - generic [ref=e571]: "sessions-integration · {\"count\":17,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e572] [cursor=pointer]:
+                - generic [ref=e573]: 14:55:33
+                - generic [ref=e574]: session.update
+                - generic [ref=e575]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e576] [cursor=pointer]:
+                - generic [ref=e577]: 14:55:18
+                - generic [ref=e578]: session.update
+                - generic [ref=e579]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e580] [cursor=pointer]:
+                - generic [ref=e581]: 14:55:03
+                - generic [ref=e582]: session.update
+                - generic [ref=e583]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e584] [cursor=pointer]:
+                - generic [ref=e585]: 14:54:48
+                - generic [ref=e586]: session.update
+                - generic [ref=e587]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e588] [cursor=pointer]:
+                - generic [ref=e589]: 14:54:33
+                - generic [ref=e590]: session.update
+                - generic [ref=e591]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e592] [cursor=pointer]:
+                - generic [ref=e593]: 14:54:18
+                - generic [ref=e594]: session.update
+                - generic [ref=e595]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e596] [cursor=pointer]:
+                - generic [ref=e597]: 14:54:03
+                - generic [ref=e598]: session.update
+                - generic [ref=e599]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e600] [cursor=pointer]:
+                - generic [ref=e601]: 14:53:48
+                - generic [ref=e602]: session.update
+                - generic [ref=e603]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e604] [cursor=pointer]:
+                - generic [ref=e605]: 14:53:33
+                - generic [ref=e606]: session.update
+                - generic [ref=e607]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e608] [cursor=pointer]:
+                - generic [ref=e609]: 14:53:18
+                - generic [ref=e610]: session.update
+                - generic [ref=e611]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e612] [cursor=pointer]:
+                - generic [ref=e613]: 14:53:03
+                - generic [ref=e614]: session.update
+                - generic [ref=e615]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e616] [cursor=pointer]:
+                - generic [ref=e617]: 14:52:48
+                - generic [ref=e618]: session.update
+                - generic [ref=e619]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e620] [cursor=pointer]:
+                - generic [ref=e621]: 14:52:33
+                - generic [ref=e622]: session.update
+                - generic [ref=e623]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e624] [cursor=pointer]:
+                - generic [ref=e625]: 14:52:18
+                - generic [ref=e626]: session.update
+                - generic [ref=e627]: "sessions-integration · {\"count\":15,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e628] [cursor=pointer]:
+                - generic [ref=e629]: 14:52:03
+                - generic [ref=e630]: session.update
+                - generic [ref=e631]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e632] [cursor=pointer]:
+                - generic [ref=e633]: 14:51:48
+                - generic [ref=e634]: session.update
+                - generic [ref=e635]: "sessions-integration · {\"count\":23,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e636] [cursor=pointer]:
+                - generic [ref=e637]: 14:51:33
+                - generic [ref=e638]: session.update
+                - generic [ref=e639]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e640] [cursor=pointer]:
+                - generic [ref=e641]: 14:51:18
+                - generic [ref=e642]: session.update
+                - generic [ref=e643]: "sessions-integration · {\"count\":23,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e644] [cursor=pointer]:
+                - generic [ref=e645]: 14:51:17
+                - generic [ref=e646]: usage.warning
+                - generic [ref=e647]: "usage-integration · {\"node\":\"lomax\",\"pct_used\":133,\"estimated_tokens\":666000,\"daily_limit\":500000,\"s..."
+              - generic [ref=e648] [cursor=pointer]:
+                - generic [ref=e649]: 14:51:17
+                - generic [ref=e650]: usage.warning
+                - generic [ref=e651]: "usage-integration · {\"node\":\"otis\",\"pct_used\":219,\"estimated_tokens\":1098000,\"daily_limit\":500000,\"s..."
+              - generic [ref=e652] [cursor=pointer]:
+                - generic [ref=e653]: 14:51:04
+                - generic [ref=e654]: session.update
+                - generic [ref=e655]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e656] [cursor=pointer]:
+                - generic [ref=e657]: 14:50:49
+                - generic [ref=e658]: session.update
+                - generic [ref=e659]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e660] [cursor=pointer]:
+                - generic [ref=e661]: 14:50:34
+                - generic [ref=e662]: session.update
+                - generic [ref=e663]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e664] [cursor=pointer]:
+                - generic [ref=e665]: 14:50:19
+                - generic [ref=e666]: session.update
+                - generic [ref=e667]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e668] [cursor=pointer]:
+                - generic [ref=e669]: 14:50:04
+                - generic [ref=e670]: session.update
+                - generic [ref=e671]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e672] [cursor=pointer]:
+                - generic [ref=e673]: 14:49:49
+                - generic [ref=e674]: session.update
+                - generic [ref=e675]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e676] [cursor=pointer]:
+                - generic [ref=e677]: 14:49:34
+                - generic [ref=e678]: session.update
+                - generic [ref=e679]: "sessions-integration · {\"count\":23,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e680] [cursor=pointer]:
+                - generic [ref=e681]: 14:49:19
+                - generic [ref=e682]: session.update
+                - generic [ref=e683]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e684] [cursor=pointer]:
+                - generic [ref=e685]: 14:49:04
+                - generic [ref=e686]: session.update
+                - generic [ref=e687]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e688] [cursor=pointer]:
+                - generic [ref=e689]: 14:48:49
+                - generic [ref=e690]: session.update
+                - generic [ref=e691]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e692] [cursor=pointer]:
+                - generic [ref=e693]: 14:48:34
+                - generic [ref=e694]: session.update
+                - generic [ref=e695]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e696] [cursor=pointer]:
+                - generic [ref=e697]: 14:48:19
+                - generic [ref=e698]: session.update
+                - generic [ref=e699]: "sessions-integration · {\"count\":23,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e700] [cursor=pointer]:
+                - generic [ref=e701]: 14:48:04
+                - generic [ref=e702]: session.update
+                - generic [ref=e703]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e704] [cursor=pointer]:
+                - generic [ref=e705]: 14:47:49
+                - generic [ref=e706]: session.update
+                - generic [ref=e707]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e708] [cursor=pointer]:
+                - generic [ref=e709]: 14:47:34
+                - generic [ref=e710]: session.update
+                - generic [ref=e711]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e712] [cursor=pointer]:
+                - generic [ref=e713]: 14:47:19
+                - generic [ref=e714]: session.update
+                - generic [ref=e715]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e716] [cursor=pointer]:
+                - generic [ref=e717]: 14:47:04
+                - generic [ref=e718]: session.update
+                - generic [ref=e719]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e720] [cursor=pointer]:
+                - generic [ref=e721]: 14:46:49
+                - generic [ref=e722]: session.update
+                - generic [ref=e723]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e724] [cursor=pointer]:
+                - generic [ref=e725]: 14:46:34
+                - generic [ref=e726]: session.update
+                - generic [ref=e727]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e728] [cursor=pointer]:
+                - generic [ref=e729]: 14:46:19
+                - generic [ref=e730]: session.update
+                - generic [ref=e731]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e732] [cursor=pointer]:
+                - generic [ref=e733]: 14:46:04
+                - generic [ref=e734]: session.update
+                - generic [ref=e735]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e736] [cursor=pointer]:
+                - generic [ref=e737]: 14:45:49
+                - generic [ref=e738]: session.update
+                - generic [ref=e739]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e740] [cursor=pointer]:
+                - generic [ref=e741]: 14:45:34
+                - generic [ref=e742]: session.update
+                - generic [ref=e743]: "sessions-integration · {\"count\":22,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e744] [cursor=pointer]:
+                - generic [ref=e745]: 14:45:19
+                - generic [ref=e746]: session.update
+                - generic [ref=e747]: "sessions-integration · {\"count\":23,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e748] [cursor=pointer]:
+                - generic [ref=e749]: 14:45:04
+                - generic [ref=e750]: session.update
+                - generic [ref=e751]: "sessions-integration · {\"count\":26,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e752] [cursor=pointer]:
+                - generic [ref=e753]: 14:44:49
+                - generic [ref=e754]: session.update
+                - generic [ref=e755]: "sessions-integration · {\"count\":26,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e756] [cursor=pointer]:
+                - generic [ref=e757]: 14:44:34
+                - generic [ref=e758]: session.update
+                - generic [ref=e759]: "sessions-integration · {\"count\":26,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e760] [cursor=pointer]:
+                - generic [ref=e761]: 14:44:19
+                - generic [ref=e762]: session.update
+                - generic [ref=e763]: "sessions-integration · {\"count\":26,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e764] [cursor=pointer]:
+                - generic [ref=e765]: 14:44:04
+                - generic [ref=e766]: session.update
+                - generic [ref=e767]: "sessions-integration · {\"count\":19,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+              - generic [ref=e768] [cursor=pointer]:
+                - generic [ref=e769]: 14:43:49
+                - generic [ref=e770]: session.update
+                - generic [ref=e771]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner..."
+              - generic [ref=e772] [cursor=pointer]:
+                - generic [ref=e773]: 14:43:35
+                - generic [ref=e774]: dashboard.action
+                - generic [ref=e775]: "dashboard · {\"action\":\"builds.dispatch-all\",\"method\":\"autopilot-cluster\",\"dispatched\":[{\"pro..."
+              - generic [ref=e776] [cursor=pointer]:
+                - generic [ref=e777]: 14:43:33
+                - generic [ref=e778]: session.update
+                - generic [ref=e779]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e780] [cursor=pointer]:
+                - generic [ref=e781]: 14:43:19
+                - generic [ref=e782]: session.update
+                - generic [ref=e783]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e784] [cursor=pointer]:
+                - generic [ref=e785]: 14:43:03
+                - generic [ref=e786]: session.update
+                - generic [ref=e787]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e788] [cursor=pointer]:
+                - generic [ref=e789]: 14:42:48
+                - generic [ref=e790]: session.update
+                - generic [ref=e791]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e792] [cursor=pointer]:
+                - generic [ref=e793]: 14:42:33
+                - generic [ref=e794]: session.update
+                - generic [ref=e795]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e796] [cursor=pointer]:
+                - generic [ref=e797]: 14:42:18
+                - generic [ref=e798]: session.update
+                - generic [ref=e799]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e800] [cursor=pointer]:
+                - generic [ref=e801]: 14:42:03
+                - generic [ref=e802]: session.update
+                - generic [ref=e803]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e804] [cursor=pointer]:
+                - generic [ref=e805]: 14:41:48
+                - generic [ref=e806]: session.update
+                - generic [ref=e807]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e808] [cursor=pointer]:
+                - generic [ref=e809]: 14:41:33
+                - generic [ref=e810]: session.update
+                - generic [ref=e811]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e812] [cursor=pointer]:
+                - generic [ref=e813]: 14:41:19
+                - generic [ref=e814]: session.update
+                - generic [ref=e815]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e816] [cursor=pointer]:
+                - generic [ref=e817]: 14:41:03
+                - generic [ref=e818]: session.update
+                - generic [ref=e819]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e820] [cursor=pointer]:
+                - generic [ref=e821]: 14:40:49
+                - generic [ref=e822]: session.update
+                - generic [ref=e823]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e824] [cursor=pointer]:
+                - generic [ref=e825]: 14:40:33
+                - generic [ref=e826]: session.update
+                - generic [ref=e827]: "sessions-integration · {\"count\":9,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e828] [cursor=pointer]:
+                - generic [ref=e829]: 14:40:19
+                - generic [ref=e830]: session.update
+                - generic [ref=e831]: "sessions-integration · {\"count\":9,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e832] [cursor=pointer]:
+                - generic [ref=e833]: 14:40:03
+                - generic [ref=e834]: session.update
+                - generic [ref=e835]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e836] [cursor=pointer]:
+                - generic [ref=e837]: 14:39:48
+                - generic [ref=e838]: session.update
+                - generic [ref=e839]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e840] [cursor=pointer]:
+                - generic [ref=e841]: 14:39:33
+                - generic [ref=e842]: session.update
+                - generic [ref=e843]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e844] [cursor=pointer]:
+                - generic [ref=e845]: 14:39:18
+                - generic [ref=e846]: session.update
+                - generic [ref=e847]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e848] [cursor=pointer]:
+                - generic [ref=e849]: 14:39:03
+                - generic [ref=e850]: session.update
+                - generic [ref=e851]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e852] [cursor=pointer]:
+                - generic [ref=e853]: 14:38:48
+                - generic [ref=e854]: session.update
+                - generic [ref=e855]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e856] [cursor=pointer]:
+                - generic [ref=e857]: 14:38:33
+                - generic [ref=e858]: session.update
+                - generic [ref=e859]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e860] [cursor=pointer]:
+                - generic [ref=e861]: 14:38:19
+                - generic [ref=e862]: session.update
+                - generic [ref=e863]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e864] [cursor=pointer]:
+                - generic [ref=e865]: 14:38:05
+                - generic [ref=e866]: session.update
+                - generic [ref=e867]: "sessions-integration · {\"count\":9,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"--\",\"state\":..."
+              - generic [ref=e868] [cursor=pointer]:
+                - generic [ref=e869]: 14:37:48
+                - generic [ref=e870]: session.update
+                - generic [ref=e871]: "sessions-integration · {\"count\":8,\"nodes\":[\"muddy\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"BuildRunner3..."
+              - generic [ref=e872] [cursor=pointer]:
+                - generic [ref=e873]: 14:37:35
+                - generic [ref=e874]: log.analysis.alert
+                - generic [ref=e875]: "log-analysis · \"{\\\"pattern_type\\\": \\\"runtime_error\\\", \\\"severity\\\": \\\"high\\\", \\\"description\\\": ..."
+          - generic [ref=e876]:
+            - generic [ref=e877]: Node Health
+            - generic [ref=e878]:
+              - generic [ref=e879]:
+                - generic [ref=e880]: muddy
+                - generic [ref=e882]:
+                  - generic [ref=e883]: CPU
+                  - generic [ref=e884]: 3.474%
+                - generic [ref=e888]:
+                  - generic [ref=e889]: Memory
+                  - generic [ref=e890]: 56%
+              - generic [ref=e893]:
+                - generic [ref=e894]: lockwood
+                - generic [ref=e896]:
+                  - generic [ref=e897]: CPU
+                  - generic [ref=e898]: 2.07%
+                - generic [ref=e902]:
+                  - generic [ref=e903]: Memory
+                  - generic [ref=e904]: 49%
+              - generic [ref=e907]:
+                - generic [ref=e908]: walter
+                - generic [ref=e910]:
+                  - generic [ref=e911]: CPU
+                  - generic [ref=e912]: 1.3%
+                - generic [ref=e916]:
+                  - generic [ref=e917]: Memory
+                  - generic [ref=e918]: 49%
+              - generic [ref=e921]:
+                - generic [ref=e922]: otis
+                - generic [ref=e924]:
+                  - generic [ref=e925]: CPU
+                  - generic [ref=e926]: 1.23%
+                - generic [ref=e930]:
+                  - generic [ref=e931]: Memory
+                  - generic [ref=e932]: 39%
+              - generic [ref=e935]:
+                - generic [ref=e936]: lomax
+                - generic [ref=e938]:
+                  - generic [ref=e939]: CPU
+                  - generic [ref=e940]: 1.74%
+                - generic [ref=e944]:
+                  - generic [ref=e945]: Memory
+                  - generic [ref=e946]: 35%
+              - generic [ref=e949]:
+                - generic [ref=e950]: below
+                - generic [ref=e952]:
+                  - generic [ref=e953]: CPU
+                  - generic [ref=e954]: 0%
+                - generic [ref=e957]:
+                  - generic [ref=e958]: Memory
+                  - generic [ref=e959]: 14.7%
+          - generic [ref=e962]:
+            - generic [ref=e963]:
+              - text: Prod Logs
+              - generic [ref=e964]: "1"
+              - button "Restart" [ref=e965] [cursor=pointer]
+            - generic [ref=e966]:
+              - generic [ref=e967]:
+                - button "All" [ref=e968] [cursor=pointer]
+                - button "Browser" [ref=e969] [cursor=pointer]
+                - button "Supabase" [ref=e970] [cursor=pointer]
+                - button "Device" [ref=e971] [cursor=pointer]
+                - button "Query" [ref=e972] [cursor=pointer]
+              - generic [ref=e974] [cursor=pointer]:
+                - generic [ref=e975]: 14:37:35
+                - generic [ref=e976]: analysis.alert
+                - generic [ref=e977]: "\"{\\\"pattern_type\\\": \\\"runtime_error\\\", \\\"severity\\\": \\\"high\\\", \\\"description\\\": \\\"24 runtime errors: Failed to fetch com"
+          - generic [ref=e978]:
+            - generic [ref=e979]:
+              - text: Decisions
+              - generic [ref=e980]: "0"
+            - generic [ref=e982]: No decisions yet
+          - generic [ref=e983]:
+            - generic [ref=e984]:
+              - text: Recommendations
+              - generic [ref=e985]: "0"
+            - generic [ref=e987]: No recommendations yet
+          - generic [ref=e988]:
+            - generic [ref=e989]: System Health
+            - generic [ref=e991]: Waiting for health data...
+          - generic [ref=e992]:
+            - generic [ref=e993]:
+              - text: Intelligence
+              - generic [ref=e994]: "0"
+              - generic [ref=e995]:
+                - combobox [ref=e996] [cursor=pointer]:
+                  - option "All Sources" [selected]
+                  - option "Official"
+                  - option "Community"
+                  - option "Blog"
+                - combobox [ref=e997] [cursor=pointer]:
+                  - option "All Priority" [selected]
+                  - option "Critical"
+                  - option "High"
+                  - option "Medium"
+                - button "Refresh" [ref=e998] [cursor=pointer]
+            - generic [ref=e1000]: Connecting to Lockwood...
+          - generic [ref=e1001]:
+            - generic [ref=e1002]:
+              - text: Deals
+              - generic [ref=e1003]: "0"
+              - button "Refresh" [ref=e1004] [cursor=pointer]
+            - generic [ref=e1006]: Connecting to Lockwood...
+  - generic:
+    - generic [ref=e1007]: "builds.dispatch-all: done"
+    - generic [ref=e1008]: "builds.dispatch-all: done"

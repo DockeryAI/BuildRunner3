@@ -1,122 +1,110 @@
-# Draft Plan: Walter Sentinel Hardening + Cluster Monitoring
+# Draft Plan: Walter Auto-Provision
 
 ## Problem Statement
 
-Walter (test-runner sentinel, 10.0.1.102) has never successfully tested a single build despite being "wired in" across 39 phases of cluster-build-orchestration. Root cause analysis found 5 compounding failures:
-
-1. **Walter crashes and never restarts** — no LaunchAgent, empty PID file, no auto-recovery
-2. **Repos on Walter are stale** — git pull silently fails, mtime-based change detection misses everything
-3. **Trigger fires into the void** — auto-save-session.sh curls Walter in background with output to /dev/null, no logging, no verification
-4. **Results never block anything** — governance says "block on test failure" but all gates are warnings-only
-5. **Phase 37 marked complete but unbuilt** — no post-receive hook, no Lockwood reporting, no sparklines
-
-Additionally, deep code scan found:
-
-- **22 race conditions** (7 critical) in node_tests.py, events.mjs, dispatch-to-node.sh, walter.mjs
-- **8 dead code blocks** including endpoints nobody calls and functions pushing to non-existent Lockwood endpoints
-- **3 duplicate test dispatch paths** that can race against each other
+Walter watches ~/repos/ but nothing creates repos there for new projects. 41 projects in ~/Projects/, only 4 on Walter (BuildRunner3, Synapse, research-library, workfloDock). auto-save-session.sh pushes to ssh://10.0.1.102/~/repos/$PROJECT but if the bare repo doesn't exist, the push fails silently (2>/dev/null, backgrounded with &). Walter's /api/run only iterates existing directories — unknown projects return "no matching projects found" which gets logged but never surfaced.
 
 ## Scope
 
-Fix Walter permanently. Add cluster-wide monitoring. Make the test pipeline bulletproof from commit to gate.
-
 ### In Scope
 
-- Walter service hardening (LaunchAgent, health, auto-restart)
-- Race condition fixes in node_tests.py (threading locks, queue-based dispatch)
-- Race condition fixes in events.mjs (registry atomicity, SSE safety, dispatch locking)
-- Push-based repo sync replacing broken pull-based polling
-- Git SHA-based change detection replacing fragile mtime detection
-- Dispatch logging and verification (walter-dispatch.log)
-- Blocking test gates in /begin and /commit
-- Phase 37 completion (Lockwood reporting endpoint + Walter push)
-- Dead code removal from node_tests.py and dispatch-to-node.sh
-- Cluster health monitor (LaunchAgent, all 6 nodes, 60s interval)
-- Build monitor (active builds, stall detection, 30s interval)
-- Test pipeline monitor (end-to-end tracing: commit → dispatch → run → results)
-- Auto-remediation agent (restart services, fix repo drift, re-dispatch stalled builds)
-- Dashboard monitoring workspace (ws-monitor.js)
+- Server-side auto-provision on Walter (create bare repos on demand)
+- Client-side error surfacing in auto-save-session.sh
+- Bulk seed of all existing projects to Walter
+- Provision logging and verification
 
 ### Out of Scope
 
-- Rewriting the entire dashboard
-- Changing the cluster topology
-- Adding new cluster nodes
-- Rewriting /autopilot or /begin from scratch
-- Intel pipeline (Phase 36 — separate build)
+- Auto-discovery of new ~/Projects/ directories without a commit hook (filesystem watcher on Muddy)
+- Removing projects from Walter when deleted locally
+- Multi-branch watching (currently only watches `current` ref)
+- Selective test filtering per project (some projects may not have vitest)
+- Changes to Walter's test execution logic (vitest/playwright) — that already works
 
 ## Technical Approach
 
-### Walter Service (node_tests.py)
+### Server-Side (node_tests.py)
 
-- Add `threading.Lock` for `_running`, `_file_hashes`, `_last_results`
-- Replace dual trigger paths (loop + /api/run) with single queue consumer
-- Unique temp files per run (include run_id in path)
-- SQLite write serialization via `_db_lock`
-- Git SHA-based change detection: `git diff --name-only $last_tested_sha..HEAD`
-- Store `last_tested_sha` per repo in SQLite
-- Remove dead endpoints: /api/history, /api/running, /api/testmap/baseline
-- Fix `_push_to_lockwood()` to target correct Lockwood endpoint
+- Add `_ensure_repo(project_name)` helper — runs `git init --bare ~/repos/{project}` if missing, returns path
+- Add `POST /api/provision` endpoint — accepts project name, calls \_ensure_repo, returns status. Idempotent.
+- Modify `/api/run` — when project param is set and directory doesn't exist, call \_ensure_repo so bare repo is ready for the next push
+- New SQLite table `repo_provisions` to track when repos were provisioned
+- Log watched repo count on each watch loop cycle
 
-### Cluster Infrastructure
+### Client-Side (auto-save-session.sh)
 
-- Push-based sync: git remote `walter` on Muddy, push before /api/run trigger
-- Enhanced auto-save-session.sh: log dispatches, verify health, capture response
-- LaunchAgent on Walter: KeepAlive, RunAtLoad, log rotation
-- Enhanced /health endpoint: uptime, last_test_run, repo HEADs, memory
+- Before git push: call `/api/provision?project=$PROJECT` to ensure bare repo exists (one HTTP call, idempotent)
+- Remove `2>/dev/null` from git push — redirect stderr to walter-dispatch.log
+- Remove backgrounding `&` from git push — make synchronous so dispatch only fires after push succeeds
+- Add push exit code check — log error and skip /api/run if push fails
+- Parse /api/run response for error status
 
-### Events & Dispatch (events.mjs, dispatch-to-node.sh)
+### Bulk Seed (walter-seed.sh — NEW)
 
-- Registry read-modify-write atomicity (temp-file-then-rename)
-- Dispatch lock files per node+project
-- SSE broadcast: copy Set before iterating
-- Unique prompt file paths (include buildId + timestamp)
-- Walter.mjs: sequential polling (prevents stacking)
-
-### Gates
-
-- /begin Step 6.5: BLOCK on pass_rate < 1.0 (not just warn)
-- /commit: BLOCK on test failures (allow --force override)
-
-### Monitoring (NEW)
-
-- cluster-health-monitor.mjs — LaunchAgent, 60s, all nodes, logs to .buildrunner/logs/cluster-health.log
-- build-monitor.mjs — LaunchAgent, 30s, active builds, logs to .buildrunner/logs/monitor.log
-- test-pipeline-monitor.mjs — hooks into dispatch log, traces full chain
-- auto-remediate.mjs — triggered by alerts, restarts/syncs/re-dispatches
-- ws-monitor.js — dashboard workspace for all monitoring data
+- Read projects.json, SSH to Walter, git init --bare for each missing repo
+- Push current HEAD from Muddy for each
+- --dry-run and --verify flags
+- Run against all 37 missing projects
 
 ## Files
 
 ### MODIFY
 
-- `core/cluster/node_tests.py` — race fixes, queue, git-SHA detection, dead code removal, /health enhancement
-- `~/.buildrunner/scripts/auto-save-session.sh` — push-based sync, logging, health verification
-- `~/.buildrunner/dashboard/integrations/walter.mjs` — sequential polling, coverage delta fix
-- `~/.buildrunner/dashboard/events.mjs` — registry atomicity, SSE safety, dispatch locking, prompt uniqueness
-- `~/.buildrunner/scripts/dispatch-to-node.sh` — dispatch lock files, remove dead keychain code
-- `~/.claude/commands/begin.md` — blocking test gate at Step 6.5
-- `~/.claude/commands/commit.md` — blocking pre-push test gate
-- `core/cluster/node_semantic.py` — add /api/memory/tests endpoint on Lockwood
+- `core/cluster/node_tests.py` — add /api/provision endpoint, \_ensure_repo helper, modify /api/run, add repo_provisions table
+- `~/.buildrunner/scripts/auto-save-session.sh` — pre-push provision call, error surfacing, synchronous push
 
 ### CREATE (NEW)
 
-- `~/.buildrunner/scripts/cluster-health-monitor.mjs` — node health polling
-- `~/.buildrunner/scripts/build-monitor.mjs` — active build monitoring
-- `~/.buildrunner/scripts/test-pipeline-monitor.mjs` — end-to-end test tracing
-- `~/.buildrunner/scripts/auto-remediate.mjs` — auto-fix detected issues
-- `~/.buildrunner/dashboard/public/js/ws-monitor.js` — monitoring dashboard workspace
-- `~/Library/LaunchAgents/com.br3.walter-sentinel.plist` — Walter auto-restart (deployed to Walter)
-- `~/Library/LaunchAgents/com.br3.cluster-monitor.plist` — monitoring LaunchAgent on Muddy
-- `~/.buildrunner/scripts/walter-setup.sh` — one-shot Walter deployment script
+- `~/.buildrunner/scripts/walter-seed.sh` — bulk provisioning script
+
+## Phases
+
+### Phase 1: Server-Side Auto-Provision
+
+**Files:** core/cluster/node_tests.py (MODIFY)
+**Deliverables:**
+
+- [ ] \_ensure_repo(project_name) helper — git init --bare if missing
+- [ ] POST /api/provision endpoint — idempotent, returns status
+- [ ] Modify /api/run — auto-provision when project param set and dir missing
+- [ ] repo_provisions SQLite table
+- [ ] Watch loop repo count logging
+
+### Phase 2: Client-Side Error Surfacing
+
+**Files:** ~/.buildrunner/scripts/auto-save-session.sh (MODIFY)
+**Deliverables:**
+
+- [ ] Pre-push /api/provision call
+- [ ] Remove 2>/dev/null from git push, log stderr
+- [ ] Remove & backgrounding, make push synchronous
+- [ ] Push exit code check
+- [ ] /api/run error response parsing
+
+### Phase 3: Bulk Seed + Verification
+
+**Files:** ~/.buildrunner/scripts/walter-seed.sh (NEW)
+**Deliverables:**
+
+- [ ] walter-seed.sh reads projects.json, inits bare repos
+- [ ] --dry-run flag
+- [ ] --verify flag
+- [ ] Run seed for all 37 missing projects
+- [ ] Verify via /api/health repo count
+
+## Parallelization Matrix
+
+| Phase | Key Files                  | Can Parallel With | Blocked By |
+| ----- | -------------------------- | ----------------- | ---------- |
+| 1     | core/cluster/node_tests.py | 2                 | -          |
+| 2     | auto-save-session.sh       | 1                 | -          |
+| 3     | walter-seed.sh (NEW)       | -                 | 1, 2       |
 
 ## Risk Assessment
 
-| Risk                                                  | Mitigation                                               |
-| ----------------------------------------------------- | -------------------------------------------------------- |
-| Walter offline during deployment                      | Deploy via SSH script, verify with health check          |
-| Race fix breaks existing API consumers                | Run existing tests before/after, maintain API contract   |
-| Blocking gates too aggressive                         | --force override on /commit, user confirmation on /begin |
-| Monitor LaunchAgents add CPU overhead                 | Lightweight polling (curl + jq), <1% CPU                 |
-| Registry atomicity change breaks concurrent dashboard | Test with parallel API calls                             |
-| Dead code removal breaks undiscovered callers         | Grep entire codebase before removing                     |
+| Risk                                                     | Mitigation                                                              |
+| -------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Bare repo init on Walter fails (disk space, permissions) | \_ensure_repo checks disk space, returns clear error                    |
+| Synchronous push slows down commit hook                  | Push has 10s timeout — worst case adds 10s to hook                      |
+| Seed script overwhelms Walter with 37 inits              | Sequential init with 1s delay between                                   |
+| Projects without vitest spam Walter with failures        | Walter already handles this — returns "no test runner found" gracefully |

@@ -1,0 +1,11 @@
+[      97ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/favicon.ico:0
+[  122496ms] [ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE @ http://10.0.1.101:8100/api/research/search?query=*&limit=50:0
+[  122496ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://10.0.1.101:8100/api/research/stats:0
+[  122496ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_RESET @ http://10.0.1.101:8100/api/research/stats:0
+[  122498ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/items?limit=50:0
+[  122527ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://10.0.1.101:8100/api/research/stats:0
+[  122531ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/improvements:0
+[  122560ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://10.0.1.101:8100/api/research/stats:0
+[  122564ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/hunts:0
+[  122599ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/deals/summary:0
+[  122600ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://localhost:4400/api/proxy/intel/brief:0

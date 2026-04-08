@@ -442,13 +442,26 @@ def _invalidate_test_map_entries(project: str, changed_files: list[str]):
 
 
 # --- Test Runners ---
+def _find_vitest_dir(repo_path: str) -> str | None:
+    """Find the directory containing vitest — root or first subdirectory with node_modules/.bin/vitest."""
+    if Path(repo_path, "node_modules", ".bin", "vitest").exists():
+        return repo_path
+    # Check common subdirs (ui/, app/, client/, frontend/, web/)
+    for subdir in ("ui", "app", "client", "frontend", "web"):
+        candidate = Path(repo_path, subdir)
+        if candidate.joinpath("node_modules", ".bin", "vitest").exists():
+            return str(candidate)
+    return None
+
+
 def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> dict:
     """Run vitest for affected tests. Returns parsed results."""
-    if not Path(repo_path, "node_modules", ".bin", "vitest").exists():
+    vitest_dir = _find_vitest_dir(repo_path)
+    if not vitest_dir:
         return None
 
     # Check if there are test files
-    has_tests = any(Path(repo_path).rglob("*.test.*")) or any(Path(repo_path).rglob("*.spec.*"))
+    has_tests = any(Path(vitest_dir).rglob("*.test.*")) or any(Path(vitest_dir).rglob("*.spec.*"))
     if not has_tests:
         return None
 
@@ -468,7 +481,7 @@ def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> 
 
         result = subprocess.run(
             cmd, capture_output=True, text=True,
-            cwd=repo_path, timeout=120,
+            cwd=vitest_dir, timeout=120,
             env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
         )
 
@@ -548,9 +561,6 @@ def _run_playwright(repo_path: str, project_name: str, changed_files: list[str])
             "--workers=1",
             "--project=webkit",  # lowest memory per research
         ]
-        if changed_files:
-            cmd.append("--only-changed")
-
         result = subprocess.run(
             cmd, capture_output=True, text=True,
             cwd=repo_path, timeout=300,

@@ -242,6 +242,20 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
             filtered = len(listings) - len(relevant)
             if filtered:
                 logger.info(f"Below filtered {filtered} irrelevant items for '{hunt_name}'")
+
+            # Hallucination guard: filter individual items lacking tech indicators
+            if relevant:
+                import re as _re2
+                tech_indicators = _re2.compile(r'\d|GB|TB|MHz|GHz|DDR|RTX|GTX|NVLink|USB|SSD|NVMe|PCIe|HDMI|Corsair|EVGA|ASUS|MSI|Gigabyte|Crucial|Minisforum|PNY', _re2.IGNORECASE)
+                real = [l for l in relevant if tech_indicators.search(l.get("title", ""))]
+                hallucinated = len(relevant) - len(real)
+                if hallucinated:
+                    logger.warning(f"eBay '{hunt_name}': dropped {hallucinated}/{len(relevant)} titles lacking tech indicators")
+                    for l in relevant:
+                        if not tech_indicators.search(l.get("title", "")):
+                            logger.debug(f"  Hallucination: '{l.get('title', '')}'")
+                relevant = real
+
             logger.info(f"Below extracted {len(relevant)} relevant listings for '{hunt_name}'")
             return relevant
 

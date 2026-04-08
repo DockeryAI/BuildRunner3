@@ -1,0 +1,9 @@
+[     144ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/health?limit=200:0
+[     146ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/alerts:0
+[     146ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/remediation?limit=50:0
+[     147ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/pipeline?limit=50:0
+[     156ms] TypeError: (intermediate value)(intermediate value)(intermediate value).filter is not a function
+    at renderKPIs (http://localhost:4400/js/ws-monitor.js:249:79)
+    at renderAll (http://localhost:4400/js/ws-monitor.js:424:5)
+    at fetchAll (http://localhost:4400/js/ws-monitor.js:243:5)
+[     152ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/favicon.ico:0

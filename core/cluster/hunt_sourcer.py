@@ -30,6 +30,7 @@ CONFIG_PATH = Path(__file__).parent / "hunt_sourcer_config.json"
 LOCKWOOD_URL = os.environ.get("LOCKWOOD_URL", "http://10.0.1.101:8100")
 BELOW_OLLAMA_URL = os.environ.get("BELOW_OLLAMA_URL", "http://10.0.1.105:11434")
 BELOW_MODEL = os.environ.get("BELOW_MODEL", "qwen3:8b")
+BELOW_EMBED_MODEL = os.environ.get("BELOW_EMBED_MODEL", "nomic-embed-text")
 CHECK_HUNTS_INTERVAL = int(os.environ.get("CHECK_HUNTS_INTERVAL", "300"))  # 5min
 
 
@@ -132,9 +133,9 @@ async def _post_deal_item(item: dict) -> Optional[int]:
 def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> tuple[bool, str]:
     """Validate a deal item against hunt requirements.
     Returns (passed, reason). Reason is empty string if passed.
+    Hard gates: relevance checks (wrong product, excluded terms, out of stock).
     """
     if not requirements:
-        # Legacy hunts without requirements — apply basic keyword exclusion only
         excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
         name_lower = item.get("name", "").lower()
         if excluded and any(ex in name_lower for ex in excluded):
@@ -143,7 +144,6 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
 
     filters = requirements.get("filters", {})
     name_lower = item.get("name", "").lower()
-    price = item.get("price")
     attrs = item.get("attributes", {})
     if isinstance(attrs, str):
         try:
@@ -155,15 +155,6 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
     if filters.get("in_stock_only", True):
         if isinstance(attrs, dict) and attrs.get("in_stock") is False:
             return False, "out of stock"
-
-    # Price range
-    if price is not None:
-        price_min = filters.get("price_min")
-        price_max = filters.get("price_max")
-        if price_min and price < price_min:
-            return False, f"price ${price} below min ${price_min}"
-        if price_max and price > price_max:
-            return False, f"price ${price} above max ${price_max}"
 
     # Title must contain (AND — all must be present)
     must_contain = filters.get("title_must_contain", [])
@@ -198,12 +189,6 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
             if c.lower() in condition:
                 return False, f"condition '{condition}' is rejected"
 
-    # Seller minimums
-    seller_rating = item.get("seller_rating")
-    min_rating = filters.get("min_seller_rating")
-    if min_rating and seller_rating is not None and seller_rating < min_rating:
-        return False, f"seller rating {seller_rating}% below min {min_rating}%"
-
     # Also check keyword-based exclusions as fallback
     excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
     if excluded and any(ex in name_lower for ex in excluded):
@@ -212,21 +197,51 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
     return True, ""
 
 
+def _check_price_range(item: dict, requirements: dict) -> bool:
+    """Check if item price falls within the hunt's target range.
+    Returns True if in range (highlighted), False if outside.
+    """
+    if not requirements:
+        return True
+    filters = requirements.get("filters", {})
+    price = item.get("price")
+    if price is None:
+        return False
+    price_min = filters.get("price_min")
+    price_max = filters.get("price_max")
+    if price_min and price < price_min:
+        return False
+    if price_max and price > price_max:
+        return False
+    return True
+
+
 # --- Batch Insert via Direct DB (Lockwood-local) or API ---
 
+TOP_N_DEALS = 10  # Always insert top N cheapest relevant items per hunt
+
+
 async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dict = None, hunt_keywords: str = "") -> int:
-    """Insert deal items, deduplicating against existing. Returns count of new items.
-    Validates every item against hunt requirements before insert.
+    """Insert top N cheapest relevant deal items per hunt cycle.
+    Relevance = passes hard gates (title match, excluded terms, stock).
+    Price range is a soft flag (in_range), not a gate — items always insert.
+    Returns count of new items inserted.
     """
     existing_urls = await _get_existing_deal_urls(hunt_id)
     new_count = 0
+    skip_dup = 0
+    skip_relevance = 0
+    skip_insert = 0
 
+    # Phase 1: filter to relevant items only (hard gates — wrong product, excluded, OOS)
+    relevant = []
     for item in items:
         source_url = item.get("source_url", "")
         if source_url in existing_urls:
+            skip_dup += 1
             continue
 
-        # Log every price to market data BEFORE validation — rejected items are valid market data
+        # Log every price to market data — all items are valid market data
         item_price = item.get("price")
         if item_price and item_price > 0:
             try:
@@ -243,13 +258,36 @@ async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dic
             except Exception as e:
                 logger.debug(f"Market price log failed: {e}")
 
-        # Validate against hunt requirements
         passed, reason = _validate_item(item, requirements, hunt_keywords)
         if not passed:
+            skip_relevance += 1
+            logger.debug(f"  Irrelevant '{item.get('name', '')[:60]}': {reason}")
             continue
+        relevant.append(item)
 
-        # Use Lockwood's create_deal_item directly if running on Lockwood,
-        # otherwise POST to API
+    # Phase 2: sort by price ascending, take top N cheapest
+    relevant.sort(key=lambda x: x.get("price") or float("inf"))
+    top_items = relevant[:TOP_N_DEALS]
+
+    # Phase 3: insert all top items, flag in_range
+    in_range_count = 0
+    for rank, item in enumerate(top_items, 1):
+        source_url = item.get("source_url", "")
+        in_range = _check_price_range(item, requirements)
+        if in_range:
+            in_range_count += 1
+
+        # Inject flags into attributes
+        attrs = item.get("attributes", {})
+        if isinstance(attrs, str):
+            try:
+                attrs = json.loads(attrs)
+            except (json.JSONDecodeError, TypeError):
+                attrs = {}
+        attrs["in_range"] = in_range
+        attrs["price_rank"] = rank
+        item["attributes"] = attrs
+
         try:
             from core.cluster.intel_collector import create_deal_item
             deal_id = create_deal_item(
@@ -267,11 +305,20 @@ async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dic
             if deal_id:
                 new_count += 1
                 existing_urls.add(source_url)
+            else:
+                skip_insert += 1
         except ImportError:
             deal_id = await _post_deal_item(item)
             if deal_id:
                 new_count += 1
                 existing_urls.add(source_url)
+            else:
+                skip_insert += 1
+
+    # Log summary
+    logger.info(f"  Insert: {len(items)} scraped, {len(relevant)} relevant, top {len(top_items)} → {new_count} new ({in_range_count} in range)")
+    if skip_dup:
+        logger.info(f"    {skip_dup} url-dup, {skip_relevance} irrelevant, {skip_insert} db-dup")
 
     return new_count
 
@@ -351,7 +398,7 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
                 try:
                     resp = await client.post(
                         f"{BELOW_OLLAMA_URL}/api/embed",
-                        json={"model": BELOW_MODEL, "input": title},
+                        json={"model": BELOW_EMBED_MODEL, "input": title},
                     )
                     if resp.status_code == 200:
                         data = resp.json()

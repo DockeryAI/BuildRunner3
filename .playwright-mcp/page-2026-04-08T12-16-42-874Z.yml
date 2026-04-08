@@ -1,0 +1,62 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - text: Intelligence
+    - generic [ref=e15] [cursor=pointer]:
+      - img [ref=e16]
+      - text: Terminal
+    - generic [ref=e18] [cursor=pointer]:
+      - img [ref=e19]
+      - text: Builds
+    - generic [ref=e22] [cursor=pointer]:
+      - img [ref=e23]
+      - text: Research
+    - generic [ref=e26] [cursor=pointer]:
+      - img [ref=e27]
+      - text: Monitor
+  - generic [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: BR3 The Band
+        - generic [ref=e33]: Intelligence
+      - generic [ref=e34]:
+        - generic [ref=e36]: "Tokens: 204k"
+        - generic [ref=e39]: "SSE: 2"
+        - generic [ref=e40]: "Uptime: 0m"
+        - generic [ref=e41]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e855]:
+      - generic [ref=e856]:
+        - generic [ref=e858]: Intelligence
+        - generic [ref=e861]: 13s
+      - generic [ref=e862]:
+        - button "Feed" [ref=e863] [cursor=pointer]
+        - button "Deals" [ref=e864] [cursor=pointer]
+        - button "Improvements" [ref=e865] [cursor=pointer]
+        - button "Hunts" [ref=e866] [cursor=pointer]
+      - generic [ref=e868]:
+        - textbox "Search intel..." [ref=e869]
+        - combobox [ref=e870] [cursor=pointer]:
+          - option "All priority" [selected]
+          - option "Critical"
+          - option "High"
+          - option "Medium"
+          - option "Low"
+        - combobox [ref=e871] [cursor=pointer]:
+          - option "All sources" [selected]
+          - option "Official"
+          - option "Community"
+          - option "Blog"
+        - combobox [ref=e872] [cursor=pointer]:
+          - option "All types" [selected]
+          - option "Release"
+          - option "Breaking"
+          - option "Security"
+          - option "Feature"
+          - option "Tool"
+          - option "Article"

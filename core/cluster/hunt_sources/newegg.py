@@ -199,6 +199,21 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
             filtered = len(listings) - len(relevant)
             if filtered:
                 logger.info(f"Below filtered {filtered} irrelevant Newegg items for '{hunt_name}'")
+
+            # Hallucination guard: filter individual items lacking tech indicators
+            # Per-item filter instead of batch discard — keeps real items even if some are hallucinated
+            if relevant:
+                import re as _re2
+                tech_indicators = _re2.compile(r'\d|GB|TB|MHz|GHz|DDR|RTX|GTX|NVLink|USB|SSD|NVMe|PCIe|HDMI|Corsair|EVGA|ASUS|MSI|Gigabyte|Crucial|Minisforum|PNY', _re2.IGNORECASE)
+                real = [l for l in relevant if tech_indicators.search(l.get("title", ""))]
+                hallucinated = len(relevant) - len(real)
+                if hallucinated:
+                    logger.warning(f"Newegg '{hunt_name}': dropped {hallucinated}/{len(relevant)} titles lacking tech indicators")
+                    for l in relevant:
+                        if not tech_indicators.search(l.get("title", "")):
+                            logger.debug(f"  Hallucination: '{l.get('title', '')}'")
+                relevant = real
+
             logger.info(f"Below extracted {len(relevant)} relevant Newegg listings for '{hunt_name}'")
             return relevant
 

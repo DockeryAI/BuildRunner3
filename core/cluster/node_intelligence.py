@@ -6,6 +6,7 @@ Run: uvicorn core.cluster.node_intelligence:app --host 0.0.0.0 --port 8100
 (Shares port with node_semantic — mount as sub-app or run separately)
 """
 
+import asyncio
 import os
 import hmac
 import hashlib
@@ -73,7 +74,16 @@ class OpusDealReview(BaseModel):
 # --- Startup ---
 
 async def intel_startup():
-    """Initialize DB tables and start pollers if enabled. Called by node_semantic on startup."""
+    """Initialize DB tables and start pollers if enabled. Called by node_semantic on startup.
+
+    Crons are staggered to avoid overwhelming the M2's single-core SQLite I/O:
+    - Pollers start immediately (lightweight RSS/webhook receivers)
+    - Scoring starts after 30s (Below API calls, not I/O heavy)
+    - Verifier starts after 60s (HTTP checks, moderate I/O)
+    - Sourcer starts after 90s (heavy: external scrapes + SQLite writes)
+    """
+    import asyncio
+
     from core.cluster.intel_collector import _get_intel_db
     # Ensure tables exist on startup
     conn = _get_intel_db()
@@ -86,23 +96,30 @@ async def intel_startup():
     else:
         logger.info("DISABLE_POLLERS=true — skipping background pollers")
 
-    if not DISABLE_SCORING:
-        from core.cluster.intel_scoring import start_scoring_cron
-        start_scoring_cron()
-    else:
-        logger.info("DISABLE_SCORING=true — skipping scoring cron")
+    # Stagger cron startups so they don't all hit SQLite simultaneously
+    async def _deferred_crons():
+        if not DISABLE_SCORING:
+            await asyncio.sleep(30)
+            from core.cluster.intel_scoring import start_scoring_cron
+            start_scoring_cron()
+        else:
+            logger.info("DISABLE_SCORING=true — skipping scoring cron")
 
-    if not DISABLE_VERIFIER:
-        from core.cluster.intel_verifier import start_verifier_cron
-        start_verifier_cron()
-    else:
-        logger.info("DISABLE_VERIFIER=true — skipping deal verifier cron")
+        if not DISABLE_VERIFIER:
+            await asyncio.sleep(30)
+            from core.cluster.intel_verifier import start_verifier_cron
+            start_verifier_cron()
+        else:
+            logger.info("DISABLE_VERIFIER=true — skipping deal verifier cron")
 
-    if not DISABLE_SOURCER:
-        from core.cluster.hunt_sourcer import start_sourcer_cron
-        start_sourcer_cron()
-    else:
-        logger.info("DISABLE_SOURCER=true — skipping hunt sourcer cron")
+        if not DISABLE_SOURCER:
+            await asyncio.sleep(30)
+            from core.cluster.hunt_sourcer import start_sourcer_cron
+            start_sourcer_cron()
+        else:
+            logger.info("DISABLE_SOURCER=true — skipping hunt sourcer cron")
+
+    asyncio.create_task(_deferred_crons())
 
 
 # --- Manual Intel Submission ---
@@ -632,14 +649,32 @@ async def webhook_changedetection(request: Request):
     return {"status": "ok", "items_created": len(items), "items": items}
 
 
+_sourcer_task: Optional[asyncio.Task] = None
+
+
 @router.post("/api/deals/source")
 async def trigger_sourcer():
-    """Manually trigger one sourcer check cycle."""
-    import asyncio
-    try:
-        from core.cluster.hunt_sourcer import check_hunts_once
-        await check_hunts_once()
-        return {"status": "ok", "message": "Sourcer check completed"}
-    except Exception as e:
-        logger.error(f"Manual sourcer trigger failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    """Manually trigger one sourcer check cycle. Fire-and-forget — returns immediately."""
+    global _sourcer_task
+    if _sourcer_task and not _sourcer_task.done():
+        return {"status": "running", "message": "Sourcer cycle already in progress"}
+
+    async def _run_sourcer():
+        try:
+            from core.cluster.hunt_sourcer import check_hunts_once, _last_checked
+            _last_checked.clear()
+            await check_hunts_once()
+            logger.info("Manual sourcer cycle completed")
+        except Exception as e:
+            logger.error(f"Manual sourcer trigger failed: {e}")
+
+    _sourcer_task = asyncio.create_task(_run_sourcer())
+    return {"status": "started", "message": "Sourcer cycle started in background"}
+
+
+@router.get("/api/deals/source/status")
+async def sourcer_status():
+    """Check if a sourcer cycle is currently running."""
+    if _sourcer_task and not _sourcer_task.done():
+        return {"status": "running"}
+    return {"status": "idle"}

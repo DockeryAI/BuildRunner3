@@ -1,0 +1,2 @@
+[  126578ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: Failed to fetch
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:596:46) @ http://localhost:4400/js/ws-intel.js:629

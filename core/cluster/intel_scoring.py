@@ -519,6 +519,8 @@ def _scoring_cron_loop():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
+    # Wait before first cycle so API is ready to serve
+    time.sleep(10)
     while True:
         try:
             loop.run_until_complete(run_scoring_cycle())

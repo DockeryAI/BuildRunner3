@@ -1,0 +1,18 @@
+[   31606ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/health?limit=200:0
+[   31606ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/alerts:0
+[   31606ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/remediation?limit=50:0
+[   31606ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/pipeline?limit=50:0
+[   31609ms] TypeError: liveNodes is not iterable
+    at renderTopology (http://localhost:4400/js/ws-monitor.js:275:22)
+    at renderAll (http://localhost:4400/js/ws-monitor.js:424:5)
+    at fetchAll (http://localhost:4400/js/ws-monitor.js:243:5)
+[  240183ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: Failed to fetch
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:487:42) @ http://localhost:4400/js/ws-intel.js:637
+[  240224ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/health?limit=200:0
+[  240224ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/alerts:0
+[  240224ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/remediation?limit=50:0
+[  240224ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/api/monitor/pipeline?limit=50:0
+[  240275ms] TypeError: liveNodes is not iterable
+    at renderTopology (http://localhost:4400/js/ws-monitor.js:275:22)
+    at renderAll (http://localhost:4400/js/ws-monitor.js:424:5)
+    at fetchAll (http://localhost:4400/js/ws-monitor.js:243:5)

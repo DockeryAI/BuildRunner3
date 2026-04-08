@@ -487,3 +487,4 @@
   - monitor-config.json: service_restart/repo_sync/walter_trigger ON by default, build_redispatch OFF (manual)
   - ws-monitor.js: 4 tabs (topology/alerts/remediation/pipeline), SSE auto-refresh on monitor.* events, 30s poll
   - events.mjs: 7 new /api/monitor/* endpoints for alerts, health, remediation, pipeline, builds, config, event emit
+[Wed Apr  8 14:35:44 CDT 2026] [DECISION] Created build spec: walter-auto-provision with 3 phases — server-side auto-provision, client error surfacing, bulk seed

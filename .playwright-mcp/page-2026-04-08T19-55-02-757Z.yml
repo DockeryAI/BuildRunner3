@@ -1,0 +1,208 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - text: Intelligence
+    - generic [ref=e15] [cursor=pointer]:
+      - img [ref=e16]
+      - text: Terminal
+    - generic [ref=e18] [cursor=pointer]:
+      - img [ref=e19]
+      - text: Builds
+    - generic [ref=e22] [cursor=pointer]:
+      - img [ref=e23]
+      - text: Research
+    - generic [ref=e26] [cursor=pointer]:
+      - img [ref=e27]
+      - text: Monitor
+  - generic [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: BR3 The Band
+        - generic [ref=e33]: Dashboard
+      - generic [ref=e34]:
+        - generic [ref=e36]: "Tokens: 204k"
+        - generic [ref=e39]: "SSE: 2"
+        - generic [ref=e40]: "Uptime: 3m"
+        - generic [ref=e41]: ⌘K
+    - generic [ref=e42]:
+      - generic [ref=e43]:
+        - generic [ref=e44]: Cluster
+        - button "Reset All" [ref=e45] [cursor=pointer]
+      - generic [ref=e46]:
+        - generic [ref=e47] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e48]
+          - generic [ref=e49]:
+            - generic [ref=e50]: Unknown
+            - generic [ref=e51]: Muddy
+            - img [ref=e52]: Muddy offline — click to reset
+            - img [ref=e54]: Power unknown
+            - generic [ref=e56]: M5
+          - generic [ref=e57]: Command · 10.0.1.100
+          - generic [ref=e58]: idle
+        - generic [ref=e59] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e60]
+          - generic [ref=e61]:
+            - generic [ref=e62]: Unknown
+            - generic [ref=e63]: Lockwood
+            - img [ref=e64]: Lockwood offline — click to reset
+            - img [ref=e66]: Power unknown
+            - generic [ref=e68]: M2
+          - generic [ref=e69]: Memory · 10.0.1.101
+          - generic [ref=e70]: idle
+        - generic [ref=e71] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e72]
+          - generic [ref=e73]:
+            - generic [ref=e74]: Unknown
+            - generic [ref=e75]: Walter
+            - img [ref=e76]: Walter offline — click to reset
+            - img [ref=e78]: Power unknown
+            - generic [ref=e80]: M2
+          - generic [ref=e81]: Sentinel · 10.0.1.102
+          - generic [ref=e82]: idle
+        - generic [ref=e83] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e84]
+          - generic [ref=e85]:
+            - generic [ref=e86]: Unknown
+            - generic [ref=e87]: Otis
+            - img [ref=e88]: Otis offline — click to reset
+            - img [ref=e90]: Power unknown
+            - generic [ref=e92]: M2
+          - generic [ref=e93]: Builder · 10.0.1.103
+          - generic [ref=e94]: idle
+        - generic [ref=e95] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e96]
+          - generic [ref=e97]:
+            - generic [ref=e98]: Unknown
+            - generic [ref=e99]: Lomax
+            - img [ref=e100]: Lomax offline — click to reset
+            - img [ref=e102]: Power unknown
+            - generic [ref=e104]: M2
+          - generic [ref=e105]: Forge · 10.0.1.104
+          - generic [ref=e106]: idle
+        - generic [ref=e107] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e108]
+          - generic [ref=e109]:
+            - generic [ref=e110]: Unknown
+            - generic [ref=e111]: Below
+            - img [ref=e112]: Below offline — click to reset
+            - img [ref=e114]: Power unknown
+            - generic [ref=e116]: Win
+          - generic [ref=e117]: Workhorse · 10.0.1.105
+          - generic [ref=e118]: idle
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - generic [ref=e121]: Active Builds
+          - generic [ref=e122]: "0"
+          - generic [ref=e123]: "--"
+        - generic "Click for account details" [ref=e124] [cursor=pointer]:
+          - generic [ref=e125]:
+            - generic [ref=e126]: Tokens Used
+            - button "SWAP" [ref=e127]
+          - generic [ref=e128]: 40%
+          - generic [ref=e129]: B · B:40% B:235% B:133%
+        - generic [ref=e130]:
+          - generic [ref=e131]: Sessions
+          - generic [ref=e132]: "0"
+          - generic [ref=e133]: none
+        - generic [ref=e134]:
+          - generic [ref=e135]: Reviews
+          - generic [ref=e136]: "0"
+          - generic [ref=e137]: pending
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - generic [ref=e140]:
+            - text: Alerts
+            - generic [ref=e141]: "0"
+          - generic [ref=e143]: No alerts
+        - generic [ref=e144]:
+          - generic [ref=e145]:
+            - text: Active Builds
+            - generic [ref=e146]: "0"
+            - button "Dispatch All" [ref=e147] [cursor=pointer]
+            - button "Show completed" [ref=e148] [cursor=pointer]
+          - generic [ref=e150]: No active builds
+        - generic [ref=e151]:
+          - generic [ref=e152]: Build DAG
+          - generic [ref=e154]: No builds in registry
+        - generic [ref=e155]:
+          - generic [ref=e156]:
+            - text: Sessions
+            - generic [ref=e157]: "0"
+            - button "Refresh" [ref=e158] [cursor=pointer]
+          - generic [ref=e160]: Scanning for sessions...
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - text: Review Queue
+            - generic [ref=e163]: "0"
+            - button "Refresh" [ref=e164] [cursor=pointer]
+          - generic [ref=e166]: No pending reviews
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - text: Event Log
+            - generic [ref=e169]: "0"
+            - generic [ref=e170]:
+              - combobox [ref=e171] [cursor=pointer]:
+                - option "All types" [selected]
+              - combobox [ref=e172] [cursor=pointer]:
+                - option "All time" [selected]
+                - option "Last 1h"
+                - option "Last 6h"
+                - option "Last 24h"
+          - generic [ref=e174]: Connecting to event stream...
+        - generic [ref=e175]:
+          - generic [ref=e176]: Node Health
+          - generic [ref=e178]: Waiting for health data...
+        - generic [ref=e179]:
+          - generic [ref=e180]:
+            - text: Prod Logs
+            - generic [ref=e181]: "0"
+            - button "Restart" [ref=e182] [cursor=pointer]
+          - generic [ref=e183]:
+            - generic [ref=e184]:
+              - button "All" [ref=e185] [cursor=pointer]
+              - button "Browser" [ref=e186] [cursor=pointer]
+              - button "Supabase" [ref=e187] [cursor=pointer]
+              - button "Device" [ref=e188] [cursor=pointer]
+              - button "Query" [ref=e189] [cursor=pointer]
+            - generic [ref=e191]: No log events yet
+        - generic [ref=e192]:
+          - generic [ref=e193]:
+            - text: Decisions
+            - generic [ref=e194]: "0"
+          - generic [ref=e196]: No decisions yet
+        - generic [ref=e197]:
+          - generic [ref=e198]:
+            - text: Recommendations
+            - generic [ref=e199]: "0"
+          - generic [ref=e201]: No recommendations yet
+        - generic [ref=e202]:
+          - generic [ref=e203]: System Health
+          - generic [ref=e205]: Waiting for health data...
+        - generic [ref=e206]:
+          - generic [ref=e207]:
+            - text: Intelligence
+            - generic [ref=e208]: "0"
+            - generic [ref=e209]:
+              - combobox [ref=e210] [cursor=pointer]:
+                - option "All Sources" [selected]
+                - option "Official"
+                - option "Community"
+                - option "Blog"
+              - combobox [ref=e211] [cursor=pointer]:
+                - option "All Priority" [selected]
+                - option "Critical"
+                - option "High"
+                - option "Medium"
+              - button "Refresh" [ref=e212] [cursor=pointer]
+          - generic [ref=e214]: Connecting to Lockwood...
+        - generic [ref=e215]:
+          - generic [ref=e216]:
+            - text: Deals
+            - generic [ref=e217]: "0"
+            - button "Refresh" [ref=e218] [cursor=pointer]
+          - generic [ref=e220]: Connecting to Lockwood...

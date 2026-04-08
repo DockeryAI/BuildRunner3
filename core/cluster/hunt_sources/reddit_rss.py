@@ -171,6 +171,11 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                             if core_in_want > core_in_have:
                                 continue
 
+                    # Skip bundle/prebuilt posts — they contain component keywords
+                    # but price is for the whole system, not the component
+                    if re.match(r'\[(?:prebuilt|bundle|combo)\]', title_lower):
+                        continue
+
                     # Smart matching: require model number + brand/product term
                     if model_terms and brand_terms:
                         has_model = any(mt in title_lower for mt in model_terms)
@@ -265,15 +270,30 @@ async def search_historical(hunt: dict, config: dict) -> list[dict]:
                 data = resp.json()
                 children = data.get("data", {}).get("children", [])
 
+                target_price = hunt.get("target_price")
+                price_ceiling = target_price * 3 if target_price else None
+                price_floor = target_price * 0.1 if target_price else None
+
                 for child in children:
                     post = child.get("data", {})
                     title = post.get("title", "")
                     if not title:
                         continue
 
+                    # Skip bundle/prebuilt posts
+                    title_lower = title.lower()
+                    if re.match(r'\[(?:prebuilt|bundle|combo)\]', title_lower):
+                        continue
+
                     # Extract price from title
                     price = _extract_price(title)
                     if not price or price <= 0:
+                        continue
+
+                    # Skip prices that are clearly bundles (3x+ target) or accessories (< 10% target)
+                    if price_ceiling and price > price_ceiling:
+                        continue
+                    if price_floor and price < price_floor:
                         continue
 
                     permalink = post.get("permalink", "")
