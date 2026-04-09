@@ -1098,7 +1098,7 @@ async def trigger_run(project: Optional[str] = None, trigger: str = "manual"):
     for repo_dir in repos_path.iterdir():
         if not repo_dir.is_dir() or repo_dir.name.startswith("."):
             continue
-        if project and repo_dir.name != project:
+        if project and repo_dir.name.lower() != project.lower():
             continue
 
         name = repo_dir.name
