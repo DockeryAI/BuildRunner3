@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(update-config)",
+      "Edit(~/.claude/commands/*)",
+      "Edit(~/.buildrunner/scripts/*)",
+      "Write(~/.claude/commands/*)",
+      "Write(~/.buildrunner/scripts/*)",
+      "Edit(~/.claude/docs/*)",
+      "Write(~/.buildrunner/*)"
+    ]
+  }
+}
