@@ -159,6 +159,9 @@ export interface DealItem {
   collected_at: string;
   read: boolean;
   dismissed: boolean;
+  in_stock: boolean | null;
+  seller_verified: boolean | null;
+  last_checked: string | null;
 }
 
 export interface Hunt {
@@ -185,4 +188,7 @@ export interface DealFilters {
   hunt_id?: number;
   min_score?: number;
   limit?: number;
+  ready_only?: boolean;
+  in_stock_only?: boolean;
+  seller_verified_only?: boolean;
 }

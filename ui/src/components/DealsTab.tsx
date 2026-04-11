@@ -338,7 +338,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
           <div className="hunt-groups">
             {huntGroups.map(({ hunt, deals: huntDeals, bestDeal, inRangeCount }) => {
               const isExpanded = expandedHunts.has(hunt.id);
-              const restDeals = huntDeals.slice(1);
+              const restDeals = huntDeals.slice(1, 11); // Top 10 after best
 
               return (
                 <div
@@ -361,18 +361,12 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                     </div>
                   </div>
 
-                  {/* Best price — always visible */}
+                  {/* Best deal — compact single row */}
                   {bestDeal && (
-                    <DealCard
+                    <BestDealRow
                       deal={bestDeal}
-                      isBest
                       inRange={isInRange(bestDeal)}
                       targetPrice={hunt.target_price}
-                      expandedDeal={expandedDeal}
-                      priceHistory={priceHistory}
-                      onShowHistory={handleShowHistory}
-                      onDismiss={handleDismiss}
-                      onMarkRead={handleMarkRead}
                       getVerdictClass={getVerdictClass}
                       getScoreColor={getScoreColor}
                       formatTime={formatTime}
@@ -427,6 +421,82 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
         )}
       </div>
     </div>
+  );
+}
+
+// --- BestDealRow sub-component (compact single row) ---
+
+interface BestDealRowProps {
+  deal: DealItem;
+  inRange: boolean;
+  targetPrice: number;
+  getVerdictClass: (v: string) => string;
+  getScoreColor: (s: number) => string;
+  formatTime: (ts: string) => string;
+  formatPrice: (p: number) => string;
+}
+
+function BestDealRow({
+  deal,
+  inRange,
+  targetPrice,
+  getVerdictClass,
+  getScoreColor,
+  formatTime,
+  formatPrice,
+}: BestDealRowProps) {
+  const priceDelta = targetPrice ? deal.price - targetPrice : 0;
+  const isVerified = deal.in_stock && deal.seller_verified;
+
+  return (
+    <a
+      href={deal.listing_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`best-deal-row ${inRange ? 'best-deal-in-range blink-highlight' : ''}`}
+    >
+      <div className="bdr-score" style={{ backgroundColor: getScoreColor(deal.deal_score) }}>
+        {deal.deal_score}
+      </div>
+      <span className="bdr-rank">#1</span>
+      <span className="bdr-name">{deal.name}</span>
+      <div className="bdr-status">
+        {deal.in_stock === true && (
+          <span className="status-badge status-in-stock" title="In Stock">
+            IN STOCK
+          </span>
+        )}
+        {deal.in_stock === false && (
+          <span className="status-badge status-out-of-stock" title="Out of Stock">
+            SOLD
+          </span>
+        )}
+        {deal.seller_verified && (
+          <span className="status-badge status-verified" title="Seller Verified">
+            VERIFIED
+          </span>
+        )}
+        {!isVerified && deal.in_stock !== false && (
+          <span className="status-badge status-unverified" title="Not yet verified">
+            UNVERIFIED
+          </span>
+        )}
+      </div>
+      <span className="bdr-seller">{deal.seller}</span>
+      <span className={`bdr-verdict ${getVerdictClass(deal.verdict)}`}>{deal.verdict}</span>
+      <span className="bdr-time">{formatTime(deal.collected_at)}</span>
+      <div className="bdr-price-block">
+        <span className={`bdr-price ${inRange ? 'price-in-range' : ''}`}>
+          {formatPrice(deal.price)}
+        </span>
+        {targetPrice > 0 && (
+          <span className={`bdr-delta ${priceDelta <= 0 ? 'delta-good' : 'delta-over'}`}>
+            {priceDelta <= 0 ? '' : '+'}
+            {formatPrice(Math.abs(priceDelta))} {priceDelta <= 0 ? 'under' : 'over'}
+          </span>
+        )}
+      </div>
+    </a>
   );
 }
 
@@ -496,6 +566,18 @@ function DealCard({
             </span>
             <span className="deal-condition">{deal.condition}</span>
             <span className="deal-time">{formatTime(deal.collected_at)}</span>
+          </div>
+          <div className="deal-status-badges">
+            {deal.in_stock === true && (
+              <span className="status-badge status-in-stock">IN STOCK</span>
+            )}
+            {deal.in_stock === false && (
+              <span className="status-badge status-out-of-stock">SOLD</span>
+            )}
+            {deal.seller_verified && <span className="status-badge status-verified">VERIFIED</span>}
+            {!deal.seller_verified && deal.in_stock !== false && (
+              <span className="status-badge status-unverified">UNVERIFIED</span>
+            )}
           </div>
         </div>
         <div className="deal-price-block">

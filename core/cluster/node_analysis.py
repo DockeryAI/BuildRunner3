@@ -300,9 +300,10 @@ def _detect_patterns(entries: list[dict]) -> list[dict]:
             })
 
     # --- RLS denial spike ---
+    # Exclude HEAD requests — they return 0 bytes by design (count-only queries)
     supabase_entries = by_type.get("supabase", [])
     queries = [e for e in supabase_entries if e.get("event_type") == "query"]
-    empty_200s = [e for e in queries if e.get("status_code") == 200 and e.get("response_size") == 0]
+    empty_200s = [e for e in queries if e.get("status_code") == 200 and e.get("response_size") == 0 and e.get("method", "").upper() != "HEAD"]
     if len(queries) >= 10 and len(empty_200s) / len(queries) > 0.3:
         patterns.append({
             "pattern_type": "rls_denial_spike",
@@ -806,15 +807,19 @@ def _analysis_loop():
                 if not project_dir.exists():
                     continue
 
+                # Skip stale logs (not modified in last 24 hours)
+                max_age_hours = 24
+                now = time.time()
+
                 supa_log = project_dir / "supabase.log"
-                if supa_log.exists():
+                if supa_log.exists() and (now - supa_log.stat().st_mtime) < max_age_hours * 3600:
                     entries = _parse_supabase_log(str(supa_log))
                     for e in entries:
                         e["project"] = project
                     all_entries.extend(entries)
 
                 browser_log = project_dir / "browser.log"
-                if browser_log.exists():
+                if browser_log.exists() and (now - browser_log.stat().st_mtime) < max_age_hours * 3600:
                     entries = _parse_browser_log(str(browser_log))
                     for e in entries:
                         e["project"] = project
@@ -822,7 +827,7 @@ def _analysis_loop():
 
                 for logname, logtype in [("device.log", "device"), ("query.log", "query")]:
                     logpath = project_dir / logname
-                    if logpath.exists():
+                    if logpath.exists() and (now - logpath.stat().st_mtime) < max_age_hours * 3600:
                         entries = _parse_generic_log(str(logpath), logtype)
                         for e in entries:
                             e["project"] = project

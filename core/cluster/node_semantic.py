@@ -245,6 +245,7 @@ def run_research_index():
         if docs_path.exists():
             current_mtime = _get_dir_mtime(docs_path)
             if current_mtime == _research_dir_mtime and _research_file_hashes:
+                _research_last_index_time = time.time()  # update even on no-change check
                 return  # nothing changed
             _research_dir_mtime = current_mtime
 

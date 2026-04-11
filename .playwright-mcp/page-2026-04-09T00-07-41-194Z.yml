@@ -1,0 +1,400 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "7"
+      - text: Intelligence
+    - generic [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+      - text: Terminal
+    - generic [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Builds
+    - generic [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - text: Research
+    - generic [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - text: Monitor
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: BR3 The Band
+        - generic [ref=e34]: Intelligence
+      - generic [ref=e35]:
+        - generic [ref=e37]: "Tokens: 204k"
+        - generic [ref=e40]: "SSE: 0"
+        - generic [ref=e41]: "Uptime: 0m"
+        - generic [ref=e42]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e1305]:
+      - generic [ref=e1306]:
+        - generic [ref=e1307]:
+          - generic [ref=e1308]: Intelligence
+          - generic [ref=e1309]:
+            - generic [ref=e1310]:
+              - strong [ref=e1311]: "14"
+              - text: total
+            - generic [ref=e1312]:
+              - strong [ref=e1313]: "1"
+              - text: critical
+            - generic [ref=e1314]:
+              - strong [ref=e1315]: "7"
+              - text: high
+            - generic [ref=e1316]:
+              - strong [ref=e1317]: "8"
+              - text: improve
+            - generic [ref=e1318]:
+              - strong [ref=e1319]: "13"
+              - text: unread
+        - generic [ref=e1322]: 4s
+      - generic [ref=e1323]:
+        - button "Intelligence 13 8" [ref=e1324] [cursor=pointer]:
+          - text: Intelligence
+          - generic [ref=e1325]: "13"
+          - generic [ref=e1326]: "8"
+        - button "Deals" [ref=e1327] [cursor=pointer]
+      - generic [ref=e1328]:
+        - generic [ref=e1330] [cursor=pointer]:
+          - generic [ref=e1331]:
+            - generic [ref=e1332]: Morning Brief
+            - generic [ref=e1333]: ▼
+          - generic [ref=e1334]:
+            - generic [ref=e1335]:
+              - strong [ref=e1336]: "5"
+              - text: need attention
+            - generic [ref=e1337]:
+              - strong [ref=e1338]: "8"
+              - text: informational
+        - generic [ref=e1340]:
+          - generic [ref=e1341]: BR3 Improvements (8 pending)
+          - generic [ref=e1342]:
+            - generic [ref=e1343] [cursor=pointer]:
+              - generic [ref=e1344]:
+                - generic [ref=e1345]: Consider M4 Mac Mini upgrade for Walter or Otis
+                - generic [ref=e1346]: Build This
+                - generic [ref=e1347]: new
+              - generic [ref=e1348]: M4 roughly doubles single-threaded perf over M2. Walter (continuous testing) and Otis (parallel builds) are the most compute-bound nodes. 24GB/512GB at $889 is a meaningful cluster upgrade.
+              - generic [ref=e1349]:
+                - button "Copy /setlist Command" [ref=e1350]
+                - button "Plan This" [ref=e1351]
+                - button "Dismiss" [ref=e1352]
+            - generic [ref=e1353] [cursor=pointer]:
+              - generic [ref=e1354]:
+                - generic [ref=e1355]: Evaluate Supabase Log Drains for edge function observability
+                - generic [ref=e1356]: Build This
+                - generic [ref=e1357]: new
+              - generic [ref=e1358]: Log Drains could send edge function server-side logs directly to Lockwood, replacing the devLog _debug[] injection pipeline with a simpler, always-on solution.
+              - generic [ref=e1359]:
+                - button "Copy /setlist Command" [ref=e1360]
+                - button "Plan This" [ref=e1361]
+                - button "Dismiss" [ref=e1362]
+            - generic [ref=e1363] [cursor=pointer]:
+              - generic [ref=e1364]:
+                - generic [ref=e1365]: Update Claude Code to v2.1.92 on Muddy and Otis
+                - generic [ref=e1366]: Build This
+                - generic [ref=e1367]: new
+              - generic [ref=e1368]: 60% faster Write tool for large files and 500K MCP persistence directly improve phase dispatch speed and context retention during multi-file builds.
+              - generic [ref=e1369]:
+                - button "Copy /setlist Command" [ref=e1370]
+                - button "Plan This" [ref=e1371]
+                - button "Dismiss" [ref=e1372]
+            - generic [ref=e1373] [cursor=pointer]:
+              - generic [ref=e1374]:
+                - generic [ref=e1375]: Migrate off Sonnet 4.5 before April 30 cutoff
+                - generic [ref=e1376]: Build This
+                - generic [ref=e1377]: new
+              - generic [ref=e1378]: Sonnet 4.5 1M context beta is retiring April 30. Any BR3 edge functions or automation scripts still referencing claude-sonnet-4-5 will break.
+              - generic [ref=e1379]:
+                - button "Copy /setlist Command" [ref=e1380]
+                - button "Plan This" [ref=e1381]
+                - button "Dismiss" [ref=e1382]
+            - generic [ref=e1383] [cursor=pointer]:
+              - generic [ref=e1384]:
+                - generic [ref=e1385]: Upgrade Walter to Playwright 1.59.1 with new features
+                - generic [ref=e1386]: Build This
+                - generic [ref=e1387]: new
+              - generic [ref=e1388]: Built-in --fail-on-flaky-tests replaces custom flaky detection, browser dashboard enables remote monitoring from Muddy, CLI trace analysis removes need for Playwright UI on headless Walter.
+              - generic [ref=e1389]:
+                - button "Copy /setlist Command" [ref=e1390]
+                - button "Plan This" [ref=e1391]
+                - button "Dismiss" [ref=e1392]
+            - generic [ref=e1393] [cursor=pointer]:
+              - generic [ref=e1394]:
+                - generic [ref=e1395]: Upgrade to Vite 8 with Rolldown bundler
+                - generic [ref=e1396]: Build This
+                - generic [ref=e1397]: new
+              - generic [ref=e1398]: 10-30x faster production builds directly speed up Muddy dev, Lomax staging deploys, and Otis parallel builds. Real-world reports show 46s to 6s.
+              - generic [ref=e1399]:
+                - button "Copy /setlist Command" [ref=e1400]
+                - button "Plan This" [ref=e1401]
+                - button "Dismiss" [ref=e1402]
+            - generic [ref=e1403] [cursor=pointer]:
+              - generic [ref=e1404]:
+                - generic [ref=e1405]: Update node-tar across all cluster nodes
+                - generic [ref=e1406]: Build This
+                - generic [ref=e1407]: new
+              - generic [ref=e1408]: node-tar path traversal vulnerability affects npm itself. Every node running npm install is exposed until tar >=7.5.3.
+              - generic [ref=e1409]:
+                - button "Copy /setlist Command" [ref=e1410]
+                - button "Plan This" [ref=e1411]
+                - button "Dismiss" [ref=e1412]
+            - generic [ref=e1413] [cursor=pointer]:
+              - generic [ref=e1414]:
+                - generic [ref=e1415]: Audit axios versions across all BR3 projects
+                - generic [ref=e1416]: Build This
+                - generic [ref=e1417]: new
+              - generic [ref=e1418]: Supply chain attack on axios v1.14.1 and v0.30.4 included a RAT. Any BR3 project that pulled these versions during the 3-hour window has compromised credentials.
+              - generic [ref=e1419]:
+                - button "Copy /setlist Command" [ref=e1420]
+                - button "Plan This" [ref=e1421]
+                - button "Dismiss" [ref=e1422]
+        - generic [ref=e1423]:
+          - textbox "Search intel..." [ref=e1424]
+          - combobox [ref=e1425] [cursor=pointer]:
+            - option "All priority" [selected]
+            - option "Critical"
+            - option "High"
+            - option "Medium"
+            - option "Low"
+          - combobox [ref=e1426] [cursor=pointer]:
+            - option "All sources" [selected]
+            - option "Official"
+            - option "Community"
+            - option "Blog"
+          - combobox [ref=e1427] [cursor=pointer]:
+            - option "All types" [selected]
+            - option "Release"
+            - option "Breaking"
+            - option "Security"
+            - option "Feature"
+            - option "Tool"
+            - option "Article"
+        - generic [ref=e1428]:
+          - generic [ref=e1429]:
+            - generic [ref=e1430] [cursor=pointer]:
+              - generic [ref=e1431]: ▼
+              - generic [ref=e1432]: SECURITY & BREAKING
+              - generic [ref=e1433]: "2"
+            - generic [ref=e1434]:
+              - generic [ref=e1435] [cursor=pointer]:
+                - generic [ref=e1436]:
+                  - generic [ref=e1437]: "node-tar CVE: arbitrary file overwrite and symlink poisoning — fixed in v7.5.3"
+                  - generic [ref=e1438]:
+                    - generic [ref=e1439]: SUGGESTED
+                    - generic [ref=e1440]: NEW
+                    - generic [ref=e1441]: high
+                - generic [ref=e1442]: node-tar vulnerable to arbitrary file overwrite and symlink poisoning via insufficient path sanitization. Fixed in tar v7.5.3. Additionally, 36 malicious npm packages disguised as Strapi plugins found exploiting Redis and PostgreSQL for persistent access.
+                - generic [ref=e1443]:
+                  - generic [ref=e1444]: official
+                  - generic [ref=e1445]: 1d ago
+                - generic [ref=e1446]:
+                  - button "Mark Read" [ref=e1447]
+                  - button "Dismiss" [ref=e1448]
+                  - button "Build This" [ref=e1449]
+              - generic [ref=e1450] [cursor=pointer]:
+                - generic [ref=e1451]:
+                  - generic [ref=e1452]: "CRITICAL: Axios npm supply chain attack — malicious v1.14.1 and v0.30.4 deployed RAT"
+                  - generic [ref=e1453]:
+                    - generic [ref=e1454]: ACTION REQUIRED
+                    - generic [ref=e1455]: critical
+                - generic [ref=e1456]: North Korean state actor (Sapphire Sleet/UNC1069) compromised axios maintainer account on Mar 31. Malicious v1.14.1 and v0.30.4 included cross-platform RAT via plain-crypto-js dependency. Active for ~3 hours. If installed, rotate all secrets immediately and pin to v1.14.0 or v0.30.3.
+                - generic [ref=e1457]:
+                  - generic [ref=e1458]: official
+                  - generic [ref=e1459]: 1d ago
+                - generic [ref=e1460]:
+                  - button "Dismiss" [ref=e1461]
+                  - button "Build This" [ref=e1462]
+          - generic [ref=e1463]:
+            - generic [ref=e1464] [cursor=pointer]:
+              - generic [ref=e1465]: ▼
+              - generic [ref=e1466]: STACK UPDATES
+              - generic [ref=e1467]: "8"
+            - generic [ref=e1468]:
+              - generic [ref=e1469] [cursor=pointer]:
+                - generic [ref=e1470]:
+                  - generic [ref=e1471]: React 20 released — Server Actions and Partial Prerendering now stable
+                  - generic [ref=e1472]:
+                    - generic [ref=e1473]: NEW
+                    - generic [ref=e1474]: high
+                - generic [ref=e1475]: React 20 moves Server Actions and Partial Prerendering from experimental to stable. Component tree rendering up to 40% faster. Compiler auto-detects and eliminates dead code paths. Enhanced hooks, improved concurrent rendering.
+                - generic [ref=e1476]:
+                  - generic [ref=e1477]: official
+                  - generic [ref=e1478]: 1d ago
+                - generic [ref=e1479]:
+                  - button "Mark Read" [ref=e1480]
+                  - button "Dismiss" [ref=e1481]
+                  - button "Build This" [ref=e1482]
+              - generic [ref=e1483] [cursor=pointer]:
+                - generic [ref=e1484]:
+                  - generic [ref=e1485]: TypeScript 6.0 RC — last JS-based compiler, Temporal API, Go-based TS7 next
+                  - generic [ref=e1486]:
+                    - generic [ref=e1487]: NEW
+                    - generic [ref=e1488]: high
+                - generic [ref=e1489]: TypeScript 6.0 RC (Mar 6) is the final release on the current JS codebase. Adds Temporal API support, RegExp.escape types, Map upsert methods. 20-50% build time reduction in large monorepos. TypeScript 7 will be rewritten in Go with 10x speedup.
+                - generic [ref=e1490]:
+                  - generic [ref=e1491]: official
+                  - generic [ref=e1492]: 1d ago
+                - generic [ref=e1493]:
+                  - button "Mark Read" [ref=e1494]
+                  - button "Dismiss" [ref=e1495]
+                  - button "Build This" [ref=e1496]
+              - generic [ref=e1497] [cursor=pointer]:
+                - generic [ref=e1498]:
+                  - generic [ref=e1499]: Vite 8.0.5 — Rolldown-powered, 10-30x faster builds
+                  - generic [ref=e1500]:
+                    - generic [ref=e1501]: SUGGESTED
+                    - generic [ref=e1502]: NEW
+                    - generic [ref=e1503]: high
+                - generic [ref=e1504]: Vite 8.0.5 (Apr 6) is the latest patch in the Vite 8 line. Vite 8 shipped Mar 12 with Rolldown as the single Rust-based bundler replacing esbuild+Rollup. Linear reports production builds dropping from 46s to 6s. Vite 7.3.2 and 6.4.2 also released for LTS.
+                - generic [ref=e1505]:
+                  - generic [ref=e1506]: official
+                  - generic [ref=e1507]: 1d ago
+                - generic [ref=e1508]:
+                  - button "Mark Read" [ref=e1509]
+                  - button "Dismiss" [ref=e1510]
+                  - button "Build This" [ref=e1511]
+              - generic [ref=e1512] [cursor=pointer]:
+                - generic [ref=e1513]:
+                  - generic [ref=e1514]: Playwright 1.59.0 — Screencast API, CLI trace analysis, browser dashboard
+                  - generic [ref=e1515]:
+                    - generic [ref=e1516]: SUGGESTED
+                    - generic [ref=e1517]: NEW
+                    - generic [ref=e1518]: high
+                - generic [ref=e1519]: Playwright 1.59.0 (Apr 1) introduces page.screencast API for unified recording with action annotations and visual overlays. CLI trace analysis via npx playwright trace for headless CI debugging. Browser dashboard (PLAYWRIGHT_DASHBOARD=1) to watch agent browsers. New --fail-on-flaky-tests flag. v1.59.1 patches Windows regression.
+                - generic [ref=e1520]:
+                  - generic [ref=e1521]: official
+                  - generic [ref=e1522]: 1d ago
+                - generic [ref=e1523]:
+                  - button "Mark Read" [ref=e1524]
+                  - button "Dismiss" [ref=e1525]
+                  - button "Build This" [ref=e1526]
+              - generic [ref=e1527] [cursor=pointer]:
+                - generic [ref=e1528]:
+                  - generic [ref=e1529]: "Anthropic API: 300k max_tokens, 1M context GA on Opus/Sonnet 4.6, Sonnet 4.5 1M retiring Apr 30"
+                  - generic [ref=e1530]:
+                    - generic [ref=e1531]: SUGGESTED
+                    - generic [ref=e1532]: NEW
+                    - generic [ref=e1533]: high
+                - generic [ref=e1534]: Max_tokens raised to 300k on Batches API for Opus/Sonnet 4.6. 1M context window now GA (no beta header) on Sonnet/Opus 4.6. Sonnet 4.5 and Sonnet 4 1M context beta retiring April 30 — migrate to 4.6 models. Web search and code execution tools now GA.
+                - generic [ref=e1535]:
+                  - generic [ref=e1536]: official
+                  - generic [ref=e1537]: 1d ago
+                - generic [ref=e1538]:
+                  - button "Mark Read" [ref=e1539]
+                  - button "Dismiss" [ref=e1540]
+                  - button "Build This" [ref=e1541]
+              - generic [ref=e1542] [cursor=pointer]:
+                - generic [ref=e1543]:
+                  - generic [ref=e1544]: Claude Code v2.1.92 — Bedrock wizard, policy controls, perf improvements
+                  - generic [ref=e1545]:
+                    - generic [ref=e1546]: SUGGESTED
+                    - generic [ref=e1547]: NEW
+                    - generic [ref=e1548]: high
+                - generic [ref=e1549]: Claude Code v2.1.92 (Apr 4) adds forceRemoteSettingsRefresh policy, interactive Bedrock setup wizard, per-model /cost breakdown, and 60% faster Write tool diff for large files. v2.1.91 (Apr 2) adds MCP tool result persistence up to 500K chars.
+                - generic [ref=e1550]:
+                  - generic [ref=e1551]: official
+                  - generic [ref=e1552]: 1d ago
+                - generic [ref=e1553]:
+                  - button "Mark Read" [ref=e1554]
+                  - button "Dismiss" [ref=e1555]
+                  - button "Build This" [ref=e1556]
+              - generic [ref=e1557] [cursor=pointer]:
+                - generic [ref=e1558]:
+                  - generic [ref=e1559]: Tailwind CSS v4.2.2 — Vite 8 support added
+                  - generic [ref=e1560]:
+                    - generic [ref=e1561]: NEW
+                    - generic [ref=e1562]: medium
+                - generic [ref=e1563]: Tailwind CSS v4.2.2 (Mar 18) adds Vite 8 compatibility in @tailwindcss/vite package. Fixes crashes with prototype property candidates and canonicalization issues. v4.1 added text shadows, masks, overflow-wrap utilities, and colored drop shadows.
+                - generic [ref=e1564]:
+                  - generic [ref=e1565]: official
+                  - generic [ref=e1566]: 1d ago
+                - generic [ref=e1567]:
+                  - button "Mark Read" [ref=e1568]
+                  - button "Dismiss" [ref=e1569]
+                  - button "Build This" [ref=e1570]
+              - generic [ref=e1571] [cursor=pointer]:
+                - generic [ref=e1572]:
+                  - generic [ref=e1573]: "Supabase: Log Drains on Pro, 14.8x faster Storage, AI table filters, Stripe Sync"
+                  - generic [ref=e1574]:
+                    - generic [ref=e1575]: NEW
+                    - generic [ref=e1576]: medium
+                - generic [ref=e1577]: Log Drains now available on Pro tier (Datadog, Grafana Loki, Sentry, Axiom, S3). Storage object listing up to 14.8x faster on 60M+ row datasets. AI-powered table filters in dashboard. Queue-based table editing with diff view. One-click Stripe Sync Engine integration.
+                - generic [ref=e1578]:
+                  - generic [ref=e1579]: official
+                  - generic [ref=e1580]: 1d ago
+                - generic [ref=e1581]:
+                  - button "Mark Read" [ref=e1582]
+                  - button "Dismiss" [ref=e1583]
+                  - button "Build This" [ref=e1584]
+          - generic [ref=e1585]:
+            - generic [ref=e1586] [cursor=pointer]:
+              - generic [ref=e1587]: ▼
+              - generic [ref=e1588]: HARDWARE & MARKET
+              - generic [ref=e1589]: "3"
+            - generic [ref=e1590]:
+              - generic [ref=e1591] [cursor=pointer]:
+                - generic [ref=e1592]:
+                  - generic [ref=e1593]: 4TB NVMe SSD prices rising — NAND shortage driving costs through 2027
+                  - generic [ref=e1594]:
+                    - generic [ref=e1595]: NEW
+                    - generic [ref=e1596]: medium
+                - generic [ref=e1597]: 4TB NVMe SSDs now $250-590+ depending on model. Kingston NV3 4TB at $590. NAND flash shortage driven by AI infrastructure demand pushing prices up, expected to persist through 2027. Micron Crucial ceasing consumer drive production.
+                - generic [ref=e1598]:
+                  - generic [ref=e1599]: community
+                  - generic [ref=e1600]: 1d ago
+                - generic [ref=e1601]:
+                  - button "Mark Read" [ref=e1602]
+                  - button "Dismiss" [ref=e1603]
+                  - button "Build This" [ref=e1604]
+              - generic [ref=e1605] [cursor=pointer]:
+                - generic [ref=e1606]:
+                  - generic [ref=e1607]: "RTX 3090 pricing: new $1,488 Amazon, used $713-1,000 eBay"
+                  - generic [ref=e1608]:
+                    - generic [ref=e1609]: NEW
+                    - generic [ref=e1610]: low
+                - generic [ref=e1611]: RTX 3090 new on Amazon at $1,488, third-party new at $1,880. Used market $713-1,000 on eBay. Prices stable but not dropping. Third-party used around $1,148.
+                - generic [ref=e1612]:
+                  - generic [ref=e1613]: community
+                  - generic [ref=e1614]: 1d ago
+                - generic [ref=e1615]:
+                  - button "Mark Read" [ref=e1616]
+                  - button "Dismiss" [ref=e1617]
+                  - button "Build This" [ref=e1618]
+              - generic [ref=e1619] [cursor=pointer]:
+                - generic [ref=e1620]:
+                  - generic [ref=e1621]: "Mac Mini M4 deals: base model $499-549, 24GB/1TB at $1,099"
+                  - generic [ref=e1622]:
+                    - generic [ref=e1623]: NEW
+                    - generic [ref=e1624]: low
+                - generic [ref=e1625]: M4 Mac Mini 16GB/256GB at $499-549 (down from $599). 16GB/512GB at $689 (down from $799). 24GB/512GB at $889 (down from $999). 24GB/1TB at $1,099 at B&H. Consistent $100-130 discounts throughout Q1 2026.
+                - generic [ref=e1626]:
+                  - generic [ref=e1627]: community
+                  - generic [ref=e1628]: 1d ago
+                - generic [ref=e1629]:
+                  - button "Mark Read" [ref=e1630]
+                  - button "Dismiss" [ref=e1631]
+                  - button "Build This" [ref=e1632]
+          - generic [ref=e1633]:
+            - generic [ref=e1634] [cursor=pointer]:
+              - generic [ref=e1635]: ▼
+              - generic [ref=e1636]: COMMUNITY & RESEARCH
+              - generic [ref=e1637]: "1"
+            - generic [ref=e1639] [cursor=pointer]:
+              - generic [ref=e1640]:
+                - generic [ref=e1641]: API test
+                - generic [ref=e1642]:
+                  - generic [ref=e1643]: NEW
+                  - generic [ref=e1644]: low
+              - generic [ref=e1645]: test
+              - generic [ref=e1646]:
+                - generic [ref=e1647]: official
+                - generic [ref=e1648]: 1d ago
+              - generic [ref=e1649]:
+                - button "Mark Read" [ref=e1650]
+                - button "Dismiss" [ref=e1651]
+                - button "Build This" [ref=e1652]

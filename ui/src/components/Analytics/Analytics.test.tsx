@@ -2,13 +2,14 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 import { PerformanceChart } from './PerformanceChart';
 import { CostBreakdown } from './CostBreakdown';
 import { TrendAnalysis } from './TrendAnalysis';
 
 // Mock recharts components
-jest.mock('recharts', () => ({
+vi.mock('recharts', () => ({
   LineChart: ({ children }: any) => <div data-testid="line-chart">{children}</div>,
   BarChart: ({ children }: any) => <div data-testid="bar-chart">{children}</div>,
   PieChart: ({ children }: any) => <div data-testid="pie-chart">{children}</div>,
@@ -27,7 +28,7 @@ jest.mock('recharts', () => ({
 }));
 
 // Mock fetch globally
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch as any;
 
 describe('Analytics Components', () => {
@@ -53,9 +54,7 @@ describe('Analytics Components', () => {
     ];
 
     it('should render loading state initially', () => {
-      mockFetch.mockImplementationOnce(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+      mockFetch.mockImplementationOnce(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
       render(<PerformanceChart period="day" />);
 
@@ -102,9 +101,7 @@ describe('Analytics Components', () => {
       render(<PerformanceChart period="day" />);
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/No performance data available/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/No performance data available/i)).toBeInTheDocument();
       });
     });
 
@@ -120,9 +117,7 @@ describe('Analytics Components', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining('/api/analytics/agent-performance')
         );
-        expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('period=week')
-        );
+        expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('period=week'));
       });
     });
 
@@ -210,9 +205,7 @@ describe('Analytics Components', () => {
     };
 
     it('should render loading state initially', () => {
-      mockFetch.mockImplementationOnce(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+      mockFetch.mockImplementationOnce(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
       render(<CostBreakdown period="day" />);
 
@@ -350,9 +343,7 @@ describe('Analytics Components', () => {
     };
 
     it('should render loading state initially', () => {
-      mockFetch.mockImplementationOnce(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
-      );
+      mockFetch.mockImplementationOnce(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
       render(<TrendAnalysis period="day" days={7} />);
 
@@ -442,12 +433,8 @@ describe('Analytics Components', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining('/api/analytics/success-trends')
         );
-        expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('period=week')
-        );
-        expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('days=14')
-        );
+        expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('period=week'));
+        expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('days=14'));
       });
     });
 

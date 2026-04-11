@@ -1,0 +1,2 @@
+[  425306ms] [ERROR] Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING @ http://localhost:4400/api/events/stream:0
+[  425306ms] [ERROR] Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING @ http://localhost:4400/api/events/stream:0

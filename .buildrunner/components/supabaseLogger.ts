@@ -39,7 +39,8 @@ function formatLine(entry: LogEntry): string {
 }
 
 function detectWarnings(entry: LogEntry): string | null {
-  if (entry.status === 200 && entry.responseSize === 0 && entry.method !== 'HEAD') {
+  // HEAD requests have no body by design - not an RLS denial
+  if (entry.status === 200 && entry.responseSize === 0 && entry.method.toUpperCase() !== 'HEAD') {
     return '⚠ EMPTY_200 — possible RLS denial (200 OK but no data returned)';
   }
   if (entry.status >= 400 && entry.status < 500) {
@@ -98,7 +99,7 @@ export function createInstrumentedFetch(
       return originalFetch(input, init);
     }
 
-    const method = init?.method || 'GET';
+    const method = (init?.method || 'GET').toUpperCase();
     const start = performance.now();
 
     const response = await originalFetch(input, init);

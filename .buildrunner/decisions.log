@@ -488,3 +488,24 @@
   - ws-monitor.js: 4 tabs (topology/alerts/remediation/pipeline), SSE auto-refresh on monitor.* events, 30s poll
   - events.mjs: 7 new /api/monitor/* endpoints for alerts, health, remediation, pipeline, builds, config, event emit
 [Wed Apr  8 14:35:44 CDT 2026] [DECISION] Created build spec: walter-auto-provision with 3 phases — server-side auto-provision, client error surfacing, bulk seed
+
+[2026-04-08T23:50:00Z] [ARCHITECTURE] Walter sentinel test dispatch uses case-insensitive project matching
+  WHY: Dispatcher (auto-save-session.sh) lowercases project names for Lockwood consistency, but Walter API did case-sensitive matching against actual directory names (BuildRunner3 vs buildrunner3). Every dispatch was silently failing.
+  CONTEXT: core/cluster/node_tests.py:1101, ~/.buildrunner/scripts/auto-save-session.sh:11
+
+[2026-04-08T23:50:01Z] [WHY] Root cause: auto-save-session.sh line 11 forces lowercase via tr '[:upper:]' '[:lower:]'
+  WHY: This was intentional for Lockwood API consistency. The bug was on Walter's side - it should have matched case-insensitively since project names come from multiple sources with varying case.
+  CONTEXT: ~/.buildrunner/scripts/auto-save-session.sh, test dispatch pipeline
+
+[2026-04-08T23:50:02Z] [DECISION] Fix applied on Walter's /api/run endpoint, not the dispatcher
+  WHY: The dispatcher's lowercase behavior is correct for Lockwood. Walter should accept case-insensitive project names since it's the receiver of requests from multiple systems.
+  CONTEXT: core/cluster/node_tests.py line 1101: repo_dir.name.lower() != project.lower()
+
+[2026-04-08T23:50:03Z] [CONSTRAINT] Walter only had 6 test runs despite days of uptime
+  WHY: Every HTTP dispatch from Muddy returned 200 OK but with empty run_ids due to case mismatch. The 6 existing runs came from the background watch loop (trigger=watch) which uses actual directory names, not from the dispatch pipeline.
+  CONTEXT: ~/.walter/test_results.db, walter-dispatch.log showing run_id= (empty) on all entries
+
+[2026-04-08T23:50:04Z] [PATTERN] API endpoints accepting project names must use case-insensitive matching
+  WHY: Project names come from git directory names, URL params, config files, and user input - all with varying case conventions. macOS filesystem is case-insensitive but Python string comparison is not.
+  CONTEXT: All cluster node APIs that accept project= parameter
+[Thu Apr  9 13:55:01 CDT 2026] [DECISION] Created build spec: universal-test-plan with 6 phases — mandatory browser verification, dashboard test workspace, bidirectional sync, Walter integration, governance enforcement

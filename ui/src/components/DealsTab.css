@@ -269,6 +269,12 @@
   flex-wrap: wrap;
 }
 
+.deal-status-badges {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
 .deal-seller {
   font-weight: 500;
   color: #555;
@@ -518,33 +524,212 @@
   color: #999;
 }
 
-/* Best deal card styling */
-.hunt-group > .deal-card {
-  border: none;
-  border-radius: 0;
+/* Best Deal Row — compact single line */
+.best-deal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 22px;
   border-bottom: 1px solid #eee;
-}
-
-.deal-best {
   background: #fafafa;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.best-price-tag {
-  display: inline-block;
-  font-size: 10px;
+.best-deal-row:hover {
+  background: #f0f2f5;
+}
+
+.bdr-score {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
   font-weight: 800;
-  padding: 1px 6px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.bdr-rank {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 6px;
   border-radius: 3px;
   background: #333;
   color: white;
-  margin-right: 8px;
-  vertical-align: middle;
+  flex-shrink: 0;
 }
 
-/* In-range highlighting */
+.bdr-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status badges for verification state */
+.bdr-status {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.status-in-stock {
+  background: rgba(76, 175, 80, 0.12);
+  color: #2e7d32;
+}
+
+.status-out-of-stock {
+  background: rgba(244, 67, 54, 0.1);
+  color: #c62828;
+}
+
+.status-verified {
+  background: rgba(33, 150, 243, 0.12);
+  color: #1565c0;
+}
+
+.status-unverified {
+  background: rgba(158, 158, 158, 0.15);
+  color: #757575;
+}
+
+/* Blink highlight for in-range deals */
+.blink-highlight {
+  animation: blink-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes blink-glow {
+  0%,
+  100% {
+    background: rgba(76, 175, 80, 0.06);
+  }
+  50% {
+    background: rgba(76, 175, 80, 0.18);
+    box-shadow: inset 0 0 0 2px rgba(76, 175, 80, 0.4);
+  }
+}
+
+.bdr-seller {
+  font-size: 12px;
+  color: #888;
+  flex-shrink: 0;
+}
+
+.bdr-verdict {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.bdr-verdict.verdict-exceptional {
+  background: rgba(76, 175, 80, 0.12);
+  color: #2e7d32;
+}
+
+.bdr-verdict.verdict-good {
+  background: rgba(255, 152, 0, 0.12);
+  color: #e65100;
+}
+
+.bdr-verdict.verdict-fair {
+  background: rgba(0, 102, 204, 0.1);
+  color: #0066cc;
+}
+
+.bdr-verdict.verdict-pass {
+  background: #f0f0f0;
+  color: #888;
+}
+
+.bdr-time {
+  font-size: 12px;
+  color: #bbb;
+  flex-shrink: 0;
+}
+
+.bdr-price-block {
+  text-align: right;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+.bdr-price {
+  font-size: 18px;
+  font-weight: 800;
+  color: #333;
+}
+
+.bdr-price.price-in-range {
+  color: #2e7d32;
+}
+
+.bdr-delta {
+  display: block;
+  font-size: 10px;
+  margin-top: 1px;
+}
+
+/* In-range blink on best deal row */
+.best-deal-in-range {
+  animation: range-pulse 2s ease-in-out infinite;
+}
+
+@keyframes range-pulse {
+  0%,
+  100% {
+    background: rgba(76, 175, 80, 0.04);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.1);
+  }
+  50% {
+    background: rgba(76, 175, 80, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(76, 175, 80, 0.35);
+  }
+}
+
+.best-deal-in-range .bdr-price {
+  color: #2e7d32;
+}
+
+/* In-range highlighting on expanded deal cards */
 .deal-in-range {
   border-left-color: #4caf50 !important;
   background: rgba(76, 175, 80, 0.03);
+  animation: range-pulse-card 2s ease-in-out infinite;
+}
+
+@keyframes range-pulse-card {
+  0%,
+  100% {
+    border-left-color: #4caf50;
+    background: rgba(76, 175, 80, 0.03);
+  }
+  50% {
+    border-left-color: #2e7d32;
+    background: rgba(76, 175, 80, 0.1);
+  }
 }
 
 .deal-in-range .deal-price {

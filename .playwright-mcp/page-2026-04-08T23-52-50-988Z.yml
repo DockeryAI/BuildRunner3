@@ -1,0 +1,80 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - text: Intelligence
+    - generic [ref=e15] [cursor=pointer]:
+      - img [ref=e16]
+      - text: Terminal
+    - generic [ref=e18] [cursor=pointer]:
+      - img [ref=e19]
+      - text: Builds
+    - generic [ref=e22] [cursor=pointer]:
+      - img [ref=e23]
+      - text: Research
+    - generic [ref=e26] [cursor=pointer]:
+      - img [ref=e27]
+      - text: Monitor
+  - generic [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: BR3 The Band
+        - generic [ref=e33]: Intelligence
+      - generic [ref=e34]:
+        - generic [ref=e36]: "Tokens: 204k"
+        - generic [ref=e39]: "SSE: 2"
+        - generic [ref=e40]: "Uptime: 39m"
+        - generic [ref=e41]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e1128]:
+      - generic [ref=e1129]:
+        - generic [ref=e1130]:
+          - generic [ref=e1131]: Intelligence
+          - generic [ref=e1144]:
+            - generic [ref=e1159]:
+              - strong [ref=e1160]: "0"
+              - text: total
+            - generic [ref=e1161]:
+              - strong [ref=e1162]: "0"
+              - text: critical
+            - generic [ref=e1163]:
+              - strong [ref=e1164]: "0"
+              - text: high
+            - generic [ref=e1165]:
+              - strong [ref=e1166]: "0"
+              - text: improve
+            - generic [ref=e1167]:
+              - strong [ref=e1168]: "0"
+              - text: unread
+        - generic [ref=e1134]: 8s
+      - generic [ref=e1135]:
+        - button "Intelligence" [ref=e1136] [cursor=pointer]
+        - button "Deals" [active] [ref=e1137] [cursor=pointer]
+      - generic [ref=e1169]:
+        - generic [ref=e1170]:
+          - generic [ref=e1171]:
+            - generic [ref=e1172]: Active Hunts
+            - button "+ Add Hunt" [ref=e1173] [cursor=pointer]
+          - generic [ref=e1175]: No active hunts — add one to start tracking.
+        - generic [ref=e1176]:
+          - textbox "Search deals..." [ref=e1177]
+          - generic [ref=e1178]:
+            - generic [ref=e1179]:
+              - strong [ref=e1180]: "0"
+              - text: deals
+            - generic [ref=e1181]:
+              - strong [ref=e1182]: "0"
+              - text: bought
+            - generic [ref=e1183]:
+              - strong [ref=e1184]: $0
+              - text: / $0 (0%)
+            - generic [ref=e1185]:
+              - strong [ref=e1186]: "0"
+              - text: hunts
+        - generic [ref=e1188]:
+          - generic [ref=e1189]: 💰
+          - generic [ref=e1190]: No deals match search

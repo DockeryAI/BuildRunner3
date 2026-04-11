@@ -71,13 +71,12 @@ def _get_intel_db() -> sqlite3.Connection:
 
 
 def _ensure_intel_tables(conn: sqlite3.Connection):
-    """Create tables from schema file, then migrate existing DBs."""
-    if SCHEMA_PATH.exists():
-        schema_sql = SCHEMA_PATH.read_text()
-        conn.executescript(schema_sql)
-    conn.commit()
+    """Create tables from schema file, then migrate existing DBs.
 
-    # Migration fallback for existing databases — add new columns if missing
+    IMPORTANT: Migrations run BEFORE schema.sql so that indexes on new columns
+    don't fail against stale on-disk tables (schema uses IF NOT EXISTS guards).
+    """
+    # Migration FIRST — add columns to existing tables before schema indexes reference them
     _migrate_columns = [
         ("intel_improvements", "type", "TEXT DEFAULT 'fix'"),
         ("intel_improvements", "auto_acted", "INTEGER DEFAULT 0"),
@@ -92,6 +91,14 @@ def _ensure_intel_tables(conn: sqlite3.Connection):
         # Phase 7: deal_items purchase tracking
         ("deal_items", "purchased", "INTEGER DEFAULT 0"),
         ("deal_items", "purchased_price", "REAL"),
+        # Seller verification (Apify-powered)
+        ("deal_items", "seller_verified", "INTEGER DEFAULT 0"),
+        ("deal_items", "seller_account_age_years", "REAL"),
+        ("deal_items", "seller_karma", "INTEGER"),
+        ("deal_items", "seller_trades", "INTEGER"),
+        ("deal_items", "seller_verification_source", "TEXT"),
+        ("deal_items", "seller_verified_at", "TEXT"),
+        ("deal_items", "seller_verification_error", "TEXT"),
     ]
     for table, col, col_def in _migrate_columns:
         try:
@@ -99,6 +106,13 @@ def _ensure_intel_tables(conn: sqlite3.Connection):
             conn.commit()
         except sqlite3.OperationalError:
             pass  # Column already exists
+
+    # NOW apply schema (CREATE TABLE IF NOT EXISTS, CREATE INDEX IF NOT EXISTS)
+    # Safe because migrations above ensure columns exist for any indexes
+    if SCHEMA_PATH.exists():
+        schema_sql = SCHEMA_PATH.read_text()
+        conn.executescript(schema_sql)
+    conn.commit()
 
 
 def _url_hash(url: str) -> str:
@@ -257,13 +271,23 @@ def create_deal_item(hunt_id: int, name: str, category: str = None,
             if existing:
                 return None  # duplicate
 
+        # Extract in_stock from attributes if present (sources like eBay Browse set this)
+        in_stock = None
+        if attributes and isinstance(attributes, dict):
+            in_stock_attr = attributes.get("in_stock")
+            if in_stock_attr is True:
+                in_stock = 1
+            elif in_stock_attr is False:
+                in_stock = 0
+
         cursor = conn.execute(
             """INSERT INTO deal_items (hunt_id, name, category, attributes,
-               source_url, price, condition, seller, seller_rating, listing_url, listing_url_hash)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               source_url, price, condition, seller, seller_rating, listing_url, listing_url_hash, in_stock)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (hunt_id, name, category, json.dumps(attributes) if attributes else None,
              source_url, price, condition, seller, seller_rating, listing_url,
-             hashlib.sha256((dedup_url or "").strip().lower().encode()).hexdigest()[:16] if dedup_url else None)
+             hashlib.sha256((dedup_url or "").strip().lower().encode()).hexdigest()[:16] if dedup_url else None,
+             in_stock)
         )
         conn.commit()
         deal_id = cursor.lastrowid
@@ -283,8 +307,32 @@ def create_deal_item(hunt_id: int, name: str, category: str = None,
 
 def get_deal_items(hunt_id: int = None, min_score: int = None,
                    limit: int = 50, verified_only: bool = None,
-                   in_stock_only: bool = None) -> list[dict]:
-    """Query deal items with filters."""
+                   in_stock_only: bool = None,
+                   seller_verified_only: bool = None,
+                   ready_only: bool = True,
+                   include_out_of_stock: bool = False,
+                   include_unverified_sellers: bool = False) -> list[dict]:
+    """Query deal items with filters.
+
+    By default (ready_only=True), only shows items that are:
+    - in_stock = 1 (verified in stock)
+    - seller_verified = 1 (seller legitimacy verified)
+
+    This ensures the dashboard only shows deals you can actually buy from
+    verified sellers. Set ready_only=False to see all items regardless of
+    verification status.
+
+    Args:
+        hunt_id: Filter by hunt
+        min_score: Minimum deal score
+        limit: Max results
+        verified_only: Require link verified (deprecated, use ready_only)
+        in_stock_only: Require in_stock = 1
+        seller_verified_only: Require seller_verified = 1
+        ready_only: Require BOTH in_stock AND seller_verified (default True)
+        include_out_of_stock: Include items marked out of stock
+        include_unverified_sellers: Include items with unverified sellers
+    """
     conn = _get_intel_db()
     conditions = ["dismissed = 0"]
     params = []
@@ -297,12 +345,22 @@ def get_deal_items(hunt_id: int = None, min_score: int = None,
         params.append(min_score)
     if verified_only:
         conditions.append("verified = 1")
-    if in_stock_only:
+
+    # Ready mode: require both in_stock AND seller_verified
+    if ready_only:
         conditions.append("in_stock = 1")
+        conditions.append("seller_verified = 1")
+    else:
+        # When ready_only=False, show all deals by default.
+        # Only apply filters if explicitly requested.
+        if in_stock_only:
+            conditions.append("in_stock = 1")
+        if seller_verified_only:
+            conditions.append("seller_verified = 1")
 
     where = " AND ".join(conditions)
     query = f"""SELECT * FROM deal_items WHERE {where}
-                ORDER BY deal_score DESC NULLS LAST, collected_at DESC
+                ORDER BY price ASC NULLS LAST, collected_at DESC
                 LIMIT ?"""
     params.append(limit)
 
@@ -326,13 +384,26 @@ def log_market_price(hunt_id: int, price: float, source: str,
                      title: str = None, url: str = None,
                      is_sold: int = 0, condition: str = None) -> Optional[int]:
     """Log a market price data point for a hunt (no deal_item required).
-    Used for building market stats: every price seen, including rejected items and sold listings.
+    Used for building market stats. Applies price floor/ceiling sanity checks
+    to prevent accessory pollution.
     Returns price_history row ID or None on error.
     """
     if price is None or price <= 0:
         return None
     conn = _get_intel_db()
     try:
+        # Get hunt's target_price for sanity bounds
+        hunt_row = conn.execute(
+            "SELECT target_price FROM active_hunts WHERE id = ?", (hunt_id,)
+        ).fetchone()
+        if hunt_row and hunt_row["target_price"]:
+            target = hunt_row["target_price"]
+            price_floor = target * 0.1   # 10% of target
+            price_ceiling = target * 3.0  # 300% of target
+            if price < price_floor or price > price_ceiling:
+                logger.debug(f"Price ${price:.2f} outside bounds [${price_floor:.0f}-${price_ceiling:.0f}] for hunt {hunt_id}")
+                return None
+
         # Dedup: skip if same url already recorded for this hunt
         if url:
             existing = conn.execute(
@@ -399,6 +470,20 @@ def get_market_stats(hunt_id: int, days: int = 90) -> dict:
 
     prices = [r["price"] for r in rows]
     sold_count = sum(1 for r in rows if r["is_sold"])
+
+    # Outlier trimming: IQR-based filter to handle polluted data
+    if len(prices) >= 5:
+        sorted_prices = sorted(prices)
+        q1_idx = len(sorted_prices) // 4
+        q3_idx = (3 * len(sorted_prices)) // 4
+        q1 = sorted_prices[q1_idx]
+        q3 = sorted_prices[q3_idx]
+        iqr = q3 - q1
+        lower_bound = q1 - (1.5 * iqr)
+        upper_bound = q3 + (1.5 * iqr)
+        prices = [p for p in prices if lower_bound <= p <= upper_bound]
+        if not prices:
+            prices = [r["price"] for r in rows]  # fallback if filter too aggressive
 
     median = statistics.median(prices)
     p25, p75 = None, None

@@ -25,6 +25,7 @@ DISABLE_POLLERS = os.environ.get("DISABLE_POLLERS", "true").lower() in ("true", 
 DISABLE_SCORING = os.environ.get("DISABLE_SCORING", "true").lower() in ("true", "1", "yes")
 DISABLE_VERIFIER = os.environ.get("DISABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
 DISABLE_SOURCER = os.environ.get("DISABLE_SOURCER", "false").lower() in ("true", "1", "yes")
+DISABLE_SELLER_VERIFIER = os.environ.get("DISABLE_SELLER_VERIFIER", "false").lower() in ("true", "1", "yes")
 
 # --- Router (included by node_semantic.py) ---
 router = APIRouter()
@@ -118,6 +119,13 @@ async def intel_startup():
             start_sourcer_cron()
         else:
             logger.info("DISABLE_SOURCER=true — skipping hunt sourcer cron")
+
+        if not DISABLE_SELLER_VERIFIER:
+            await asyncio.sleep(30)
+            from core.cluster.seller_verifier import start_seller_verifier_cron
+            start_seller_verifier_cron()
+        else:
+            logger.info("DISABLE_SELLER_VERIFIER=true — skipping seller verifier cron")
 
     asyncio.create_task(_deferred_crons())
 
@@ -329,15 +337,60 @@ async def get_deal_items(
     read: Optional[bool] = None,
     verified_only: Optional[bool] = None,
     in_stock_only: Optional[bool] = None,
+    seller_verified_only: Optional[bool] = None,
+    ready_only: bool = True,
     limit: int = 50,
 ):
-    """Get deal items with filters."""
+    """Get deal items with filters.
+
+    By default (ready_only=True), only returns deals that are:
+    - in_stock = 1 (verified available for purchase)
+    - seller_verified = 1 (seller legitimacy verified via Apify)
+
+    Set ready_only=False to see all deals regardless of verification status.
+    """
     from core.cluster.intel_collector import get_deal_items as _get_deals
     items = _get_deals(
         hunt_id=hunt_id, min_score=min_score, limit=limit,
         verified_only=verified_only, in_stock_only=in_stock_only,
+        seller_verified_only=seller_verified_only, ready_only=ready_only,
     )
     return {"items": items, "count": len(items)}
+
+
+class DealItemCreate(BaseModel):
+    """Deal item for insertion via API."""
+    hunt_id: int
+    name: str
+    category: Optional[str] = None
+    attributes: Optional[dict] = None
+    source_url: Optional[str] = None
+    price: Optional[float] = None
+    condition: Optional[str] = None
+    seller: Optional[str] = None
+    seller_rating: Optional[float] = None
+    listing_url: Optional[str] = None
+
+
+@router.post("/api/deals/items")
+async def create_deal_item_endpoint(item: DealItemCreate):
+    """Create a new deal item (used by remote sourcer)."""
+    from core.cluster.intel_collector import create_deal_item
+    deal_id = create_deal_item(
+        hunt_id=item.hunt_id,
+        name=item.name,
+        category=item.category,
+        attributes=item.attributes,
+        source_url=item.source_url,
+        price=item.price,
+        condition=item.condition,
+        seller=item.seller,
+        seller_rating=item.seller_rating,
+        listing_url=item.listing_url,
+    )
+    if deal_id:
+        return {"id": deal_id, "status": "created"}
+    return {"id": None, "status": "duplicate"}
 
 
 @router.get("/api/deals/hunts")
@@ -359,6 +412,30 @@ async def create_hunt(hunt: HuntCreate):
         source_urls=hunt.source_urls,
     )
     return {"id": hunt_id, "status": "created"}
+
+
+@router.patch("/api/deals/hunts/{hunt_id}")
+async def update_hunt(hunt_id: int, body: dict):
+    """Update hunt fields (requirements, keywords, target_price, etc.)."""
+    from core.cluster.intel_collector import _get_intel_db
+    conn = _get_intel_db()
+    allowed = {"requirements", "keywords", "target_price", "check_interval_minutes", "source_urls", "name", "category"}
+    updates = []
+    params = []
+    for key, val in body.items():
+        if key not in allowed:
+            continue
+        if key in ("requirements", "source_urls") and not isinstance(val, str):
+            val = json.dumps(val)
+        updates.append(f"{key} = ?")
+        params.append(val)
+    if not updates:
+        return {"status": "nothing to update"}
+    params.append(hunt_id)
+    conn.execute(f"UPDATE active_hunts SET {', '.join(updates)} WHERE id = ?", params)
+    conn.commit()
+    conn.close()
+    return {"status": "updated", "hunt_id": hunt_id}
 
 
 @router.post("/api/deals/hunts/{hunt_id}/archive")

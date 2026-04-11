@@ -58,7 +58,15 @@ def dashboard():
 @click.option("--history", is_flag=True, help="Show past plans table (with --view plan)")
 @click.option("--context", is_flag=True, help="Show BUILD spec phase alongside plan (with --view plan)")
 @click.option("--diff", "show_diff", is_flag=True, help="Show plan comparison diff (with --view plan)")
-def show(path: Optional[str], watch: bool, view: str, detail: Optional[str], history: bool = False, context: bool = False, show_diff: bool = False):
+@click.option(
+    "--sort",
+    "-s",
+    type=click.Choice(["completed", "name", "progress", "updated", "health"]),
+    default="completed",
+    help="Sort column (default: completed date desc, then name)",
+)
+@click.option("--asc", is_flag=True, help="Sort ascending instead of descending")
+def show(path: Optional[str], watch: bool, view: str, detail: Optional[str], history: bool = False, context: bool = False, show_diff: bool = False, sort: str = "completed", asc: bool = False):
     """
     Show multi-repo dashboard.
 
@@ -132,7 +140,7 @@ def _generate_dashboard(root_path: Path, view: str, detail: Optional[str]) -> Pa
     elif view == "timeline":
         content = _render_timeline_view(views)
     else:  # overview
-        content = _render_overview(views)
+        content = _render_overview(views, sort_by=sort, ascending=asc)
 
     return Panel(
         content,
@@ -142,8 +150,8 @@ def _generate_dashboard(root_path: Path, view: str, detail: Optional[str]) -> Pa
     )
 
 
-def _render_overview(views: DashboardViews) -> Table:
-    """Render overview table"""
+def _render_overview(views: DashboardViews, sort_by: str = "completed", ascending: bool = False) -> Table:
+    """Render overview table with sortable columns"""
     overview = views.get_overview_data()
 
     # Summary stats
@@ -160,17 +168,38 @@ def _render_overview(views: DashboardViews) -> Table:
     summary.append(f"Blocked: ", style="bold")
     summary.append(f"{overview['blocked_projects']}\n", style="red")
 
+    # Sort projects based on column
+    projects = list(overview["projects"])
+    if sort_by == "completed":
+        # Completed projects first, then by completion date descending
+        def sort_key(p):
+            is_complete = 0 if p.completion_percentage == 100 else 1
+            completed_ts = p.completed_date.timestamp() if p.completed_date else 0
+            return (is_complete, -completed_ts, p.name.lower())
+        projects.sort(key=sort_key, reverse=ascending)
+    elif sort_by == "name":
+        projects.sort(key=lambda p: p.name.lower(), reverse=not ascending)
+    elif sort_by == "progress":
+        projects.sort(key=lambda p: p.completion_percentage, reverse=not ascending)
+    elif sort_by == "updated":
+        projects.sort(key=lambda p: p.last_updated.timestamp(), reverse=not ascending)
+    elif sort_by == "health":
+        health_order = {"healthy": 0, "warning": 1, "critical": 2}
+        projects.sort(key=lambda p: health_order.get(p.health_status, 3), reverse=not ascending)
+
     # Project table
-    table = Table(title="Projects Overview", show_header=True, header_style="bold magenta")
+    sort_indicator = "↑" if ascending else "↓"
+    table = Table(title=f"Projects Overview (sorted by {sort_by} {sort_indicator})", show_header=True, header_style="bold magenta")
     table.add_column("Project", style="cyan", no_wrap=True)
     table.add_column("Status", justify="center")
     table.add_column("Progress", justify="right")
     table.add_column("Features", justify="center")
+    table.add_column("Completed", justify="center")
     table.add_column("Active", justify="center")
     table.add_column("Health", justify="center")
     table.add_column("Last Updated", justify="right")
 
-    for project in overview["projects"]:
+    for project in projects:
         # Status emoji
         status_emoji = (
             "✅"
@@ -189,6 +218,14 @@ def _render_overview(views: DashboardViews) -> Table:
 
         # Features summary
         features_text = f"{project.completed}/{project.total_features}"
+
+        # Completed date (when project reached 100%)
+        if project.completed_date:
+            completed_display = f"[green]{project.completed_date.strftime('%Y-%m-%d')}[/green]"
+        elif project.completion_percentage == 100:
+            completed_display = "[dim]Unknown[/dim]"
+        else:
+            completed_display = "-"
 
         # Active features count
         active_text = str(project.in_progress) if project.in_progress > 0 else "-"
@@ -219,6 +256,7 @@ def _render_overview(views: DashboardViews) -> Table:
             status_emoji,
             f"[{progress_color}]{progress_text}[/{progress_color}]",
             features_text,
+            completed_display,
             active_text,
             health_display,
             updated,

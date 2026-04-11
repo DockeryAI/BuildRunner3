@@ -189,6 +189,30 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
             if c.lower() in condition:
                 return False, f"condition '{condition}' is rejected"
 
+    # Domestic-only check (reject international sellers/locations)
+    if filters.get("domestic_only", False):
+        item_location = ""
+        if isinstance(attrs, dict):
+            item_location = (attrs.get("item_location", "") or "").lower()
+        seller_location = (item.get("seller_location", "") or "").lower()
+        location = item_location or seller_location
+        if location and location not in ("us", "usa", "united states", ""):
+            return False, f"international seller/location: {location}"
+
+    # Min seller feedback count
+    min_feedback = filters.get("min_seller_feedback")
+    if min_feedback:
+        feedback = item.get("seller_feedback_count") or (attrs.get("seller_feedback_count") if isinstance(attrs, dict) else None)
+        if feedback is not None and feedback < min_feedback:
+            return False, f"seller feedback {feedback} below minimum {min_feedback}"
+
+    # Min seller rating percentage
+    min_rating = filters.get("min_seller_rating")
+    if min_rating:
+        rating = item.get("seller_rating")
+        if rating is not None and rating < min_rating:
+            return False, f"seller rating {rating}% below minimum {min_rating}%"
+
     # Also check keyword-based exclusions as fallback
     excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
     if excluded and any(ex in name_lower for ex in excluded):
@@ -241,7 +265,13 @@ async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dic
             skip_dup += 1
             continue
 
-        # Log every price to market data — all items are valid market data
+        passed, reason = _validate_item(item, requirements, hunt_keywords)
+        if not passed:
+            skip_relevance += 1
+            logger.debug(f"  Irrelevant '{item.get('name', '')[:60]}': {reason}")
+            continue
+
+        # Log price ONLY for validated items (prevents accessory pollution)
         item_price = item.get("price")
         if item_price and item_price > 0:
             try:
@@ -258,11 +288,6 @@ async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dic
             except Exception as e:
                 logger.debug(f"Market price log failed: {e}")
 
-        passed, reason = _validate_item(item, requirements, hunt_keywords)
-        if not passed:
-            skip_relevance += 1
-            logger.debug(f"  Irrelevant '{item.get('name', '')[:60]}': {reason}")
-            continue
         relevant.append(item)
 
     # Phase 2: sort by price ascending, take top N cheapest
@@ -288,32 +313,13 @@ async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dic
         attrs["price_rank"] = rank
         item["attributes"] = attrs
 
-        try:
-            from core.cluster.intel_collector import create_deal_item
-            deal_id = create_deal_item(
-                hunt_id=item["hunt_id"],
-                name=item["name"],
-                category=item.get("category"),
-                attributes=item.get("attributes"),
-                source_url=source_url,
-                price=item.get("price"),
-                condition=item.get("condition"),
-                seller=item.get("seller"),
-                seller_rating=item.get("seller_rating"),
-                listing_url=item.get("listing_url"),
-            )
-            if deal_id:
-                new_count += 1
-                existing_urls.add(source_url)
-            else:
-                skip_insert += 1
-        except ImportError:
-            deal_id = await _post_deal_item(item)
-            if deal_id:
-                new_count += 1
-                existing_urls.add(source_url)
-            else:
-                skip_insert += 1
+        # Always use API to insert (sourcer runs on Walter, DB is on Lockwood)
+        deal_id = await _post_deal_item(item)
+        if deal_id:
+            new_count += 1
+            existing_urls.add(source_url)
+        else:
+            skip_insert += 1
 
     # Log summary
     logger.info(f"  Insert: {len(items)} scraped, {len(relevant)} relevant, top {len(top_items)} → {new_count} new ({in_range_count} in range)")

@@ -5,10 +5,10 @@
       "_note": "eBay CAPTCHA blocks httpx — use ebay_browse with API keys instead"
     },
     "ebay_browse": {
-      "enabled": false,
+      "enabled": true,
       "marketplace_id": "EBAY_US",
       "limit": 50,
-      "_note": "Set EBAY_APP_ID + EBAY_SECRET env vars to enable"
+      "_note": "Requires EBAY_APP_ID + EBAY_SECRET env vars"
     },
     "reddit_rss": { "enabled": true, "subreddits": ["buildapcsales", "hardwareswap"] },
     "craigslist_rss": { "enabled": false, "_note": "IP-level 403 block — needs proxy to work" },

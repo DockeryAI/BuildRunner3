@@ -33,10 +33,13 @@ OUT_OF_STOCK_PATTERNS = [
     r"Bidding has ended on this item",
     r"This Buy It Now listing has ended",
     r"The item you selected is no longer available",
+    r"Listing Ended",
+    r"item has ended",
+    r"listing ended",
 ]
 OUT_OF_STOCK_RE = re.compile("|".join(OUT_OF_STOCK_PATTERNS), re.IGNORECASE)
 
-# Patterns that indicate an item IS in stock
+# Patterns that indicate an item IS in stock (eBay-focused)
 IN_STOCK_PATTERNS = [
     r"Buy It Now",
     r"Add to cart",
@@ -48,6 +51,11 @@ IN_STOCK_PATTERNS = [
     r"Available",
     r"Buy now",
     r"Order now",
+    r"In \d+ carts",          # eBay: "In 8 carts"
+    r"buy-it-now",            # eBay button class
+    r"d-atc-button",          # eBay add to cart button
+    r'"buyItNowPrice"',       # eBay JSON data
+    r'data-testid="x-bin-action"',  # eBay buy it now button
 ]
 IN_STOCK_RE = re.compile("|".join(IN_STOCK_PATTERNS), re.IGNORECASE)
 

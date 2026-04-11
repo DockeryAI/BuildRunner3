@@ -866,6 +866,28 @@ SETUP_EOF
 echo -e "  ${GREEN}✓${NC} Created BR3_SETUP.md in .buildrunner/"
 
 # ============================================
+# SHELL ALIAS (creates both 4.5 and 4.6 variants)
+# ============================================
+echo ""
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${YELLOW}Creating Shell Aliases${NC}"
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+# Derive alias name from project (lowercase, no spaces/dashes)
+ALIAS_NAME=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr -d ' -')
+
+# Check if alias already exists in .zshrc
+if grep -q "_br_project $ALIAS_NAME " ~/.zshrc 2>/dev/null; then
+  echo -e "  ${BLUE}ℹ${NC}  Alias '$ALIAS_NAME' already exists"
+else
+  # Add to .zshrc (creates both name and name46 variants)
+  echo "_br_project $ALIAS_NAME $PROJECT_PATH" >> ~/.zshrc
+  echo -e "  ${GREEN}✓${NC} Created aliases: ${CYAN}$ALIAS_NAME${NC} (Opus 4.5) + ${CYAN}${ALIAS_NAME}46${NC} (Opus 4.6)"
+  echo -e "  ${BLUE}💡${NC} Run: source ~/.zshrc (or open new terminal)"
+fi
+
+# ============================================
 # FINAL SUMMARY
 # ============================================
 echo ""
