@@ -1,22 +1,22 @@
-# Phase 1 Verification — Walter Service Hardening
+# Phase 1: SQLite Single Writer — Verification
 
-## Deliverable Status
+## All 16 Deliverables: PASS
 
-| # | Deliverable | Status | Evidence |
-|---|-------------|--------|----------|
-| 1 | Threading locks (RC1-RC5) | PASS | _state_lock, _db_lock, _run_status_lock — 3 locks protecting all shared state |
-| 2 | Queue-based execution (RC4) | PASS | queue.Queue with single _queue_consumer thread, dedup by project |
-| 3 | Git SHA change detection | PASS | _detect_changes uses git diff, project_sha_tracking table, _update_tested_sha |
-| 4 | /health endpoint | PASS | GET /api/health returns uptime, last_test_run, repo_heads, memory, queue_depth, version |
-| 5 | Unique temp files (RC6) | PASS | UUID-based: /tmp/walter-{runner}-{project}-{uuid}.json |
-| 6 | /api/run returns queued + polling | PASS | POST /api/run returns run_id, GET /api/run/{run_id}/status for polling |
-| 7 | Dead code removed | PASS | /api/history, /api/running, /api/testmap/baseline, _push_to_lockwood, AlertPayload all removed |
-| 8 | walter-setup.sh | PASS | LaunchAgent plist with KeepAlive+RunAtLoad, deploy+verify via /health |
+1. builds table created with all columns + SUSPECT status
+2. build_events audit log table created
+3. heartbeats table created with sequence tracking
+4. 30 builds migrated from cluster-builds.json (in-flight get fresh baseline)
+5. build-state-machine.mjs rewritten as SQLite accessor
+6. Scanner routes through updateBuild()
+7. Heartbeat handler routes through appendEvent(HEARTBEAT)
+8. Dispatch completion routes through appendEvent(EXIT/STALLED)
+9. registry.mjs reads/writes via SQLite state machine
+10. /api/builds/snapshot endpoint added
+11. registry.mjs lock path fixed (.registry-lock -> cluster-builds.json.lock)
+12. Dead imports removed from events.mjs
+13. migrate-to-events.mjs archived to lib/archive/
+14. NODE_MATRIX extracted to lib/node-matrix.mjs
+15. readRegistry() consolidated to single source
+16. browser.old.log + pending-alerts.jsonl deleted
 
-## Code Quality
-
-- Python syntax verified (ast.parse)
-- Bash syntax verified (bash -n)
-- No unused imports (BaseModel, FastAPI removed)
-- No dead state variables (_file_hashes, _hash_lock removed)
-- All DB operations serialized via _db_lock
+## Functional Tests: 7/7 PASS

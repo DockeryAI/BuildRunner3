@@ -514,3 +514,8 @@
 [2026-04-12T14:37:32Z] [AMENDMENT] Added 7 tasks from /dead analysis: lock file fix (CRITICAL), dead import removal, migration script archive, NODE_MATRIX extraction, readRegistry consolidation, stale file deletion, getNodeHealth extraction. Reason: dead code analysis found race condition, duplicates, and unused code.
 [Sun Apr 12 09:44:27 CDT 2026] [DECISION] Created build spec: hunt-lifecycle with 3 phases (schema+API, dashboard UI, 17track delivery)
 [2026-04-12T14:45:54Z] Phase 5 decisions: setsid via perl POSIX (macOS has no setsid binary), process-group watchdog over perl alarm, 360s timeout for M2 8GB nodes, orphan pkill between retries, --bare flag for headless review, NODE_OPTIONS heap limit 3584MB
+[2026-04-12T14:55:37Z] Phase 1 decisions:
+  - SQLite single writer via better-sqlite3 (shared with dashboard events.db)
+  - State machine setDb() allows dashboard to inject its DB connection
+  - SUSPECT state added for graduated liveness (Phase 2 reaper will use)
+  - cluster-builds.json kept as backward-compat write during transition
