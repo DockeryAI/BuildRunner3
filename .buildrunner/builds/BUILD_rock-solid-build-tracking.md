@@ -1,7 +1,7 @@
 # Build: Rock-Solid Build Tracking
 
 **Created:** 2026-04-12
-**Status:** Phases 1, 5 Complete (2/5) — Phase 2 Next
+**Status:** Phases 1-2 Complete — Phase 2 In Progress
 **Deploy:** infra — restart dashboard server (`node ~/.buildrunner/dashboard/events.mjs`)
 
 ## Overview
@@ -66,7 +66,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 ### Phase 2: Heartbeat Redesign
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Single heartbeat source per build with graduated liveness detection. No more dual heartbeat race between sidecar and relay.
 
 **Files:**
@@ -121,7 +121,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 ### Phase 4: Dashboard Resilience + Status Display
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Dashboard UI handles disconnection gracefully, shows heartbeat health in real-time, uses accessible status indicators.
 
 **Files:**
