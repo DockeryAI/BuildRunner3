@@ -7,7 +7,10 @@
       "Write(~/.claude/commands/*)",
       "Write(~/.buildrunner/scripts/*)",
       "Edit(~/.claude/docs/*)",
-      "Write(~/.buildrunner/*)"
+      "Write(~/.buildrunner/*)",
+      "Bash(rm -f .git/index.lock)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)"
     ]
   }
 }
