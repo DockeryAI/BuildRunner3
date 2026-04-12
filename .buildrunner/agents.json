@@ -1,0 +1,19 @@
+{
+  "agents": {
+    "phase-1-sqlite": {
+      "phase": 1,
+      "name": "SQLite Single Writer",
+      "startedAt": "2026-04-12T14:40:00Z",
+      "status": "running",
+      "node": "muddy"
+    },
+    "phase-5-adversarial": {
+      "phase": 5,
+      "name": "Adversarial Dispatch Hardening",
+      "startedAt": "2026-04-12T14:40:00Z",
+      "status": "complete",
+      "completedAt": "2026-04-12T14:44:00Z",
+      "node": "muddy"
+    }
+  }
+}

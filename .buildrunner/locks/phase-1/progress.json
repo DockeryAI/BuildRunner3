@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "name": "SQLite Single Writer",
+  "step": 1,
+  "step_name": "setup",
+  "step_label": "Setup & sync",
+  "status": "active",
+  "tasks_total": 16,
+  "tasks_done": 0,
+  "current_task": null,
+  "tests_written": 0,
+  "tests_passing": 0,
+  "commits": 0,
+  "errors": [],
+  "warnings": [],
+  "started_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "history": []
+}
