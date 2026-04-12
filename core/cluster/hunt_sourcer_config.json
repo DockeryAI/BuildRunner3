@@ -29,5 +29,10 @@
   "pair_detection": {
     "enabled": true,
     "same_seller_window_hours": 72
+  },
+  "delivery_tracking": {
+    "enabled": true,
+    "check_interval_hours": 4,
+    "api_key_env": "TRACK17_API_KEY"
   }
 }
