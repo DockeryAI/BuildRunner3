@@ -34,6 +34,8 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 - ~/.buildrunner/lib/build-state-machine.mjs (REWRITE)
 - ~/.buildrunner/dashboard/events.mjs (MODIFY — scanner, heartbeat handler, dispatch handler sections)
 - ~/.buildrunner/scripts/registry.mjs (MODIFY)
+- ~/.buildrunner/scripts/next-ready-build.mjs (MODIFY — use shared imports) _(added: 2026-04-12)_
+- ~/.buildrunner/lib/node-matrix.mjs (CREATE — shared module) _(added: 2026-04-12)_
 - ~/.buildrunner/cluster-builds.json (MIGRATE then DEPRECATE)
 - ~/.buildrunner/build-events.jsonl (DELETE)
 - ~/.buildrunner/dashboard/recommender.mjs (MODIFY — read from SQLite)
@@ -51,8 +53,14 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 - [ ] Route dispatch completion through state machine (remove direct writes in events.mjs ~lines 987-1036)
 - [ ] Update registry.mjs to write to SQLite via state machine instead of cluster-builds.json
 - [ ] Add /api/builds/snapshot endpoint that returns full builds table as JSON (replaces reading cluster-builds.json)
+- [ ] **CRITICAL:** Fix registry.mjs lock path divergence — change line 14 from `.registry-lock` to `cluster-builds.json.lock` (currently uses different lock file than events.mjs and build-state-machine.mjs, causing write races) _(added: 2026-04-12, source: /dead analysis)_
+- [ ] Remove unused imports from events.mjs: STATES (line 20), checkStaleHeartbeats (line 22), readRegistryFromEvents (line 23) — grep confirms zero usage _(added: 2026-04-12, source: /dead analysis)_
+- [ ] Archive migrate-to-events.mjs to `lib/archive/` — already executed (171 events exist), guard clause prevents re-run _(added: 2026-04-12, source: /dead analysis)_
+- [ ] Extract NODE*MATRIX to `lib/node-matrix.mjs` — currently duplicated identically in registry.mjs:18-24 and next-ready-build.mjs:15-21 *(added: 2026-04-12, source: /dead analysis)\_
+- [ ] Consolidate readRegistry() — delete duplicate definitions in registry.mjs:61 and next-ready-build.mjs:37, import from build-state-machine.mjs instead _(added: 2026-04-12, source: /dead analysis)_
+- [ ] Delete stale files: `browser.old.log`, `pending-alerts.jsonl` (0 bytes) _(added: 2026-04-12, source: /dead analysis)_
 
-**Success Criteria:** Dashboard shows correct build states sourced entirely from SQLite. cluster-builds.json is not read by any running code. Zero dual-writes.
+**Success Criteria:** Dashboard shows correct build states sourced entirely from SQLite. cluster-builds.json is not read by any running code. Zero dual-writes. No duplicate lock files, no dead imports, no triplicate function definitions.
 
 ---
 
@@ -66,6 +74,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 - ~/.buildrunner/dashboard/events.mjs (MODIFY — heartbeat handler + reaper)
 - ~/.buildrunner/scripts/build-sidecar.sh (MODIFY)
 - ~/.buildrunner/scripts/heartbeat-relay.sh (MODIFY)
+- ~/.buildrunner/lib/cluster-health.mjs (CREATE — shared module) _(added: 2026-04-12)_
 
 **Blocked by:** Phase 1 (events.mjs, state machine)
 **Deliverables:**
@@ -77,8 +86,9 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 - [ ] Relay reports tagged `source: poll` (lower authority than `source: sidecar`)
 - [ ] Server-side reaper every 30s with graduated response: active (<45s) → suspect (45-90s, status=SUSPECT) → stalled (>180s, status=STALLED). Suspect is a liveness warning, stalled is terminal requiring manual intervention or redispatch.
 - [ ] Process group isolation — sidecar uses shared `_setsid-exec.sh` utility (from Phase 5), tracks PGID not just PID
+- [ ] Extract getNodeHealth() to shared `lib/cluster-health.mjs` — currently duplicated identically in registry.mjs:26-33 and recommender.mjs:55-66 _(added: 2026-04-12, source: /dead analysis)_
 
-**Success Criteria:** Only one heartbeat source active per build at any time. Stale builds detected and marked within 3 minutes. No phantom liveness from relay keeping dead builds alive.
+**Success Criteria:** Only one heartbeat source active per build at any time. Stale builds detected and marked within 3 minutes. No phantom liveness from relay keeping dead builds alive. No duplicate health check functions.
 
 ---
 
