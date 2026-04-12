@@ -414,6 +414,14 @@ async def create_hunt(hunt: HuntCreate):
     return {"id": hunt_id, "status": "created"}
 
 
+@router.get("/api/deals/hunts/archived")
+async def get_archived_hunts_endpoint():
+    """Get archived/completed hunts with item counts and total spent."""
+    from core.cluster.intel_collector import get_archived_hunts
+    hunts = get_archived_hunts()
+    return {"hunts": hunts, "count": len(hunts)}
+
+
 @router.patch("/api/deals/hunts/{hunt_id}")
 async def update_hunt(hunt_id: int, body: dict):
     """Update hunt fields (requirements, keywords, target_price, etc.)."""
@@ -519,10 +527,16 @@ async def opus_review_deal(item_id: int, review: OpusDealReview):
 class DealItemUpdate(BaseModel):
     purchased: Optional[int] = None
     purchased_price: Optional[float] = None
-    notes: Optional[str] = None
+    user_notes: Optional[str] = None
     dismissed: Optional[int] = None
     deal_score: Optional[int] = None
     verdict: Optional[str] = None
+    received: Optional[int] = None
+    received_at: Optional[str] = None
+    actual_url: Optional[str] = None
+    tracking_number: Optional[str] = None
+    carrier: Optional[str] = None
+    delivery_status: Optional[str] = None
 
 
 @router.get("/api/deals/market/{hunt_id}")
@@ -755,3 +769,54 @@ async def sourcer_status():
     if _sourcer_task and not _sourcer_task.done():
         return {"status": "running"}
     return {"status": "idle"}
+
+
+# --- Item Lifecycle Endpoints ---
+
+
+@router.delete("/api/deals/items/{item_id}")
+async def delete_deal_item_endpoint(item_id: int):
+    """Delete a deal item and its price history."""
+    from core.cluster.intel_collector import delete_deal_item
+    success = delete_deal_item(item_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Deal item not found")
+    return {"status": "deleted"}
+
+
+class HuntCompleteBody(BaseModel):
+    completion_notes: Optional[str] = None
+
+
+@router.post("/api/deals/hunts/{hunt_id}/complete")
+async def complete_hunt_endpoint(hunt_id: int, body: HuntCompleteBody = None):
+    """Complete a hunt — sets active=0, completed_at=now, optional notes."""
+    from core.cluster.intel_collector import complete_hunt
+    notes = body.completion_notes if body else None
+    complete_hunt(hunt_id, completion_notes=notes)
+    return {"status": "completed"}
+
+
+@router.post("/api/deals/hunts/{hunt_id}/revive")
+async def revive_hunt_endpoint(hunt_id: int):
+    """Revive an archived hunt — sets active=1, clears completed_at."""
+    from core.cluster.intel_collector import revive_hunt
+    revive_hunt(hunt_id)
+    return {"status": "revived"}
+
+
+class ItemReviveBody(BaseModel):
+    target_hunt_id: Optional[int] = None
+    new_hunt_name: Optional[str] = None
+
+
+@router.post("/api/deals/items/{item_id}/revive")
+async def revive_item_endpoint(item_id: int, body: ItemReviveBody = None):
+    """Revive a deal item — clone into target hunt or create new hunt."""
+    from core.cluster.intel_collector import revive_item
+    target_hunt_id = body.target_hunt_id if body else None
+    new_hunt_name = body.new_hunt_name if body else None
+    result = revive_item(item_id, target_hunt_id=target_hunt_id, new_hunt_name=new_hunt_name)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return {"status": "revived", **result}

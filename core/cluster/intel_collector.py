@@ -99,6 +99,17 @@ def _ensure_intel_tables(conn: sqlite3.Connection):
         ("deal_items", "seller_verification_source", "TEXT"),
         ("deal_items", "seller_verified_at", "TEXT"),
         ("deal_items", "seller_verification_error", "TEXT"),
+        # Hunt lifecycle tracking
+        ("deal_items", "received", "INTEGER DEFAULT 0"),
+        ("deal_items", "received_at", "TEXT"),
+        ("deal_items", "user_notes", "TEXT"),
+        ("deal_items", "actual_url", "TEXT"),
+        ("deal_items", "tracking_number", "TEXT"),
+        ("deal_items", "carrier", "TEXT"),
+        ("deal_items", "delivery_status", "TEXT DEFAULT 'none'"),
+        ("deal_items", "delivery_updated_at", "TEXT"),
+        ("active_hunts", "completed_at", "TEXT"),
+        ("active_hunts", "completion_notes", "TEXT"),
     ]
     for table, col, col_def in _migrate_columns:
         try:
@@ -568,8 +579,10 @@ def update_deal_item(item_id: int, **fields) -> bool:
     Supported fields: purchased, purchased_price, notes, dismissed, read.
     Returns True if row was updated.
     """
-    allowed = {"purchased", "purchased_price", "notes", "dismissed", "read",
-               "deal_score", "verdict", "below_assessment", "opus_assessment"}
+    allowed = {"purchased", "purchased_price", "user_notes", "dismissed", "read",
+               "deal_score", "verdict", "below_assessment", "opus_assessment",
+               "received", "received_at", "actual_url", "tracking_number",
+               "carrier", "delivery_status", "delivery_updated_at"}
     updates = []
     params = []
     for key, value in fields.items():
@@ -648,6 +661,127 @@ def archive_hunt(hunt_id: int) -> bool:
     conn.commit()
     conn.close()
     return True
+
+
+def complete_hunt(hunt_id: int, completion_notes: str = None) -> bool:
+    """Complete a hunt — sets active=0, completed_at=now, optional notes."""
+    conn = _get_intel_db()
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "UPDATE active_hunts SET active = 0, completed_at = ?, completion_notes = ? WHERE id = ?",
+        (now, completion_notes, hunt_id)
+    )
+    conn.commit()
+    conn.close()
+    return True
+
+
+def get_archived_hunts() -> list[dict]:
+    """Get archived/completed hunts with item counts and total spent."""
+    conn = _get_intel_db()
+    hunts = conn.execute(
+        "SELECT * FROM active_hunts WHERE active = 0 ORDER BY completed_at DESC, created_at DESC"
+    ).fetchall()
+    result = []
+    for hunt in hunts:
+        h = dict(hunt)
+        stats = conn.execute(
+            """SELECT COUNT(*) as item_count,
+                      SUM(CASE WHEN purchased = 1 THEN purchased_price ELSE 0 END) as total_spent,
+                      SUM(CASE WHEN purchased = 1 THEN 1 ELSE 0 END) as purchased_count,
+                      SUM(CASE WHEN received = 1 THEN 1 ELSE 0 END) as received_count
+               FROM deal_items WHERE hunt_id = ?""",
+            (h["id"],)
+        ).fetchone()
+        h["item_count"] = stats["item_count"] or 0
+        h["total_spent"] = round(stats["total_spent"] or 0, 2)
+        h["purchased_count"] = stats["purchased_count"] or 0
+        h["received_count"] = stats["received_count"] or 0
+        result.append(h)
+    conn.close()
+    return result
+
+
+def revive_hunt(hunt_id: int) -> bool:
+    """Revive an archived hunt — sets active=1, clears completed_at."""
+    conn = _get_intel_db()
+    conn.execute(
+        "UPDATE active_hunts SET active = 1, completed_at = NULL, completion_notes = NULL WHERE id = ?",
+        (hunt_id,)
+    )
+    conn.commit()
+    conn.close()
+    return True
+
+
+def revive_item(item_id: int, target_hunt_id: int = None, new_hunt_name: str = None) -> dict:
+    """Revive a deal item from an archived hunt.
+
+    If target_hunt_id provided, clone item into that hunt.
+    If new_hunt_name provided, create a new hunt and clone into it.
+    If neither, create a hunt named 'Revived: {original_hunt_name}'.
+    Cloned item has purchased=0, received=0 (fresh lifecycle).
+    Returns {"item_id": new_id, "hunt_id": target_id}.
+    """
+    conn = _get_intel_db()
+    row = conn.execute("SELECT * FROM deal_items WHERE id = ?", (item_id,)).fetchone()
+    if not row:
+        conn.close()
+        return {"error": "Item not found"}
+    item = dict(row)
+
+    # Determine target hunt
+    if target_hunt_id:
+        dest_hunt_id = target_hunt_id
+    elif new_hunt_name:
+        cursor = conn.execute(
+            "INSERT INTO active_hunts (name, category) VALUES (?, ?)",
+            (new_hunt_name, item.get("category", "other"))
+        )
+        conn.commit()
+        dest_hunt_id = cursor.lastrowid
+    else:
+        # Get original hunt name
+        hunt_row = conn.execute(
+            "SELECT name, category FROM active_hunts WHERE id = ?", (item["hunt_id"],)
+        ).fetchone()
+        hunt_name = hunt_row["name"] if hunt_row else "Unknown"
+        hunt_cat = hunt_row["category"] if hunt_row else "other"
+        cursor = conn.execute(
+            "INSERT INTO active_hunts (name, category) VALUES (?, ?)",
+            (f"Revived: {hunt_name}", hunt_cat)
+        )
+        conn.commit()
+        dest_hunt_id = cursor.lastrowid
+
+    # Clone the item into target hunt with reset lifecycle
+    cursor = conn.execute(
+        """INSERT INTO deal_items (hunt_id, name, category, attributes, source_url, price,
+           condition, seller, seller_rating, listing_url, listing_url_hash,
+           actual_url, user_notes, tracking_number, carrier)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (dest_hunt_id, item["name"], item.get("category"), item.get("attributes"),
+         item.get("source_url"), item.get("price"), item.get("condition"),
+         item.get("seller"), item.get("seller_rating"), item.get("listing_url"),
+         item.get("listing_url_hash"), item.get("actual_url"), item.get("user_notes"),
+         None, None)
+    )
+    conn.commit()
+    new_item_id = cursor.lastrowid
+    conn.close()
+    return {"item_id": new_item_id, "hunt_id": dest_hunt_id}
+
+
+def delete_deal_item(item_id: int) -> bool:
+    """Delete a deal item and its price history."""
+    conn = _get_intel_db()
+    # Delete price history first (no FK cascade configured)
+    conn.execute("DELETE FROM price_history WHERE deal_item_id = ?", (item_id,))
+    conn.execute("DELETE FROM deal_items WHERE id = ?", (item_id,))
+    conn.commit()
+    changed = conn.total_changes > 0
+    conn.close()
+    return changed
 
 
 # --- Model Snapshots ---

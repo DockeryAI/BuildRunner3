@@ -62,6 +62,15 @@ CREATE TABLE IF NOT EXISTS deal_items (
     listing_url_hash TEXT,  -- SHA256[:16] of listing_url for dedup
     purchased INTEGER NOT NULL DEFAULT 0,  -- 1=bought this item
     purchased_price REAL,  -- actual purchase price (may differ from listing)
+    -- Lifecycle tracking
+    received INTEGER NOT NULL DEFAULT 0,  -- 1=item received
+    received_at TEXT,
+    user_notes TEXT,  -- user-editable notes (separate from AI assessments)
+    actual_url TEXT,  -- user-corrected URL (may differ from listing_url)
+    tracking_number TEXT,
+    carrier TEXT,
+    delivery_status TEXT NOT NULL DEFAULT 'none',  -- none/ordered/shipped/in_transit/out_for_delivery/delivered
+    delivery_updated_at TEXT,
     -- Seller verification (Apify-powered)
     seller_verified INTEGER NOT NULL DEFAULT 0,  -- 1=verified, 0=unverified
     seller_account_age_years REAL,  -- Reddit/eBay account age
@@ -121,6 +130,8 @@ CREATE TABLE IF NOT EXISTS active_hunts (
     source_urls TEXT,  -- JSON array
     requirements TEXT,  -- JSON: filters, pair_rules, notes (see hunt_sourcer.py)
     active INTEGER NOT NULL DEFAULT 1,
+    completed_at TEXT,
+    completion_notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
