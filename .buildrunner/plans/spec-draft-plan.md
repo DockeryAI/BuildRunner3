@@ -1,199 +1,132 @@
-# DRAFT: BR3 Universal Test Plan System
+# Build: Hunt Lifecycle Management
 
-## Purpose
+**Created:** 2026-04-12
+**Status:** Phase 1 In Progress
+**Deploy:** local — Lockwood FastAPI + Muddy dashboard (deploy nodes via SSH after each phase)
 
-Every BR3 build gets a TEST_PLAN.md — a plain English testing document that lives alongside the BUILD spec. Tests are verified in a real browser via Playwright. No test passes without browser confirmation. The dashboard shows all tests per project, editable inline, with changes flowing bidirectionally to the filesystem. Mandatory after every single build phase — no exceptions.
+## Overview
 
-## Problem Being Solved
+Full item lifecycle tracking for the hunt/deals system. Items flow through found → purchased → received with notes, editable URLs, delivery tracking via 17track, and delete. Hunts can be completed, archived, and revived. Single items can be revived from archived hunts.
 
-Claude marks tests as "passing" without opening a browser. Rate limits, guards, and middleware block user flows but go undiscovered because nobody tested the full flow end-to-end. New Claude instances don't know what was tested vs assumed. The TEST_PLAN.md + dashboard system fixes all of this.
+**Builds On:** BUILD_hunt-system (ALL 5 PHASES COMPLETE) — hunts, deals, sourcer, scoring, dashboard all exist.
 
-## Tech Stack
+**DO NOT:**
 
-- Node.js (dashboard workspace, file watcher, WebSocket server)
-- Playwright MCP (browser verification)
-- SQLite (Walter test results)
-- Chokidar v4 (file watching for dashboard sync)
-- SSE/WebSocket (real-time dashboard updates)
-- Markdown (TEST_PLAN.md format)
+- Rebuild existing hunt/deal infrastructure (tables, CRUD, scoring, dashboard tab all exist)
+- Break existing sourcer pipeline or scoring flow
+- Remove the existing purchased toggle (extend it)
+- Change the intel_items or intel_improvements tables
+- Add automated purchasing
 
-## Existing Infrastructure to Build On
+**Research:**
 
-- Dashboard workspace pattern: ws-\*.js files in ~/.buildrunner/dashboard/public/js/
-- Registry: ~/.buildrunner/scripts/registry.mjs (build tracking)
-- Events: ~/.buildrunner/dashboard/events.mjs (SSE + WebSocket)
-- Walter: core/cluster/node_tests.py (test_file_map, SHA tracking)
-- Walter integration: ~/.buildrunner/dashboard/integrations/walter.mjs
-- Stop hooks: ~/.claude/settings.json (test + visual verification)
-- Begin skill: ~/.claude/commands/begin.md (Steps 3, 3.5, 4.5, 6.5, 7)
-- File watchers: core/build/file_watcher.py (watchdog pattern)
-- Governance: ~/.buildrunner/governance/governance.yaml
-
----
-
-## Phase 1: TEST_PLAN.md Format + Creation in /begin
-
-**Goal:** Every build creates a TEST_PLAN.md during planning. Format is standardized with preconditions, user actions, expected results, status, and per-row content hashes.
-
-**Files:**
-
-- ~/.claude/docs/begin-test-plan.md (NEW)
-- ~/.claude/commands/begin.md (MODIFY)
-- ~/.claude/docs/begin-tdd-gate.md (MODIFY)
-
-**Deliverables:**
-
-- [ ] TEST_PLAN.md format specification with rules header, feature sections, precondition/action/result/status columns, per-row content hash, version tracking
-- [ ] begin-test-plan.md reference doc with format template, generation rules, status management, healing protocol, rate-limit bypass rule, false-pass prevention checklist, XML enforcement tags
-- [ ] begin.md Step 3: create TEST_PLAN.md alongside phase plan, every deliverable gets user-flow rows from UX perspective
-- [ ] begin.md Step 3.5: generate .spec.ts Playwright files from TEST_PLAN.md browser scenarios, commit alongside unit tests
-- [ ] begin.md Step 4: after each commit, update TEST_PLAN.md statuses, FAILED blocks next task
-- [ ] begin.md Step 4.5: run all Playwright specs, update statuses, heal before failing (2 attempts), block if FAILED after healing
-
-**Success Criteria:** /begin creates TEST_PLAN.md with user-perspective test rows for every deliverable.
-
----
-
-## Phase 2: Mandatory Post-Build Browser Verification Gate
-
-**Goal:** Every phase completion requires full TEST_PLAN.md browser verification. No skip criteria. No exceptions. Any change can break user flows.
-
-**Files:**
-
-- ~/.claude/commands/begin.md (MODIFY)
-- ~/.claude/docs/begin-verification.md (MODIFY)
-- ~/.claude/settings.json (MODIFY)
-- ~/.claude/commands/autopilot.md (MODIFY)
-
-**Deliverables:**
-
-- [ ] Step 6.5 rewrite: parse TEST_PLAN.md, run every non-PASS test in Playwright, update statuses, block if any FAILED
-- [ ] Remove ALL skip criteria from browser verification
-- [ ] XML absolute completion rule: PASS = browser-confirmed only
-- [ ] Rate limit/guard bypass rule: limiters must have TEST_MODE bypass
-- [ ] Healing protocol: re-snapshot, update selectors, re-run (2 attempts) before FAILED
-- [ ] False pass prevention: 5-question checklist before any PASS
-- [ ] Stop hook: check TEST_PLAN.md, block if non-PASS rows exist
-- [ ] Autopilot: full regression between every phase
-
-**Success Criteria:** Claude cannot complete any phase or stop until every row is PASS via Playwright.
-
----
-
-## Phase 3: Dashboard Test Workspace
-
-**Goal:** New "Tests" workspace in the BR3 dashboard. Testpad-style checklist UX — all tests visible at once, editable inline, keyboard-driven. Real-time status updates.
-
-**Files:**
-
-- ~/.buildrunner/dashboard/public/js/ws-tests.js (NEW)
-- ~/.buildrunner/dashboard/public/index.html (MODIFY)
-- ~/.buildrunner/dashboard/events.mjs (MODIFY)
-- ~/.buildrunner/dashboard/emit-event.mjs (MODIFY)
-
-**Deliverables:**
-
-- [ ] ws-tests.js: project selector, progress bar (pass/fail/untested), collapsible feature sections, checklist rows with status badges
-- [ ] Inline editing: click row to edit precondition/action/result, auto-save on blur/Enter, arrow keys + Tab navigation
-- [ ] Add Flow button (new test group per feature), Add Test button (new row per flow), Delete row with confirmation
-- [ ] Non-dismissable rules banner showing 6 verification rules
-- [ ] Real-time SSE updates when Claude/Walter updates test statuses
-- [ ] Test run history per row (last 5 results on badge click)
-- [ ] Project summary: total tests, pass rate, last tested, last tester
-- [ ] index.html: tests workspace div + sidebar icon + switcher
-
-**Success Criteria:** User opens dashboard, clicks project, sees all tests in plain English, edits inline, sees real-time updates.
-
----
-
-## Phase 4: Bidirectional Dashboard-File Sync
-
-**Goal:** Dashboard edits write to TEST_PLAN.md. External edits update dashboard. Chokidar watcher with self-edit suppression and hash-based change detection.
-
-**Files:**
-
-- ~/.buildrunner/dashboard/watchers/test-plan-watcher.mjs (NEW)
-- ~/.buildrunner/dashboard/lib/test-plan-parser.mjs (NEW)
-- ~/.buildrunner/dashboard/lib/test-plan-sync.mjs (NEW)
-- ~/.buildrunner/dashboard/events.mjs (MODIFY)
-
-**Deliverables:**
-
-- [ ] test-plan-parser.mjs: parse TEST_PLAN.md to JSON, serialize JSON to markdown, preserve formatting
-- [ ] test-plan-watcher.mjs: chokidar watching TEST_PLAN.md files, 150ms debounce, self-edit suppression via content hash
-- [ ] test-plan-sync.mjs: external change → parse → broadcast via WebSocket; dashboard edit → serialize → write → suppress echo
-- [ ] Per-row content hash in markdown (HTML comment), status resets to UNTESTED on hash change
-- [ ] Conflict notification: "File changed externally — merge or discard?"
-- [ ] WebSocket messages: file:changed, file:save, file:status-update
-- [ ] Auto-discovery: scan registered projects for TEST_PLAN.md on startup
-
-**Success Criteria:** Dashboard edit → file updates in 100ms. External edit → dashboard updates in 200ms. No echo loops.
-
----
-
-## Phase 5: Walter TEST_PLAN.md Integration
-
-**Goal:** Walter parses TEST_PLAN.md, generates Playwright tests from UNTESTED rows, executes, updates statuses. Continuous on every push.
-
-**Files:**
-
-- core/cluster/node_tests.py (MODIFY)
-- core/cluster/test_plan_parser.py (NEW)
-- core/cluster/test_generator.py (NEW)
-
-**Deliverables:**
-
-- [ ] test_plan_parser.py: parse TEST_PLAN.md to Python dicts
-- [ ] test_generator.py: generate .spec.ts from parsed rows, getByRole/getByText locators, precondition setup, row number references
-- [ ] node_tests.py: on run, check TEST_PLAN.md, parse, generate tests for UNTESTED rows, execute via Playwright, update statuses, push to Lockwood
-- [ ] Healing: re-snapshot DOM, selector repair, re-run before FAILED
-- [ ] Incremental generation: only regenerate for changed/UNTESTED rows
-- [ ] Dashboard events: emit test.plan.updated with per-row results
-
-**Success Criteria:** Push to Walter → reads TEST_PLAN.md → generates tests → runs in browser → updates statuses → dashboard shows results.
-
----
-
-## Phase 6: Governance + Enforcement
-
-**Goal:** TEST_PLAN.md mandatory for all builds. Enforced via hooks, governance, skill gates.
-
-**Files:**
-
-- ~/.buildrunner/governance/governance.yaml (MODIFY)
-- ~/.claude/settings.json (MODIFY)
-- ~/.claude/commands/spec.md (MODIFY)
-- ~/.claude/commands/begin.md (MODIFY)
-
-**Deliverables:**
-
-- [ ] governance.yaml: test_plan_required, browser_verification_required, no_skip_criteria
-- [ ] PreToolUse hook: on phase completion commit, verify TEST_PLAN.md exists and all rows PASS
-- [ ] Stop hook: parse TEST_PLAN.md, block if any non-PASS
-- [ ] /spec: prompt for TEST_PLAN.md section in BUILD spec template
-- [ ] Post-build event: emit test.plan.gate to dashboard
-- [ ] Backfill guide for existing builds
-
-**Success Criteria:** No build without TEST_PLAN.md. No phase completion without all-PASS. No Claude stop with incomplete tests.
-
----
+- 17track API key stored in `.env` as `TRACK17_API_KEY`
+- 17track docs: https://api.17track.net/track/v2.2
+- Free tier: 100 queries/day, auto-detects carrier from tracking number
 
 ## Parallelization Matrix
 
-| Phase | Key Files                                                       | Can Parallel With | Blocked By               |
-| ----- | --------------------------------------------------------------- | ----------------- | ------------------------ |
-| 1     | begin.md, begin-test-plan.md, begin-tdd-gate.md                 | -                 | -                        |
-| 2     | begin.md, begin-verification.md, settings.json, autopilot.md    | -                 | 1 (shares begin.md)      |
-| 3     | ws-tests.js, index.html, events.mjs                             | 1, 2              | - (different files)      |
-| 4     | test-plan-watcher.mjs, test-plan-parser.mjs, test-plan-sync.mjs | 1, 2              | 3 (dashboard must exist) |
-| 5     | node_tests.py, test_plan_parser.py, test_generator.py           | 1, 2, 3           | 1 (needs format spec)    |
-| 6     | governance.yaml, settings.json, spec.md                         | -                 | 1, 2, 3, 4, 5            |
+| Phase | Key Files                                                                                               | Can Parallel With | Blocked By       |
+| ----- | ------------------------------------------------------------------------------------------------------- | ----------------- | ---------------- |
+| 1     | `core/cluster/intel_schema.sql`, `core/cluster/intel_collector.py`, `core/cluster/node_intelligence.py` | -                 | -                |
+| 2     | `~/.buildrunner/dashboard/public/js/ws-intel.js`, `~/.buildrunner/dashboard/events.mjs`                 | 3                 | 1 (needs API)    |
+| 3     | `core/cluster/delivery_tracker.py` (NEW)                                                                | 2                 | 1 (needs schema) |
+
+**Optimal execution:**
+
+- **Wave 1:** Phase 1 (schema + API — everything depends on this)
+- **Wave 2:** Phases 2 + 3 (parallel — dashboard vs tracker service, zero file overlap)
+
+## Phases
+
+### Phase 1: Schema + API Extensions
+
+**Status:** not_started
+**Goal:** Database supports full item lifecycle (purchased/received/notes/URL/tracking/delete) and hunt completion/archive/revival. All new API endpoints working.
+**Files:**
+
+- `core/cluster/intel_schema.sql` (MODIFY)
+- `core/cluster/intel_collector.py` (MODIFY)
+- `core/cluster/node_intelligence.py` (MODIFY)
+
+**Blocked by:** None
+**Pre-flight:** Verify Lockwood's `~/.lockwood/intel.db` has existing BUILD_hunt-system columns (purchased, purchased_price, seller_verified, etc.) — if missing, run full schema init first
+**Deliverables:**
+
+- [ ] Add columns to `deal_items`: `received INTEGER DEFAULT 0`, `received_at TEXT`, `user_notes TEXT`, `actual_url TEXT`, `tracking_number TEXT`, `carrier TEXT`, `delivery_status TEXT DEFAULT 'none'`, `delivery_updated_at TEXT`
+- [ ] Add columns to `active_hunts`: `completed_at TEXT`, `completion_notes TEXT`
+- [ ] Run ALTER TABLE migration on Lockwood's `~/.lockwood/intel.db` (SQLite ALTER ADD COLUMN for each new column)
+- [ ] Extend `DealItemUpdate` model with: `received`, `received_at`, `user_notes`, `actual_url`, `tracking_number`, `carrier`, `delivery_status`
+- [ ] Rename existing `DealItemUpdate.notes` → `user_notes` for consistency with new schema column (existing `notes` field has no backing column — was writing to void)
+- [ ] Extend `update_deal_item()` allowed fields set to include all new columns
+- [ ] Add `DELETE /api/deals/items/{item_id}` endpoint — deletes price_history rows FIRST (no FK cascade configured), then deletes the deal_item
+- [ ] Add `POST /api/deals/hunts/{hunt_id}/complete` endpoint — sets `active=0`, `completed_at=now()`, accepts optional `completion_notes`. This is the new canonical endpoint; existing `/archive` endpoint remains for backward compat but doesn't set `completed_at`
+- [ ] Add `GET /api/deals/hunts/archived` endpoint — returns hunts where `active=0` with item counts and total spent
+- [ ] Add `revive_hunt()` and `revive_item()` functions in `intel_collector.py` (no existing revive logic exists — archive_hunt only sets active=0)
+- [ ] Add `POST /api/deals/hunts/{hunt_id}/revive` endpoint — calls revive_hunt(), sets `active=1`, clears `completed_at`
+- [ ] Add `POST /api/deals/items/{item_id}/revive` endpoint — accepts optional `target_hunt_id` or `new_hunt_name`; if neither provided, creates new hunt named "Revived: {original_hunt_name}". Calls revive_item(), clones item, resets purchased/received to 0
+
+**Success Criteria:** All endpoints testable via curl against Lockwood. Delete removes items. Complete/archive/revive cycle works round-trip.
+
+### Phase 2: Dashboard UI
+
+**Status:** not_started
+**Goal:** Dashboard supports the full item lifecycle — multi-state buttons, notes, URL editing, tracking display, delete, hunt completion, archived hunts view, revival.
+**Files:**
+
+- `~/.buildrunner/dashboard/public/js/ws-intel.js` (MODIFY)
+- `~/.buildrunner/dashboard/events.mjs` (MODIFY)
+
+**Blocked by:** Phase 1 (needs API endpoints)
+**Deliverables:**
+
+- [ ] Deal card action buttons: three-state toggle — "Mark Bought" → "Bought ✓ / Mark Received" → "Received ✓✓" (with appropriate styling per state)
+- [ ] Deal card inline notes editing — textarea that saves to `user_notes` (separate from AI assessments)
+- [ ] Deal card URL editing — click to edit actual_url, prefilled with listing_url, saves to `actual_url` field
+- [ ] Deal card tracking display — show carrier + tracking number badge, delivery status badge (color-coded: ordered=yellow, shipped=blue, in_transit=blue, delivered=green)
+- [ ] Delete button on every deal card — red ✕ with confirmation modal ("Delete this deal? This cannot be undone.")
+- [ ] Hunt card "Complete Hunt" button — confirmation modal, moves hunt to archived state
+- [ ] Archived Hunts panel — collapsible section below active hunt cards showing completed hunts with date, item count, total spent
+- [ ] "Revive Hunt" button on archived hunt cards — brings hunt back to active
+- [ ] "Revive Item" action on items within archived hunts — modal to pick target hunt or create new one
+- [ ] Dashboard proxy in events.mjs: add DELETE method forwarding for `/api/proxy/deals/items/{id}`. Also update existing DELETE `/api/proxy/deals/hunts/:id` mapping (line ~1961) to call `/complete` instead of `/archive` for new hunts
+
+**Success Criteria:** Full lifecycle walkthrough in browser — buy item, add note, add tracking, mark received, complete hunt, view in archive, revive.
+
+### Phase 3: 17track Delivery Tracker
+
+**Status:** not_started
+**Goal:** Automatic delivery status updates for items with tracking numbers. Walter runs periodic checks via 17track API.
+**Files:**
+
+- `core/cluster/delivery_tracker.py` (NEW)
+- `core/cluster/hunt_sourcer_config.json` (MODIFY — add tracking section)
+
+**Blocked by:** Phase 1 (needs schema columns)
+**After:** Phase 1 (different files than Phase 2, CAN run in parallel with Phase 2)
+**Deliverables:**
+
+- [ ] `delivery_tracker.py` — standalone service that queries 17track for items where `tracking_number IS NOT NULL AND delivery_status != 'delivered'`
+- [ ] 17track API integration — batch register tracking numbers via POST `/track/v2.2/register` (up to 40 per request), batch query status via POST `/track/v2.2/gettrackinfo`
+- [ ] Auto-detect carrier from tracking number (17track does this natively in batch response)
+- [ ] Map 17track status codes to our states: `none` → `ordered` → `shipped` → `in_transit` → `out_for_delivery` → `delivered`
+- [ ] Update `deal_items` via Lockwood API: PATCH with `delivery_status`, `carrier` (auto-detected), `delivery_updated_at`
+- [ ] Rate limiting — 100 API calls/day limit applies to batch endpoints (each call handles up to 40 items). With 4-hour check interval = 6 calls/day = 240 items max. Check only items not yet delivered.
+- [ ] Config in `hunt_sourcer_config.json`: add `delivery_tracking` section with `enabled`, `check_interval_hours`, `api_key_env`
+- [ ] Deploy to Walter as systemd timer or integrate into existing hunt_sourcer scheduling
+
+**Success Criteria:** Add tracking number to a purchased item, within 4 hours dashboard shows carrier + delivery status automatically.
 
 ## Out of Scope (Future)
 
-- Mobile viewport testing in dashboard
-- CRDT-based collaborative editing
-- AI-generated test specs without human review
-- Visual regression screenshot comparison
-- Test coverage percentage tracking
-- Gherkin/Cucumber/BDD framework integration
+- Push notifications on delivery status change (Discord webhook later)
+- Bulk operations (mark all items in a hunt as received)
+- Cost analytics / spending reports across hunts
+- Export hunt data to CSV/spreadsheet
+- Multi-user hunt sharing
+- Automated tracking number extraction from email
+- eBay order API integration (not available for buyers)
+
+## Session Log
+
+[Will be updated by /begin]

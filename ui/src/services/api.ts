@@ -280,9 +280,7 @@ export const intelAPI = {
 // Deals API — talks to Lockwood intelligence service (same base URL as intel)
 export const dealsAPI = {
   async getDealItems(filters?: DealFilters): Promise<{ items: DealItem[]; count: number }> {
-    const params: Record<string, any> = {
-      ready_only: false, // Show all deals, not just verified + in_stock
-    };
+    const params: Record<string, any> = {};
     if (filters?.hunt_id) params.hunt_id = filters.hunt_id;
     if (filters?.min_score !== undefined) params.min_score = filters.min_score;
     if (filters?.limit) params.limit = filters.limit;

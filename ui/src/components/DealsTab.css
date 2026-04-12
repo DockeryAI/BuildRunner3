@@ -868,3 +868,14 @@
   font-size: 13px;
   margin-top: 8px;
 }
+
+/* Empty state for hunts with no verified in-stock deals */
+.hunt-empty-state {
+  padding: 16px 20px;
+  background: rgba(255, 193, 7, 0.08);
+  border-left: 3px solid #ffc107;
+  color: #856404;
+  font-size: 13px;
+  border-radius: 0 4px 4px 0;
+  margin: 8px 0;
+}

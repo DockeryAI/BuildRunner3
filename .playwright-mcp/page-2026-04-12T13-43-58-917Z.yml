@@ -1,0 +1,77 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - heading "🚀 BuildRunner Workspace" [level=1] [ref=e7]
+      - generic [ref=e8]:
+        - button "📁 Open Project" [ref=e9] [cursor=pointer]
+        - button "✨ New Project" [ref=e10] [cursor=pointer]
+    - generic [ref=e11]:
+      - button "⚡ Command Center" [ref=e12] [cursor=pointer]
+      - button "📝 PRD Editor" [ref=e13] [cursor=pointer]
+      - button "📊 Live Logs" [ref=e14] [cursor=pointer]
+  - generic [ref=e17]:
+    - generic [ref=e18]:
+      - heading "🚀 BuildRunner Command Center" [level=1] [ref=e19]
+      - generic [ref=e20]: Execute any BR command from the web
+    - generic [ref=e21]:
+      - heading "Quick Actions" [level=3] [ref=e22]
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - textbox "Project name" [ref=e25]
+          - button "📁 Init Project" [disabled] [ref=e26]
+        - button "▶️ Run Build" [ref=e27] [cursor=pointer]
+        - button "📊 Status" [ref=e28] [cursor=pointer]
+        - button "📋 Task List" [ref=e29] [cursor=pointer]
+        - button "✅ Quality Check" [ref=e30] [cursor=pointer]
+        - button "🤖 Agent List" [ref=e31] [cursor=pointer]
+    - generic [ref=e32]:
+      - generic [ref=e33]:
+        - generic [ref=e34]: BuildRunner Terminal
+        - generic [ref=e35]: /Users/byronhudson/Projects/BuildRunner3
+      - generic [ref=e37]:
+        - generic [ref=e38]: BR ❯
+        - textbox "Enter any br command (e.g., br run, br quality check)" [active] [ref=e39]
+        - button "Execute" [disabled] [ref=e40]
+    - generic [ref=e41]:
+      - heading "Available Commands" [level=3] [ref=e42]
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - code [ref=e45]: br init [name]
+          - text: "- Initialize new project"
+        - generic [ref=e46]:
+          - code [ref=e47]: br run
+          - text: "- Run the build"
+        - generic [ref=e48]:
+          - code [ref=e49]: br status
+          - text: "- Check status"
+        - generic [ref=e50]:
+          - code [ref=e51]: br task list
+          - text: "- List all tasks"
+        - generic [ref=e52]:
+          - code [ref=e53]: br quality check
+          - text: "- Run quality checks"
+        - generic [ref=e54]:
+          - code [ref=e55]: br agent list
+          - text: "- List AI agents"
+        - generic [ref=e56]:
+          - code [ref=e57]: br plan
+          - text: "- Start planning mode"
+        - generic [ref=e58]:
+          - code [ref=e59]: br quality lint
+          - text: "- Run linter"
+        - generic [ref=e60]:
+          - code [ref=e61]: br quality typecheck
+          - text: "- Type check"
+        - generic [ref=e62]:
+          - code [ref=e63]: br test
+          - text: "- Run tests"
+        - generic [ref=e64]:
+          - code [ref=e65]: br validate
+          - text: "- Validate project"
+        - generic [ref=e66]:
+          - code [ref=e67]: br generate
+          - text: "- Generate code"
+  - generic [ref=e69]:
+    - generic [ref=e70]: BuildRunner v3.2.0
+    - generic [ref=e71]: "|"
+    - generic [ref=e72]: File-based workspace integration with Claude Code

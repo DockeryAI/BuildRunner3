@@ -26,7 +26,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 ### Phase 1: SQLite Single Writer
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** All build state lives in SQLite. One process (dashboard server) owns all writes. cluster-builds.json and build-events.jsonl eliminated as state stores.
 
 **Files:**
@@ -148,7 +148,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 ### Phase 5: Adversarial Dispatch Hardening _(added: 2026-04-12)_
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Fix adversarial-review.sh so remote Claude dispatch to Otis completes reliably instead of failing 100% of the time. Extract setsid process group utility for reuse in Phase 2.
 
 **Files:**

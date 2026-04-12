@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { dealsAPI } from '../services/api';
 import type { DealItem, Hunt, PriceHistoryPoint } from '../types';
 import './DealsTab.css';
@@ -6,6 +6,9 @@ import './DealsTab.css';
 interface DealsTabProps {
   onAlertCount?: (count: number) => void;
 }
+
+// Persist accordion state across remounts (parent polling causes re-renders)
+const persistedExpandedHunts = new Set<number>();
 
 interface HuntGroup {
   hunt: Hunt;
@@ -21,7 +24,9 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null);
-  const [expandedHunts, setExpandedHunts] = useState<Set<number>>(new Set());
+  const [expandedHunts, setExpandedHunts] = useState<Set<number>>(
+    () => new Set(persistedExpandedHunts)
+  );
   const [priceHistory, setPriceHistory] = useState<PriceHistoryPoint[]>([]);
   const [showNewHunt, setShowNewHunt] = useState(false);
   const [newHunt, setNewHunt] = useState({
@@ -33,17 +38,31 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
     source_urls: [] as string[],
   });
 
+  // Use ref to avoid onAlertCount in useCallback deps (prevents cascading re-renders)
+  const onAlertCountRef = useRef(onAlertCount);
+  onAlertCountRef.current = onAlertCount;
+  const lastAlertCountRef = useRef<number>(-1);
+
   const loadData = useCallback(async () => {
     try {
       const [huntsRes, dealsRes] = await Promise.all([
         dealsAPI.getHunts(),
-        dealsAPI.getDealItems(selectedHunt ? { hunt_id: selectedHunt } : { limit: 50 }),
+        dealsAPI.getDealItems({
+          ...(selectedHunt ? { hunt_id: selectedHunt } : { limit: 50 }),
+          ready_only: true,
+          in_stock_only: true,
+          seller_verified_only: true,
+        }),
       ]);
       setHunts(huntsRes.hunts);
       setDeals(dealsRes.items);
 
       const exceptional = dealsRes.items.filter((d) => d.deal_score >= 80 && !d.read).length;
-      onAlertCount?.(exceptional);
+      // Only call if count changed to prevent parent re-renders
+      if (exceptional !== lastAlertCountRef.current) {
+        lastAlertCountRef.current = exceptional;
+        onAlertCountRef.current?.(exceptional);
+      }
       setError(null);
     } catch (err) {
       setError('Failed to connect to Lockwood deals service');
@@ -51,12 +70,41 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
     } finally {
       setLoading(false);
     }
-  }, [selectedHunt, onAlertCount]);
+  }, [selectedHunt]);
 
+  // Polling with visibility handling - pause when tab hidden, refresh when visible
   useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 30000);
-    return () => clearInterval(interval);
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      if (interval) clearInterval(interval);
+      loadData();
+      interval = setInterval(loadData, 30000);
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        // Tab became visible - refresh data immediately and restart polling
+        startPolling();
+      } else {
+        // Tab hidden - pause polling to prevent stale state accumulation
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      }
+    };
+
+    // Start polling if tab is visible
+    if (document.visibilityState === 'visible') {
+      startPolling();
+    }
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      if (interval) clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [loadData]);
 
   const handleSelectHunt = (huntId: number | null) => {
@@ -115,8 +163,13 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
   const toggleHuntAccordion = (huntId: number) => {
     setExpandedHunts((prev) => {
       const next = new Set(prev);
-      if (next.has(huntId)) next.delete(huntId);
-      else next.add(huntId);
+      if (next.has(huntId)) {
+        next.delete(huntId);
+        persistedExpandedHunts.delete(huntId);
+      } else {
+        next.add(huntId);
+        persistedExpandedHunts.add(huntId);
+      }
       return next;
     });
   };
@@ -126,12 +179,19 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
   };
 
   // Group deals by hunt, sorted by price within each group
+  // Filter: only in-stock + verified sellers
+  // STABILITY FIX: Include ALL hunts even with 0 matching deals to prevent accordion state loss
   const huntGroups: HuntGroup[] = useMemo(() => {
-    const huntMap = new Map<number, Hunt>();
-    hunts.forEach((h) => huntMap.set(h.id, h));
-
     const grouped = new Map<number, DealItem[]>();
-    const filteredDeals = selectedHunt ? deals.filter((d) => d.hunt_id === selectedHunt) : deals;
+
+    // Filter deals to only in-stock + verified sellers
+    const filteredDeals = (
+      selectedHunt ? deals.filter((d) => d.hunt_id === selectedHunt) : deals
+    ).filter(
+      (d) =>
+        (d.in_stock === true || d.in_stock === 1) &&
+        (d.seller_verified === true || d.seller_verified === 1)
+    );
 
     filteredDeals.forEach((deal) => {
       const list = grouped.get(deal.hunt_id) || [];
@@ -139,24 +199,28 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
       grouped.set(deal.hunt_id, list);
     });
 
-    const groups: HuntGroup[] = [];
-    grouped.forEach((huntDeals, huntId) => {
-      const hunt = huntMap.get(huntId);
-      if (!hunt) return;
+    // Include ALL hunts (or selected hunt), even those with 0 matching deals
+    // This prevents accordion state from being lost when deals are filtered out
+    const relevantHunts = selectedHunt ? hunts.filter((h) => h.id === selectedHunt) : hunts;
+
+    const groups: HuntGroup[] = relevantHunts.map((hunt) => {
+      const huntDeals = grouped.get(hunt.id) || [];
       const sorted = [...huntDeals].sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
-      groups.push({
+      return {
         hunt,
         deals: sorted,
         bestDeal: sorted[0] || null,
         inRangeCount: sorted.filter(isInRange).length,
-      });
+      };
     });
 
-    // Hunts with in-range deals first, then by best price
+    // Stable sort: hunts with in-range deals first, then by best price, then by hunt.id for determinism
     groups.sort((a, b) => {
       if (a.inRangeCount > 0 && b.inRangeCount === 0) return -1;
       if (b.inRangeCount > 0 && a.inRangeCount === 0) return 1;
-      return (a.bestDeal?.price || Infinity) - (b.bestDeal?.price || Infinity);
+      const priceCompare = (a.bestDeal?.price || Infinity) - (b.bestDeal?.price || Infinity);
+      if (priceCompare !== 0) return priceCompare;
+      return a.hunt.id - b.hunt.id; // Stable secondary sort by ID
     });
 
     return groups;
@@ -361,8 +425,8 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                     </div>
                   </div>
 
-                  {/* Best deal — compact single row */}
-                  {bestDeal && (
+                  {/* Best deal — compact single row, or empty state */}
+                  {bestDeal ? (
                     <BestDealRow
                       deal={bestDeal}
                       inRange={isInRange(bestDeal)}
@@ -372,6 +436,8 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                       formatTime={formatTime}
                       formatPrice={formatPrice}
                     />
+                  ) : (
+                    <div className="hunt-empty-state">No verified in-stock deals available</div>
                   )}
 
                   {/* Accordion for remaining deals */}
@@ -461,22 +527,22 @@ function BestDealRow({
       <span className="bdr-rank">#1</span>
       <span className="bdr-name">{deal.name}</span>
       <div className="bdr-status">
-        {deal.in_stock === true && (
+        {!!deal.in_stock && (
           <span className="status-badge status-in-stock" title="In Stock">
             IN STOCK
           </span>
         )}
-        {deal.in_stock === false && (
+        {!deal.in_stock && deal.in_stock !== null ? (
           <span className="status-badge status-out-of-stock" title="Out of Stock">
             SOLD
           </span>
-        )}
-        {deal.seller_verified && (
+        ) : null}
+        {!!deal.seller_verified && (
           <span className="status-badge status-verified" title="Seller Verified">
             VERIFIED
           </span>
         )}
-        {!isVerified && deal.in_stock !== false && (
+        {!isVerified && !!deal.in_stock && (
           <span className="status-badge status-unverified" title="Not yet verified">
             UNVERIFIED
           </span>
@@ -568,14 +634,14 @@ function DealCard({
             <span className="deal-time">{formatTime(deal.collected_at)}</span>
           </div>
           <div className="deal-status-badges">
-            {deal.in_stock === true && (
-              <span className="status-badge status-in-stock">IN STOCK</span>
-            )}
-            {deal.in_stock === false && (
+            {!!deal.in_stock && <span className="status-badge status-in-stock">IN STOCK</span>}
+            {(deal.in_stock === false || deal.in_stock === 0) && (
               <span className="status-badge status-out-of-stock">SOLD</span>
             )}
-            {deal.seller_verified && <span className="status-badge status-verified">VERIFIED</span>}
-            {!deal.seller_verified && deal.in_stock !== false && (
+            {!!deal.seller_verified && (
+              <span className="status-badge status-verified">VERIFIED</span>
+            )}
+            {!deal.seller_verified && !!deal.in_stock && (
               <span className="status-badge status-unverified">UNVERIFIED</span>
             )}
           </div>
