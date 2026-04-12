@@ -26,7 +26,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 ### Phase 1: SQLite Single Writer
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** All build state lives in SQLite. One process (dashboard server) owns all writes. cluster-builds.json and build-events.jsonl eliminated as state stores.
 
 **Files:**
@@ -81,6 +81,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 - [ ] Add monotonic sequence number (fencing token) to sidecar heartbeat payload
 - [ ] Sidecar heartbeat includes: PID, current phase, phase progress, sequence number, timestamp
+- [ ] Update build-sidecar.sh heartbeat loop to include sequence counter in heartbeat file (JSON format: `{"ts":"...","seq":N}`) _(added: 2026-04-12, source: skill analysis)_
 - [ ] Server rejects heartbeats with sequence <= last recorded sequence (fencing). Server resets sequence to 0 on DISPATCHED event so sidecar restarts are accepted after redispatch.
 - [ ] Demote relay to read-only fallback — only checks nodes with no sidecar heartbeat > 60s
 - [ ] Relay reports tagged `source: poll` (lower authority than `source: sidecar`)
@@ -88,7 +89,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 - [ ] Process group isolation — sidecar uses shared `_setsid-exec.sh` utility (from Phase 5), tracks PGID not just PID
 - [ ] Extract getNodeHealth() to shared `lib/cluster-health.mjs` — currently duplicated identically in registry.mjs:26-33 and recommender.mjs:55-66 _(added: 2026-04-12, source: /dead analysis)_
 
-**Success Criteria:** Only one heartbeat source active per build at any time. Stale builds detected and marked within 3 minutes. No phantom liveness from relay keeping dead builds alive. No duplicate health check functions.
+**Success Criteria:** Only one heartbeat source active per build at any time. Stale builds detected and marked within 3 minutes. No phantom liveness from relay keeping dead builds alive. No duplicate health check functions. Sidecar heartbeats include monotonic sequence for fencing.
 
 ---
 
@@ -148,7 +149,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 ### Phase 5: Adversarial Dispatch Hardening _(added: 2026-04-12)_
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Fix adversarial-review.sh so remote Claude dispatch to Otis completes reliably instead of failing 100% of the time. Extract setsid process group utility for reuse in Phase 2.
 
 **Files:**
