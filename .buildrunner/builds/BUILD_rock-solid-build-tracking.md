@@ -1,7 +1,7 @@
 # Build: Rock-Solid Build Tracking
 
 **Created:** 2026-04-12
-**Status:** Phases 1-2 Complete — Phase 2 In Progress
+**Status:** 3/5 Complete (1, 4, 5) — Phase 2 In Progress
 **Deploy:** infra — restart dashboard server (`node ~/.buildrunner/dashboard/events.mjs`)
 
 ## Overview
@@ -121,7 +121,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 ### Phase 4: Dashboard Resilience + Status Display
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Dashboard UI handles disconnection gracefully, shows heartbeat health in real-time, uses accessible status indicators.
 
 **Files:**
