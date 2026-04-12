@@ -1,7 +1,7 @@
 # Build: Rock-Solid Build Tracking
 
 **Created:** 2026-04-12
-**Status:** Phases 1-3 Complete — Phase 2 In Progress
+**Status:** Phases 1-4 Complete — Phase 3 In Progress
 **Deploy:** infra — restart dashboard server (`node ~/.buildrunner/dashboard/events.mjs`)
 
 ## Overview
@@ -95,7 +95,7 @@ Replace the unreliable multi-writer JSON build registry with a single-writer SQL
 
 ### Phase 3: Exit Status Outbox + Branch-Aware Scanner
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Goal:** Build exit status survives network drops. Scanner reads specs from correct branch.
 
 **Files:**

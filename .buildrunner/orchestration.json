@@ -1,1 +1,1 @@
-{"batches":[{"id":1,"phases":[1,5],"status":"complete"},{"id":2,"phases":[2,4],"status":"running"},{"id":3,"phases":[3]}],"current_batch":2,"total_phases":5,"completed_phases":2,"mode":"autopilot-go","started":"2026-04-12T15:01:08Z"}
+{"batches":[{"id":1,"phases":[3]}],"current_batch":1,"total_phases":5,"completed_phases":4,"mode":"autopilot","started":"2026-04-12T16:07:00Z"}
