@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "name": "Adversarial Dispatch Hardening",
+  "step": 1,
+  "step_name": "setup",
+  "step_label": "Setup & sync",
+  "status": "active",
+  "tasks_total": 7,
+  "tasks_done": 0,
+  "current_task": null,
+  "tests_written": 0,
+  "tests_passing": 0,
+  "commits": 0,
+  "errors": [],
+  "warnings": [],
+  "started_at": "2026-04-12T14:43:01Z",
+  "updated_at": "2026-04-12T14:43:01Z",
+  "history": [{"step": 0.5, "name": "rescue", "label": "Recover uncommitted work", "at": "2026-04-12T14:43:01Z", "status": "skipped"}]
+}
