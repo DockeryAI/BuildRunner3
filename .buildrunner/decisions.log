@@ -509,3 +509,5 @@
   WHY: Project names come from git directory names, URL params, config files, and user input - all with varying case conventions. macOS filesystem is case-insensitive but Python string comparison is not.
   CONTEXT: All cluster node APIs that accept project= parameter
 [Thu Apr  9 13:55:01 CDT 2026] [DECISION] Created build spec: universal-test-plan with 6 phases — mandatory browser verification, dashboard test workspace, bidirectional sync, Walter integration, governance enforcement
+[Sun Apr 12 09:16:32 CDT 2026] [DECISION] Created build spec: rock-solid-build-tracking with 4 phases — SQLite single writer, heartbeat redesign, exit status outbox, dashboard resilience
+[2026-04-12T14:24:37Z] [AMENDMENT] Added Phase 5 (Adversarial Dispatch Hardening) with 7 tasks. Modified Phase 2 setsid deliverable to reference shared utility. Reason: Root cause analysis found adversarial-review.sh failing 100% on Otis due to broken timeout architecture (perl alarm orphans claude --print), missing --bare flag, no NODE_OPTIONS heap cap, and insufficient timeout duration.
