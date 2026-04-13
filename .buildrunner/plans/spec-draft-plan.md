@@ -1,139 +1,175 @@
-# Build: Cross-Model Review Pipeline + Cursor Visibility
+# Draft Plan: Dashboard DB Hardening
 
-**Purpose:** Add automated cross-model code review (GPT-4o via OpenRouter) into BR3's dispatch chain, and set up Cursor as the visual review surface — giving Byron eyes on every phase build without copy-pasting anything.
+**Purpose:** Prevent recurrence of the 2026-04-13 `events.db` corruption and recover from the current broken state. Root cause: multiple independent writers (`events.mjs`, `build-state-machine.mjs`, `observability.mjs`, and any `registry.mjs` subprocess) open `~/.buildrunner/dashboard/events.db` directly with `better-sqlite3` and do not coordinate on journal mode, busy_timeout, or checkpoint strategy. One of them wrote header bytes inconsistent with the WAL between 09:04 and 13:21 today, corrupting the file. The dashboard UI appears healthy only because `events.mjs` (PID 86944) is serving stale mmap'd pages from its startup snapshot.
 
-**Target Users:** Byron (solo builder, non-coder, needs visibility into what AI builds)
+**Target Users:** Byron (solo builder) — the dashboard is his primary source of truth for build state, and it must not silently lie to him.
 
-**Tech Stack:** Python (OpenRouter API), Node.js (dashboard integration), Shell (dispatch chain), Cursor IDE
+**Tech Stack:** `better-sqlite3` (Node), launchd (scheduling), bash (scripts).
+
+**Scope:** Recovery + hardening of `~/.buildrunner/dashboard/events.db`. Does NOT include dashboard feature work, schema changes, or migrations beyond what recovery requires.
 
 ---
 
-## Phase 1: Cursor IDE Setup + Auto-Focus Script
+## Current DB Openers (confirmed via grep for `new Database(`)
 
-**Goal:** Cursor replaces VS Code as daily IDE with a BR3-optimized workspace and an auto-focus script that opens changed files after each phase.
+1. `~/.buildrunner/dashboard/events.mjs` — dashboard server, **WRITER**, holds mmap
+2. `~/.buildrunner/lib/build-state-machine.mjs` — **WRITER**, used by `registry.mjs`, `cluster-health.mjs`, `node-matrix.mjs`, `next-ready-build.mjs`, `recommender.mjs`
+3. `~/.buildrunner/dashboard/observability.mjs` — **READONLY** (opens with `{ readonly: true }` at line 17). Not a writer. Still routes through the helper in Phase 2 for pragma consistency, but does not contribute to the multi-writer race.
+
+The race is between `events.mjs` and any process spawned via `build-state-machine.mjs` (notably `registry.mjs add/update`). Two real writers, not three.
+
+---
+
+## Phase 1: Recovery + Safe Restart
+
+**Goal:** Dashboard is running on a fresh, readable `events.db`. Broken file preserved for forensics. The `BUILD_cross-model-review` amendment from this session is re-registered.
 
 **Files:**
 
-- `~/.buildrunner/scripts/cursor-review-focus.sh` (NEW) — post-phase hook that opens changed files in Cursor's diff view
-- `~/.buildrunner/cursor-workspace.code-workspace` (NEW) — BR3 workspace config with recommended panel layout, excluded paths, and review-focused settings
+- `~/.buildrunner/dashboard/events.db` (REPLACE — move broken aside, fresh created by server on boot)
+- `~/.buildrunner/dashboard/events.db-wal`, `events.db-shm` (DELETE)
+- `~/.buildrunner/dashboard/events.db.broken-2026-04-13` (NEW — forensic copy)
 
 **Blocked by:** None
 
 **Deliverables:**
 
-- [ ] Cursor workspace file with BR3 project paths, .buildrunner/ state visible, node_modules/dist excluded
-- [ ] cursor-review-focus.sh: reads git diff --name-only from last phase, opens all changed files in Cursor via `cursor <file1> <file2> ...` CLI (opens files directly; user uses Cursor's built-in Source Control panel for diff view)
-- [ ] Hook integration: wire cursor-review-focus.sh as optional post-phase trigger (runs after auto-save-session.sh completes, only on Muddy)
-- [ ] Cursor settings.json: dark theme, minimap off, diff editor default open, git decorations enabled, Claude Code extension configured
-- [ ] Verification: Cursor launches, Claude Code terminal works, auto-focus opens correct files after a test commit
+- [ ] Kill dashboard server PID 86944 (`events.mjs`) cleanly via launchd (`launchctl unload` the plist, or SIGTERM)
+- [ ] Move `events.db`, `events.db-wal`, `events.db-shm` to `events.db.broken-2026-04-13.*` (preserve for forensics — do NOT delete)
+- [ ] Restart dashboard server via launchd; confirm it recreates an empty `events.db` on startup
+- [ ] Verify with `sqlite3 events.db "SELECT 1"` that the fresh file is readable
+- [ ] Re-register `BuildRunner3:BUILD_cross-model-review` via `registry.mjs add` (the amendment from earlier this session is in the spec file but not in the registry)
+- [ ] Re-register `BuildRunner3:BUILD_cluster-max` from `~/Projects/BuildRunner3/.buildrunner/builds/BUILD_cluster-max.md` — explicitly required, must be present in the dashboard after Phase 1 completes
+- [ ] Re-register `geo-command-center:BUILD_geo-v2` from `~/Projects/geo-command-center/.buildrunner/builds/BUILD_geo-v2.md` — explicitly required, must be present in the dashboard after Phase 1 completes. Note: cross-project registration, so `registry.mjs add` must be run with `--path ~/Projects/geo-command-center` and `--project geo-command-center`
+- [ ] For any **other** builds Byron wants restored beyond the three above, run `registry.mjs add` per-build manually. (Note: `--register-all` is referenced in the `/spec` skill template but does NOT exist in `registry.mjs` — confirmed via grep. Do not call it. If we want bulk restore, that's a separate small task: implement `--register-all` first, then use it.)
+- [ ] Verify dashboard UI lists (at minimum): `BUILD_cross-model-review`, `BUILD_cluster-max`, `BUILD_geo-v2` — Phase 1 is not complete until all three are visible
 
-**Success Criteria:** After a phase builds, Cursor automatically shows the changed files in diff view without Byron doing anything.
+**Success Criteria:** Dashboard UI lists `BUILD_cross-model-review` (5 phases), `BUILD_cluster-max`, and `BUILD_geo-v2`. Fresh `events.db` opens cleanly from both `sqlite3` CLI and a standalone `new Database()` call. Broken file preserved under `.broken-2026-04-13` for later inspection.
 
 ---
 
-## Phase 2: Cross-Model Review Engine
+## Phase 2: Shared DB-Open Helper + Writer Audit
 
-**Goal:** A Python module that takes a git diff + BUILD spec context, sends it to a non-Claude model via OpenRouter, and returns structured review findings in the same JSON format as adversarial-review.sh.
+**Goal:** Every process that opens `events.db` does so through one helper with identical pragmas. No direct `new Database(DB_PATH)` calls survive outside the helper.
 
 **Files:**
 
-- `core/cluster/cross_model_review.py` (NEW) — review engine: diff parsing, API call, response parsing, caching
-- `core/cluster/cross_model_review_config.json` (NEW) — model selection, budget cap, prompt templates
-- `~/.buildrunner/scripts/cross-model-review.sh` (NEW) — shell wrapper matching adversarial-review.sh interface
+- `~/.buildrunner/lib/db-open.mjs` (NEW)
+- `~/.buildrunner/dashboard/events.mjs` (MODIFY — route through helper)
+- `~/.buildrunner/lib/build-state-machine.mjs` (MODIFY — route through helper)
+- `~/.buildrunner/dashboard/observability.mjs` (MODIFY — route through helper)
 
-**Blocked by:** None (different files than Phase 1)
+**Blocked by:** Phase 1 (need a readable db to test against)
 
 **Deliverables:**
 
-- [ ] cross_model_review.py: accepts diff text + spec context, calls OpenRouter API (model ID: `openai/gpt-4o` — OpenRouter uses provider-prefixed IDs), returns JSON array of {finding, severity} matching adversarial-review.sh format
-- [ ] Multi-backend support: OpenRouter API (primary), Codex CLI (if available, free with ChatGPT Pro), Below local inference (future — endpoint configurable)
-- [ ] SHA-based caching: skip review if same commit SHA already reviewed, cache in ~/.buildrunner/cache/cross-reviews/
-- [ ] Budget tracking: monthly spend cap (configurable, default $50), reads/writes ~/.buildrunner/logs/cross-review-spend.json
-- [ ] Structured review prompt: asks for bugs, security issues, architecture concerns, spec compliance — mirrors the 5 adversarial failure modes
-- [ ] cross-model-review.sh: shell wrapper that takes same args as adversarial-review.sh (plan_file, project_root), calls Python module, outputs JSON to stdout
-- [ ] Error handling: OpenRouter timeout (30s), rate limit retry (1x), malformed response fallback to warning-level finding
-- [ ] Unit tests: test diff parsing, response parsing, cache hit/miss, budget enforcement
+- [ ] Create `db-open.mjs` exporting `openEventsDb()` that sets: `journal_mode=WAL`, `busy_timeout=5000`, `synchronous=NORMAL`, `foreign_keys=ON`
+- [ ] Replace `new Database(DB_PATH)` in `events.mjs`, `build-state-machine.mjs`, `observability.mjs` with `openEventsDb()`
+- [ ] Grep the full `~/.buildrunner/` tree for any remaining `new Database(` or `better-sqlite3` direct imports — fix or delete
+- [ ] Add a startup-time assertion in `events.mjs` that PRAGMA reports `journal_mode=wal` (refuse to start otherwise)
+- [ ] Smoke test: run `registry.mjs list`, `registry.mjs add`, and a dashboard write simultaneously; confirm no lock errors
 
-**Success Criteria:** `cross-model-review.sh plan.md /project/root` returns JSON findings from GPT-4o. Same format as adversarial review. Cached on SHA. Under budget cap.
+**Success Criteria:** All DB opens go through `db-open.mjs`. A grep for `new Database(` outside `db-open.mjs` and `node_modules/` returns zero matches. Concurrent writes from `events.mjs` and `registry.mjs` coexist without errors.
 
 ---
 
-## Phase 3: Dispatch Chain Integration + Unified Gate
+## Phase 3: Hourly Backups + Rotation
 
-**Goal:** Wire cross-model review into auto-save-session.sh as a local background process on Muddy (not a cluster node dispatch). Build a unified review gate that collects from all three review sources into one report.
+**Goal:** If the db breaks again, recovery is a `mv` away.
 
 **Files:**
 
-- `~/.buildrunner/scripts/auto-save-session.sh` (MODIFY) — add cross-model review as local background process alongside existing Walter/Lockwood/Lomax HTTP dispatches
-- `~/.buildrunner/scripts/unified-review-gate.sh` (NEW) — collects results from all review sources, generates combined report
-- `~/.buildrunner/logs/cross-review.log` (NEW, auto-created) — cross-model review results
+- `~/.buildrunner/scripts/backup-events-db.sh` (NEW)
+- `~/Library/LaunchAgents/com.buildrunner.db-backup.plist` (NEW)
+- `~/.buildrunner/dashboard/backups/` (NEW directory, auto-created)
 
-**Blocked by:** Phase 2 (needs cross-model-review.sh to exist)
+**Blocked by:** None (all new files — can run parallel to Phase 2)
 
 **Deliverables:**
 
-- [ ] auto-save-session.sh modification: add cross-model-review.sh as a LOCAL background process on Muddy (not an HTTP dispatch to a node — runs `~/.buildrunner/scripts/cross-model-review.sh "$DIFF" "$PROJECT_ROOT" >> ~/.buildrunner/logs/cross-review.log 2>&1 &`), fire-and-forget alongside existing HTTP dispatches
-- [ ] cross-review.log format: timestamp, commit SHA, model used, findings JSON, cost, duration — one entry per review
-- [ ] unified-review-gate.sh: collects from three INDEPENDENT sources: Walter test results (via Walter API /api/results/:sha or test_results.db), Otis adversarial (run separately by /begin and /autopilot skills, NOT by auto-save), cross-model (cross-review.log). Each source has its own trigger — the gate READS results, doesn't trigger them.
-- [ ] Unified report format: three sections (Tests / Adversarial / Cross-Model), blocker count, overall pass/fail, written to ~/.buildrunner/logs/unified-review.md. Missing sections shown as "pending" or "skipped" (not all three run on every commit)
-- [ ] Gate logic: if ANY source has a blocker-severity finding, overall status = BLOCKED. Warnings listed but non-blocking.
-- [ ] Fallback: if cross-model review times out or fails, gate proceeds with available sources only (degraded but not stuck)
-- [ ] mkdir -p ~/.buildrunner/cache/cross-reviews/ in cross-model-review.sh init (ensure cache dir exists before first write)
+- [ ] `backup-events-db.sh`: uses `sqlite3 events.db ".backup <dest>"` (the online safe method, NOT `cp`) to write `backups/events.db.<HH>.bak`. Rotates: keep last 24 hourly + last 7 daily.
+- [ ] launchd plist: fires the script hourly. Loaded on demand, survives reboot.
+- [ ] Backup script exits non-zero on `.backup` failure and logs to `~/.buildrunner/logs/db-backup.log`
+- [ ] Add a `--restore <backup-file>` flag to the script that stops the dashboard, swaps the backup in, and restarts
+- [ ] Manual test: run once, confirm a readable `.bak` file lands in `backups/` and the dashboard keeps running
 
-**Success Criteria:** After a commit, cross-model review runs locally in background. Unified gate can be invoked to collect all available review results into one report. Gate blocks on blockers from any source.
+**Success Criteria:** 24 rolling hourly + 7 daily backups present after one day of uptime. Running `--restore` on today's broken file (as a dry test) swaps cleanly.
 
 ---
 
-## Phase 4: Dashboard Panel + Review Convergence
+## Phase 4: Health Watchdog
 
-**Goal:** New dashboard panel showing cross-model review results alongside existing review queue. Review convergence view shows agreement/disagreement between reviewers.
+**Goal:** A corruption event pages the user within 5 minutes, not 4 hours.
 
 **Files:**
 
-- `~/.buildrunner/dashboard/public/index.html` (MODIFY) — add Cross-Model Review panel
-- `~/.buildrunner/dashboard/events.mjs` (MODIFY) — add SSE event type for cross-model reviews
-- `~/.buildrunner/dashboard/integrations/cross-review.mjs` (NEW) — data source for cross-model review results
-- `~/.buildrunner/dashboard/integrations/reviews.mjs` (MODIFY) — integrate unified gate into existing review approval flow
+- `~/.buildrunner/scripts/db-watchdog.mjs` (NEW)
+- `~/Library/LaunchAgents/com.buildrunner.db-watchdog.plist` (NEW)
+- `~/.buildrunner/logs/db-watchdog.log` (NEW, auto-created)
 
-**Blocked by:** Phase 3 (needs dispatch data flowing to cross-review.log)
+**Blocked by:** Phase 2 (uses `openEventsDb()` from the shared helper)
 
 **Deliverables:**
 
-- [ ] cross-review.mjs: reads cross-review.log, parses entries, exposes via REST API (/api/cross-reviews, /api/cross-reviews/:sha)
-- [ ] Dashboard panel: "Cross-Model Review" showing last 10 reviews with status (pass/warn/block), model used, cost, findings expandable
-- [ ] Review convergence indicator: when Otis adversarial AND cross-model both flag the same area, highlight as high-confidence finding
-- [ ] Unified review status in existing Review Queue panel: shows combined pass/fail from all sources, not just Otis
-- [ ] SSE event: cross_review_complete pushed when review finishes, dashboard auto-updates
-- [ ] Cost tracker widget: running monthly spend on cross-model reviews (reads cross-review-spend.json)
+- [ ] `db-watchdog.mjs`: every 5 min, opens events.db via the shared helper, runs `PRAGMA integrity_check`, asserts result === `ok`. Also runs a real `SELECT COUNT(*) FROM builds` to catch mmap-vs-disk drift.
+- [ ] On failure: write a loud entry to `db-watchdog.log`, post a dashboard SSE alert (`db_health_alert`), and optionally trigger an automatic `.backup` snapshot before the state degrades further
+- [ ] launchd plist runs the script every 300s
+- [ ] Dashboard UI shows a red banner when the last watchdog entry is a failure
+- [ ] Test: deliberately corrupt a copy of the db in a sandbox, point the watchdog at it, confirm alert fires within one interval
 
-**Success Criteria:** Dashboard shows cross-model review results in real-time. Review queue shows unified status. User can see cost tracking.
+**Success Criteria:** Watchdog runs on schedule, logs ok every cycle. Simulated corruption triggers the red banner within 5 minutes.
 
 ---
 
-## Out of Scope (Future)
+## Phase 5: Single-Writer Architecture (the real fix)
 
-- Below as local review backend (needs 3090 upgrade for quality models)
-- Multi-model rotation (cycling GPT-4o / Gemini / Mistral per review for diversity)
-- Blind spot profiling (tracking which model catches which bug types over time)
-- Cursor agent orchestration (BR3's dispatch system is already more capable)
-- Copilot integration (autocomplete for non-coders adds no value)
-- Antigravity (not ready, stability issues)
+**Goal:** Only `events.mjs` ever writes to `events.db`. All other processes post to an HTTP endpoint. The multi-writer race becomes architecturally impossible.
+
+**Files:**
+
+- `~/.buildrunner/dashboard/events.mjs` (MODIFY — add write endpoints)
+- `~/.buildrunner/lib/build-state-machine.mjs` (MODIFY — split into read-only and HTTP-client write paths)
+- `~/.buildrunner/scripts/registry.mjs` (MODIFY — use HTTP client, not direct db)
+- `~/.buildrunner/dashboard/observability.mjs` (MODIFY — writes go through endpoint)
+- `~/.buildrunner/lib/db-client.mjs` (NEW — thin HTTP client used by all non-server callers)
+
+**Blocked by:** Phase 2 (same files — cannot parallelize with Phase 2)
+
+**Deliverables:**
+
+- [ ] Add POST endpoints on dashboard server for registry operations (add/update/remove), phase state transitions, and event inserts
+- [ ] Create `db-client.mjs` exposing the same API surface as current `build-state-machine.mjs` writer functions, but talking HTTP to localhost
+- [ ] Split `build-state-machine.mjs`: reads stay local (open via helper, read-only), writes delegate to `db-client.mjs`
+- [ ] Refactor `registry.mjs` to use `db-client.mjs` for all writes
+- [ ] Retire all non-server `new Database()` writer calls — grep must return zero
+- [ ] Integration test: spam 100 concurrent `registry.mjs add` calls while dashboard is serving, confirm no lock errors, no corruption, all writes land
+
+**Success Criteria:** Only `events.mjs` holds a writable `better-sqlite3` handle. All other BR3 scripts talk to it via HTTP. Concurrent write stress test passes. The race condition that caused 2026-04-13 is architecturally eliminated.
 
 ---
 
 ## Parallelization Matrix
 
-| Phase | Key Files                                          | Can Parallel With | Blocked By              |
-| ----- | -------------------------------------------------- | ----------------- | ----------------------- |
-| 1     | cursor-workspace, cursor-review-focus.sh           | 2                 | -                       |
-| 2     | cross_model_review.py, cross-model-review.sh       | 1                 | -                       |
-| 3     | auto-save-session.sh, unified-review-gate.sh       | -                 | 2 (needs review script) |
-| 4     | dashboard index.html, events.mjs, cross-review.mjs | -                 | 3 (needs data flowing)  |
-
-**Phases 1 and 2 can run in parallel.** Phases 3 and 4 are sequential after Phase 2.
+| Phase | Key Files                                              | Can Parallel With | Blocked By                    |
+| ----- | ------------------------------------------------------ | ----------------- | ----------------------------- |
+| 1     | events.db (REPLACE), launchd control                   | -                 | -                             |
+| 2     | db-open.mjs (NEW), events.mjs, build-state-machine.mjs | 3                 | 1                             |
+| 3     | backup-events-db.sh (NEW), launchd plist (NEW)         | 2, 4              | -                             |
+| 4     | db-watchdog.mjs (NEW), launchd plist (NEW)             | 3                 | 2 (uses shared helper)        |
+| 5     | events.mjs, build-state-machine.mjs, registry.mjs      | -                 | 2 (same files, file conflict) |
 
 ---
 
-**Total Phases:** 4
-**Parallelizable:** Phase 1 + Phase 2 simultaneously
-**Estimated cost impact:** ~$5-15/mo OpenRouter API (GPT-4o reviews), $20/mo Cursor Pro, $0 if Codex CLI works as review backend
+## Out of Scope (Future)
+
+- Dashboard schema migrations or event model redesign
+- Multi-machine replication of `events.db`
+- Switching from SQLite to Postgres (not warranted — SQLite is correct for a single-host dashboard)
+- Encryption at rest for the db
+- Historical event recovery from the broken file (preserved for forensics, not restored)
+- Cross-node registry sync (separate concern)
+
+---
+
+**Total Phases:** 5
+**Parallelizable:** Phase 3 runs alongside Phase 2. Phase 4 runs alongside Phase 3. Phase 5 is serial after Phase 2.
