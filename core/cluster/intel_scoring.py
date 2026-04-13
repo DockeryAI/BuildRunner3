@@ -13,11 +13,12 @@ Handles:
 
 import json
 import logging
-import math
 import os
 import time
 import threading
 from typing import Optional
+
+from core.cluster.utils import cosine_similarity
 
 try:
     import httpx
@@ -109,19 +110,7 @@ async def _call_below_embed(text: str) -> Optional[list[float]]:
         return None
 
 
-# --- Cosine Similarity ---
-
-def _cosine_similarity(v1: list[float], v2: list[float]) -> float:
-    """Compute cosine similarity between two vectors."""
-    if len(v1) != len(v2) or not v1:
-        return 0.0
-    dot = sum(a * b for a, b in zip(v1, v2))
-    mag1 = math.sqrt(sum(a * a for a in v1))
-    mag2 = math.sqrt(sum(b * b for b in v2))
-    if mag1 == 0 or mag2 == 0:
-        return 0.0
-    return dot / (mag1 * mag2)
-
+# cosine_similarity imported from core.cluster.utils
 
 # --- Intel Scoring ---
 
@@ -312,7 +301,7 @@ async def _check_duplicate_by_embedding(title: str, item_type: str = "intel") ->
         for row in rows:
             existing_embedding = await _call_below_embed(row["title"])
             if existing_embedding:
-                sim = _cosine_similarity(new_embedding, existing_embedding)
+                sim = cosine_similarity(new_embedding, existing_embedding)
                 if sim > DEDUP_SIMILARITY_THRESHOLD:
                     logger.info(
                         f"Duplicate detected: '{title}' similar to '{row['title']}' "

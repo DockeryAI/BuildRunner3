@@ -1,0 +1,212 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "7"
+      - text: Intelligence
+    - generic [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+      - text: Terminal
+    - generic [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Builds
+    - generic [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - text: Research
+    - generic [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - text: Monitor
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: BR3 The Band
+        - generic [ref=e34]: Intelligence
+      - generic [ref=e35]:
+        - generic [ref=e37]: "Tokens: 0k"
+        - generic [ref=e41]: 9s ago
+        - generic [ref=e42]: "SSE: 4"
+        - generic [ref=e43]: "Uptime: 3m"
+        - generic [ref=e44]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e946]:
+      - generic [ref=e947]:
+        - generic [ref=e948]:
+          - generic [ref=e949]: Intelligence
+          - generic [ref=e950]:
+            - generic [ref=e1284]:
+              - strong [ref=e1285]: "14"
+              - text: total
+            - generic [ref=e1286]:
+              - strong [ref=e1287]: "1"
+              - text: critical
+            - generic [ref=e1288]:
+              - strong [ref=e1289]: "7"
+              - text: high
+            - generic [ref=e1290]:
+              - strong [ref=e1291]: "7"
+              - text: improve
+            - generic [ref=e1292]:
+              - strong [ref=e1293]: "13"
+              - text: unread
+        - generic [ref=e963]: 19s
+      - generic [ref=e964]:
+        - button "Intelligence 13 6" [ref=e965] [cursor=pointer]:
+          - text: Intelligence
+          - generic [ref=e966]: "13"
+          - generic [ref=e967]: "6"
+        - button "Deals" [active] [ref=e968] [cursor=pointer]
+      - generic [ref=e1294]:
+        - generic [ref=e1295]:
+          - generic [ref=e1296]:
+            - generic [ref=e1297]: Active Hunts
+            - button "+ Add Hunt" [ref=e1298] [cursor=pointer]
+          - generic [ref=e1299]:
+            - generic [ref=e1300]:
+              - generic [ref=e1301]:
+                - generic [ref=e1302]: Corsair Vengeance RGB Pro 32GB DDR4-3200
+                - generic [ref=e1303]: paused
+              - generic [ref=e1304]:
+                - generic [ref=e1305]:
+                  - strong [ref=e1306]: $280
+                  - text: target
+                - generic [ref=e1307]:
+                  - strong [ref=e1308]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1310] [cursor=pointer]
+            - generic [ref=e1311]:
+              - generic [ref=e1312]:
+                - generic [ref=e1313]: Crucial 64GB DDR5-5600 SODIMM
+                - generic [ref=e1314]: paused
+              - generic [ref=e1315]:
+                - generic [ref=e1316]:
+                  - strong [ref=e1317]: $586
+                  - text: target
+                - generic [ref=e1318]:
+                  - strong [ref=e1319]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1321] [cursor=pointer]
+            - generic [ref=e1322]:
+              - generic [ref=e1323]:
+                - generic [ref=e1324]: Corsair RM1200x SHIFT 1200W PSU
+                - generic [ref=e1325]: paused
+              - generic [ref=e1326]:
+                - generic [ref=e1327]:
+                  - strong [ref=e1328]: $195
+                  - text: target
+                - generic [ref=e1329]:
+                  - strong [ref=e1330]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1332] [cursor=pointer]
+            - generic [ref=e1333]:
+              - generic [ref=e1334]:
+                - generic [ref=e1335]: WD Blue SN5000 2TB NVMe SSD
+                - generic [ref=e1336]: paused
+              - generic [ref=e1337]:
+                - generic [ref=e1338]:
+                  - strong [ref=e1339]: $124
+                  - text: target
+                - generic [ref=e1340]:
+                  - strong [ref=e1341]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1343] [cursor=pointer]
+            - generic [ref=e1344]:
+              - generic [ref=e1345]:
+                - generic [ref=e1346]: NVIDIA P3669 NVLink 3-Slot Bridge
+                - generic [ref=e1347]: paused
+              - generic [ref=e1348]:
+                - generic [ref=e1349]:
+                  - strong [ref=e1350]: $379
+                  - text: target
+                - generic [ref=e1351]:
+                  - strong [ref=e1352]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1354] [cursor=pointer]
+            - generic [ref=e1355]:
+              - generic [ref=e1356]:
+                - generic [ref=e1357]: Minisforum MS-A2 Barebones (9955HX)
+                - generic [ref=e1358]: paused
+              - generic [ref=e1359]:
+                - generic [ref=e1360]:
+                  - strong [ref=e1361]: $799
+                  - text: target
+                - generic [ref=e1362]:
+                  - strong [ref=e1363]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1365] [cursor=pointer]
+            - generic [ref=e1366]:
+              - generic [ref=e1367]:
+                - generic [ref=e1368]: RTX 3090 Matching Pair (Any Brand)
+                - generic [ref=e1369]: paused
+              - generic [ref=e1370]:
+                - generic [ref=e1371]:
+                  - strong [ref=e1372]: $900
+                  - text: target
+                - generic [ref=e1373]:
+                  - strong [ref=e1374]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1376] [cursor=pointer]
+            - generic [ref=e1377]:
+              - generic [ref=e1378]:
+                - generic [ref=e1379]: EVGA RTX 3090 FTW3 Ultra Pair
+                - generic [ref=e1380]: paused
+              - generic [ref=e1381]:
+                - generic [ref=e1382]:
+                  - strong [ref=e1383]: $879
+                  - text: target
+                - generic [ref=e1384]:
+                  - strong [ref=e1385]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1387] [cursor=pointer]
+            - generic [ref=e1388]:
+              - generic [ref=e1389]:
+                - generic [ref=e1390]: Test Revive Hunt
+                - generic [ref=e1391]: paused
+              - generic [ref=e1392]:
+                - generic [ref=e1393]:
+                  - strong [ref=e1394]: No limit
+                  - text: target
+                - generic [ref=e1395]:
+                  - strong [ref=e1396]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1398] [cursor=pointer]
+            - generic [ref=e1399]:
+              - generic [ref=e1400]:
+                - generic [ref=e1401]: NVLink 3-Slot Bridge Alternative
+                - generic [ref=e1402]: paused
+              - generic [ref=e1403]:
+                - generic [ref=e1404]:
+                  - strong [ref=e1405]: $250
+                  - text: target
+                - generic [ref=e1406]:
+                  - strong [ref=e1407]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e1409] [cursor=pointer]
+          - button "▼ Archived Hunts (10)" [ref=e1411] [cursor=pointer]:
+            - generic [ref=e1412]: ▼
+            - generic [ref=e1413]: Archived Hunts (10)
+        - generic [ref=e1414]:
+          - textbox "Search deals..." [ref=e1415]
+          - generic [ref=e1416]:
+            - generic [ref=e1417]:
+              - strong [ref=e1418]: "7"
+              - text: deals
+            - generic [ref=e1419]:
+              - strong [ref=e1420]: "7"
+              - text: bought
+            - generic [ref=e1421]:
+              - strong [ref=e1422]: $5,371.42
+              - text: / $3,263 (165%)
+            - generic [ref=e1423]:
+              - strong [ref=e1424]: "7"
+              - text: hunts
+        - generic [ref=e1425]:
+          - button "Hunting0" [ref=e1426] [cursor=pointer]
+          - button "Bought7" [ref=e1427] [cursor=pointer]
+          - button "Delivered0" [ref=e1428] [cursor=pointer]
+        - generic [ref=e1430]:
+          - generic [ref=e1431]: 💰
+          - generic [ref=e1432]: No active deals being hunted

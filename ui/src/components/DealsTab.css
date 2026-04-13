@@ -879,3 +879,98 @@
   border-radius: 0 4px 4px 0;
   margin: 8px 0;
 }
+
+/* Status Tabs */
+.status-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  background: #1a1a2e;
+  padding: 4px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.status-tab {
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #888;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-tab:hover {
+  color: #ccc;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.status-tab.active {
+  background: #2d2d44;
+  color: #fff;
+}
+
+.tab-count {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-tab.active .tab-count {
+  background: #4caf50;
+  color: #fff;
+}
+
+/* Status Dropdown */
+.status-dropdown {
+  padding: 6px 12px;
+  background: #2d2d44;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.status-dropdown:hover {
+  border-color: #0066cc;
+}
+
+.status-dropdown:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+/* BestDealRow wrapper for dropdown */
+.best-deal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bdr-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+  padding: 12px 16px;
+  background: #1e1e2f;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.bdr-link:hover {
+  background: #2a2a3f;
+}

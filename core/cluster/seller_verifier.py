@@ -282,7 +282,7 @@ async def verify_deal_seller(deal: dict) -> dict:
         feedback_percent = deal.get("seller_rating") or attrs.get("seller_feedback_percent")
 
         result = await verify_ebay_seller(seller, feedback_count, feedback_percent)
-        result["source"] = "ebay_scrape"
+        result["source"] = "ebay"
         # Map eBay fields to common schema
         result["karma"] = result.get("feedback_count")
         result["account_age_years"] = None

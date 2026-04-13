@@ -1,0 +1,290 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "7"
+      - text: Intelligence
+    - generic [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+      - text: Terminal
+    - generic [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Builds
+    - generic [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - text: Research
+    - generic [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - text: Monitor
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: BR3 The Band
+        - generic [ref=e34]: Intelligence
+      - generic [ref=e35]:
+        - generic [ref=e37]: "Tokens: 0k"
+        - generic [ref=e41]: 3s ago
+        - generic [ref=e42]: "SSE: 4"
+        - generic [ref=e43]: "Uptime: 3h 0m"
+        - generic [ref=e44]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e1237]:
+      - generic [ref=e1238]:
+        - generic [ref=e1239]:
+          - generic [ref=e1240]: Intelligence
+          - generic [ref=e1241]:
+            - generic [ref=e1575]:
+              - strong [ref=e1576]: "14"
+              - text: total
+            - generic [ref=e1577]:
+              - strong [ref=e1578]: "1"
+              - text: critical
+            - generic [ref=e1579]:
+              - strong [ref=e1580]: "7"
+              - text: high
+            - generic [ref=e1581]:
+              - strong [ref=e1582]: "7"
+              - text: improve
+            - generic [ref=e1583]:
+              - strong [ref=e1584]: "13"
+              - text: unread
+        - generic [ref=e1254]: 12s
+      - generic [ref=e1255]:
+        - button "Intelligence 13 6" [ref=e1256] [cursor=pointer]:
+          - text: Intelligence
+          - generic [ref=e1257]: "13"
+          - generic [ref=e1258]: "6"
+        - button "Deals" [active] [ref=e1259] [cursor=pointer]
+      - generic [ref=e1585]:
+        - generic [ref=e1586]:
+          - generic [ref=e1587]:
+            - generic [ref=e1588]: Active Hunts
+            - button "+ Add Hunt" [ref=e1589] [cursor=pointer]
+          - generic [ref=e1591]: No active hunts — add one to start tracking.
+          - button "▼ Archived Hunts (10)" [ref=e1593] [cursor=pointer]:
+            - generic [ref=e1594]: ▼
+            - generic [ref=e1595]: Archived Hunts (10)
+        - generic [ref=e1596]:
+          - textbox "Search deals..." [ref=e1597]
+          - generic [ref=e1598]:
+            - generic [ref=e1599]:
+              - strong [ref=e1600]: "33"
+              - text: deals
+            - generic [ref=e1601]:
+              - strong [ref=e1602]: "7"
+              - text: bought
+            - generic [ref=e1603]:
+              - strong [ref=e1604]: $5,371.42
+              - text: / $3,263 (165%)
+            - generic [ref=e1605]:
+              - strong [ref=e1606]: "7"
+              - text: hunts
+        - generic [ref=e1607]:
+          - button "Hunting20" [ref=e1608] [cursor=pointer]
+          - button "Bought4" [ref=e1609] [cursor=pointer]
+          - button "Delivered0" [ref=e1610] [cursor=pointer]
+        - generic [ref=e1611]:
+          - generic [ref=e1612]:
+            - generic [ref=e1613]:
+              - generic [ref=e1614]: Crucial P3 Plus 1TB PCIe M.2 2280 SSD
+              - generic [ref=e1616]: 1 deal
+            - generic [ref=e1617] [cursor=pointer]:
+              - generic [ref=e1618]: "#1"
+              - generic [ref=e1619]: Crucial P3 Plus 1TB PCIe M.2 2280 SSD
+              - generic [ref=e1620]: Crucial
+              - generic [ref=e1621]: 6h ago
+              - generic [ref=e1622]: $61.99
+          - generic [ref=e1623]:
+            - generic [ref=e1624]:
+              - generic [ref=e1625]: "[USA-OH] [H] Sealed ASUS X870-P WiFi , C"
+              - generic [ref=e1627]: 1 deal
+            - generic [ref=e1628] [cursor=pointer]:
+              - generic [ref=e1629]: "#1"
+              - generic [ref=e1630]: "[USA-OH] [H] Sealed ASUS X870-P WiFi , Corsair Vengeance Pro RGB 4x 8GB (32GB total) DDR4-3200, ASUS X99-WS/IPMI, (3x) Broken 1080 Ti's for parts/repair/practice [W] PayPal / Cash on Collection"
+              - generic [ref=e1631]: TheMadDutchDude
+              - generic [ref=e1632]: 1d ago
+              - generic [ref=e1633]: $125
+          - generic [ref=e1634]:
+            - generic [ref=e1635]:
+              - generic [ref=e1636]: Crucial P3 Plus 1TB NVMe M.2 Internal SS
+              - generic [ref=e1638]: 1 deal
+            - generic [ref=e1639] [cursor=pointer]:
+              - generic [ref=e1640]: "#1"
+              - generic [ref=e1641]: Crucial P3 Plus 1TB NVMe M.2 Internal SSD CT1000P3PSSD8 Black
+              - generic [ref=e1642]: nalbow_0
+              - generic [ref=e1643]: 2h ago
+              - generic [ref=e1644]: $129.48
+          - generic [ref=e1645]:
+            - generic [ref=e1646]:
+              - generic [ref=e1647]: CT1000P3PSSD8 - Crucial P3 Plus SSD 1TB
+              - generic [ref=e1649]: 1 deal
+            - generic [ref=e1650] [cursor=pointer]:
+              - generic [ref=e1651]: "#1"
+              - generic [ref=e1652]: CT1000P3PSSD8 - Crucial P3 Plus SSD 1TB PCIe (NVMe)
+              - generic [ref=e1653]: overnightcomputers
+              - generic [ref=e1654]: 3d ago
+              - generic [ref=e1655]: $182.58
+          - generic [ref=e1656]:
+            - generic [ref=e1657]:
+              - generic [ref=e1658]: Crucial P3 Plus PCIe Gen4 NVMe 1TB SSD,
+              - generic [ref=e1660]: 1 deal
+            - generic [ref=e1661] [cursor=pointer]:
+              - generic [ref=e1662]: "#1"
+              - generic [ref=e1663]: Crucial P3 Plus PCIe Gen4 NVMe 1TB SSD, Up to 5,000MB/s Read, Laptop & Desktop
+              - generic [ref=e1664]: co83321
+              - generic [ref=e1665]: 3d ago
+              - generic [ref=e1666]: $195
+          - generic [ref=e1667]:
+            - generic [ref=e1668]:
+              - generic [ref=e1669]: Corsair RM1200x SHIFT Fully Modular ATX
+              - generic [ref=e1671]: 1 deal
+            - generic [ref=e1672] [cursor=pointer]:
+              - generic [ref=e1673]: "#1"
+              - generic [ref=e1674]: Corsair RM1200x SHIFT Fully Modular ATX 3.0 Power Supply 1200W 80 PLUS Gold
+              - generic [ref=e1675]: "*athq*"
+              - generic [ref=e1676]: 3d ago
+              - generic [ref=e1677]: $198.99
+          - generic [ref=e1678]:
+            - generic [ref=e1679]:
+              - generic [ref=e1680]: CORSAIR RM1200x Shift Fully Modular 80PL
+              - generic [ref=e1682]: 1 deal
+            - generic [ref=e1683] [cursor=pointer]:
+              - generic [ref=e1684]: "#1"
+              - generic [ref=e1685]: CORSAIR RM1200x Shift Fully Modular 80PLUS Gold ATX Power Supply CP-9020254-NA
+              - generic [ref=e1686]: hiway_61
+              - generic [ref=e1687]: 3d ago
+              - generic [ref=e1688]: $200
+          - generic [ref=e1689]:
+            - generic [ref=e1690]:
+              - generic [ref=e1691]: CORSAIR 1200W RMx Shift RM1200x Shift Fu
+              - generic [ref=e1693]: 1 deal
+            - generic [ref=e1694] [cursor=pointer]:
+              - generic [ref=e1695]: "#1"
+              - generic [ref=e1696]: CORSAIR 1200W RMx Shift RM1200x Shift Fully Modular 80PLUS Gold ATX Power Supply
+              - generic [ref=e1697]: newegg
+              - generic [ref=e1698]: 3d ago
+              - generic [ref=e1699]: $200.99
+          - generic [ref=e1700]:
+            - generic [ref=e1701]:
+              - generic [ref=e1702]: Crucial 16GB 32GB 48GB 64GB 96GB 128GB D
+              - generic [ref=e1704]: 1 deal
+            - generic [ref=e1705] [cursor=pointer]:
+              - generic [ref=e1706]: "#1"
+              - generic [ref=e1707]: Crucial 16GB 32GB 48GB 64GB 96GB 128GB DDR5 5600 PC5 44800 SODIMM Model Kit LOT
+              - generic [ref=e1708]: ic_pro
+              - generic [ref=e1709]: 3d ago
+              - generic [ref=e1710]: $219.95
+          - generic [ref=e1711]:
+            - generic [ref=e1712]:
+              - generic [ref=e1713]: CORSAIR Vengeance RGB PRO 32GB DDR4 3200
+              - generic [ref=e1715]: 1 deal
+            - generic [ref=e1716] [cursor=pointer]:
+              - generic [ref=e1717]: "#1"
+              - generic [ref=e1718]: CORSAIR Vengeance RGB PRO 32GB DDR4 3200MHz Memory Module (2 x 16 GB)
+              - generic [ref=e1719]: kenji2007
+              - generic [ref=e1720]: 3d ago
+              - generic [ref=e1721]: $259
+          - generic [ref=e1722]:
+            - generic [ref=e1723]:
+              - generic [ref=e1724]: Crucial P3 Plus 1TB PCIe Gen4 3D NAND NV
+              - generic [ref=e1726]: 1 deal
+            - generic [ref=e1727] [cursor=pointer]:
+              - generic [ref=e1728]: "#1"
+              - generic [ref=e1729]: Crucial P3 Plus 1TB PCIe Gen4 3D NAND NVMe M.2 SSD, up to 5000MB/s - CT1000P3...
+              - generic [ref=e1730]: usa*stores
+              - generic [ref=e1731]: 2h ago
+              - generic [ref=e1732]: $274.68
+          - generic [ref=e1733]:
+            - generic [ref=e1734]:
+              - generic [ref=e1735]: Crucial P3 plus Pcie Gen4 Nvme 1TB SSD,
+              - generic [ref=e1737]: 1 deal
+            - generic [ref=e1738] [cursor=pointer]:
+              - generic [ref=e1739]: "#1"
+              - generic [ref=e1740]: Crucial P3 plus Pcie Gen4 Nvme 1TB SSD, up to 5,000Mb/S Read, Laptop & Desktop (
+              - generic [ref=e1741]: globalpackages52
+              - generic [ref=e1742]: 2h ago
+              - generic [ref=e1743]: $275.99
+          - generic [ref=e1744]:
+            - generic [ref=e1745]:
+              - generic [ref=e1746]: 1TB Crucial P3 Plus M.2 PCI Express 4.0
+              - generic [ref=e1748]: 1 deal
+            - generic [ref=e1749] [cursor=pointer]:
+              - generic [ref=e1750]: "#1"
+              - generic [ref=e1751]: 1TB Crucial P3 Plus M.2 PCI Express 4.0 Internal Solid State Drive
+              - generic [ref=e1752]: memoryc_deals
+              - generic [ref=e1753]: 3d ago
+              - generic [ref=e1754]: $285.85
+          - generic [ref=e1755]:
+            - generic [ref=e1756]:
+              - generic [ref=e1757]: "\"NEW\" CT1000P3PSSD8 Crucial P3 Plus 3D N"
+              - generic [ref=e1759]: 1 deal
+            - generic [ref=e1760] [cursor=pointer]:
+              - generic [ref=e1761]: "#1"
+              - generic [ref=e1762]: "\"NEW\" CT1000P3PSSD8 Crucial P3 Plus 3D NAND 1TB PCIe 4.0 x4 NVMe M.2 2280 SSD"
+              - generic [ref=e1763]: backup_servers
+              - generic [ref=e1764]: 3d ago
+              - generic [ref=e1765]: $342
+          - generic [ref=e1766]:
+            - generic [ref=e1767]:
+              - generic [ref=e1768]: Crucial P3 / P3 Plus 500GB 1TB 2TB 4TB M
+              - generic [ref=e1770]: 1 deal
+            - generic [ref=e1771] [cursor=pointer]:
+              - generic [ref=e1772]: "#1"
+              - generic [ref=e1773]: Crucial P3 / P3 Plus 500GB 1TB 2TB 4TB M.2 PCI-Express NVMe 3D NAND Internal LOT
+              - generic [ref=e1774]: ic_pro
+              - generic [ref=e1775]: 3d ago
+              - generic [ref=e1776]: $349.99
+          - generic [ref=e1777]:
+            - generic [ref=e1778]:
+              - generic [ref=e1779]: NEW! CORSAIR Vengeance RGB Pro 32GB (2x1
+              - generic [ref=e1781]: 1 deal
+            - generic [ref=e1782] [cursor=pointer]:
+              - generic [ref=e1783]: "#1"
+              - generic [ref=e1784]: NEW! CORSAIR Vengeance RGB Pro 32GB (2x16GB) 288-Pin SDRAM DDR4 3200 PC4 25600!!
+              - generic [ref=e1785]: goss1492
+              - generic [ref=e1786]: 5m ago
+              - generic [ref=e1787]: $449.97
+          - generic [ref=e1788]:
+            - generic [ref=e1789]:
+              - generic [ref=e1790]: Crucial 64GB Kit (32GBx2) DDR5-5600 SODI
+              - generic [ref=e1792]: 1 deal
+            - generic [ref=e1793] [cursor=pointer]:
+              - generic [ref=e1794]: "#1"
+              - generic [ref=e1795]: Crucial 64GB Kit (32GBx2) DDR5-5600 SODIMM
+              - generic [ref=e1796]: Crucial
+              - generic [ref=e1797]: 6h ago
+              - generic [ref=e1798]: $585.99
+          - generic [ref=e1799]:
+            - generic [ref=e1800]:
+              - generic [ref=e1801]: Crucial 64GB Kit (2x 32GB) DDR5 5600 PC5
+              - generic [ref=e1803]: 1 deal
+            - generic [ref=e1804] [cursor=pointer]:
+              - generic [ref=e1805]: "#1"
+              - generic [ref=e1806]: Crucial 64GB Kit (2x 32GB) DDR5 5600 PC5 Laptop Memory CT2K32G56C46S5 Brand New
+              - generic [ref=e1807]: vintandmod
+              - generic [ref=e1808]: 3d ago
+              - generic [ref=e1809]: $670.5
+          - generic [ref=e1810]:
+            - generic [ref=e1811]:
+              - generic [ref=e1812]: CT2K32G56C46S5 Crucial 32GB x2 64GB DDR5
+              - generic [ref=e1814]: 1 deal
+            - generic [ref=e1815] [cursor=pointer]:
+              - generic [ref=e1816]: "#1"
+              - generic [ref=e1817]: CT2K32G56C46S5 Crucial 32GB x2 64GB DDR5-5600MHz PC5-44800 SODIMM Non-ECC Memory
+              - generic [ref=e1818]: cloudtech-0
+              - generic [ref=e1819]: 3d ago
+              - generic [ref=e1820]: $920
+          - generic [ref=e1821]:
+            - generic [ref=e1822]:
+              - generic [ref=e1823]: Crucial 64GB (2x32GB) DDR5 5600MHz 262pi
+              - generic [ref=e1825]: 1 deal
+            - generic [ref=e1826] [cursor=pointer]:
+              - generic [ref=e1827]: "#1"
+              - generic [ref=e1828]: Crucial 64GB (2x32GB) DDR5 5600MHz 262pin SoDIMM Laptop Memory CT2K32G56C46S5
+              - generic [ref=e1829]: nothingbutsavings
+              - generic [ref=e1830]: 3d ago
+              - generic [ref=e1831]: $1081.84

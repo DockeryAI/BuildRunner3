@@ -1,0 +1,177 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "7"
+      - text: Intelligence
+    - generic [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+      - text: Terminal
+    - generic [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Builds
+    - generic [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - text: Research
+    - generic [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - text: Monitor
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: BR3 The Band
+        - generic [ref=e34]: Builds
+      - generic [ref=e35]:
+        - generic [ref=e37]: "Tokens: 0k"
+        - generic [ref=e41]: 6s ago
+        - generic [ref=e42]: "SSE: 2"
+        - generic [ref=e43]: "Uptime: 0m"
+        - generic [ref=e44]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e877]:
+      - generic [ref=e878]:
+        - generic [ref=e879]:
+          - generic [ref=e880]: Builds
+          - generic [ref=e881]:
+            - generic [ref=e1338]:
+              - strong [ref=e1339]: "0"
+              - text: running
+            - generic [ref=e1340]:
+              - strong [ref=e1341]: "0"
+              - text: queued
+            - generic [ref=e1342]:
+              - strong [ref=e1343]: "30"
+              - text: done
+            - generic [ref=e1344]:
+              - strong [ref=e1345]: "30"
+              - text: total
+        - generic [ref=e890]:
+          - button "Dispatch All" [ref=e891] [cursor=pointer]
+          - button "+ New Build" [ref=e892] [cursor=pointer]
+      - generic [ref=e893]:
+        - button "Build List" [ref=e894] [cursor=pointer]
+        - button "DAG" [ref=e895] [cursor=pointer]
+      - generic [ref=e896]:
+        - generic [ref=e897]:
+          - textbox "Search builds..." [ref=e898]: synapse
+          - combobox [ref=e899] [cursor=pointer]:
+            - option "All statuses" [selected]
+            - option "Running"
+            - option "Stalled"
+            - option "Registered"
+            - option "Queued"
+            - option "Blocked"
+            - option "Paused"
+            - option "Complete"
+            - option "Failed"
+            - option "Cancelled"
+          - button "Hide completed" [ref=e913] [cursor=pointer]
+        - generic [ref=e901]:
+          - generic [ref=e1346] [cursor=pointer]:
+            - generic [ref=e1347]:
+              - generic [ref=e1348]: Synapse:BUILD_workflodock-intake
+              - generic [ref=e1349]:
+                - generic [ref=e1350]: complete
+                - generic [ref=e1351]: 20/20
+                - generic [ref=e1352]: otis
+                - generic [ref=e1353]: 100% − --
+            - generic [ref=e1357]: 100%
+            - generic [ref=e1358]: Updated 12s ago · WIP +0.0 lines
+            - generic [ref=e1359]:
+              - button "Details" [ref=e1360]
+              - button "Reassign" [ref=e1361]
+            - generic [ref=e1362]:
+              - generic [ref=e1363]:
+                - generic [ref=e1364]: "1"
+                - generic [ref=e1366]: Phase 1
+                - button "View Diff" [ref=e1368]
+              - generic [ref=e1369]:
+                - generic [ref=e1370]: "2"
+                - generic [ref=e1372]: Phase 2
+                - button "View Diff" [ref=e1374]
+              - generic [ref=e1375]:
+                - generic [ref=e1376]: "3"
+                - generic [ref=e1378]: Phase 3
+                - button "View Diff" [ref=e1380]
+              - generic [ref=e1381]:
+                - generic [ref=e1382]: "4"
+                - generic [ref=e1384]: Phase 4
+                - button "View Diff" [ref=e1386]
+              - generic [ref=e1387]:
+                - generic [ref=e1388]: "5"
+                - generic [ref=e1390]: Phase 5
+                - button "View Diff" [ref=e1392]
+              - generic [ref=e1393]:
+                - generic [ref=e1394]: "6"
+                - generic [ref=e1396]: Phase 6
+                - button "View Diff" [ref=e1398]
+              - generic [ref=e1399]:
+                - generic [ref=e1400]: "7"
+                - generic [ref=e1402]: Phase 7
+                - button "View Diff" [ref=e1404]
+              - generic [ref=e1405]:
+                - generic [ref=e1406]: "8"
+                - generic [ref=e1408]: Phase 8
+                - button "View Diff" [ref=e1410]
+              - generic [ref=e1411]:
+                - generic [ref=e1412]: "9"
+                - generic [ref=e1414]: Phase 9
+                - button "View Diff" [ref=e1416]
+              - generic [ref=e1417]:
+                - generic [ref=e1418]: "10"
+                - generic [ref=e1420]: Phase 10
+                - button "View Diff" [ref=e1422]
+              - generic [ref=e1423]:
+                - generic [ref=e1424]: "11"
+                - generic [ref=e1426]: Phase 11
+                - button "View Diff" [ref=e1428]
+              - generic [ref=e1429]:
+                - generic [ref=e1430]: "12"
+                - generic [ref=e1432]: Phase 12
+                - button "View Diff" [ref=e1434]
+              - generic [ref=e1435]:
+                - generic [ref=e1436]: "13"
+                - generic [ref=e1438]: Phase 13
+                - button "View Diff" [ref=e1440]
+              - generic [ref=e1441]:
+                - generic [ref=e1442]: "14"
+                - generic [ref=e1444]: Phase 14
+                - button "View Diff" [ref=e1446]
+              - generic [ref=e1447]:
+                - generic [ref=e1448]: "15"
+                - generic [ref=e1450]: Phase 15
+                - button "View Diff" [ref=e1452]
+              - generic [ref=e1453]:
+                - generic [ref=e1454]: "16"
+                - generic [ref=e1456]: Phase 16
+                - button "View Diff" [ref=e1458]
+              - generic [ref=e1459]:
+                - generic [ref=e1460]: "17"
+                - generic [ref=e1462]: Phase 17
+                - button "View Diff" [ref=e1464]
+              - generic [ref=e1465]:
+                - generic [ref=e1466]: "18"
+                - generic [ref=e1468]: Phase 18
+                - button "View Diff" [ref=e1470]
+              - generic [ref=e1471]:
+                - generic [ref=e1472]: "19"
+                - generic [ref=e1474]: Phase 19
+                - button "View Diff" [ref=e1476]
+              - generic [ref=e1477]:
+                - generic [ref=e1478]: "20"
+                - generic [ref=e1480]: Phase 20
+                - button "View Diff" [ref=e1482]
+          - generic [ref=e1483] [cursor=pointer]:
+            - generic [ref=e1484]:
+              - generic [ref=e1485]: workfloDock:synapse-integration
+              - generic [ref=e1486]:
+                - generic [ref=e1487]: complete
+                - generic [ref=e1488]: 25/25
+                - generic [ref=e1489]: otis
+                - generic [ref=e1490]: 100% − --
+            - generic [ref=e1494]: 100%
+            - generic [ref=e1495]: Updated 12s ago · WIP +0.0 lines

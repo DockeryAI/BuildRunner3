@@ -11,12 +11,11 @@ import asyncio
 import json
 import logging
 import os
-import sys
 import time
-import hashlib
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+from core.cluster.utils import url_hash, last_checked_lock, cosine_similarity
 
 try:
     import httpx
@@ -40,8 +39,7 @@ def _load_config() -> dict:
         return json.loads(CONFIG_PATH.read_text())
     return {
         "sources": {
-            "ebay_scrape": {"enabled": True},
-            "ebay_browse": {"enabled": False, "marketplace_id": "EBAY_US", "limit": 50},
+            "ebay_browse": {"enabled": True, "marketplace_id": "EBAY_US", "limit": 50},
             "reddit_rss": {"enabled": True, "subreddits": ["buildapcsales", "hardwareswap"]},
             "craigslist_rss": {"enabled": True, "cities": ["sfbay", "losangeles", "seattle"]},
             "pcpartpicker": {"enabled": True, "use_playwright": False},
@@ -56,8 +54,7 @@ def _load_config() -> dict:
     }
 
 
-def _url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
+# _url_hash moved to core.cluster.utils
 
 
 # --- Lockwood Client ---
@@ -417,8 +414,7 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
             if len(embeddings) < 2:
                 return items
 
-            # Remove duplicates
-            import math
+            # Remove duplicates using shared cosine_similarity
             kept = []
             seen_ids = set()
 
@@ -437,15 +433,10 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
                     kept_emb = embeddings.get(id(kept_item))
                     if not kept_emb:
                         continue
-                    # Cosine similarity
-                    dot = sum(a * b for a, b in zip(emb, kept_emb))
-                    mag1 = math.sqrt(sum(a * a for a in emb))
-                    mag2 = math.sqrt(sum(b * b for b in kept_emb))
-                    if mag1 > 0 and mag2 > 0:
-                        sim = dot / (mag1 * mag2)
-                        if sim > threshold:
-                            is_dup = True
-                            break
+                    sim = cosine_similarity(emb, kept_emb)
+                    if sim > threshold:
+                        is_dup = True
+                        break
 
                 if not is_dup:
                     kept.append(item)
@@ -466,9 +457,7 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
 async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list[dict]:
     """Run a single source search for a hunt."""
     try:
-        if source_name == "ebay_scrape":
-            from core.cluster.hunt_sources.ebay_scrape import search
-        elif source_name == "ebay_sold":
+        if source_name == "ebay_sold":
             from core.cluster.hunt_sources.ebay_sold import search
         elif source_name == "ebay_browse":
             # Only enable when BOTH API keys present
@@ -490,6 +479,8 @@ async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list
             from core.cluster.hunt_sources.shopify import search
         elif source_name == "bhphoto":
             from core.cluster.hunt_sources.bhphoto import search
+        elif source_name == "crucial":
+            from core.cluster.hunt_sources.crucial import search
         else:
             logger.warning(f"Unknown source: {source_name}")
             return []
@@ -506,7 +497,7 @@ async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list
 _last_checked: dict[int, float] = {}
 
 
-BELOW_NEEDS_LLM = {"ebay_scrape", "newegg", "bhphoto"}
+BELOW_NEEDS_LLM = {"newegg", "bhphoto"}
 
 
 async def _check_below_online() -> bool:
@@ -535,13 +526,14 @@ async def check_hunts_once():
     for hunt in hunts:
         hunt_id = hunt["id"]
         interval = hunt.get("check_interval_minutes", 60) * 60
-        last = _last_checked.get(hunt_id, 0)
 
-        if now - last < interval:
-            continue
+        with last_checked_lock:
+            last = _last_checked.get(hunt_id, 0)
+            if now - last < interval:
+                continue
+            _last_checked[hunt_id] = now
 
-        logger.info(f"Checking hunt [{hunt_id}] '{hunt['name']}'")
-        _last_checked[hunt_id] = now
+        logger.info(f"Checking hunt [{hunt_id}] '{hunt['name']}'")  # noqa: Q000
 
         below_online = await _check_below_online()
         if not below_online:

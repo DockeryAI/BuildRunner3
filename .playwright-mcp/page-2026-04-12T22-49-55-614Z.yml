@@ -1,0 +1,125 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "7"
+      - text: Intelligence
+    - generic [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+      - text: Terminal
+    - generic [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Builds
+    - generic [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - text: Research
+    - generic [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - text: Monitor
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: BR3 The Band
+        - generic [ref=e34]: Intelligence
+      - generic [ref=e35]:
+        - generic [ref=e37]: "Tokens: 0k"
+        - generic [ref=e41]: connected
+        - generic [ref=e42]: "SSE: 4"
+        - generic [ref=e43]: "Uptime: 3h 1m"
+        - generic [ref=e44]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e1237]:
+      - generic [ref=e1238]:
+        - generic [ref=e1239]:
+          - generic [ref=e1240]: Intelligence
+          - generic [ref=e1241]:
+            - generic [ref=e1832]:
+              - strong [ref=e1833]: "14"
+              - text: total
+            - generic [ref=e1834]:
+              - strong [ref=e1835]: "1"
+              - text: critical
+            - generic [ref=e1836]:
+              - strong [ref=e1837]: "7"
+              - text: high
+            - generic [ref=e1838]:
+              - strong [ref=e1839]: "7"
+              - text: improve
+            - generic [ref=e1840]:
+              - strong [ref=e1841]: "13"
+              - text: unread
+        - generic [ref=e1254]: 29s
+      - generic [ref=e1255]:
+        - button "Intelligence 13 6" [ref=e1256] [cursor=pointer]:
+          - text: Intelligence
+          - generic [ref=e1257]: "13"
+          - generic [ref=e1258]: "6"
+        - button "Deals" [ref=e1259] [cursor=pointer]
+      - generic [ref=e1585]:
+        - generic [ref=e1586]:
+          - generic [ref=e1587]:
+            - generic [ref=e1588]: Active Hunts
+            - button "+ Add Hunt" [ref=e1589] [cursor=pointer]
+          - generic [ref=e1842]: No active hunts — add one to start tracking.
+          - button "▼ Archived Hunts (10)" [ref=e1593] [cursor=pointer]:
+            - generic [ref=e1594]: ▼
+            - generic [ref=e1595]: Archived Hunts (10)
+        - generic [ref=e1596]:
+          - textbox "Search deals..." [ref=e1597]
+          - generic [ref=e1598]:
+            - generic [ref=e1843]:
+              - strong [ref=e1844]: "33"
+              - text: deals
+            - generic [ref=e1845]:
+              - strong [ref=e1846]: "7"
+              - text: bought
+            - generic [ref=e1847]:
+              - strong [ref=e1848]: $5,371.42
+              - text: / $3,263 (165%)
+            - generic [ref=e1849]:
+              - strong [ref=e1850]: "7"
+              - text: hunts
+        - generic [ref=e1607]:
+          - button "Hunting20" [ref=e1608] [cursor=pointer]
+          - button "Bought4" [active] [ref=e1609] [cursor=pointer]
+          - button "Delivered0" [ref=e1610] [cursor=pointer]
+        - generic [ref=e1611]:
+          - generic [ref=e1851]:
+            - generic [ref=e1852]:
+              - generic [ref=e1853]: Corsair RM1200x SHIFT 1200W PSU - eBay a
+              - generic [ref=e1855]: 1 deal
+            - generic [ref=e1856] [cursor=pointer]:
+              - generic [ref=e1857]: "#1"
+              - generic [ref=e1858]: Corsair RM1200x SHIFT 1200W PSU - eBay athq
+              - generic [ref=e1859]: 32m ago
+              - generic [ref=e1860]: $215.41
+          - generic [ref=e1861]:
+            - generic [ref=e1862]:
+              - generic [ref=e1863]: Corsair Vengeance LPX DDR4 32GB (2x16GB)
+              - generic [ref=e1865]: 1 deal
+            - generic [ref=e1866] [cursor=pointer]:
+              - generic [ref=e1867]: "#1"
+              - generic [ref=e1868]: Corsair Vengeance LPX DDR4 32GB (2x16GB) 3200MHz - Amazon
+              - generic [ref=e1869]: Amazon
+              - generic [ref=e1870]: 1m ago
+              - generic [ref=e1871]: $219.99
+          - generic [ref=e1872]:
+            - generic [ref=e1873]:
+              - generic [ref=e1874]: Minisforum MS-A2
+              - generic [ref=e1876]: 1 deal
+            - generic [ref=e1877] [cursor=pointer]:
+              - generic [ref=e1878]: "#1"
+              - generic [ref=e1879]: Minisforum MS-A2 (AMD Ryzen 9 9955HX / Barebone)
+              - generic [ref=e1880]: 6h ago
+          - generic [ref=e1881]:
+            - generic [ref=e1882]:
+              - generic [ref=e1883]: RTX 3090 Founders Edition
+              - generic [ref=e1885]: 1 deal
+            - generic [ref=e1886] [cursor=pointer]:
+              - generic [ref=e1887]: "#1"
+              - generic [ref=e1888]: 2x NVIDIA RTX 3090 Founders Edition (Renewed) - Amazon
+              - generic [ref=e1889]: 6h ago

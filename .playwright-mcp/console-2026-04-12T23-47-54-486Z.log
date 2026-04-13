@@ -1,0 +1,17 @@
+[      35ms] [LOG] [TWS] Picker initialized, nodes: 6 @ http://localhost:4400/js/ws-terminal.js?v=20260411b:627
+[   60035ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/sessions:0
+[   60035ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/reviews:0
+[   60036ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/health:0
+[   60036ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/usage:0
+[   60036ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/registry:0
+[   60036ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/nodes:0
+[   60036ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/builds/health:0
+[   60037ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/proxy/intel/bundle:0
+[   60037ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: Failed to fetch
+    at fetchLiveData (http://localhost:4400/js/ws-intel.js:630:31)
+    at http://localhost:4400/js/ws-intel.js:2733:7 @ http://localhost:4400/js/ws-intel.js:796
+[   60043ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/monitor/health?limit=200:0
+[   60043ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/monitor/alerts:0
+[   60043ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/monitor/remediation?limit=50:0
+[   60043ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/monitor/pipeline?limit=50:0
+[   60742ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/sessions:0

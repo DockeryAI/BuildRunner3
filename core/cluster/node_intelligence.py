@@ -501,8 +501,28 @@ async def verify_single_deal(item_id: int):
 
     result = await verify_deal_link(row["listing_url"])
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    current_price = result.get("current_price")
 
     conn = _get_intel_db()
+    # Update price if the API returned a new one
+    if current_price is not None:
+        old_price = conn.execute("SELECT price FROM deal_items WHERE id = ?", (item_id,)).fetchone()
+        if old_price and old_price["price"] is not None:
+            try:
+                old_price_num = float(str(old_price["price"]).replace("$", "").replace(",", ""))
+                if abs(current_price - old_price_num) > 0.01:
+                    conn.execute(
+                        """UPDATE deal_items SET verified = 1, link_status = ?, in_stock = ?, last_checked = ?,
+                           price = ?, price_updated_at = ? WHERE id = ?""",
+                        (result["status"], result["in_stock"], now, current_price, now, item_id)
+                    )
+                    conn.commit()
+                    conn.close()
+                    return {"status": "ok", "link_status": result["status"], "in_stock": result["in_stock"],
+                            "reason": result["reason"], "current_price": current_price, "price_updated": True}
+            except (ValueError, TypeError):
+                pass
+
     conn.execute(
         "UPDATE deal_items SET verified = 1, link_status = ?, in_stock = ?, last_checked = ? WHERE id = ?",
         (result["status"], result["in_stock"], now, item_id)
@@ -510,7 +530,8 @@ async def verify_single_deal(item_id: int):
     conn.commit()
     conn.close()
 
-    return {"status": "ok", "link_status": result["status"], "in_stock": result["in_stock"], "reason": result["reason"]}
+    return {"status": "ok", "link_status": result["status"], "in_stock": result["in_stock"],
+            "reason": result["reason"], "current_price": current_price}
 
 
 @router.post("/api/deals/items/{item_id}/opus-review")
@@ -537,6 +558,8 @@ class DealItemUpdate(BaseModel):
     tracking_number: Optional[str] = None
     carrier: Optional[str] = None
     delivery_status: Optional[str] = None
+    seller_verified: Optional[int] = None
+    in_stock: Optional[int] = None
 
 
 @router.get("/api/deals/market/{hunt_id}")
@@ -566,9 +589,13 @@ async def get_deals_summary():
     from core.cluster.intel_collector import _get_intel_db
     conn = _get_intel_db()
 
-    # Get per-hunt stats
+    # Get per-hunt stats (include completed hunts that have purchased items)
     hunts = conn.execute(
-        "SELECT id, name, category, target_price FROM active_hunts WHERE active = 1 ORDER BY id"
+        """SELECT DISTINCT h.id, h.name, h.category, h.target_price
+           FROM active_hunts h
+           LEFT JOIN deal_items d ON d.hunt_id = h.id AND d.purchased = 1
+           WHERE h.active = 1 OR d.id IS NOT NULL
+           ORDER BY h.id"""
     ).fetchall()
 
     hunt_stats = []

@@ -519,3 +519,213 @@
   - State machine setDb() allows dashboard to inject its DB connection
   - SUSPECT state added for graduated liveness (Phase 2 reaper will use)
   - cluster-builds.json kept as backward-compat write during transition
+
+[2026-04-12T12:05:00Z] [ARCHITECTURE] Added eBay Browse API verification path to intel_verifier.py
+  WHY: Direct HTTP scraping triggers CAPTCHA; eBay blocks unauthenticated requests. The Browse API with OAuth2 bypasses this entirely.
+  CONTEXT: core/cluster/intel_verifier.py, core/cluster/hunt_sources/ebay_browse.py
+
+[2026-04-12T12:05:01Z] [DECISION] Use Browse API getItem endpoint for single-item verification
+  WHY: getItem returns structured JSON with price and availability. No regex parsing needed, no CAPTCHA, 100% reliable.
+  CONTEXT: intel_verifier.py:_verify_ebay_via_api(), endpoint: /buy/browse/v1/item/v1|{item_id}|0
+
+[2026-04-12T12:05:02Z] [PATTERN] Reuse existing OAuth2 infrastructure from ebay_browse.py
+  WHY: DRY — token caching, auth flow, error handling already implemented and tested. No need to duplicate.
+  CONTEXT: intel_verifier.py imports _get_auth_token and EBAY_BROWSE_URL from ebay_browse.py
+
+[2026-04-12T12:05:03Z] [WHY] Legacy item ID format v1|{item_id}|0 used for getItem calls
+  WHY: eBay Browse API uses this format for backwards compatibility with classic item IDs. The 0 suffix indicates US marketplace.
+  CONTEXT: intel_verifier.py:_verify_ebay_via_api() line building endpoint URL
+
+[2026-04-12T12:05:04Z] [TRADE-OFF] API rate limits (5000/day) accepted for reliability
+  WHY: We verify ~20 items per 5-minute cycle. At most 5760 calls/day if continuous. Within limits. Reliability > throughput.
+  CONTEXT: intel_verifier.py verification cron, VERIFY_INTERVAL=300, batch=20
+
+[2026-04-12T12:05:05Z] [DECISION] Route only eBay URLs to API path; other URLs keep existing HTTP scrape path
+  WHY: Other sources (Shopify, Newegg, etc) don't have the same CAPTCHA problem. Change minimal, surgical fix.
+  CONTEXT: intel_verifier.py:verify_deal_link() — checks for eBay item ID first, falls through to HTTP otherwise
+
+[2026-04-12T12:05:06Z] [WHY] Extract availability from estimatedAvailabilities[0].availabilityStatus
+  WHY: This is the canonical eBay API field for stock status. Values: IN_STOCK, LIMITED_QUANTITY, OUT_OF_STOCK, SOLD_OUT.
+  CONTEXT: intel_verifier.py:_verify_ebay_via_api() availability parsing
+
+[2026-04-12T12:10:00Z] [ARCHITECTURE] Added consecutive failure tracking for node health checks
+  WHY: Single SSH timeout or network hiccup immediately marked nodes as unreachable, causing false alerts
+  CONTEXT: ~/.buildrunner/dashboard/events.mjs - nodeFailureCount object tracks failures per node
+
+[2026-04-12T12:10:01Z] [DECISION] Set unreachable threshold at 2 consecutive failures
+  WHY: 2 failures = 60 seconds (30s poll interval) - enough to filter transient issues while still detecting real outages quickly
+  CONTEXT: checkNodeHealth() in events.mjs for walter, otis, lomax, lockwood; Below node has separate HTTP fallback path
+
+[2026-04-12T12:10:02Z] [WHY] Grace period needed because dashboard polls every 10s from frontend, backend SSH timeout is 10s
+  WHY: Tight timing means any brief network hiccup (WiFi interference, SSH multiplex socket reset) triggers immediate false positive
+  CONTEXT: Frontend pollHealth() interval 10000ms, backend execFile timeout 10000ms
+
+[2026-04-12T12:10:03Z] [PATTERN] Transient failure tolerance: track consecutive failures, only report after threshold exceeded
+  WHY: Common pattern for health monitoring - prevents alert fatigue from brief connectivity blips while maintaining quick detection of real outages
+  CONTEXT: Applied to all remote node health checks in events.mjs; reset counter to 0 on any successful check
+[2026-04-12T21:30:00Z] [DECISION] Extracted _url_hash() to shared core/cluster/utils.py
+  WHY: Function duplicated identically in 7 files (hunt_sourcer, intel_collector, 5 hunt sources). Single source of truth prevents drift if hashing algorithm changes.
+  CONTEXT: core/cluster/utils.py, hunt_sourcer.py, intel_collector.py, hunt_sources/{reddit_rss,ebay_browse,ebay_sold,craigslist_rss,pcpartpicker}.py
+
+[2026-04-12T21:31:00Z] [DECISION] Extracted cosine_similarity() to shared core/cluster/utils.py
+  WHY: Identical implementations in hunt_sourcer.py (inline, 6 lines) and intel_scoring.py (_cosine_similarity, 10 lines). Both for vector similarity during dedup. Unified prevents divergence.
+  CONTEXT: core/cluster/utils.py, hunt_sourcer.py (line 437-445), intel_scoring.py (line 114-123)
+
+[2026-04-12T21:32:00Z] [DECISION] Extracted tech indicator filtering to filter_hallucinations() in utils.py
+  WHY: Identical regex pattern and logic in newegg.py and bhphoto.py (lines 203-215, 167-177). LLM-extracted listings need hardware keywords to avoid hallucinations. Centralization enables consistent logging and future tweaks.
+  CONTEXT: core/cluster/utils.py, newegg.py, bhphoto.py
+
+[2026-04-12T21:33:00Z] [ARCHITECTURE] Added threading.Lock protection to _last_checked dict in hunt_sourcer.py
+  WHY: Race condition identified: check_hunts_once() runs in background thread, read-then-compare pattern on _last_checked dict can cause two threads to both decide hunt is due. Lock ensures atomic check-and-update at line 540-546.
+  CONTEXT: hunt_sourcer.py, core/cluster/utils.py (last_checked_lock)
+
+[2026-04-12T21:34:00Z] [ARCHITECTURE] Added threading.Lock protection to rate limit counters in delivery_tracker.py
+  WHY: Race condition: _daily_calls and _daily_reset_date mutated without lock in async context. Can lose increments near midnight UTC or exceed MAX_API_CALLS_PER_DAY. Lock ensures atomic operations in _check_rate_limit() and _increment_rate_limit().
+  CONTEXT: delivery_tracker.py, core/cluster/utils.py (rate_limit_lock)
+
+[2026-04-12T21:35:00Z] [DECISION] Deleted ebay_scrape.py (hunt_sources/)
+  WHY: CAPTCHA blocks httpx requests. Config has enabled: false. Replaced by ebay_browse API. Code unreachable but removed dead import path and source selector logic.
+  CONTEXT: hunt_sources/ebay_scrape.py (316 lines deleted), hunt_sourcer.py (_run_source selector, BELOW_NEEDS_LLM set), seller_verifier.py source attribution
+
+[2026-04-12T21:36:00Z] [DECISION] Made url_hash, cosine_similarity, filter_hallucinations public (no underscore prefix) in utils.py
+  WHY: These are utility functions for consumption by multiple modules, not private implementation details. Public naming convention signals intentional API for reuse.
+  CONTEXT: core/cluster/utils.py
+
+[2026-04-12T21:37:00Z] [DECISION] Removed unused imports: sys (hunt_sourcer.py), datetime (hunt_sourcer.py), math (intel_scoring.py), hashlib (multiple files)
+  WHY: Imports removed when functions were extracted to utils. No code path used these. Clean codebase signal.
+  CONTEXT: hunt_sourcer.py (sys, datetime), intel_scoring.py (math), hunt_sources (hashlib)
+
+[2026-04-12T21:38:00Z] [PATTERN] Centralized module-level utilities in core/cluster/utils.py
+  WHY: Cluster code had repeated utility functions and shared state. Single source of truth prevents bugs from code drift, enables consistent logging/monitoring, simplifies maintenance.
+  PATTERN: Define utility functions + locks in utils.py, import from consumers. Not per-file duplication.
+  CONTEXT: url_hash, cosine_similarity, filter_hallucinations, last_checked_lock, rate_limit_lock
+
+[2026-04-12T21:39:00Z] [CONSTRAINT] Python asyncio + threading mix in cluster services
+  WHY: hunt_sourcer runs async event loop in background thread. Shared state (_last_checked dict) accessed from async context needs locks because threading.Lock works across thread boundaries.
+  CONTEXT: hunt_sourcer.py (run_forever in thread, check_hunts_once async), utils.py last_checked_lock
+[2026-04-12 18:51] [DECISION] Created build spec: cluster-max with 7 phases — Below dual 3090 NVLink upgrade, MS-A2 Memory+Staging node, 7-worker cluster reconfiguration, Below 70B skill integration, vLLM batch pipeline, overnight automation
+
+[2026-04-12T23:58:00Z] [ARCHITECTURE] Root cause of Otis adversarial review failures: expired OAuth tokens, not script architecture
+  WHY: 5 parallel subagent investigation revealed token refresh daemon was running local-only script (br-token-refresh-local.sh) instead of cluster sync version (br-token-refresh.sh). Otis token expired 152 minutes before failures.
+  CONTEXT: ~/.buildrunner/scripts/br-token-refresh*.sh, adversarial-review.sh, com.br3.token-refresh.plist
+
+[2026-04-12T23:58:01Z] [WHY] Previous 5 fix attempts (Apr 5-12) never worked
+  WHY: All fixes targeted script mechanics (perl setsid, 360s timeout, --bare flag, heap caps, process groups) but the actual failure was 401 auth error from expired token. Script architecture was fine.
+  CONTEXT: Phase 5 adversarial dispatch hardening, BUILD_rock-solid-build-tracking
+
+[2026-04-12T23:58:02Z] [CONSTRAINT] `claude auth status` does not validate token expiry
+  WHY: Command reads cached metadata, not actual token validity. Shows "loggedIn: true" even when token is expired. Only actual API calls (claude --print) reveal the 401 error.
+  CONTEXT: adversarial-review.sh preflight check, cluster health monitoring
+
+[2026-04-12T23:58:03Z] [REJECTED] Cross-node credential sync architecture (MacBook syncs to cluster nodes)
+  WHY: Single point of failure. If MacBook is asleep, offline, or sync script misconfigured, all nodes go stale. Token TTL is ~4 hours so any missed sync cycle = broken node.
+  CONTEXT: br-token-refresh.sh, com.br3.token-refresh.plist
+
+[2026-04-12T23:58:04Z] [ARCHITECTURE] New approach: per-node self-sufficient authentication
+  WHY: Each node (Otis, Walter, Lomax) manages its own Claude login and token refresh independently. No cross-node sync needed. Removes single point of failure.
+  CONTEXT: br-token-refresh-local.sh deployed to each node, per-node launchd daemon
+
+[2026-04-12T23:58:05Z] [DECISION] Fixed Otis immediately by copying fresh credentials + reloading daemon
+  WHY: Otis was the only broken parallel builder. scp ~/.claude/.credentials + launchctl reload restored function. Token refresh daemon now running, token expires in 1.1h, will auto-refresh.
+  CONTEXT: otis:~/.claude/.credentials, com.br3.token-refresh launchd agent
+
+[2026-04-12T23:58:06Z] [CONSTRAINT] Walter and Lomax do not have Claude installed
+  WHY: They are not builder nodes - Walter is sentinel (testing), Lomax is forge (staging). Only Otis is parallel-builder role requiring Claude.
+  CONTEXT: cluster.json, node roles
+
+[2026-04-12T23:58:07Z] [GOAL] Long-term cluster auth architecture: per-node OAuth with cluster-level monitoring
+  WHY: Each node has its own Claude login, its own refresh daemon, and cluster health checks validate token expiry (not just auth status). Proactive alerts when any token < 1 hour from expiry.
+  CONTEXT: cluster-check.sh, dashboard health panel
+
+[2026-04-12T23:58:08Z] [PATTERN] Token expiry validation: parse expires_at from .credentials, compare to current time
+  WHY: `claude auth status` lies about token validity. Must check actual expires_at timestamp in ~/.claude/.credentials JSON to know if token is valid.
+  CONTEXT: cluster health checks, adversarial-review.sh preflight
+
+[2026-04-12T23:58:09Z] [TRADE-OFF] Per-node auth requires interactive login on each node vs automatic sync
+  WHY: One-time `claude auth login` per node is more reliable than continuous cross-node sync. Trade-off: manual setup once vs fragile automation forever.
+  CONTEXT: Otis, Walter (if needed), Lomax (if needed) initial setup
+
+[2026-04-13T12:05:00Z] [ARCHITECTURE] Removed --bare flag from adversarial-review.sh remote claude invocation
+  WHY: --bare disables OAuth authentication entirely ("OAuth and keychain are never read"). Otis uses OAuth as its only auth method. Preflight passed (no --bare) but actual review failed (with --bare) — creating illusion auth worked while every review failed.
+  CONTEXT: ~/.buildrunner/scripts/adversarial-review.sh:226, Otis parallel builder node
+
+[2026-04-13T12:05:01Z] [WHY] Phase 5 --bare flag broke Otis despite being a "performance optimization"
+  WHY: --bare was added to skip hooks/CLAUDE.md/LSP/MCP loading, reducing startup from ~120s to ~30s. But the flag bundles too many things — including disabling OAuth. On OAuth-only nodes like Otis, this causes "Not logged in" error on every invocation.
+  CONTEXT: Phase 5 adversarial dispatch hardening (Apr 12), adversarial-review.sh
+
+[2026-04-13T12:05:02Z] [CONSTRAINT] Cannot use --bare flag on OAuth-authenticated nodes
+  WHY: claude --help documents: "--bare ... Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read)". Cluster nodes use OAuth, not API keys.
+  CONTEXT: adversarial-review.sh, all cluster builder nodes (Otis)
+
+[2026-04-13T12:05:03Z] [TRADE-OFF] Accepting slower startup on remote reviews to preserve OAuth auth
+  WHY: Without --bare, claude loads hooks, CLAUDE.md, LSP on each remote invocation. Adds ~10-30s overhead. But OAuth works. Trade-off: performance vs authentication.
+  CONTEXT: adversarial-review.sh:226
+
+[2026-04-13T12:05:04Z] [DECISION] Removed stale ~/.claude/.credentials.json from Otis
+  WHY: Two credential files existed — .credentials (valid) and .credentials.json (expired Apr 8). Removed stale file to eliminate confusion and potential precedence issues.
+  CONTEXT: Otis ~/.claude/.credentials.json
+
+[2026-04-13T12:05:05Z] [PATTERN] Add warning comment when removing dangerous flags
+  WHY: Added comment "NOTE: Do NOT use --bare flag — it disables OAuth auth" to prevent future re-introduction of the bug. Comments explain constraints that aren't obvious from code.
+  CONTEXT: adversarial-review.sh:218
+
+[2026-04-13T12:05:06Z] [WHY] Preflight check passed but actual review failed (different flags)
+  WHY: Line 126 (preflight) runs `claude --print "ok"` without --bare → OAuth works → passes. Line 226 (actual review) ran with --bare → OAuth disabled → fails. Inconsistent flag usage created misleading diagnostic.
+  CONTEXT: adversarial-review.sh:126, adversarial-review.sh:226
+
+[2026-04-13T12:25:00Z] [ARCHITECTURE] Added keychain unlock to adversarial-review.sh before preflight check
+  WHY: Headless cluster nodes (Otis) auto-lock keychain after inactivity. Claude reads credentials from keychain, not file. Locked keychain = "Not logged in" error even with valid token.
+  CONTEXT: adversarial-review.sh:124-127, keychain unlock using CLUSTER_SSH_PASS from .env
+
+[2026-04-13T12:25:01Z] [ARCHITECTURE] Added keychain unlock to br-token-refresh-local.sh
+  WHY: Token refresh daemon reads from keychain. On headless nodes, keychain locks between refresh cycles. Script now unlocks before reading, using password from CLUSTER_SSH_PASS env var or ~/.buildrunner/.env.
+  CONTEXT: br-token-refresh-local.sh:23-30
+
+[2026-04-13T12:25:02Z] [CONSTRAINT] Headless macOS nodes auto-lock keychain
+  WHY: macOS security feature. No interactive login = keychain locks after timeout. All scripts that read keychain on cluster nodes must unlock first.
+  CONTEXT: Otis (10.0.1.103), any future headless builder nodes
+
+[2026-04-13T12:25:03Z] [DECISION] Store CLUSTER_SSH_PASS in ~/.buildrunner/.env on each node
+  WHY: Keychain password needed to unlock before reads. Copying .env to all nodes enables autonomous keychain unlock without interactive input.
+  CONTEXT: ~/.buildrunner/.env, scp to otis
+
+[2026-04-13T12:25:04Z] [WHY] Three separate root causes for Otis failures, found over two sessions
+  WHY: (1) Token refresh daemon using local-only script = tokens expired. (2) --bare flag disabled OAuth = "Not logged in". (3) Keychain auto-locked on headless node = credentials unreadable. All three had to be fixed for Otis to work.
+  CONTEXT: adversarial-review.sh, br-token-refresh-local.sh, Otis headless node
+
+[2026-04-13T12:25:05Z] [PATTERN] Always unlock keychain before any keychain read on cluster nodes
+  WHY: Headless nodes have locked keychains. Pattern: source .env, get CLUSTER_SSH_PASS, run `security unlock-keychain -p "$PASS"` before any `security find-generic-password` call.
+  CONTEXT: All scripts that touch keychain on cluster nodes
+[2026-04-13T07:15:00Z] [ROOT-CAUSE] Otis SSH instability is keychain/auth ACL mismatch, not network/SSH
+  WHY: Keychain entry exists but CLI can't read password blob; credentials file on disk is valid. CLI reports loggedIn:false despite fresh tokens. This is a macOS keychain permissions issue where the refresh daemon (launchd) has different ACL than claude CLI binary.
+  CONTEXT: cluster dispatch, adversarial-review.sh, token refresh daemon, Otis auth
+
+[2026-04-13T07:15:00Z] [ARCHITECTURE] Per-node self-sufficient Claude authentication (adopted Apr 12)
+  WHY: Rejected cross-node sync due to single point of failure (MacBook sleep/offline breaks all nodes). Each node now independently manages its own OAuth login and token refresh daemon.
+  CONTEXT: Otis, Walter, Lomax; br-token-refresh.sh; dispatch-to-node.sh auth flow
+
+[2026-04-13T07:15:00Z] [CONSTRAINT] M2 8GB memory pressure destabilizes dispatch
+  WHY: Otis has only 8GB; when free pages drop below 15K during Claude processes, SSH connections fail (exit 255) alongside auth failures. Correlation observed across 24 failure events (Apr 7-13).
+  CONTEXT: diag logs show memory pressure spikes; NODE_OPTIONS heap cap + orphan process cleanup needed
+
+[2026-04-13T07:15:00Z] [REJECTED] Using --bare flag on Otis dispatch (was attempted in Phase 5)
+  WHY: --bare disables OAuth auth entirely; Otis uses OAuth only. Flag bundles startup optimization (skip hooks/CLAUDE.md/LSP) with auth mechanism bypass, breaking cluster nodes while appearing to work locally.
+  CONTEXT: adversarial-review.sh line 218 — explicit comment now warns against --bare
+
+[2026-04-13T07:15:00Z] [PATTERN] Preflight auth check + actual execution must use identical flags
+  WHY: adversarial-review.sh line 125 ran preflight WITHOUT --bare (auth passed) but line 226 ran WITH --bare (auth failed), creating diagnostic blindness. Token validity hidden until actual API call.
+  CONTEXT: dispatch/auth verification, script consistency
+
+[2026-04-13T07:15:00Z] [WHY] Token refresh daemon complexity required per-node architecture
+  WHY: Central token refresh (from MacBook to cluster) created implicit dependency on control machine availability. Per-node daemons are self-sufficient but require independent setup and monitoring on each node. Trade: more setup complexity for architectural resilience.
+  CONTEXT: cluster resilience, token management, Otis/Walter/Lomax
+
+[2026-04-13T07:15:00Z] [GOAL] Shift from "script architecture fixes" to "auth stack verification"
+  WHY: 5 phases of script improvements (setsid, timeout, heap caps, orphan cleanup) addressed wrong problem entirely. Real issue was token validity + keychain ACLs. Reveals diagnosis gap: claude auth status lies about token freshness. Future: validate tokens via expires_at field, not CLI output.
+  CONTEXT: BUILD_rock-solid-build-tracking phases 1-5; adversarial dispatch reliability
+
+[2026-04-13T07:15:00Z] [DECISION] Immediate fix: recreate Otis keychain entry with correct ACLs
+  WHY: Current entry (created Apr 6, modified Apr 13) exists but is unreadable by claude CLI. Delete broken entry and re-create from valid disk credentials (.credentials file) with proper security ACLs.
+  CONTEXT: ~/.ssh/config Otis setup; security delete-generic-password + manual ACL grant needed
+[2026-04-13T12:36:32Z] [DECISION] Created build spec: cross-model-review with 4 phases — Cursor IDE setup + auto-focus, cross-model review engine (Codex CLI primary, OpenRouter fallback), dispatch chain integration + unified review gate, dashboard panel + review convergence. Adversarial review: 3 blockers found and fixed (cursor --diff syntax, OpenRouter model ID, dispatch target clarification).
+[2026-04-13T12:46:04Z] [AMENDMENT] Phase 2 expanded: Added Codex CLI backend for adversarial-review.sh (--backend codex flag). True cross-model review — GPT-4o reviews Claude's plans instead of Claude reviewing Claude. Runs locally on Muddy, no SSH/auth issues. Otis remains default, Codex is opt-in or auto-fallback when Otis unreachable.

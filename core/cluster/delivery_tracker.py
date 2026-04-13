@@ -11,11 +11,12 @@ import asyncio
 import json
 import logging
 import os
-import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+
+from core.cluster.utils import rate_limit_lock
 
 try:
     import httpx
@@ -269,19 +270,21 @@ _daily_reset_date = ""
 
 
 def _check_rate_limit() -> bool:
-    """Check if we're within the daily API call limit."""
+    """Check if we're within the daily API call limit. Thread-safe."""
     global _daily_calls, _daily_reset_date
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    if today != _daily_reset_date:
-        _daily_calls = 0
-        _daily_reset_date = today
-    return _daily_calls < MAX_API_CALLS_PER_DAY
+    with rate_limit_lock:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        if today != _daily_reset_date:
+            _daily_calls = 0
+            _daily_reset_date = today
+        return _daily_calls < MAX_API_CALLS_PER_DAY
 
 
 def _increment_rate_limit(count: int = 1):
-    """Increment daily API call counter."""
+    """Increment daily API call counter. Thread-safe."""
     global _daily_calls
-    _daily_calls += count
+    with rate_limit_lock:
+        _daily_calls += count
 
 
 async def check_deliveries_once():

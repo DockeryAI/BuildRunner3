@@ -5,9 +5,10 @@ Falls back to RSS if Playwright unavailable.
 """
 
 import logging
-import hashlib
 import re
 from typing import Optional
+
+from core.cluster.utils import url_hash
 
 try:
     import httpx
@@ -17,10 +18,6 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 PCPP_BASE = "https://pcpartpicker.com"
-
-
-def _url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
 
 
 async def _scrape_with_playwright(keywords: str, limit: int = 20) -> list[dict]:
@@ -191,7 +188,7 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                 "retailer": result.get("retailer", "PCPartPicker"),
                 "source": "pcpartpicker",
             },
-            "source_url": f"pcpp:{_url_hash(listing_url)}",
+            "source_url": f"pcpp:{url_hash(listing_url)}",
             "price": price,
             "condition": "New",
             "seller": result.get("retailer", "Various Retailers"),

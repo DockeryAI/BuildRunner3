@@ -297,6 +297,11 @@ export const dealsAPI = {
     return response.data;
   },
 
+  async getArchivedHunts(): Promise<{ hunts: Hunt[]; count: number }> {
+    const response = await intelApi.get('/api/deals/hunts/archived');
+    return response.data;
+  },
+
   async createHunt(
     hunt: Omit<Hunt, 'id' | 'created_at' | 'active' | 'items_count' | 'last_checked'>
   ): Promise<Hunt> {
@@ -321,6 +326,20 @@ export const dealsAPI = {
 
   async markDealRead(id: number): Promise<{ status: string }> {
     const response = await intelApi.post(`/api/deals/items/${id}/read`);
+    return response.data;
+  },
+
+  async updateDeal(
+    id: number,
+    updates: {
+      purchased?: number;
+      delivery_status?: string;
+      purchased_price?: number;
+      tracking_number?: string;
+      carrier?: string;
+    }
+  ): Promise<{ status: string }> {
+    const response = await intelApi.patch(`/api/deals/items/${id}`, updates);
     return response.data;
   },
 };

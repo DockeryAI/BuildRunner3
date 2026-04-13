@@ -5,9 +5,10 @@ Free, no API key. Configurable city.
 """
 
 import logging
-import hashlib
 import re
 from typing import Optional
+
+from core.cluster.utils import url_hash
 
 try:
     import httpx
@@ -18,10 +19,6 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_CITIES = ["sfbay", "losangeles", "seattle"]
 DEFAULT_CATEGORY = "sss"  # For sale - all
-
-
-def _url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
 
 
 def _extract_price_from_title(title: str) -> Optional[float]:
@@ -149,7 +146,7 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                             "cl_category": cl_category,
                             "published": entry.get("published", ""),
                         },
-                        "source_url": f"craigslist:{_url_hash(post_url)}",
+                        "source_url": f"craigslist:{url_hash(post_url)}",
                         "price": price,
                         "condition": "Used",
                         "seller": f"craigslist/{city}",

@@ -5,9 +5,10 @@ Free tier: 5,000 calls/day. Searches active + sold/completed listings.
 
 import os
 import logging
-import hashlib
 from typing import Optional
 from datetime import datetime
+
+from core.cluster.utils import url_hash
 
 try:
     import httpx
@@ -52,8 +53,7 @@ async def _get_auth_token() -> Optional[str]:
         return None
 
 
-def _url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
+# _url_hash moved to core.cluster.utils
 
 
 async def search(hunt: dict, config: dict) -> list[dict]:
@@ -155,7 +155,7 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                         "source": "ebay_browse",
                         "in_stock": True,  # Browse API only returns active listings
                     },
-                    "source_url": f"ebay_browse:{_url_hash(listing_url)}",
+                    "source_url": f"ebay_browse:{url_hash(listing_url)}",
                     "price": price_val,
                     "condition": condition_text,
                     "seller": seller_name,

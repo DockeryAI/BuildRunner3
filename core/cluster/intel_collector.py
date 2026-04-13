@@ -11,7 +11,6 @@ Handles:
 
 import os
 import json
-import hashlib
 import sqlite3
 import time
 import threading
@@ -19,6 +18,8 @@ import logging
 from pathlib import Path
 from typing import Optional
 from datetime import datetime, timedelta
+
+from core.cluster.utils import url_hash
 
 try:
     import httpx
@@ -126,9 +127,7 @@ def _ensure_intel_tables(conn: sqlite3.Connection):
     conn.commit()
 
 
-def _url_hash(url: str) -> str:
-    """Generate hash for URL deduplication."""
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
+# _url_hash moved to core.cluster.utils
 
 
 def _classify_source_type(source: str, url: str = "") -> str:
@@ -151,7 +150,7 @@ def create_intel_item(title: str, source: str, url: str = None,
     try:
         # Dedup by URL hash
         if url:
-            uhash = _url_hash(url)
+            uhash = url_hash(url)
             existing = conn.execute(
                 "SELECT id FROM intel_items WHERE url_hash = ?", (uhash,)
             ).fetchone()
@@ -282,23 +281,27 @@ def create_deal_item(hunt_id: int, name: str, category: str = None,
             if existing:
                 return None  # duplicate
 
-        # Extract in_stock from attributes if present (sources like eBay Browse set this)
+        # Extract in_stock and seller_verified from attributes if present
         in_stock = None
+        seller_verified = 0
         if attributes and isinstance(attributes, dict):
             in_stock_attr = attributes.get("in_stock")
             if in_stock_attr is True:
                 in_stock = 1
             elif in_stock_attr is False:
                 in_stock = 0
+            # Official stores (shopify_direct, crucial_direct) are pre-verified
+            if attributes.get("seller_verified") or attributes.get("source") in ("shopify_direct", "crucial_direct"):
+                seller_verified = 1
 
         cursor = conn.execute(
             """INSERT INTO deal_items (hunt_id, name, category, attributes,
-               source_url, price, condition, seller, seller_rating, listing_url, listing_url_hash, in_stock)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               source_url, price, condition, seller, seller_rating, listing_url, listing_url_hash, in_stock, seller_verified)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (hunt_id, name, category, json.dumps(attributes) if attributes else None,
              source_url, price, condition, seller, seller_rating, listing_url,
              hashlib.sha256((dedup_url or "").strip().lower().encode()).hexdigest()[:16] if dedup_url else None,
-             in_stock)
+             in_stock, seller_verified)
         )
         conn.commit()
         deal_id = cursor.lastrowid
@@ -358,9 +361,9 @@ def get_deal_items(hunt_id: int = None, min_score: int = None,
         conditions.append("verified = 1")
 
     # Ready mode: require both in_stock AND seller_verified
+    # BUT always include purchased items (they're already bought, stock doesn't matter)
     if ready_only:
-        conditions.append("in_stock = 1")
-        conditions.append("seller_verified = 1")
+        conditions.append("(purchased = 1 OR (in_stock = 1 AND seller_verified = 1))")
     else:
         # When ready_only=False, show all deals by default.
         # Only apply filters if explicitly requested.
@@ -582,7 +585,8 @@ def update_deal_item(item_id: int, **fields) -> bool:
     allowed = {"purchased", "purchased_price", "user_notes", "dismissed", "read",
                "deal_score", "verdict", "below_assessment", "opus_assessment",
                "received", "received_at", "actual_url", "tracking_number",
-               "carrier", "delivery_status", "delivery_updated_at"}
+               "carrier", "delivery_status", "delivery_updated_at",
+               "seller_verified", "in_stock"}
     updates = []
     params = []
     for key, value in fields.items():

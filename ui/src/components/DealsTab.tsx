@@ -17,10 +17,21 @@ interface HuntGroup {
   inRangeCount: number;
 }
 
+type StatusTab = 'hunting' | 'bought' | 'delivered';
+
+// Derive status from purchased + delivery_status fields
+function getDealStatus(deal: DealItem): StatusTab {
+  if (deal.delivery_status === 'delivered') return 'delivered';
+  if (deal.purchased === 1) return 'bought';
+  return 'hunting';
+}
+
 export function DealsTab({ onAlertCount }: DealsTabProps) {
   const [hunts, setHunts] = useState<Hunt[]>([]);
+  const [archivedHunts, setArchivedHunts] = useState<Hunt[]>([]);
   const [deals, setDeals] = useState<DealItem[]>([]);
   const [selectedHunt, setSelectedHunt] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<StatusTab>('hunting');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null);
@@ -45,16 +56,16 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
 
   const loadData = useCallback(async () => {
     try {
-      const [huntsRes, dealsRes] = await Promise.all([
+      const [huntsRes, archivedRes, dealsRes] = await Promise.all([
         dealsAPI.getHunts(),
+        dealsAPI.getArchivedHunts(),
         dealsAPI.getDealItems({
-          ...(selectedHunt ? { hunt_id: selectedHunt } : { limit: 50 }),
-          ready_only: true,
-          in_stock_only: true,
-          seller_verified_only: true,
+          ...(selectedHunt ? { hunt_id: selectedHunt } : { limit: 100 }),
+          ready_only: false,
         }),
       ]);
       setHunts(huntsRes.hunts);
+      setArchivedHunts(archivedRes.hunts);
       setDeals(dealsRes.items);
 
       const exceptional = dealsRes.items.filter((d) => d.deal_score >= 80 && !d.read).length;
@@ -160,6 +171,35 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
     loadData();
   };
 
+  const handleStatusChange = async (dealId: number, newStatus: StatusTab) => {
+    // Determine API fields based on status
+    const updates: { purchased?: number; delivery_status?: string } = {};
+    if (newStatus === 'hunting') {
+      updates.purchased = 0;
+      updates.delivery_status = 'none';
+    } else if (newStatus === 'bought') {
+      updates.purchased = 1;
+      updates.delivery_status = 'none';
+    } else if (newStatus === 'delivered') {
+      updates.purchased = 1;
+      updates.delivery_status = 'delivered';
+    }
+    await dealsAPI.updateDeal(dealId, updates);
+    // Update local state immediately for responsiveness
+    setDeals((prev) =>
+      prev.map((d) =>
+        d.id === dealId
+          ? {
+              ...d,
+              purchased: updates.purchased ?? d.purchased,
+              delivery_status: (updates.delivery_status ??
+                d.delivery_status) as DealItem['delivery_status'],
+            }
+          : d
+      )
+    );
+  };
+
   const toggleHuntAccordion = (huntId: number) => {
     setExpandedHunts((prev) => {
       const next = new Set(prev);
@@ -178,20 +218,35 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
     return deal.attributes?.in_range === true;
   };
 
+  // Count deals by status for tab badges
+  const statusCounts = useMemo(() => {
+    const counts = { hunting: 0, bought: 0, delivered: 0 };
+    deals.forEach((d) => {
+      counts[getDealStatus(d)]++;
+    });
+    return counts;
+  }, [deals]);
+
   // Group deals by hunt, sorted by price within each group
-  // Filter: only in-stock + verified sellers
+  // Filter: by active tab + in-stock + verified sellers (for hunting tab)
   // STABILITY FIX: Include ALL hunts even with 0 matching deals to prevent accordion state loss
   const huntGroups: HuntGroup[] = useMemo(() => {
     const grouped = new Map<number, DealItem[]>();
 
-    // Filter deals to only in-stock + verified sellers
-    const filteredDeals = (
-      selectedHunt ? deals.filter((d) => d.hunt_id === selectedHunt) : deals
-    ).filter(
-      (d) =>
-        (d.in_stock === true || d.in_stock === 1) &&
-        (d.seller_verified === true || d.seller_verified === 1)
-    );
+    // Filter deals by hunt selection and active tab
+    let filteredDeals = selectedHunt ? deals.filter((d) => d.hunt_id === selectedHunt) : deals;
+
+    // Filter by status tab
+    filteredDeals = filteredDeals.filter((d) => getDealStatus(d) === activeTab);
+
+    // For hunting tab, also filter to in-stock + verified sellers
+    if (activeTab === 'hunting') {
+      filteredDeals = filteredDeals.filter(
+        (d) =>
+          (d.in_stock === true || d.in_stock === 1) &&
+          (d.seller_verified === true || d.seller_verified === 1)
+      );
+    }
 
     filteredDeals.forEach((deal) => {
       const list = grouped.get(deal.hunt_id) || [];
@@ -201,11 +256,18 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
 
     // Include ALL hunts (or selected hunt), even those with 0 matching deals
     // This prevents accordion state from being lost when deals are filtered out
-    const relevantHunts = selectedHunt ? hunts.filter((h) => h.id === selectedHunt) : hunts;
+    // For Bought/Delivered tabs, also include archived hunts since those deals still exist
+    const allHunts = activeTab === 'hunting' ? hunts : [...hunts, ...archivedHunts];
+    const relevantHunts = selectedHunt ? allHunts.filter((h) => h.id === selectedHunt) : allHunts;
 
     const groups: HuntGroup[] = relevantHunts.map((hunt) => {
       const huntDeals = grouped.get(hunt.id) || [];
-      const sorted = [...huntDeals].sort((a, b) => (a.price || Infinity) - (b.price || Infinity));
+      // Sort by deal_score descending (best deals first), then by price ascending as tiebreaker
+      const sorted = [...huntDeals].sort((a, b) => {
+        const scoreDiff = (b.deal_score || 0) - (a.deal_score || 0);
+        if (scoreDiff !== 0) return scoreDiff;
+        return (a.price || Infinity) - (b.price || Infinity);
+      });
       return {
         hunt,
         deals: sorted,
@@ -224,7 +286,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
     });
 
     return groups;
-  }, [hunts, deals, selectedHunt]);
+  }, [hunts, archivedHunts, deals, selectedHunt, activeTab]);
 
   const getVerdictClass = (verdict: string) => {
     const classes: Record<string, string> = {
@@ -393,6 +455,28 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
           </span>
         </h3>
 
+        {/* Status tabs */}
+        <div className="status-tabs">
+          <button
+            className={`status-tab ${activeTab === 'hunting' ? 'active' : ''}`}
+            onClick={() => setActiveTab('hunting')}
+          >
+            Hunting <span className="tab-count">{statusCounts.hunting}</span>
+          </button>
+          <button
+            className={`status-tab ${activeTab === 'bought' ? 'active' : ''}`}
+            onClick={() => setActiveTab('bought')}
+          >
+            Bought <span className="tab-count">{statusCounts.bought}</span>
+          </button>
+          <button
+            className={`status-tab ${activeTab === 'delivered' ? 'active' : ''}`}
+            onClick={() => setActiveTab('delivered')}
+          >
+            Delivered <span className="tab-count">{statusCounts.delivered}</span>
+          </button>
+        </div>
+
         {huntGroups.length === 0 ? (
           <div className="deals-empty">
             No deals found.
@@ -435,6 +519,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                       getScoreColor={getScoreColor}
                       formatTime={formatTime}
                       formatPrice={formatPrice}
+                      onStatusChange={handleStatusChange}
                     />
                   ) : (
                     <div className="hunt-empty-state">No verified in-stock deals available</div>
@@ -470,6 +555,7 @@ export function DealsTab({ onAlertCount }: DealsTabProps) {
                               onShowHistory={handleShowHistory}
                               onDismiss={handleDismiss}
                               onMarkRead={handleMarkRead}
+                              onStatusChange={handleStatusChange}
                               getVerdictClass={getVerdictClass}
                               getScoreColor={getScoreColor}
                               formatTime={formatTime}
@@ -500,6 +586,7 @@ interface BestDealRowProps {
   getScoreColor: (s: number) => string;
   formatTime: (ts: string) => string;
   formatPrice: (p: number) => string;
+  onStatusChange: (dealId: number, status: StatusTab) => void;
 }
 
 function BestDealRow({
@@ -510,59 +597,68 @@ function BestDealRow({
   getScoreColor,
   formatTime,
   formatPrice,
+  onStatusChange,
 }: BestDealRowProps) {
   const priceDelta = targetPrice ? deal.price - targetPrice : 0;
   const isVerified = deal.in_stock && deal.seller_verified;
+  const currentStatus = getDealStatus(deal);
 
   return (
-    <a
-      href={deal.listing_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`best-deal-row ${inRange ? 'best-deal-in-range blink-highlight' : ''}`}
-    >
-      <div className="bdr-score" style={{ backgroundColor: getScoreColor(deal.deal_score) }}>
-        {deal.deal_score}
-      </div>
-      <span className="bdr-rank">#1</span>
-      <span className="bdr-name">{deal.name}</span>
-      <div className="bdr-status">
-        {!!deal.in_stock && (
-          <span className="status-badge status-in-stock" title="In Stock">
-            IN STOCK
+    <div className={`best-deal-row ${inRange ? 'best-deal-in-range blink-highlight' : ''}`}>
+      <a href={deal.listing_url} target="_blank" rel="noopener noreferrer" className="bdr-link">
+        <div className="bdr-score" style={{ backgroundColor: getScoreColor(deal.deal_score) }}>
+          {deal.deal_score}
+        </div>
+        <span className="bdr-rank">#1</span>
+        <span className="bdr-name">{deal.name}</span>
+        <div className="bdr-status">
+          {!!deal.in_stock && (
+            <span className="status-badge status-in-stock" title="In Stock">
+              IN STOCK
+            </span>
+          )}
+          {!deal.in_stock && deal.in_stock !== null ? (
+            <span className="status-badge status-out-of-stock" title="Out of Stock">
+              SOLD
+            </span>
+          ) : null}
+          {!!deal.seller_verified && (
+            <span className="status-badge status-verified" title="Seller Verified">
+              VERIFIED
+            </span>
+          )}
+          {!isVerified && !!deal.in_stock && (
+            <span className="status-badge status-unverified" title="Not yet verified">
+              UNVERIFIED
+            </span>
+          )}
+        </div>
+        <span className="bdr-seller">{deal.seller}</span>
+        <span className={`bdr-verdict ${getVerdictClass(deal.verdict)}`}>{deal.verdict}</span>
+        <span className="bdr-time">{formatTime(deal.collected_at)}</span>
+        <div className="bdr-price-block">
+          <span className={`bdr-price ${inRange ? 'price-in-range' : ''}`}>
+            {formatPrice(deal.price)}
           </span>
-        )}
-        {!deal.in_stock && deal.in_stock !== null ? (
-          <span className="status-badge status-out-of-stock" title="Out of Stock">
-            SOLD
-          </span>
-        ) : null}
-        {!!deal.seller_verified && (
-          <span className="status-badge status-verified" title="Seller Verified">
-            VERIFIED
-          </span>
-        )}
-        {!isVerified && !!deal.in_stock && (
-          <span className="status-badge status-unverified" title="Not yet verified">
-            UNVERIFIED
-          </span>
-        )}
-      </div>
-      <span className="bdr-seller">{deal.seller}</span>
-      <span className={`bdr-verdict ${getVerdictClass(deal.verdict)}`}>{deal.verdict}</span>
-      <span className="bdr-time">{formatTime(deal.collected_at)}</span>
-      <div className="bdr-price-block">
-        <span className={`bdr-price ${inRange ? 'price-in-range' : ''}`}>
-          {formatPrice(deal.price)}
-        </span>
-        {targetPrice > 0 && (
-          <span className={`bdr-delta ${priceDelta <= 0 ? 'delta-good' : 'delta-over'}`}>
-            {priceDelta <= 0 ? '' : '+'}
-            {formatPrice(Math.abs(priceDelta))} {priceDelta <= 0 ? 'under' : 'over'}
-          </span>
-        )}
-      </div>
-    </a>
+          {targetPrice > 0 && (
+            <span className={`bdr-delta ${priceDelta <= 0 ? 'delta-good' : 'delta-over'}`}>
+              {priceDelta <= 0 ? '' : '+'}
+              {formatPrice(Math.abs(priceDelta))} {priceDelta <= 0 ? 'under' : 'over'}
+            </span>
+          )}
+        </div>
+      </a>
+      <select
+        className="status-dropdown"
+        value={currentStatus}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => onStatusChange(deal.id, e.target.value as StatusTab)}
+      >
+        <option value="hunting">Hunting</option>
+        <option value="bought">Bought</option>
+        <option value="delivered">Delivered</option>
+      </select>
+    </div>
   );
 }
 
@@ -578,6 +674,7 @@ interface DealCardProps {
   onShowHistory: (id: number) => void;
   onDismiss: (id: number) => void;
   onMarkRead: (id: number) => void;
+  onStatusChange: (dealId: number, status: StatusTab) => void;
   getVerdictClass: (v: string) => string;
   getScoreColor: (s: number) => string;
   formatTime: (ts: string) => string;
@@ -594,11 +691,13 @@ function DealCard({
   onShowHistory,
   onDismiss,
   onMarkRead,
+  onStatusChange,
   getVerdictClass,
   getScoreColor,
   formatTime,
   formatPrice,
 }: DealCardProps) {
+  const currentStatus = getDealStatus(deal);
   const priceDelta = targetPrice ? deal.price - targetPrice : 0;
   const pricePct = targetPrice ? ((deal.price / targetPrice) * 100).toFixed(0) : null;
 
@@ -676,6 +775,15 @@ function DealCard({
       )}
 
       <div className="deal-actions">
+        <select
+          className="status-dropdown"
+          value={currentStatus}
+          onChange={(e) => onStatusChange(deal.id, e.target.value as StatusTab)}
+        >
+          <option value="hunting">Hunting</option>
+          <option value="bought">Bought</option>
+          <option value="delivered">Delivered</option>
+        </select>
         <a
           href={deal.listing_url}
           target="_blank"

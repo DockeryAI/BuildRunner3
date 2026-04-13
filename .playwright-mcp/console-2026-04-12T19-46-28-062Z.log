@@ -1,0 +1,2 @@
+[      51ms] [LOG] [TWS] Picker initialized, nodes: 6 @ http://localhost:4400/js/ws-terminal.js?v=20260411b:627
+[  145387ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/events/stream:0

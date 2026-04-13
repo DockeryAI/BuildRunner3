@@ -162,6 +162,11 @@ export interface DealItem {
   in_stock: boolean | null;
   seller_verified: boolean | null;
   last_checked: string | null;
+  // Purchase tracking
+  purchased: number; // 0=hunting, 1=bought
+  delivery_status: 'none' | 'ordered' | 'shipped' | 'in_transit' | 'out_for_delivery' | 'delivered';
+  purchased_price: number | null;
+  current_price: number | null;
 }
 
 export interface Hunt {

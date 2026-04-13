@@ -1,0 +1,147 @@
+[      62ms] [LOG] [TWS] Picker initialized, nodes: 6 @ http://localhost:8080/js/ws-terminal.js?v=20260411b:627
+[      63ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[      64ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/nodes:0
+[      64ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events?limit=100:0
+[      74ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/sessions:0
+[      74ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[      74ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/usage:0
+[      75ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/builds/health:0
+[      75ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/intel/bundle:0
+[      76ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/deals/hunts/archived:0
+[      76ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/monitor/alerts:0
+[      76ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/monitor/remediation?limit=50:0
+[      76ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/monitor/health?limit=200:0
+[      76ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/monitor/pipeline?limit=50:0
+[      76ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[      76ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/reviews:0
+[      76ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[      77ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/deals/summary:0
+[      78ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/intel/brief:0
+[      79ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/favicon.ico:0
+[     852ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[    3100ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[    6530ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[   10063ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   10064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   14792ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[   15059ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/sessions:0
+[   15061ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/usage:0
+[   20064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   20064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   28639ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[   30059ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/sessions:0
+[   30062ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/reviews:0
+[   30064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   30064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/usage:0
+[   30064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/nodes:0
+[   30064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   30065ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/intel/bundle:0
+[   30067ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/intel/brief:0
+[   30067ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/deals/summary:0
+[   40063ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   40063ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   45062ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/sessions:0
+[   45064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/usage:0
+[   50060ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   50061ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   60065ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/sessions:0
+[   60066ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/reviews:0
+[   60066ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   60067ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/usage:0
+[   60068ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   60068ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/builds/health:0
+[   60068ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/nodes:0
+[   60160ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/intel/bundle:0
+[   60162ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/intel/brief:0
+[   60163ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/deals/summary:0
+[   62500ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[   70061ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   70061ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   75059ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/sessions:0
+[   75061ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/usage:0
+[   80063ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   80064ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   90062ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/reviews:0
+[   90062ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/sessions:0
+[   90065ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/health:0
+[   90066ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/registry:0
+[   90066ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/nodes:0
+[   90067ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/usage:0
+[   90067ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/intel/bundle:0
+[   90068ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/intel/brief:0
+[   90069ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/proxy/deals/summary:0
+[   90700ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:8080/api/events/stream:0
+[  100063ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  100066ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  105059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  105062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0
+[  110061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  110061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  115795ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/events/stream:0
+[  120058ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  120059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/reviews:0
+[  120060ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  120061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0
+[  120061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  120061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/nodes:0
+[  120061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/builds/health:0
+[  120062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/proxy/intel/bundle:0
+[  120062ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: Failed to fetch
+    at fetchLiveData (http://localhost:8080/js/ws-intel.js:630:31)
+    at http://localhost:8080/js/ws-intel.js:2733:7 @ http://localhost:8080/js/ws-intel.js:796
+[  130061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  130061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  135058ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  135060ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0
+[  140061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  140061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  150059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  150059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/reviews:0
+[  150060ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  150061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0
+[  150061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  150061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/nodes:0
+[  150061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/proxy/intel/bundle:0
+[  150061ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: Failed to fetch
+    at fetchLiveData (http://localhost:8080/js/ws-intel.js:630:31)
+    at http://localhost:8080/js/ws-intel.js:2733:7 @ http://localhost:8080/js/ws-intel.js:796
+[  150544ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/events/stream:0
+[  160061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  160061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  165058ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  165060ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0
+[  170061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  170061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  175504ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/events/stream:0
+[  180059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  180059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/reviews:0
+[  180060ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  180061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0
+[  180061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  180061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/nodes:0
+[  180061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/builds/health:0
+[  180062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/proxy/intel/bundle:0
+[  180062ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: Failed to fetch
+    at fetchLiveData (http://localhost:8080/js/ws-intel.js:630:31)
+    at http://localhost:8080/js/ws-intel.js:2733:7 @ http://localhost:8080/js/ws-intel.js:796
+[  190062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  190062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  195059ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  195060ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0
+[  200061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  200061ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  202221ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/events/stream:0
+[  210062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  210062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/reviews:0
+[  210062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  210063ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0
+[  210064ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  210064ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/nodes:0
+[  210064ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/proxy/intel/bundle:0
+[  210064ms] [ERROR] [ws-intel] fetchLiveData failed: TypeError: Failed to fetch
+    at fetchLiveData (http://localhost:8080/js/ws-intel.js:630:31)
+    at http://localhost:8080/js/ws-intel.js:2733:7 @ http://localhost:8080/js/ws-intel.js:796
+[  220064ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/health:0
+[  220064ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/registry:0
+[  225060ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/sessions:0
+[  225062ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/usage:0

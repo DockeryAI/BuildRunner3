@@ -7,8 +7,9 @@ All entries are logged as market data with is_sold=1.
 
 import os
 import logging
-import hashlib
 import re
+
+from core.cluster.utils import url_hash
 
 try:
     import httpx
@@ -19,10 +20,6 @@ logger = logging.getLogger(__name__)
 
 EBAY_SEARCH_URL = "https://www.ebay.com/sch/i.html"
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
-
-
-def _url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
 
 
 async def _fetch_sold_html(keywords: str, max_price: float = None) -> str:
@@ -199,7 +196,7 @@ async def search(hunt: dict, source_config: dict) -> list[dict]:
             "hunt_id": hunt["id"],
             "name": f"[SOLD] {title}",
             "category": hunt.get("category", ""),
-            "source_url": f"ebay_sold:{_url_hash(url or title)}",
+            "source_url": f"ebay_sold:{url_hash(url or title)}",
             "listing_url": url,
             "price": listing.get("price"),
             "condition": listing.get("condition", "Unknown"),

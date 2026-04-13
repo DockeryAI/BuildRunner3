@@ -6,7 +6,8 @@ Fetches B&H search results, sends to Below for structured extraction.
 import asyncio
 import os
 import logging
-import re
+
+from core.cluster.utils import filter_hallucinations
 
 try:
     import httpx
@@ -164,17 +165,8 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
             if filtered:
                 logger.info(f"Below filtered {filtered} irrelevant B&H items for '{hunt_name}'")
 
-            # Hallucination guard: filter individual items lacking tech indicators
-            if relevant:
-                tech_indicators = re.compile(r'\d|GB|TB|MHz|GHz|DDR|RTX|GTX|NVLink|USB|SSD|NVMe|PCIe|HDMI|Corsair|EVGA|ASUS|MSI|Gigabyte|Crucial|Minisforum|PNY', re.IGNORECASE)
-                real = [l for l in relevant if tech_indicators.search(l.get("title", ""))]
-                hallucinated = len(relevant) - len(real)
-                if hallucinated:
-                    logger.warning(f"B&H '{hunt_name}': dropped {hallucinated}/{len(relevant)} titles lacking tech indicators")
-                    for l in relevant:
-                        if not tech_indicators.search(l.get("title", "")):
-                            logger.debug(f"  Hallucination: '{l.get('title', '')}'")
-                relevant = real
+            # Hallucination guard: filter items lacking tech indicators
+            relevant = filter_hallucinations(relevant, "B&H", hunt_name)
 
             logger.info(f"Below extracted {len(relevant)} relevant B&H listings for '{hunt_name}'")
             return relevant

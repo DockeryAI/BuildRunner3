@@ -1,9 +1,5 @@
 {
   "sources": {
-    "ebay_scrape": {
-      "enabled": false,
-      "_note": "eBay CAPTCHA blocks httpx — use ebay_browse with API keys instead"
-    },
     "ebay_browse": {
       "enabled": true,
       "marketplace_id": "EBAY_US",
@@ -16,8 +12,9 @@
     "newegg": { "enabled": true },
     "shopify": {
       "enabled": true,
-      "stores": [{ "name": "Minisforum", "domain": "www.minisforum.com" }]
+      "stores": [{ "name": "Minisforum", "domain": "store.minisforum.com" }]
     },
+    "crucial": { "enabled": true },
     "bhphoto": { "enabled": true },
     "ebay_sold": { "enabled": true, "_note": "Completed/sold listings for market price data" }
   },

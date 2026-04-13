@@ -1,0 +1,814 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "7"
+      - text: Intelligence
+    - generic [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+      - text: Terminal
+    - generic [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Builds
+    - generic [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - text: Research
+    - generic [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - text: Monitor
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: BR3 The Band
+        - generic [ref=e34]: Dashboard
+      - generic [ref=e35]:
+        - generic [ref=e37]: "Tokens: 0k"
+        - generic [ref=e41]: disconnected
+        - generic [ref=e42]: "SSE: 2"
+        - generic [ref=e43]: "Uptime: 2m"
+        - generic [ref=e44]: ⌘K
+    - generic [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e47]: Cluster
+        - button "Reset All" [ref=e48] [cursor=pointer]
+      - generic [ref=e49]:
+        - generic [ref=e50] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e51]
+          - generic [ref=e52]:
+            - generic [ref=e53]: Online
+            - generic [ref=e54]: Muddy
+            - img [ref=e55]: Muddy online — click to reset
+            - img [ref=e57]: Plugged in
+            - generic [ref=e59]: M5
+          - generic [ref=e60]: Command · 10.0.1.100
+          - generic [ref=e61]: idle
+          - generic [ref=e63]:
+            - generic [ref=e64]: CPU
+            - generic [ref=e65]: 1.692%
+          - generic [ref=e69]:
+            - generic [ref=e70]: MEM
+            - generic [ref=e71]: 42%
+        - generic [ref=e74] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e75]
+          - generic [ref=e76]:
+            - generic [ref=e77]: Online
+            - generic [ref=e78]: Lockwood
+            - img [ref=e79]: Lockwood online — click to reset
+            - img [ref=e81]: Plugged in
+            - generic [ref=e83]: M2
+          - generic [ref=e84]: Memory · 10.0.1.101
+          - generic [ref=e85]: idle
+          - generic [ref=e87]:
+            - generic [ref=e88]: CPU
+            - generic [ref=e89]: 1.41%
+          - generic [ref=e93]:
+            - generic [ref=e94]: MEM
+            - generic [ref=e95]: 54%
+        - generic [ref=e98] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e99]
+          - generic [ref=e100]:
+            - generic [ref=e101]: Online
+            - generic [ref=e102]: Walter
+            - img [ref=e103]: Walter online — click to reset
+            - img [ref=e105]: Plugged in
+            - generic [ref=e107]: M2
+          - generic [ref=e108]: Sentinel · 10.0.1.102
+          - generic [ref=e109]: idle
+          - generic [ref=e111]:
+            - generic [ref=e112]: CPU
+            - generic [ref=e113]: 10.36%
+          - generic [ref=e117]:
+            - generic [ref=e118]: MEM
+            - generic [ref=e119]: 63%
+        - generic [ref=e122] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e123]
+          - generic [ref=e124]:
+            - generic [ref=e125]: Online
+            - generic [ref=e126]: Otis
+            - img [ref=e127]: Otis online — click to reset
+            - img [ref=e129]: Plugged in
+            - generic [ref=e131]: M2
+          - generic [ref=e132]: Builder · 10.0.1.103
+          - generic [ref=e133]: synapse-integration (92%)
+          - generic [ref=e135]:
+            - generic [ref=e136]: CPU
+            - generic [ref=e137]: 1.52%
+          - generic [ref=e141]:
+            - generic [ref=e142]: MEM
+            - generic [ref=e143]: 42%
+        - generic [ref=e146] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e147]
+          - generic [ref=e148]:
+            - generic [ref=e149]: Online
+            - generic [ref=e150]: Lomax
+            - img [ref=e151]: Lomax online — click to reset
+            - img [ref=e153]: Plugged in
+            - generic [ref=e155]: M2
+          - generic [ref=e156]: Forge · 10.0.1.104
+          - generic [ref=e157]: idle
+          - generic [ref=e159]:
+            - generic [ref=e160]: CPU
+            - generic [ref=e161]: 1.99%
+          - generic [ref=e165]:
+            - generic [ref=e166]: MEM
+            - generic [ref=e167]: 33%
+        - generic [ref=e170] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e171]
+          - generic [ref=e172]:
+            - generic [ref=e173]: Online
+            - generic [ref=e174]: Below
+            - img [ref=e175]: Below online — click to reset
+            - img [ref=e177]: Plugged in
+            - generic [ref=e179]: Win
+          - generic [ref=e180]: Workhorse · 10.0.1.105
+          - generic [ref=e181]: idle
+          - generic [ref=e183]:
+            - generic [ref=e184]: CPU
+            - generic [ref=e185]: 0%
+          - generic [ref=e188]:
+            - generic [ref=e189]: MEM
+            - generic [ref=e190]: 12%
+      - generic [ref=e193]:
+        - generic [ref=e194]:
+          - generic [ref=e195]: Active Builds
+          - generic [ref=e196]: "1"
+          - generic [ref=e197]: 30 total
+        - generic "Click for account details" [ref=e198] [cursor=pointer]:
+          - generic [ref=e199]:
+            - generic [ref=e200]: Tokens Used
+            - button "SWAP" [ref=e201]
+          - generic [ref=e202]: 0%
+          - generic [ref=e203]: A · A:0% C:252% B:111%
+        - generic [ref=e204]:
+          - generic [ref=e205]: Sessions
+          - generic [ref=e206]: "0"
+          - generic [ref=e207]: none
+        - generic [ref=e208]:
+          - generic [ref=e209]: Reviews
+          - generic [ref=e210]: "0"
+          - generic [ref=e211]: pending
+      - generic [ref=e212]:
+        - generic [ref=e213]:
+          - generic [ref=e214]:
+            - text: Alerts
+            - generic [ref=e215]: "0"
+          - generic [ref=e217]: No alerts
+        - generic [ref=e218]:
+          - generic [ref=e219]:
+            - text: Active Builds
+            - generic [ref=e220]: 1 (+29 done)
+            - button "Dispatch All" [ref=e221] [cursor=pointer]
+            - button "Show completed (29)" [ref=e222] [cursor=pointer]
+          - table [ref=e224]:
+            - rowgroup [ref=e234]:
+              - row "Build Status Phase Node Progress Updated Health" [ref=e235]:
+                - columnheader "Build" [ref=e236]
+                - columnheader "Status" [ref=e237]
+                - columnheader "Phase" [ref=e238]
+                - columnheader "Node" [ref=e239]
+                - columnheader "Progress" [ref=e240]
+                - columnheader "Updated" [ref=e241]
+                - columnheader "Health" [ref=e242]
+                - columnheader [ref=e243]
+            - rowgroup [ref=e244]:
+              - row "workfloDock:synapse-integration ▶ running 23/25 otis 92% 3s ago +0.0 ♥ 4s 100% − -- Pause ⋮" [ref=e245]:
+                - cell "workfloDock:synapse-integration" [ref=e246]:
+                  - link "workfloDock:synapse-integration" [ref=e247] [cursor=pointer]:
+                    - /url: "#"
+                - cell "▶ running" [ref=e248]:
+                  - generic "running" [ref=e249]: ▶ running
+                - cell "23/25" [ref=e250]
+                - cell "otis" [ref=e251]
+                - cell "92%" [ref=e252]: 92%
+                - cell "3s ago +0.0 ♥ 4s" [ref=e255]
+                - cell "100% − --" [ref=e256]:
+                  - generic [ref=e259] [cursor=pointer]: 100% − --
+                - cell "Pause ⋮" [ref=e260]:
+                  - button "Pause" [ref=e261] [cursor=pointer]
+                  - button "⋮" [ref=e262] [cursor=pointer]
+        - generic [ref=e263]:
+          - generic [ref=e264]: Build DAG
+          - generic [ref=e268] [cursor=pointer]: workfloDock:synapse-..
+        - generic [ref=e270]:
+          - generic [ref=e271]:
+            - text: Sessions
+            - generic [ref=e272]: "10"
+            - button "Refresh" [ref=e273] [cursor=pointer]
+          - generic [ref=e275]:
+            - generic [ref=e276] [cursor=pointer]:
+              - generic [ref=e277]:
+                - generic [ref=e278]: muddy
+                - generic [ref=e279]: active
+              - generic [ref=e280]: BuildRunner3
+              - generic [ref=e281]:
+                - generic [ref=e282]: main
+                - generic [ref=e283]: 0:50.01
+              - generic [ref=e284]: CPU 7.6% · MEM 1.5%
+            - generic [ref=e285] [cursor=pointer]:
+              - generic [ref=e286]:
+                - generic [ref=e287]: muddy
+                - generic [ref=e288]: active
+              - generic [ref=e289]: BuildRunner3
+              - generic [ref=e290]:
+                - generic [ref=e291]: main
+                - generic [ref=e292]: 0:27.21
+              - generic [ref=e293]: CPU 0.1% · MEM 1.4%
+            - generic [ref=e294] [cursor=pointer]:
+              - generic [ref=e295]:
+                - generic [ref=e296]: muddy
+                - generic [ref=e297]: active
+              - generic [ref=e298]: culturecook
+              - generic [ref=e299]:
+                - generic [ref=e300]: main
+                - generic [ref=e301]: 0:07.93
+              - generic [ref=e302]: CPU 0.1% · MEM 0.8%
+            - generic [ref=e303] [cursor=pointer]:
+              - generic [ref=e304]:
+                - generic [ref=e305]: muddy
+                - generic [ref=e306]: zombie
+              - generic [ref=e307]: workfloDock
+              - generic [ref=e308]:
+                - generic [ref=e309]: main
+                - generic [ref=e310]: 0:00.00
+              - generic [ref=e311]: CPU 0% · MEM 0%
+            - generic [ref=e312] [cursor=pointer]:
+              - generic [ref=e313]:
+                - generic [ref=e314]: muddy
+                - generic [ref=e315]: zombie
+              - generic [ref=e316]: culturecook
+              - generic [ref=e317]:
+                - generic [ref=e318]: main
+                - generic [ref=e319]: 0:00.01
+              - generic [ref=e320]: CPU 0% · MEM 0%
+            - generic [ref=e321] [cursor=pointer]:
+              - generic [ref=e322]:
+                - generic [ref=e323]: muddy
+                - generic [ref=e324]: zombie
+              - generic [ref=e325]: workfloDock
+              - generic [ref=e326]:
+                - generic [ref=e327]: main
+                - generic [ref=e328]: 4:23.19
+              - generic [ref=e329]: CPU 0% · MEM 0.7%
+            - generic [ref=e330] [cursor=pointer]:
+              - generic [ref=e331]:
+                - generic [ref=e332]: muddy
+                - generic [ref=e333]: zombie
+              - generic [ref=e334]: Synapse
+              - generic [ref=e335]:
+                - generic [ref=e336]: main
+                - generic [ref=e337]: 2:48.47
+              - generic [ref=e338]: CPU 0% · MEM 0.3%
+            - generic [ref=e339] [cursor=pointer]:
+              - generic [ref=e340]:
+                - generic [ref=e341]: otis
+                - generic [ref=e342]: zombie
+              - generic [ref=e343]: workfloDock
+              - generic [ref=e344]:
+                - generic [ref=e345]: "--"
+                - generic [ref=e346]: 0:13.25
+              - generic [ref=e347]: CPU 0% · MEM 3%
+            - generic [ref=e348] [cursor=pointer]:
+              - generic [ref=e349]:
+                - generic [ref=e350]: otis
+                - generic [ref=e351]: zombie
+              - generic [ref=e352]: workfloDock
+              - generic [ref=e353]:
+                - generic [ref=e354]: "--"
+                - generic [ref=e355]: 0:00.01
+              - generic [ref=e356]: CPU 0% · MEM 0%
+            - generic [ref=e357] [cursor=pointer]:
+              - generic [ref=e358]:
+                - generic [ref=e359]: otis
+                - generic [ref=e360]: zombie
+              - generic [ref=e361]: workfloDock
+              - generic [ref=e362]:
+                - generic [ref=e363]: "--"
+                - generic [ref=e364]: 0:00.21
+              - generic [ref=e365]: CPU 0% · MEM 0%
+        - generic [ref=e366]:
+          - generic [ref=e367]:
+            - text: Review Queue
+            - generic [ref=e368]: "0"
+            - button "Refresh" [ref=e369] [cursor=pointer]
+          - generic [ref=e371]: No pending reviews
+        - generic [ref=e372]:
+          - generic [ref=e373]:
+            - text: Event Log
+            - generic [ref=e374]: "100"
+            - generic [ref=e375]:
+              - combobox [ref=e376] [cursor=pointer]:
+                - option "All types" [selected]
+                - option "build.heartbeat"
+                - option "build.stalled"
+                - option "session.update"
+                - option "usage.warning"
+              - combobox [ref=e377] [cursor=pointer]:
+                - option "All time" [selected]
+                - option "Last 1h"
+                - option "Last 6h"
+                - option "Last 24h"
+          - generic [ref=e379]:
+            - generic [ref=e380] [cursor=pointer]:
+              - generic [ref=e381]: 11:42:49
+              - generic [ref=e382]: build.heartbeat
+              - generic [ref=e383]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e384] [cursor=pointer]:
+              - generic [ref=e385]: 11:42:43
+              - generic [ref=e386]: build.stalled
+              - generic [ref=e387]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e388] [cursor=pointer]:
+              - generic [ref=e389]: 11:42:42
+              - generic [ref=e390]: session.update
+              - generic [ref=e391]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e392] [cursor=pointer]:
+              - generic [ref=e393]: 11:42:34
+              - generic [ref=e394]: build.heartbeat
+              - generic [ref=e395]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e396] [cursor=pointer]:
+              - generic [ref=e397]: 11:42:29
+              - generic [ref=e398]: session.update
+              - generic [ref=e399]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e400] [cursor=pointer]:
+              - generic [ref=e401]: 11:42:19
+              - generic [ref=e402]: build.heartbeat
+              - generic [ref=e403]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e404] [cursor=pointer]:
+              - generic [ref=e405]: 11:42:15
+              - generic [ref=e406]: session.update
+              - generic [ref=e407]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e408] [cursor=pointer]:
+              - generic [ref=e409]: 11:42:12
+              - generic [ref=e410]: build.stalled
+              - generic [ref=e411]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e412] [cursor=pointer]:
+              - generic [ref=e413]: 11:42:10
+              - generic [ref=e414]: session.update
+              - generic [ref=e415]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e416] [cursor=pointer]:
+              - generic [ref=e417]: 11:42:04
+              - generic [ref=e418]: build.heartbeat
+              - generic [ref=e419]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e420] [cursor=pointer]:
+              - generic [ref=e421]: 11:41:52
+              - generic [ref=e422]: session.update
+              - generic [ref=e423]: "sessions-integration · {\"count\":11,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e424] [cursor=pointer]:
+              - generic [ref=e425]: 11:41:52
+              - generic [ref=e426]: build.stalled
+              - generic [ref=e427]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e428] [cursor=pointer]:
+              - generic [ref=e429]: 11:41:48
+              - generic [ref=e430]: build.heartbeat
+              - generic [ref=e431]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e432] [cursor=pointer]:
+              - generic [ref=e433]: 11:41:38
+              - generic [ref=e434]: session.update
+              - generic [ref=e435]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e436] [cursor=pointer]:
+              - generic [ref=e437]: 11:41:33
+              - generic [ref=e438]: build.heartbeat
+              - generic [ref=e439]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e440] [cursor=pointer]:
+              - generic [ref=e441]: 11:41:18
+              - generic [ref=e442]: build.heartbeat
+              - generic [ref=e443]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e444] [cursor=pointer]:
+              - generic [ref=e445]: 11:41:13
+              - generic [ref=e446]: session.update
+              - generic [ref=e447]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e448] [cursor=pointer]:
+              - generic [ref=e449]: 11:41:13
+              - generic [ref=e450]: build.stalled
+              - generic [ref=e451]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e452] [cursor=pointer]:
+              - generic [ref=e453]: 11:41:10
+              - generic [ref=e454]: session.update
+              - generic [ref=e455]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e456] [cursor=pointer]:
+              - generic [ref=e457]: 11:41:03
+              - generic [ref=e458]: build.heartbeat
+              - generic [ref=e459]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e460] [cursor=pointer]:
+              - generic [ref=e461]: 11:40:48
+              - generic [ref=e462]: build.heartbeat
+              - generic [ref=e463]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e464] [cursor=pointer]:
+              - generic [ref=e465]: 11:40:47
+              - generic [ref=e466]: session.update
+              - generic [ref=e467]: "sessions-integration · {\"count\":11,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e468] [cursor=pointer]:
+              - generic [ref=e469]: 11:40:47
+              - generic [ref=e470]: session.update
+              - generic [ref=e471]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e472] [cursor=pointer]:
+              - generic [ref=e473]: 11:40:45
+              - generic [ref=e474]: usage.warning
+              - generic [ref=e475]: "usage-integration · {\"node\":\"lomax\",\"pct_used\":111,\"estimated_tokens\":555000,\"daily_limit\":500000,\"s..."
+            - generic [ref=e476] [cursor=pointer]:
+              - generic [ref=e477]: 11:40:45
+              - generic [ref=e478]: usage.warning
+              - generic [ref=e479]: "usage-integration · {\"node\":\"otis\",\"pct_used\":244,\"estimated_tokens\":1224000,\"daily_limit\":500000,\"s..."
+            - generic [ref=e480] [cursor=pointer]:
+              - generic [ref=e481]: 11:40:33
+              - generic [ref=e482]: build.heartbeat
+              - generic [ref=e483]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e484] [cursor=pointer]:
+              - generic [ref=e485]: 11:40:24
+              - generic [ref=e486]: session.update
+              - generic [ref=e487]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e488] [cursor=pointer]:
+              - generic [ref=e489]: 11:40:17
+              - generic [ref=e490]: build.heartbeat
+              - generic [ref=e491]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e492] [cursor=pointer]:
+              - generic [ref=e493]: 11:40:14
+              - generic [ref=e494]: session.update
+              - generic [ref=e495]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e496] [cursor=pointer]:
+              - generic [ref=e497]: 11:40:13
+              - generic [ref=e498]: usage.warning
+              - generic [ref=e499]: "usage-integration · {\"node\":\"lomax\",\"pct_used\":111,\"estimated_tokens\":555000,\"daily_limit\":500000,\"s..."
+            - generic [ref=e500] [cursor=pointer]:
+              - generic [ref=e501]: 11:40:13
+              - generic [ref=e502]: usage.warning
+              - generic [ref=e503]: "usage-integration · {\"node\":\"otis\",\"pct_used\":243,\"estimated_tokens\":1215000,\"daily_limit\":500000,\"s..."
+            - generic [ref=e504] [cursor=pointer]:
+              - generic [ref=e505]: 11:40:02
+              - generic [ref=e506]: build.heartbeat
+              - generic [ref=e507]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e508] [cursor=pointer]:
+              - generic [ref=e509]: 11:39:47
+              - generic [ref=e510]: session.update
+              - generic [ref=e511]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e512] [cursor=pointer]:
+              - generic [ref=e513]: 11:39:47
+              - generic [ref=e514]: build.heartbeat
+              - generic [ref=e515]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e516] [cursor=pointer]:
+              - generic [ref=e517]: 11:39:34
+              - generic [ref=e518]: session.update
+              - generic [ref=e519]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e520] [cursor=pointer]:
+              - generic [ref=e521]: 11:39:32
+              - generic [ref=e522]: build.stalled
+              - generic [ref=e523]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e524] [cursor=pointer]:
+              - generic [ref=e525]: 11:39:32
+              - generic [ref=e526]: build.heartbeat
+              - generic [ref=e527]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e528] [cursor=pointer]:
+              - generic [ref=e529]: 11:39:25
+              - generic [ref=e530]: session.update
+              - generic [ref=e531]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e532] [cursor=pointer]:
+              - generic [ref=e533]: 11:39:17
+              - generic [ref=e534]: build.heartbeat
+              - generic [ref=e535]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e536] [cursor=pointer]:
+              - generic [ref=e537]: 11:39:15
+              - generic [ref=e538]: build.stalled
+              - generic [ref=e539]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e540] [cursor=pointer]:
+              - generic [ref=e541]: 11:39:15
+              - generic [ref=e542]: session.update
+              - generic [ref=e543]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e544] [cursor=pointer]:
+              - generic [ref=e545]: 11:39:01
+              - generic [ref=e546]: build.heartbeat
+              - generic [ref=e547]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e548] [cursor=pointer]:
+              - generic [ref=e549]: 11:39:00
+              - generic [ref=e550]: session.update
+              - generic [ref=e551]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e552] [cursor=pointer]:
+              - generic [ref=e553]: 11:38:46
+              - generic [ref=e554]: build.heartbeat
+              - generic [ref=e555]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e556] [cursor=pointer]:
+              - generic [ref=e557]: 11:38:33
+              - generic [ref=e558]: build.stalled
+              - generic [ref=e559]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e560] [cursor=pointer]:
+              - generic [ref=e561]: 11:38:32
+              - generic [ref=e562]: session.update
+              - generic [ref=e563]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e564] [cursor=pointer]:
+              - generic [ref=e565]: 11:38:31
+              - generic [ref=e566]: build.heartbeat
+              - generic [ref=e567]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e568] [cursor=pointer]:
+              - generic [ref=e569]: 11:38:22
+              - generic [ref=e570]: session.update
+              - generic [ref=e571]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e572] [cursor=pointer]:
+              - generic [ref=e573]: 11:38:16
+              - generic [ref=e574]: build.heartbeat
+              - generic [ref=e575]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e576] [cursor=pointer]:
+              - generic [ref=e577]: 11:38:07
+              - generic [ref=e578]: build.stalled
+              - generic [ref=e579]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e580] [cursor=pointer]:
+              - generic [ref=e581]: 11:38:07
+              - generic [ref=e582]: session.update
+              - generic [ref=e583]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e584] [cursor=pointer]:
+              - generic [ref=e585]: 11:38:01
+              - generic [ref=e586]: build.heartbeat
+              - generic [ref=e587]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e588] [cursor=pointer]:
+              - generic [ref=e589]: 11:38:00
+              - generic [ref=e590]: session.update
+              - generic [ref=e591]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e592] [cursor=pointer]:
+              - generic [ref=e593]: 11:37:46
+              - generic [ref=e594]: build.heartbeat
+              - generic [ref=e595]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e596] [cursor=pointer]:
+              - generic [ref=e597]: 11:37:33
+              - generic [ref=e598]: build.stalled
+              - generic [ref=e599]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e600] [cursor=pointer]:
+              - generic [ref=e601]: 11:37:32
+              - generic [ref=e602]: session.update
+              - generic [ref=e603]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e604] [cursor=pointer]:
+              - generic [ref=e605]: 11:37:30
+              - generic [ref=e606]: build.heartbeat
+              - generic [ref=e607]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e608] [cursor=pointer]:
+              - generic [ref=e609]: 11:37:21
+              - generic [ref=e610]: session.update
+              - generic [ref=e611]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e612] [cursor=pointer]:
+              - generic [ref=e613]: 11:37:15
+              - generic [ref=e614]: build.heartbeat
+              - generic [ref=e615]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e616] [cursor=pointer]:
+              - generic [ref=e617]: 11:37:06
+              - generic [ref=e618]: session.update
+              - generic [ref=e619]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e620] [cursor=pointer]:
+              - generic [ref=e621]: 11:37:06
+              - generic [ref=e622]: build.stalled
+              - generic [ref=e623]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e624] [cursor=pointer]:
+              - generic [ref=e625]: 11:37:00
+              - generic [ref=e626]: build.heartbeat
+              - generic [ref=e627]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e628] [cursor=pointer]:
+              - generic [ref=e629]: 11:36:49
+              - generic [ref=e630]: session.update
+              - generic [ref=e631]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e632] [cursor=pointer]:
+              - generic [ref=e633]: 11:36:45
+              - generic [ref=e634]: build.heartbeat
+              - generic [ref=e635]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e636] [cursor=pointer]:
+              - generic [ref=e637]: 11:36:33
+              - generic [ref=e638]: session.update
+              - generic [ref=e639]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e640] [cursor=pointer]:
+              - generic [ref=e641]: 11:36:33
+              - generic [ref=e642]: build.stalled
+              - generic [ref=e643]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e644] [cursor=pointer]:
+              - generic [ref=e645]: 11:36:30
+              - generic [ref=e646]: build.heartbeat
+              - generic [ref=e647]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e648] [cursor=pointer]:
+              - generic [ref=e649]: 11:36:17
+              - generic [ref=e650]: session.update
+              - generic [ref=e651]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e652] [cursor=pointer]:
+              - generic [ref=e653]: 11:36:14
+              - generic [ref=e654]: build.heartbeat
+              - generic [ref=e655]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e656] [cursor=pointer]:
+              - generic [ref=e657]: 11:36:06
+              - generic [ref=e658]: build.stalled
+              - generic [ref=e659]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e660] [cursor=pointer]:
+              - generic [ref=e661]: 11:36:02
+              - generic [ref=e662]: session.update
+              - generic [ref=e663]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e664] [cursor=pointer]:
+              - generic [ref=e665]: 11:35:59
+              - generic [ref=e666]: build.heartbeat
+              - generic [ref=e667]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e668] [cursor=pointer]:
+              - generic [ref=e669]: 11:35:48
+              - generic [ref=e670]: session.update
+              - generic [ref=e671]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e672] [cursor=pointer]:
+              - generic [ref=e673]: 11:35:44
+              - generic [ref=e674]: build.heartbeat
+              - generic [ref=e675]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e676] [cursor=pointer]:
+              - generic [ref=e677]: 11:35:41
+              - generic [ref=e678]: session.update
+              - generic [ref=e679]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e680] [cursor=pointer]:
+              - generic [ref=e681]: 11:35:41
+              - generic [ref=e682]: session.update
+              - generic [ref=e683]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e684] [cursor=pointer]:
+              - generic [ref=e685]: 11:35:40
+              - generic [ref=e686]: build.stalled
+              - generic [ref=e687]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e688] [cursor=pointer]:
+              - generic [ref=e689]: 11:35:38
+              - generic [ref=e690]: session.update
+              - generic [ref=e691]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e692] [cursor=pointer]:
+              - generic [ref=e693]: 11:35:29
+              - generic [ref=e694]: build.heartbeat
+              - generic [ref=e695]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e696] [cursor=pointer]:
+              - generic [ref=e697]: 11:35:19
+              - generic [ref=e698]: session.update
+              - generic [ref=e699]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e700] [cursor=pointer]:
+              - generic [ref=e701]: 11:35:14
+              - generic [ref=e702]: build.heartbeat
+              - generic [ref=e703]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e704] [cursor=pointer]:
+              - generic [ref=e705]: 11:35:10
+              - generic [ref=e706]: session.update
+              - generic [ref=e707]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e708] [cursor=pointer]:
+              - generic [ref=e709]: 11:35:04
+              - generic [ref=e710]: session.update
+              - generic [ref=e711]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e712] [cursor=pointer]:
+              - generic [ref=e713]: 11:35:04
+              - generic [ref=e714]: session.update
+              - generic [ref=e715]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e716] [cursor=pointer]:
+              - generic [ref=e717]: 11:35:04
+              - generic [ref=e718]: build.stalled
+              - generic [ref=e719]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e720] [cursor=pointer]:
+              - generic [ref=e721]: 11:34:59
+              - generic [ref=e722]: build.heartbeat
+              - generic [ref=e723]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e724] [cursor=pointer]:
+              - generic [ref=e725]: 11:34:48
+              - generic [ref=e726]: session.update
+              - generic [ref=e727]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e728] [cursor=pointer]:
+              - generic [ref=e729]: 11:34:43
+              - generic [ref=e730]: build.heartbeat
+              - generic [ref=e731]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e732] [cursor=pointer]:
+              - generic [ref=e733]: 11:34:40
+              - generic [ref=e734]: session.update
+              - generic [ref=e735]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e736] [cursor=pointer]:
+              - generic [ref=e737]: 11:34:32
+              - generic [ref=e738]: session.update
+              - generic [ref=e739]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e740] [cursor=pointer]:
+              - generic [ref=e741]: 11:34:32
+              - generic [ref=e742]: usage.warning
+              - generic [ref=e743]: "usage-integration · {\"node\":\"lomax\",\"pct_used\":111,\"estimated_tokens\":555000,\"daily_limit\":500000,\"s..."
+            - generic [ref=e744] [cursor=pointer]:
+              - generic [ref=e745]: 11:34:32
+              - generic [ref=e746]: usage.warning
+              - generic [ref=e747]: "usage-integration · {\"node\":\"otis\",\"pct_used\":226,\"estimated_tokens\":1134000,\"daily_limit\":500000,\"s..."
+            - generic [ref=e748] [cursor=pointer]:
+              - generic [ref=e749]: 11:34:29
+              - generic [ref=e750]: session.update
+              - generic [ref=e751]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e752] [cursor=pointer]:
+              - generic [ref=e753]: 11:34:28
+              - generic [ref=e754]: build.heartbeat
+              - generic [ref=e755]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e756] [cursor=pointer]:
+              - generic [ref=e757]: 11:34:27
+              - generic [ref=e758]: session.update
+              - generic [ref=e759]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e760] [cursor=pointer]:
+              - generic [ref=e761]: 11:34:14
+              - generic [ref=e762]: build.stalled
+              - generic [ref=e763]: "scanner · {\"build_id\":\"Synapse:BUILD_workflodock-intake\",\"project\":\"Synapse\",\"phase\":20,\"n..."
+            - generic [ref=e764] [cursor=pointer]:
+              - generic [ref=e765]: 11:34:14
+              - generic [ref=e766]: session.update
+              - generic [ref=e767]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e768] [cursor=pointer]:
+              - generic [ref=e769]: 11:34:13
+              - generic [ref=e770]: build.heartbeat
+              - generic [ref=e771]: "sidecar · \"{\\\"build_id\\\":\\\"workfloDock:BUILD_synapse-integration\\\",\\\"node\\\":\\\"Otis\\\",\\\"sta..."
+            - generic [ref=e772] [cursor=pointer]:
+              - generic [ref=e773]: 11:34:10
+              - generic [ref=e774]: session.update
+              - generic [ref=e775]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e776] [cursor=pointer]:
+              - generic [ref=e777]: 11:33:59
+              - generic [ref=e778]: session.update
+              - generic [ref=e779]: "sessions-integration · {\"count\":10,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+        - generic [ref=e780]:
+          - generic [ref=e781]: Node Health
+          - generic [ref=e782]:
+            - generic [ref=e783]:
+              - generic [ref=e784]: muddy
+              - generic [ref=e786]:
+                - generic [ref=e787]: CPU
+                - generic [ref=e788]: 1.692%
+              - generic [ref=e792]:
+                - generic [ref=e793]: Memory
+                - generic [ref=e794]: 42%
+            - generic [ref=e797]:
+              - generic [ref=e798]: lockwood
+              - generic [ref=e800]:
+                - generic [ref=e801]: CPU
+                - generic [ref=e802]: 1.41%
+              - generic [ref=e806]:
+                - generic [ref=e807]: Memory
+                - generic [ref=e808]: 54%
+            - generic [ref=e811]:
+              - generic [ref=e812]: walter
+              - generic [ref=e814]:
+                - generic [ref=e815]: CPU
+                - generic [ref=e816]: 10.36%
+              - generic [ref=e820]:
+                - generic [ref=e821]: Memory
+                - generic [ref=e822]: 63%
+            - generic [ref=e825]:
+              - generic [ref=e826]: otis
+              - generic [ref=e828]:
+                - generic [ref=e829]: CPU
+                - generic [ref=e830]: 1.52%
+              - generic [ref=e834]:
+                - generic [ref=e835]: Memory
+                - generic [ref=e836]: 42%
+            - generic [ref=e839]:
+              - generic [ref=e840]: lomax
+              - generic [ref=e842]:
+                - generic [ref=e843]: CPU
+                - generic [ref=e844]: 1.99%
+              - generic [ref=e848]:
+                - generic [ref=e849]: Memory
+                - generic [ref=e850]: 33%
+            - generic [ref=e853]:
+              - generic [ref=e854]: below
+              - generic [ref=e856]:
+                - generic [ref=e857]: CPU
+                - generic [ref=e858]: 0%
+              - generic [ref=e861]:
+                - generic [ref=e862]: Memory
+                - generic [ref=e863]: 12%
+        - generic [ref=e866]:
+          - generic [ref=e867]:
+            - text: Prod Logs
+            - generic [ref=e868]: "0"
+            - button "Restart" [ref=e869] [cursor=pointer]
+          - generic [ref=e870]:
+            - generic [ref=e871]:
+              - button "All" [ref=e872] [cursor=pointer]
+              - button "Browser" [ref=e873] [cursor=pointer]
+              - button "Supabase" [ref=e874] [cursor=pointer]
+              - button "Device" [ref=e875] [cursor=pointer]
+              - button "Query" [ref=e876] [cursor=pointer]
+            - generic [ref=e878]: No log events yet
+        - generic [ref=e879]:
+          - generic [ref=e880]:
+            - text: Decisions
+            - generic [ref=e881]: "0"
+          - generic [ref=e883]: No decisions yet
+        - generic [ref=e884]:
+          - generic [ref=e885]:
+            - text: Recommendations
+            - generic [ref=e886]: "0"
+          - generic [ref=e888]: No recommendations yet
+        - generic [ref=e889]:
+          - generic [ref=e890]: System Health
+          - generic [ref=e892]: Waiting for health data...
+        - generic [ref=e893]:
+          - generic [ref=e894]:
+            - text: Intelligence
+            - generic [ref=e895]: "0"
+            - generic [ref=e896]:
+              - combobox [ref=e897] [cursor=pointer]:
+                - option "All Sources" [selected]
+                - option "Official"
+                - option "Community"
+                - option "Blog"
+              - combobox [ref=e898] [cursor=pointer]:
+                - option "All Priority" [selected]
+                - option "Critical"
+                - option "High"
+                - option "Medium"
+              - button "Refresh" [ref=e899] [cursor=pointer]
+          - generic [ref=e901]: Connecting to Lockwood...
+        - generic [ref=e902]:
+          - generic [ref=e903]:
+            - text: Deals
+            - generic [ref=e904]: "0"
+            - button "Refresh" [ref=e905] [cursor=pointer]
+          - generic [ref=e907]: Connecting to Lockwood...

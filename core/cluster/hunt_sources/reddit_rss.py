@@ -5,9 +5,10 @@ Free, no API key needed. Uses .rss endpoint.
 """
 
 import logging
-import hashlib
 import re
 from typing import Optional
+
+from core.cluster.utils import url_hash
 
 try:
     import httpx
@@ -20,10 +21,6 @@ DEFAULT_SUBREDDITS = [
     "buildapcsales",
     "hardwareswap",
 ]
-
-
-def _url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
 
 
 def _extract_price(text: str) -> Optional[float]:
@@ -228,7 +225,7 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                             "flair": flair,
                             "created_utc": created_utc,
                         },
-                        "source_url": f"reddit:{_url_hash(post_url)}",
+                        "source_url": f"reddit:{url_hash(post_url)}",
                         "price": price,
                         "condition": condition,
                         "seller": author,
