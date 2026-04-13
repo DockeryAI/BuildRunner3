@@ -729,3 +729,48 @@
   CONTEXT: ~/.ssh/config Otis setup; security delete-generic-password + manual ACL grant needed
 [2026-04-13T12:36:32Z] [DECISION] Created build spec: cross-model-review with 4 phases — Cursor IDE setup + auto-focus, cross-model review engine (Codex CLI primary, OpenRouter fallback), dispatch chain integration + unified review gate, dashboard panel + review convergence. Adversarial review: 3 blockers found and fixed (cursor --diff syntax, OpenRouter model ID, dispatch target clarification).
 [2026-04-13T12:46:04Z] [AMENDMENT] Phase 2 expanded: Added Codex CLI backend for adversarial-review.sh (--backend codex flag). True cross-model review — GPT-4o reviews Claude's plans instead of Claude reviewing Claude. Runs locally on Muddy, no SSH/auth issues. Otis remains default, Codex is opt-in or auto-fallback when Otis unreachable.
+
+[2026-04-13T13:45:00Z] [ARCHITECTURE] Fixed SPEC_AMENDED event handler to process before state transition validation
+  WHY: SPEC_AMENDED doesn't represent a state change, so eventToState() returned null and applyStateChange() was never called, leaving phases_total unchanged
+  CONTEXT: .buildrunner/lib/build-state-machine.mjs appendEvent(), SPEC_AMENDED processing moved before transition validation block (line ~340)
+
+[2026-04-13T13:46:00Z] [BUG FIX] Fixed reaper heartbeat age calculation: SQLite datetime format parsing
+  WHY: SQLite datetime('now', '-5 minutes') returns "YYYY-MM-DD HH:MM:SS" but JavaScript new Date() expects ISO format with T and Z. Age calculation was negative, preventing stale builds from being marked stalled
+  CONTEXT: .buildrunner/dashboard/events.mjs reaper heartbeat parsing (line ~2874). Added timestamp normalization to convert "YYYY-MM-DD HH:MM:SS" to "YYYY-MM-DDT...Z"
+
+[2026-04-13T13:47:00Z] [DECISION] Added /api/scanner/trigger endpoint for E2E test control
+  WHY: Tests need deterministic scanner execution without 30-second interval delays. Enables faster test cycles for phase count amendments, liveness checks, and stale build detection
+  CONTEXT: .buildrunner/dashboard/events.mjs. Stores scanner function reference and exposes POST /api/scanner/trigger endpoint (line ~1237)
+
+[2026-04-13T13:48:00Z] [PATTERN] Playwright E2E tests use serial mode with afterEach cleanup
+  WHY: Test contamination from previous runs. Build marked COMPLETE in spec file persists in git history, causing subsequent tests (FIX 4, FIX 5) to see old state
+  CONTEXT: .buildrunner/dashboard/tests/dispatch.spec.mjs uses test.describe.configure({ mode: 'serial' }) with test.afterEach() cleanup
+
+[2026-04-13T13:49:00Z] [CONSTRAINT] E2E test spec file must not be in git history
+  WHY: Scanner reads from git first (git show main:spec_path). Test spec marked COMPLETE in previous runs causes subsequent tests to read stale COMPLETE phases
+  CONTEXT: Moved test spec path from .buildrunner/builds/BUILD_e2e-dispatch-test.md to /tmp/BUILD_e2e-dispatch-test.md. Git show fails on /tmp, forcing fallback to filesystem
+
+[2026-04-13T13:50:00Z] [TRADE-OFF] E2E tests use simulator approach for completion detection (FIX 2)
+  WHY: Full dispatch cycle too slow and unreliable. Instead: write completed spec file, mark build dispatched, trigger scanner. Tests intention of completion detection without build execution overhead
+  CONTEXT: .buildrunner/dashboard/tests/dispatch.spec.mjs FIX 2 test (~line 177). Achieves test coverage in 2.8s instead of 2+ minutes
+
+[2026-04-13T13:51:00Z] [DECISION] Dashboard scanner keeps failed heartbeat timestamp parsing fix subtle
+  WHY: Users may have manually set last_heartbeat_at via SQL in wrong format during testing. Reaper now normalizes both ISO and SQLite formats to handle both cases gracefully
+  CONTEXT: events.mjs reaper, line ~2874. Adds one-liner format check instead of strict validation
+
+[2026-04-13T13:52:00Z] [GOAL] Verify all 5 dispatch lifecycle fixes with 100% pass Playwright E2E tests
+  WHY: User explicitly requested thorough testing: "be thorough and script all scenarios and do not pause until it is 100% successful"
+  CONTEXT: FIX 1: Local dispatch sidecar + heartbeats, FIX 2: Completion detection, FIX 3: Phase count amendment, FIX 4: Registered builds stay registered, FIX 5: Stale builds marked stalled. All 5 tests pass reliably
+
+[2026-04-13T13:53:00Z] [REJECTED] Approach: Waiting for scanner interval (30s) in tests
+  WHY: Too slow. Tests would take minutes. Added /api/scanner/trigger endpoint instead to invoke scanner on-demand
+  CONTEXT: Dispatch test design decision
+
+[2026-04-13T13:54:00Z] [REJECTED] Approach: Using network-idle for dashboard page load
+  WHY: SSE (Server-Sent Events) connection keeps network active indefinitely. Instead: wait for builds-table selector to appear
+  CONTEXT: Dispatch tests, line ~91. No longer calls page.waitForLoadState('networkidle')
+
+[2026-04-13T13:55:00Z] [WHY] Scanner emits SPEC_AMENDED before applyStateChange in state machine
+  WHY: SPEC_AMENDED is not a state transition event — it's an amendment that may or may not change state. Needs to be processed early, outside the state transition validation block, similar to HEARTBEAT and PHASE_COMPLETE handling
+  CONTEXT: State machine design. Events fall into two categories: (1) non-state-changing (HEARTBEAT, PHASE_COMPLETE, SPEC_AMENDED) processed immediately, (2) state-changing events validated against transition table
+
