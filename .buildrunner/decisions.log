@@ -774,3 +774,4 @@
   WHY: SPEC_AMENDED is not a state transition event — it's an amendment that may or may not change state. Needs to be processed early, outside the state transition validation block, similar to HEARTBEAT and PHASE_COMPLETE handling
   CONTEXT: State machine design. Events fall into two categories: (1) non-state-changing (HEARTBEAT, PHASE_COMPLETE, SPEC_AMENDED) processed immediately, (2) state-changing events validated against transition table
 
+[Mon Apr 13 11:58:00 CDT 2026] [AMENDMENT] Added Phase 5 (Codex Power Features): 5 tasks — /2nd skill, plan critique gate in /begin, auto-trigger on high-risk diffs, /codex-do terminal delegation, /2nd --adversarial mode. Reason: extract research-backed second-opinion value beyond automated review.

@@ -16,6 +16,7 @@ Automated cross-model code review pipeline using Codex CLI (ChatGPT Plus) to che
 | 2     | cross_model_review.py, cross-model-review.sh, adversarial-review.sh | 1                 | -                       |
 | 3     | auto-save-session.sh, unified-review-gate.sh                        | -                 | 2 (needs review script) |
 | 4     | dashboard index.html, events.mjs, cross-review.mjs                  | -                 | 3 (needs data flowing)  |
+| 5     | /2nd skill, /codex-do skill, auto-save-session.sh, /begin skill     | -                 | 2 (needs review engine) |
 
 ## Phases
 
@@ -118,6 +119,33 @@ Automated cross-model code review pipeline using Codex CLI (ChatGPT Plus) to che
 - [ ] Cost tracker widget: running monthly spend on OpenRouter fallback reviews (reads cross-review-spend.json). Shows $0 when Codex CLI handles all reviews.
 
 **Success Criteria:** Dashboard shows cross-model review results in real-time. Review queue shows unified status. Cost tracking visible.
+
+### Phase 5: Codex Power Features — Second Opinion & Delegation _(added: 2026-04-13)_
+
+**Status:** pending
+**Goal:** Expose the Phase 2 Codex engine as user-facing workflows that extract the proven second-opinion value beyond automated review.
+
+**Files:**
+
+- `~/.claude/skills/2nd/SKILL.md` (NEW)
+- `~/.claude/skills/codex-do/SKILL.md` (NEW)
+- `~/.buildrunner/scripts/auto-save-session.sh` (MODIFY — high-risk diff detection)
+- `~/.claude/skills/begin/SKILL.md` (MODIFY — plan critique gate)
+- `.buildrunner/codex-briefs/` (NEW directory, auto-created)
+
+**Blocked by:** Phase 2 (needs `cross_model_review.py` + Codex CLI auth path)
+
+**Deliverables:**
+
+- [ ] `/2nd` skill — stuck-debug second opinion _(added: 2026-04-13)_. Gathers: goal from current conversation, what Claude has tried (recent Bash/edits/tool calls), full contents of suspect files (not diffs), raw error output + relevant log slices, Claude's current hypothesis stated explicitly, the user's one-line question. Writes brief to `.buildrunner/codex-briefs/<ts>.md`, invokes `codex exec` with repo access, returns a **disagreement diff** (which of Claude's assumptions Codex rejected, what it proposes, confidence). Advisory only — never auto-applies. Research backing: models fix external errors 64.5% more reliably than their own (Zylos, Feb 2026).
+- [ ] Plan critique gate in `/begin` _(added: 2026-04-13)_. Before phase execution begins, fire `cross-model-review.sh` against the BUILD spec + architecture plan (not just diffs). Runs in parallel with existing adversarial review. Blocks on blocker-severity findings, warns otherwise. Different model = uncorrelated blind spots on design decisions.
+- [ ] Auto-trigger on high-risk diffs _(added: 2026-04-13)_. Pre-commit hook in `auto-save-session.sh` that detects high-risk file patterns (`supabase/migrations/**`, RLS policies, `**/auth/**`, `**/payments/**`, edge functions with DB writes) and auto-fires `/2nd` brief generation + Codex review synchronously (blocking commit on blockers). Never-forget insurance on the changes that matter most.
+- [ ] `/codex-do <task>` skill — terminal/DevOps delegation _(added: 2026-04-13)_. For pure shell/CI/deploy/Dockerfile/bash-script work, delegate to Codex CLI instead of Claude. Codex measured 77.3% vs Claude 65.4% on Terminal-Bench 2.0. Skill wraps `codex exec` with project context, streams output, commits on approval. Scope-limited to terminal-shaped tasks — NOT a general execution replacement.
+- [ ] `/2nd --adversarial` mode — "convince me I'm wrong" _(added: 2026-04-13)_. Flag on the `/2nd` skill that forces Codex to argue the contrary position on a fix/architecture decision Claude is confident about. Brief framing instructs Codex: "The prior engineer believes X. Assume they are wrong. What did they miss?" Exploits external-attribution bias for maximum pushback. Use on untestable decisions (security tradeoffs, architecture calls).
+
+**Success Criteria:** `/2nd` produces a usable brief + Codex response in < 60s on a stuck-debug case. `/begin` blocks when Codex flags a blocker in the plan critique. Pre-commit hook fires automatically on a migration change without manual invocation. `/codex-do "write a deploy script for X"` produces working shell output. `/2nd --adversarial` returns a substantively contrary read, not agreement.
+
+---
 
 ## Out of Scope (Future)
 
