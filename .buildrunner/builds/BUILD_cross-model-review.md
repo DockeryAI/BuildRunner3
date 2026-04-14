@@ -1,7 +1,7 @@
 # Build: cross-model-review
 
 **Created:** 2026-04-13
-**Status:** Phases 1-1 Complete — Phase 1 In Progress
+**Status:** Phases 1-2 Complete — Phase 2 In Progress
 **Deploy:** local — Muddy scripts + dashboard (deploy via SSH after dashboard phases)
 
 ## Overview
@@ -22,7 +22,7 @@ Automated cross-model code review pipeline using Codex CLI (ChatGPT Plus) to che
 
 ### Phase 1: Cursor IDE Setup + Auto-Focus Script
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Cursor replaces VS Code as daily IDE with BR3-optimized workspace. Auto-focus script opens changed files after each phase build.
 
 **Files:**
@@ -34,11 +34,11 @@ Automated cross-model code review pipeline using Codex CLI (ChatGPT Plus) to che
 
 **Deliverables:**
 
-- [ ] Cursor workspace file with BR3 project paths, .buildrunner/ state visible, node_modules/dist excluded
-- [ ] cursor-review-focus.sh: reads git diff --name-only from last phase, opens all changed files in Cursor via `cursor <file1> <file2> ...` CLI (user uses Cursor's built-in Source Control panel for diff view)
-- [ ] Hook integration: wire cursor-review-focus.sh as optional post-phase trigger (runs after auto-save-session.sh completes, only on Muddy)
-- [ ] Cursor settings.json: dark theme, minimap off, diff editor default open, git decorations enabled, Claude Code extension configured
-- [ ] Verification: Cursor launches, Claude Code terminal works, auto-focus opens correct files after a test commit
+- [x] Cursor workspace file with BR3 project paths, .buildrunner/ state visible, node_modules/dist excluded
+- [x] cursor-review-focus.sh: reads git diff --name-only from last phase, opens all changed files in Cursor via `cursor <file1> <file2> ...` CLI (user uses Cursor's built-in Source Control panel for diff view)
+- [x] Hook integration: wire cursor-review-focus.sh as optional post-phase trigger (runs after auto-save-session.sh completes, only on Muddy)
+- [x] Cursor settings.json: dark theme, minimap off, diff editor default open, git decorations enabled, Claude Code extension configured
+- [x] Verification: Cursor launches, Claude Code terminal works, auto-focus opens correct files after a test commit
 
 **Success Criteria:** After a phase builds, Cursor automatically shows the changed files without Byron doing anything.
 

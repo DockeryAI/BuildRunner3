@@ -1,25 +1,31 @@
-# Phase 1: SQLite Single Writer — Implementation Plan
+# Phase 1 Plan: Cursor IDE Setup + Auto-Focus Script
+
+## Assessment
+
+All Phase 1 code already exists from a prior build. Verification only.
+
+## Existing Code
+
+- `~/.buildrunner/scripts/cursor-review-focus.sh` — complete, 69 lines
+- `~/.buildrunner/cursor-workspace.code-workspace` — complete, 41 lines
+- Hook wired in `auto-save-session.sh` lines 83-84
 
 ## Tasks
 
-1. Create SQLite tables (builds, build_events, heartbeats) in events.db
-2. Migrate cluster-builds.json into builds table
-3. Rewrite build-state-machine.mjs as SQLite accessor with SUSPECT state
-4. Extract NODE_MATRIX to lib/node-matrix.mjs
-5. Update registry.mjs — SQLite via state machine, fix lock path
-6. Update next-ready-build.mjs — shared imports
-7. Route heartbeat handler through state machine (events.mjs)
-8. Route dispatch completion through state machine (events.mjs)
-9. Route scanner updates through state machine (events.mjs)
-10. Add /api/builds/snapshot endpoint (events.mjs)
-11. Update recommender.mjs — read from SQLite
-12. Remove dead imports from events.mjs
-13. Archive migrate-to-events.mjs
-14. Delete stale files (browser.old.log, pending-alerts.jsonl)
-15. Consolidate readRegistry() duplicates
+### Task 1: Verify cursor-review-focus.sh
+
+Run the script with a test commit range to confirm it resolves files correctly and invokes Cursor CLI.
+
+### Task 2: Verify workspace loads
+
+Confirm workspace file is valid JSON and references correct paths.
+
+### Task 3: Mark deliverables complete
+
+Update BUILD spec with all checkboxes checked.
 
 ## Tests
 
-- State machine CRUD + transitions + SUSPECT state
-- Migration correctness
-- /api/builds/snapshot response shape
+- Script exits 0 with valid commit range
+- Script exits 0 (no-op) on nodes that aren't Muddy
+- Workspace JSON is valid
