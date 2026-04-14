@@ -1,7 +1,7 @@
 # Build: cross-model-review
 
 **Created:** 2026-04-13
-**Status:** Phases 1-3 Complete — Phase 3 In Progress
+**Status:** Phases 1-4 Complete — Phase 5 In Progress
 **Deploy:** local — Muddy scripts + dashboard (deploy via SSH after dashboard phases)
 
 ## Overview
@@ -73,7 +73,7 @@ Automated cross-model code review pipeline using Codex CLI (ChatGPT Plus) to che
 
 ### Phase 3: Dispatch Chain Integration + Unified Gate
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Cross-model review runs locally on Muddy as background process after commits. Unified review gate collects all three review sources into one report.
 
 **Files:**
@@ -86,12 +86,12 @@ Automated cross-model code review pipeline using Codex CLI (ChatGPT Plus) to che
 
 **Deliverables:**
 
-- [ ] auto-save-session.sh modification: add cross-model-review.sh as LOCAL background process on Muddy (`~/.buildrunner/scripts/cross-model-review.sh "$DIFF" "$PROJECT_ROOT" >> ~/.buildrunner/logs/cross-review.log 2>&1 &`), fire-and-forget alongside existing HTTP dispatches
-- [ ] cross-review.log format: timestamp, commit SHA, model used, findings JSON, cost, duration — one entry per review
-- [ ] unified-review-gate.sh: collects from three INDEPENDENT sources — Walter test results (via Walter API /api/results/:sha or test_results.db), Otis adversarial (run separately by /begin and /autopilot skills, NOT by auto-save), cross-model (cross-review.log). Each source has its own trigger — the gate READS results, doesn't trigger them.
-- [ ] Unified report format: three sections (Tests / Adversarial / Cross-Model), blocker count, overall pass/fail, written to ~/.buildrunner/logs/unified-review.md. Missing sections shown as "pending" or "skipped"
-- [ ] Gate logic: if ANY source has a blocker-severity finding, overall status = BLOCKED. Warnings listed but non-blocking.
-- [ ] Fallback: if cross-model review times out or fails, gate proceeds with available sources only (degraded but not stuck)
+- [x] auto-save-session.sh modification: add cross-model-review.sh as LOCAL background process on Muddy (`~/.buildrunner/scripts/cross-model-review.sh "$DIFF" "$PROJECT_ROOT" >> ~/.buildrunner/logs/cross-review.log 2>&1 &`), fire-and-forget alongside existing HTTP dispatches
+- [x] cross-review.log format: timestamp, commit SHA, model used, findings JSON, cost, duration — one entry per review
+- [x] unified-review-gate.sh: collects from three INDEPENDENT sources — Walter test results (via Walter API /api/results/:sha or test_results.db), Otis adversarial (run separately by /begin and /autopilot skills, NOT by auto-save), cross-model (cross-review.log). Each source has its own trigger — the gate READS results, doesn't trigger them.
+- [x] Unified report format: three sections (Tests / Adversarial / Cross-Model), blocker count, overall pass/fail, written to ~/.buildrunner/logs/unified-review.md. Missing sections shown as "pending" or "skipped"
+- [x] Gate logic: if ANY source has a blocker-severity finding, overall status = BLOCKED. Warnings listed but non-blocking.
+- [x] Fallback: if cross-model review times out or fails, gate proceeds with available sources only (degraded but not stuck)
 
 **Success Criteria:** After a commit, cross-model review runs locally in background. Unified gate produces combined report from all available sources. Gate blocks on blockers.
 
