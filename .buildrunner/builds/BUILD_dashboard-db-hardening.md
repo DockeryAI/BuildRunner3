@@ -1,7 +1,7 @@
 # Build: dashboard-db-hardening
 
 **Created:** 2026-04-13
-**Status:** Phase 1 In Progress
+**Status:** ✅ COMPLETE (5/5 phases)
 **Deploy:** local — infra (`~/.buildrunner/` scripts + launchd agents, no app deploy)
 
 ## Overview
@@ -24,7 +24,7 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 ### Phase 1: Recovery + Safe Restart
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Fresh readable `events.db`, broken file preserved for forensics, `BUILD_cross-model-review` + `BUILD_cluster-max` + `BUILD_geo-v2` all visible in the dashboard.
 
 **Files:**
@@ -38,14 +38,14 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 **Deliverables:**
 
-- [ ] Stop dashboard server PID 86944 (`events.mjs`) cleanly via launchd (`launchctl unload` the plist, or SIGTERM)
-- [ ] Move `events.db`, `events.db-wal`, `events.db-shm` to `events.db.broken-2026-04-13.*` (preserve, do NOT delete)
-- [ ] Restart dashboard via launchd; verify it recreates an empty `events.db` on startup
-- [ ] Confirm `sqlite3 events.db "SELECT 1"` returns successfully on the fresh file
-- [ ] Re-register `BuildRunner3:BUILD_cross-model-review` (5 phases — the amendment from this session is in the spec but not in the registry)
-- [ ] Re-register `BuildRunner3:BUILD_cluster-max` from `~/Projects/BuildRunner3/.buildrunner/builds/BUILD_cluster-max.md`
-- [ ] Re-register `geo-command-center:BUILD_geo-v2` from `~/Projects/geo-command-center/.buildrunner/builds/BUILD_geo-v2.md` — cross-project, must use `--path ~/Projects/geo-command-center --project geo-command-center`
-- [ ] Verify dashboard UI lists all three named builds before declaring Phase 1 complete
+- [x] Stop dashboard server PID 86944 (`events.mjs`) cleanly via launchd (`launchctl unload` the plist, or SIGTERM)
+- [x] Move `events.db`, `events.db-wal`, `events.db-shm` to `events.db.broken-2026-04-13.*` (preserve, do NOT delete)
+- [x] Restart dashboard via launchd; verify it recreates an empty `events.db` on startup
+- [x] Confirm `sqlite3 events.db "SELECT 1"` returns successfully on the fresh file
+- [x] Re-register `BuildRunner3:BUILD_cross-model-review` (5 phases — the amendment from this session is in the spec but not in the registry)
+- [x] Re-register `BuildRunner3:BUILD_cluster-max` from `~/Projects/BuildRunner3/.buildrunner/builds/BUILD_cluster-max.md`
+- [x] Re-register `geo-command-center:BUILD_geo-v2` from `~/Projects/geo-command-center/.buildrunner/builds/BUILD_geo-v2.md` — cross-project, must use `--path ~/Projects/geo-command-center --project geo-command-center`
+- [x] Verify dashboard UI lists all three named builds before declaring Phase 1 complete
 
 **Success Criteria:** Dashboard UI lists `BUILD_cross-model-review` (5 phases), `BUILD_cluster-max`, and `BUILD_geo-v2`. Fresh `events.db` opens cleanly from both `sqlite3` CLI and a standalone `new Database()` call. Broken file preserved under `.broken-2026-04-13` for later inspection.
 
@@ -55,7 +55,7 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 ### Phase 2: Shared DB-Open Helper
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Every db open uses one shared helper with identical pragmas. No raw `new Database(DB_PATH)` survives outside the helper.
 
 **Files:**
@@ -69,11 +69,11 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 **Deliverables:**
 
-- [ ] Create `db-open.mjs` exporting `openEventsDb({ readonly })` that sets: `journal_mode=WAL`, `busy_timeout=5000`, `synchronous=NORMAL`, `foreign_keys=ON`
-- [ ] Replace `new Database(DB_PATH)` in `events.mjs`, `build-state-machine.mjs`, and `observability.mjs` (readonly path) with `openEventsDb()`
-- [ ] Grep `~/.buildrunner/` (excluding `node_modules/`) for `new Database(` — must return zero outside `db-open.mjs`
-- [ ] Add startup-time assertion in `events.mjs`: refuse to start if `PRAGMA journal_mode` ≠ `wal`
-- [ ] Smoke test: concurrent `events.mjs` write + `registry.mjs add` succeed without lock errors
+- [x] Create `db-open.mjs` exporting `openEventsDb({ readonly })` that sets: `journal_mode=WAL`, `busy_timeout=5000`, `synchronous=NORMAL`, `foreign_keys=ON`
+- [x] Replace `new Database(DB_PATH)` in `events.mjs`, `build-state-machine.mjs`, and `observability.mjs` (readonly path) with `openEventsDb()`
+- [x] Grep `~/.buildrunner/` (excluding `node_modules/`) for `new Database(` — must return zero outside `db-open.mjs`
+- [x] Add startup-time assertion in `events.mjs`: refuse to start if `PRAGMA journal_mode` ≠ `wal`
+- [x] Smoke test: concurrent `events.mjs` write + `registry.mjs add` succeed without lock errors
 
 **Success Criteria:** All db opens go through `db-open.mjs`. Grep for `new Database(` outside the helper and `node_modules/` returns zero matches. Concurrent writes from `events.mjs` and `registry.mjs` coexist without errors.
 
@@ -81,7 +81,7 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 ### Phase 3: Hourly Backups + Rotation
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Recovery from corruption is one `mv` away.
 
 **Files:**
@@ -95,12 +95,12 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 **Deliverables:**
 
-- [ ] `backup-events-db.sh` uses `sqlite3 events.db ".backup <dest>"` (online safe method, NOT `cp`)
-- [ ] launchd plist fires the script hourly, survives reboot
-- [ ] Rotation: keep last 24 hourly + last 7 daily backups in `dashboard/backups/`
-- [ ] Script exits non-zero on `.backup` failure and logs to `~/.buildrunner/logs/db-backup.log`
-- [ ] `--restore <backup-file>` flag stops the dashboard, swaps the backup in, and restarts
-- [ ] Manual test: run once, confirm a readable `.bak` lands in `backups/` and the dashboard keeps running
+- [x] `backup-events-db.sh` uses `sqlite3 events.db ".backup <dest>"` (online safe method, NOT `cp`)
+- [x] launchd plist fires the script hourly, survives reboot
+- [x] Rotation: keep last 24 hourly + last 7 daily backups in `dashboard/backups/`
+- [x] Script exits non-zero on `.backup` failure and logs to `~/.buildrunner/logs/db-backup.log`
+- [x] `--restore <backup-file>` flag stops the dashboard, swaps the backup in, and restarts
+- [x] Manual test: run once, confirm a readable `.bak` lands in `backups/` and the dashboard keeps running
 
 **Success Criteria:** 24 rolling hourly + 7 daily backups present after one day of uptime. Running `--restore` swaps cleanly without leaving the dashboard in a broken state.
 
@@ -108,7 +108,7 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 ### Phase 4: Health Watchdog
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Corruption events alert within 5 minutes, not 4 hours.
 
 **Files:**
@@ -121,12 +121,12 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 **Deliverables:**
 
-- [ ] `db-watchdog.mjs` opens `events.db` via the shared helper every 5 min, runs `PRAGMA integrity_check`, asserts result === `ok`
-- [ ] Also runs a real `SELECT COUNT(*) FROM builds` to catch mmap-vs-disk drift (the failure mode that masked today's corruption)
-- [ ] On failure: write loud entry to `db-watchdog.log`, post dashboard SSE alert (`db_health_alert`), auto-trigger a `.backup` snapshot before state degrades further
-- [ ] launchd plist runs the script every 300s
-- [ ] Dashboard UI shows a red banner when last watchdog entry is a failure
-- [ ] Test: deliberately corrupt a copy of the db in a sandbox, point watchdog at it, confirm alert fires within one cycle
+- [x] `db-watchdog.mjs` opens `events.db` via the shared helper every 5 min, runs `PRAGMA integrity_check`, asserts result === `ok`
+- [x] Also runs a real `SELECT COUNT(*) FROM builds` to catch mmap-vs-disk drift (the failure mode that masked today's corruption)
+- [x] On failure: write loud entry to `db-watchdog.log`, post dashboard SSE alert (`db_health_alert`), auto-trigger a `.backup` snapshot before state degrades further
+- [x] launchd plist runs the script every 300s
+- [x] Dashboard UI shows a red banner when last watchdog entry is a failure
+- [x] Test: deliberately corrupt a copy of the db in a sandbox, point watchdog at it, confirm alert fires within one cycle
 
 **Success Criteria:** Watchdog runs on schedule, logs ok every cycle. Simulated corruption triggers the red banner within 5 minutes.
 
@@ -134,7 +134,7 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 ### Phase 5: Single-Writer Architecture
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** Only `events.mjs` ever holds a writable handle on `events.db`. All other processes post HTTP. Multi-writer race becomes architecturally impossible.
 
 **Files:**
@@ -148,12 +148,12 @@ Recover from the 2026-04-13 `events.db` corruption and ensure it can never recur
 
 **Deliverables:**
 
-- [ ] Add POST endpoints on dashboard server for registry add/update/remove and phase state transitions
-- [ ] Create `db-client.mjs` mirroring the `build-state-machine.mjs` writer API but talking HTTP to localhost
-- [ ] Split `build-state-machine.mjs`: reads stay local (open via helper, readonly), writes delegate to `db-client.mjs`
-- [ ] Refactor `registry.mjs` to use `db-client.mjs` exclusively for writes
-- [ ] Retire all non-server `new Database()` writer calls — grep must return zero
-- [ ] Stress test: 100 concurrent `registry.mjs add` calls during dashboard serving, confirm no lock errors and all writes land
+- [x] Add POST endpoints on dashboard server for registry add/update/remove and phase state transitions
+- [x] Create `db-client.mjs` mirroring the `build-state-machine.mjs` writer API but talking HTTP to localhost
+- [x] Split `build-state-machine.mjs`: reads stay local (open via helper, readonly), writes delegate to `db-client.mjs`
+- [x] Refactor `registry.mjs` to use `db-client.mjs` exclusively for writes
+- [x] Retire all non-server `new Database()` writer calls — grep must return zero
+- [x] Stress test: 100 concurrent `registry.mjs add` calls during dashboard serving, confirm no lock errors and all writes land
 
 **Success Criteria:** Only `events.mjs` holds a writable `better-sqlite3` handle. All other BR3 scripts talk to it via HTTP. Concurrent stress test passes. The race condition that caused 2026-04-13 is architecturally eliminated.
 

@@ -377,7 +377,17 @@ def _detect_patterns(entries: list[dict]) -> list[dict]:
         })
 
     # --- Latency degradation ---
-    timed_entries = [e for e in supabase_entries if e.get("duration_ms") and e.get("duration_ms") > 0]
+    # Exclude ALL edge function calls — they run arbitrary server work (LLM calls,
+    # scraping, multi-step pipelines) and routinely take 30–90s. The 800ms bar is
+    # a DB/REST latency bar, not an edge-function bar. Also skip any entry tagged
+    # [EDGE_FN] or [EDGE_FN:*] even if the URL parse missed it.
+    def _is_edge_fn_call(e):
+        blob = (e.get("url") or "") + " " + (e.get("message") or "")
+        return "/functions/v1/" in blob or "[EDGE_FN" in blob or (e.get("event_type") or "").startswith("edge_fn")
+    timed_entries = [
+        e for e in supabase_entries
+        if e.get("duration_ms") and e.get("duration_ms") > 0 and not _is_edge_fn_call(e)
+    ]
     if len(timed_entries) >= 10:
         avg_duration = sum(e["duration_ms"] for e in timed_entries) / len(timed_entries)
         slow = [e for e in timed_entries if e["duration_ms"] > 800]

@@ -776,3 +776,92 @@
 
 [Mon Apr 13 11:58:00 CDT 2026] [AMENDMENT] Added Phase 5 (Codex Power Features): 5 tasks — /2nd skill, plan critique gate in /begin, auto-trigger on high-risk diffs, /codex-do terminal delegation, /2nd --adversarial mode. Reason: extract research-backed second-opinion value beyond automated review.
 [Mon Apr 13 13:46:54 CDT 2026] [DECISION] Created BUILD_dashboard-db-hardening with 5 phases. Reason: events.db corrupted today by multi-writer race; need recovery + permanent fix. Adversarial review on Otis surfaced 10 findings (output truncated at 2). Two verified blockers fixed in plan: --register-all does not exist (removed from Phase 1, replaced with explicit per-build registration of cross-model-review/cluster-max/geo-v2); observability.mjs is readonly not a writer (root cause corrected to 2 writers).
+
+[2026-04-13T22:15:00Z] [ARCHITECTURE] Token refresh daemon now uses real API calls instead of --print-system-prompt
+  WHY: --print-system-prompt is local-only and does NOT trigger OAuth token refresh. Only actual API calls (sending messages) trigger the Claude backend to refresh tokens. The old approach read expired tokens and reported success.
+  CONTEXT: ~/.buildrunner/scripts/br-token-refresh-local.sh, Otis auth failures
+
+[2026-04-13T22:15:01Z] [DECISION] Token refresh interval changed from 4h to 90min (14400s → 5400s)
+  WHY: OAuth tokens from Anthropic expire in ~4h. With 4h refresh interval, the daemon often ran AFTER tokens expired. 90min gives 2-3 refresh attempts per token lifetime.
+  CONTEXT: ~/Library/LaunchAgents/com.br3.token-refresh.plist, all cluster nodes
+
+[2026-04-13T22:15:02Z] [WHY] Script now fails loudly on expired tokens instead of silently "succeeding"
+  WHY: Old script would read an expired token (negative remaining hours), call auth status (which lies), and report "Auth check passed" + "Token refresh complete" even though nothing was refreshed. New script exits with ERROR if remaining time < 30min.
+  CONTEXT: br-token-refresh-local.sh lines 55-61
+
+[2026-04-13T22:15:03Z] [CONSTRAINT] Cannot refresh already-expired OAuth tokens programmatically
+  WHY: Once an OAuth token expires, the refresh token is also invalid. Must manually run `claude login` to get a fresh token. The daemon can only MAINTAIN valid tokens, not resurrect dead ones.
+  CONTEXT: Otis auth, OAuth flow
+
+[2026-04-13T22:15:04Z] [DECISION] Prune session cache to 50 sessions per project
+  WHY: .claude/projects/ had 5.7GB across 3,400+ stale sessions (Synapse alone had 2,025). This caused glob searches from ~ to timeout after 20s. Keeping newest 50 per project is sufficient for recent history.
+  CONTEXT: ~/.claude/projects/*/, glob performance
+
+[2026-04-13T22:15:05Z] [WHY] Telemetry directory cleared (390MB)
+  WHY: ~/.claude/telemetry/ accumulates indefinitely and provides no user value. Safe to delete periodically.
+  CONTEXT: ~/.claude/telemetry/
+
+[2026-04-13T22:15:06Z] [REJECTED] Considered keeping all sessions for history
+  WHY: 9.1GB bloat caused tool timeouts. History beyond 50 sessions is rarely accessed. Git history + decisions.log + Lockwood provide better long-term memory.
+  CONTEXT: .claude directory management
+
+[2026-04-13T22:15:07Z] [PATTERN] Root cause of Otis failures: check token expiry FIRST, then SSH, then script logic
+  WHY: "claude auth status" returns loggedIn:true even with expired tokens sometimes. Always check actual expiry timestamp from keychain. Memory note "Otis failures are auth not script" confirmed correct.
+  CONTEXT: ~/.buildrunner/adversarial-diag.log, Otis debugging
+
+[2026-04-13T22:15:08Z] [TRADE-OFF] Real API call for refresh costs ~1 API request per 90min per node
+  WHY: Using `echo "ping" | claude --print --max-turns 1` actually triggers OAuth refresh, unlike --print-system-prompt. Cost is minimal (~16 requests/day/node) vs benefit of reliable auth.
+  CONTEXT: br-token-refresh-local.sh, cluster-wide
+
+[2026-04-13T22:30:00Z] [ARCHITECTURE] Replaced keychain-based OAuth with one-year setup tokens across cluster
+  WHY: OAuth tokens expire in ~4h, keychain locks on headless nodes, refresh daemon couldn't keep them alive. One-year tokens eliminate all refresh complexity and keychain issues.
+  CONTEXT: ~/.buildrunner/.tokens/, all cluster nodes (Otis, Lockwood, Walter, Lomax, Below)
+
+[2026-04-13T22:30:01Z] [DECISION] Generated 3 separate one-year tokens (one per account) instead of one shared token
+  WHY: User rotates between 3 accounts for rate limiting. Each account needs its own token so /swap can rotate without re-auth.
+  CONTEXT: account1.token (byhudson@yahoo.com), account2.token (byron@dockeryai.com), account3.token (byronhudson@gmail.com)
+
+[2026-04-13T22:30:02Z] [ARCHITECTURE] Created br-swap-tokens.sh to replace keychain-based br-swap-accounts.sh
+  WHY: Old script was 300+ lines of keychain manipulation with race conditions. New script reads tokens from files, sets CLAUDE_CODE_OAUTH_TOKEN env var, 80 lines, zero keychain.
+  CONTEXT: ~/.buildrunner/scripts/br-swap-tokens.sh
+
+[2026-04-13T22:30:03Z] [WHY] Set CLAUDE_CODE_OAUTH_TOKEN in env file instead of keychain
+  WHY: Tokens can be deployed to all nodes simultaneously. Keychain changes require SSH + password on headless nodes. File-based is simpler, more reliable, and works the same way.
+  CONTEXT: ~/.buildrunner/active-token.env (deployed to all nodes)
+
+[2026-04-13T22:30:04Z] [PATTERN] Token rotation now uses simple round-robin (1→2→3→1) instead of usage tracking
+  WHY: With one-year tokens there's no refresh limit. Usage tracking was only needed when tokens expired. Simpler logic, less state, deterministic.
+  CONTEXT: br-swap-tokens.sh line 76-85
+
+[2026-04-13T22:30:05Z] [GOAL] Eliminate 100% of token refresh failures on cluster
+  WHY: Recurring Otis auth failures were blocking builds. Root cause was fundamental: OAuth refresh mechanism didn't work at all. One-year tokens bypass this entirely.
+  CONTEXT: All dispatch nodes
+
+[2026-04-13T22:30:06Z] [TRADE-OFF] Tokens are tied to specific accounts and cannot be dynamically rotated without manual setup-token run
+  WHY: setup-token requires interactive browser login. This is acceptable because: (1) tokens are one-year so setup happens once, (2) user has 3 accounts already captured, (3) new accounts are rare.
+  CONTEXT: Token generation process
+
+[2026-04-13T22:30:07Z] [REJECTED] Considered using API keys from Claude Console instead of setup-token
+  WHY: API keys require per-interaction approval in interactive mode. One-year tokens are simpler and designed specifically for this use case (headless/CI).
+  CONTEXT: Official Claude Code docs recommend setup-token for cluster/CI scenarios
+
+[2026-04-13T22:30:08Z] [CONSTRAINT] Tokens must be regenerated annually (one-year expiry)
+  WHY: OAuth tokens from Anthropic have fixed lifetimes. This is a platform constraint. Setup takes 5 minutes per token (browser login).
+  CONTEXT: Anthropic OAuth flow
+
+[2026-04-13T22:30:09Z] [DECISION] Pruned session cache: 9.1GB → 3.8GB (reclaimed 5.3GB)
+  WHY: Glob searches from ~ were timing out after 20s due to 2,000+ session dirs per project. Kept newest 50 per project (sufficient for recent history).
+  CONTEXT: ~/.claude/projects/ (3,400 old sessions deleted), ~/.claude/telemetry/ (390MB cleared)
+
+[2026-04-13T22:30:10Z] [WHY] Only kept 50 session directories per project instead of all
+  WHY: Older sessions are rarely accessed (git history is better). 50 sessions provides ~3 months of history. Cost-benefit: reclaim 5GB vs lose negligible history.
+  CONTEXT: Cache retention policy
+
+[2026-04-13T22:30:11Z] [DECISION] Deployed tokens to Mac nodes only (skipped Below Windows)
+  WHY: Below uses different path structure and wasn't critical for this phase. Mac nodes form the core dispatch cluster.
+  CONTEXT: otis, lockwood, walter, lomax deployed; below skipped
+
+[2026-04-13T22:30:12Z] [PATTERN] Token files stored in ~/.buildrunner/.tokens/ alongside accounts.json mapping
+  WHY: Centralized location, easy to backup, easy to deploy via scp, human-readable metadata.
+  CONTEXT: ~/.buildrunner/.tokens/account{1,2,3}.token, ~/.buildrunner/.tokens/accounts.json
+

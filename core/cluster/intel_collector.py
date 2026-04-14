@@ -586,7 +586,7 @@ def update_deal_item(item_id: int, **fields) -> bool:
                "deal_score", "verdict", "below_assessment", "opus_assessment",
                "received", "received_at", "actual_url", "tracking_number",
                "carrier", "delivery_status", "delivery_updated_at",
-               "seller_verified", "in_stock"}
+               "seller_verified", "in_stock", "listing_url", "price"}
     updates = []
     params = []
     for key, value in fields.items():

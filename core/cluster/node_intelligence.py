@@ -560,6 +560,8 @@ class DealItemUpdate(BaseModel):
     delivery_status: Optional[str] = None
     seller_verified: Optional[int] = None
     in_stock: Optional[int] = None
+    listing_url: Optional[str] = None
+    price: Optional[float] = None
 
 
 @router.get("/api/deals/market/{hunt_id}")
