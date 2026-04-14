@@ -320,10 +320,10 @@ def main():
     if not all([args.diff_file, args.spec_file, args.commit_sha, args.project_root]):
         parser.error("--diff-file, --spec-file, --commit-sha, and --project-root are required for review")
 
-    # Read inputs
-    with open(args.diff_file) as f:
+    # Read inputs (handle binary/non-UTF-8 diffs gracefully)
+    with open(args.diff_file, encoding="utf-8", errors="replace") as f:
         diff_text = f.read()
-    with open(args.spec_file) as f:
+    with open(args.spec_file, encoding="utf-8", errors="replace") as f:
         spec_text = f.read()
 
     config = load_config()
