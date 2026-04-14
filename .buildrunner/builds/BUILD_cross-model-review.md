@@ -1,7 +1,7 @@
 # Build: cross-model-review
 
 **Created:** 2026-04-13
-**Status:** Phase 1 In Progress
+**Status:** Phase 4 Complete — Phase 5 Pending
 **Deploy:** local — Muddy scripts + dashboard (deploy via SSH after dashboard phases)
 
 ## Overview
@@ -97,7 +97,7 @@ Automated cross-model code review pipeline using Codex CLI (ChatGPT Plus) to che
 
 ### Phase 4: Dashboard Panel + Review Convergence
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Goal:** New dashboard panel showing cross-model review results alongside existing review queue. Review convergence view shows agreement/disagreement between reviewers.
 
 **Files:**
@@ -111,12 +111,12 @@ Automated cross-model code review pipeline using Codex CLI (ChatGPT Plus) to che
 
 **Deliverables:**
 
-- [ ] cross-review.mjs: reads cross-review.log, parses entries, exposes via REST API (/api/cross-reviews, /api/cross-reviews/:sha)
-- [ ] Dashboard panel: "Cross-Model Review" showing last 10 reviews with status (pass/warn/block), model used, cost, findings expandable
-- [ ] Review convergence indicator: when Otis adversarial AND cross-model both flag the same area (matched by file path + severity), highlight as high-confidence finding
-- [ ] Unified review status in existing Review Queue panel: shows combined pass/fail from all sources, not just Otis
-- [ ] SSE event: cross_review_complete pushed when review finishes, dashboard auto-updates
-- [ ] Cost tracker widget: running monthly spend on OpenRouter fallback reviews (reads cross-review-spend.json). Shows $0 when Codex CLI handles all reviews.
+- [x] cross-review.mjs: reads cross-review.log, parses entries, exposes via REST API (/api/cross-reviews, /api/cross-reviews/:sha)
+- [x] Dashboard panel: "Cross-Model Review" showing last 10 reviews with status (pass/warn/block), model used, cost, findings expandable
+- [x] Review convergence indicator: when Otis adversarial AND cross-model both flag the same area (matched by file path + severity), highlight as high-confidence finding
+- [x] Unified review status in existing Review Queue panel: shows combined pass/fail from all sources, not just Otis
+- [x] SSE event: cross_review_complete pushed when review finishes, dashboard auto-updates
+- [x] Cost tracker widget: running monthly spend on OpenRouter fallback reviews (reads cross-review-spend.json). Shows $0 when Codex CLI handles all reviews.
 
 **Success Criteria:** Dashboard shows cross-model review results in real-time. Review queue shows unified status. Cost tracking visible.
 

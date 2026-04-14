@@ -1,15 +1,25 @@
-# Phase 4: Visual Regression Baselines — Implementation Plan
+# Phase 4 Plan: Dashboard Panel + Review Convergence
+
+## Assessment
+
+Most Phase 4 deliverables already exist from earlier builds. Three integration gaps remain.
 
 ## Tasks
 
-1. **Modify playwright.config.ts** — Add toHaveScreenshot() config, visual project with @visual tag filtering, exclude visual from normal runs
-2. **Create tests/e2e/visual/screenshot.css** — Global animation/transition/caret disabling stylesheet
-3. **Create tests/e2e/visual/dashboard.visual.spec.ts** — Visual spec for dashboard with dynamic content masking
-4. **Create tests/e2e/visual/login.visual.spec.ts** — Visual spec for login page
-5. **Create tests/e2e/visual/analytics.visual.spec.ts** — Visual spec for analytics page with dynamic content masking
-6. **Create Dockerfile.playwright** — Docker container for consistent baseline generation
-7. **Modify package.json** — Add test:visual, test:visual:docker, test:visual:update scripts
+### Task 1: SSE event emission for cross_review_complete
+
+The UI (index.html:2206) listens for `cross_review_complete` SSE events but events.mjs never emits them. Add a file watcher on `~/.buildrunner/cache/cross-reviews/` that emits `cross_review_complete` when new review files appear.
+
+### Task 2: Convergence UI in dashboard
+
+`findConvergence()` exists in cross-review.mjs but the HTML panel doesn't display convergent findings. Add a convergence section below the cross-review findings that highlights when both adversarial + cross-model flag the same file/severity.
+
+### Task 3: Unified review status in Review Queue
+
+`getUnifiedStatus()` exists in reviews.mjs but isn't exposed via API or shown in the review queue panel. Wire it into the existing review queue header as a combined pass/fail badge.
 
 ## Tests
 
-Visual spec files ARE the tests. No separate TDD step needed — these are config + test scaffold files.
+- SSE emission: verify `cross_review_complete` fires when a new cache file is written
+- Convergence: verify matching findings highlight correctly
+- Unified status: verify badge reflects combined status
