@@ -85,7 +85,7 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 
 ### Phase 4: /commit Hard Walter Gate + Direct Push _(added: 2026-04-15)_
 
-**Status:** pending
+**Status:** in_progress
 **Goal:** Walter is a hard requirement for all commits — no graceful degradation, no silent skips
 **Files:**
 
