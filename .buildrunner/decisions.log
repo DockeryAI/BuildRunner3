@@ -865,3 +865,67 @@
   WHY: Centralized location, easy to backup, easy to deploy via scp, human-readable metadata.
   CONTEXT: ~/.buildrunner/.tokens/account{1,2,3}.token, ~/.buildrunner/.tokens/accounts.json
 
+[2026-04-15T18:20:00Z] [DECISION] Wrapped ComponentNode in React.forwardRef to resolve ReactFlow ref attachment
+  WHY: ReactFlow v11 internally attempts to attach refs to custom node components for dimension measurement. Plain React.FC components cannot receive refs, causing "function components cannot be given refs" warning
+  CONTEXT: ui/src/components/nodes/ComponentNode.tsx, ui/src/components/ArchitectureCanvas.tsx (nodeTypes registration), reactflow v11.11.4
+
+[2026-04-15T18:20:00Z] [ARCHITECTURE] ComponentNode now properly forwards refs to root DOM element
+  WHY: Enables ReactFlow's internal ref system to work correctly, eliminating React warnings and allowing proper node dimension tracking in the canvas
+  CONTEXT: ComponentNode now uses forwardRef<HTMLDivElement, ComponentNodeProps> pattern with displayName set for DevTools
+
+[2026-04-15T18:20:00Z] [WHY] Exhaustive root cause analysis ruled out all other ref-related issues
+  WHY: Codebase audit found zero other instances of refs being passed to custom components. All other useRef calls attach to native DOM elements only. Radix UI packages installed but unused (no risk until integration). Only ReactFlow integration was the actual trigger.
+  CONTEXT: Manual audit of 40+ components, all ref usages, all forwardRef status checks completed
+
+[2026-04-15T18:20:00Z] [CONSTRAINT] All 18 Radix UI packages currently installed but unused - future integration will require forwardRef review
+  WHY: When Radix UI Trigger/Portal patterns are integrated with custom components (e.g., NotificationBell as TooltipTrigger with asChild), those components will need forwardRef wrappers to receive forwarded refs from Radix slots
+  CONTEXT: ui/package.json dependencies, when ui-libraries are eventually imported into BuildRunner3/ui/src
+
+[2026-04-15T21:55:00Z] [ARCHITECTURE] Added process group management for subprocess execution in Walter
+  WHY: subprocess.run(timeout=N) only kills parent process, not child workers spawned by vitest/playwright. Orphaned workers accumulated, consuming all RAM until Walter choked.
+  CONTEXT: core/cluster/node_tests.py - _run_with_process_group() helper, _run_vitest(), _run_playwright()
+
+[2026-04-15T21:55:01Z] [DECISION] Use start_new_session=True + os.killpg() for subprocess timeout handling
+  WHY: Creates new process group so we can kill entire tree (parent + all children) on timeout, not just the npx parent
+  CONTEXT: core/cluster/node_tests.py:475-515 _run_with_process_group()
+
+[2026-04-15T21:55:02Z] [ARCHITECTURE] Added request deduplication to /api/run endpoint via _inflight_projects set
+  WHY: Otis was firing 25+ rapid requests, each spawning test processes faster than queue could drain. Needed gate to reject duplicates.
+  CONTEXT: core/cluster/node_tests.py - _inflight_projects set, trigger_run() endpoint
+
+[2026-04-15T21:55:03Z] [REJECTED] Scanning _run_status dict for existing queued/running tests
+  WHY: Race condition - all concurrent requests check dict before any writes to it. Need atomic check-and-set.
+  CONTEXT: /api/run deduplication logic
+
+[2026-04-15T21:55:04Z] [PATTERN] Use dedicated tracking set (_inflight_projects) for deduplication, not status dict
+  WHY: Set membership check + add is atomic within lock. Status dict iteration has window between check and insert.
+  CONTEXT: core/cluster/node_tests.py:48-49
+
+[2026-04-15T21:55:05Z] [ARCHITECTURE] Added _cleanup_stale_port() to Walter startup
+  WHY: LaunchAgent KeepAlive restarts Walter immediately on crash, but child processes from previous run still hold port 8100. New instance can't bind → crash → restart loop (23 attempts in log).
+  CONTEXT: core/cluster/node_tests.py:999-1020 startup event
+
+[2026-04-15T21:55:06Z] [CONSTRAINT] macOS 14 Sonoma: launchctl load crashes (SIGABRT) when run over SSH
+  WHY: Apple changed LaunchAgent domain handling in Sonoma. GUI domain operations fail from SSH sessions.
+  CONTEXT: Walter LaunchAgent com.br3.walter.plist, cluster management over SSH
+
+[2026-04-15T21:55:07Z] [REJECTED] Making /api/run async→sync to fix threading.Lock race
+  WHY: FastAPI runs sync endpoints in thread pool anyway, so threading.Lock doesn't serialize async-style. Real fix was atomic check-and-set with _inflight_projects set.
+  CONTEXT: core/cluster/node_tests.py trigger_run()
+
+[2026-04-15T21:55:08Z] [TRADE-OFF] Accept orphaned Walter process (PPID=1) instead of LaunchAgent management
+  WHY: LaunchAgent won't load over SSH on macOS 14. Workaround: start Walter manually with nohup. Loses auto-restart on crash but gains working deployment.
+  CONTEXT: Walter deployment, cluster management
+
+[2026-04-15T21:55:09Z] [WHY] Clear _inflight_projects in queue consumer finally block, not after queue.put()
+  WHY: Must track project as inflight until test actually completes (success/error), not just until queued. Otherwise new requests slip through while test is running.
+  CONTEXT: core/cluster/node_tests.py:885-892 _queue_consumer()
+
+[2026-04-15T21:55:10Z] [CONSTRAINT] Walter M2 has only 8GB RAM - zombie vitest processes exhaust memory quickly
+  WHY: Each vitest worker uses ~50-100MB. 150 zombies = 7.5-15GB. M2 Mini dies.
+  CONTEXT: Walter node capacity planning
+
+[2026-04-15T21:55:11Z] [WHY] Kill process group with SIGTERM then SIGKILL after 0.5s grace period
+  WHY: SIGTERM allows clean shutdown. SIGKILL catches processes that ignore SIGTERM. Grace period prevents race between signal handling and force kill.
+  CONTEXT: core/cluster/node_tests.py:500-507 _run_with_process_group()
+[2026-04-15T23:14:57Z] [AMENDMENT] Added Phase 4 to BUILD_walter-auto-provision: /commit hard Walter gate + direct push. Reason: Walter must always be available — no graceful degradation. 4 deliverables: hard block on offline, push to walter remote, remove backgrounding from auto-save, configure repos for push.
