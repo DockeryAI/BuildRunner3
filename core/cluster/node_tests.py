@@ -11,6 +11,7 @@ import re
 import time
 import json
 import uuid
+import signal
 import sqlite3
 import subprocess
 import threading
@@ -47,6 +48,7 @@ _last_results = {}
 _test_queue: queue.Queue = queue.Queue()
 _run_status: dict[str, dict] = {}   # run_id -> {status, project, queued_at, started_at, completed_at, result}
 _run_status_lock = threading.Lock()
+_inflight_projects: set[str] = set()  # Projects with queued/running tests (for dedup)
 
 # Track last tested SHA per project for git-based change detection
 _last_tested_sha: dict[str, str] = {}
@@ -262,6 +264,11 @@ def _ensure_repo(project_name: str) -> str:
             ["git", "init", "--bare", repo_path],
             capture_output=True, text=True, timeout=10
         )
+        # Allow pushes to update working directory (for non-bare repos)
+        subprocess.run(
+            ["git", "config", "receive.denyCurrentBranch", "updateInstead"],
+            capture_output=True, text=True, cwd=repo_path, timeout=5
+        )
         # Track provision in DB
         try:
             with _db_lock:
@@ -472,6 +479,49 @@ def _invalidate_test_map_entries(project: str, changed_files: list[str]):
 
 
 # --- Test Runners ---
+def _run_with_process_group(cmd: list[str], cwd: str, timeout: int, env: dict) -> tuple[str, str, int, bool]:
+    """Run command in a new process group. Kills entire group on timeout.
+
+    Returns: (stdout, stderr, returncode, timed_out)
+
+    This is the fix for zombie vitest/playwright processes:
+    - subprocess.run() timeout only kills the parent, not children
+    - By using start_new_session=True, we create a process group
+    - On timeout, we kill the entire group with os.killpg()
+    """
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=cwd,
+        env=env,
+        start_new_session=True,  # Creates new process group
+        text=True
+    )
+
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+        return stdout, stderr, proc.returncode, False
+    except subprocess.TimeoutExpired:
+        # Kill the entire process group, not just the parent
+        try:
+            pgid = os.getpgid(proc.pid)
+            os.killpg(pgid, signal.SIGTERM)
+            time.sleep(0.5)  # Brief grace period
+            os.killpg(pgid, signal.SIGKILL)  # Force kill stragglers
+        except (ProcessLookupError, PermissionError):
+            pass
+
+        # Clean up any remaining output
+        try:
+            stdout, stderr = proc.communicate(timeout=2)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            stdout, stderr = "", ""
+
+        return stdout, stderr, -1, True
+
+
 def _find_vitest_dir(repo_path: str) -> Optional[str]:
     """Find the directory containing vitest — root or first subdirectory with node_modules/.bin/vitest."""
     if Path(repo_path, "node_modules", ".bin", "vitest").exists():
@@ -498,73 +548,68 @@ def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> 
     start = time.time()
     result_file = f"/tmp/walter-vitest-{project_name}-{uuid.uuid4().hex[:8]}.json"
 
-    try:
-        cmd = [
-            "npx", "vitest", "run",
-            "--reporter=json",
-            f"--outputFile={result_file}",
-            "--passWithNoTests",
-        ]
-        # If we know which files changed, use --changed
-        if changed_files:
-            cmd.append("--changed")
+    cmd = [
+        "npx", "vitest", "run",
+        "--reporter=json",
+        f"--outputFile={result_file}",
+        "--passWithNoTests",
+    ]
+    # If we know which files changed, use --changed
+    if changed_files:
+        cmd.append("--changed")
 
-        result = subprocess.run(
-            cmd, capture_output=True, text=True,
-            cwd=vitest_dir, timeout=120,
-            env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
-        )
+    env = {**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
+    stdout, stderr, returncode, timed_out = _run_with_process_group(cmd, vitest_dir, timeout=120, env=env)
 
-        duration = int((time.time() - start) * 1000)
+    duration = int((time.time() - start) * 1000)
 
-        # Parse JSON results
-        if Path(result_file).exists():
-            try:
-                data = json.loads(Path(result_file).read_text())
-                return {
-                    "runner": "vitest",
-                    "project": project_name,
-                    "duration_ms": duration,
-                    "total": data.get("numTotalTests", 0),
-                    "passed": data.get("numPassedTests", 0),
-                    "failed": data.get("numFailedTests", 0),
-                    "skipped": data.get("numPendingTests", 0),
-                    "tests": [
-                        {
-                            "suite": tr.get("name", ""),
-                            "name": ar.get("title", ""),
-                            "full_name": ar.get("fullName", ""),
-                            "status": ar.get("status", "unknown"),
-                            "duration_ms": ar.get("duration", 0),
-                            "failure": "\n".join(ar.get("failureMessages", [])),
-                        }
-                        for tr in data.get("testResults", [])
-                        for ar in tr.get("assertionResults", [])
-                    ],
-                }
-            except (json.JSONDecodeError, KeyError):
-                pass
-            finally:
-                try:
-                    os.unlink(result_file)
-                except OSError:
-                    pass
-
-        # Fallback: parse exit code
-        return {
-            "runner": "vitest",
-            "project": project_name,
-            "duration_ms": duration,
-            "total": 0, "passed": 0,
-            "failed": 1 if result.returncode != 0 else 0,
-            "skipped": 0,
-            "tests": [],
-            "error": result.stderr[-500:] if result.returncode != 0 else None,
-        }
-    except subprocess.TimeoutExpired:
+    if timed_out:
         return {"runner": "vitest", "project": project_name, "error": "timeout", "failed": 1, "total": 1, "passed": 0, "skipped": 0, "tests": [], "duration_ms": 120000}
-    except Exception as e:
-        return {"runner": "vitest", "project": project_name, "error": str(e), "failed": 0, "total": 0, "passed": 0, "skipped": 0, "tests": [], "duration_ms": 0}
+
+    # Parse JSON results
+    if Path(result_file).exists():
+        try:
+            data = json.loads(Path(result_file).read_text())
+            return {
+                "runner": "vitest",
+                "project": project_name,
+                "duration_ms": duration,
+                "total": data.get("numTotalTests", 0),
+                "passed": data.get("numPassedTests", 0),
+                "failed": data.get("numFailedTests", 0),
+                "skipped": data.get("numPendingTests", 0),
+                "tests": [
+                    {
+                        "suite": tr.get("name", ""),
+                        "name": ar.get("title", ""),
+                        "full_name": ar.get("fullName", ""),
+                        "status": ar.get("status", "unknown"),
+                        "duration_ms": ar.get("duration", 0),
+                        "failure": "\n".join(ar.get("failureMessages", [])),
+                    }
+                    for tr in data.get("testResults", [])
+                    for ar in tr.get("assertionResults", [])
+                ],
+            }
+        except (json.JSONDecodeError, KeyError):
+            pass
+        finally:
+            try:
+                os.unlink(result_file)
+            except OSError:
+                pass
+
+    # Fallback: parse exit code
+    return {
+        "runner": "vitest",
+        "project": project_name,
+        "duration_ms": duration,
+        "total": 0, "passed": 0,
+        "failed": 1 if returncode != 0 else 0,
+        "skipped": 0,
+        "tests": [],
+        "error": stderr[-500:] if returncode != 0 else None,
+    }
 
 
 def _run_playwright(repo_path: str, project_name: str, changed_files: list[str]) -> dict:
@@ -584,63 +629,58 @@ def _run_playwright(repo_path: str, project_name: str, changed_files: list[str])
     start = time.time()
     result_file = f"/tmp/walter-playwright-{project_name}-{uuid.uuid4().hex[:8]}.json"
 
-    try:
-        cmd = [
-            "npx", "playwright", "test",
-            "--reporter=json",
-            "--workers=1",
-            "--project=webkit",  # lowest memory per research
-        ]
-        result = subprocess.run(
-            cmd, capture_output=True, text=True,
-            cwd=repo_path, timeout=300,
-            env={
-                **os.environ,
-                "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}",
-                "PLAYWRIGHT_JSON_OUTPUT_NAME": result_file,
-            }
-        )
+    cmd = [
+        "npx", "playwright", "test",
+        "--reporter=json",
+        "--workers=1",
+        "--project=webkit",  # lowest memory per research
+    ]
+    env = {
+        **os.environ,
+        "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": result_file,
+    }
+    stdout, stderr, returncode, timed_out = _run_with_process_group(cmd, repo_path, timeout=300, env=env)
 
-        duration = int((time.time() - start) * 1000)
+    duration = int((time.time() - start) * 1000)
 
-        if Path(result_file).exists():
-            try:
-                data = json.loads(Path(result_file).read_text())
-                tests = []
-                for suite in data.get("suites", []):
-                    _extract_pw_tests(suite, tests)
-
-                passed = sum(1 for t in tests if t["status"] == "passed")
-                failed = sum(1 for t in tests if t["status"] == "failed")
-                flaky = sum(1 for t in tests if t["status"] == "flaky")
-                skipped = sum(1 for t in tests if t["status"] == "skipped")
-
-                return {
-                    "runner": "playwright",
-                    "project": project_name,
-                    "duration_ms": duration,
-                    "total": len(tests),
-                    "passed": passed,
-                    "failed": failed,
-                    "flaky": flaky,
-                    "skipped": skipped,
-                    "tests": tests,
-                }
-            except (json.JSONDecodeError, KeyError):
-                pass
-
-        return {
-            "runner": "playwright",
-            "project": project_name,
-            "duration_ms": duration,
-            "total": 0, "passed": 0, "failed": 1 if result.returncode != 0 else 0,
-            "skipped": 0, "tests": [],
-            "error": result.stderr[-500:] if result.returncode != 0 else None,
-        }
-    except subprocess.TimeoutExpired:
+    if timed_out:
         return {"runner": "playwright", "project": project_name, "error": "timeout", "failed": 1, "total": 1, "passed": 0, "skipped": 0, "tests": [], "duration_ms": 300000}
-    except Exception as e:
-        return {"runner": "playwright", "project": project_name, "error": str(e), "failed": 0, "total": 0, "passed": 0, "skipped": 0, "tests": [], "duration_ms": 0}
+
+    if Path(result_file).exists():
+        try:
+            data = json.loads(Path(result_file).read_text())
+            tests = []
+            for suite in data.get("suites", []):
+                _extract_pw_tests(suite, tests)
+
+            passed = sum(1 for t in tests if t["status"] == "passed")
+            failed = sum(1 for t in tests if t["status"] == "failed")
+            flaky = sum(1 for t in tests if t["status"] == "flaky")
+            skipped = sum(1 for t in tests if t["status"] == "skipped")
+
+            return {
+                "runner": "playwright",
+                "project": project_name,
+                "duration_ms": duration,
+                "total": len(tests),
+                "passed": passed,
+                "failed": failed,
+                "flaky": flaky,
+                "skipped": skipped,
+                "tests": tests,
+            }
+        except (json.JSONDecodeError, KeyError):
+            pass
+
+    return {
+        "runner": "playwright",
+        "project": project_name,
+        "duration_ms": duration,
+        "total": 0, "passed": 0, "failed": 1 if returncode != 0 else 0,
+        "skipped": 0, "tests": [],
+        "error": stderr[-500:] if returncode != 0 else None,
+    }
 
 
 def _extract_pw_tests(suite: dict, tests: list, prefix: str = ""):
@@ -850,6 +890,9 @@ def _queue_consumer():
         finally:
             with _state_lock:
                 _running = False
+            # Clear inflight flag so new runs can be queued for this project
+            with _run_status_lock:
+                _inflight_projects.discard(project)
             _test_queue.task_done()
 
 
@@ -962,8 +1005,38 @@ def _watch_loop():
             print(f"Watch loop error: {e}")
 
 
+def _cleanup_stale_port(port: int = 8100):
+    """Kill any stale processes holding our port before startup.
+
+    This fixes the KeepAlive restart loop where launchd restarts Walter
+    but child processes from previous runs still hold the port.
+    """
+    try:
+        # Find PIDs using the port
+        result = subprocess.run(
+            ["lsof", "-ti", f":{port}"],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            pids = [int(p) for p in result.stdout.strip().split("\n") if p.isdigit()]
+            my_pid = os.getpid()
+            for pid in pids:
+                if pid != my_pid:
+                    try:
+                        os.kill(pid, signal.SIGTERM)
+                        print(f"Killed stale process {pid} on port {port}")
+                    except (ProcessLookupError, PermissionError):
+                        pass
+            time.sleep(0.5)  # Brief pause for port release
+    except Exception as e:
+        print(f"Port cleanup error: {e}")
+
+
 @app.on_event("startup")
 async def startup():
+    # Clean up any stale processes from previous runs holding our port
+    _cleanup_stale_port(8100)
+
     # Start queue consumer (single thread — serializes all test runs)
     consumer = threading.Thread(target=_queue_consumer, daemon=True, name="test-consumer")
     consumer.start()
@@ -1137,8 +1210,15 @@ async def provision_repo(project: str = ""):
 
 
 @app.post("/api/run")
-async def trigger_run(project: Optional[str] = None, trigger: str = "manual"):
-    """Enqueue a test run. Returns run_id for status polling."""
+def trigger_run(project: Optional[str] = None, trigger: str = "manual"):
+    """Enqueue a test run. Returns run_id for status polling.
+
+    Deduplicates: if a project already has a queued/running test, returns existing run_id
+    instead of flooding the queue with duplicates.
+
+    Note: This is a sync function (not async) so threading.Lock works correctly
+    for coordination with background threads.
+    """
     repos_path = Path(REPOS_DIR)
 
     # Auto-provision if project specified but repo directory doesn't exist
@@ -1146,6 +1226,7 @@ async def trigger_run(project: Optional[str] = None, trigger: str = "manual"):
         _ensure_repo(project)
 
     run_ids = []
+    skipped = []
 
     for repo_dir in repos_path.iterdir():
         if not repo_dir.is_dir() or repo_dir.name.startswith("."):
@@ -1154,10 +1235,23 @@ async def trigger_run(project: Optional[str] = None, trigger: str = "manual"):
             continue
 
         name = repo_dir.name
-        repo_path = str(repo_dir)
-        run_id = f"{trigger}-{uuid.uuid4().hex[:8]}"
+        repo_path_str = str(repo_dir)
 
+        # Dedupe: check if this project already has a queued/running test
         with _run_status_lock:
+            if name in _inflight_projects:
+                # Find existing run_id for response
+                existing = next(
+                    (rid for rid, s in _run_status.items()
+                     if s.get("project") == name and s.get("status") in ("queued", "running")),
+                    None
+                )
+                skipped.append({"project": name, "existing_run_id": existing})
+                continue
+
+            # No existing run — mark as inflight and create status
+            _inflight_projects.add(name)
+            run_id = f"{trigger}-{uuid.uuid4().hex[:8]}"
             _run_status[run_id] = {
                 "status": "queued", "project": name,
                 "queued_at": datetime.now().isoformat()
@@ -1166,16 +1260,21 @@ async def trigger_run(project: Optional[str] = None, trigger: str = "manual"):
         _test_queue.put({
             "run_id": run_id,
             "project": name,
-            "repo_path": repo_path,
+            "repo_path": repo_path_str,
             "trigger": trigger,
             "changed": [],  # manual runs test everything
         })
         run_ids.append(run_id)
 
-    if not run_ids:
+    if not run_ids and not skipped:
         return {"status": "error", "message": "no matching projects found"}
 
-    return {"status": "queued", "run_ids": run_ids, "run_id": run_ids[0]}
+    return {
+        "status": "queued",
+        "run_ids": run_ids,
+        "run_id": run_ids[0] if run_ids else skipped[0]["existing_run_id"],
+        "skipped": skipped if skipped else None,
+    }
 
 
 @app.get("/api/run/{run_id}/status")
