@@ -472,7 +472,7 @@ def _invalidate_test_map_entries(project: str, changed_files: list[str]):
 
 
 # --- Test Runners ---
-def _find_vitest_dir(repo_path: str) -> str | None:
+def _find_vitest_dir(repo_path: str) -> Optional[str]:
     """Find the directory containing vitest — root or first subdirectory with node_modules/.bin/vitest."""
     if Path(repo_path, "node_modules", ".bin", "vitest").exists():
         return repo_path

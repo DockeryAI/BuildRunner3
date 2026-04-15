@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 import { LoginPage } from './pages/LoginPage';
 
-test.describe('Authentication', () => {
+test.describe('@ui Authentication', () => {
   test('should display login page', async ({ page }) => {
     const loginPage = new LoginPage(page);
     // Use a fresh context without storageState for login page tests

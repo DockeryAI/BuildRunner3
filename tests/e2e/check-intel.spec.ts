@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 
-test('capture intel workspace', async ({ page }) => {
+test('@ui capture intel workspace', async ({ page }) => {
   await page.goto('http://localhost:4400');
   await page.waitForTimeout(1500);
 

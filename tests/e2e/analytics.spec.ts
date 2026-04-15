@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 
-test.describe('Analytics Dashboard', () => {
+test.describe('@ui Analytics Dashboard', () => {
   test('should display analytics components', async ({ analyticsPage }) => {
     await analyticsPage.expectComponentsVisible();
   });

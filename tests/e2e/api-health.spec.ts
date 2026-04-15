@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('API Health Check', () => {
+test.describe('@api API Health Check', () => {
   test('should have healthy backend API', async ({ request }) => {
     const response = await request.get('http://localhost:8080/health');
     expect(response.ok()).toBeTruthy();

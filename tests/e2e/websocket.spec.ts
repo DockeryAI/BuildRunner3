@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 
-test.describe('WebSocket Live Updates', () => {
+test.describe('@ui WebSocket Live Updates', () => {
   test('should establish WebSocket connection', async ({ dashboardPage }) => {
     await dashboardPage.expectWsConnected();
   });
