@@ -146,6 +146,8 @@ def _ensure_tables(conn: sqlite3.Connection):
 def record_build_phase(project: str, build_name: str, phase: str,
                        status: str, duration: float = None,
                        failure_reason: str = None, files_changed: list = None):
+    # Normalize project name to lowercase for consistent lookups
+    project = project.lower() if project else project
     conn = _get_db()
     conn.execute(
         """INSERT INTO build_history (project, build_name, phase, status,
@@ -159,6 +161,9 @@ def record_build_phase(project: str, build_name: str, phase: str,
 
 
 def get_build_history(project: str = None, limit: int = 50) -> list[dict]:
+    # Normalize project name to lowercase for consistent lookups
+    if project:
+        project = project.lower()
     conn = _get_db()
     if project:
         rows = conn.execute(
@@ -176,6 +181,8 @@ def get_build_history(project: str = None, limit: int = 50) -> list[dict]:
 
 def predict_phase(project: str, phase_pattern: str) -> dict:
     """Predict difficulty of a phase based on history of similar phases."""
+    # Normalize project name to lowercase for consistent lookups
+    project = project.lower() if project else project
     conn = _get_db()
     rows = conn.execute(
         """SELECT status, duration_seconds, failure_reason
