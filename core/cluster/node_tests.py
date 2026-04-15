@@ -1023,8 +1023,11 @@ async def get_results(project: Optional[str] = None, latest: bool = True):
             conn = _get_db()
             if latest:
                 if project:
+                    # Get latest run per runner (vitest, playwright) for this project
                     runs = conn.execute(
-                        "SELECT * FROM test_runs WHERE project = ? ORDER BY timestamp DESC LIMIT 1",
+                        """SELECT * FROM test_runs WHERE run_id IN (
+                             SELECT MAX(run_id) FROM test_runs WHERE project = ? GROUP BY runner
+                           ) ORDER BY timestamp DESC""",
                         (project,)
                     ).fetchall()
                 else:
