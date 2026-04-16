@@ -1,7 +1,7 @@
 # Build: walter-auto-provision
 
 **Created:** 2026-04-08
-**Status:** IN PROGRESS (Phase 4 pending)
+**Status:** ✅ BUILD COMPLETE (4/4 phases)
 **Deploy:** cluster — `~/.buildrunner/scripts/walter-setup.sh` redeploy to 10.0.1.102
 
 ## Overview
@@ -85,7 +85,7 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 
 ### Phase 4: /commit Hard Walter Gate + Direct Push _(added: 2026-04-15)_
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE
 **Goal:** Walter is a hard requirement for all commits — no graceful degradation, no silent skips
 **Files:**
 
@@ -97,10 +97,10 @@ Walter watches ~/repos/ but nothing creates repos there for new projects. 41 pro
 **Blocked by:** Phase 1, 2, 3 (all complete)
 **Deliverables:**
 
-- [ ] `/commit` Step 6.5: Replace graceful degradation with hard block — `WARN_OFFLINE` and `SKIP` both become `BLOCK`. Walter unreachable = commit aborted. Only `--force` overrides.
-- [ ] `/commit` Step 7: After `git push origin`, add walter remote setup (`git remote add walter ssh://10.0.1.102/~/repos/$PROJECT` if missing) + synchronous `git push walter HEAD:refs/heads/current --force-with-lease`. Push failure = commit aborted (unless `--force`).
-- [ ] `auto-save-session.sh`: Remove `&` backgrounding from walter push (line 135). Change `status=skipped reason=unreachable` to exit with error. Make auto-save path consistent with /commit — Walter is required, not optional.
-- [ ] Walter repos: Add `git config receive.denyCurrentBranch updateInstead` to `walter-seed.sh` provisioning and `/api/provision` endpoint so non-bare repos accept pushes and update working directories.
+- [x] `/commit` Step 6.5: Replace graceful degradation with hard block — `WARN_OFFLINE` and `SKIP` both become `BLOCK`. Walter unreachable = commit aborted. Only `--force` overrides.
+- [x] `/commit` Step 7: After `git push origin`, add walter remote setup (`git remote add walter ssh://10.0.1.102/~/repos/$PROJECT` if missing) + synchronous `git push walter HEAD:refs/heads/current --force-with-lease`. Push failure = commit aborted (unless `--force`).
+- [x] `auto-save-session.sh`: Remove `&` backgrounding from walter push (line 135). Change `status=skipped reason=unreachable` to exit with error. Make auto-save path consistent with /commit — Walter is required, not optional.
+- [x] Walter repos: Add `git config receive.denyCurrentBranch updateInstead` to `walter-seed.sh` provisioning and `/api/provision` endpoint so non-bare repos accept pushes and update working directories.
 
 **Success Criteria:** `/commit` with Walter offline → hard block with error message. `/commit` with Walter online → code pushed to both origin and walter, tests gate enforced. No code path treats Walter as optional.
 
