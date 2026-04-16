@@ -929,3 +929,36 @@
   WHY: SIGTERM allows clean shutdown. SIGKILL catches processes that ignore SIGTERM. Grace period prevents race between signal handling and force kill.
   CONTEXT: core/cluster/node_tests.py:500-507 _run_with_process_group()
 [2026-04-15T23:14:57Z] [AMENDMENT] Added Phase 4 to BUILD_walter-auto-provision: /commit hard Walter gate + direct push. Reason: Walter must always be available — no graceful degradation. 4 deliverables: hard block on offline, push to walter remote, remove backgrounding from auto-save, configure repos for push.
+
+[2026-04-16T08:29:00Z] [ROOT CAUSE] Adversarial review with --backend codex was running locally, not on Otis
+  WHY: The script's `--backend codex` block (lines 113-174) bypassed cluster dispatch entirely and exited after local run
+  CONTEXT: ~/.buildrunner/scripts/adversarial-review.sh, Website-Builder build
+
+[2026-04-16T08:29:15Z] [DECISION] Install Codex on Otis to enable distributed adversarial reviews
+  WHY: Codex CLI not found on Otis; installing via Homebrew (brew install --cask codex) gives Otis capability for independent code reviews
+  CONTEXT: Otis (10.0.1.103) parallel-builder node; codex-cli v0.121.0
+
+[2026-04-16T08:30:00Z] [ARCHITECTURE] Rewrote adversarial-review.sh --backend codex path to dispatch to Otis first, fallback local
+  WHY: Previously hard-coded to run locally only. New design: try Otis → if SSH works and codex exists, run remote; else fallback to local. Reduces latency, distributes load, preserves resilience.
+  CONTEXT: ~/.buildrunner/scripts/adversarial-review.sh lines 112-225; removed inline local-only code, added remote dispatch logic
+
+[2026-04-16T08:31:00Z] [CONSTRAINT] Codex requires --skip-git-repo-check flag when running in non-git directories
+  WHY: Codex enforces trusted directory checks; /tmp and other ephemeral dirs fail without the flag. Remote review runs in /tmp on Otis.
+  CONTEXT: codex exec commands on lines 175 (remote) and 202 (local fallback)
+
+[2026-04-16T08:31:30Z] [DECISION] Sync Codex auth.json and config.toml from Muddy to Otis
+  WHY: Codex requires OpenAI credentials and config; new Otis install had neither. SCP'ing from working local install ensures parity and unblocks auth.
+  CONTEXT: ~/.codex/auth.json → Otis:~/.codex/auth.json; ~/.codex/config.toml → Otis:~/.codex/config.toml
+
+[2026-04-16T08:31:45Z] [GOAL] Ensure adversarial reviews never run in wrong place by default
+  WHY: User discovered review was running locally instead of on Otis; this creates confusion and wastes cluster resources. New behavior: explicit dispatch with fallback, not accidental local runs.
+  CONTEXT: adversarial-review.sh; Website-Builder and all future projects using this script
+
+[2026-04-16T08:32:00Z] [PATTERN] Remote dispatch with graceful fallback for cluster-aware scripts
+  WHY: Otis may go down, auth may fail, network may flake. The pattern: try remote → log reason on failure → fallback → succeed anyway. Better than "node down = entire script fails".
+  CONTEXT: Established pattern for adversarial-review.sh; applicable to future dispatch scripts
+
+[2026-04-16T08:32:15Z] [TRADE-OFF] Codex on Otis adds complexity vs. purity of "Claude only" reviewers
+  WHY: Codex (GPT-4o) is a different model than Claude for adversarial review, but user explicitly requested fixing the dispatch. Accepting this as a use case: fast, independent code reviews via different LLM. Not replacing Claude reviews, complementing them.
+  CONTEXT: Adversarial review backend choice; user owns the trade-off
+
