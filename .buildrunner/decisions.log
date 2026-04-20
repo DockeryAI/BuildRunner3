@@ -1034,3 +1034,4 @@
   RECOVERY: Authored ~/.buildrunner/scripts/phase3-finish.sh — one-shot idempotent script installs NOPASSWD sudo, provisions /srv/jimmy/ with 13 subdirs, configures UFW (ports 22/8100/8101/8200/4400/4500 allow, 11434 denied), stops stale uvicorn procs, authors and installs 4 systemd units (br3-semantic/intel/staging + br3-git-mirrors.timer), migrates ~/.lockwood/ data to /srv/jimmy/{lancedb,memory}, triggers first br3-git-mirrors.service run.
   RESULT: 3 services active+enabled, 26 git mirrors cloned from Muddy ~/Projects/, all endpoints responsive (8200/health=200, 8100 POST /api/search=200 indexer-enabled-after-migration).
   CONTEXT: .buildrunner/builds/BUILD_cluster-max.md Phase 3 Status line + Status Table row updated
+[2026-04-20T22:45:00Z] PHASE-8 COMPLETE claude-sonnet-4-6 cache policy + summarizer live, cache hit rate measurable on next /review run (byte-identity test passes, breakpoints 1-2 stable), AGENTS.md updated
