@@ -1,8 +1,8 @@
 # Build: cluster-max
 
 **Created:** 2026-04-12
-**Last Revised:** 2026-04-20 (Phase 3 complete: Jimmy services live 8100/8101/8200, Lockwood data migrated, git mirrors active, nightly backup LaunchAgent loaded on Muddy; /srv/jimmy/ + UFW pending sudo provisioning)
-**Status:** Phases 0-3 + 6 Complete — Phase 4 Next
+**Last Revised:** 2026-04-20T21:59Z (Phase 3 FULLY complete: `/srv/jimmy/` layout provisioned, UFW active with correct ports, passwordless sudo configured on Jimmy, 26 git mirrors cloned + hourly timer enabled, 3 systemd services active)
+**Status:** Phases 0-3 + 6 Complete — Phase 8 Next (ship-order priority: cache engineering)
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
@@ -256,23 +256,23 @@ User never talks to a local model directly. Claude is the single voice.
 
 ### Status Table (All Phases — UPDATE ON EVERY PHASE COMPLETION)
 
-| #   | Status      | Completed         | 1-line summary                                                              |
-| --- | ----------- | ----------------- | --------------------------------------------------------------------------- |
-| 0   | completed   | 2026-04-20T18:53Z | AGENTS.md authored — router + 5 scopes, 11907 bytes                        |
-| 1   | completed   | 2026-04-20T18:49Z | Below dual-3090 NVLink 4×14.062 GB/s, BIOS 2101, RM1200x, 64GB DIMM       |
-| 2   | completed   | 2026-04-19T18:10Z | 70B dual-GPU 18.01 tok/s, NVLink 4×14.062 GB/s, same-model residency proven |
-| 3   | completed   | 2026-04-20T20:00Z | Jimmy services live (8100/8101/8200), Lockwood data migrated, git mirrors hourly, nightly backup scheduled |
-| 4   | not_started | —                 | 7-node priority + overflow dispatcher                                       |
-| 5   | not_started | —                 | Below skill integration                                                     |
-| 6   | completed   | 2026-04-20T19:30Z | OllamaRuntime registered, local_ready capability live                      |
-| 7   | REPLACED    | —                 | Was LiteLLM; now RuntimeRegistry shim + pre-commit hook                     |
-| 8   | not_started | —                 | Prompt cache + byte-identity test (SHIP FIRST of remaining)                 |
-| 9   | not_started | —                 | 2-way review + Opus arbiter (NOT 3-way, NOT r1)                             |
-| 10  | not_started | —                 | Auto-context hook + research redesign                                       |
-| 11  | not_started | —                 | Dashboard + Jimmy cutover + overflow wake/drain                             |
-| 12  | not_started | —                 | Multi-model context parity                                                  |
-| 13  | not_started | —                 | Shadow → cutover + flag flip                                                |
-| 14  | not_started | —                 | Self-maintenance crons                                                      |
+| #   | Status      | Completed         | 1-line summary                                                                                                               |
+| --- | ----------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 0   | completed   | 2026-04-20T18:53Z | AGENTS.md authored — router + 5 scopes, 11907 bytes                                                                          |
+| 1   | completed   | 2026-04-20T18:49Z | Below dual-3090 NVLink 4×14.062 GB/s, BIOS 2101, RM1200x, 64GB DIMM                                                          |
+| 2   | completed   | 2026-04-19T18:10Z | 70B dual-GPU 18.01 tok/s, NVLink 4×14.062 GB/s, same-model residency proven                                                  |
+| 3   | completed   | 2026-04-20T21:59Z | Jimmy systemd services live + enabled, /srv/jimmy/ layout + UFW provisioned, 26 git mirrors cloned, nightly backup scheduled |
+| 4   | not_started | —                 | 7-node priority + overflow dispatcher                                                                                        |
+| 5   | not_started | —                 | Below skill integration                                                                                                      |
+| 6   | completed   | 2026-04-20T19:30Z | OllamaRuntime registered, local_ready capability live                                                                        |
+| 7   | REPLACED    | —                 | Was LiteLLM; now RuntimeRegistry shim + pre-commit hook                                                                      |
+| 8   | not_started | —                 | Prompt cache + byte-identity test (SHIP FIRST of remaining)                                                                  |
+| 9   | not_started | —                 | 2-way review + Opus arbiter (NOT 3-way, NOT r1)                                                                              |
+| 10  | not_started | —                 | Auto-context hook + research redesign                                                                                        |
+| 11  | not_started | —                 | Dashboard + Jimmy cutover + overflow wake/drain                                                                              |
+| 12  | not_started | —                 | Multi-model context parity                                                                                                   |
+| 13  | not_started | —                 | Shadow → cutover + flag flip                                                                                                 |
+| 14  | not_started | —                 | Self-maintenance crons                                                                                                       |
 
 ### Recommended Ship Order (inside remaining phases)
 
@@ -777,7 +777,7 @@ Dual 3090 NVLink operational, Ollama serving 70B models at ≥18 tok/s, existing
 
 ### Phase 3: Jimmy Activation
 
-**Status:** not_started
+**Status:** ✅ COMPLETE (2026-04-20T21:59Z) — 3 systemd services active+enabled on Jimmy (semantic:8100, intel:8101, staging:8200), br3-git-mirrors.timer active (hourly); /srv/jimmy/ layout fully provisioned (11 subdirs); UFW active with 22/8100/8101/8200/4400/4500 open, 11434 confirmed closed; Lockwood data migrated to /srv/jimmy/{lancedb,memory}; 26 git mirrors cloned under /srv/jimmy/backups/git-mirrors/; nightly backup LaunchAgent loaded on Muddy; AGENTS.md deployed (sha256 match); passwordless sudo configured for byronhudson.
 **Codex model:** gpt-5.3-codex
 **Codex effort:** medium
 **Worktree:** `worktrees/wave2-msa2`
