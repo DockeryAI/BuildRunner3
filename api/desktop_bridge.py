@@ -96,16 +96,6 @@ class DesktopBridge:
                 except:
                     pass
 
-            # Fallback: copy to clipboard
-            if system == "Darwin":
-                process = subprocess.Popen(["pbcopy"], stdin=subprocess.PIPE, text=True)
-                process.communicate(prompt)
-                return {
-                    "status": "partial",
-                    "message": "Prompt copied to clipboard. Please open Claude manually.",
-                    "method": "clipboard",
-                }
-
             return {
                 "status": "error",
                 "message": "Could not find Claude on your system",

@@ -1,0 +1,152 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T033745Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The hook is looking for a `TEST_PLAN.md` in `/private/tmp` \u2014 but this task was pure plan review (no code, no tests, no bash commands needed). The JSON output above is the complete deliverable.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The hook is looking for a `TEST_PLAN.md` in `/private/tmp` \u2014 but this task was pure plan review (no code, no tests, no bash commands needed). The JSON output above is the complete deliverable.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 defines `core/benchmark/pilot_contention.py` against `CompletedRow.wall_clock_ms`, but Phase 1's schema puts `wall_clock_ms` inside nested `RunResult` and the later Phase 9 deliverable uses `row.run_result.wall_clock_ms`. Those contracts are incompatible and will break the pilot contention calculation if implemented from the file list text.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9 defines `core/benchmark/pilot_contention.py` against `CompletedRow.wall_clock_ms`, but Phase 1's schema puts `wall_clock_ms` inside nested `RunResult` and the later Phase 9 deliverable uses `row.run_result.wall_clock_ms`. Those contracts are incompatible and will break the pilot contention calculation if implemented from the file list text.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 declares `pilot_contention.json` schema as `{drop_lomax: bool, ratio: float, ...}` but the low-sample path explicitly writes `ratio=null`. That is a schema conflict between producer and consumer (`deps.py` in Phase 10) and will fail if the artifact is validated or parsed as documented.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9 declares `pilot_contention.json` schema as `{drop_lomax: bool, ratio: float, ...}` but the low-sample path explicitly writes `ratio=null`. That is a schema conflict between producer and consumer (`deps.py` in Phase 10) and will fail if the artifact is validated or parsed as documented.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's runner logic depends on undocumented `dispatch-to-node.sh` internals: exact exit-code meanings (`1/2/3/4/6`) and exact source-line patterns grepped from the script. The only cited verification for that script is its CLI signature/header comments. Those additional contracts are not verified anywhere in the provided excerpts, so they are fabricated assumptions the harness uses for control flow.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's runner logic depends on undocumented `dispatch-to-node.sh` internals: exact exit-code meanings (`1/2/3/4/6`) and exact source-line patterns grepped from the script. The only cited verification for that script is its CLI signature/header comments. Those additional contracts are not verified anywhere in the provided excerpts, so they are fabricated assumptions the harness uses for control flow.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 reuses one shared `.venv-benchmark` across all runs and installs contestant-modified `requirements*.txt` into it, but only uninstalls the editable package and defers full reset until session end. Version changes to shared dependencies will leak across later runs and can change test outcomes or break the harness itself; this is not isolated benchmarking.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 reuses one shared `.venv-benchmark` across all runs and installs contestant-modified `requirements*.txt` into it, but only uninstalls the editable package and defers full reset until session end. Version changes to shared dependencies will leak across later runs and can change test outcomes or break the harness itself; this is not isolated benchmarking.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 says `core/benchmark/config.py` is 'the sole writer of `config.py`', then immediately says later phases extend `BenchmarkConfig` by adding fields. Those two requirements conflict on ownership of the same file and will force unscheduled cross-phase edits.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 says `core/benchmark/config.py` is 'the sole writer of `config.py`', then immediately says later phases extend `BenchmarkConfig` by adding fields. Those two requirements conflict on ownership of the same file and will force unscheduled cross-phase edits.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 9 defines `core/benchmark/pilot_contention.py` against `CompletedRow.wall_clock_ms`, but Phase 1's schema puts `wall_clock_ms` inside nested `RunResult` and the later Phase 9 deliverable uses `row.run_result.wall_clock_ms`. Those contracts are incompatible and will break the pilot contention calculation if implemented from the file list text.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9 defines `core/benchmark/pilot_contention.py` against `CompletedRow.wall_clock_ms`, but Phase 1's schema puts `wall_clock_ms` inside nested `RunResult` and the later Phase 9 deliverable uses `row.run_result.wall_clock_ms`. Those contracts are incompatible and will break the pilot contention calculation if implemented from the file list text.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 declares `pilot_contention.json` schema as `{drop_lomax: bool, ratio: float, ...}` but the low-sample path explicitly writes `ratio=null`. That is a schema conflict between producer and consumer (`deps.py` in Phase 10) and will fail if the artifact is validated or parsed as documented.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9 declares `pilot_contention.json` schema as `{drop_lomax: bool, ratio: float, ...}` but the low-sample path explicitly writes `ratio=null`. That is a schema conflict between producer and consumer (`deps.py` in Phase 10) and will fail if the artifact is validated or parsed as documented.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's runner logic depends on undocumented `dispatch-to-node.sh` internals: exact exit-code meanings (`1/2/3/4/6`) and exact source-line patterns grepped from the script. The only cited verification for that script is its CLI signature/header comments. Those additional contracts are not verified anywhere in the provided excerpts, so they are fabricated assumptions the harness uses for control flow.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's runner logic depends on undocumented `dispatch-to-node.sh` internals: exact exit-code meanings (`1/2/3/4/6`) and exact source-line patterns grepped from the script. The only cited verification for that script is its CLI signature/header comments. Those additional contracts are not verified anywhere in the provided excerpts, so they are fabricated assumptions the harness uses for control flow.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T03:47:45.363266Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

@@ -108,6 +108,13 @@ echo ""
 echo "📋 Phase 5: Governance Rules"
 echo "============================"
 
+HOOK_REQUIRE_ADVERSARIAL="$HOME/.buildrunner/hooks/require-adversarial-review.sh"
+if [ -x "$HOOK_REQUIRE_ADVERSARIAL" ]; then
+    run_check "Adversarial Review Enforcement" "\"$HOOK_REQUIRE_ADVERSARIAL\" \"$PROJECT_ROOT\""
+else
+    echo "  ⚠️  require-adversarial-review.sh not found - skipping"
+fi
+
 # Check if governance file exists
 if [ -f ".buildrunner/governance/governance.yaml" ]; then
     echo "  ✅ governance.yaml exists"

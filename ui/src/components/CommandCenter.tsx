@@ -30,6 +30,32 @@ interface CommandResult {
   error?: string;
   timestamp: Date;
   command: string;
+  resolvedRuntime?: string;
+  runtimeSource?: string;
+}
+
+interface RuntimeResolution {
+  runtime: string;
+  source: string;
+}
+
+interface RuntimeHealth {
+  status: string;
+  last_seen?: string | null;
+  last_status?: string | null;
+  last_error_class?: string | null;
+  recent_runs?: number;
+}
+
+interface RuntimeHealthResponse {
+  runtimes: Record<string, RuntimeHealth>;
+  budget: {
+    status: string;
+    total_usd: number;
+    monthly_cap_usd: number;
+    remaining_usd: number;
+  };
+  command_support: Record<string, string[]>;
 }
 
 export function CommandCenter() {
@@ -37,8 +63,11 @@ export function CommandCenter() {
   const [history, setHistory] = useState<CommandResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [projectName, setProjectName] = useState('');
-  const [projectPath, setProjectPath] = useState('/Users/byronhudson/Projects/BuildRunner3');
+  const [projectPath] = useState('/Users/byronhudson/Projects/BuildRunner3');
   const [lastInitProject, setLastInitProject] = useState<string | null>(null);
+  const [runtime, setRuntime] = useState<'claude' | 'codex'>('claude');
+  const [resolvedRuntime, setResolvedRuntime] = useState<RuntimeResolution | null>(null);
+  const [runtimeHealth, setRuntimeHealth] = useState<RuntimeHealthResponse | null>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
   // Common commands
@@ -98,14 +127,17 @@ export function CommandCenter() {
         // Fall back to web API
         const response = await axios.post(`${API_URL}/api/execute`, {
           command: cmd,
-          cwd: projectPath
+          cwd: projectPath,
+          runtime,
         });
 
         result = {
           command: cmd,
           output: response.data.output || response.data,
           error: response.data.error,
-          timestamp: new Date()
+          timestamp: new Date(),
+          resolvedRuntime: response.data.resolved_runtime,
+          runtimeSource: response.data.runtime_source,
         };
       }
 
@@ -140,6 +172,39 @@ export function CommandCenter() {
     }
   }, [history]);
 
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get(`${API_URL}/api/runtime/resolve`, { params: { cwd: projectPath, runtime } })
+      .then((response) => {
+        if (!cancelled) setResolvedRuntime(response.data);
+      })
+      .catch(() => {
+        if (!cancelled) setResolvedRuntime(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [projectPath, runtime]);
+
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get(`${API_URL}/api/runtime/health`)
+      .then((response) => {
+        if (!cancelled) setRuntimeHealth(response.data);
+      })
+      .catch(() => {
+        if (!cancelled) setRuntimeHealth(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [history.length]);
+
+  const selectedRuntimeHealth = runtimeHealth?.runtimes?.[runtime];
+  const selectedSupport = runtimeHealth?.command_support?.[runtime === 'claude' ? 'claude_only' : 'codex_ready'] || [];
+
   return (
     <div className="command-center">
       <div className="header">
@@ -157,6 +222,33 @@ export function CommandCenter() {
 
       <div className="quick-actions">
         <h3>Quick Actions</h3>
+        <div className="action-group">
+          <select value={runtime} onChange={(e) => setRuntime(e.target.value as 'claude' | 'codex')} className="project-input">
+            <option value="claude">Claude</option>
+            <option value="codex">Codex</option>
+          </select>
+          <div className="subtitle">
+            {resolvedRuntime ? `Resolved runtime: ${resolvedRuntime.runtime} (${resolvedRuntime.source})` : 'Runtime resolution unavailable'}
+          </div>
+          {selectedRuntimeHealth && (
+            <div className="subtitle">
+              Runtime health: {selectedRuntimeHealth.status}
+              {selectedRuntimeHealth.last_status ? ` · last=${selectedRuntimeHealth.last_status}` : ''}
+              {typeof selectedRuntimeHealth.recent_runs === 'number' ? ` · runs=${selectedRuntimeHealth.recent_runs}` : ''}
+              {runtimeHealth?.budget ? ` · budget=${runtimeHealth.budget.total_usd.toFixed(2)}/${runtimeHealth.budget.monthly_cap_usd.toFixed(2)} USD` : ''}
+            </div>
+          )}
+          {runtime === 'codex' && (
+            <div className="subtitle">
+              Codex remains bounded/workflow-gated. Remote Codex is not promoted.
+            </div>
+          )}
+          {runtime === 'codex' && selectedSupport.length > 0 && (
+            <div className="subtitle">
+              Direct codex-ready commands: {selectedSupport.join(', ')}
+            </div>
+          )}
+        </div>
         <div className="action-buttons">
           <div className="action-group">
             <input
@@ -289,6 +381,12 @@ export function CommandCenter() {
                 <span className="prompt">BR ❯</span>
                 <span className="command-text">{result.command}</span>
               </div>
+              {(result.resolvedRuntime || result.runtimeSource) && (
+                <div className="command-runtime-meta">
+                  {result.resolvedRuntime || 'unknown'}
+                  {result.runtimeSource ? ` · ${result.runtimeSource}` : ''}
+                </div>
+              )}
               {result.output && (
                 <pre className="output">{result.output}</pre>
               )}

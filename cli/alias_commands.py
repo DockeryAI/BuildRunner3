@@ -9,6 +9,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from core.alias_manager import alias_manager
+from core.runtime.config import RuntimeConfigError, apply_runtime_selection, resolve_runtime_selection
 
 console = Console()
 alias_app = typer.Typer(help="Manage project aliases")
@@ -67,6 +68,11 @@ def list_aliases():
 @alias_app.command("jump")
 def jump_to_alias(
     alias: str = typer.Argument(..., help="Alias name"),
+    runtime: str | None = typer.Option(
+        None,
+        "--runtime",
+        help="Override runtime when launching from alias (claude or codex)",
+    ),
 ):
     """
     Jump to a project by alias and start Claude Code
@@ -74,9 +80,7 @@ def jump_to_alias(
     This command:
     1. Resolves the alias to a project path
     2. Changes to that directory
-    3. Generates a project status prompt
-    4. Copies it to clipboard
-    5. Launches Claude Code with --dangerously-skip-permissions
+    3. Launches Claude Code with --dangerously-skip-permissions
     """
     project_path = alias_manager.get_alias(alias)
 
@@ -94,34 +98,38 @@ def jump_to_alias(
 
     console.print(f"Jumping to: {project_path}", style="cyan")
 
-    # Generate project status prompt
-    prompt = alias_manager.get_project_status_prompt(project_path)
-
-    # Copy prompt to clipboard
-    try:
-        subprocess.run(["pbcopy"], input=prompt.encode(), check=True, capture_output=True)
-        console.print("✓ Project prompt copied to clipboard", style="green")
-    except subprocess.CalledProcessError:
-        console.print("⚠ Could not copy to clipboard (pbcopy not available)", style="yellow")
-    except FileNotFoundError:
-        console.print("⚠ Could not copy to clipboard (pbcopy not found)", style="yellow")
-
     # Change directory and launch Claude Code
     os.chdir(project_path)
     console.print(f"✓ Changed directory to: {os.getcwd()}", style="green")
 
-    # Launch Claude Code
-    console.print("Launching Claude Code...", style="cyan")
     try:
-        subprocess.run(
-            ["claude", "--dangerously-skip-permissions", project_path],
-            check=False,  # Don't error if Claude Code exits normally
-        )
+        resolution = resolve_runtime_selection(explicit_runtime=runtime, project_root=project_path)
+        apply_runtime_selection(resolution)
+    except RuntimeConfigError as exc:
+        console.print(f"Error: {exc}", style="red")
+        raise typer.Exit(1)
+
+    # Launch selected runtime
+    launch_runtime = resolution.runtime
+    if launch_runtime == "codex":
+        console.print("Launching Codex...", style="cyan")
+    else:
+        console.print("Launching Claude Code...", style="cyan")
+    try:
+        if launch_runtime == "codex":
+            subprocess.run(["codex"], check=False)
+        else:
+            subprocess.run(
+                ["claude", "--dangerously-skip-permissions", project_path],
+                check=False,  # Don't error if Claude Code exits normally
+            )
     except FileNotFoundError:
-        console.print("\nError: 'claude' command not found", style="red")
-        console.print("Install Claude Code CLI first: https://code.claude.ai", style="yellow")
+        console.print(f"\nError: '{launch_runtime}' command not found", style="red")
+        if launch_runtime == "claude":
+            console.print("Install Claude Code CLI first: https://code.claude.ai", style="yellow")
+        else:
+            console.print("Install Codex CLI first: https://github.com/openai/codex", style="yellow")
         console.print(f"\nYou can manually navigate to: {project_path}", style="cyan")
-        console.print("And paste the clipboard content into Claude.", style="cyan")
         raise typer.Exit(1)
 
 

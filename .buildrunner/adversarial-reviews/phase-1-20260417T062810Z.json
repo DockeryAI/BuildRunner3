@@ -1,0 +1,152 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T061713Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. Here are the findings from the adversarial analysis of the build plan:\n\n**1 Blocker:**\n\n- **No phase wires judging or probe-scheduling into the orchestrator.** Phase 5 explicitly integrates the scorer into `Runner` via dependency injection, but no equivalent step exists for `judge.judge_pair()` or the recognition probe. Phase 9 assumes `br benchmark run --pilot` produces judge verdicts and probe scores automatically, but judging and probing are only described as standalon",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. Here are the findings from the adversarial analysis of the build plan:\n\n**1 Blocker:**\n\n- **No phase wires judging or probe-scheduling into the orchestrator.** Phase 5 explicitly integrates the scorer into `Runner` via dependency injection, but no equivalent step exists for `judge.judge_pair()` or the recognition probe. Phase 9 assumes `br benchmark run --pilot` produces judge verdicts and probe scores automatically, but judging and probing are only described as standalon",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1/4/6 make `GET https://openrouter.ai/api/v1/models` plus `data[].id` a hard startup dependency in `core/benchmark/deps.py`, but the verified dependency contract only confirms `POST https://openrouter.ai/api/v1/chat/completions`. The `/models` endpoint and response shape are not verified anywhere in the prompt, so the benchmark can fail at preflight on an unproven API.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1/4/6 make `GET https://openrouter.ai/api/v1/models` plus `data[].id` a hard startup dependency in `core/benchmark/deps.py`, but the verified dependency contract only confirms `POST https://openrouter.ai/api/v1/chat/completions`. The `/models` endpoint and response shape are not verified anywhere in the prompt, so the benchmark can fail at preflight on an unproven API.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 soft-preflight and Phase 2 degraded selector logic depend on `Below GET /health`, but the only verified Below contract is `POST /api/classify`. Using an unverified health endpoint to decide reachability can incorrectly force the DeepSeek fallback or `fallback_fullstack` path even when Below classification still works.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 soft-preflight and Phase 2 degraded selector logic depend on `Below GET /health`, but the only verified Below contract is `POST /api/classify`. Using an unverified health endpoint to decide reachability can incorrectly force the DeepSeek fallback or `fallback_fullstack` path even when Below classification still works.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's file ownership contradicts its own implementation plan: `core/benchmark/runner.py` is declared as 'no behavioral change' and only a documentation-comment update, but the Phase 5 deliverables require new runner behavior (`_detect_baseline_drift`, `_detect_venv_drift`, shared-venv flocking, editable-install cleanup, pre-run baseline reset, end-of-session venv recreation). Those required behaviors have no declared implementation owner, so the scoring/isolation path is internally inconsistent.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's file ownership contradicts its own implementation plan: `core/benchmark/runner.py` is declared as 'no behavioral change' and only a documentation-comment update, but the Phase 5 deliverables require new runner behavior (`_detect_baseline_drift`, `_detect_venv_drift`, shared-venv flocking, editable-install cleanup, pre-run baseline reset, end-of-session venv recreation). Those required behaviors have no declared implementation owner, so the scoring/isolation path is internally inconsistent.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 resume reconstruction uses `selector.selected_phases` when rebuilding `pending_queue`, but Phase 2's defined selector surface only specifies `select()`, `select_with_buffer()`, `get_phase()`, `redraw()`, `pool_survivors_after_paraphrase_equivalence`, and `replacement_phases_enqueued_by_redraw`. `selector.selected_phases` is never defined in the plan, so resume depends on an undefined API.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 resume reconstruction uses `selector.selected_phases` when rebuilding `pending_queue`, but Phase 2's defined selector surface only specifies `select()`, `select_with_buffer()`, `get_phase()`, `redraw()`, `pool_survivors_after_paraphrase_equivalence`, and `replacement_phases_enqueued_by_redraw`. `selector.selected_phases` is never defined in the plan, so resume depends on an undefined API.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 says `.buildrunner/benchmarks/layer-cache.json` and `.buildrunner/benchmarks/layer_provenance.json` need no locking because selector runs are 'serialized by the operator's CLI invocation', but the same plan has `selector.redraw()` being called from live Phase 3/4 execution while other benchmark commands can also run. That leaves layer-cache/provenance writes exposed to concurrent-process races and non-deterministic stratification.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 says `.buildrunner/benchmarks/layer-cache.json` and `.buildrunner/benchmarks/layer_provenance.json` need no locking because selector runs are 'serialized by the operator's CLI invocation', but the same plan has `selector.redraw()` being called from live Phase 3/4 execution while other benchmark commands can also run. That leaves layer-cache/provenance writes exposed to concurrent-process races and non-deterministic stratification.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1/4/6 make `GET https://openrouter.ai/api/v1/models` plus `data[].id` a hard startup dependency in `core/benchmark/deps.py`, but the verified dependency contract only confirms `POST https://openrouter.ai/api/v1/chat/completions`. The `/models` endpoint and response shape are not verified anywhere in the prompt, so the benchmark can fail at preflight on an unproven API.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1/4/6 make `GET https://openrouter.ai/api/v1/models` plus `data[].id` a hard startup dependency in `core/benchmark/deps.py`, but the verified dependency contract only confirms `POST https://openrouter.ai/api/v1/chat/completions`. The `/models` endpoint and response shape are not verified anywhere in the prompt, so the benchmark can fail at preflight on an unproven API.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's file ownership contradicts its own implementation plan: `core/benchmark/runner.py` is declared as 'no behavioral change' and only a documentation-comment update, but the Phase 5 deliverables require new runner behavior (`_detect_baseline_drift`, `_detect_venv_drift`, shared-venv flocking, editable-install cleanup, pre-run baseline reset, end-of-session venv recreation). Those required behaviors have no declared implementation owner, so the scoring/isolation path is internally inconsistent.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's file ownership contradicts its own implementation plan: `core/benchmark/runner.py` is declared as 'no behavioral change' and only a documentation-comment update, but the Phase 5 deliverables require new runner behavior (`_detect_baseline_drift`, `_detect_venv_drift`, shared-venv flocking, editable-install cleanup, pre-run baseline reset, end-of-session venv recreation). Those required behaviors have no declared implementation owner, so the scoring/isolation path is internally inconsistent.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 resume reconstruction uses `selector.selected_phases` when rebuilding `pending_queue`, but Phase 2's defined selector surface only specifies `select()`, `select_with_buffer()`, `get_phase()`, `redraw()`, `pool_survivors_after_paraphrase_equivalence`, and `replacement_phases_enqueued_by_redraw`. `selector.selected_phases` is never defined in the plan, so resume depends on an undefined API.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 resume reconstruction uses `selector.selected_phases` when rebuilding `pending_queue`, but Phase 2's defined selector surface only specifies `select()`, `select_with_buffer()`, `get_phase()`, `redraw()`, `pool_survivors_after_paraphrase_equivalence`, and `replacement_phases_enqueued_by_redraw`. `selector.selected_phases` is never defined in the plan, so resume depends on an undefined API.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T06:28:10.182525Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 1
+}

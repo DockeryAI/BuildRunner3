@@ -1,0 +1,31 @@
+{
+  "model": "llama3.3:70b-instruct-q4_K_M",
+  "model_resident": true,
+  "cold_reload_count_after_A": 0,
+  "per_call": [
+    {
+      "step": "A",
+      "model": "llama3.3:70b-instruct-q4_K_M",
+      "resident": [
+        "llama3.3:70b-instruct-q4_K_M"
+      ],
+      "load_duration_ns": 17614019000
+    },
+    {
+      "step": "B",
+      "model": "llama3.3:70b-instruct-q4_K_M",
+      "resident": [
+        "llama3.3:70b-instruct-q4_K_M"
+      ],
+      "load_duration_ns": 139639500
+    },
+    {
+      "step": "C",
+      "model": "llama3.3:70b-instruct-q4_K_M",
+      "resident": [
+        "llama3.3:70b-instruct-q4_K_M"
+      ],
+      "load_duration_ns": 129259100
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T074505Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 states `paraphrased_prompt_native: Optional[str] = None` and `paraphrased_prompt_neutral: Optional[str] = None` are 'pre-declared on the PhaseSpec pydantic model in Phase 1's models.py', but Phase 1's PhaseSpec deliverable lists only `build_file`, `phase_number`, `phase_id`, `layer`, `layer_source`, and `checklist_items`. Phase 1 also states 'no later phase adds fields' to any schema. These two fields are missing from Phase 1's declaration, so Phase 3's paraphrase-caching mechanism has no schema to write into.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 states `paraphrased_prompt_native: Optional[str] = None` and `paraphrased_prompt_neutral: Optional[str] = None` are 'pre-declared on the PhaseSpec pydantic model in Phase 1's models.py', but Phase 1's PhaseSpec deliverable lists only `build_file`, `phase_number`, `phase_id`, `layer`, `layer_source`, and `checklist_items`. Phase 1 also states 'no later phase adds fields' to any schema. These two fields are missing from Phase 1's declaration, so Phase 3's paraphrase-caching mechanism has no schema to write into.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 calls `selector.set_paraphrase(phase_id, sub_study, prompt)` and describes it as 'a new Phase 2 selector method added to Phase 2's file list's selector API surface'. However, Phase 2's Selector API Surface deliverable explicitly enumerates only: `select`, `select_with_buffer`, `pool_survivors_after_paraphrase_equivalence`, `replacement_phases_enqueued_by_redraw`, `get_phase`, `selected_phase_ids`, `surviving_phase_count`, and `redraw`. `set_paraphrase` is not listed in Phase 2's deliverables, files, or success criteria \u2014 it will not be implemented.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 calls `selector.set_paraphrase(phase_id, sub_study, prompt)` and describes it as 'a new Phase 2 selector method added to Phase 2's file list's selector API surface'. However, Phase 2's Selector API Surface deliverable explicitly enumerates only: `select`, `select_with_buffer`, `pool_survivors_after_paraphrase_equivalence`, `replacement_phases_enqueued_by_redraw`, `get_phase`, `selected_phase_ids`, `surviving_phase_count`, and `redraw`. `set_paraphrase` is not listed in Phase 2's deliverables, files, or success criteria \u2014 it will not be implemented.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's `cli_run.py` MODIFY says 'construct Runner(scorer=BenchmarkScorer(), judge=BenchmarkJudge(), probe_scheduler=ProbeScheduler())' with no arguments to ProbeScheduler. But Phase 6's `cli_probe.py` MODIFY constructs it as `ProbeScheduler(config, registry)` with two required positional args. The zero-arg construction in cli_run.py will raise TypeError at runtime.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's `cli_run.py` MODIFY says 'construct Runner(scorer=BenchmarkScorer(), judge=BenchmarkJudge(), probe_scheduler=ProbeScheduler())' with no arguments to ProbeScheduler. But Phase 6's `cli_probe.py` MODIFY constructs it as `ProbeScheduler(config, registry)` with two required positional args. The zero-arg construction in cli_run.py will raise TypeError at runtime.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's PhaseSpec does not declare a top-level `declared_files` field, yet Phase 2's layer assignment logic operates on 'the phase's declared-files list' as a phase-level attribute, and Phase 5's file precision/recall scoring compares against `phase_spec.declared_files`. The field exists only on each ChecklistItem, not on PhaseSpec itself \u2014 either PhaseSpec needs a top-level field or every consumer must aggregate from checklist items, but neither path is specified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's PhaseSpec does not declare a top-level `declared_files` field, yet Phase 2's layer assignment logic operates on 'the phase's declared-files list' as a phase-level attribute, and Phase 5's file precision/recall scoring compares against `phase_spec.declared_files`. The field exists only on each ChecklistItem, not on PhaseSpec itself \u2014 either PhaseSpec needs a top-level field or every consumer must aggregate from checklist items, but neither path is specified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's deblind classifier uses `StratifiedGroupKFold` and claims it was 'added in 0.24'. It was actually added in scikit-learn 1.0 (not 0.24). The pin `scikit-learn>=1.4` covers this, but the version claim is wrong and could mislead someone checking compatibility.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's deblind classifier uses `StratifiedGroupKFold` and claims it was 'added in 0.24'. It was actually added in scikit-learn 1.0 (not 0.24). The pin `scikit-learn>=1.4` covers this, but the version claim is wrong and could mislead someone checking compatibility.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's shared `.venv-benchmark/` with `pip install -e <clone_path>` runs the contestant's build backend (setup.py/pyproject.toml hooks) on the orchestrator machine (Muddy) with full filesystem access. A contestant model that modifies pyproject.toml to add a malicious build hook executes arbitrary code outside any sandbox. The plan acknowledges this ('contestants are trusted') but the trust boundary is the two LLMs under test, which are the exact systems being evaluated for correctness.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's shared `.venv-benchmark/` with `pip install -e <clone_path>` runs the contestant's build backend (setup.py/pyproject.toml hooks) on the orchestrator machine (Muddy) with full filesystem access. A contestant model that modifies pyproject.toml to add a malicious build hook executes arbitrary code outside any sandbox. The plan acknowledges this ('contestants are trusted') but the trust boundary is the two LLMs under test, which are the exact systems being evaluated for correctness.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan uses `/tmp/br3-bench-<run_id>/` for clones on macOS. macOS periodically cleans `/tmp` (via `/usr/sbin/periodic daily` and reboot). A full benchmark run spanning 18-48 hours across multiple overnight windows risks clone directories being swept between windows. The `refs/heads/bench/<run_id>` anchor in the parent repo preserves the commit, but any in-progress clone could be lost.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan uses `/tmp/br3-bench-<run_id>/` for clones on macOS. macOS periodically cleans `/tmp` (via `/usr/sbin/periodic daily` and reboot). A full benchmark run spanning 18-48 hours across multiple overnight windows risks clone directories being swept between windows. The `refs/heads/bench/<run_id>` anchor in the parent repo preserves the commit, but any in-progress clone could be lost.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's replacement-phase scheduler resume logic says `pending = [selector.get_phase(pid) for pid in selector.selected_phase_ids if pid not in terminal_phase_set]` \u2014 but `selected_phase_ids` includes phases that were dropped and replaced via `redraw`. A dropped phase's pid is still in `selected_phase_ids` (it was drawn), and if its replacement failed paraphrase too, both the dropped original and the failed replacement could appear as non-terminal. The filter `pid not in terminal_phase_set` should also exclude `pid in dropped_phase_set`, but the resume logic doesn't mention checking `is_phase_dropped`.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's replacement-phase scheduler resume logic says `pending = [selector.get_phase(pid) for pid in selector.selected_phase_ids if pid not in terminal_phase_set]` \u2014 but `selected_phase_ids` includes phases that were dropped and replaced via `redraw`. A dropped phase's pid is still in `selected_phase_ids` (it was drawn), and if its replacement failed paraphrase too, both the dropped original and the failed replacement could appear as non-terminal. The filter `pid not in terminal_phase_set` should also exclude `pid in dropped_phase_set`, but the resume logic doesn't mention checking `is_phase_dropped`.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `requirements-benchmark.txt` pins `typer>=0.9,<1.0` but the existing `cli/main.py` already uses Typer (lines 54-62 show `app = typer.Typer(...)`). If the project's own Typer version (from requirements-api.txt or pyproject.toml) is >=1.0, the benchmark venv's `<1.0` pin will conflict during the two-pass install since requirements-benchmark.txt runs last and wins. This would downgrade Typer and potentially break any >=1.0 API the project uses.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's `requirements-benchmark.txt` pins `typer>=0.9,<1.0` but the existing `cli/main.py` already uses Typer (lines 54-62 show `app = typer.Typer(...)`). If the project's own Typer version (from requirements-api.txt or pyproject.toml) is >=1.0, the benchmark venv's `<1.0` pin will conflict during the two-pass install since requirements-benchmark.txt runs last and wins. This would downgrade Typer and potentially break any >=1.0 API the project uses.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's contention measurement filters registry by `session_id` to isolate pilot rows. But `DroppedRow` and `RecognitionRow` are phase-scoped and do NOT carry `session_id` (Phase 1 schema). If a concurrent non-pilot `br benchmark run` drops a phase that the pilot also selected, the pilot's contention measurement won't see the drop \u2014 it only reads `CompletedRow` rows. This is fine for contention but could cause the pilot to attempt runs on a dropped phase.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's contention measurement filters registry by `session_id` to isolate pilot rows. But `DroppedRow` and `RecognitionRow` are phase-scoped and do NOT carry `session_id` (Phase 1 schema). If a concurrent non-pilot `br benchmark run` drops a phase that the pilot also selected, the pilot's contention measurement won't see the drop \u2014 it only reads `CompletedRow` rows. This is fine for contention but could cause the pilot to attempt runs on a dropped phase.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "No error handling specified for the case where `git clone --local --shared` fails because the parent repo is mid-gc or mid-repack. With 360 runs over 18-48 hours, git maintenance operations are likely to overlap with at least one clone attempt.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "No error handling specified for the case where `git clone --local --shared` fails because the parent repo is mid-gc or mid-repack. With 360 runs over 18-48 hours, git maintenance operations are likely to overlap with at least one clone attempt.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's runner caches paraphrases via `selector.set_paraphrase(phase_id, sub_study, prompt)`, but Phase 2's declared selector API surface never defines `set_paraphrase` and no later phase adds it. `core/benchmark/runner.py` therefore depends on an API the plan never schedules into `core/benchmark/selector.py`.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's runner caches paraphrases via `selector.set_paraphrase(phase_id, sub_study, prompt)`, but Phase 2's declared selector API surface never defines `set_paraphrase` and no later phase adds it. `core/benchmark/runner.py` therefore depends on an API the plan never schedules into `core/benchmark/selector.py`.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 persists `paraphrased_prompt_native` and `paraphrased_prompt_neutral` inside `selector_cache[phase_id]` as part of serialized `PhaseSpec`, but Phase 1's declared `PhaseSpec` schema does not include either field. That creates a cross-phase schema conflict between `core/benchmark/models.py` and the Phase 3 cache/write path.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 persists `paraphrased_prompt_native` and `paraphrased_prompt_neutral` inside `selector_cache[phase_id]` as part of serialized `PhaseSpec`, but Phase 1's declared `PhaseSpec` schema does not include either field. That creates a cross-phase schema conflict between `core/benchmark/models.py` and the Phase 3 cache/write path.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's judging flow calls `registry.claim_judge(pair_key, worker_id)` and relies on pair-level judge-lock operations, but `core/benchmark/registry.py` is owned by Phase 1 and the plan never assigns any phase to implement `claim_judge` / related judge-claim methods there. The Phase 6 runner wiring therefore depends on registry APIs that are not scheduled to exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's judging flow calls `registry.claim_judge(pair_key, worker_id)` and relies on pair-level judge-lock operations, but `core/benchmark/registry.py` is owned by Phase 1 and the plan never assigns any phase to implement `claim_judge` / related judge-claim methods there. The Phase 6 runner wiring therefore depends on registry APIs that are not scheduled to exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 says training-cutoff stratification uses `training_cutoffs.py` 'constants', while the repository invariants and preconditions explicitly require `core/benchmark/training_cutoffs.py` to read cutoff values from `.buildrunner/benchmarks/config.yaml` via `load_config()` with no hardcoded dates. Those are conflicting implementation contracts for the same module.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 says training-cutoff stratification uses `training_cutoffs.py` 'constants', while the repository invariants and preconditions explicitly require `core/benchmark/training_cutoffs.py` to read cutoff values from `.buildrunner/benchmarks/config.yaml` via `load_config()` with no hardcoded dates. Those are conflicting implementation contracts for the same module.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The standalone `br benchmark select` path is specified as a minimal pre-run command, but Phase 1/2 also say degraded selector behavior consults the per-session `preflight_below_unreachable` session-state flag. `select` can run before any benchmark session exists, so tying its behavior to session-state creates an undefined/stale-state path for `core/benchmark/cli_select.py` / `core/benchmark/selector.py`.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The standalone `br benchmark select` path is specified as a minimal pre-run command, but Phase 1/2 also say degraded selector behavior consults the per-session `preflight_below_unreachable` session-state flag. `select` can run before any benchmark session exists, so tying its behavior to session-state creates an undefined/stale-state path for `core/benchmark/cli_select.py` / `core/benchmark/selector.py`.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3 states `paraphrased_prompt_native: Optional[str] = None` and `paraphrased_prompt_neutral: Optional[str] = None` are 'pre-declared on the PhaseSpec pydantic model in Phase 1's models.py', but Phase 1's PhaseSpec deliverable lists only `build_file`, `phase_number`, `phase_id`, `layer`, `layer_source`, and `checklist_items`. Phase 1 also states 'no later phase adds fields' to any schema. These two fields are missing from Phase 1's declaration, so Phase 3's paraphrase-caching mechanism has no schema to write into.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 states `paraphrased_prompt_native: Optional[str] = None` and `paraphrased_prompt_neutral: Optional[str] = None` are 'pre-declared on the PhaseSpec pydantic model in Phase 1's models.py', but Phase 1's PhaseSpec deliverable lists only `build_file`, `phase_number`, `phase_id`, `layer`, `layer_source`, and `checklist_items`. Phase 1 also states 'no later phase adds fields' to any schema. These two fields are missing from Phase 1's declaration, so Phase 3's paraphrase-caching mechanism has no schema to write into.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 calls `selector.set_paraphrase(phase_id, sub_study, prompt)` and describes it as 'a new Phase 2 selector method added to Phase 2's file list's selector API surface'. However, Phase 2's Selector API Surface deliverable explicitly enumerates only: `select`, `select_with_buffer`, `pool_survivors_after_paraphrase_equivalence`, `replacement_phases_enqueued_by_redraw`, `get_phase`, `selected_phase_ids`, `surviving_phase_count`, and `redraw`. `set_paraphrase` is not listed in Phase 2's deliverables, files, or success criteria \u2014 it will not be implemented.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 calls `selector.set_paraphrase(phase_id, sub_study, prompt)` and describes it as 'a new Phase 2 selector method added to Phase 2's file list's selector API surface'. However, Phase 2's Selector API Surface deliverable explicitly enumerates only: `select`, `select_with_buffer`, `pool_survivors_after_paraphrase_equivalence`, `replacement_phases_enqueued_by_redraw`, `get_phase`, `selected_phase_ids`, `surviving_phase_count`, and `redraw`. `set_paraphrase` is not listed in Phase 2's deliverables, files, or success criteria \u2014 it will not be implemented.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's `cli_run.py` MODIFY says 'construct Runner(scorer=BenchmarkScorer(), judge=BenchmarkJudge(), probe_scheduler=ProbeScheduler())' with no arguments to ProbeScheduler. But Phase 6's `cli_probe.py` MODIFY constructs it as `ProbeScheduler(config, registry)` with two required positional args. The zero-arg construction in cli_run.py will raise TypeError at runtime.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's `cli_run.py` MODIFY says 'construct Runner(scorer=BenchmarkScorer(), judge=BenchmarkJudge(), probe_scheduler=ProbeScheduler())' with no arguments to ProbeScheduler. But Phase 6's `cli_probe.py` MODIFY constructs it as `ProbeScheduler(config, registry)` with two required positional args. The zero-arg construction in cli_run.py will raise TypeError at runtime.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's runner caches paraphrases via `selector.set_paraphrase(phase_id, sub_study, prompt)`, but Phase 2's declared selector API surface never defines `set_paraphrase` and no later phase adds it. `core/benchmark/runner.py` therefore depends on an API the plan never schedules into `core/benchmark/selector.py`.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's runner caches paraphrases via `selector.set_paraphrase(phase_id, sub_study, prompt)`, but Phase 2's declared selector API surface never defines `set_paraphrase` and no later phase adds it. `core/benchmark/runner.py` therefore depends on an API the plan never schedules into `core/benchmark/selector.py`.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 persists `paraphrased_prompt_native` and `paraphrased_prompt_neutral` inside `selector_cache[phase_id]` as part of serialized `PhaseSpec`, but Phase 1's declared `PhaseSpec` schema does not include either field. That creates a cross-phase schema conflict between `core/benchmark/models.py` and the Phase 3 cache/write path.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 persists `paraphrased_prompt_native` and `paraphrased_prompt_neutral` inside `selector_cache[phase_id]` as part of serialized `PhaseSpec`, but Phase 1's declared `PhaseSpec` schema does not include either field. That creates a cross-phase schema conflict between `core/benchmark/models.py` and the Phase 3 cache/write path.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's judging flow calls `registry.claim_judge(pair_key, worker_id)` and relies on pair-level judge-lock operations, but `core/benchmark/registry.py` is owned by Phase 1 and the plan never assigns any phase to implement `claim_judge` / related judge-claim methods there. The Phase 6 runner wiring therefore depends on registry APIs that are not scheduled to exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's judging flow calls `registry.claim_judge(pair_key, worker_id)` and relies on pair-level judge-lock operations, but `core/benchmark/registry.py` is owned by Phase 1 and the plan never assigns any phase to implement `claim_judge` / related judge-claim methods there. The Phase 6 runner wiring therefore depends on registry APIs that are not scheduled to exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T07:55:12.979408Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 2
+}

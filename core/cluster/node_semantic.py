@@ -672,13 +672,15 @@ def run_index():
                 if table is None:
                     table = _get_or_create_table(embed_dim)
 
+            # Process in small batches: embed and insert immediately to avoid OOM
             batch_size = 32
-            rows = []
+            total_inserted = 0
             for i in range(0, len(chunks_to_add), batch_size):
                 batch = chunks_to_add[i:i + batch_size]
                 texts = [c["text"] for c in batch]
                 try:
                     embeddings = embedder.encode(texts, show_progress_bar=False).tolist()
+                    rows = []
                     for j, c in enumerate(batch):
                         meta = c.get("metadata", {})
                         rows.append({
@@ -693,22 +695,16 @@ def run_index():
                             "block_type": meta.get("block_type", ""),
                             "vector": embeddings[j],
                         })
-                    if (i // batch_size) % 10 == 0:
-                        print(f"  Progress: {i + len(batch)}/{len(chunks_to_add)} chunks")
+                    # Insert immediately after embedding
+                    table.add(rows)
+                    total_inserted += len(rows)
+                    if (i // batch_size) % 50 == 0:
+                        print(f"  Progress: {total_inserted}/{len(chunks_to_add)} chunks")
                 except Exception as e:
                     print(f"  Batch error at {i}: {e}")
 
-            # Bulk insert all rows
-            if rows:
-                try:
-                    if not _file_hashes:
-                        # First run — overwrite
-                        table = _get_or_create_table(embed_dim)
-                    table.add(rows)
-                    _table = table
-                    print(f"  Added {len(rows)} rows to LanceDB")
-                except Exception as e:
-                    print(f"  LanceDB insert error: {e}")
+            _table = table
+            print(f"  Indexed {total_inserted} chunks to LanceDB")
 
         _file_hashes = new_hashes
         _last_index_time = time.time()

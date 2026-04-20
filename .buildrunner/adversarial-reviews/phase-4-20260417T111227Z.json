@@ -1,0 +1,306 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T110217Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 4's cli_probe.py MODIFY replaces the Phase 1 stub with a working probe-dispatch body, but Phase 6's cli_probe.py MODIFY then entirely replaces Phase 4's body with the ProbeScheduler-backed implementation. Phase 4's cli_probe.py work is discarded code \u2014 the build order 4\u21923\u21925\u21926 means Phase 4's body exists only until Phase 6 overwrites it. Not broken, but any Phase 4 tests that assert cli_probe behavior will break silently at Phase 6 integration unless the Phase 6 MODIFY also updates Phase 4's test_recognition_probe.py expectations.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4's cli_probe.py MODIFY replaces the Phase 1 stub with a working probe-dispatch body, but Phase 6's cli_probe.py MODIFY then entirely replaces Phase 4's body with the ProbeScheduler-backed implementation. Phase 4's cli_probe.py work is discarded code \u2014 the build order 4\u21923\u21925\u21926 means Phase 4's body exists only until Phase 6 overwrites it. Not broken, but any Phase 4 tests that assert cli_probe behavior will break silently at Phase 6 integration unless the Phase 6 MODIFY also updates Phase 4's test_recognition_probe.py expectations.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "pilot_contention.py computes observed_scoring_serial_p95_seconds from registry row timestamps (scored_row.created_at_utc minus matching_run_row.created_at_utc). These are JSONL-append timestamps, not operation-start/end timestamps. If fcntl.flock contention delays the append (another orchestrator holds LOCK_EX), the measured duration is inflated by lock-wait time, making the p95 systematically overestimate actual scoring wall-clock. Phase 10's budget-revision gate would then over-provision.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "pilot_contention.py computes observed_scoring_serial_p95_seconds from registry row timestamps (scored_row.created_at_utc minus matching_run_row.created_at_utc). These are JSONL-append timestamps, not operation-start/end timestamps. If fcntl.flock contention delays the append (another orchestrator holds LOCK_EX), the measured duration is inflated by lock-wait time, making the p95 systematically overestimate actual scoring wall-clock. Phase 10's budget-revision gate would then over-provision.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's run_local_tests holds /tmp/br3-bench-venv.lock for the full install\u2192pytest\u2192npm test\u2192uninstall sequence (~5-6 min). Phase 5's cli_score.py offline re-score path (br benchmark score --run-id) also acquires this same lock. If an operator runs br benchmark score during an active br benchmark run session, the re-score blocks for up to 10 minutes behind the in-flight scoring step. The 10-min ceiling could be hit if the in-flight run triggers a venv recreate (~30s) plus a full pytest (~5 min) plus an npm test (~5 min), totaling ~10.5 min \u2014 exceeding the ceiling and causing the offline re-score to surface a spurious install_failed.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's run_local_tests holds /tmp/br3-bench-venv.lock for the full install\u2192pytest\u2192npm test\u2192uninstall sequence (~5-6 min). Phase 5's cli_score.py offline re-score path (br benchmark score --run-id) also acquires this same lock. If an operator runs br benchmark score during an active br benchmark run session, the re-score blocks for up to 10 minutes behind the in-flight scoring step. The 10-min ceiling could be hit if the in-flight run triggers a venv recreate (~30s) plus a full pytest (~5 min) plus an npm test (~5 min), totaling ~10.5 min \u2014 exceeding the ceiling and causing the offline re-score to surface a spurious install_failed.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "cli_run.py is MODIFYed by Phase 3 (replace stub with command body), Phase 5 (add scorer to Runner constructor), and Phase 6 (add judge + probe_scheduler to Runner constructor). Each MODIFY must surgically edit the same Runner() constructor call. If Phase 5's MODIFY replaces more than the constructor line (e.g. reformats imports), Phase 6's MODIFY target string may not match, causing a build failure. No integration test verifies the three-phase cumulative MODIFY chain produces a valid cli_run.py.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "cli_run.py is MODIFYed by Phase 3 (replace stub with command body), Phase 5 (add scorer to Runner constructor), and Phase 6 (add judge + probe_scheduler to Runner constructor). Each MODIFY must surgically edit the same Runner() constructor call. If Phase 5's MODIFY replaces more than the constructor line (e.g. reformats imports), Phase 6's MODIFY target string may not match, causing a build failure. No integration test verifies the three-phase cumulative MODIFY chain produces a valid cli_run.py.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The contention_min_samples_per_bucket default is 8. With a 7-phase pilot \u00d7 2 models \u00d7 3 replications \u00d7 2 sub-studies = 84 runs split across 2 nodes, each node gets ~42 runs. After session-filter + stage-dedupe, each node's bucket has ~42 deduplicated rows. But the node allocator balances within each phase, so the split is roughly even. The 8-sample floor is easily met at N=7. However, if the pilot runs at reduced N=5 (minimum acceptable), each node gets ~30 runs \u2014 still fine. No issue here, but the statistics.quantiles p95 from 30-42 samples is meaningful. For the edge case of N=5 single-node (Lomax dropped by preflight), there is only one bucket and ratio is undefined \u2014 the code writes nulls per the fallback path.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The contention_min_samples_per_bucket default is 8. With a 7-phase pilot \u00d7 2 models \u00d7 3 replications \u00d7 2 sub-studies = 84 runs split across 2 nodes, each node gets ~42 runs. After session-filter + stage-dedupe, each node's bucket has ~42 deduplicated rows. But the node allocator balances within each phase, so the split is roughly even. The 8-sample floor is easily met at N=7. However, if the pilot runs at reduced N=5 (minimum acceptable), each node gets ~30 runs \u2014 still fine. No issue here, but the statistics.quantiles p95 from 30-42 samples is meaningful. For the edge case of N=5 single-node (Lomax dropped by preflight), there is only one bucket and ratio is undefined \u2014 the code writes nulls per the fallback path.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7's BinomialBayesMixedGLM.fit_vb() variational Bayes fit uses phase_id as a random intercept. With 30 phases (random intercept levels) and up to 360 observations, the VB approximation is reasonable. But the plan's fallback to cluster-robust fixed-effects Logit on non-convergence uses cov_type='cluster' with groups=phase_id. statsmodels Logit.fit(cov_type='cluster') requires cov_kwds={'groups': array}, where the array must be passed at fit() time, not at model construction. The plan's pseudocode shows the correct kwargs but does not verify that the binary outcome variable has sufficient within-cluster variance (if all replications for a phase agree on pass/fail, the cluster-robust SEs are undefined for that phase).",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7's BinomialBayesMixedGLM.fit_vb() variational Bayes fit uses phase_id as a random intercept. With 30 phases (random intercept levels) and up to 360 observations, the VB approximation is reasonable. But the plan's fallback to cluster-robust fixed-effects Logit on non-convergence uses cov_type='cluster' with groups=phase_id. statsmodels Logit.fit(cov_type='cluster') requires cov_kwds={'groups': array}, where the array must be passed at fit() time, not at model construction. The plan's pseudocode shows the correct kwargs but does not verify that the binary outcome variable has sufficient within-cluster variance (if all replications for a phase agree on pass/fail, the cluster-robust SEs are undefined for that phase).",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's deblind classifier uses StratifiedGroupKFold with groups=phase_id. At pilot N=7, n_splits is clamped to min(5, 7)=5. With 7 phases and 5 folds, some folds hold out 1 phase (12 rows) and others hold out 2 phases (24 rows). The TF-IDF char_wb (3,5) n-gram vectorizer on normalized diffs of BUILD-spec phase work will generate hundreds to thousands of features. Training on 60-72 rows with thousands of sparse features risks overfitting even with LogisticRegression's L2 regularization, which would inflate OOF accuracy and trigger false blinding-failure alarms.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's deblind classifier uses StratifiedGroupKFold with groups=phase_id. At pilot N=7, n_splits is clamped to min(5, 7)=5. With 7 phases and 5 folds, some folds hold out 1 phase (12 rows) and others hold out 2 phases (24 rows). The TF-IDF char_wb (3,5) n-gram vectorizer on normalized diffs of BUILD-spec phase work will generate hundreds to thousands of features. Training on 60-72 rows with thousands of sparse features risks overfitting even with LogisticRegression's L2 regularization, which would inflate OOF accuracy and trigger false blinding-failure alarms.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan claims dispatch-to-node.sh line 48 rejects paths where .git is not a directory, citing this as the reason for using git clone instead of git worktree. The fix (fresh local clone via git clone --local --shared) is sound. However, setup_clone also writes refs/keep/bench-<run_id> to the PARENT repo and sets gc.auto=0 on the parent. If the benchmark is interrupted repeatedly (multiple killed sessions), orphaned refs/keep/ refs accumulate and gc.auto=0 may persist via the orphan-recovery race (backup file from session A exists, session B starts, recovers A's backup but writes its own, session B is killed, session C starts and recovers B's backup \u2014 the recovery chain works but each kill leaves one more orphaned keepalive ref that gc-anchors must sweep).",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan claims dispatch-to-node.sh line 48 rejects paths where .git is not a directory, citing this as the reason for using git clone instead of git worktree. The fix (fresh local clone via git clone --local --shared) is sound. However, setup_clone also writes refs/keep/bench-<run_id> to the PARENT repo and sets gc.auto=0 on the parent. If the benchmark is interrupted repeatedly (multiple killed sessions), orphaned refs/keep/ refs accumulate and gc.auto=0 may persist via the orphan-recovery race (backup file from session A exists, session B starts, recovers A's backup but writes its own, session B is killed, session C starts and recovers B's backup \u2014 the recovery chain works but each kill leaves one more orphaned keepalive ref that gc-anchors must sweep).",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's session_state.py uses fcntl.flock(LOCK_EX) on /tmp/br3-bench-session-<session_id>.lock for read-modify-write serialization. Phase 2's selector.set_paraphrase() uses a DIFFERENT lock: /tmp/br3-bench-paraphrase-<phase_id>.lock for the paraphrase gate. Inside set_paraphrase, the code calls session_state.set_map_entry(session_id, 'selector_cache', phase_id, ...) which acquires the per-session flock. If two concurrent run_cell invocations for different phases in the same session both enter set_paraphrase simultaneously, they each hold their own phase-scoped paraphrase lock and then both contend on the per-session flock \u2014 this is fine (no deadlock, locks are nested in consistent order). But if a third path (e.g. selector.redraw from a paraphrase failure) also writes selector_cache under the session flock while the two set_paraphrase calls are in flight, the read-modify-write on the dict could serialize correctly but the intermediate state between the two set_paraphrase writes is visible to the redraw reader. The plan's flock handles this correctly \u2014 no lost update \u2014 but the transient inconsistency (one paraphrase written, other not yet) could cause redraw to see a partially-paraphrased cache.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's session_state.py uses fcntl.flock(LOCK_EX) on /tmp/br3-bench-session-<session_id>.lock for read-modify-write serialization. Phase 2's selector.set_paraphrase() uses a DIFFERENT lock: /tmp/br3-bench-paraphrase-<phase_id>.lock for the paraphrase gate. Inside set_paraphrase, the code calls session_state.set_map_entry(session_id, 'selector_cache', phase_id, ...) which acquires the per-session flock. If two concurrent run_cell invocations for different phases in the same session both enter set_paraphrase simultaneously, they each hold their own phase-scoped paraphrase lock and then both contend on the per-session flock \u2014 this is fine (no deadlock, locks are nested in consistent order). But if a third path (e.g. selector.redraw from a paraphrase failure) also writes selector_cache under the session flock while the two set_paraphrase calls are in flight, the read-modify-write on the dict could serialize correctly but the intermediate state between the two set_paraphrase writes is visible to the redraw reader. The plan's flock handles this correctly \u2014 no lost update \u2014 but the transient inconsistency (one paraphrase written, other not yet) could cause redraw to see a partially-paraphrased cache.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's pre-run guard calls _detect_baseline_drift which compares current pip freeze against baseline. If the baseline freeze includes editable-install entries (lines like '-e file:///path/to/repo' from a prior pip install -e), the comparison will show drift on every run because the clone path changes per run_id. The plan says the baseline is written by install-benchmark-deps.sh AFTER Pass 2, which does not do pip install -e. But if a contestant's requirements*.txt contains a -e directive, Pass 1 would install it, and the subsequent baseline freeze would capture it. The pre-run guard on the NEXT run would then see the -e line as baseline-present but path-mismatched, triggering unnecessary venv recreation on every run.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's pre-run guard calls _detect_baseline_drift which compares current pip freeze against baseline. If the baseline freeze includes editable-install entries (lines like '-e file:///path/to/repo' from a prior pip install -e), the comparison will show drift on every run because the clone path changes per run_id. The plan says the baseline is written by install-benchmark-deps.sh AFTER Pass 2, which does not do pip install -e. But if a contestant's requirements*.txt contains a -e directive, Pass 1 would install it, and the subsequent baseline freeze would capture it. The pre-run guard on the NEXT run would then see the -e line as baseline-present but path-mismatched, triggering unnecessary venv recreation on every run.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan states requirements-benchmark.txt pins pytest>=7.4,<9.0 and the two-pass install order ensures the harness pin wins. But pip's dependency resolver does not use 'last write wins' semantics \u2014 pip resolves the intersection of all constraints from all requirements files installed in the same pip invocation. Since the two passes are SEPARATE pip invocations (Pass 1 installs each non-benchmark requirements file individually, Pass 2 installs requirements-benchmark.txt), Pass 2 runs pip install -r requirements-benchmark.txt against an environment where Pass 1 already installed packages. If Pass 1 installed pytest==8.1.0 (satisfies >=7.0) and Pass 2 specifies pytest>=7.4,<9.0, pip will see pytest==8.1.0 is already installed and satisfies >=7.4,<9.0, so it will NOT reinstall \u2014 the existing version is kept. The 'last write wins' claim is only true if the pins CONFLICT (e.g. Pass 1 installs pytest==9.1.0 which violates <9.0, causing Pass 2 to downgrade). For overlapping-compatible pins, Pass 1's installed version persists. The test_installer_order.py test uses compatible pins and will pass trivially because both pins resolve to the same version range, not because ordering matters.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan states requirements-benchmark.txt pins pytest>=7.4,<9.0 and the two-pass install order ensures the harness pin wins. But pip's dependency resolver does not use 'last write wins' semantics \u2014 pip resolves the intersection of all constraints from all requirements files installed in the same pip invocation. Since the two passes are SEPARATE pip invocations (Pass 1 installs each non-benchmark requirements file individually, Pass 2 installs requirements-benchmark.txt), Pass 2 runs pip install -r requirements-benchmark.txt against an environment where Pass 1 already installed packages. If Pass 1 installed pytest==8.1.0 (satisfies >=7.0) and Pass 2 specifies pytest>=7.4,<9.0, pip will see pytest==8.1.0 is already installed and satisfies >=7.4,<9.0, so it will NOT reinstall \u2014 the existing version is kept. The 'last write wins' claim is only true if the pins CONFLICT (e.g. Pass 1 installs pytest==9.1.0 which violates <9.0, causing Pass 2 to downgrade). For overlapping-compatible pins, Pass 1's installed version persists. The test_installer_order.py test uses compatible pins and will pass trivially because both pins resolve to the same version range, not because ordering matters.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's per-run dependency reinstall assumes `<clone_path>/requirements-benchmark.txt` exists and is installed last so harness pins win, but Phase 3 explicitly checks out historical pre-phase commits in fresh clones; those commits will not contain the new benchmark harness file. On real benchmark runs the pass-2 install can no-op, breaking the stated pin-priority contract and risking scorer/tooling version drift.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's per-run dependency reinstall assumes `<clone_path>/requirements-benchmark.txt` exists and is installed last so harness pins win, but Phase 3 explicitly checks out historical pre-phase commits in fresh clones; those commits will not contain the new benchmark harness file. On real benchmark runs the pass-2 install can no-op, breaking the stated pin-priority contract and risking scorer/tooling version drift.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 computes `pre_run_test_surfaces.python` with `any((<clone_path>/tests/).rglob(\"test*_.py\"))`, which does not match normal pytest filenames like `test_models.py`. That misclassifies an existing Python test surface as absent, so later Phase 5 logic can incorrectly return `no_tests_discovered` or miss contestant test-surface deletion.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 computes `pre_run_test_surfaces.python` with `any((<clone_path>/tests/).rglob(\"test*_.py\"))`, which does not match normal pytest filenames like `test_models.py`. That misclassifies an existing Python test surface as absent, so later Phase 5 logic can incorrectly return `no_tests_discovered` or miss contestant test-surface deletion.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 repeatedly parses `<clone_path>/ui/package.json` to detect `scripts.test` and gate Node scoring, but the plan never defines behavior for malformed JSON. A contestant can produce an invalid `package.json`, which would raise during `json.loads(...)` and crash scoring instead of yielding a scored `install_failed`/`fail` outcome.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 repeatedly parses `<clone_path>/ui/package.json` to detect `scripts.test` and gate Node scoring, but the plan never defines behavior for malformed JSON. A contestant can produce an invalid `package.json`, which would raise during `json.loads(...)` and crash scoring instead of yielding a scored `install_failed`/`fail` outcome.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 relies on `tests/benchmark/test_cli_select.py::test_select_creates_ephemeral_preview_session`, but `tests/benchmark/test_cli_select.py` is never listed in any phase's Files section. The preview-session bootstrap contract is referenced but not actually scheduled to be implemented or tested.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 relies on `tests/benchmark/test_cli_select.py::test_select_creates_ephemeral_preview_session`, but `tests/benchmark/test_cli_select.py` is never listed in any phase's Files section. The preview-session bootstrap contract is referenced but not actually scheduled to be implemented or tested.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1/5 acceptance text references `tests/benchmark/test_cli_score.py` (`test_score_resolves_session_id_from_registry`, `test_score_soft_degrades_on_missing_session_file`), but `tests/benchmark/test_cli_score.py` is never created in any phase's Files list.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1/5 acceptance text references `tests/benchmark/test_cli_score.py` (`test_score_resolves_session_id_from_registry`, `test_score_soft_degrades_on_missing_session_file`), but `tests/benchmark/test_cli_score.py` is never created in any phase's Files list.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's `judge.py` declaration says a new `tests/benchmark/test_judge.py` is added to pin `BenchmarkJudge`'s API, but `tests/benchmark/test_judge.py` never appears in the Phase 6 Files list. The declared judge API contract has no scheduled test file.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's `judge.py` declaration says a new `tests/benchmark/test_judge.py` is added to pin `BenchmarkJudge`'s API, but `tests/benchmark/test_judge.py` never appears in the Phase 6 Files list. The declared judge API contract has no scheduled test file.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 5's per-run dependency reinstall assumes `<clone_path>/requirements-benchmark.txt` exists and is installed last so harness pins win, but Phase 3 explicitly checks out historical pre-phase commits in fresh clones; those commits will not contain the new benchmark harness file. On real benchmark runs the pass-2 install can no-op, breaking the stated pin-priority contract and risking scorer/tooling version drift.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's per-run dependency reinstall assumes `<clone_path>/requirements-benchmark.txt` exists and is installed last so harness pins win, but Phase 3 explicitly checks out historical pre-phase commits in fresh clones; those commits will not contain the new benchmark harness file. On real benchmark runs the pass-2 install can no-op, breaking the stated pin-priority contract and risking scorer/tooling version drift.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 computes `pre_run_test_surfaces.python` with `any((<clone_path>/tests/).rglob(\"test*_.py\"))`, which does not match normal pytest filenames like `test_models.py`. That misclassifies an existing Python test surface as absent, so later Phase 5 logic can incorrectly return `no_tests_discovered` or miss contestant test-surface deletion.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 computes `pre_run_test_surfaces.python` with `any((<clone_path>/tests/).rglob(\"test*_.py\"))`, which does not match normal pytest filenames like `test_models.py`. That misclassifies an existing Python test surface as absent, so later Phase 5 logic can incorrectly return `no_tests_discovered` or miss contestant test-surface deletion.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 repeatedly parses `<clone_path>/ui/package.json` to detect `scripts.test` and gate Node scoring, but the plan never defines behavior for malformed JSON. A contestant can produce an invalid `package.json`, which would raise during `json.loads(...)` and crash scoring instead of yielding a scored `install_failed`/`fail` outcome.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 repeatedly parses `<clone_path>/ui/package.json` to detect `scripts.test` and gate Node scoring, but the plan never defines behavior for malformed JSON. A contestant can produce an invalid `package.json`, which would raise during `json.loads(...)` and crash scoring instead of yielding a scored `install_failed`/`fail` outcome.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T11:12:27.023656Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 4
+}

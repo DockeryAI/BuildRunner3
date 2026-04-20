@@ -1,0 +1,250 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T005325Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete \u2014 that output is the final deliverable (a JSON array of findings). No tests or npm commands are needed here; this was a pure analysis task.\n\n**Summary of findings:**\n\n- **1 blocker**: Phases 2 and 3 listed as parallelizable in the matrix, but Phase 3 explicitly depends on Phase 2's `lockres.py`\n- **7 warnings**: dispatch script sync across nodes, relative prompt-file path, Below API repurposed as NLI, identity leakage via API key env vars, probe trigger ordering, node-pool",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete \u2014 that output is the final deliverable (a JSON array of findings). No tests or npm commands are needed here; this was a pure analysis task.\n\n**Summary of findings:**\n\n- **1 blocker**: Phases 2 and 3 listed as parallelizable in the matrix, but Phase 3 explicitly depends on Phase 2's `lockres.py`\n- **7 warnings**: dispatch script sync across nodes, relative prompt-file path, Below API repurposed as NLI, identity leakage via API key env vars, probe trigger ordering, node-pool",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 requires `NodeAllocator.preflight()` inside `core/benchmark/deps.py`, but `core/benchmark/node_allocator.py` is not created until Phase 3. That is a hard execution-order break: startup code in Phase 1 depends on a symbol that does not exist yet.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 requires `NodeAllocator.preflight()` inside `core/benchmark/deps.py`, but `core/benchmark/node_allocator.py` is not created until Phase 3. That is a hard execution-order break: startup code in Phase 1 depends on a symbol that does not exist yet.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan says Below can fail over to DeepSeek for equivalence validation, but Phase 1 also requires startup to fail fast if Below `/health` or `/api/classify` is unavailable. Those requirements conflict: the fallback path can never be used if process startup aborts first.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan says Below can fail over to DeepSeek for equivalence validation, but Phase 1 also requires startup to fail fast if Below `/health` or `/api/classify` is unavailable. Those requirements conflict: the fallback path can never be used if process startup aborts first.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 depends on adding `--prompt-file` support to `~/.buildrunner/scripts/dispatch-to-node.sh`, which is outside the repository and absent from the project tree/excerpts. The benchmark runner therefore cannot be made reproducible from repo changes alone, and the Phase 3 dispatch contract is unverifiable against the checked-in codebase.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 depends on adding `--prompt-file` support to `~/.buildrunner/scripts/dispatch-to-node.sh`, which is outside the repository and absent from the project tree/excerpts. The benchmark runner therefore cannot be made reproducible from repo changes alone, and the Phase 3 dispatch contract is unverifiable against the checked-in codebase.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The Parallelization Matrix claims phases `(2, 3)` are parallelizable, but Phase 3 is explicitly blocked by Phase 2 and imports `core/benchmark/lockres.py` from Phase 2. Those scheduling instructions contradict each other and will fail if followed literally.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The Parallelization Matrix claims phases `(2, 3)` are parallelizable, but Phase 3 is explicitly blocked by Phase 2 and imports `core/benchmark/lockres.py` from Phase 2. Those scheduling instructions contradict each other and will fail if followed literally.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "`WalterClient.get_results(run_id)` is not supported by the verified Walter contract shown in the plan. The only cited Walter result endpoint is `/api/results`; no run-id-specific path or query contract is provided, so the client method shape is unverified and likely fabricated.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "`WalterClient.get_results(run_id)` is not supported by the verified Walter contract shown in the plan. The only cited Walter result endpoint is `/api/results`; no run-id-specific path or query contract is provided, so the client method shape is unverified and likely fabricated.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "`LomaxClient.get_build(project, ref)` is not supported by the verified Lomax contract shown in the plan. The cited endpoints are `/api/projects/{project}/build`, `/build/status`, and `/preview`; no `get_build(project, ref)` read API or `ref` contract is shown.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "`LomaxClient.get_build(project, ref)` is not supported by the verified Lomax contract shown in the plan. The cited endpoints are `/api/projects/{project}/build`, `/build/status`, and `/preview`; no `get_build(project, ref)` read API or `ref` contract is shown.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan gives two incompatible dependency stories for Bradley-Terry: the External Dependencies table says `choix>=0.3.5` is pinned in `requirements-benchmark.txt`, while Phase 5's canonical pin list explicitly omits `choix` and Phase 7 says the solver is pure-Python with no external `choix` dependency. That dependency contract is internally inconsistent.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan gives two incompatible dependency stories for Bradley-Terry: the External Dependencies table says `choix>=0.3.5` is pinned in `requirements-benchmark.txt`, while Phase 5's canonical pin list explicitly omits `choix` and Phase 7 says the solver is pure-Python with no external `choix` dependency. That dependency contract is internally inconsistent.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Registry deduplication is race-prone. Phase 1 says `skip_if_present(run_id)` reads the JSONL registry once per resume while concurrent runs append under a lock. That prevents file corruption, but it does not prevent duplicate scheduling when two workers decide a `run_id` is absent before either append occurs.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Registry deduplication is race-prone. Phase 1 says `skip_if_present(run_id)` reads the JSONL registry once per resume while concurrent runs append under a lock. That prevents file corruption, but it does not prevent duplicate scheduling when two workers decide a `run_id` is absent before either append occurs.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase-drop handling is incomplete. When paraphrase/equivalence fails, the entire phase is supposed to be dropped and replaced, but the plan never specifies deleting or tombstoning any already-written `RegistryEntry` rows or artifacts for that phase. Resume and downstream aggregation can therefore ingest partial data from phases that were supposedly excluded.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase-drop handling is incomplete. When paraphrase/equivalence fails, the entire phase is supposed to be dropped and replaced, but the plan never specifies deleting or tombstoning any already-written `RegistryEntry` rows or artifacts for that phase. Resume and downstream aggregation can therefore ingest partial data from phases that were supposedly excluded.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The mixed-effects models in Phase 7 always control for `node_name`, but Phase 1 can collapse the node pool to a single online node. A single-level `node_name` covariate is not estimable as specified, and the plan does not define a general fallback for that offline-node case.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The mixed-effects models in Phase 7 always control for `node_name`, but Phase 1 can collapse the node pool to a single online node. A single-level `node_name` covariate is not estimable as specified, and the plan does not define a general fallback for that offline-node case.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 requires `NodeAllocator.preflight()` inside `core/benchmark/deps.py`, but `core/benchmark/node_allocator.py` is not created until Phase 3. That is a hard execution-order break: startup code in Phase 1 depends on a symbol that does not exist yet.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 requires `NodeAllocator.preflight()` inside `core/benchmark/deps.py`, but `core/benchmark/node_allocator.py` is not created until Phase 3. That is a hard execution-order break: startup code in Phase 1 depends on a symbol that does not exist yet.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan says Below can fail over to DeepSeek for equivalence validation, but Phase 1 also requires startup to fail fast if Below `/health` or `/api/classify` is unavailable. Those requirements conflict: the fallback path can never be used if process startup aborts first.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan says Below can fail over to DeepSeek for equivalence validation, but Phase 1 also requires startup to fail fast if Below `/health` or `/api/classify` is unavailable. Those requirements conflict: the fallback path can never be used if process startup aborts first.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 depends on adding `--prompt-file` support to `~/.buildrunner/scripts/dispatch-to-node.sh`, which is outside the repository and absent from the project tree/excerpts. The benchmark runner therefore cannot be made reproducible from repo changes alone, and the Phase 3 dispatch contract is unverifiable against the checked-in codebase.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 depends on adding `--prompt-file` support to `~/.buildrunner/scripts/dispatch-to-node.sh`, which is outside the repository and absent from the project tree/excerpts. The benchmark runner therefore cannot be made reproducible from repo changes alone, and the Phase 3 dispatch contract is unverifiable against the checked-in codebase.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "`WalterClient.get_results(run_id)` is not supported by the verified Walter contract shown in the plan. The only cited Walter result endpoint is `/api/results`; no run-id-specific path or query contract is provided, so the client method shape is unverified and likely fabricated.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "`WalterClient.get_results(run_id)` is not supported by the verified Walter contract shown in the plan. The only cited Walter result endpoint is `/api/results`; no run-id-specific path or query contract is provided, so the client method shape is unverified and likely fabricated.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "`LomaxClient.get_build(project, ref)` is not supported by the verified Lomax contract shown in the plan. The cited endpoints are `/api/projects/{project}/build`, `/build/status`, and `/preview`; no `get_build(project, ref)` read API or `ref` contract is shown.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "`LomaxClient.get_build(project, ref)` is not supported by the verified Lomax contract shown in the plan. The cited endpoints are `/api/projects/{project}/build`, `/build/status`, and `/preview`; no `get_build(project, ref)` read API or `ref` contract is shown.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T00:58:00.954747Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 3
+}

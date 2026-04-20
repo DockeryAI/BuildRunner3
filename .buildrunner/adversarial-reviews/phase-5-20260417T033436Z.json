@@ -1,0 +1,180 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T032429Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. The two **blockers** are the most critical findings:\n\n1. **Invariant 14 and Phase 9 define incompatible `pilot_contention.json` schemas.** Invariant 14 expects `{drop_lomax: bool, ratio: float, otis_median_ms, lomax_median_ms, measured_at_utc}` with a per-node median ratio and a 1.10 threshold. Phase 9's `pilot_contention.py` writes `{ratio: float, sample_sizes: {parallel, serial}, per_node_medians_ms: {otis, lomax, muddy}, computed_at_utc}` \u2014 no `drop_lomax` field, and t",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. The two **blockers** are the most critical findings:\n\n1. **Invariant 14 and Phase 9 define incompatible `pilot_contention.json` schemas.** Invariant 14 expects `{drop_lomax: bool, ratio: float, otis_median_ms, lomax_median_ms, measured_at_utc}` with a per-node median ratio and a 1.10 threshold. Phase 9's `pilot_contention.py` writes `{ratio: float, sample_sizes: {parallel, serial}, per_node_medians_ms: {otis, lomax, muddy}, computed_at_utc}` \u2014 no `drop_lomax` field, and t",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 creates `.buildrunner/benchmarks/config.yaml`, but the OpenRouter model-id preflight later reads `core/benchmark/config.yaml:openrouter.required_models`. `core/benchmark/config.yaml` is never created anywhere in the plan, so the benchmark has no valid config source for required model IDs.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 creates `.buildrunner/benchmarks/config.yaml`, but the OpenRouter model-id preflight later reads `core/benchmark/config.yaml:openrouter.required_models`. `core/benchmark/config.yaml` is never created anywhere in the plan, so the benchmark has no valid config source for required model IDs.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The pilot-contention artifact is specified incompatibly in different parts of the plan: Invariant 14/Phase 10 expect `.buildrunner/benchmarks/pilot_contention.json` with fields like `drop_lomax`, `otis_median_ms`, and `lomax_median_ms`, while Phase 9 writes `.buildrunner/benchmarks/results/pilot/pilot_contention.json` with a different schema (`sample_sizes`, `per_node_medians_ms`, no `drop_lomax`). Phase 10 cannot reliably consume the Phase 9 output.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The pilot-contention artifact is specified incompatibly in different parts of the plan: Invariant 14/Phase 10 expect `.buildrunner/benchmarks/pilot_contention.json` with fields like `drop_lomax`, `otis_median_ms`, and `lomax_median_ms`, while Phase 9 writes `.buildrunner/benchmarks/results/pilot/pilot_contention.json` with a different schema (`sample_sizes`, `per_node_medians_ms`, no `drop_lomax`). Phase 10 cannot reliably consume the Phase 9 output.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's contention module reads `.buildrunner/benchmarks/registry.jsonl` and overlap windows `claim_timestamp..complete_timestamp`, but the registry defined earlier is `.buildrunner/benchmarks/benchmark_registry.jsonl` and the row fields are `claimed_at_utc` / `created_at_utc`. The pilot contention step is wired to a nonexistent file and nonexistent field names.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9's contention module reads `.buildrunner/benchmarks/registry.jsonl` and overlap windows `claim_timestamp..complete_timestamp`, but the registry defined earlier is `.buildrunner/benchmarks/benchmark_registry.jsonl` and the row fields are `claimed_at_utc` / `created_at_utc`. The pilot contention step is wired to a nonexistent file and nonexistent field names.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Resume/dedup semantics conflict: the plan correctly defines the logical unit of work as `cell_key = (phase_id, model, sub_study, replication_index)` and retries mint new `run_id`s, but Phase 3 still says `runner.resume()` skips completed `run_id`s. Skipping by `run_id` cannot prevent duplicate work after retries or crashes because the resumed attempt necessarily has a different `run_id`.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Resume/dedup semantics conflict: the plan correctly defines the logical unit of work as `cell_key = (phase_id, model, sub_study, replication_index)` and retries mint new `run_id`s, but Phase 3 still says `runner.resume()` skips completed `run_id`s. Skipping by `run_id` cannot prevent duplicate work after retries or crashes because the resumed attempt necessarily has a different `run_id`.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 says `cli_gc_anchors.py` will be updated in Phase 5 to add `--reset-venv`, and Phase 5 relies on `br benchmark gc-anchors --reset-venv` for venv cleanup, but Phase 5's Files list never modifies `core/benchmark/cli_gc_anchors.py`. The required CLI flag has no implementation step.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 says `cli_gc_anchors.py` will be updated in Phase 5 to add `--reset-venv`, and Phase 5 relies on `br benchmark gc-anchors --reset-venv` for venv cleanup, but Phase 5's Files list never modifies `core/benchmark/cli_gc_anchors.py`. The required CLI flag has no implementation step.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `session_state.py` contract is self-contradictory: it says every declared field has exactly one writer phase, but `resume_session_id` is explicitly written by both Phase 1 (`deps.py` at startup) and Phase 3 (`runner` on resume). That undermines the single-writer invariant the rest of the session-state design depends on.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The `session_state.py` contract is self-contradictory: it says every declared field has exactly one writer phase, but `resume_session_id` is explicitly written by both Phase 1 (`deps.py` at startup) and Phase 3 (`runner` on resume). That undermines the single-writer invariant the rest of the session-state design depends on.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 creates `.buildrunner/benchmarks/config.yaml`, but the OpenRouter model-id preflight later reads `core/benchmark/config.yaml:openrouter.required_models`. `core/benchmark/config.yaml` is never created anywhere in the plan, so the benchmark has no valid config source for required model IDs.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 creates `.buildrunner/benchmarks/config.yaml`, but the OpenRouter model-id preflight later reads `core/benchmark/config.yaml:openrouter.required_models`. `core/benchmark/config.yaml` is never created anywhere in the plan, so the benchmark has no valid config source for required model IDs.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The pilot-contention artifact is specified incompatibly in different parts of the plan: Invariant 14/Phase 10 expect `.buildrunner/benchmarks/pilot_contention.json` with fields like `drop_lomax`, `otis_median_ms`, and `lomax_median_ms`, while Phase 9 writes `.buildrunner/benchmarks/results/pilot/pilot_contention.json` with a different schema (`sample_sizes`, `per_node_medians_ms`, no `drop_lomax`). Phase 10 cannot reliably consume the Phase 9 output.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The pilot-contention artifact is specified incompatibly in different parts of the plan: Invariant 14/Phase 10 expect `.buildrunner/benchmarks/pilot_contention.json` with fields like `drop_lomax`, `otis_median_ms`, and `lomax_median_ms`, while Phase 9 writes `.buildrunner/benchmarks/results/pilot/pilot_contention.json` with a different schema (`sample_sizes`, `per_node_medians_ms`, no `drop_lomax`). Phase 10 cannot reliably consume the Phase 9 output.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's contention module reads `.buildrunner/benchmarks/registry.jsonl` and overlap windows `claim_timestamp..complete_timestamp`, but the registry defined earlier is `.buildrunner/benchmarks/benchmark_registry.jsonl` and the row fields are `claimed_at_utc` / `created_at_utc`. The pilot contention step is wired to a nonexistent file and nonexistent field names.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9's contention module reads `.buildrunner/benchmarks/registry.jsonl` and overlap windows `claim_timestamp..complete_timestamp`, but the registry defined earlier is `.buildrunner/benchmarks/benchmark_registry.jsonl` and the row fields are `claimed_at_utc` / `created_at_utc`. The pilot contention step is wired to a nonexistent file and nonexistent field names.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Resume/dedup semantics conflict: the plan correctly defines the logical unit of work as `cell_key = (phase_id, model, sub_study, replication_index)` and retries mint new `run_id`s, but Phase 3 still says `runner.resume()` skips completed `run_id`s. Skipping by `run_id` cannot prevent duplicate work after retries or crashes because the resumed attempt necessarily has a different `run_id`.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Resume/dedup semantics conflict: the plan correctly defines the logical unit of work as `cell_key = (phase_id, model, sub_study, replication_index)` and retries mint new `run_id`s, but Phase 3 still says `runner.resume()` skips completed `run_id`s. Skipping by `run_id` cannot prevent duplicate work after retries or crashes because the resumed attempt necessarily has a different `run_id`.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T03:34:36.176735Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 5
+}

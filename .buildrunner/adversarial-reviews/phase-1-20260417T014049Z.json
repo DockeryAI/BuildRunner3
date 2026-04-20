@@ -1,0 +1,404 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T013640Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 Blocked-By lists Phase 4, but Phase 5 is Blocked-By Phase 3. Phase 4 creates `openrouter_min.py` which Phase 6 depends on. Phase 6 is Blocked-By Phase 5 (hard). This chain is consistent. However, Phase 3's `dispatch_run` passes `prompt_text` as argv[5] \u2014 a bare positional argument to a shell script that embeds it in a remote SSH heredoc. Prompts containing single quotes, backslashes, or dollar signs will be mangled by the remote shell even though local invocation uses `shell=False`. The plan addresses heredoc delimiter collision (`PROMPT_EOF`) but not shell metacharacter injection in the quoted heredoc expansion on the remote side.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 Blocked-By lists Phase 4, but Phase 5 is Blocked-By Phase 3. Phase 4 creates `openrouter_min.py` which Phase 6 depends on. Phase 6 is Blocked-By Phase 5 (hard). This chain is consistent. However, Phase 3's `dispatch_run` passes `prompt_text` as argv[5] \u2014 a bare positional argument to a shell script that embeds it in a remote SSH heredoc. Prompts containing single quotes, backslashes, or dollar signs will be mangled by the remote shell even though local invocation uses `shell=False`. The plan addresses heredoc delimiter collision (`PROMPT_EOF`) but not shell metacharacter injection in the quoted heredoc expansion on the remote side.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 creates anchor branches as `refs/heads/bench/{run_id}` using `git -C <parent> branch refs/heads/bench/{run_id} <sha>`. The `git branch` command takes a branch name, not a full refname \u2014 passing `refs/heads/bench/{run_id}` would create `refs/heads/refs/heads/bench/{run_id}` (double-prefixed). Should use `git update-ref refs/heads/bench/{run_id} <sha>` directly, or pass just `bench/{run_id}` to `git branch`.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 creates anchor branches as `refs/heads/bench/{run_id}` using `git -C <parent> branch refs/heads/bench/{run_id} <sha>`. The `git branch` command takes a branch name, not a full refname \u2014 passing `refs/heads/bench/{run_id}` would create `refs/heads/refs/heads/bench/{run_id}` (double-prefixed). Should use `git update-ref refs/heads/bench/{run_id} <sha>` directly, or pass just `bench/{run_id}` to `git branch`.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 runs local tests in the worktree via `(cd ui && npm test -- --run)` but the worktree is checked out at the pre-phase commit (the `lock:` SHA). The contestant's changes are committed by `finalize_worktree()` but `node_modules` are never installed \u2014 there is no `npm install` or `npm ci` step in the worktree before running `npm test`. Same issue for Python: no `pip install` of project dependencies in the worktree. Tests will fail with missing dependencies.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 runs local tests in the worktree via `(cd ui && npm test -- --run)` but the worktree is checked out at the pre-phase commit (the `lock:` SHA). The contestant's changes are committed by `finalize_worktree()` but `node_modules` are never installed \u2014 there is no `npm install` or `npm ci` step in the worktree before running `npm test`. Same issue for Python: no `pip install` of project dependencies in the worktree. Tests will fail with missing dependencies.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's equivalence validator sends a compound prompt to Below's `/api/classify` as the `text` field: 'A:\\n<original>\\n\\n---\\n\\nB:\\n<paraphrase>\\nAre A and B semantically equivalent?'. The verified contract says Below accepts `{text: str, categories: [str]}` for classification \u2014 it is an NLI/classification endpoint backed by Ollama, not a reasoning model. Asking it to compare two multi-paragraph BUILD specs via a single classify call is unlikely to produce meaningful `equivalent`/`partial`/`diverged` labels \u2014 this is semantic entailment, not text classification. The calibration gate (Phase 4) may catch this, but if Below passes calibration on easy pairs and fails on harder real pairs mid-run, it will cause cascading phase drops.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4's equivalence validator sends a compound prompt to Below's `/api/classify` as the `text` field: 'A:\\n<original>\\n\\n---\\n\\nB:\\n<paraphrase>\\nAre A and B semantically equivalent?'. The verified contract says Below accepts `{text: str, categories: [str]}` for classification \u2014 it is an NLI/classification endpoint backed by Ollama, not a reasoning model. Asking it to compare two multi-paragraph BUILD specs via a single classify call is unlikely to produce meaningful `equivalent`/`partial`/`diverged` labels \u2014 this is semantic entailment, not text classification. The calibration gate (Phase 4) may catch this, but if Below passes calibration on easy pairs and fails on harder real pairs mid-run, it will cause cascading phase drops.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier uses 84 pilot rows with an 80/20 split yielding ~16 holdout rows. With n=16, statistical power to detect even a large effect (e.g., 80% true accuracy) is very low \u2014 the upper 95% binomial CI for p=0.5 at n=16 is ~0.8125 (not 0.625 as stated). The plan claims the threshold is \u224862.5% which appears to be the upper bound of a 68% CI, not 95%. At n=16, even a perfectly identifying classifier has a reasonable chance of scoring \u226462.5% by luck. This gate is miscalibrated.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses 84 pilot rows with an 80/20 split yielding ~16 holdout rows. With n=16, statistical power to detect even a large effect (e.g., 80% true accuracy) is very low \u2014 the upper 95% binomial CI for p=0.5 at n=16 is ~0.8125 (not 0.625 as stated). The plan claims the threshold is \u224862.5% which appears to be the upper bound of a 68% CI, not 95%. At n=16, even a perfectly identifying classifier has a reasonable chance of scoring \u226462.5% by luck. This gate is miscalibrated.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's selector filters on `registry_exclusion` but the registry file (`benchmark_registry.jsonl`) is created empty in Phase 1. During Phase 2 development and testing, it will always be empty. More critically, the selector's `select()` fails fast if the post-filter phase pool is < 40, but the corpus is only 34 BUILD files. Even if each file averages 3 phases (~102 phase candidates), the self-containment and external-only-files filters could easily reduce this below 40. No fallback is specified for the selector itself \u2014 only the Phase 10 degraded-N rule addresses low counts, but the selector will hard-fail before Phase 10 is reached.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's selector filters on `registry_exclusion` but the registry file (`benchmark_registry.jsonl`) is created empty in Phase 1. During Phase 2 development and testing, it will always be empty. More critically, the selector's `select()` fails fast if the post-filter phase pool is < 40, but the corpus is only 34 BUILD files. Even if each file averages 3 phases (~102 phase candidates), the self-containment and external-only-files filters could easily reduce this below 40. No fallback is specified for the selector itself \u2014 only the Phase 10 degraded-N rule addresses low counts, but the selector will hard-fail before Phase 10 is reached.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 states `dispatch_run` passes the prompt as argv[5] and rejects prompts >100KB. But the plan also says `dispatch-to-node.sh` embeds `$PROMPT` into a remote SSH command as a heredoc. If the script receives the prompt as a positional argument (not stdin), and the prompt contains newlines (which BUILD spec paraphrases certainly will), the argv passing will break \u2014 shell argv elements cannot contain newlines reliably across SSH unless base64-encoded or piped via stdin. `subprocess.Popen` with `shell=False` handles local newlines in argv, but the script itself likely does `ssh node \"cat <<'PROMPT_EOF'\n$4\nPROMPT_EOF\"` which re-enters shell parsing.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 states `dispatch_run` passes the prompt as argv[5] and rejects prompts >100KB. But the plan also says `dispatch-to-node.sh` embeds `$PROMPT` into a remote SSH command as a heredoc. If the script receives the prompt as a positional argument (not stdin), and the prompt contains newlines (which BUILD spec paraphrases certainly will), the argv passing will break \u2014 shell argv elements cannot contain newlines reliably across SSH unless base64-encoded or piped via stdin. `subprocess.Popen` with `shell=False` handles local newlines in argv, but the script itself likely does `ssh node \"cat <<'PROMPT_EOF'\n$4\nPROMPT_EOF\"` which re-enters shell parsing.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's `run_local_tests` runs `pytest -q --no-cov --tb=no` in the worktree, but the worktree is at a historical commit. If that commit's tests import modules or fixtures that were added after the commit, they'd fail \u2014 but more importantly, if that commit's tests were already failing (it's a pre-phase state, not post-phase), the test baseline is broken before the contestant even runs. The plan doesn't establish a baseline test-pass expectation or diff the pre/post test results.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's `run_local_tests` runs `pytest -q --no-cov --tb=no` in the worktree, but the worktree is at a historical commit. If that commit's tests import modules or fixtures that were added after the commit, they'd fail \u2014 but more importantly, if that commit's tests were already failing (it's a pre-phase state, not post-phase), the test baseline is broken before the contestant even runs. The plan doesn't establish a baseline test-pass expectation or diff the pre/post test results.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `finalize_worktree` runs `git -C <worktree> add -A && git commit` but sets `-c user.email=bench@local -c user.name=bench`. If the repo has commit signing configured (gpgsign=true in gitconfig), this commit will fail because there's no GPG key for bench@local. The plan doesn't disable signing for benchmark commits.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `finalize_worktree` runs `git -C <worktree> add -A && git commit` but sets `-c user.email=bench@local -c user.name=bench`. If the repo has commit signing configured (gpgsign=true in gitconfig), this commit will fail because there's no GPG key for bench@local. The plan doesn't disable signing for benchmark commits.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 modifies `runtime.json` atomically but Phase 1's `session_state.py` also uses atomic writes to `session-state.json`. These are different files so no conflict. However, Phase 10's budget assumes 360 runs at ~6-7 min each with 2 nodes = 18-24 hours. But paraphrase + equivalence happens per-phase (30 phases), not per-run (360 runs) \u2014 the per-run overhead of ~20s paraphrase + ~15s equivalence cited in the budget is wrong. These happen once per phase before any runs dispatch for that phase, not once per run.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 10 modifies `runtime.json` atomically but Phase 1's `session_state.py` also uses atomic writes to `session-state.json`. These are different files so no conflict. However, Phase 10's budget assumes 360 runs at ~6-7 min each with 2 nodes = 18-24 hours. But paraphrase + equivalence happens per-phase (30 phases), not per-run (360 runs) \u2014 the per-run overhead of ~20s paraphrase + ~15s equivalence cited in the budget is wrong. These happen once per phase before any runs dispatch for that phase, not once per run.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 specifies `exclusions.jsonl` at `.buildrunner/benchmarks/exclusions.jsonl` (top-level, not under a run-id subdir). Phase 3's runner calls `registry.is_phase_dropped()` which checks `DroppedRow` in `benchmark_registry.jsonl`. But Phase 4 writes drops to BOTH `benchmark_registry.jsonl` (via `registry.drop_phase()`) AND `exclusions.jsonl` \u2014 these are two separate append-locked files recording overlapping information. If they diverge (e.g., `exclusions.jsonl` write succeeds but `registry.drop_phase()` fails), the runner and aggregator will disagree on which phases are dropped.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 specifies `exclusions.jsonl` at `.buildrunner/benchmarks/exclusions.jsonl` (top-level, not under a run-id subdir). Phase 3's runner calls `registry.is_phase_dropped()` which checks `DroppedRow` in `benchmark_registry.jsonl`. But Phase 4 writes drops to BOTH `benchmark_registry.jsonl` (via `registry.drop_phase()`) AND `exclusions.jsonl` \u2014 these are two separate append-locked files recording overlapping information. If they diverge (e.g., `exclusions.jsonl` write succeeds but `registry.drop_phase()` fails), the runner and aggregator will disagree on which phases are dropped.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references `Codex 5.4` and `Claude Opus 4.7` as the contestants with training cutoffs of 2025-09-01 and 2026-01-01 respectively. As of the plan date (2026-04-16), Claude Opus 4.7 does not exist \u2014 the current model is Opus 4.6. If this is a future model that hasn't been released, the benchmark cannot run. If it's a typo for 4.6, the training cutoff constant is unverified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references `Codex 5.4` and `Claude Opus 4.7` as the contestants with training cutoffs of 2025-09-01 and 2026-01-01 respectively. As of the plan date (2026-04-16), Claude Opus 4.7 does not exist \u2014 the current model is Opus 4.6. If this is a future model that hasn't been released, the benchmark cannot run. If it's a typo for 4.6, the training cutoff constant is unverified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7's mixed-effects regression includes `equivalence_validator` as a categorical covariate with levels `below/deepseek/both/na`. The `na` level only appears on dropped phases (paraphrase/equivalence failed entirely), but dropped phases are filtered out by `is_phase_dropped()` before reaching the aggregator. So `na` will never appear in the regression data, making it a dead level. Not a bug, but the documentation is misleading.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7's mixed-effects regression includes `equivalence_validator` as a categorical covariate with levels `below/deepseek/both/na`. The `na` level only appears on dropped phases (paraphrase/equivalence failed entirely), but dropped phases are filtered out by `is_phase_dropped()` before reaching the aggregator. So `na` will never appear in the regression data, making it a dead level. Not a bug, but the documentation is misleading.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` writes `.br3-bench-prompt.txt` into the worktree, and `finalize_worktree()` then does `git add -A && git commit`. That audit file will be committed into `post_run_commit_sha` and show up in the scored diff as an undeclared file, contaminating file-precision/scope-creep metrics and judge input.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's `dispatch_run` writes `.br3-bench-prompt.txt` into the worktree, and `finalize_worktree()` then does `git add -A && git commit`. That audit file will be committed into `post_run_commit_sha` and show up in the scored diff as an undeclared file, contaminating file-precision/scope-creep metrics and judge input.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 and Phase 4 conflict on where exclusion logs live. Phase 2 says `selector.redraw()` appends `stratum_violation` to `.buildrunner/benchmarks/results/<run-id>/exclusions.jsonl`, while Phase 4 says paraphrase/equivalence exclusions go to a single top-level `.buildrunner/benchmarks/exclusions.jsonl` specifically because no `run-id` exists yet. Those contracts cannot both be implemented as written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 and Phase 4 conflict on where exclusion logs live. Phase 2 says `selector.redraw()` appends `stratum_violation` to `.buildrunner/benchmarks/results/<run-id>/exclusions.jsonl`, while Phase 4 says paraphrase/equivalence exclusions go to a single top-level `.buildrunner/benchmarks/exclusions.jsonl` specifically because no `run-id` exists yet. Those contracts cannot both be implemented as written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 freezes the registry schema and explicitly says no later phase adds new fields, but Phase 3 says the prompt audit trail is 'captured in the registry alongside the `RunResult`'. No field for that artifact exists in the declared `CompletedRow` schema, so either the schema must change later or the audit path is lost.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 freezes the registry schema and explicitly says no later phase adds new fields, but Phase 3 says the prompt audit trail is 'captured in the registry alongside the `RunResult`'. No field for that artifact exists in the declared `CompletedRow` schema, so either the schema must change later or the audit path is lost.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's local Node test path runs `npm test` inside `ui/` when `ui/package.json` exists, but the plan never installs that app's own dependencies in the worktree. Installing Prettier/ESLint/tsc/jscpd under `.buildrunner/benchmarks/tools/` does not make `ui` test dependencies available, so Node tests will fail on a clean checkout even when the code is correct.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's local Node test path runs `npm test` inside `ui/` when `ui/package.json` exists, but the plan never installs that app's own dependencies in the worktree. Installing Prettier/ESLint/tsc/jscpd under `.buildrunner/benchmarks/tools/` does not make `ui` test dependencies available, so Node tests will fail on a clean checkout even when the code is correct.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan claims `ui/package.json` is 'verified present as of 2026-04-16', but `ui/` and `ui/package.json` appear in neither the provided project file tree nor the cited file excerpts. That file existence claim is unverified and the scoring path depends on it for the Node-test branch.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan claims `ui/package.json` is 'verified present as of 2026-04-16', but `ui/` and `ui/package.json` appear in neither the provided project file tree nor the cited file excerpts. That file existence claim is unverified and the scoring path depends on it for the Node-test branch.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's pilot run requirements are internally inconsistent: one bullet requires all `7 \u00d7 2 \u00d7 3 \u00d7 2 = 84` runs to produce valid `RunResult` rows, but the same bullet immediately allows the pilot to proceed with only 5\u20136 surviving phases after paraphrase/equivalence filtering. Those cannot both be the success condition.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9's pilot run requirements are internally inconsistent: one bullet requires all `7 \u00d7 2 \u00d7 3 \u00d7 2 = 84` runs to produce valid `RunResult` rows, but the same bullet immediately allows the pilot to proceed with only 5\u20136 surviving phases after paraphrase/equivalence filtering. Those cannot both be the success condition.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 `setup_worktree()` is defined around `lockres.resolve_lock(...)`, but the failure cases exposed by Phase 2 (`no_lock`, `ambiguous_lock`, `merge_commit_lock`) have no execution path in the runner. As written, the runner only describes the happy path and will not know whether to skip, redraw, or abort when lock resolution fails.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 `setup_worktree()` is defined around `lockres.resolve_lock(...)`, but the failure cases exposed by Phase 2 (`no_lock`, `ambiguous_lock`, `merge_commit_lock`) have no execution path in the runner. As written, the runner only describes the happy path and will not know whether to skip, redraw, or abort when lock resolution fails.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's equivalence retry logic is incomplete relative to Invariant 16. The invariant says paraphrase/equivalence failure is declared only after 3 retries with different seeds, but the concrete equivalence flow only specifies Below, optional DeepSeek confirmation, and then failure; it never defines how seed-varied retries are performed for equivalence disagreements or low-confidence results.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4's equivalence retry logic is incomplete relative to Invariant 16. The invariant says paraphrase/equivalence failure is declared only after 3 retries with different seeds, but the concrete equivalence flow only specifies Below, optional DeepSeek confirmation, and then failure; it never defines how seed-varied retries are performed for equivalence disagreements or low-confidence results.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3 creates anchor branches as `refs/heads/bench/{run_id}` using `git -C <parent> branch refs/heads/bench/{run_id} <sha>`. The `git branch` command takes a branch name, not a full refname \u2014 passing `refs/heads/bench/{run_id}` would create `refs/heads/refs/heads/bench/{run_id}` (double-prefixed). Should use `git update-ref refs/heads/bench/{run_id} <sha>` directly, or pass just `bench/{run_id}` to `git branch`.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 creates anchor branches as `refs/heads/bench/{run_id}` using `git -C <parent> branch refs/heads/bench/{run_id} <sha>`. The `git branch` command takes a branch name, not a full refname \u2014 passing `refs/heads/bench/{run_id}` would create `refs/heads/refs/heads/bench/{run_id}` (double-prefixed). Should use `git update-ref refs/heads/bench/{run_id} <sha>` directly, or pass just `bench/{run_id}` to `git branch`.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 runs local tests in the worktree via `(cd ui && npm test -- --run)` but the worktree is checked out at the pre-phase commit (the `lock:` SHA). The contestant's changes are committed by `finalize_worktree()` but `node_modules` are never installed \u2014 there is no `npm install` or `npm ci` step in the worktree before running `npm test`. Same issue for Python: no `pip install` of project dependencies in the worktree. Tests will fail with missing dependencies.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 runs local tests in the worktree via `(cd ui && npm test -- --run)` but the worktree is checked out at the pre-phase commit (the `lock:` SHA). The contestant's changes are committed by `finalize_worktree()` but `node_modules` are never installed \u2014 there is no `npm install` or `npm ci` step in the worktree before running `npm test`. Same issue for Python: no `pip install` of project dependencies in the worktree. Tests will fail with missing dependencies.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier uses 84 pilot rows with an 80/20 split yielding ~16 holdout rows. With n=16, statistical power to detect even a large effect (e.g., 80% true accuracy) is very low \u2014 the upper 95% binomial CI for p=0.5 at n=16 is ~0.8125 (not 0.625 as stated). The plan claims the threshold is \u224862.5% which appears to be the upper bound of a 68% CI, not 95%. At n=16, even a perfectly identifying classifier has a reasonable chance of scoring \u226462.5% by luck. This gate is miscalibrated.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses 84 pilot rows with an 80/20 split yielding ~16 holdout rows. With n=16, statistical power to detect even a large effect (e.g., 80% true accuracy) is very low \u2014 the upper 95% binomial CI for p=0.5 at n=16 is ~0.8125 (not 0.625 as stated). The plan claims the threshold is \u224862.5% which appears to be the upper bound of a 68% CI, not 95%. At n=16, even a perfectly identifying classifier has a reasonable chance of scoring \u226462.5% by luck. This gate is miscalibrated.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` writes `.br3-bench-prompt.txt` into the worktree, and `finalize_worktree()` then does `git add -A && git commit`. That audit file will be committed into `post_run_commit_sha` and show up in the scored diff as an undeclared file, contaminating file-precision/scope-creep metrics and judge input.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's `dispatch_run` writes `.br3-bench-prompt.txt` into the worktree, and `finalize_worktree()` then does `git add -A && git commit`. That audit file will be committed into `post_run_commit_sha` and show up in the scored diff as an undeclared file, contaminating file-precision/scope-creep metrics and judge input.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 and Phase 4 conflict on where exclusion logs live. Phase 2 says `selector.redraw()` appends `stratum_violation` to `.buildrunner/benchmarks/results/<run-id>/exclusions.jsonl`, while Phase 4 says paraphrase/equivalence exclusions go to a single top-level `.buildrunner/benchmarks/exclusions.jsonl` specifically because no `run-id` exists yet. Those contracts cannot both be implemented as written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 and Phase 4 conflict on where exclusion logs live. Phase 2 says `selector.redraw()` appends `stratum_violation` to `.buildrunner/benchmarks/results/<run-id>/exclusions.jsonl`, while Phase 4 says paraphrase/equivalence exclusions go to a single top-level `.buildrunner/benchmarks/exclusions.jsonl` specifically because no `run-id` exists yet. Those contracts cannot both be implemented as written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's local Node test path runs `npm test` inside `ui/` when `ui/package.json` exists, but the plan never installs that app's own dependencies in the worktree. Installing Prettier/ESLint/tsc/jscpd under `.buildrunner/benchmarks/tools/` does not make `ui` test dependencies available, so Node tests will fail on a clean checkout even when the code is correct.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's local Node test path runs `npm test` inside `ui/` when `ui/package.json` exists, but the plan never installs that app's own dependencies in the worktree. Installing Prettier/ESLint/tsc/jscpd under `.buildrunner/benchmarks/tools/` does not make `ui` test dependencies available, so Node tests will fail on a clean checkout even when the code is correct.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T01:40:49.647448Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 1
+}

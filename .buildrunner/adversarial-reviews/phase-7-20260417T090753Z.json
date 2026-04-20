@@ -1,0 +1,362 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T085720Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3's replacement-phase scheduler deliverable references `self.probe_scheduler.schedule(replacement_phase_id, model, expected_cell_count=...)` with a None guard, but Phase 3's Runner constructor only declares `scorer: Optional[ScorerProtocol] = None` \u2014 the `probe_scheduler` attribute is not added to Runner.__init__ until Phase 6 MODIFYs runner.py. Accessing `self.probe_scheduler` in Phase 3 code will raise AttributeError unless Phase 3 also initializes `self.probe_scheduler = None` in __init__, which is not specified in Phase 3's constructor signature or deliverables.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's replacement-phase scheduler deliverable references `self.probe_scheduler.schedule(replacement_phase_id, model, expected_cell_count=...)` with a None guard, but Phase 3's Runner constructor only declares `scorer: Optional[ScorerProtocol] = None` \u2014 the `probe_scheduler` attribute is not added to Runner.__init__ until Phase 6 MODIFYs runner.py. Accessing `self.probe_scheduler` in Phase 3 code will raise AttributeError unless Phase 3 also initializes `self.probe_scheduler = None` in __init__, which is not specified in Phase 3's constructor signature or deliverables.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's run_session body extension computes probe-scheduler watermark as `expected_cell_count=len(config.selector.sub_studies) * config.selector.replications` reading from config.yaml, but Phase 3's run_session signature is `run_session(selector, replications, models, sub_studies)` \u2014 accepting CLI-resolved sub_studies as a runtime parameter. When a user passes `--sub-studies native` (overriding the config default of `native,neutral`), the probe scheduler registers expected_cell_count=6 (from config) while only 3 cells are actually dispatched, so the probe watermark is never reached and recognition probes silently never fire for the entire study.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's run_session body extension computes probe-scheduler watermark as `expected_cell_count=len(config.selector.sub_studies) * config.selector.replications` reading from config.yaml, but Phase 3's run_session signature is `run_session(selector, replications, models, sub_studies)` \u2014 accepting CLI-resolved sub_studies as a runtime parameter. When a user passes `--sub-studies native` (overriding the config default of `native,neutral`), the probe scheduler registers expected_cell_count=6 (from config) while only 3 cells are actually dispatched, so the probe watermark is never reached and recognition probes silently never fire for the entire study.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 creates `openrouter_min.py` but does not specify that it defines `__all__`. Phase 6's contract test `test_openrouter_min_contract.py` asserts `set(openrouter_min.__all__) \u2286 set(dir(openrouter))` \u2014 if Phase 4 omits `__all__`, this test raises AttributeError at Phase 6 integration.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 creates `openrouter_min.py` but does not specify that it defines `__all__`. Phase 6's contract test `test_openrouter_min_contract.py` asserts `set(openrouter_min.__all__) \u2286 set(dir(openrouter))` \u2014 if Phase 4 omits `__all__`, this test raises AttributeError at Phase 6 integration.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's runner.py constructor also needs `judge: Optional[...] = None` (same issue as probe_scheduler). Phase 6 says it 'extends Runner.__init__ with two new constructor-injected dependencies: judge and probe_scheduler', but Phase 3's run_cell body contains the judge-claim + judge-pair wiring that Phase 6 adds \u2014 the Phase 6 MODIFY to run_cell references `self.judge` which does not exist on the Phase 3-era Runner. While the MODIFY semantics mean Phase 6 adds the code, the constructor parameters must be present for the class to instantiate correctly if any Phase 3 test constructs Runner() after Phase 6 lands.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's runner.py constructor also needs `judge: Optional[...] = None` (same issue as probe_scheduler). Phase 6 says it 'extends Runner.__init__ with two new constructor-injected dependencies: judge and probe_scheduler', but Phase 3's run_cell body contains the judge-claim + judge-pair wiring that Phase 6 adds \u2014 the Phase 6 MODIFY to run_cell references `self.judge` which does not exist on the Phase 3-era Runner. While the MODIFY semantics mean Phase 6 adds the code, the constructor parameters must be present for the class to instantiate correctly if any Phase 3 test constructs Runner() after Phase 6 lands.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "DroppedRow is shared across all concurrent sessions (no session_id field, by design), so if session A's paraphrase of phase X fails and redraw() writes a DroppedRow, a concurrent session B that already successfully paraphrased and is mid-dispatch for phase X will see `is_phase_dropped(phase_id)=True` at its next run_cell check and silently skip remaining cells for that phase. The session B cells that already completed are then filtered by Phase 7's aggregator as partial-completion, wasting cluster time and potentially dropping a valid phase from session B's analysis.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "DroppedRow is shared across all concurrent sessions (no session_id field, by design), so if session A's paraphrase of phase X fails and redraw() writes a DroppedRow, a concurrent session B that already successfully paraphrased and is mid-dispatch for phase X will see `is_phase_dropped(phase_id)=True` at its next run_cell check and silently skip remaining cells for that phase. The session B cells that already completed are then filtered by Phase 7's aggregator as partial-completion, wasting cluster time and potentially dropping a valid phase from session B's analysis.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's selector.redraw() atomicity gap: it writes a DroppedRow to benchmark_registry.jsonl (under the registry fcntl.flock) AND an ExclusionRow to exclusions.jsonl (under the exclusions flock). These are two separate files with two separate locks. A process crash between the two writes leaves the system in an inconsistent state (DroppedRow exists but ExclusionRow doesn't, or vice versa). The plan claims both happen 'under a single fcntl.flock(LOCK_EX) acquisition' but they target different files.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's selector.redraw() atomicity gap: it writes a DroppedRow to benchmark_registry.jsonl (under the registry fcntl.flock) AND an ExclusionRow to exclusions.jsonl (under the exclusions flock). These are two separate files with two separate locks. A process crash between the two writes leaves the system in an inconsistent state (DroppedRow exists but ExclusionRow doesn't, or vice versa). The plan claims both happen 'under a single fcntl.flock(LOCK_EX) acquisition' but they target different files.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's deblind classifier uses `StratifiedGroupKFold` which the plan claims was 'added in 0.24' \u2014 it was actually added in scikit-learn 1.0.0. Not a runtime issue since `requirements-benchmark.txt` pins `scikit-learn>=1.4`, but the provenance claim is incorrect and could mislead version-downgrade decisions.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's deblind classifier uses `StratifiedGroupKFold` which the plan claims was 'added in 0.24' \u2014 it was actually added in scikit-learn 1.0.0. Not a runtime issue since `requirements-benchmark.txt` pins `scikit-learn>=1.4`, but the provenance claim is incorrect and could mislead version-downgrade decisions.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's `pilot_contention.py` accesses `CompletedRow.run_result.wall_clock_ms` \u2014 this path through a nested pydantic model requires that `CompletedRow.run_result` (the field name on the pydantic model) matches this exact attribute name. Phase 1's CompletedRow declaration lists the nested object types by class name (`RunResult`, `ObjectiveMetrics`) but never specifies the snake_case field names on the CompletedRow model itself. If the pydantic field is named `RunResult` (matching the type) rather than `run_result`, every access in pilot_contention.py and the aggregator breaks.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's `pilot_contention.py` accesses `CompletedRow.run_result.wall_clock_ms` \u2014 this path through a nested pydantic model requires that `CompletedRow.run_result` (the field name on the pydantic model) matches this exact attribute name. Phase 1's CompletedRow declaration lists the nested object types by class name (`RunResult`, `ObjectiveMetrics`) but never specifies the snake_case field names on the CompletedRow model itself. If the pydantic field is named `RunResult` (matching the type) rather than `run_result`, every access in pilot_contention.py and the aggregator breaks.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's pre-run baseline guard calls `_detect_baseline_drift(baseline_freeze, current_freeze)` and triggers venv recreation on ANY difference including pure additions. But the baseline freeze is written once by `install-benchmark-deps.sh` after the initial install. If a legitimate project-level requirements change is committed between benchmark sessions (e.g. a new dep added to `requirements-api.txt`), every single run in the next session will trigger a forced venv recreation (~30s overhead \u00d7 360 runs = 3 hours of overhead) because the baseline was never updated to reflect the new commit state.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's pre-run baseline guard calls `_detect_baseline_drift(baseline_freeze, current_freeze)` and triggers venv recreation on ANY difference including pure additions. But the baseline freeze is written once by `install-benchmark-deps.sh` after the initial install. If a legitimate project-level requirements change is committed between benchmark sessions (e.g. a new dep added to `requirements-api.txt`), every single run in the next session will trigger a forced venv recreation (~30s overhead \u00d7 360 runs = 3 hours of overhead) because the baseline was never updated to reflect the new commit state.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "No error handling specified for the case where `git clone --local --shared` fails because the parent repo's object store is being garbage-collected concurrently (e.g., a background `git gc --auto` triggered by another process). The shared-object alternates link means the clone's integrity depends on the parent's object store stability during the clone's lifetime.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "No error handling specified for the case where `git clone --local --shared` fails because the parent repo's object store is being garbage-collected concurrently (e.g., a background `git gc --auto` triggered by another process). The shared-object alternates link means the clone's integrity depends on the parent's object store stability during the clone's lifetime.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's venv flock ceiling is 10 minutes, and the plan estimates worst-case contention at ~6.5 minutes. But with two concurrent orchestrators (documented supported state per Phase 1's concurrent-orchestrator contract), each running a venv-recreation + pytest sequence, the second orchestrator waits for the first's full sequence. If both trigger drift-recovery simultaneously, the second waits up to 10 minutes and may legitimately timeout with `install_failed` even though the underlying test would pass \u2014 a false negative scored outcome.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's venv flock ceiling is 10 minutes, and the plan estimates worst-case contention at ~6.5 minutes. But with two concurrent orchestrators (documented supported state per Phase 1's concurrent-orchestrator contract), each running a venv-recreation + pytest sequence, the second orchestrator waits for the first's full sequence. If both trigger drift-recovery simultaneously, the second waits up to 10 minutes and may legitimately timeout with `install_failed` even though the underlying test would pass \u2014 a false negative scored outcome.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `lock: claim Phase N` git-log grep uses `--all` which includes remote-tracking branches and tags. Phase 2's lockres adds a reachability filter via `git merge-base --is-ancestor`, but the anchor_ref resolution falls back to HEAD when no upstream is configured. If the benchmark is run from a detached HEAD state (common after `git checkout <sha>`), the anchor is HEAD itself, and `--is-ancestor HEAD HEAD` is trivially true only for HEAD \u2014 every other commit would need to be an ancestor of the detached SHA, which excludes commits on branches merged after that SHA.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The `lock: claim Phase N` git-log grep uses `--all` which includes remote-tracking branches and tags. Phase 2's lockres adds a reachability filter via `git merge-base --is-ancestor`, but the anchor_ref resolution falls back to HEAD when no upstream is configured. If the benchmark is run from a detached HEAD state (common after `git checkout <sha>`), the anchor is HEAD itself, and `--is-ancestor HEAD HEAD` is trivially true only for HEAD \u2014 every other commit would need to be an ancestor of the detached SHA, which excludes commits on branches merged after that SHA.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 references `tests/benchmark/test_cli_run.py::test_models_flag_rejects_long_version_strings`, but `tests/benchmark/test_cli_run.py` is missing from both the project file tree and every phase Files list. The plan depends on a test file that does not exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 references `tests/benchmark/test_cli_run.py::test_models_flag_rejects_long_version_strings`, but `tests/benchmark/test_cli_run.py` is missing from both the project file tree and every phase Files list. The plan depends on a test file that does not exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 wiring uses `Registry(config)` in `cli_run.py`, `cli_resume.py`, and `cli_probe.py`, but the Phase 1 `registry.py` contract never defines a `Registry` class or constructor. Only module-style APIs like `registry.claim(...)` / `registry.claim_judge(...)` are described. This is a fabricated API.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 wiring uses `Registry(config)` in `cli_run.py`, `cli_resume.py`, and `cli_probe.py`, but the Phase 1 `registry.py` contract never defines a `Registry` class or constructor. Only module-style APIs like `registry.claim(...)` / `registry.claim_judge(...)` are described. This is a fabricated API.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3/6 scheduler logic calls `len(config.selector.sub_studies) * config.selector.replications` inside `Runner.run_session()` and replacement-phase scheduling, but no `config` object is part of the declared `Runner` constructor or `run_session` signature anywhere in the plan. The execution path depends on an undeclared variable.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3/6 scheduler logic calls `len(config.selector.sub_studies) * config.selector.replications` inside `Runner.run_session()` and replacement-phase scheduling, but no `config` object is part of the declared `Runner` constructor or `run_session` signature anywhere in the plan. The execution path depends on an undeclared variable.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 later relies on a helper `runner._reinstall_contestant_requirements(clone_path: Path)`, but that method is not included in the explicit Phase 5 `Runner` method list and is absent from the cited code/contracts. The plan invokes an undeclared helper on a critical install path.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 later relies on a helper `runner._reinstall_contestant_requirements(clone_path: Path)`, but that method is not included in the explicit Phase 5 `Runner` method list and is absent from the cited code/contracts. The plan invokes an undeclared helper on a critical install path.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan hardcodes external OpenRouter model identifiers such as `openai/gpt-5`, `google/gemini-2.5-pro`, `meta-llama/llama-3.1-405b-instruct`, `mistralai/mixtral-8x22b-instruct`, and `deepseek/deepseek-chat` without any cited proof that those exact slugs are valid in the target account/environment. If any slug is wrong, preflight fails before the benchmark can start.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan hardcodes external OpenRouter model identifiers such as `openai/gpt-5`, `google/gemini-2.5-pro`, `meta-llama/llama-3.1-405b-instruct`, `mistralai/mixtral-8x22b-instruct`, and `deepseek/deepseek-chat` without any cited proof that those exact slugs are valid in the target account/environment. If any slug is wrong, preflight fails before the benchmark can start.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Walter and Lomax 'enrichment' snapshots are recorded as regression covariates even though the plan explicitly says they reflect each service's own main-branch/workspace health, not the contestant's commit. That injects unrelated cluster state into the model as if it were run-specific evidence.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Walter and Lomax 'enrichment' snapshots are recorded as regression covariates even though the plan explicitly says they reflect each service's own main-branch/workspace health, not the contestant's commit. That injects unrelated cluster state into the model as if it were run-specific evidence.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3's replacement-phase scheduler deliverable references `self.probe_scheduler.schedule(replacement_phase_id, model, expected_cell_count=...)` with a None guard, but Phase 3's Runner constructor only declares `scorer: Optional[ScorerProtocol] = None` \u2014 the `probe_scheduler` attribute is not added to Runner.__init__ until Phase 6 MODIFYs runner.py. Accessing `self.probe_scheduler` in Phase 3 code will raise AttributeError unless Phase 3 also initializes `self.probe_scheduler = None` in __init__, which is not specified in Phase 3's constructor signature or deliverables.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's replacement-phase scheduler deliverable references `self.probe_scheduler.schedule(replacement_phase_id, model, expected_cell_count=...)` with a None guard, but Phase 3's Runner constructor only declares `scorer: Optional[ScorerProtocol] = None` \u2014 the `probe_scheduler` attribute is not added to Runner.__init__ until Phase 6 MODIFYs runner.py. Accessing `self.probe_scheduler` in Phase 3 code will raise AttributeError unless Phase 3 also initializes `self.probe_scheduler = None` in __init__, which is not specified in Phase 3's constructor signature or deliverables.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's run_session body extension computes probe-scheduler watermark as `expected_cell_count=len(config.selector.sub_studies) * config.selector.replications` reading from config.yaml, but Phase 3's run_session signature is `run_session(selector, replications, models, sub_studies)` \u2014 accepting CLI-resolved sub_studies as a runtime parameter. When a user passes `--sub-studies native` (overriding the config default of `native,neutral`), the probe scheduler registers expected_cell_count=6 (from config) while only 3 cells are actually dispatched, so the probe watermark is never reached and recognition probes silently never fire for the entire study.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's run_session body extension computes probe-scheduler watermark as `expected_cell_count=len(config.selector.sub_studies) * config.selector.replications` reading from config.yaml, but Phase 3's run_session signature is `run_session(selector, replications, models, sub_studies)` \u2014 accepting CLI-resolved sub_studies as a runtime parameter. When a user passes `--sub-studies native` (overriding the config default of `native,neutral`), the probe scheduler registers expected_cell_count=6 (from config) while only 3 cells are actually dispatched, so the probe watermark is never reached and recognition probes silently never fire for the entire study.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 creates `openrouter_min.py` but does not specify that it defines `__all__`. Phase 6's contract test `test_openrouter_min_contract.py` asserts `set(openrouter_min.__all__) \u2286 set(dir(openrouter))` \u2014 if Phase 4 omits `__all__`, this test raises AttributeError at Phase 6 integration.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 creates `openrouter_min.py` but does not specify that it defines `__all__`. Phase 6's contract test `test_openrouter_min_contract.py` asserts `set(openrouter_min.__all__) \u2286 set(dir(openrouter))` \u2014 if Phase 4 omits `__all__`, this test raises AttributeError at Phase 6 integration.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 references `tests/benchmark/test_cli_run.py::test_models_flag_rejects_long_version_strings`, but `tests/benchmark/test_cli_run.py` is missing from both the project file tree and every phase Files list. The plan depends on a test file that does not exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 references `tests/benchmark/test_cli_run.py::test_models_flag_rejects_long_version_strings`, but `tests/benchmark/test_cli_run.py` is missing from both the project file tree and every phase Files list. The plan depends on a test file that does not exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 wiring uses `Registry(config)` in `cli_run.py`, `cli_resume.py`, and `cli_probe.py`, but the Phase 1 `registry.py` contract never defines a `Registry` class or constructor. Only module-style APIs like `registry.claim(...)` / `registry.claim_judge(...)` are described. This is a fabricated API.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 wiring uses `Registry(config)` in `cli_run.py`, `cli_resume.py`, and `cli_probe.py`, but the Phase 1 `registry.py` contract never defines a `Registry` class or constructor. Only module-style APIs like `registry.claim(...)` / `registry.claim_judge(...)` are described. This is a fabricated API.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3/6 scheduler logic calls `len(config.selector.sub_studies) * config.selector.replications` inside `Runner.run_session()` and replacement-phase scheduling, but no `config` object is part of the declared `Runner` constructor or `run_session` signature anywhere in the plan. The execution path depends on an undeclared variable.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3/6 scheduler logic calls `len(config.selector.sub_studies) * config.selector.replications` inside `Runner.run_session()` and replacement-phase scheduling, but no `config` object is part of the declared `Runner` constructor or `run_session` signature anywhere in the plan. The execution path depends on an undeclared variable.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T09:07:53.414524Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

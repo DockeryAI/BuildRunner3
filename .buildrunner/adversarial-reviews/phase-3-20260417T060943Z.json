@@ -1,0 +1,362 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T055928Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 1 declares `RegistryRow = Union[ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow]` (7 variants) but also declares `ProbePendingRow` as a separate deliverable in the same phase. `ProbePendingRow` is not included in the union. Phase 4 references it as 'new row-type added to Phase 1's union'. The JSONL reader's discriminated-union parse will reject `row_type=\"probe_pending\"` lines, and `_reduce_registry_by_cell_key` will either crash or silently drop probe-pending rows.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares `RegistryRow = Union[ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow]` (7 variants) but also declares `ProbePendingRow` as a separate deliverable in the same phase. `ProbePendingRow` is not included in the union. Phase 4 references it as 'new row-type added to Phase 1's union'. The JSONL reader's discriminated-union parse will reject `row_type=\"probe_pending\"` lines, and `_reduce_registry_by_cell_key` will either crash or silently drop probe-pending rows.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 declares `CalibrationPair` with `below_prediction: Literal[\"equivalent\",\"not_equivalent\"]`, `true_label: Literal[\"equivalent\",\"not_equivalent\"]`, and fields `sub_study`, `replication_index`. Phase 4's `equivalence-calibration.json` schema uses `below_prediction: Optional[Literal[\"equivalent\",\"partial\",\"diverged\"]]`, `true_label: Literal[\"equivalent\",\"divergent\"]`, and fields `original_phase_id`, `paraphrase_phase_id` instead. The Literal types are incompatible (\"not_equivalent\" vs \"diverged\"/\"divergent\", two-category vs three-category), and the field sets are structurally different. Phase 4's equivalence validator sends `categories=[\"equivalent\",\"partial\",\"diverged\"]` to Below, so the Phase 1 pydantic model will reject actual Below responses at validation time.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares `CalibrationPair` with `below_prediction: Literal[\"equivalent\",\"not_equivalent\"]`, `true_label: Literal[\"equivalent\",\"not_equivalent\"]`, and fields `sub_study`, `replication_index`. Phase 4's `equivalence-calibration.json` schema uses `below_prediction: Optional[Literal[\"equivalent\",\"partial\",\"diverged\"]]`, `true_label: Literal[\"equivalent\",\"divergent\"]`, and fields `original_phase_id`, `paraphrase_phase_id` instead. The Literal types are incompatible (\"not_equivalent\" vs \"diverged\"/\"divergent\", two-category vs three-category), and the field sets are structurally different. Phase 4's equivalence validator sends `categories=[\"equivalent\",\"partial\",\"diverged\"]` to Below, so the Phase 1 pydantic model will reject actual Below responses at validation time.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 adds `node_runner_detected: Literal[\"vitest\",\"other\"]` to `LocalTestResult`, but Phase 1 declares the full frozen schema for `LocalTestResult` ('no later phase adds variants') and this field is absent from the Phase 1 declaration. The pydantic model will reject the field at write time, or if added ad-hoc it violates Phase 1's single-owner invariant.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 adds `node_runner_detected: Literal[\"vitest\",\"other\"]` to `LocalTestResult`, but Phase 1 declares the full frozen schema for `LocalTestResult` ('no later phase adds variants') and this field is absent from the Phase 1 declaration. The pydantic model will reject the field at write time, or if added ad-hoc it violates Phase 1's single-owner invariant.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 states '`br benchmark run --session-id <existing_id>` is explicitly NOT supported \u2014 `run` always mints a new id', but Phase 3's `cli_run.py` flag surface declares `--session-id <str> (optional; auto-generated UUIDv7 if omitted)` as a Typer option on the `run` subcommand. The semantics are ambiguous: does the flag pre-seed a new UUID or accept an existing session? If a user passes an existing session id to `run`, the behavior is undefined and could corrupt session state.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 states '`br benchmark run --session-id <existing_id>` is explicitly NOT supported \u2014 `run` always mints a new id', but Phase 3's `cli_run.py` flag surface declares `--session-id <str> (optional; auto-generated UUIDv7 if omitted)` as a Typer option on the `run` subcommand. The semantics are ambiguous: does the flag pre-seed a new UUID or accept an existing session? If a user passes an existing session id to `run`, the behavior is undefined and could corrupt session state.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 explicitly states 'No later phase adds new variants or new fields to either model' for both `RegistryRow` and `ExclusionRow`, yet Phase 1's own deliverables list `ProbePendingRow` as if it were part of the union while the union definition omits it. This is an internal self-contradiction in Phase 1 \u2014 either the union must include 8 types or `ProbePendingRow` must be moved to a separate JSONL file (like `ExclusionRow` was).",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 explicitly states 'No later phase adds new variants or new fields to either model' for both `RegistryRow` and `ExclusionRow`, yet Phase 1's own deliverables list `ProbePendingRow` as if it were part of the union while the union definition omits it. This is an internal self-contradiction in Phase 1 \u2014 either the union must include 8 types or `ProbePendingRow` must be moved to a separate JSONL file (like `ExclusionRow` was).",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `deps.py` preflight greps `dispatch-to-node.sh` for literal patterns like `if [ ! -d \"$PROJECT_PATH/.git\" ]` and `git merge --ff-only \"$SESSION_NAME\"`. These are fragile string matches \u2014 whitespace changes, quoting changes, or variable renaming that preserve behavior but alter the literal string will fail the preflight and block the benchmark with a false positive. No regex tolerance or version-negotiation is specified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `deps.py` preflight greps `dispatch-to-node.sh` for literal patterns like `if [ ! -d \"$PROJECT_PATH/.git\" ]` and `git merge --ff-only \"$SESSION_NAME\"`. These are fragile string matches \u2014 whitespace changes, quoting changes, or variable renaming that preserve behavior but alter the literal string will fail the preflight and block the benchmark with a false positive. No regex tolerance or version-negotiation is specified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's pre-run baseline guard calls `_detect_baseline_drift(baseline_freeze, current_freeze)` and recreates the venv on ANY drift including pure additions. But the very first run after install will have `baseline_freeze == current_freeze` (no drift). The second run, if the first run's contestant added a package, will detect the addition as drift and recreate \u2014 costing ~30s. This is correct per the spec. However, if the recreation itself runs `pip install -r requirements-benchmark.txt` which resolves transitive deps differently than the original install (pip resolver non-determinism across runs), the new baseline could differ from the old one, causing a cascading recreation on every subsequent run.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's pre-run baseline guard calls `_detect_baseline_drift(baseline_freeze, current_freeze)` and recreates the venv on ANY drift including pure additions. But the very first run after install will have `baseline_freeze == current_freeze` (no drift). The second run, if the first run's contestant added a package, will detect the addition as drift and recreate \u2014 costing ~30s. This is correct per the spec. However, if the recreation itself runs `pip install -r requirements-benchmark.txt` which resolves transitive deps differently than the original install (pip resolver non-determinism across runs), the new baseline could differ from the old one, causing a cascading recreation on every subsequent run.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references `UUIDv7` for session ids (Phase 3: 'auto-generated UUIDv7 if omitted') but Phase 1's session_state uses `uuid4()` ('br benchmark run mints a fresh session_id = uuid4()'). UUIDv7 is time-ordered while UUIDv4 is random \u2014 if resume logic or the session index assumes time-ordering (UUIDv7), using uuid4 would break that assumption; if it doesn't, the inconsistency is cosmetic but confusing.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references `UUIDv7` for session ids (Phase 3: 'auto-generated UUIDv7 if omitted') but Phase 1's session_state uses `uuid4()` ('br benchmark run mints a fresh session_id = uuid4()'). UUIDv7 is time-ordered while UUIDv4 is random \u2014 if resume logic or the session index assumes time-ordering (UUIDv7), using uuid4 would break that assumption; if it doesn't, the inconsistency is cosmetic but confusing.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier uses `StratifiedGroupKFold(n_splits=5)` with `groups=phase_id`. At the pilot minimum of 5 phases, each fold holds out exactly 1 phase (12 rows) and trains on 4 phases (48 rows). With only 4 training groups and a char-level TF-IDF + LogisticRegression pipeline, the model may overfit to phase-specific tokens rather than model-identity tokens, making the blinding gate unreliable in both directions.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses `StratifiedGroupKFold(n_splits=5)` with `groups=phase_id`. At the pilot minimum of 5 phases, each fold holds out exactly 1 phase (12 rows) and trains on 4 phases (48 rows). With only 4 training groups and a char-level TF-IDF + LogisticRegression pipeline, the model may overfit to phase-specific tokens rather than model-identity tokens, making the blinding gate unreliable in both directions.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "No specification for what happens if `dispatch-to-node.sh` is updated by another BR3 process (e.g. a `/begin` phase running concurrently on Otis) between the preflight grep check and the actual dispatch invocation. The grep asserts a contract that could change mid-session.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "No specification for what happens if `dispatch-to-node.sh` is updated by another BR3 process (e.g. a `/begin` phase running concurrently on Otis) between the preflight grep check and the actual dispatch invocation. The grep asserts a contract that could change mid-session.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `anthropic` import-time safety argument ('does not require ANTHROPIC_API_KEY at import time') is stated as of the current SDK version but is not pinned or verified \u2014 a future anthropic SDK release that adds import-time key validation would silently break every contestant run's editable install smoke test.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The `anthropic` import-time safety argument ('does not require ANTHROPIC_API_KEY at import time') is stated as of the current SDK version but is not pinned or verified \u2014 a future anthropic SDK release that adds import-time key validation would silently break every contestant run's editable install smoke test.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 defines `RegistryRow` with `row_type: Literal[\"claim\",\"heartbeat\",\"superseded\",\"completed\",\"dropped\",\"skipped\",\"recognition\"]`, but Phase 4 later adds `ProbePendingRow` with `row_type=\"probe_pending\"`. That discriminator set does not include `probe_pending`, so pending-probe rows will fail validation or be unreadable by the declared union.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `RegistryRow` with `row_type: Literal[\"claim\",\"heartbeat\",\"superseded\",\"completed\",\"dropped\",\"skipped\",\"recognition\"]`, but Phase 4 later adds `ProbePendingRow` with `row_type=\"probe_pending\"`. That discriminator set does not include `probe_pending`, so pending-probe rows will fail validation or be unreadable by the declared union.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `CalibrationPair` schema is internally contradictory. Phase 1 declares `CalibrationPair` as binary (`below_prediction`/`deepseek_prediction`: `\"equivalent\" | \"not_equivalent\"`, with `phase_id`, `true_label`, `reviewed_at_utc` fields), but Phase 4 says `.buildrunner/benchmarks/equivalence-calibration.json` stores `CalibrationPair` entries with ternary predictions (`\"equivalent\" | \"partial\" | \"diverged\"`) and different field names (`original_phase_id`, `paraphrase_phase_id`, `byron_reviewed_at_utc`). The persisted artifact cannot satisfy both contracts.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The `CalibrationPair` schema is internally contradictory. Phase 1 declares `CalibrationPair` as binary (`below_prediction`/`deepseek_prediction`: `\"equivalent\" | \"not_equivalent\"`, with `phase_id`, `true_label`, `reviewed_at_utc` fields), but Phase 4 says `.buildrunner/benchmarks/equivalence-calibration.json` stores `CalibrationPair` entries with ternary predictions (`\"equivalent\" | \"partial\" | \"diverged\"`) and different field names (`original_phase_id`, `paraphrase_phase_id`, `byron_reviewed_at_utc`). The persisted artifact cannot satisfy both contracts.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 resume/redraw logic depends on persisted selector state that is never actually specified. `runner.resume()` reconstructs work from `selector.selected_phases` and `selector.get_phase(...)` via a 'session-state candidate cache', but Phase 1's `SessionState` schema has no field for selected phases or cached `PhaseSpec`s, and no file path is defined for persisting them. After a kill/resume, replacement phases cannot be reconstructed deterministically.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 resume/redraw logic depends on persisted selector state that is never actually specified. `runner.resume()` reconstructs work from `selector.selected_phases` and `selector.get_phase(...)` via a 'session-state candidate cache', but Phase 1's `SessionState` schema has no field for selected phases or cached `PhaseSpec`s, and no file path is defined for persisting them. After a kill/resume, replacement phases cannot be reconstructed deterministically.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's exit-code handling for `dispatch-to-node.sh` is inconsistent and will mis-score runs. The plan says dispatcher exit code `2` covers both local validation failures and `runtime subprocess exit \u2260 0`, then classifies all exit-2 cases as terminal `SkippedRow{reason=\"dispatch_terminal_exit2\"}`. That conflicts with the same phase's statement that contestant runtime-nonzero is a legitimate scored failed run; those runs would be dropped instead of recorded as failed outcomes.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's exit-code handling for `dispatch-to-node.sh` is inconsistent and will mis-score runs. The plan says dispatcher exit code `2` covers both local validation failures and `runtime subprocess exit \u2260 0`, then classifies all exit-2 cases as terminal `SkippedRow{reason=\"dispatch_terminal_exit2\"}`. That conflicts with the same phase's statement that contestant runtime-nonzero is a legitimate scored failed run; those runs would be dropped instead of recorded as failed outcomes.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's `pilot_contention.py` is specified to scan 'every `CompletedRow` in the canonical registry' and compute node medians from them. That will double-count the same run because `CompletedRow` is append-only with `stage=\"run\"`, `\"scored\"`, and `\"judged\"` versions, and it can also mix pilot and non-pilot sessions unless further filtered. The contention ratio that decides whether Lomax is dropped will be corrupted.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9's `pilot_contention.py` is specified to scan 'every `CompletedRow` in the canonical registry' and compute node medians from them. That will double-count the same run because `CompletedRow` is append-only with `stage=\"run\"`, `\"scored\"`, and `\"judged\"` versions, and it can also mix pilot and non-pilot sessions unless further filtered. The contention ratio that decides whether Lomax is dropped will be corrupted.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 declares `RegistryRow = Union[ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow]` (7 variants) but also declares `ProbePendingRow` as a separate deliverable in the same phase. `ProbePendingRow` is not included in the union. Phase 4 references it as 'new row-type added to Phase 1's union'. The JSONL reader's discriminated-union parse will reject `row_type=\"probe_pending\"` lines, and `_reduce_registry_by_cell_key` will either crash or silently drop probe-pending rows.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares `RegistryRow = Union[ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow]` (7 variants) but also declares `ProbePendingRow` as a separate deliverable in the same phase. `ProbePendingRow` is not included in the union. Phase 4 references it as 'new row-type added to Phase 1's union'. The JSONL reader's discriminated-union parse will reject `row_type=\"probe_pending\"` lines, and `_reduce_registry_by_cell_key` will either crash or silently drop probe-pending rows.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 declares `CalibrationPair` with `below_prediction: Literal[\"equivalent\",\"not_equivalent\"]`, `true_label: Literal[\"equivalent\",\"not_equivalent\"]`, and fields `sub_study`, `replication_index`. Phase 4's `equivalence-calibration.json` schema uses `below_prediction: Optional[Literal[\"equivalent\",\"partial\",\"diverged\"]]`, `true_label: Literal[\"equivalent\",\"divergent\"]`, and fields `original_phase_id`, `paraphrase_phase_id` instead. The Literal types are incompatible (\"not_equivalent\" vs \"diverged\"/\"divergent\", two-category vs three-category), and the field sets are structurally different. Phase 4's equivalence validator sends `categories=[\"equivalent\",\"partial\",\"diverged\"]` to Below, so the Phase 1 pydantic model will reject actual Below responses at validation time.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares `CalibrationPair` with `below_prediction: Literal[\"equivalent\",\"not_equivalent\"]`, `true_label: Literal[\"equivalent\",\"not_equivalent\"]`, and fields `sub_study`, `replication_index`. Phase 4's `equivalence-calibration.json` schema uses `below_prediction: Optional[Literal[\"equivalent\",\"partial\",\"diverged\"]]`, `true_label: Literal[\"equivalent\",\"divergent\"]`, and fields `original_phase_id`, `paraphrase_phase_id` instead. The Literal types are incompatible (\"not_equivalent\" vs \"diverged\"/\"divergent\", two-category vs three-category), and the field sets are structurally different. Phase 4's equivalence validator sends `categories=[\"equivalent\",\"partial\",\"diverged\"]` to Below, so the Phase 1 pydantic model will reject actual Below responses at validation time.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 adds `node_runner_detected: Literal[\"vitest\",\"other\"]` to `LocalTestResult`, but Phase 1 declares the full frozen schema for `LocalTestResult` ('no later phase adds variants') and this field is absent from the Phase 1 declaration. The pydantic model will reject the field at write time, or if added ad-hoc it violates Phase 1's single-owner invariant.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 adds `node_runner_detected: Literal[\"vitest\",\"other\"]` to `LocalTestResult`, but Phase 1 declares the full frozen schema for `LocalTestResult` ('no later phase adds variants') and this field is absent from the Phase 1 declaration. The pydantic model will reject the field at write time, or if added ad-hoc it violates Phase 1's single-owner invariant.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 defines `RegistryRow` with `row_type: Literal[\"claim\",\"heartbeat\",\"superseded\",\"completed\",\"dropped\",\"skipped\",\"recognition\"]`, but Phase 4 later adds `ProbePendingRow` with `row_type=\"probe_pending\"`. That discriminator set does not include `probe_pending`, so pending-probe rows will fail validation or be unreadable by the declared union.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `RegistryRow` with `row_type: Literal[\"claim\",\"heartbeat\",\"superseded\",\"completed\",\"dropped\",\"skipped\",\"recognition\"]`, but Phase 4 later adds `ProbePendingRow` with `row_type=\"probe_pending\"`. That discriminator set does not include `probe_pending`, so pending-probe rows will fail validation or be unreadable by the declared union.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `CalibrationPair` schema is internally contradictory. Phase 1 declares `CalibrationPair` as binary (`below_prediction`/`deepseek_prediction`: `\"equivalent\" | \"not_equivalent\"`, with `phase_id`, `true_label`, `reviewed_at_utc` fields), but Phase 4 says `.buildrunner/benchmarks/equivalence-calibration.json` stores `CalibrationPair` entries with ternary predictions (`\"equivalent\" | \"partial\" | \"diverged\"`) and different field names (`original_phase_id`, `paraphrase_phase_id`, `byron_reviewed_at_utc`). The persisted artifact cannot satisfy both contracts.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The `CalibrationPair` schema is internally contradictory. Phase 1 declares `CalibrationPair` as binary (`below_prediction`/`deepseek_prediction`: `\"equivalent\" | \"not_equivalent\"`, with `phase_id`, `true_label`, `reviewed_at_utc` fields), but Phase 4 says `.buildrunner/benchmarks/equivalence-calibration.json` stores `CalibrationPair` entries with ternary predictions (`\"equivalent\" | \"partial\" | \"diverged\"`) and different field names (`original_phase_id`, `paraphrase_phase_id`, `byron_reviewed_at_utc`). The persisted artifact cannot satisfy both contracts.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 resume/redraw logic depends on persisted selector state that is never actually specified. `runner.resume()` reconstructs work from `selector.selected_phases` and `selector.get_phase(...)` via a 'session-state candidate cache', but Phase 1's `SessionState` schema has no field for selected phases or cached `PhaseSpec`s, and no file path is defined for persisting them. After a kill/resume, replacement phases cannot be reconstructed deterministically.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 resume/redraw logic depends on persisted selector state that is never actually specified. `runner.resume()` reconstructs work from `selector.selected_phases` and `selector.get_phase(...)` via a 'session-state candidate cache', but Phase 1's `SessionState` schema has no field for selected phases or cached `PhaseSpec`s, and no file path is defined for persisting them. After a kill/resume, replacement phases cannot be reconstructed deterministically.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's exit-code handling for `dispatch-to-node.sh` is inconsistent and will mis-score runs. The plan says dispatcher exit code `2` covers both local validation failures and `runtime subprocess exit \u2260 0`, then classifies all exit-2 cases as terminal `SkippedRow{reason=\"dispatch_terminal_exit2\"}`. That conflicts with the same phase's statement that contestant runtime-nonzero is a legitimate scored failed run; those runs would be dropped instead of recorded as failed outcomes.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's exit-code handling for `dispatch-to-node.sh` is inconsistent and will mis-score runs. The plan says dispatcher exit code `2` covers both local validation failures and `runtime subprocess exit \u2260 0`, then classifies all exit-2 cases as terminal `SkippedRow{reason=\"dispatch_terminal_exit2\"}`. That conflicts with the same phase's statement that contestant runtime-nonzero is a legitimate scored failed run; those runs would be dropped instead of recorded as failed outcomes.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's `pilot_contention.py` is specified to scan 'every `CompletedRow` in the canonical registry' and compute node medians from them. That will double-count the same run because `CompletedRow` is append-only with `stage=\"run\"`, `\"scored\"`, and `\"judged\"` versions, and it can also mix pilot and non-pilot sessions unless further filtered. The contention ratio that decides whether Lomax is dropped will be corrupted.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9's `pilot_contention.py` is specified to scan 'every `CompletedRow` in the canonical registry' and compute node medians from them. That will double-count the same run because `CompletedRow` is append-only with `stage=\"run\"`, `\"scored\"`, and `\"judged\"` versions, and it can also mix pilot and non-pilot sessions unless further filtered. The contention ratio that decides whether Lomax is dropped will be corrupted.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T06:09:43.149725Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 3
+}

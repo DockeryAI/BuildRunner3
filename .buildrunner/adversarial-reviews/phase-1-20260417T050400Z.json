@@ -1,0 +1,502 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T045326Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 is blocked by Phase 4, but Phase 3's runner.py defines the ScorerProtocol and the full run_cell pipeline including paraphrase/equivalence calls. Phase 4's paraphraser.py and equivalence.py must land first. However, Phase 4 is blocked by Phase 2 only, while Phase 3 is blocked by Phases 1, 2, AND 4. The parallelization matrix confirms build order 1\u21922\u21924\u21923, which is consistent. No ordering issue here \u2014 this is correct.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 is blocked by Phase 4, but Phase 3's runner.py defines the ScorerProtocol and the full run_cell pipeline including paraphrase/equivalence calls. Phase 4's paraphraser.py and equivalence.py must land first. However, Phase 4 is blocked by Phase 2 only, while Phase 3 is blocked by Phases 1, 2, AND 4. The parallelization matrix confirms build order 1\u21922\u21924\u21923, which is consistent. No ordering issue here \u2014 this is correct.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 declares SessionState with a field 'resume_session_id' whose writer is 'Phase 1 deps.py ONLY', but the description then explains that 'br benchmark run' mints a fresh session_id and writes it. deps.py is the dependency/preflight module \u2014 session creation logic (minting UUIDs, acquiring session-index locks, creating per-session files) is orchestration logic that belongs in runner.py or cli_run.py, not deps.py. If deps.py truly owns this, Phase 3's cli_run.py (which replaces the stub) would need to call into deps.py for session creation, creating a circular responsibility where the preflight module also handles runtime orchestration.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares SessionState with a field 'resume_session_id' whose writer is 'Phase 1 deps.py ONLY', but the description then explains that 'br benchmark run' mints a fresh session_id and writes it. deps.py is the dependency/preflight module \u2014 session creation logic (minting UUIDs, acquiring session-index locks, creating per-session files) is orchestration logic that belongs in runner.py or cli_run.py, not deps.py. If deps.py truly owns this, Phase 3's cli_run.py (which replaces the stub) would need to call into deps.py for session creation, creating a circular responsibility where the preflight module also handles runtime orchestration.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 claims 'scripts/install-benchmark-deps.sh' creates .buildrunner/.gitignore, but .buildrunner/.gitignore is also listed as a separate NEW file in Phase 1's Files list. Two creation paths for the same file in the same phase \u2014 the shell script and the phase's own file-creation step could race or conflict if the install script runs during the build step rather than as a post-build setup.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 claims 'scripts/install-benchmark-deps.sh' creates .buildrunner/.gitignore, but .buildrunner/.gitignore is also listed as a separate NEW file in Phase 1's Files list. Two creation paths for the same file in the same phase \u2014 the shell script and the phase's own file-creation step could race or conflict if the install script runs during the build step rather than as a post-build setup.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's dispatch_run passes prompt_text as argv[5] positional argument to dispatch-to-node.sh. The plan states prompts are <50KB and hard-rejected at 200KB (later corrected to 100KB in the same deliverable). However, dispatch-to-node.sh embeds the prompt into a remote SSH heredoc command. The plan acknowledges a 128KB SSH practical ceiling but sets the rejection threshold at 100KB \u2014 this is fine. But the plan says 'hard-rejected at 200 KB' in one sentence and '100 KB' two sentences later for the same check. This is a self-contradiction in the prompt size limit.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's dispatch_run passes prompt_text as argv[5] positional argument to dispatch-to-node.sh. The plan states prompts are <50KB and hard-rejected at 200KB (later corrected to 100KB in the same deliverable). However, dispatch-to-node.sh embeds the prompt into a remote SSH heredoc command. The plan acknowledges a 128KB SSH practical ceiling but sets the rejection threshold at 100KB \u2014 this is fine. But the plan says 'hard-rejected at 200 KB' in one sentence and '100 KB' two sentences later for the same check. This is a self-contradiction in the prompt size limit.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's venv drift detection uses 'packaging.version.Version' for PEP 440 comparison, but 'packaging' is not listed in requirements-benchmark.txt. pip ships packaging internally but importing 'packaging.version' from pip's vendored copy is fragile. The requirements file pins pydantic, scipy, numpy, etc. but not 'packaging'.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's venv drift detection uses 'packaging.version.Version' for PEP 440 comparison, but 'packaging' is not listed in requirements-benchmark.txt. pip ships packaging internally but importing 'packaging.version' from pip's vendored copy is fragile. The requirements file pins pydantic, scipy, numpy, etc. but not 'packaging'.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's pilot targets 7 phases \u00d7 2 models \u00d7 3 reps \u00d7 2 sub-studies = 84 runs. The contention measurement requires \u22658 samples per node bucket (Otis and Lomax). With balanced node allocation across 84 runs split between 2 nodes, each node gets ~42 runs \u2014 well above 8. However, if the pilot achieves only the minimum 5 phases (60 runs), each node still gets ~30. No issue here.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's pilot targets 7 phases \u00d7 2 models \u00d7 3 reps \u00d7 2 sub-studies = 84 runs. The contention measurement requires \u22658 samples per node bucket (Otis and Lomax). With balanced node allocation across 84 runs split between 2 nodes, each node gets ~42 runs \u2014 well above 8. However, if the pilot achieves only the minimum 5 phases (60 runs), each node still gets ~30. No issue here.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's config.py declares the full BenchmarkConfig schema including PilotConfig with 'contention_ratio_threshold' and 'contention_min_samples_per_bucket', but Phase 9's pilot_contention.py hardcodes the threshold as 1.10 and min samples as 8 (per Invariant 14) rather than reading from config. Either the config fields are dead/stranded or the implementation should read them \u2014 a requirement conflict between 'Phase 1 declares every config field any phase needs' and Phase 9 using literals.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's config.py declares the full BenchmarkConfig schema including PilotConfig with 'contention_ratio_threshold' and 'contention_min_samples_per_bucket', but Phase 9's pilot_contention.py hardcodes the threshold as 1.10 and min samples as 8 (per Invariant 14) rather than reading from config. Either the config fields are dead/stranded or the implementation should read them \u2014 a requirement conflict between 'Phase 1 declares every config field any phase needs' and Phase 9 using literals.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's deblind_classifier.py uses StratifiedGroupKFold which requires groups. The plan states 7 pilot phases with 12 rows each = 84 rows, 5-fold CV. With 7 groups and 5 folds, some folds must contain 1 group (12 rows) and others 2 groups (24 rows). StratifiedGroupKFold with n_splits=5 and only 7 groups means the class balance per fold may be poor \u2014 if a single phase happened to produce all-correct or all-incorrect predictions for one model, the stratification within 1-group folds is degenerate. The plan acknowledges clamping n_splits but doesn't address the statistical power concern at low group counts.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's deblind_classifier.py uses StratifiedGroupKFold which requires groups. The plan states 7 pilot phases with 12 rows each = 84 rows, 5-fold CV. With 7 groups and 5 folds, some folds must contain 1 group (12 rows) and others 2 groups (24 rows). StratifiedGroupKFold with n_splits=5 and only 7 groups means the class balance per fold may be poor \u2014 if a single phase happened to produce all-correct or all-incorrect predictions for one model, the stratification within 1-group folds is degenerate. The plan acknowledges clamping n_splits but doesn't address the statistical power concern at low group counts.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's setup_clone uses 'git clone --local --shared' which creates alternates-based object sharing. But teardown_clone does 'rm -rf /tmp/br3-bench-<run_id>/' \u2014 if the clone's objects/info/alternates points back to the parent repo and git GC runs on the parent between finalize_run (fetch) and teardown, objects could theoretically be pruned. In practice this is unlikely within a single run's lifetime, but the plan doesn't mention '--dissociate' or any protection against this.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's setup_clone uses 'git clone --local --shared' which creates alternates-based object sharing. But teardown_clone does 'rm -rf /tmp/br3-bench-<run_id>/' \u2014 if the clone's objects/info/alternates points back to the parent repo and git GC runs on the parent between finalize_run (fetch) and teardown, objects could theoretically be pruned. In practice this is unlikely within a single run's lifetime, but the plan doesn't mention '--dissociate' or any protection against this.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 states that when a contestant modifies requirements*.txt, the runner re-runs pip install from the clone's requirements files into the shared .venv-benchmark/. But pip install order matters \u2014 Phase 1's installer runs 'for req in requirements*.txt' with nullglob, which iterates in glob order (alphabetical). requirements-api.txt sorts before requirements-benchmark.txt. If a contestant's edit to requirements-api.txt pins a version that conflicts with requirements-benchmark.txt, the resolver behavior depends on pip's conflict resolution strategy, not install order. The plan claims 'pip installs requirements-benchmark.txt last' as a resolution mechanism, but glob ordering is alphabetical \u2014 requirements-benchmark.txt (b) comes BEFORE requirements-api.txt (no, wait \u2014 'api' < 'benchmark' alphabetically, so requirements-api.txt is installed first, then requirements-benchmark.txt). Actually the plan is correct that benchmark comes after api alphabetically. But pip's resolver processes all constraints together when using backtracking resolver (default since pip 20.3), not sequentially. The 'last write wins' claim about pip is incorrect \u2014 pip resolves the intersection of all constraints, not a last-writer-wins model.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 states that when a contestant modifies requirements*.txt, the runner re-runs pip install from the clone's requirements files into the shared .venv-benchmark/. But pip install order matters \u2014 Phase 1's installer runs 'for req in requirements*.txt' with nullglob, which iterates in glob order (alphabetical). requirements-api.txt sorts before requirements-benchmark.txt. If a contestant's edit to requirements-api.txt pins a version that conflicts with requirements-benchmark.txt, the resolver behavior depends on pip's conflict resolution strategy, not install order. The plan claims 'pip installs requirements-benchmark.txt last' as a resolution mechanism, but glob ordering is alphabetical \u2014 requirements-benchmark.txt (b) comes BEFORE requirements-api.txt (no, wait \u2014 'api' < 'benchmark' alphabetically, so requirements-api.txt is installed first, then requirements-benchmark.txt). Actually the plan is correct that benchmark comes after api alphabetically. But pip's resolver processes all constraints together when using backtracking resolver (default since pip 20.3), not sequentially. The 'last write wins' claim about pip is incorrect \u2014 pip resolves the intersection of all constraints, not a last-writer-wins model.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's finalize_run fetches the contestant's commit from the clone into the parent repo as refs/heads/bench/<run_id>. Over 360 runs this creates 360 git refs in the parent repo. The gc-anchors command sweeps refs older than --keep-days (default 30). During the multi-day Phase 10 run, all 360 refs accumulate. Each ref's objects are already shared via alternates, but the ref namespace grows. This is not a bug per se but the plan doesn't discuss the impact of 360+ refs on git performance during the run.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's finalize_run fetches the contestant's commit from the clone into the parent repo as refs/heads/bench/<run_id>. Over 360 runs this creates 360 git refs in the parent repo. The gc-anchors command sweeps refs older than --keep-days (default 30). During the multi-day Phase 10 run, all 360 refs accumulate. Each ref's objects are already shared via alternates, but the ref namespace grows. This is not a bug per se but the plan doesn't discuss the impact of 360+ refs on git performance during the run.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7's mixed-effects regression uses statsmodels BinomialBayesMixedGLM with fit_vb(). The plan specifies fallback to cluster-robust fixed-effects Logit on convergence failure. However, the plan states the regression controls for recognition_score (continuous), node_name (categorical), equivalence_validator (categorical), walter_cluster_snapshot.status (categorical), and lomax_cluster_snapshot.status (categorical). With 30 phases and potentially 5+ categorical levels across covariates, plus a random intercept on phase_id, the model could be overparameterized relative to the ~360 binary observations. The plan doesn't discuss degrees of freedom or model selection.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7's mixed-effects regression uses statsmodels BinomialBayesMixedGLM with fit_vb(). The plan specifies fallback to cluster-robust fixed-effects Logit on convergence failure. However, the plan states the regression controls for recognition_score (continuous), node_name (categorical), equivalence_validator (categorical), walter_cluster_snapshot.status (categorical), and lomax_cluster_snapshot.status (categorical). With 30 phases and potentially 5+ categorical levels across covariates, plus a random intercept on phase_id, the model could be overparameterized relative to the ~360 binary observations. The plan doesn't discuss degrees of freedom or model selection.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references 'Codex 5.4' and 'Claude Opus 4.7' as the two contestants, with config values codex_model_version='codex-5-4' and claude_model_version='claude-opus-4-7'. These model versions do not exist as of the assistant's knowledge cutoff (May 2025). The plan is dated April 2026, so these are presumably future model versions. The config stores them as strings for dispatch, which is fine. However, dispatch-to-node.sh's --runtime flag only takes 'claude' or 'codex' (per the verified CLI), not a model version \u2014 the model version is informational only and does not control which actual model runs. If the nodes have multiple Codex or Claude versions installed, the harness has no mechanism to pin the exact version at dispatch time.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references 'Codex 5.4' and 'Claude Opus 4.7' as the two contestants, with config values codex_model_version='codex-5-4' and claude_model_version='claude-opus-4-7'. These model versions do not exist as of the assistant's knowledge cutoff (May 2025). The plan is dated April 2026, so these are presumably future model versions. The config stores them as strings for dispatch, which is fine. However, dispatch-to-node.sh's --runtime flag only takes 'claude' or 'codex' (per the verified CLI), not a model version \u2014 the model version is informational only and does not control which actual model runs. If the nodes have multiple Codex or Claude versions installed, the harness has no mechanism to pin the exact version at dispatch time.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's equivalence validator sends a compound text to Below's POST /api/classify with categories ['equivalent','partial','diverged']. The verified Below contract is 'single-text multi-category classification'. The equivalence check embeds both original and paraphrase into a single text field with a separator and a question. This is using a text classifier as an NLI system \u2014 the classifier was not verified to handle this prompt format. The contract verification only confirmed the API shape, not that Below's model produces meaningful NLI judgments from this input format. The Below calibration step (Phase 4 deliverable) addresses this, but if Below's model is a simple topic classifier rather than an instruction-following model, the calibration will fail and force DeepSeek-only equivalence, which is an OpenRouter dependency for every paraphrase check.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4's equivalence validator sends a compound text to Below's POST /api/classify with categories ['equivalent','partial','diverged']. The verified Below contract is 'single-text multi-category classification'. The equivalence check embeds both original and paraphrase into a single text field with a separator and a question. This is using a text classifier as an NLI system \u2014 the classifier was not verified to handle this prompt format. The contract verification only confirmed the API shape, not that Below's model produces meaningful NLI judgments from this input format. The Below calibration step (Phase 4 deliverable) addresses this, but if Below's model is a simple topic classifier rather than an instruction-following model, the calibration will fail and force DeepSeek-only equivalence, which is an OpenRouter dependency for every paraphrase check.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's requirements-benchmark.txt pins 'pytest>=7.4,<9.0' with an elaborate rationale about pytest 9's collection-API changes. But the plan also states the shared venv installs ALL root-level requirements*.txt files. If requirements-api.txt (or any other existing root requirements file) pins a pytest version outside this range, the install will fail with ResolutionImpossible at Phase 1 setup time. The plan verified requirements-api.txt exists but did not verify whether it pins pytest.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's requirements-benchmark.txt pins 'pytest>=7.4,<9.0' with an elaborate rationale about pytest 9's collection-API changes. But the plan also states the shared venv installs ALL root-level requirements*.txt files. If requirements-api.txt (or any other existing root requirements file) pins a pytest version outside this range, the install will fail with ResolutionImpossible at Phase 1 setup time. The plan verified requirements-api.txt exists but did not verify whether it pins pytest.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's lockres.py resolve_lock uses 'git log --all --extended-regexp --grep=...' which scans all refs. With 360+ bench/* refs from Phase 10 runs (each containing commits with messages like 'feat: dispatched phase work'), the git log scan during Phase 10 would be searching across an increasingly large ref set. The grep pattern targets 'lock: claim Phase N' subjects, so the bench/* commits won't match, but --all still forces git to walk all ref tips. This is a performance concern, not a correctness issue.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's lockres.py resolve_lock uses 'git log --all --extended-regexp --grep=...' which scans all refs. With 360+ bench/* refs from Phase 10 runs (each containing commits with messages like 'feat: dispatched phase work'), the git log scan during Phase 10 would be searching across an increasingly large ref set. The grep pattern targets 'lock: claim Phase N' subjects, so the bench/* commits won't match, but --all still forces git to walk all ref tips. This is a performance concern, not a correctness issue.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan states Phase 3's runner calls paraphraser.paraphrase_spec() and equivalence.check_equivalence() in its run_cell prelude (steps 2-3 of the temporal precedence list). These are Phase 4 symbols. The build order is 1\u21922\u21924\u21923, so Phase 4 lands before Phase 3, making the imports valid. However, Phase 3's test_runner.py (NEW) would need to mock/stub these Phase 4 imports for unit testing. The plan doesn't mention how test_runner.py handles the paraphraser/equivalence dependencies \u2014 if tests import runner.py, they transitively import paraphraser.py and equivalence.py, which import openrouter_min.py and api_clients.py. The test file needs careful mocking.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan states Phase 3's runner calls paraphraser.paraphrase_spec() and equivalence.check_equivalence() in its run_cell prelude (steps 2-3 of the temporal precedence list). These are Phase 4 symbols. The build order is 1\u21922\u21924\u21923, so Phase 4 lands before Phase 3, making the imports valid. However, Phase 3's test_runner.py (NEW) would need to mock/stub these Phase 4 imports for unit testing. The plan doesn't mention how test_runner.py handles the paraphraser/equivalence dependencies \u2014 if tests import runner.py, they transitively import paraphraser.py and equivalence.py, which import openrouter_min.py and api_clients.py. The test file needs careful mocking.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's npm install for contestant UI deps uses '--ignore-scripts' which suppresses postinstall hooks. Some common npm packages (e.g., esbuild, sharp, node-sass) require postinstall scripts to install platform-specific binaries. If the current BR3 UI deps or a contestant's added deps need postinstall, npm test will fail with missing binaries. The plan addresses this with a baseline sanity check, but only for the pre-benchmark tree \u2014 a contestant adding esbuild as a dep would get install_failed, which the plan explicitly scores as a model failure. This is a design choice, not a bug.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's npm install for contestant UI deps uses '--ignore-scripts' which suppresses postinstall hooks. Some common npm packages (e.g., esbuild, sharp, node-sass) require postinstall scripts to install platform-specific binaries. If the current BR3 UI deps or a contestant's added deps need postinstall, npm test will fail with missing binaries. The plan addresses this with a baseline sanity check, but only for the pre-benchmark tree \u2014 a contestant adding esbuild as a dep would get install_failed, which the plan explicitly scores as a model failure. This is a design choice, not a bug.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The prompt size contradiction: Phase 3 deliverable states prompts are 'hard-rejected at 200 KB' in one location and then two paragraphs later states 'rejected with prompt_too_large if they exceed 100 KB (a conservative ceiling well below the verified SSH limit)'. These are the same check described with two different thresholds in the same deliverable.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The prompt size contradiction: Phase 3 deliverable states prompts are 'hard-rejected at 200 KB' in one location and then two paragraphs later states 'rejected with prompt_too_large if they exceed 100 KB (a conservative ceiling well below the verified SSH limit)'. These are the same check described with two different thresholds in the same deliverable.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's SessionState schema declares preflight_nodes_online as list[str] but the plan never describes how this field is consumed downstream. Phase 7's regression uses preflight_single_node (bool) and observed node_name cardinality, not preflight_nodes_online. Phase 3's NodeAllocator consumes deps.probe_node_pool() directly, not the session-state field. This field appears stranded \u2014 declared but never read.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's SessionState schema declares preflight_nodes_online as list[str] but the plan never describes how this field is consumed downstream. Phase 7's regression uses preflight_single_node (bool) and observed node_name cardinality, not preflight_nodes_online. Phase 3's NodeAllocator consumes deps.probe_node_pool() directly, not the session-state field. This field appears stranded \u2014 declared but never read.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 modifies deps.py to add read_pilot_contention(). Phase 1 states 'Phase 1 is the sole writer of deps.py' but Phase 10 adds a MODIFY. The plan explicitly addresses this ('Phase 10's one-helper addition'), so this is acknowledged. However, the invariant 'Phase 1 is the sole writer' is technically violated. The plan should say 'Phase 1 is the primary owner' rather than 'sole writer'.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 10 modifies deps.py to add read_pilot_contention(). Phase 1 states 'Phase 1 is the sole writer of deps.py' but Phase 10 adds a MODIFY. The plan explicitly addresses this ('Phase 10's one-helper addition'), so this is acknowledged. However, the invariant 'Phase 1 is the sole writer' is technically violated. The plan should say 'Phase 1 is the primary owner' rather than 'sole writer'.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `lockres.resolve_lock()` falls back to the most recent non-merge `lock: claim Phase <N>` commit when no candidate touched the target BUILD file. Because phase numbers repeat across different BUILD files, that fallback can resolve an unrelated phase's lock commit and make Phase 3 check out the wrong baseline commit.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's `lockres.resolve_lock()` falls back to the most recent non-merge `lock: claim Phase <N>` commit when no candidate touched the target BUILD file. Because phase numbers repeat across different BUILD files, that fallback can resolve an unrelated phase's lock commit and make Phase 3 check out the wrong baseline commit.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 says `runner.resume()` uses \"the aggregator's two-level reducer,\" but `core/benchmark/aggregator.py` is not created until Phase 7. In the stated build order, Phase 3 cannot import or depend on that reducer.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 says `runner.resume()` uses \"the aggregator's two-level reducer,\" but `core/benchmark/aggregator.py` is not created until Phase 7. In the stated build order, Phase 3 cannot import or depend on that reducer.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 adds `tests/benchmark/test_openrouter_min_contract.py` that imports and compares against `core/benchmark/openrouter.py`, but `openrouter.py` is only created in Phase 6. Running Phase 4's test suite in the stated order will fail on a missing module.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 adds `tests/benchmark/test_openrouter_min_contract.py` that imports and compares against `core/benchmark/openrouter.py`, but `openrouter.py` is only created in Phase 6. Running Phase 4's test suite in the stated order will fail on a missing module.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10's achieved-runs formula references `selector.pool_survivors_after_paraphrase_equivalence`, but Phase 2 only defines `select()`, `select_with_buffer()`, and `redraw()`. That selector API/property is never defined anywhere in the plan.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10's achieved-runs formula references `selector.pool_survivors_after_paraphrase_equivalence`, but Phase 2 only defines `select()`, `select_with_buffer()`, and `redraw()`. That selector API/property is never defined anywhere in the plan.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 defines `.buildrunner/benchmarks/equivalence-calibration.json` with only aggregate fields (`primary`, agreement rates, counts, timestamps), but the calibration deliverable also says Byron writes the 20 hand-review labels into that same file. The schema has nowhere to store per-pair labels, so the calibration artifact is underspecified and not reproducible as written.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 defines `.buildrunner/benchmarks/equivalence-calibration.json` with only aggregate fields (`primary`, agreement rates, counts, timestamps), but the calibration deliverable also says Byron writes the 20 hand-review labels into that same file. The schema has nowhere to store per-pair labels, so the calibration artifact is underspecified and not reproducible as written.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `scripts/install-benchmark-deps.sh` relies on `shopt -s nullglob`, but the plan never specifies a bash shebang or guarantees the script is invoked with bash. Under `/bin/sh`, `shopt` will fail and the installer breaks before dependency installation.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's `scripts/install-benchmark-deps.sh` relies on `shopt -s nullglob`, but the plan never specifies a bash shebang or guarantees the script is invoked with bash. Under `/bin/sh`, `shopt` will fail and the installer breaks before dependency installation.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 5's venv drift detection uses 'packaging.version.Version' for PEP 440 comparison, but 'packaging' is not listed in requirements-benchmark.txt. pip ships packaging internally but importing 'packaging.version' from pip's vendored copy is fragile. The requirements file pins pydantic, scipy, numpy, etc. but not 'packaging'.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's venv drift detection uses 'packaging.version.Version' for PEP 440 comparison, but 'packaging' is not listed in requirements-benchmark.txt. pip ships packaging internally but importing 'packaging.version' from pip's vendored copy is fragile. The requirements file pins pydantic, scipy, numpy, etc. but not 'packaging'.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 states that when a contestant modifies requirements*.txt, the runner re-runs pip install from the clone's requirements files into the shared .venv-benchmark/. But pip install order matters \u2014 Phase 1's installer runs 'for req in requirements*.txt' with nullglob, which iterates in glob order (alphabetical). requirements-api.txt sorts before requirements-benchmark.txt. If a contestant's edit to requirements-api.txt pins a version that conflicts with requirements-benchmark.txt, the resolver behavior depends on pip's conflict resolution strategy, not install order. The plan claims 'pip installs requirements-benchmark.txt last' as a resolution mechanism, but glob ordering is alphabetical \u2014 requirements-benchmark.txt (b) comes BEFORE requirements-api.txt (no, wait \u2014 'api' < 'benchmark' alphabetically, so requirements-api.txt is installed first, then requirements-benchmark.txt). Actually the plan is correct that benchmark comes after api alphabetically. But pip's resolver processes all constraints together when using backtracking resolver (default since pip 20.3), not sequentially. The 'last write wins' claim about pip is incorrect \u2014 pip resolves the intersection of all constraints, not a last-writer-wins model.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 states that when a contestant modifies requirements*.txt, the runner re-runs pip install from the clone's requirements files into the shared .venv-benchmark/. But pip install order matters \u2014 Phase 1's installer runs 'for req in requirements*.txt' with nullglob, which iterates in glob order (alphabetical). requirements-api.txt sorts before requirements-benchmark.txt. If a contestant's edit to requirements-api.txt pins a version that conflicts with requirements-benchmark.txt, the resolver behavior depends on pip's conflict resolution strategy, not install order. The plan claims 'pip installs requirements-benchmark.txt last' as a resolution mechanism, but glob ordering is alphabetical \u2014 requirements-benchmark.txt (b) comes BEFORE requirements-api.txt (no, wait \u2014 'api' < 'benchmark' alphabetically, so requirements-api.txt is installed first, then requirements-benchmark.txt). Actually the plan is correct that benchmark comes after api alphabetically. But pip's resolver processes all constraints together when using backtracking resolver (default since pip 20.3), not sequentially. The 'last write wins' claim about pip is incorrect \u2014 pip resolves the intersection of all constraints, not a last-writer-wins model.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The prompt size contradiction: Phase 3 deliverable states prompts are 'hard-rejected at 200 KB' in one location and then two paragraphs later states 'rejected with prompt_too_large if they exceed 100 KB (a conservative ceiling well below the verified SSH limit)'. These are the same check described with two different thresholds in the same deliverable.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The prompt size contradiction: Phase 3 deliverable states prompts are 'hard-rejected at 200 KB' in one location and then two paragraphs later states 'rejected with prompt_too_large if they exceed 100 KB (a conservative ceiling well below the verified SSH limit)'. These are the same check described with two different thresholds in the same deliverable.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `lockres.resolve_lock()` falls back to the most recent non-merge `lock: claim Phase <N>` commit when no candidate touched the target BUILD file. Because phase numbers repeat across different BUILD files, that fallback can resolve an unrelated phase's lock commit and make Phase 3 check out the wrong baseline commit.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's `lockres.resolve_lock()` falls back to the most recent non-merge `lock: claim Phase <N>` commit when no candidate touched the target BUILD file. Because phase numbers repeat across different BUILD files, that fallback can resolve an unrelated phase's lock commit and make Phase 3 check out the wrong baseline commit.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 says `runner.resume()` uses \"the aggregator's two-level reducer,\" but `core/benchmark/aggregator.py` is not created until Phase 7. In the stated build order, Phase 3 cannot import or depend on that reducer.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 says `runner.resume()` uses \"the aggregator's two-level reducer,\" but `core/benchmark/aggregator.py` is not created until Phase 7. In the stated build order, Phase 3 cannot import or depend on that reducer.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 adds `tests/benchmark/test_openrouter_min_contract.py` that imports and compares against `core/benchmark/openrouter.py`, but `openrouter.py` is only created in Phase 6. Running Phase 4's test suite in the stated order will fail on a missing module.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 adds `tests/benchmark/test_openrouter_min_contract.py` that imports and compares against `core/benchmark/openrouter.py`, but `openrouter.py` is only created in Phase 6. Running Phase 4's test suite in the stated order will fail on a missing module.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10's achieved-runs formula references `selector.pool_survivors_after_paraphrase_equivalence`, but Phase 2 only defines `select()`, `select_with_buffer()`, and `redraw()`. That selector API/property is never defined anywhere in the plan.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10's achieved-runs formula references `selector.pool_survivors_after_paraphrase_equivalence`, but Phase 2 only defines `select()`, `select_with_buffer()`, and `redraw()`. That selector API/property is never defined anywhere in the plan.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T05:04:00.238359Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 1
+}

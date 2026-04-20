@@ -1,0 +1,72 @@
+{
+  "schema_version": "br3.command_capabilities.v1",
+  "inventory_source": ".buildrunner/runtime-command-inventory.json",
+  "defaults": {
+    "claude_first_support_level": "claude_only",
+    "non_claude_first_support_level": "codex_ready"
+  },
+  "commands": {
+    "business": {
+      "support_level": "codex_ready",
+      "fallback_runtime": "codex",
+      "codex_skill_names": ["business", "sales"],
+      "context_files": [".buildrunner/PROJECT_SPEC.md", ".buildrunner/builds/*.md"],
+      "notes": ["High-value business context can be translated directly for Codex."]
+    },
+    "sales": {
+      "support_level": "codex_ready",
+      "fallback_runtime": "codex",
+      "codex_skill_names": ["business", "sales", "chet"],
+      "context_files": [".buildrunner/PROJECT_SPEC.md", ".buildrunner/builds/*.md"],
+      "notes": ["Sales context is portable when BR3 assembles the research package explicitly."]
+    },
+    "test": {
+      "support_level": "codex_ready",
+      "fallback_runtime": "codex",
+      "codex_skill_names": ["security-rules"],
+      "context_files": [".buildrunner/PROJECT_SPEC.md"],
+      "notes": ["Simple local execution path."]
+    },
+    "review": {
+      "support_level": "codex_shadow_only",
+      "fallback_runtime": "claude",
+      "codex_skill_names": ["security-rules"],
+      "notes": ["Advisory-only Codex shadow mode remains the only promoted review path after Phase 8."]
+    },
+    "begin": {
+      "support_level": "codex_workflow_only",
+      "fallback_runtime": "claude",
+      "workflow_name": "begin_workflow",
+      "codex_skill_names": ["security-rules"],
+      "context_files": [
+        ".buildrunner/builds/*.md",
+        ".buildrunner/plans/phase-*-plan.md"
+      ],
+      "notes": [
+        "Codex `/begin` is enabled only through the BR3-owned bounded sequential workflow.",
+        "BR3 retains lock handling, approval gates, and phase-by-phase capability admission."
+      ]
+    },
+    "spec": {
+      "support_level": "codex_workflow_only",
+      "fallback_runtime": "claude",
+      "workflow_name": "spec_workflow",
+      "codex_skill_names": ["br3-planning", "security-rules"],
+      "context_files": [
+        ".buildrunner/PROJECT_SPEC.md",
+        ".buildrunner/builds/*.md",
+        ".buildrunner/runtime-command-inventory.md",
+        ".buildrunner/runtime-skill-mapping.md"
+      ],
+      "required_scripts": [
+        "~/.buildrunner/scripts/validate-spec-paths.sh",
+        "~/.buildrunner/scripts/adversarial-review.sh",
+        "~/.buildrunner/scripts/enforce-skill-steps.sh"
+      ],
+      "notes": [
+        "Codex may draft `/spec` only through the BR3-owned workflow path.",
+        "Shared validation and adversarial review stay outside the runtime adapter."
+      ]
+    }
+  }
+}

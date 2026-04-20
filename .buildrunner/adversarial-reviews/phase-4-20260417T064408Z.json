@@ -1,0 +1,264 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T063340Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 1 deps.py soft-check references `POST https://below.local:<port>/api/classify` but the dependency table establishes Below at `http://10.0.1.105:8100`. Both hostname (`below.local` vs IP literal) and protocol (`https` vs `http`) are inconsistent. If the implementation uses the literal `below.local` hostname it may fail to resolve on machines without that DNS/mDNS entry.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 deps.py soft-check references `POST https://below.local:<port>/api/classify` but the dependency table establishes Below at `http://10.0.1.105:8100`. Both hostname (`below.local` vs IP literal) and protocol (`https` vs `http`) are inconsistent. If the implementation uses the literal `below.local` hostname it may fail to resolve on machines without that DNS/mDNS entry.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 creates `scripts/install-benchmark-deps.sh` and Phase 5 creates `scripts/install-benchmark-tools.sh`, but no `scripts/` directory exists in the project file tree. Neither phase mentions creating the parent directory. File creation will fail if `scripts/` is not mkdir'd first.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 creates `scripts/install-benchmark-deps.sh` and Phase 5 creates `scripts/install-benchmark-tools.sh`, but no `scripts/` directory exists in the project file tree. Neither phase mentions creating the parent directory. File creation will fail if `scripts/` is not mkdir'd first.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's BenchmarkConfig schema exhaustively lists every config field across all 10 phases but omits cluster node URLs (Below `10.0.1.105:8100`, Walter `10.0.1.102:8100`, Lomax `10.0.1.104:8100`). Phase 2's `api_clients.py` and Phase 1's `deps.py` both need these URLs at runtime, but the plan never specifies whether they come from `config.yaml`, `~/.buildrunner/cluster.json`, or are hardcoded \u2014 leaving an undefined configuration surface.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's BenchmarkConfig schema exhaustively lists every config field across all 10 phases but omits cluster node URLs (Below `10.0.1.105:8100`, Walter `10.0.1.102:8100`, Lomax `10.0.1.104:8100`). Phase 2's `api_clients.py` and Phase 1's `deps.py` both need these URLs at runtime, but the plan never specifies whether they come from `config.yaml`, `~/.buildrunner/cluster.json`, or are hardcoded \u2014 leaving an undefined configuration surface.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phases 3, 5, and 6 all MODIFY `runner.py`'s `run_cell()` method body sequentially: Phase 3 creates the base flow, Phase 5 inserts the scorer call inside try/finally, Phase 6 inserts judge + probe_scheduler calls after scoring. Three sequential insertions into the same function body across three phases is fragile \u2014 each later phase must understand the exact code layout left by the prior phase, and any deviation in Phase 3's implementation from what Phase 5/6 expect will cascade.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phases 3, 5, and 6 all MODIFY `runner.py`'s `run_cell()` method body sequentially: Phase 3 creates the base flow, Phase 5 inserts the scorer call inside try/finally, Phase 6 inserts judge + probe_scheduler calls after scoring. Three sequential insertions into the same function body across three phases is fragile \u2014 each later phase must understand the exact code layout left by the prior phase, and any deviation in Phase 3's implementation from what Phase 5/6 expect will cascade.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 scorer invokes `.venv-benchmark/bin/pytest -q --tb=no -p no:cacheprovider` and explicitly omits `--no-cov` because pytest-cov is not in requirements-benchmark.txt. However, a contestant's diff can add `pytest-cov` to any `requirements*.txt` (which the runner installs before pytest), and pytest-cov auto-activates via its plugin hook. Without `-p no:pytest_cov`, coverage instrumentation would silently run, adding overhead and potentially altering exit behavior across contestant runs non-uniformly.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 scorer invokes `.venv-benchmark/bin/pytest -q --tb=no -p no:cacheprovider` and explicitly omits `--no-cov` because pytest-cov is not in requirements-benchmark.txt. However, a contestant's diff can add `pytest-cov` to any `requirements*.txt` (which the runner installs before pytest), and pytest-cov auto-activates via its plugin hook. Without `-p no:pytest_cov`, coverage instrumentation would silently run, adding overhead and potentially altering exit behavior across contestant runs non-uniformly.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's `cli_run.py` MODIFY extends the Runner constructor to `Runner(scorer=BenchmarkScorer(), judge=BenchmarkJudge(), probe_scheduler=ProbeScheduler())`, but Phase 5's MODIFY of the same file set it to `Runner(scorer=BenchmarkScorer())`. The plan describes these as sequential edits, but the Phase 5 edit text is never shown \u2014 if Phase 5's edit uses a specific string pattern for the constructor call, Phase 6's Edit must match that exact pattern. A mismatch (e.g., multiline vs single-line formatting, trailing comma differences) would cause the Phase 6 edit to fail to find its replacement target.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's `cli_run.py` MODIFY extends the Runner constructor to `Runner(scorer=BenchmarkScorer(), judge=BenchmarkJudge(), probe_scheduler=ProbeScheduler())`, but Phase 5's MODIFY of the same file set it to `Runner(scorer=BenchmarkScorer())`. The plan describes these as sequential edits, but the Phase 5 edit text is never shown \u2014 if Phase 5's edit uses a specific string pattern for the constructor call, Phase 6's Edit must match that exact pattern. A mismatch (e.g., multiline vs single-line formatting, trailing comma differences) would cause the Phase 6 edit to fail to find its replacement target.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's contention measurement filters CompletedRow by session_id, but CompletedRow.session_id is a field on the row itself (declared in Phase 1). The pilot invocation needs to pass the pilot's session_id to `pilot_contention.py --session-id <id>`. The plan says this comes 'from the pilot's Typer context' but doesn't specify how the Typer context captures and forwards the session_id that `br benchmark run --pilot` internally minted (a uuid4). The wiring from the Typer command body to the pilot_contention invocation is underdefined.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's contention measurement filters CompletedRow by session_id, but CompletedRow.session_id is a field on the row itself (declared in Phase 1). The pilot invocation needs to pass the pilot's session_id to `pilot_contention.py --session-id <id>`. The plan says this comes 'from the pilot's Typer context' but doesn't specify how the Typer context captures and forwards the session_id that `br benchmark run --pilot` internally minted (a uuid4). The wiring from the Typer command body to the pilot_contention invocation is underdefined.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan states `.buildrunner/benchmarks/config.yaml` is created as NEW in Phase 1, but the full BenchmarkConfig schema has ~50 fields with canonical default values scattered across the plan prose. No template or default-value generator is described \u2014 the operator must manually author the YAML with correct field names, nesting, and values. A single typo in config.yaml (e.g., `contention_ratio_theshold` instead of `contention_ratio_threshold`) would pass YAML parsing but fail pydantic validation at preflight. Consider shipping a validated default config alongside the schema.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan states `.buildrunner/benchmarks/config.yaml` is created as NEW in Phase 1, but the full BenchmarkConfig schema has ~50 fields with canonical default values scattered across the plan prose. No template or default-value generator is described \u2014 the operator must manually author the YAML with correct field names, nesting, and values. A single typo in config.yaml (e.g., `contention_ratio_theshold` instead of `contention_ratio_threshold`) would pass YAML parsing but fail pydantic validation at preflight. Consider shipping a validated default config alongside the schema.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `lockres.resolve_lock` uses `git log --all --extended-regexp --grep='^lock: claim Phase N($|[^0-9])'`. The `--all` flag searches all refs including remote-tracking branches. The plan adds a Stage 1b reachability filter via `git merge-base --is-ancestor`, but this runs one subprocess per candidate SHA. In a repo with many remote branches and repeated phase numbers across BUILD files, this could spawn dozens of subprocesses per phase. With 30+ phases to resolve, the selector's wall-clock could be unexpectedly long.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's `lockres.resolve_lock` uses `git log --all --extended-regexp --grep='^lock: claim Phase N($|[^0-9])'`. The `--all` flag searches all refs including remote-tracking branches. The plan adds a Stage 1b reachability filter via `git merge-base --is-ancestor`, but this runs one subprocess per candidate SHA. In a repo with many remote branches and repeated phase numbers across BUILD files, this could spawn dozens of subprocesses per phase. With 30+ phases to resolve, the selector's wall-clock could be unexpectedly long.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's Node install uses `npm ci --ignore-scripts` as the primary path with `npm install --ignore-scripts` as fallback. A contestant whose diff adds a native Node module (e.g., `sharp`, `bcrypt`) that requires a postinstall compilation step will get a broken `node_modules/` and their tests will fail with a missing-binary error. The plan treats this as 'scored as model failure' but does not distinguish between a contestant who legitimately uses a native dep vs one who made a mistake \u2014 both get `install_failed`, which could systematically penalize one model if it tends to reach for native deps.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's Node install uses `npm ci --ignore-scripts` as the primary path with `npm install --ignore-scripts` as fallback. A contestant whose diff adds a native Node module (e.g., `sharp`, `bcrypt`) that requires a postinstall compilation step will get a broken `node_modules/` and their tests will fail with a missing-binary error. The plan treats this as 'scored as model failure' but does not distinguish between a contestant who legitimately uses a native dep vs one who made a mistake \u2014 both get `install_failed`, which could systematically penalize one model if it tends to reach for native deps.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 wires `Runner.run_cell()` to call `self.probe_scheduler.notify_pair_judged(pair_key)`, but `core/benchmark/probe.py` is only specified to expose `ProbeScheduler.schedule(...)` and `ProbeScheduler.run_pending()`. `notify_pair_judged` is absent from the plan's declared API surface.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 wires `Runner.run_cell()` to call `self.probe_scheduler.notify_pair_judged(pair_key)`, but `core/benchmark/probe.py` is only specified to expose `ProbeScheduler.schedule(...)` and `ProbeScheduler.run_pending()`. `notify_pair_judged` is absent from the plan's declared API surface.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Recognition-probe triggering is contradictory. Phase 4 says a `(phase_id, model)` probe may run only after every cell for the entire phase is `stage=\"judged\"`, but Phase 6 changes the trigger to fire when one `pair_key`/replication becomes judged. Those conditions are incompatible, and the Phase 6 trigger can run probes before remaining replications or sub-studies finish, violating the non-priming requirement.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Recognition-probe triggering is contradictory. Phase 4 says a `(phase_id, model)` probe may run only after every cell for the entire phase is `stage=\"judged\"`, but Phase 6 changes the trigger to fire when one `pair_key`/replication becomes judged. Those conditions are incompatible, and the Phase 6 trigger can run probes before remaining replications or sub-studies finish, violating the non-priming requirement.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The judge data model does not line up with the registry model. Phase 1 defines `CompletedRow` as a run-scoped row appended three times per `run_id`, while Phase 6 produces one pairwise `JudgeVerdict` keyed by `pair_key` and says the runner appends a singular `stage=\"judged\"` `CompletedRow`. The plan never specifies how both underlying runs get terminal judged rows, so one side can remain stuck at `stage=\"scored\"`, breaking resume logic and downstream aggregation.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The judge data model does not line up with the registry model. Phase 1 defines `CompletedRow` as a run-scoped row appended three times per `run_id`, while Phase 6 produces one pairwise `JudgeVerdict` keyed by `pair_key` and says the runner appends a singular `stage=\"judged\"` `CompletedRow`. The plan never specifies how both underlying runs get terminal judged rows, so one side can remain stuck at `stage=\"scored\"`, breaking resume logic and downstream aggregation.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10's `achieved_phases = min(30, selector.pool_survivors_after_paraphrase_equivalence + selector.replacement_phases_enqueued_by_redraw)` can overcount. `replacement_phases_enqueued_by_redraw` counts redraw reservations, not successful surviving replacement phases, so a replacement that later also fails paraphrase/equivalence still inflates achieved N and can misapply the degraded-sample decision rule.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10's `achieved_phases = min(30, selector.pool_survivors_after_paraphrase_equivalence + selector.replacement_phases_enqueued_by_redraw)` can overcount. `replacement_phases_enqueued_by_redraw` counts redraw reservations, not successful surviving replacement phases, so a replacement that later also fails paraphrase/equivalence still inflates achieved N and can misapply the degraded-sample decision rule.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6 wires `Runner.run_cell()` to call `self.probe_scheduler.notify_pair_judged(pair_key)`, but `core/benchmark/probe.py` is only specified to expose `ProbeScheduler.schedule(...)` and `ProbeScheduler.run_pending()`. `notify_pair_judged` is absent from the plan's declared API surface.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 wires `Runner.run_cell()` to call `self.probe_scheduler.notify_pair_judged(pair_key)`, but `core/benchmark/probe.py` is only specified to expose `ProbeScheduler.schedule(...)` and `ProbeScheduler.run_pending()`. `notify_pair_judged` is absent from the plan's declared API surface.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Recognition-probe triggering is contradictory. Phase 4 says a `(phase_id, model)` probe may run only after every cell for the entire phase is `stage=\"judged\"`, but Phase 6 changes the trigger to fire when one `pair_key`/replication becomes judged. Those conditions are incompatible, and the Phase 6 trigger can run probes before remaining replications or sub-studies finish, violating the non-priming requirement.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Recognition-probe triggering is contradictory. Phase 4 says a `(phase_id, model)` probe may run only after every cell for the entire phase is `stage=\"judged\"`, but Phase 6 changes the trigger to fire when one `pair_key`/replication becomes judged. Those conditions are incompatible, and the Phase 6 trigger can run probes before remaining replications or sub-studies finish, violating the non-priming requirement.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The judge data model does not line up with the registry model. Phase 1 defines `CompletedRow` as a run-scoped row appended three times per `run_id`, while Phase 6 produces one pairwise `JudgeVerdict` keyed by `pair_key` and says the runner appends a singular `stage=\"judged\"` `CompletedRow`. The plan never specifies how both underlying runs get terminal judged rows, so one side can remain stuck at `stage=\"scored\"`, breaking resume logic and downstream aggregation.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The judge data model does not line up with the registry model. Phase 1 defines `CompletedRow` as a run-scoped row appended three times per `run_id`, while Phase 6 produces one pairwise `JudgeVerdict` keyed by `pair_key` and says the runner appends a singular `stage=\"judged\"` `CompletedRow`. The plan never specifies how both underlying runs get terminal judged rows, so one side can remain stuck at `stage=\"scored\"`, breaking resume logic and downstream aggregation.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T06:44:08.359200Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 4
+}

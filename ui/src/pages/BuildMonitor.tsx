@@ -11,7 +11,7 @@ export const BuildMonitor: React.FC = () => {
   const { projectAlias } = useParams<{ projectAlias: string }>();
   const navigate = useNavigate();
   
-  const { session, setSession, websocket, setWebSocketState, addTerminalLine, updateComponent, updateFeature } = useBuildStore();
+  const { session, setSession, patchSession, websocket, setWebSocketState, addTerminalLine, updateComponent, updateFeature } = useBuildStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -113,14 +113,23 @@ export const BuildMonitor: React.FC = () => {
     });
 
     ws.on('build_progress', (data) => {
-      if (session) {
-        setSession({
-          ...session,
-          status: data.status || session.status,
-          currentComponent: data.current_component,
-          currentFeature: data.current_feature,
-        });
-      }
+      patchSession({
+        status: data.status,
+        current_component: data.current_component,
+        current_feature: data.current_feature,
+        runtime: data.runtime,
+        backend: data.backend,
+        runtime_source: data.runtime_source,
+        runtime_session_id: data.runtime_session_id,
+        capabilities: data.capabilities,
+        dispatch_mode: data.dispatch_mode,
+        shadow_runtime: data.shadow_runtime,
+        shadow_status: data.shadow_status,
+      });
+    });
+
+    ws.on('runtime_update', (data) => {
+      patchSession(data);
     });
 
     ws.on('error', (data) => {
@@ -201,11 +210,23 @@ export const BuildMonitor: React.FC = () => {
             {session.status}
           </div>
           <div className="elapsed-time">
+            {session.runtime}{session.backend ? ` · ${session.backend}` : ''}
+          </div>
+          <div className="elapsed-time">
+            {session.runtimeSource || 'default'}
+            {session.runtimeSessionId ? ` · ${session.runtimeSessionId}` : ''}
+          </div>
+          <div className="elapsed-time">
             {formatElapsedTime(elapsedTime)}
           </div>
         </div>
 
         <div className="header-right">
+          <div className="ws-status">
+            {session.dispatchMode || 'direct'}
+            {session.shadowRuntime ? ` · shadow ${session.shadowRuntime}` : ''}
+            {session.shadowStatus ? ` (${session.shadowStatus})` : ''}
+          </div>
           <div className={`ws-status ${websocket.connected ? 'connected' : websocket.reconnecting ? 'reconnecting' : 'disconnected'}`}>
             <span className="ws-dot"></span>
             {websocket.connected ? 'Connected' : websocket.reconnecting ? 'Reconnecting...' : 'Disconnected'}
@@ -223,6 +244,12 @@ export const BuildMonitor: React.FC = () => {
         </div>
 
         <aside className="progress-section">
+          <div className="progress-metadata">
+            <strong>Capabilities:</strong>{' '}
+            {Object.keys(session.capabilities || {}).length > 0
+              ? Object.keys(session.capabilities || {}).join(', ')
+              : 'none reported'}
+          </div>
           <ProgressSidebar 
             components={session.components}
             features={session.features}

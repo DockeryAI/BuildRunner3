@@ -8,6 +8,7 @@ Run: uvicorn core.cluster.node_staging:app --host 0.0.0.0 --port 8100
 import os
 import time
 import json
+import signal
 import sqlite3
 import subprocess
 import threading
@@ -116,6 +117,41 @@ def _discover_projects() -> list[dict]:
     return projects
 
 
+# --- Process Group Helper (prevents zombie processes on timeout) ---
+def _run_with_process_group(cmd: list[str], cwd: str, timeout: int, env: dict) -> tuple[str, str, int, bool]:
+    """Run command in a new process group. Kills entire group on timeout.
+
+    Returns: (stdout, stderr, returncode, timed_out)
+    """
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=cwd,
+        env=env,
+        start_new_session=True,
+        text=True
+    )
+
+    try:
+        stdout, stderr = proc.communicate(timeout=timeout)
+        return stdout, stderr, proc.returncode, False
+    except subprocess.TimeoutExpired:
+        try:
+            pgid = os.getpgid(proc.pid)
+            os.killpg(pgid, signal.SIGTERM)
+            time.sleep(0.5)
+            os.killpg(pgid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
+        try:
+            stdout, stderr = proc.communicate(timeout=2)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            stdout, stderr = "", ""
+        return stdout, stderr, -1, True
+
+
 # --- Git Helpers ---
 def _git_sha(repo_path: str) -> str:
     try:
@@ -144,27 +180,24 @@ def _run_tsc(repo_path: str) -> dict:
     if not tsconfig.exists():
         return {"ok": True, "errors": [], "output": "no tsconfig.json — skipped"}
 
-    try:
-        result = subprocess.run(
-            ["npx", "tsc", "--noEmit"],
-            capture_output=True, text=True, cwd=repo_path, timeout=120,
-            env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
-        )
-        output = result.stdout + result.stderr
-        errors = []
-        for line in output.splitlines():
-            # tsc errors look like: src/foo.ts(12,5): error TS2345: ...
-            if ": error TS" in line:
-                errors.append(line.strip())
-        return {
-            "ok": result.returncode == 0,
-            "errors": errors,
-            "output": output[-2000:] if output else "",
-        }
-    except subprocess.TimeoutExpired:
+    env = {**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
+    stdout, stderr, returncode, timed_out = _run_with_process_group(
+        ["npx", "tsc", "--noEmit"], repo_path, timeout=120, env=env
+    )
+
+    if timed_out:
         return {"ok": False, "errors": ["tsc timed out (120s)"], "output": "timeout"}
-    except Exception as e:
-        return {"ok": False, "errors": [str(e)], "output": str(e)}
+
+    output = stdout + stderr
+    errors = []
+    for line in output.splitlines():
+        if ": error TS" in line:
+            errors.append(line.strip())
+    return {
+        "ok": returncode == 0,
+        "errors": errors,
+        "output": output[-2000:] if output else "",
+    }
 
 
 def _run_vite_build(repo_path: str) -> dict:
@@ -180,29 +213,27 @@ def _run_vite_build(repo_path: str) -> dict:
     except (json.JSONDecodeError, OSError):
         return {"ok": False, "errors": ["cannot read package.json"], "output": ""}
 
-    try:
-        result = subprocess.run(
-            ["npm", "run", "build"],
-            capture_output=True, text=True, cwd=repo_path, timeout=180,
-            env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
-        )
-        output = result.stdout + result.stderr
-        errors = []
-        for line in output.splitlines():
-            lower = line.lower()
-            if "error" in lower and ("ts(" in lower or "vite" in lower or "rollup" in lower):
-                errors.append(line.strip())
-            elif line.startswith("ERROR") or line.startswith("error"):
-                errors.append(line.strip())
-        return {
-            "ok": result.returncode == 0,
-            "errors": errors,
-            "output": output[-2000:] if output else "",
-        }
-    except subprocess.TimeoutExpired:
+    env = {**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
+    stdout, stderr, returncode, timed_out = _run_with_process_group(
+        ["npm", "run", "build"], repo_path, timeout=180, env=env
+    )
+
+    if timed_out:
         return {"ok": False, "errors": ["vite build timed out (180s)"], "output": "timeout"}
-    except Exception as e:
-        return {"ok": False, "errors": [str(e)], "output": str(e)}
+
+    output = stdout + stderr
+    errors = []
+    for line in output.splitlines():
+        lower = line.lower()
+        if "error" in lower and ("ts(" in lower or "vite" in lower or "rollup" in lower):
+            errors.append(line.strip())
+        elif line.startswith("ERROR") or line.startswith("error"):
+            errors.append(line.strip())
+    return {
+        "ok": returncode == 0,
+        "errors": errors,
+        "output": output[-2000:] if output else "",
+    }
 
 
 def _validate_project(project_path: str, project_name: str, trigger: str = "watch") -> dict:
@@ -312,59 +343,57 @@ def _deploy_preview(project_path: str, project_name: str) -> dict:
     if not dist_dir.exists():
         return {"ok": False, "error": "dist/ directory not found after build"}
 
+    env = {**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
+    stdout, stderr, returncode, timed_out = _run_with_process_group(
+        ["npx", "netlify", "deploy", "--dir=dist", "--json"],
+        project_path, timeout=120, env=env
+    )
+
+    if timed_out:
+        return {"ok": False, "error": "netlify deploy timed out (120s)"}
+
+    output = stdout + stderr
+
+    # Parse JSON output from netlify deploy
+    preview_url = ""
+    deploy_id = ""
     try:
-        result = subprocess.run(
-            ["npx", "netlify", "deploy", "--dir=dist", "--json"],
-            capture_output=True, text=True, cwd=project_path, timeout=120,
-            env={**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
-        )
-
-        output = result.stdout + result.stderr
-
-        # Parse JSON output from netlify deploy
-        preview_url = ""
-        deploy_id = ""
-        try:
-            deploy_data = json.loads(result.stdout)
-            preview_url = deploy_data.get("deploy_url", "") or deploy_data.get("url", "")
-            deploy_id = deploy_data.get("deploy_id", "")
-        except (json.JSONDecodeError, ValueError):
-            # Try to extract URL from text output
-            for line in output.splitlines():
-                if "http" in line and "netlify" in line:
-                    parts = line.split()
-                    for p in parts:
-                        if p.startswith("http"):
-                            preview_url = p.strip()
-                            break
+        deploy_data = json.loads(stdout)
+        preview_url = deploy_data.get("deploy_url", "") or deploy_data.get("url", "")
+        deploy_id = deploy_data.get("deploy_id", "")
+    except (json.JSONDecodeError, ValueError):
+        # Try to extract URL from text output
+        for line in output.splitlines():
+            if "http" in line and "netlify" in line:
+                parts = line.split()
+                for p in parts:
+                    if p.startswith("http"):
+                        preview_url = p.strip()
+                        break
                     if preview_url:
                         break
 
-        ok = result.returncode == 0 and bool(preview_url)
+    ok = returncode == 0 and bool(preview_url)
 
-        # Store in DB
-        try:
-            conn = _get_db()
-            conn.execute(
-                """INSERT INTO previews (project, preview_url, deploy_id, ok, output)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (project_name, preview_url, deploy_id, int(ok), output[-1000:])
-            )
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            print(f"DB write error for preview {project_name}: {e}")
-
-        return {
-            "ok": ok,
-            "preview_url": preview_url,
-            "deploy_id": deploy_id,
-            "output": output[-500:] if not ok else "",
-        }
-    except subprocess.TimeoutExpired:
-        return {"ok": False, "error": "netlify deploy timed out (120s)"}
+    # Store in DB
+    try:
+        conn = _get_db()
+        conn.execute(
+            """INSERT INTO previews (project, preview_url, deploy_id, ok, output)
+               VALUES (?, ?, ?, ?, ?)""",
+            (project_name, preview_url, deploy_id, int(ok), output[-1000:])
+        )
+        conn.commit()
+        conn.close()
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        print(f"DB write error for preview {project_name}: {e}")
+
+    return {
+        "ok": ok,
+        "preview_url": preview_url,
+        "deploy_id": deploy_id,
+        "output": output[-500:] if not ok else "",
+    }
 
 
 # --- Background Build Loop ---

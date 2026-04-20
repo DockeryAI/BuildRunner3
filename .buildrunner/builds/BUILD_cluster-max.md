@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-12
 **Last Revised:** 2026-04-20 (Autopilot pass: single source-of-truth section at top, research-backed role split per phase, context-poisoning triggers, Jimmy memory cutover, overflow reserve design, LiteLLM replaced by RuntimeRegistry shim, deepseek-r1 / budget_tokens / 12KB threshold / round-cap-3 dropped)
-**Status:** Phases 1-1 Complete — Phase 0 In Progress
+**Status:** Phases 1-2 Complete — Phase 2 In Progress
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
@@ -498,7 +498,7 @@ Every review gate in this build — per-phase Claude Review, wave-merge review, 
 
 ### Phase 0: AGENTS.md Authoring (Codex Scoping Foundation)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE (2026-04-20) — 6 files authored, 11907 bytes total, all gates pass
 **Codex model:** gpt-5.4
 **Codex effort:** low
 **Worktree:** main repo (no parallelization within phase)

@@ -33,16 +33,15 @@ check_and_restart() {
   lsof -ti :$PORT 2>/dev/null | xargs kill -9 2>/dev/null || true
 
   # Start uvicorn from project root (module path requires it)
-  # DISABLE_INDEXER=true: skip code embedding model, saves ~275MB on M2 8GB
-  # Lockwood's role is research search + memory, not code search
+  # Code indexer enabled — uses ~275MB for embedding model
   # DISABLE_SOURCER=true: skip hunt sourcer (runs separately via launchd)
   # APIFY_API_KEY: seller verification for Reddit/eBay deals
   cd "$LOCKWOOD_DIR"
   source "$HOME/.buildrunner/.env" 2>/dev/null || true
-  DISABLE_INDEXER=true DISABLE_SOURCER=true APIFY_API_KEY="${APIFY_API_KEY:-}" nohup "$PYTHON" -m uvicorn "$MODULE:app" --host 0.0.0.0 --port $PORT >> "$LOG" 2>&1 &
+  DISABLE_SOURCER=true APIFY_API_KEY="${APIFY_API_KEY:-}" nohup "$PYTHON" -m uvicorn "$MODULE:app" --host 0.0.0.0 --port $PORT >> "$LOG" 2>&1 &
   NEWPID=$!
   echo "$NEWPID" > "$PIDFILE"
-  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Restarted uvicorn (PID $NEWPID) [DISABLE_INDEXER=true, grace=${GRACE_SECONDS}s]" >> "$LOG"
+  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Restarted uvicorn (PID $NEWPID) [indexer=ON, grace=${GRACE_SECONDS}s]" >> "$LOG"
 }
 
 check_and_restart

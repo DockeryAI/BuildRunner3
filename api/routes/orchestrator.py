@@ -15,6 +15,7 @@ from pydantic import BaseModel
 # Import core modules
 from core.orchestrator import TaskOrchestrator, OrchestrationStatus
 from core.task_queue import TaskQueue, TaskStatus, QueuedTask
+from core.runtime.config import RuntimeConfigError, resolve_runtime_selection
 
 router = APIRouter()
 
@@ -86,6 +87,17 @@ class StatusResponse(BaseModel):
     failed_batches: int
 
 
+class RuntimeSelectionResponse(BaseModel):
+    """Resolved runtime selection for orchestrator-facing callers."""
+
+    runtime: str
+    source: str
+    explicit_runtime: Optional[str] = None
+    project_config_path: Optional[str] = None
+    user_config_path: Optional[str] = None
+    available_runtimes: List[str]
+
+
 @router.options("/status")
 async def status_options():
     """Handle OPTIONS for CORS preflight"""
@@ -103,6 +115,18 @@ async def get_status() -> StatusResponse:
     orchestrator = get_orchestrator()
     status = orchestrator.get_status()
     return StatusResponse(**status)
+
+
+@router.get("/runtime", response_model=RuntimeSelectionResponse)
+async def get_runtime_selection(
+    cwd: Optional[str] = None, runtime: Optional[str] = None
+) -> RuntimeSelectionResponse:
+    """Resolve runtime selection for orchestrator entrypoints."""
+    try:
+        resolution = resolve_runtime_selection(explicit_runtime=runtime, project_root=cwd)
+        return RuntimeSelectionResponse(**resolution.to_dict())
+    except RuntimeConfigError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.get("/progress", response_model=ProgressResponse)

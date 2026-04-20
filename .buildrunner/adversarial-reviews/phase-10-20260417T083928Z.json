@@ -1,0 +1,334 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T082912Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 5's `toolchain.py` declares `PROJECT_TOOLS` paths as 'resolved relative to the repo root' (e.g. `.buildrunner/benchmarks/tools/node_modules/.bin/prettier`), but Phase 6's `formatter.normalize_diff()` runs Prettier/Black against files inside the clone at `/tmp/br3-bench-<run_id>/`. If the paths are relative and the CWD is the clone, they will resolve against the clone (which has no `.buildrunner/benchmarks/tools/`). The plan never specifies that these paths are made absolute against the parent repo root, so the tool invocations will fail with 'command not found' when called from the scorer/formatter operating inside a clone context.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's `toolchain.py` declares `PROJECT_TOOLS` paths as 'resolved relative to the repo root' (e.g. `.buildrunner/benchmarks/tools/node_modules/.bin/prettier`), but Phase 6's `formatter.normalize_diff()` runs Prettier/Black against files inside the clone at `/tmp/br3-bench-<run_id>/`. If the paths are relative and the CWD is the clone, they will resolve against the clone (which has no `.buildrunner/benchmarks/tools/`). The plan never specifies that these paths are made absolute against the parent repo root, so the tool invocations will fail with 'command not found' when called from the scorer/formatter operating inside a clone context.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `requirements-benchmark.txt` pins `typer>=0.9,<1.0`, but Typer 0.9+ through 0.12+ progressively changed the `Typer()` constructor and subcommand registration API. The plan's CLI architecture (`benchmark_app = typer.Typer(name='benchmark', ...)` + `register(app)` hooks in 12 stub modules) is valid for Typer 0.9\u20130.12 but has not been verified against the specific Typer version the `.venv-benchmark/` pip resolver will select. If a breaking Typer change landed in 0.10+ affecting `add_typer` behavior, the CLI skeleton could fail.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's `requirements-benchmark.txt` pins `typer>=0.9,<1.0`, but Typer 0.9+ through 0.12+ progressively changed the `Typer()` constructor and subcommand registration API. The plan's CLI architecture (`benchmark_app = typer.Typer(name='benchmark', ...)` + `register(app)` hooks in 12 stub modules) is valid for Typer 0.9\u20130.12 but has not been verified against the specific Typer version the `.venv-benchmark/` pip resolver will select. If a breaking Typer change landed in 0.10+ affecting `add_typer` behavior, the CLI skeleton could fail.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` passes the full prompt text as a positional CLI argument (argv[5]) to `dispatch-to-node.sh`. On macOS, `ARG_MAX` is ~1 MiB for local exec, but the dispatcher embeds the prompt into an SSH command with a heredoc. The plan states a 100 KB hard-reject threshold and claims the SSH ceiling is ~128 KiB. However, the actual SSH `ARG_MAX` depends on the remote OS's `execve()` limit, which on Linux defaults to ~2 MiB but on older macOS/Darwin nodes could be as low as 256 KiB total for the entire command line (including the SSH wrapper, env, and heredoc). If Otis/Lomax run Darwin 23.x, prompts near 100 KB combined with the SSH boilerplate could exceed the limit.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `dispatch_run` passes the full prompt text as a positional CLI argument (argv[5]) to `dispatch-to-node.sh`. On macOS, `ARG_MAX` is ~1 MiB for local exec, but the dispatcher embeds the prompt into an SSH command with a heredoc. The plan states a 100 KB hard-reject threshold and claims the SSH ceiling is ~128 KiB. However, the actual SSH `ARG_MAX` depends on the remote OS's `execve()` limit, which on Linux defaults to ~2 MiB but on older macOS/Darwin nodes could be as low as 256 KiB total for the entire command line (including the SSH wrapper, env, and heredoc). If Otis/Lomax run Darwin 23.x, prompts near 100 KB combined with the SSH boilerplate could exceed the limit.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's pre-run guard calls `_detect_baseline_drift(baseline_freeze, current_freeze)` and forcibly recreates `.venv-benchmark/` on ANY drift (including pure additions from a prior run). The recreation runs `scripts/install-benchmark-deps.sh` which takes ~20\u201330 seconds. With 360 runs and potentially frequent drift, this could accumulate significant overhead. More critically, if the recreation itself introduces a subtle version difference (e.g., a dep released a new patch between the original install and recreation), the baseline_freeze file is re-written, silently shifting the baseline mid-study. The plan says `install-benchmark-deps.sh` re-samples baseline_freeze after Pass 2, but does not pin exact versions via a lockfile \u2014 only ranges via `requirements-benchmark.txt`.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's pre-run guard calls `_detect_baseline_drift(baseline_freeze, current_freeze)` and forcibly recreates `.venv-benchmark/` on ANY drift (including pure additions from a prior run). The recreation runs `scripts/install-benchmark-deps.sh` which takes ~20\u201330 seconds. With 360 runs and potentially frequent drift, this could accumulate significant overhead. More critically, if the recreation itself introduces a subtle version difference (e.g., a dep released a new patch between the original install and recreation), the baseline_freeze file is re-written, silently shifting the baseline mid-study. The plan says `install-benchmark-deps.sh` re-samples baseline_freeze after Pass 2, but does not pin exact versions via a lockfile \u2014 only ranges via `requirements-benchmark.txt`.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier uses `StratifiedGroupKFold(n_splits=5)` with `groups=phase_id`. At N=7 pilot phases, this means some folds hold out 1 phase (12 rows) and others hold out 2 phases (24 rows). With only 5 training groups per fold and 7 total groups, the TF-IDF + LogisticRegression pipeline has very little group diversity to learn from. The statistical power of the blinding gate at n=84 with 7 groups is questionable \u2014 the classifier may trivially pass (low accuracy) not because blinding is effective but because 7 groups provide insufficient signal for any classifier. The plan does not address this irreducible limitation of the pilot size.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses `StratifiedGroupKFold(n_splits=5)` with `groups=phase_id`. At N=7 pilot phases, this means some folds hold out 1 phase (12 rows) and others hold out 2 phases (24 rows). With only 5 training groups per fold and 7 total groups, the TF-IDF + LogisticRegression pipeline has very little group diversity to learn from. The statistical power of the blinding gate at n=84 with 7 groups is questionable \u2014 the classifier may trivially pass (low accuracy) not because blinding is effective but because 7 groups provide insufficient signal for any classifier. The plan does not address this irreducible limitation of the pilot size.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's `pilot_contention.py` filters registry rows by `session_id` and deduplicates by stage precedence, then groups by `node_name`. But `CompletedRow.node_name` is a field on the row itself, not on the nested `RunResult`. Let me verify: Phase 1's `ClaimRow` carries `node_name` and `CompletedRow` carries `node_name` (listed in the CompletedRow fields). Meanwhile, `RunResult` also carries `node_name`. The plan's `pilot_contention.py` description says 'groups each deduplicated row by `CompletedRow.node_name`' \u2014 this is consistent with the Phase 1 schema where `CompletedRow` has a top-level `node_name`.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's `pilot_contention.py` filters registry rows by `session_id` and deduplicates by stage precedence, then groups by `node_name`. But `CompletedRow.node_name` is a field on the row itself, not on the nested `RunResult`. Let me verify: Phase 1's `ClaimRow` carries `node_name` and `CompletedRow` carries `node_name` (listed in the CompletedRow fields). Meanwhile, `RunResult` also carries `node_name`. The plan's `pilot_contention.py` description says 'groups each deduplicated row by `CompletedRow.node_name`' \u2014 this is consistent with the Phase 1 schema where `CompletedRow` has a top-level `node_name`.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 creates `scripts/install-benchmark-deps.sh` with a two-pass pip install loop using `shopt -s nullglob`. The glob `requirements*.txt` will match any file starting with 'requirements' and ending in '.txt'. If a contestant's diff creates a file like `requirements-malicious.txt` containing `pip install evil-package`, the next run's pre-run guard recreation would execute Pass 1 against the clone's requirements files. However, the installer runs against the PARENT repo root (not the clone), so contestant-created files in the clone would not be picked up by the installer. The per-run reinstall in Phase 5 does run against `<clone_path>/requirements*.txt` \u2014 this is the intended path for picking up contestant deps, and is bounded by the venv isolation.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 creates `scripts/install-benchmark-deps.sh` with a two-pass pip install loop using `shopt -s nullglob`. The glob `requirements*.txt` will match any file starting with 'requirements' and ending in '.txt'. If a contestant's diff creates a file like `requirements-malicious.txt` containing `pip install evil-package`, the next run's pre-run guard recreation would execute Pass 1 against the clone's requirements files. However, the installer runs against the PARENT repo root (not the clone), so contestant-created files in the clone would not be picked up by the installer. The per-run reinstall in Phase 5 does run against `<clone_path>/requirements*.txt` \u2014 this is the intended path for picking up contestant deps, and is bounded by the venv isolation.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `lockres.py` Stage 1b uses `git merge-base --is-ancestor <sha> <anchor_ref>` to filter reachable commits. This is O(n) in the commit graph depth per candidate. With `--all` potentially returning many candidates across all branches and 34 BUILD files \u00d7 multiple phases each, the lock resolution could be slow on a large git history. The plan does not specify a timeout or candidate-count ceiling for the `resolve_lock` call.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's `lockres.py` Stage 1b uses `git merge-base --is-ancestor <sha> <anchor_ref>` to filter reachable commits. This is O(n) in the commit graph depth per candidate. With `--all` potentially returning many candidates across all branches and 34 BUILD files \u00d7 multiple phases each, the lock resolution could be slow on a large git history. The plan does not specify a timeout or candidate-count ceiling for the `resolve_lock` call.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's `runner.py` MODIFY extends `run_session` to call `probe_scheduler.schedule(phase_id, model, expected_cell_count)` for every `(phase, model)` pair at startup. But if `selector.redraw()` introduces REPLACEMENT phases mid-run (Phase 2's redraw contract), those replacement phases are never registered with the probe scheduler via `schedule()`. The replacement-phase scheduler in Phase 3 appends replacement `PhaseSpec`s to `pending_queue` and dispatches their cells, but Phase 6's `run_session` extension only iterates `selector.selected_phase_ids` at startup. The scheduler's `_maybe_fire(phase_id)` would never trigger for a replacement phase because `schedule()` was never called for it \u2014 the `expected` counter would not exist in the `dict[(phase_id, model)]` map.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's `runner.py` MODIFY extends `run_session` to call `probe_scheduler.schedule(phase_id, model, expected_cell_count)` for every `(phase, model)` pair at startup. But if `selector.redraw()` introduces REPLACEMENT phases mid-run (Phase 2's redraw contract), those replacement phases are never registered with the probe scheduler via `schedule()`. The replacement-phase scheduler in Phase 3 appends replacement `PhaseSpec`s to `pending_queue` and dispatches their cells, but Phase 6's `run_session` extension only iterates `selector.selected_phase_ids` at startup. The scheduler's `_maybe_fire(phase_id)` would never trigger for a replacement phase because `schedule()` was never called for it \u2014 the `expected` counter would not exist in the `dict[(phase_id, model)]` map.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's runner defines `ScorerProtocol` with signature `score_run(handle, phase, run_result, runner)`. Phase 5 implements `BenchmarkScorer.score_run(handle, phase, run_result, runner)` matching this protocol. But Phase 5 also says `toolchain.run_local_tests(handle, runner)` \u2014 the `run_local_tests` function signature is `(handle: CloneHandle, runner: 'Runner')`. However, `toolchain.py` is a standalone module, not a method on `Runner`. When `BenchmarkScorer.score_run()` calls `toolchain.run_local_tests(handle, runner)`, the `runner` parameter carries the Runner instance for accessing `runner._detect_baseline_drift()` etc. But `toolchain.run_local_tests` also needs access to the clone_path for `npm test` and `pytest`, which comes from `handle`. This seems fine architecturally, but the forward-reference typing `runner: 'Runner'` in `toolchain.py` creates a circular import risk: `toolchain.py` imports Runner type for annotation, `runner.py` imports `toolchain.run_local_tests` for invocation, `scorer.py` imports both. Python handles this with `TYPE_CHECKING` guards, but the plan does not mention this.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's runner defines `ScorerProtocol` with signature `score_run(handle, phase, run_result, runner)`. Phase 5 implements `BenchmarkScorer.score_run(handle, phase, run_result, runner)` matching this protocol. But Phase 5 also says `toolchain.run_local_tests(handle, runner)` \u2014 the `run_local_tests` function signature is `(handle: CloneHandle, runner: 'Runner')`. However, `toolchain.py` is a standalone module, not a method on `Runner`. When `BenchmarkScorer.score_run()` calls `toolchain.run_local_tests(handle, runner)`, the `runner` parameter carries the Runner instance for accessing `runner._detect_baseline_drift()` etc. But `toolchain.run_local_tests` also needs access to the clone_path for `npm test` and `pytest`, which comes from `handle`. This seems fine architecturally, but the forward-reference typing `runner: 'Runner'` in `toolchain.py` creates a circular import risk: `toolchain.py` imports Runner type for annotation, `runner.py` imports `toolchain.run_local_tests` for invocation, `scorer.py` imports both. Python handles this with `TYPE_CHECKING` guards, but the plan does not mention this.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `session_state.py` declares `set_map_entry(session_id, key, sub_key, sub_value)` as a 4-arg helper. Phase 2's `selector.set_paraphrase()` calls `SessionState.set_map_entry(self.session_id, 'selector_cache', phase_id, updated_dict)`. But `set_map_entry` reads the full dict, inserts one key, and atomically writes back. If two concurrent orchestrators both call `set_paraphrase()` for different phases at the same time, both read the same dict, each inserts their own key, and the last writer wins \u2014 losing the other's entry. The plan's `tmp+fsync+rename` atomic write protects against corruption but not against lost updates in the read-modify-write cycle. There is no flock around `set_map_entry`.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's `session_state.py` declares `set_map_entry(session_id, key, sub_key, sub_value)` as a 4-arg helper. Phase 2's `selector.set_paraphrase()` calls `SessionState.set_map_entry(self.session_id, 'selector_cache', phase_id, updated_dict)`. But `set_map_entry` reads the full dict, inserts one key, and atomically writes back. If two concurrent orchestrators both call `set_paraphrase()` for different phases at the same time, both read the same dict, each inserts their own key, and the last writer wins \u2014 losing the other's entry. The plan's `tmp+fsync+rename` atomic write protects against corruption but not against lost updates in the read-modify-write cycle. There is no flock around `set_map_entry`.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 says the scorer sets `PYTHONPATH=<clone_path>:<clone_path>/core` for pytest. But if the project's own `conftest.py` or `pyproject.toml` configures pytest with `pythonpath` or `rootdir` settings, the scorer's PYTHONPATH override could conflict, causing import resolution differences between the contestant's intent and the scorer's execution. The plan does not verify whether the existing project has pytest configuration that would interact with the PYTHONPATH override.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 says the scorer sets `PYTHONPATH=<clone_path>:<clone_path>/core` for pytest. But if the project's own `conftest.py` or `pyproject.toml` configures pytest with `pythonpath` or `rootdir` settings, the scorer's PYTHONPATH override could conflict, causing import resolution differences between the contestant's intent and the scorer's execution. The plan does not verify whether the existing project has pytest configuration that would interact with the PYTHONPATH override.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 creates `core/benchmark/probe.py` as a NEW file with `ProbeScheduler`, but Phase 4 already creates `core/benchmark/recognition_probe.py` with the actual probe dispatch logic. Phase 6's `ProbeScheduler._maybe_fire()` presumably calls into `recognition_probe.py`'s dispatch function, but this import dependency is never explicitly stated in Phase 6's description. If `ProbeScheduler` reimplements probe dispatch independently instead of importing from `recognition_probe.py`, Phase 4's module becomes dead code.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 creates `core/benchmark/probe.py` as a NEW file with `ProbeScheduler`, but Phase 4 already creates `core/benchmark/recognition_probe.py` with the actual probe dispatch logic. Phase 6's `ProbeScheduler._maybe_fire()` presumably calls into `recognition_probe.py`'s dispatch function, but this import dependency is never explicitly stated in Phase 6's description. If `ProbeScheduler` reimplements probe dispatch independently instead of importing from `recognition_probe.py`, Phase 4's module becomes dead code.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's success criteria require `br benchmark run --phases 0 --replications 0 --no-pilot` and `tests/benchmark/test_phase1_smoke.py::test_empty_run_passes_all_preflight_tiers`, but Phase 1 only ships help-only CLI stubs and does not create `tests/benchmark/test_phase1_smoke.py`; the `run` command implementation is deferred to Phase 3, so Phase 1 cannot satisfy its own acceptance test.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's success criteria require `br benchmark run --phases 0 --replications 0 --no-pilot` and `tests/benchmark/test_phase1_smoke.py::test_empty_run_passes_all_preflight_tiers`, but Phase 1 only ships help-only CLI stubs and does not create `tests/benchmark/test_phase1_smoke.py`; the `run` command implementation is deferred to Phase 3, so Phase 1 cannot satisfy its own acceptance test.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 defines two incompatible signatures for the same scorer entrypoint: one section says `run_local_tests(handle: CloneHandle) -> LocalTestResult`, while the declared public API later requires `run_local_tests(handle: CloneHandle, runner: \"Runner\") -> LocalTestResult`. That mismatch will break the scorer/runner integration unless every caller and implementation is rewritten consistently.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 defines two incompatible signatures for the same scorer entrypoint: one section says `run_local_tests(handle: CloneHandle) -> LocalTestResult`, while the declared public API later requires `run_local_tests(handle: CloneHandle, runner: \"Runner\") -> LocalTestResult`. That mismatch will break the scorer/runner integration unless every caller and implementation is rewritten consistently.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's API contract is internally inconsistent: most of the plan treats `runner.run_cell(phase, model, sub_study, replication_index)` as one logical cell/replication, but Phase 3's success criteria say a single `runner.run_cell(...)` should produce `N RunResult rows, N = replications`. Those are different execution models and will lead to conflicting implementations and tests.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's API contract is internally inconsistent: most of the plan treats `runner.run_cell(phase, model, sub_study, replication_index)` as one logical cell/replication, but Phase 3's success criteria say a single `runner.run_cell(...)` should produce `N RunResult rows, N = replications`. Those are different execution models and will lead to conflicting implementations and tests.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 references `tests/benchmark/test_cli_judge.py::test_backfill_skips_already_judged_pairs` and `::test_backfill_and_runner_race_single_judgment`, but `tests/benchmark/test_cli_judge.py` is not listed in the Phase 6 Files section or anywhere else in the plan. The plan depends on a test file it never creates.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 references `tests/benchmark/test_cli_judge.py::test_backfill_skips_already_judged_pairs` and `::test_backfill_and_runner_race_single_judgment`, but `tests/benchmark/test_cli_judge.py` is not listed in the Phase 6 Files section or anywhere else in the plan. The plan depends on a test file it never creates.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Probe ownership is split across two modules with overlapping responsibilities: Phase 4 introduces `core/benchmark/recognition_probe.py` and a `cli_probe.py` implementation, then Phase 6 introduces `core/benchmark/probe.py` as the canonical scheduler and rewires `cli_probe.py` to it. That duplicate control surface is a requirement conflict and makes it unclear which module owns retry logic, trigger logic, and backfill semantics.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Probe ownership is split across two modules with overlapping responsibilities: Phase 4 introduces `core/benchmark/recognition_probe.py` and a `cli_probe.py` implementation, then Phase 6 introduces `core/benchmark/probe.py` as the canonical scheduler and rewires `cli_probe.py` to it. That duplicate control surface is a requirement conflict and makes it unclear which module owns retry logic, trigger logic, and backfill semantics.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6's `runner.py` MODIFY extends `run_session` to call `probe_scheduler.schedule(phase_id, model, expected_cell_count)` for every `(phase, model)` pair at startup. But if `selector.redraw()` introduces REPLACEMENT phases mid-run (Phase 2's redraw contract), those replacement phases are never registered with the probe scheduler via `schedule()`. The replacement-phase scheduler in Phase 3 appends replacement `PhaseSpec`s to `pending_queue` and dispatches their cells, but Phase 6's `run_session` extension only iterates `selector.selected_phase_ids` at startup. The scheduler's `_maybe_fire(phase_id)` would never trigger for a replacement phase because `schedule()` was never called for it \u2014 the `expected` counter would not exist in the `dict[(phase_id, model)]` map.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's `runner.py` MODIFY extends `run_session` to call `probe_scheduler.schedule(phase_id, model, expected_cell_count)` for every `(phase, model)` pair at startup. But if `selector.redraw()` introduces REPLACEMENT phases mid-run (Phase 2's redraw contract), those replacement phases are never registered with the probe scheduler via `schedule()`. The replacement-phase scheduler in Phase 3 appends replacement `PhaseSpec`s to `pending_queue` and dispatches their cells, but Phase 6's `run_session` extension only iterates `selector.selected_phase_ids` at startup. The scheduler's `_maybe_fire(phase_id)` would never trigger for a replacement phase because `schedule()` was never called for it \u2014 the `expected` counter would not exist in the `dict[(phase_id, model)]` map.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's success criteria require `br benchmark run --phases 0 --replications 0 --no-pilot` and `tests/benchmark/test_phase1_smoke.py::test_empty_run_passes_all_preflight_tiers`, but Phase 1 only ships help-only CLI stubs and does not create `tests/benchmark/test_phase1_smoke.py`; the `run` command implementation is deferred to Phase 3, so Phase 1 cannot satisfy its own acceptance test.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's success criteria require `br benchmark run --phases 0 --replications 0 --no-pilot` and `tests/benchmark/test_phase1_smoke.py::test_empty_run_passes_all_preflight_tiers`, but Phase 1 only ships help-only CLI stubs and does not create `tests/benchmark/test_phase1_smoke.py`; the `run` command implementation is deferred to Phase 3, so Phase 1 cannot satisfy its own acceptance test.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 defines two incompatible signatures for the same scorer entrypoint: one section says `run_local_tests(handle: CloneHandle) -> LocalTestResult`, while the declared public API later requires `run_local_tests(handle: CloneHandle, runner: \"Runner\") -> LocalTestResult`. That mismatch will break the scorer/runner integration unless every caller and implementation is rewritten consistently.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 defines two incompatible signatures for the same scorer entrypoint: one section says `run_local_tests(handle: CloneHandle) -> LocalTestResult`, while the declared public API later requires `run_local_tests(handle: CloneHandle, runner: \"Runner\") -> LocalTestResult`. That mismatch will break the scorer/runner integration unless every caller and implementation is rewritten consistently.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 references `tests/benchmark/test_cli_judge.py::test_backfill_skips_already_judged_pairs` and `::test_backfill_and_runner_race_single_judgment`, but `tests/benchmark/test_cli_judge.py` is not listed in the Phase 6 Files section or anywhere else in the plan. The plan depends on a test file it never creates.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 references `tests/benchmark/test_cli_judge.py::test_backfill_skips_already_judged_pairs` and `::test_backfill_and_runner_race_single_judgment`, but `tests/benchmark/test_cli_judge.py` is not listed in the Phase 6 Files section or anywhere else in the plan. The plan depends on a test file it never creates.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T08:39:28.654332Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 10
+}

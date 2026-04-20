@@ -1,0 +1,152 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T084510Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. The output above is the JSON array of findings from the adversarial plan review \u2014 no tests or visual verification are applicable here since this is a static plan analysis task, not a code change.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. The output above is the JSON array of findings from the adversarial plan review \u2014 no tests or visual verification are applicable here since this is a static plan analysis task, not a code change.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan uses incompatible values for the `model` field. Phase 3 says `cli_run.py --models` takes `config.contestants.*_model_version` values like `claude-opus-4-7` / `codex-5-4`, but Phase 2 `training_cutoffs.get_cutoffs()`, Phase 4 recognition rows, and Phase 6 probe scheduling hardcode `claude` / `codex`. That mismatch will break cell/pair grouping, cutoff lookup, probe scheduling, and registry joins.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan uses incompatible values for the `model` field. Phase 3 says `cli_run.py --models` takes `config.contestants.*_model_version` values like `claude-opus-4-7` / `codex-5-4`, but Phase 2 `training_cutoffs.get_cutoffs()`, Phase 4 recognition rows, and Phase 6 probe scheduling hardcode `claude` / `codex`. That mismatch will break cell/pair grouping, cutoff lookup, probe scheduling, and registry joins.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Recognition-probe dedup is internally inconsistent. Phase 1 defines the dedup/backfill key as `(session_id, phase_id, model)`, but Phase 4's backfill path switches to matching only `(phase_id, model)`. Concurrent sessions can therefore suppress each other's probes or join the wrong recognition score.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Recognition-probe dedup is internally inconsistent. Phase 1 defines the dedup/backfill key as `(session_id, phase_id, model)`, but Phase 4's backfill path switches to matching only `(phase_id, model)`. Concurrent sessions can therefore suppress each other's probes or join the wrong recognition score.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `ProbeScheduler` constructor contract is contradictory. Phase 6 `cli_probe.py` constructs `ProbeScheduler(config, registry)`, but the same phase's `cli_run.py` and `cli_resume.py` construct `ProbeScheduler()` with no arguments. One of those call sites will fail once the class is implemented.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The `ProbeScheduler` constructor contract is contradictory. Phase 6 `cli_probe.py` constructs `ProbeScheduler(config, registry)`, but the same phase's `cli_run.py` and `cli_resume.py` construct `ProbeScheduler()` with no arguments. One of those call sites will fail once the class is implemented.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's Python test-surface detection only treats `tests/**/test_*.py` as a real test surface. Pytest also collects `*_test.py` and can collect tests outside `tests/`, so legitimate suites can be misclassified as `no_tests_discovered` or as 'deleted by contestant'.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's Python test-surface detection only treats `tests/**/test_*.py` as a real test surface. Pytest also collects `*_test.py` and can collect tests outside `tests/`, so legitimate suites can be misclassified as `no_tests_discovered` or as 'deleted by contestant'.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 hardcodes Node test discovery to `<clone_path>/ui/package.json`. Any phase that moves the frontend, uses a different workspace root, or has root-level/package-workspace tests will be invisible to the scorer and can be incorrectly marked `no_tests_discovered`.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 hardcodes Node test discovery to `<clone_path>/ui/package.json`. Any phase that moves the frontend, uses a different workspace root, or has root-level/package-workspace tests will be invisible to the scorer and can be incorrectly marked `no_tests_discovered`.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "The plan uses incompatible values for the `model` field. Phase 3 says `cli_run.py --models` takes `config.contestants.*_model_version` values like `claude-opus-4-7` / `codex-5-4`, but Phase 2 `training_cutoffs.get_cutoffs()`, Phase 4 recognition rows, and Phase 6 probe scheduling hardcode `claude` / `codex`. That mismatch will break cell/pair grouping, cutoff lookup, probe scheduling, and registry joins.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan uses incompatible values for the `model` field. Phase 3 says `cli_run.py --models` takes `config.contestants.*_model_version` values like `claude-opus-4-7` / `codex-5-4`, but Phase 2 `training_cutoffs.get_cutoffs()`, Phase 4 recognition rows, and Phase 6 probe scheduling hardcode `claude` / `codex`. That mismatch will break cell/pair grouping, cutoff lookup, probe scheduling, and registry joins.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Recognition-probe dedup is internally inconsistent. Phase 1 defines the dedup/backfill key as `(session_id, phase_id, model)`, but Phase 4's backfill path switches to matching only `(phase_id, model)`. Concurrent sessions can therefore suppress each other's probes or join the wrong recognition score.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Recognition-probe dedup is internally inconsistent. Phase 1 defines the dedup/backfill key as `(session_id, phase_id, model)`, but Phase 4's backfill path switches to matching only `(phase_id, model)`. Concurrent sessions can therefore suppress each other's probes or join the wrong recognition score.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `ProbeScheduler` constructor contract is contradictory. Phase 6 `cli_probe.py` constructs `ProbeScheduler(config, registry)`, but the same phase's `cli_run.py` and `cli_resume.py` construct `ProbeScheduler()` with no arguments. One of those call sites will fail once the class is implemented.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The `ProbeScheduler` constructor contract is contradictory. Phase 6 `cli_probe.py` constructs `ProbeScheduler(config, registry)`, but the same phase's `cli_run.py` and `cli_resume.py` construct `ProbeScheduler()` with no arguments. One of those call sites will fail once the class is implemented.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T08:55:24.245474Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 2
+}

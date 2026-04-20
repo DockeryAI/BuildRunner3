@@ -224,10 +224,6 @@ class BuildRunnerTUI(App):
                 if os.path.exists(expanded):
                     subprocess.run(["open", expanded])
                     output.add_info(f"✅ Opened {os.path.basename(expanded)}")
-                    if prompt:
-                        # Copy to clipboard
-                        subprocess.run(["pbcopy"], input=prompt.encode(), check=True)
-                        output.add_info("📋 Prompt copied to clipboard - paste in Claude!")
                     return
 
         # Windows

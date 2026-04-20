@@ -1,0 +1,166 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T051112Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. The JSON array above contains my findings \u2014 2 blockers, 3 warnings, and 3 notes. The most critical issue is the missing `CalibrationPair` model declaration in Phase 1 that Phase 4 depends on.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. The JSON array above contains my findings \u2014 2 blockers, 3 warnings, and 3 notes. The most critical issue is the missing `CalibrationPair` model declaration in Phase 1 that Phase 4 depends on.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's config schema defines role-specific OpenRouter fields (`openrouter.paraphraser_primary`, `paraphraser_secondary`, `judge_primary`, `judge_secondary`, `equivalence_fallback`), but the same phase later says every consumer reads model IDs from `openrouter.required_models`. A plain list cannot preserve the role-to-model mapping, so Phase 4 and Phase 6 cannot deterministically select the correct model IDs from the declared single source of truth.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's config schema defines role-specific OpenRouter fields (`openrouter.paraphraser_primary`, `paraphraser_secondary`, `judge_primary`, `judge_secondary`, `equivalence_fallback`), but the same phase later says every consumer reads model IDs from `openrouter.required_models`. A plain list cannot preserve the role-to-model mapping, so Phase 4 and Phase 6 cannot deterministically select the correct model IDs from the declared single source of truth.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan contradicts itself on session-state storage: the preconditions say Phase 1 writes `.buildrunner/benchmarks/session-state.json`, but Phase 1's `session_state.py` explicitly says that path is not created and the canonical layout is per-session files under `.buildrunner/benchmarks/sessions/<session_id>.json` plus `sessions/index.json`. Those two tasks describe different on-disk contracts for the same state.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan contradicts itself on session-state storage: the preconditions say Phase 1 writes `.buildrunner/benchmarks/session-state.json`, but Phase 1's `session_state.py` explicitly says that path is not created and the canonical layout is per-session files under `.buildrunner/benchmarks/sessions/<session_id>.json` plus `sessions/index.json`. Those two tasks describe different on-disk contracts for the same state.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 computes `achieved_phases = min(30, selector.pool_survivors_after_paraphrase_equivalence + replacement_phases_enqueued_by_redraw)`, but no phase defines any field, function, artifact, or API named `replacement_phases_enqueued_by_redraw`. The full-run completion criterion depends on an undefined value.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10 computes `achieved_phases = min(30, selector.pool_survivors_after_paraphrase_equivalence + replacement_phases_enqueued_by_redraw)`, but no phase defines any field, function, artifact, or API named `replacement_phases_enqueued_by_redraw`. The full-run completion criterion depends on an undefined value.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's Stage-3 lock fallback returns `ok(...)` for a bare `lock: claim Phase N` commit that touched no BUILD file when all candidates are BUILD-file-agnostic. Because phase numbers repeat across many BUILD specs, that fallback cannot prove the commit belongs to the requested `build_file`; it can select the wrong pre-phase commit, corrupting both checkout state in Phase 3 and cutoff stratification in Phase 2.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's Stage-3 lock fallback returns `ok(...)` for a bare `lock: claim Phase N` commit that touched no BUILD file when all candidates are BUILD-file-agnostic. Because phase numbers repeat across many BUILD specs, that fallback cannot prove the commit belongs to the requested `build_file`; it can select the wrong pre-phase commit, corrupting both checkout state in Phase 3 and cutoff stratification in Phase 2.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The OpenRouter contract test ownership is internally inconsistent: Phase 4 explicitly says `test_openrouter_min_contract.py` is owned by Phase 6 because `openrouter.py` does not exist yet, but the `core/benchmark/openrouter_min.py` deliverable in the same phase says 'Phase 4' owns that test. That leaves the invariant's enforcing test with conflicting ownership and timing.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The OpenRouter contract test ownership is internally inconsistent: Phase 4 explicitly says `test_openrouter_min_contract.py` is owned by Phase 6 because `openrouter.py` does not exist yet, but the `core/benchmark/openrouter_min.py` deliverable in the same phase says 'Phase 4' owns that test. That leaves the invariant's enforcing test with conflicting ownership and timing.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 scores runs in a shared `.venv-benchmark` and only recreates the environment after detecting version drift. That does not protect the current run being scored: its pytest/vitest results are still produced in a mutated environment that may already include previous contestants' added packages or version changes, so the measurement is not isolated per run.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 scores runs in a shared `.venv-benchmark` and only recreates the environment after detecting version drift. That does not protect the current run being scored: its pytest/vitest results are still produced in a mutated environment that may already include previous contestants' added packages or version changes, so the measurement is not isolated per run.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1's config schema defines role-specific OpenRouter fields (`openrouter.paraphraser_primary`, `paraphraser_secondary`, `judge_primary`, `judge_secondary`, `equivalence_fallback`), but the same phase later says every consumer reads model IDs from `openrouter.required_models`. A plain list cannot preserve the role-to-model mapping, so Phase 4 and Phase 6 cannot deterministically select the correct model IDs from the declared single source of truth.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's config schema defines role-specific OpenRouter fields (`openrouter.paraphraser_primary`, `paraphraser_secondary`, `judge_primary`, `judge_secondary`, `equivalence_fallback`), but the same phase later says every consumer reads model IDs from `openrouter.required_models`. A plain list cannot preserve the role-to-model mapping, so Phase 4 and Phase 6 cannot deterministically select the correct model IDs from the declared single source of truth.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 computes `achieved_phases = min(30, selector.pool_survivors_after_paraphrase_equivalence + replacement_phases_enqueued_by_redraw)`, but no phase defines any field, function, artifact, or API named `replacement_phases_enqueued_by_redraw`. The full-run completion criterion depends on an undefined value.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10 computes `achieved_phases = min(30, selector.pool_survivors_after_paraphrase_equivalence + replacement_phases_enqueued_by_redraw)`, but no phase defines any field, function, artifact, or API named `replacement_phases_enqueued_by_redraw`. The full-run completion criterion depends on an undefined value.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's Stage-3 lock fallback returns `ok(...)` for a bare `lock: claim Phase N` commit that touched no BUILD file when all candidates are BUILD-file-agnostic. Because phase numbers repeat across many BUILD specs, that fallback cannot prove the commit belongs to the requested `build_file`; it can select the wrong pre-phase commit, corrupting both checkout state in Phase 3 and cutoff stratification in Phase 2.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's Stage-3 lock fallback returns `ok(...)` for a bare `lock: claim Phase N` commit that touched no BUILD file when all candidates are BUILD-file-agnostic. Because phase numbers repeat across many BUILD specs, that fallback cannot prove the commit belongs to the requested `build_file`; it can select the wrong pre-phase commit, corrupting both checkout state in Phase 3 and cutoff stratification in Phase 2.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T05:21:43.420401Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 5
+}

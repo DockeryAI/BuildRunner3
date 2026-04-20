@@ -1,0 +1,390 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T030119Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 1 declares ExclusionRow in models.py as part of the 'Phase 1 declarative-up-front model list', but the Phase 1 deliverables section's registry row union is `RegistryRow = Union[ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow]` \u2014 ExclusionRow is NOT in this union. The Phase 2 deliverables then say 'Pydantic model ExclusionRow is declared in core/benchmark/models.py in Phase 1's declarative-up-front model list (add to the shared models module alongside RegistryRow)'. This is a parenthetical instruction to Phase 1 that contradicts Phase 1's own explicit union definition. If Phase 1 is implemented as written (7-variant union, no ExclusionRow), Phase 2 will fail to import ExclusionRow from models.py.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares ExclusionRow in models.py as part of the 'Phase 1 declarative-up-front model list', but the Phase 1 deliverables section's registry row union is `RegistryRow = Union[ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow]` \u2014 ExclusionRow is NOT in this union. The Phase 2 deliverables then say 'Pydantic model ExclusionRow is declared in core/benchmark/models.py in Phase 1's declarative-up-front model list (add to the shared models module alongside RegistryRow)'. This is a parenthetical instruction to Phase 1 that contradicts Phase 1's own explicit union definition. If Phase 1 is implemented as written (7-variant union, no ExclusionRow), Phase 2 will fail to import ExclusionRow from models.py.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 is blocked by Phase 4 ('imports paraphraser.paraphrase_spec() and equivalence.check_equivalence()'), but Phase 4 is blocked by Phase 2 only, not Phase 1. Meanwhile Phase 3 is also blocked by Phase 1 and Phase 2. The parallelization matrix correctly shows build order 1\u21922\u21924\u21923, but Phase 3's own Blocked-By line says 'Phase 1, Phase 2, Phase 4' while Phase 4's Blocked-By says 'Phase 2'. This is consistent. However, Phase 4 creates openrouter_min.py and Phase 6 creates openrouter.py that 're-exports the same API and adds judge-specific retry'. Phase 6's Blocked-By includes Phase 4 indirectly (via 3\u21924 chain and 5), but Phase 6 does NOT list Phase 4 directly in its Blocked-By \u2014 it lists 'Phase 3, Phase 4 (via openrouter_min.py import), Phase 5 (hard)'. Actually the matrix says Phase 6 blocked by '3, 4, 5 (hard)' \u2014 but the Phase 6 section header says 'Blocked by: Phase 3, Phase 5'. Phase 4 is missing from the Phase 6 prose Blocked-By, contradicting the matrix.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 is blocked by Phase 4 ('imports paraphraser.paraphrase_spec() and equivalence.check_equivalence()'), but Phase 4 is blocked by Phase 2 only, not Phase 1. Meanwhile Phase 3 is also blocked by Phase 1 and Phase 2. The parallelization matrix correctly shows build order 1\u21922\u21924\u21923, but Phase 3's own Blocked-By line says 'Phase 1, Phase 2, Phase 4' while Phase 4's Blocked-By says 'Phase 2'. This is consistent. However, Phase 4 creates openrouter_min.py and Phase 6 creates openrouter.py that 're-exports the same API and adds judge-specific retry'. Phase 6's Blocked-By includes Phase 4 indirectly (via 3\u21924 chain and 5), but Phase 6 does NOT list Phase 4 directly in its Blocked-By \u2014 it lists 'Phase 3, Phase 4 (via openrouter_min.py import), Phase 5 (hard)'. Actually the matrix says Phase 6 blocked by '3, 4, 5 (hard)' \u2014 but the Phase 6 section header says 'Blocked by: Phase 3, Phase 5'. Phase 4 is missing from the Phase 6 prose Blocked-By, contradicting the matrix.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 deliverable for dispatch_run says argv is `[dispatch-to-node.sh, '--runtime', runtime, node, handle.clone_path, prompt_text, 'bench-dispatch-<run_id>']`. The verified CLI contract from the dependency table says: `[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]`. This maps to argv = `[script, '--runtime', runtime, node_name, project_path, prompt, session_name]` which matches. However, prompt_text is passed as a single positional argument. The plan states prompts are <50KB with a hard reject at 200KB, but the SSH command-line limit discussion says 128KiB. There is an internal contradiction: the hard reject is at 100KB (stated later in the same deliverable), not 200KB. Minor inconsistency in the same paragraph.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 deliverable for dispatch_run says argv is `[dispatch-to-node.sh, '--runtime', runtime, node, handle.clone_path, prompt_text, 'bench-dispatch-<run_id>']`. The verified CLI contract from the dependency table says: `[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]`. This maps to argv = `[script, '--runtime', runtime, node_name, project_path, prompt, session_name]` which matches. However, prompt_text is passed as a single positional argument. The plan states prompts are <50KB with a hard reject at 200KB, but the SSH command-line limit discussion says 128KiB. There is an internal contradiction: the hard reject is at 100KB (stated later in the same deliverable), not 200KB. Minor inconsistency in the same paragraph.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 deliverable says the scorer implements Phase 3's ScorerProtocol, and Phase 3 defines `ScorerProtocol` as a typing.Protocol with method `score_run(handle: CloneHandle, phase: PhaseSpec, run_result: RunResult) -> tuple[ObjectiveMetrics, AdherenceMetrics]`. But Phase 5's runner.py MODIFY says 'Phase 5's CLI entry point constructs Runner(scorer=ConcreteScorer())'. The ConcreteScorer class name is never defined in Phase 5's file list \u2014 scorer.py is listed but the class name mapping to ScorerProtocol is implicit. This is a naming concern, not a blocker, since the protocol is structural.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 deliverable says the scorer implements Phase 3's ScorerProtocol, and Phase 3 defines `ScorerProtocol` as a typing.Protocol with method `score_run(handle: CloneHandle, phase: PhaseSpec, run_result: RunResult) -> tuple[ObjectiveMetrics, AdherenceMetrics]`. But Phase 5's runner.py MODIFY says 'Phase 5's CLI entry point constructs Runner(scorer=ConcreteScorer())'. The ConcreteScorer class name is never defined in Phase 5's file list \u2014 scorer.py is listed but the class name mapping to ScorerProtocol is implicit. This is a naming concern, not a blocker, since the protocol is structural.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 session_state.py declares the full SessionState schema with `preflight_single_node` whose writer is 'Phase 1 deps.py only'. Phase 9's contention-measurement rule says 'if ratio exceeds 1.10... Lomax is dropped from the pool for Phase 10, preflight_single_node=true is set in session state'. This directly contradicts Phase 1's declaration that Phase 1 deps.py is the ONLY writer of preflight_single_node and that it is 'set at preflight from probe_node_pool() and never updated mid-run'. Phase 9 would need to write this flag but the schema enforcement would reject it or the invariant is violated.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 session_state.py declares the full SessionState schema with `preflight_single_node` whose writer is 'Phase 1 deps.py only'. Phase 9's contention-measurement rule says 'if ratio exceeds 1.10... Lomax is dropped from the pool for Phase 10, preflight_single_node=true is set in session state'. This directly contradicts Phase 1's declaration that Phase 1 deps.py is the ONLY writer of preflight_single_node and that it is 'set at preflight from probe_node_pool() and never updated mid-run'. Phase 9 would need to write this flag but the schema enforcement would reject it or the invariant is violated.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 creates lockres.py, and Phase 3 imports it. Phase 3's Blocked-By correctly includes Phase 2. However, Phase 4's Blocked-By is 'Phase 2 (uses api_clients.BelowClient)' \u2014 Phase 4 does NOT list Phase 1 as a dependency, yet Phase 4's openrouter_min.py would need OPENROUTER_API_KEY validation logic that Phase 1's deps.py provides. Phase 4 can import from Phase 1's modules since Phase 1 is transitively required (Phase 2 depends on Phase 1, Phase 4 depends on Phase 2), so this is not a blocker \u2014 just an implicit transitive dependency.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 creates lockres.py, and Phase 3 imports it. Phase 3's Blocked-By correctly includes Phase 2. However, Phase 4's Blocked-By is 'Phase 2 (uses api_clients.BelowClient)' \u2014 Phase 4 does NOT list Phase 1 as a dependency, yet Phase 4's openrouter_min.py would need OPENROUTER_API_KEY validation logic that Phase 1's deps.py provides. Phase 4 can import from Phase 1's modules since Phase 1 is transitively required (Phase 2 depends on Phase 1, Phase 4 depends on Phase 2), so this is not a blocker \u2014 just an implicit transitive dependency.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 deliverable says `dispatch_run` recovery policy retries once on a different node. But if the node pool is a single node (preflight_single_node=true), there IS no different node to retry on. The plan does not address single-node retry behavior \u2014 the retry would go to the same node, which may have the same transient issue.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 deliverable says `dispatch_run` recovery policy retries once on a different node. But if the node pool is a single node (preflight_single_node=true), there IS no different node to retry on. The plan does not address single-node retry behavior \u2014 the retry would go to the same node, which may have the same transient issue.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 deliverable for de-blinding classifier says 'With 7 phases and 12 rows per phase (2 models \u00d7 3 reps \u00d7 2 sub-studies), each fold holds out 1 or 2 phases'. StratifiedGroupKFold with n_splits=5 and 7 groups means some folds hold out 1 group and some hold out 2 groups (7/5 = 1.4). This is fine for sklearn. But the deliverable also says 'If the pilot runs at reduced N (5-6 surviving phases) StratifiedGroupKFold still applies \u2014 n_splits is clamped to min(5, n_phases)'. With 5 phases and n_splits=5, that's leave-one-group-out CV (each fold holds out exactly 1 phase = 12 rows, trains on 48). This works but the train set is small (48 rows, 4 phases) for a TF-IDF + LogisticRegression pipeline \u2014 overfitting risk is high, making the blinding check unreliable at low N.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 deliverable for de-blinding classifier says 'With 7 phases and 12 rows per phase (2 models \u00d7 3 reps \u00d7 2 sub-studies), each fold holds out 1 or 2 phases'. StratifiedGroupKFold with n_splits=5 and 7 groups means some folds hold out 1 group and some hold out 2 groups (7/5 = 1.4). This is fine for sklearn. But the deliverable also says 'If the pilot runs at reduced N (5-6 surviving phases) StratifiedGroupKFold still applies \u2014 n_splits is clamped to min(5, n_phases)'. With 5 phases and n_splits=5, that's leave-one-group-out CV (each fold holds out exactly 1 phase = 12 rows, trains on 48). This works but the train set is small (48 rows, 4 phases) for a TF-IDF + LogisticRegression pipeline \u2014 overfitting risk is high, making the blinding check unreliable at low N.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 deliverable describes an elaborate dependency-install + editable-install + teardown pipeline for Python tests, including fcntl.flock on /tmp/br3-bench-venv.lock. But the plan states the orchestrator is single-threaded on Muddy (contestants run on Otis/Lomax, orchestrator writes registry locally). If scoring is sequential within the orchestrator, the venv lock is only contended by a concurrent `br benchmark score --run-id` CLI invocation \u2014 an edge case. The complexity of the locking protocol (lock acquisition timeout, editable_install_leaked recovery, package-name discovery with AST fallback) is disproportionate to the actual concurrency risk and increases implementation surface area for bugs.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 deliverable describes an elaborate dependency-install + editable-install + teardown pipeline for Python tests, including fcntl.flock on /tmp/br3-bench-venv.lock. But the plan states the orchestrator is single-threaded on Muddy (contestants run on Otis/Lomax, orchestrator writes registry locally). If scoring is sequential within the orchestrator, the venv lock is only contended by a concurrent `br benchmark score --run-id` CLI invocation \u2014 an edge case. The complexity of the locking protocol (lock acquisition timeout, editable_install_leaked recovery, package-name discovery with AST fallback) is disproportionate to the actual concurrency risk and increases implementation surface area for bugs.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 says 'selector.select_with_buffer(target=7, buffer=3)' to over-draw 10 candidates. Phase 2 declares this method signature as 'select_with_buffer(target: int, buffer: int) -> list[PhaseSpec]' returning target+buffer candidates. But the plan says 'the caller consumes the first target survivors after paraphrase+equivalence filtering'. If 4+ of the 10 candidates fail paraphrase/equivalence, Phase 9 falls below the minimum 5. The buffer=3 provides only 3 extra candidates. With the stated 3-retry-then-drop policy per phase, and OpenRouter as the paraphraser, the buffer may be insufficient if the paraphraser has a bad day. No dynamic re-draw from the pool is mentioned for the pilot specifically (redraw is Phase 10's mid-run mechanism).",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 says 'selector.select_with_buffer(target=7, buffer=3)' to over-draw 10 candidates. Phase 2 declares this method signature as 'select_with_buffer(target: int, buffer: int) -> list[PhaseSpec]' returning target+buffer candidates. But the plan says 'the caller consumes the first target survivors after paraphrase+equivalence filtering'. If 4+ of the 10 candidates fail paraphrase/equivalence, Phase 9 falls below the minimum 5. The buffer=3 provides only 3 extra candidates. With the stated 3-retry-then-drop policy per phase, and OpenRouter as the paraphraser, the buffer may be insufficient if the paraphraser has a bad day. No dynamic re-draw from the pool is mentioned for the pilot specifically (redraw is Phase 10's mid-run mechanism).",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 declares `requirements-benchmark.txt` with `pytest>=7.4,<9.0` but the existing project may already have pytest in `requirements-api.txt`. Phase 1's installer runs ALL root-level requirements*.txt through the same venv. If `requirements-api.txt` pins a different pytest version range, pip will either resolve to the intersection or fail. No conflict-resolution strategy is documented.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares `requirements-benchmark.txt` with `pytest>=7.4,<9.0` but the existing project may already have pytest in `requirements-api.txt`. Phase 1's installer runs ALL root-level requirements*.txt through the same venv. If `requirements-api.txt` pins a different pytest version range, pip will either resolve to the intersection or fail. No conflict-resolution strategy is documented.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 deliverable says finalize_run does `git -C <parent_repo> fetch --quiet '/tmp/br3-bench-<run_id>/' 'refs/heads/bench-src-<run_id>:refs/heads/bench/<run_id>'`. This fetches from the clone into the parent repo. But the parent repo is the live working directory at /Users/byronhudson/Projects/BuildRunner3. Creating hundreds of refs/heads/bench/* branches in the main working repo will pollute `git branch` output and may interact with hooks or CI. The gc-anchors command is mentioned but only as a post-Phase-10 maintenance tool \u2014 during the 360-run execution, 360 anchor branches accumulate.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 deliverable says finalize_run does `git -C <parent_repo> fetch --quiet '/tmp/br3-bench-<run_id>/' 'refs/heads/bench-src-<run_id>:refs/heads/bench/<run_id>'`. This fetches from the clone into the parent repo. But the parent repo is the live working directory at /Users/byronhudson/Projects/BuildRunner3. Creating hundreds of refs/heads/bench/* branches in the main working repo will pollute `git branch` output and may interact with hooks or CI. The gc-anchors command is mentioned but only as a post-Phase-10 maintenance tool \u2014 during the 360-run execution, 360 anchor branches accumulate.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references 'Claude Opus 4.7' and 'Codex 5.4' as the two contestants. These are future model versions not yet released as of the knowledge cutoff. The plan treats them as available via dispatch-to-node.sh with --runtime claude|codex. If either model is not yet available on the cluster nodes at execution time, the entire benchmark cannot run. No version-pinning or availability check for specific model versions is in the preflight.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references 'Claude Opus 4.7' and 'Codex 5.4' as the two contestants. These are future model versions not yet released as of the knowledge cutoff. The plan treats them as available via dispatch-to-node.sh with --runtime claude|codex. If either model is not yet available on the cluster nodes at execution time, the entire benchmark cannot run. No version-pinning or availability check for specific model versions is in the preflight.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's npm install uses --ignore-scripts for contestant trees, but the baseline sanity check also uses --ignore-scripts. If the baseline BR3 ui/ tree currently depends on a postinstall script (e.g., a Husky git-hook installer or patch-package), the baseline check will fail and block the benchmark. The plan asserts 'BR3 currently uses Vite + vitest + React 20 \u2014 none of which require postinstall' but does not verify this claim against the actual ui/package.json dependencies.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's npm install uses --ignore-scripts for contestant trees, but the baseline sanity check also uses --ignore-scripts. If the baseline BR3 ui/ tree currently depends on a postinstall script (e.g., a Husky git-hook installer or patch-package), the baseline check will fail and block the benchmark. The plan asserts 'BR3 currently uses Vite + vitest + React 20 \u2014 none of which require postinstall' but does not verify this claim against the actual ui/package.json dependencies.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 and Invariant 14 conflict on `preflight_single_node`: Phase 1 says `core/benchmark/session_state.py` has `preflight_single_node` written only by `deps.py` at preflight and never updated mid-run, but Invariant 14 says the Phase 9 pilot may drop Lomax and then set `preflight_single_node=true` in session state after the contention check. Those rules cannot both be true.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 and Invariant 14 conflict on `preflight_single_node`: Phase 1 says `core/benchmark/session_state.py` has `preflight_single_node` written only by `deps.py` at preflight and never updated mid-run, but Invariant 14 says the Phase 9 pilot may drop Lomax and then set `preflight_single_node=true` in session state after the contention check. Those rules cannot both be true.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 and Phase 10 define incompatible degraded-sample decision rules. Phase 7 says `25 <= N < 30` still requires the 95% CI gate plus a Bradley-Terry effect-size threshold of 0.15, but Phase 10 summarizes the same range as `N >= 25 uses primary rule`, which removes that extra effect-size gate. This creates two different outcomes for the same achieved sample size.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 7 and Phase 10 define incompatible degraded-sample decision rules. Phase 7 says `25 <= N < 30` still requires the 95% CI gate plus a Bradley-Terry effect-size threshold of 0.15, but Phase 10 summarizes the same range as `N >= 25 uses primary rule`, which removes that extra effect-size gate. This creates two different outcomes for the same achieved sample size.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 requires an explicit operator command `br benchmark record-contracts`, but no phase adds a `record-contracts` subcommand. Phase 1's CLI skeleton enumerates the full command set and `record-contracts` is not in it, so the contract-recording workflow has no defined entry point.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 requires an explicit operator command `br benchmark record-contracts`, but no phase adds a `record-contracts` subcommand. Phase 1's CLI skeleton enumerates the full command set and `record-contracts` is not in it, so the contract-recording workflow has no defined entry point.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3/Phase 1 resume semantics are keyed to `run_id` instead of the logical cell. The plan says retries mint new `run_id`s and dedup must key on `(phase_id, model, sub_study, replication_index)`, but it also says `runner.resume()` and startup resume logic skip completed `run_id`s. That does not prevent re-running an already-completed cell under a fresh `run_id`.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3/Phase 1 resume semantics are keyed to `run_id` instead of the logical cell. The plan says retries mint new `run_id`s and dedup must key on `(phase_id, model, sub_study, replication_index)`, but it also says `runner.resume()` and startup resume logic skip completed `run_id`s. That does not prevent re-running an already-completed cell under a fresh `run_id`.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 mutates the shared `.venv-benchmark/` based on each contestant's edited `requirements*.txt` and explicitly does not roll those dependency changes back after scoring. A run that upgrades/downgrades or adds packages can contaminate later runs and change their test outcomes, so isolation is broken at the Python dependency layer.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 mutates the shared `.venv-benchmark/` based on each contestant's edited `requirements*.txt` and explicitly does not roll those dependency changes back after scoring. A run that upgrades/downgrades or adds packages can contaminate later runs and change their test outcomes, so isolation is broken at the Python dependency layer.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 assumes `setup.py` or `pyproject.toml` at the repo root means the project is editable-installable and runs `pip install -e <clone_path>`. The project tree includes `pyproject.toml`, but no cited excerpt proves it defines an installable package. If it is config-only, every run can fail at the editable-install step before tests even start.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 assumes `setup.py` or `pyproject.toml` at the repo root means the project is editable-installable and runs `pip install -e <clone_path>`. The project tree includes `pyproject.toml`, but no cited excerpt proves it defines an installable package. If it is config-only, every run can fail at the editable-install step before tests even start.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 says the CLI wiring will pass `Runner(scorer=ConcreteScorer())`, but no phase defines a `ConcreteScorer` symbol. `core/benchmark/scorer.py` is listed as new, but the plan never names an exported class or factory matching that identifier.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 says the CLI wiring will pass `Runner(scorer=ConcreteScorer())`, but no phase defines a `ConcreteScorer` symbol. `core/benchmark/scorer.py` is listed as new, but the plan never names an exported class or factory matching that identifier.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 declares ExclusionRow in models.py as part of the 'Phase 1 declarative-up-front model list', but the Phase 1 deliverables section's registry row union is `RegistryRow = Union[ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow]` \u2014 ExclusionRow is NOT in this union. The Phase 2 deliverables then say 'Pydantic model ExclusionRow is declared in core/benchmark/models.py in Phase 1's declarative-up-front model list (add to the shared models module alongside RegistryRow)'. This is a parenthetical instruction to Phase 1 that contradicts Phase 1's own explicit union definition. If Phase 1 is implemented as written (7-variant union, no ExclusionRow), Phase 2 will fail to import ExclusionRow from models.py.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares ExclusionRow in models.py as part of the 'Phase 1 declarative-up-front model list', but the Phase 1 deliverables section's registry row union is `RegistryRow = Union[ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow]` \u2014 ExclusionRow is NOT in this union. The Phase 2 deliverables then say 'Pydantic model ExclusionRow is declared in core/benchmark/models.py in Phase 1's declarative-up-front model list (add to the shared models module alongside RegistryRow)'. This is a parenthetical instruction to Phase 1 that contradicts Phase 1's own explicit union definition. If Phase 1 is implemented as written (7-variant union, no ExclusionRow), Phase 2 will fail to import ExclusionRow from models.py.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 session_state.py declares the full SessionState schema with `preflight_single_node` whose writer is 'Phase 1 deps.py only'. Phase 9's contention-measurement rule says 'if ratio exceeds 1.10... Lomax is dropped from the pool for Phase 10, preflight_single_node=true is set in session state'. This directly contradicts Phase 1's declaration that Phase 1 deps.py is the ONLY writer of preflight_single_node and that it is 'set at preflight from probe_node_pool() and never updated mid-run'. Phase 9 would need to write this flag but the schema enforcement would reject it or the invariant is violated.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 session_state.py declares the full SessionState schema with `preflight_single_node` whose writer is 'Phase 1 deps.py only'. Phase 9's contention-measurement rule says 'if ratio exceeds 1.10... Lomax is dropped from the pool for Phase 10, preflight_single_node=true is set in session state'. This directly contradicts Phase 1's declaration that Phase 1 deps.py is the ONLY writer of preflight_single_node and that it is 'set at preflight from probe_node_pool() and never updated mid-run'. Phase 9 would need to write this flag but the schema enforcement would reject it or the invariant is violated.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 and Invariant 14 conflict on `preflight_single_node`: Phase 1 says `core/benchmark/session_state.py` has `preflight_single_node` written only by `deps.py` at preflight and never updated mid-run, but Invariant 14 says the Phase 9 pilot may drop Lomax and then set `preflight_single_node=true` in session state after the contention check. Those rules cannot both be true.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 and Invariant 14 conflict on `preflight_single_node`: Phase 1 says `core/benchmark/session_state.py` has `preflight_single_node` written only by `deps.py` at preflight and never updated mid-run, but Invariant 14 says the Phase 9 pilot may drop Lomax and then set `preflight_single_node=true` in session state after the contention check. Those rules cannot both be true.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 and Phase 10 define incompatible degraded-sample decision rules. Phase 7 says `25 <= N < 30` still requires the 95% CI gate plus a Bradley-Terry effect-size threshold of 0.15, but Phase 10 summarizes the same range as `N >= 25 uses primary rule`, which removes that extra effect-size gate. This creates two different outcomes for the same achieved sample size.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 7 and Phase 10 define incompatible degraded-sample decision rules. Phase 7 says `25 <= N < 30` still requires the 95% CI gate plus a Bradley-Terry effect-size threshold of 0.15, but Phase 10 summarizes the same range as `N >= 25 uses primary rule`, which removes that extra effect-size gate. This creates two different outcomes for the same achieved sample size.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 requires an explicit operator command `br benchmark record-contracts`, but no phase adds a `record-contracts` subcommand. Phase 1's CLI skeleton enumerates the full command set and `record-contracts` is not in it, so the contract-recording workflow has no defined entry point.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 requires an explicit operator command `br benchmark record-contracts`, but no phase adds a `record-contracts` subcommand. Phase 1's CLI skeleton enumerates the full command set and `record-contracts` is not in it, so the contract-recording workflow has no defined entry point.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T03:06:03.046855Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 5
+}

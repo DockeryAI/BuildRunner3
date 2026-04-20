@@ -1,0 +1,3115 @@
+{
+  "generated_at": "2026-04-15",
+  "source": {
+    "commands_dir": "/Users/byronhudson/.claude/commands",
+    "skills_dir": "/Users/byronhudson/.claude/skills"
+  },
+  "summary": {
+    "total_commands": 65,
+    "total_skills": 12,
+    "bucket_counts": {
+      "trivial": 10,
+      "keep-Claude-first": 35,
+      "hard": 9,
+      "moderate": 11
+    },
+    "category_counts": {
+      "execution": 30,
+      "cluster_ops": 18,
+      "design": 3,
+      "planning": 2,
+      "business_domain": 6,
+      "misc": 3,
+      "research": 2,
+      "session_helper": 1
+    },
+    "portability_counts": {
+      "high": 10,
+      "claude_first": 35,
+      "low": 9,
+      "medium": 11
+    },
+    "core_command_count": 16,
+    "core_low_portability_count": 14,
+    "core_low_portability_share": 0.875
+  },
+  "decision_gate": {
+    "result": "formalize_long_term_hybrid_strategy",
+    "reason": "14 of 16 core commands (88%) are low-portability or Claude-first."
+  },
+  "rollout_order": [
+    {
+      "stage": "Stage 1",
+      "bucket": "trivial",
+      "commands": [
+        "/3",
+        "/business",
+        "/concise",
+        "/fixplan",
+        "/mobile",
+        "/restart",
+        "/sales",
+        "/supa",
+        "/switch",
+        "/test"
+      ],
+      "focus": "simple local execution commands with minimal orchestration coupling"
+    },
+    {
+      "stage": "Stage 2",
+      "bucket": "moderate",
+      "commands": [
+        "/cluster",
+        "/commit",
+        "/impact",
+        "/intel-review",
+        "/predict",
+        "/production",
+        "/pw-test",
+        "/reset-cluster",
+        "/rules",
+        "/swap",
+        "/tuning"
+      ],
+      "focus": "commands with manageable cluster or interaction coupling after runtime selection exists"
+    },
+    {
+      "stage": "Stage 3",
+      "bucket": "hard",
+      "commands": [
+        "/brief",
+        "/dbg",
+        "/device",
+        "/preview",
+        "/query",
+        "/sdb",
+        "/setlist",
+        "/website-build",
+        "/why"
+      ],
+      "focus": "commands needing explicit adapter or policy extraction work"
+    },
+    {
+      "stage": "Stage 4",
+      "bucket": "keep-Claude-first",
+      "commands": [
+        "/amend",
+        "/appdesign",
+        "/autopilot",
+        "/begin",
+        "/brainstorm",
+        "/cluster-research",
+        "/dash",
+        "/dead",
+        "/design",
+        "/diag",
+        "/e2e",
+        "/explore-qa",
+        "/gaps",
+        "/geo-coach",
+        "/geo",
+        "/guard",
+        "/hunt",
+        "/later",
+        "/learn",
+        "/llm",
+        "/monitor",
+        "/opus",
+        "/perplexity",
+        "/prompt",
+        "/recraft",
+        "/research-audit",
+        "/research",
+        "/review",
+        "/roadmap",
+        "/root",
+        "/save",
+        "/social",
+        "/spec",
+        "/steal",
+        "/worktree"
+      ],
+      "focus": "research, planning, architecture, and browser-heavy commands retained on Claude"
+    }
+  ],
+  "skills": [
+    {
+      "name": "2nd",
+      "path": "/Users/byronhudson/.claude/skills/2nd/SKILL.md"
+    },
+    {
+      "name": "br3-frontend-design",
+      "path": "/Users/byronhudson/.claude/skills/br3-frontend-design/SKILL.md"
+    },
+    {
+      "name": "br3-planning",
+      "path": "/Users/byronhudson/.claude/skills/br3-planning/SKILL.md"
+    },
+    {
+      "name": "business",
+      "path": "/Users/byronhudson/.claude/skills/business.md"
+    },
+    {
+      "name": "chet",
+      "path": "/Users/byronhudson/.claude/skills/chet/SKILL.md"
+    },
+    {
+      "name": "codex-do",
+      "path": "/Users/byronhudson/.claude/skills/codex-do/SKILL.md"
+    },
+    {
+      "name": "geo",
+      "path": "/Users/byronhudson/.claude/skills/geo.md"
+    },
+    {
+      "name": "prodlog",
+      "path": "/Users/byronhudson/.claude/skills/prodlog/SKILL.md"
+    },
+    {
+      "name": "roy-personality",
+      "path": "/Users/byronhudson/.claude/skills/roy-personality/SKILL.md"
+    },
+    {
+      "name": "sales",
+      "path": "/Users/byronhudson/.claude/skills/sales.md"
+    },
+    {
+      "name": "security-rules",
+      "path": "/Users/byronhudson/.claude/skills/security-rules/SKILL.md"
+    },
+    {
+      "name": "template",
+      "path": "/Users/byronhudson/.claude/skills/template/SKILL.md"
+    }
+  ],
+  "commands": [
+    {
+      "command": "/3",
+      "name": "3",
+      "path": "/Users/byronhudson/.claude/commands/3.md",
+      "description": "Kill port 3000 and start current project's dev server",
+      "model": "haiku",
+      "allowed_tools": [
+        "Bash",
+        "Read",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "lsof",
+          "make",
+          "npm"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "simple local command flow"
+      ],
+      "line_count": 32
+    },
+    {
+      "command": "/amend",
+      "name": "amend",
+      "path": "/Users/byronhudson/.claude/commands/amend.md",
+      "description": "Add changes to BUILD spec mid-project (cross-phase amendments)",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "AskUserQuestion"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/adversarial-review.sh",
+          "~/.buildrunner/scripts/cluster-check.sh",
+          "~/.buildrunner/scripts/update-build-header.sh"
+        ],
+        "docs": [
+          "~/.claude/docs/setlist-explore-lenses.md"
+        ],
+        "skills": [],
+        "commands": [
+          "begin",
+          "later",
+          "spec"
+        ],
+        "external_tools": [
+          "claude",
+          "codex",
+          "curl",
+          "git",
+          "node"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 318
+    },
+    {
+      "command": "/appdesign",
+      "name": "appdesign",
+      "path": "/Users/byronhudson/.claude/commands/appdesign.md",
+      "description": "Load BR3 design system + app design research library into context for frontend work. Use before any frontend implementation.",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Bash"
+      ],
+      "category": "design",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "br3-frontend-design",
+          "business",
+          "chet"
+        ],
+        "commands": [
+          "autopilot",
+          "begin",
+          "design",
+          "research"
+        ],
+        "external_tools": [
+          "claude",
+          "vercel"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 191
+    },
+    {
+      "command": "/autopilot",
+      "name": "autopilot",
+      "path": "/Users/byronhudson/.claude/commands/autopilot.md",
+      "description": "Automated multi-phase build orchestration \u2014 reads BUILD spec, batches phases, runs parallel/sequential, gates for approval",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Agent",
+        "TaskCreate",
+        "TaskUpdate",
+        "TaskList",
+        "TaskGet"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/_dispatch-core.sh",
+          "~/.buildrunner/scripts/cluster-check.sh",
+          "~/.buildrunner/scripts/dispatch-to-node.sh",
+          "~/.buildrunner/scripts/next-ready-build.mjs",
+          "~/.buildrunner/scripts/research-search.sh",
+          "~/.buildrunner/scripts/update-build-header.sh"
+        ],
+        "docs": [
+          "~/.claude/docs/autopilot-executor-prompt.md",
+          "~/.claude/docs/autopilot-executor-prompt.md."
+        ],
+        "skills": [
+          "template"
+        ],
+        "commands": [
+          "appdesign",
+          "cluster",
+          "commit",
+          "dash",
+          "design",
+          "gaps",
+          "guard",
+          "impact",
+          "opus",
+          "predict",
+          "test"
+        ],
+        "external_tools": [
+          "claude",
+          "curl",
+          "git",
+          "netlify",
+          "node",
+          "npm",
+          "playwright",
+          "python3",
+          "supabase"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": true,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 1063
+    },
+    {
+      "command": "/begin",
+      "name": "begin",
+      "path": "/Users/byronhudson/.claude/commands/begin.md",
+      "description": "Begin work - plan, execute, finish (simplified)",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Task"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh",
+          "~/.buildrunner/scripts/dispatch-phase-to-otis.sh",
+          "~/.buildrunner/scripts/research-search.sh",
+          "~/.buildrunner/scripts/update-build-header.sh"
+        ],
+        "docs": [
+          "~/.claude/docs/begin-execution-gates.md",
+          "~/.claude/docs/begin-locks.md",
+          "~/.claude/docs/begin-completion.md",
+          "~/.claude/docs/begin-health-check.md",
+          "~/.claude/docs/begin-report.md",
+          "~/.claude/docs/begin-review.md",
+          "~/.claude/docs/begin-tdd-gate.md",
+          "~/.claude/docs/begin-verification.md"
+        ],
+        "skills": [
+          "template"
+        ],
+        "commands": [
+          "appdesign",
+          "autopilot",
+          "design",
+          "impact",
+          "predict",
+          "research"
+        ],
+        "external_tools": [
+          "claude",
+          "codex",
+          "curl",
+          "git",
+          "node",
+          "npm",
+          "playwright",
+          "python3",
+          "supabase"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": true,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 627
+    },
+    {
+      "command": "/brainstorm",
+      "name": "brainstorm",
+      "path": "/Users/byronhudson/.claude/commands/brainstorm.md",
+      "description": "Socratic design exploration with hard gate \u2014 no code until approved",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "planning",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "begin",
+          "spec",
+          "test"
+        ],
+        "external_tools": [
+          "claude",
+          "git"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 194
+    },
+    {
+      "command": "/brief",
+      "name": "brief",
+      "path": "/Users/byronhudson/.claude/commands/brief.md",
+      "description": "/brief \u2014 Developer Brief",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "low_value",
+      "status_reason": "session helper; auto-runs via hook and is not a migration priority",
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/developer-brief.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "git"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": true,
+      "browser_tool_dependence": false,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "low migration value",
+        "hook/governance coupling"
+      ],
+      "line_count": 18
+    },
+    {
+      "command": "/business",
+      "name": "business",
+      "path": "/Users/byronhudson/.claude/commands/business.md",
+      "description": "Business Planning Context: /business",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "business_domain",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "business",
+          "sales"
+        ],
+        "commands": [
+          "opus",
+          "sales"
+        ],
+        "external_tools": [
+          "claude"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "skill-specific behavior"
+      ],
+      "line_count": 145
+    },
+    {
+      "command": "/cluster-research",
+      "name": "cluster-research",
+      "path": "/Users/byronhudson/.claude/commands/cluster-research.md",
+      "description": "/cluster-research \u2014 Load Cluster Research Context",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "template"
+        ],
+        "commands": [],
+        "external_tools": [
+          "claude",
+          "netlify",
+          "node",
+          "playwright",
+          "pnpm"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": true,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "hook/governance coupling",
+        "skill-specific behavior"
+      ],
+      "line_count": 86
+    },
+    {
+      "command": "/cluster",
+      "name": "cluster",
+      "path": "/Users/byronhudson/.claude/commands/cluster.md",
+      "description": "/cluster \u2014 BR3 Cluster Management",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "curl",
+          "git",
+          "node",
+          "python3"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "cluster integration"
+      ],
+      "line_count": 97
+    },
+    {
+      "command": "/commit",
+      "name": "commit",
+      "path": "/Users/byronhudson/.claude/commands/commit.md",
+      "description": "Stage all, commit, push, and optionally tag. Use -dev for dev branch only.",
+      "model": "default",
+      "allowed_tools": [
+        "Bash",
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "claude",
+          "curl",
+          "gh",
+          "git",
+          "netlify",
+          "npm",
+          "vercel"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "cluster integration"
+      ],
+      "line_count": 595
+    },
+    {
+      "command": "/concise",
+      "name": "concise",
+      "path": "/Users/byronhudson/.claude/commands/concise.md",
+      "description": "Present plans in plain-language walkthrough format. No code, no tech details. Concepts and flow only.",
+      "model": "default",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "low_value",
+      "status_reason": "formatting helper, not a substantive runtime workflow",
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": []
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "low migration value"
+      ],
+      "line_count": 37
+    },
+    {
+      "command": "/dash",
+      "name": "dash",
+      "path": "/Users/byronhudson/.claude/commands/dash.md",
+      "description": "BR3 Dashboard",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "business"
+        ],
+        "commands": [
+          "spec"
+        ],
+        "external_tools": [
+          "claude",
+          "curl",
+          "git",
+          "node",
+          "npm"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "skill-specific behavior"
+      ],
+      "line_count": 182
+    },
+    {
+      "command": "/dbg",
+      "name": "dbg",
+      "path": "/Users/byronhudson/.claude/commands/dbg.md",
+      "description": "Debug browser errors - reads browser logs and analyzes issues",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "sales"
+        ],
+        "commands": [
+          "device",
+          "diag",
+          "query",
+          "sdb"
+        ],
+        "external_tools": [
+          "git",
+          "lsof",
+          "netlify",
+          "npm",
+          "supabase"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "skill-specific behavior"
+      ],
+      "line_count": 160
+    },
+    {
+      "command": "/dead",
+      "name": "dead",
+      "path": "/Users/byronhudson/.claude/commands/dead.md",
+      "description": "Dead code analysis - find duplicates, semantic duplicates, parallel/competing code, dead code, and race conditions",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Task",
+        "WebSearch",
+        "WebFetch"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "sales"
+        ],
+        "commands": [
+          "test"
+        ],
+        "external_tools": [
+          "curl",
+          "git"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "subagent orchestration",
+        "skill-specific behavior"
+      ],
+      "line_count": 274
+    },
+    {
+      "command": "/design",
+      "name": "design",
+      "path": "/Users/byronhudson/.claude/commands/design.md",
+      "description": "Interactive design discovery with 4 browseable mockups (3 original + 1 competitor baseline). Produces DESIGN_SPEC.md from a winning direction.",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Skill"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "br3-frontend-design",
+          "business",
+          "chet",
+          "geo",
+          "template"
+        ],
+        "commands": [
+          "3",
+          "appdesign",
+          "autopilot",
+          "begin",
+          "pw-test",
+          "research",
+          "website-build"
+        ],
+        "external_tools": [
+          "claude",
+          "curl",
+          "git",
+          "make",
+          "npm",
+          "playwright",
+          "python3",
+          "vercel"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 2690
+    },
+    {
+      "command": "/device",
+      "name": "device",
+      "path": "/Users/byronhudson/.claude/commands/device.md",
+      "description": "Analyze device.log \u2014 SW state, visibility, memory, network, permissions",
+      "model": "sonnet",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "sales"
+        ],
+        "commands": [],
+        "external_tools": [
+          "netlify",
+          "npm"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "skill-specific behavior"
+      ],
+      "line_count": 89
+    },
+    {
+      "command": "/diag",
+      "name": "diag",
+      "path": "/Users/byronhudson/.claude/commands/diag.md",
+      "description": "Full diagnostic \u2014 cross-file correlation across all 4 BR3 logs",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "sales"
+        ],
+        "commands": [
+          "device",
+          "query"
+        ],
+        "external_tools": [
+          "lsof",
+          "netlify",
+          "npm",
+          "supabase"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "subagent orchestration",
+        "skill-specific behavior"
+      ],
+      "line_count": 135
+    },
+    {
+      "command": "/e2e",
+      "name": "e2e",
+      "path": "/Users/byronhudson/.claude/commands/e2e.md",
+      "description": "Run Playwright E2E tests for the most recent work \u2014 auto-detects what to test",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Agent"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "test"
+        ],
+        "external_tools": [
+          "curl",
+          "git",
+          "lsof",
+          "make",
+          "npm",
+          "playwright"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "subagent orchestration"
+      ],
+      "line_count": 233
+    },
+    {
+      "command": "/explore-qa",
+      "name": "explore-qa",
+      "path": "/Users/byronhudson/.claude/commands/explore-qa.md",
+      "description": "Autonomous browser exploration and QA \u2014 crawls every page, finds errors, tests forms, checks mobile",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "mcp__playwright__browser_navigate",
+        "mcp__playwright__browser_snapshot",
+        "mcp__playwright__browser_click",
+        "mcp__playwright__browser_fill_form",
+        "mcp__playwright__browser_console_messages",
+        "mcp__playwright__browser_take_screenshot",
+        "mcp__playwright__browser_resize",
+        "mcp__playwright__browser_tabs",
+        "mcp__playwright__browser_navigate_back",
+        "mcp__playwright__browser_network_requests",
+        "mcp__playwright__browser_press_key",
+        "mcp__playwright__browser_hover",
+        "mcp__playwright__browser_close",
+        "mcp__playwright__browser_evaluate",
+        "mcp__playwright__browser_type",
+        "mcp__playwright__browser_wait_for",
+        "mcp__playwright__browser_select_option"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "curl",
+          "git",
+          "lsof",
+          "make",
+          "playwright"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration"
+      ],
+      "line_count": 257
+    },
+    {
+      "command": "/fixplan",
+      "name": "fixplan",
+      "path": "/Users/byronhudson/.claude/commands/fixplan.md",
+      "description": "Generate a concise fix plan covering ALL issues from the entire session - no code, no action, just the plan",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": []
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "simple local command flow"
+      ],
+      "line_count": 122
+    },
+    {
+      "command": "/gaps",
+      "name": "gaps",
+      "path": "/Users/byronhudson/.claude/commands/gaps.md",
+      "description": "Gap detection with safeguards - analyzes build plan, reports issues, fixes only with confirmation",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "curl",
+          "git",
+          "make",
+          "npm"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 301
+    },
+    {
+      "command": "/geo-coach",
+      "name": "geo-coach",
+      "path": "/Users/byronhudson/.claude/commands/geo-coach.md",
+      "description": "GEO citation coach for DockeryAI \u2014 guides through the 5-stage citation playbook with research-backed methodology",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "business_domain",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "business",
+          "geo"
+        ],
+        "commands": [],
+        "external_tools": [
+          "make",
+          "supabase"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "skill-specific behavior"
+      ],
+      "line_count": 242
+    },
+    {
+      "command": "/geo",
+      "name": "geo",
+      "path": "/Users/byronhudson/.claude/commands/geo.md",
+      "description": "Load GEO & AI search citation research into context, apply to current session plans",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "business_domain",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "geo"
+        ],
+        "commands": [],
+        "external_tools": []
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "skill-specific behavior"
+      ],
+      "line_count": 139
+    },
+    {
+      "command": "/guard",
+      "name": "guard",
+      "path": "/Users/byronhudson/.claude/commands/guard.md",
+      "description": "Guard - Validates work against spec, governance, decisions, and architecture. Prevents drift.",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "e2e"
+        ],
+        "external_tools": [
+          "claude",
+          "curl",
+          "git",
+          "playwright"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 251
+    },
+    {
+      "command": "/hunt",
+      "name": "hunt",
+      "path": "/Users/byronhudson/.claude/commands/hunt.md",
+      "description": "Hunt system \u2014 research deals, manage hunts, review exceptional finds on the cluster",
+      "model": "default",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebSearch",
+        "ToolSearch"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "sales"
+        ],
+        "commands": [
+          "spec"
+        ],
+        "external_tools": [
+          "claude",
+          "curl",
+          "make"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "skill-specific behavior"
+      ],
+      "line_count": 300
+    },
+    {
+      "command": "/impact",
+      "name": "impact",
+      "path": "/Users/byronhudson/.claude/commands/impact.md",
+      "description": "/impact \u2014 Cross-Project Impact Analysis",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "business"
+        ],
+        "commands": [],
+        "external_tools": [
+          "curl"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "cluster integration",
+        "skill-specific behavior"
+      ],
+      "line_count": 44
+    },
+    {
+      "command": "/intel-review",
+      "name": "intel-review",
+      "path": "/Users/byronhudson/.claude/commands/intel-review.md",
+      "description": "Intelligence review \u2014 Opus reasoning pass on high-scoring intel items and exceptional deals",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "setlist"
+        ],
+        "external_tools": [
+          "claude",
+          "curl"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "cluster integration"
+      ],
+      "line_count": 164
+    },
+    {
+      "command": "/later",
+      "name": "later",
+      "path": "/Users/byronhudson/.claude/commands/later.md",
+      "description": "Later - Move features from current build to roadmap (next/later horizons)",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep"
+      ],
+      "category": "design",
+      "usage_tier": "standard",
+      "status": "low_value",
+      "status_reason": "response-style helper, low migration value",
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "roadmap"
+        ],
+        "external_tools": [
+          "claude"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 256
+    },
+    {
+      "command": "/learn",
+      "name": "learn",
+      "path": "/Users/byronhudson/.claude/commands/learn.md",
+      "description": "Load research context from library - understands natural language queries",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh",
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "geo",
+          "sales"
+        ],
+        "commands": [
+          "research"
+        ],
+        "external_tools": [
+          "claude",
+          "make"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 338
+    },
+    {
+      "command": "/llm",
+      "name": "llm",
+      "path": "/Users/byronhudson/.claude/commands/llm.md",
+      "description": "Load local LLM prompting best practices (Qwen 3, Llama 3.3, DeepSeek R1, Ollama), apply to current session plans",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "template"
+        ],
+        "commands": [
+          "opus"
+        ],
+        "external_tools": [
+          "claude",
+          "make"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 192
+    },
+    {
+      "command": "/mobile",
+      "name": "mobile",
+      "path": "/Users/byronhudson/.claude/commands/mobile.md",
+      "description": "Start a tmux session for remote phone access via SSH",
+      "model": "default",
+      "allowed_tools": [
+        "Bash",
+        "Read"
+      ],
+      "category": "misc",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "claude"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "simple local command flow"
+      ],
+      "line_count": 94
+    },
+    {
+      "command": "/monitor",
+      "name": "monitor",
+      "path": "/Users/byronhudson/.claude/commands/monitor.md",
+      "description": "Monitor user flows - capture network/console activity and generate diagnostic report",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": []
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "user gating / interactive stop points"
+      ],
+      "line_count": 261
+    },
+    {
+      "command": "/opus",
+      "name": "opus",
+      "path": "/Users/byronhudson/.claude/commands/opus.md",
+      "description": "Load Claude Opus/Sonnet prompting best practices (4.5-4.6), apply to current session plans",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "begin",
+          "fixplan"
+        ],
+        "external_tools": [
+          "claude",
+          "make"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": true,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 149
+    },
+    {
+      "command": "/perplexity",
+      "name": "perplexity",
+      "path": "/Users/byronhudson/.claude/commands/perplexity.md",
+      "description": "Load Perplexity best practices (prompting, Sonar/Agent API, features, streaming, error handling, workflows), apply to current session plans",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "geo"
+        ],
+        "commands": [
+          "begin",
+          "fixplan"
+        ],
+        "external_tools": [
+          "claude",
+          "make",
+          "vercel"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "skill-specific behavior"
+      ],
+      "line_count": 166
+    },
+    {
+      "command": "/predict",
+      "name": "predict",
+      "path": "/Users/byronhudson/.claude/commands/predict.md",
+      "description": "/predict \u2014 Phase Difficulty Prediction",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "curl",
+          "git"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "cluster integration"
+      ],
+      "line_count": 53
+    },
+    {
+      "command": "/preview",
+      "name": "preview",
+      "path": "/Users/byronhudson/.claude/commands/preview.md",
+      "description": "Deploy current project to Netlify preview via Lomax, return shareable URL",
+      "model": "haiku",
+      "allowed_tools": [
+        "Bash"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "curl",
+          "netlify",
+          "node",
+          "playwright"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration"
+      ],
+      "line_count": 59
+    },
+    {
+      "command": "/production",
+      "name": "production",
+      "path": "/Users/byronhudson/.claude/commands/production.md",
+      "description": "Setup dev/prod architecture - current DB becomes PROD, creates DEV, outputs env vars",
+      "model": "default",
+      "allowed_tools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep",
+        "AskUserQuestion"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "claude",
+          "netlify",
+          "supabase"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "user gating / interactive stop points"
+      ],
+      "line_count": 239
+    },
+    {
+      "command": "/prompt",
+      "name": "prompt",
+      "path": "/Users/byronhudson/.claude/commands/prompt.md",
+      "description": "Load LLM & Claude prompting best practices, apply to current session plans",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "planning",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "begin",
+          "fixplan"
+        ],
+        "external_tools": [
+          "claude",
+          "make"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 178
+    },
+    {
+      "command": "/pw-test",
+      "name": "pw-test",
+      "path": "/Users/byronhudson/.claude/commands/pw-test.md",
+      "description": "/pw-test \u2014 Write Playwright E2E Tests",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "e2e",
+          "test"
+        ],
+        "external_tools": [
+          "make",
+          "playwright"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "browser/web research dependence"
+      ],
+      "line_count": 74
+    },
+    {
+      "command": "/query",
+      "name": "query",
+      "path": "/Users/byronhudson/.claude/commands/query.md",
+      "description": "Analyze query.log \u2014 cache hit rates, stale patterns, hydration timing",
+      "model": "sonnet",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "sales"
+        ],
+        "commands": [],
+        "external_tools": [
+          "netlify",
+          "npm"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "skill-specific behavior"
+      ],
+      "line_count": 96
+    },
+    {
+      "command": "/recraft",
+      "name": "recraft",
+      "path": "/Users/byronhudson/.claude/commands/recraft.md",
+      "description": "Load Recraft image generation best practices, prompting techniques, and creative guidance",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "design",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "business",
+          "template"
+        ],
+        "commands": [],
+        "external_tools": []
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": true,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 171
+    },
+    {
+      "command": "/research-audit",
+      "name": "research-audit",
+      "path": "/Users/byronhudson/.claude/commands/research-audit.md",
+      "description": "Audit research library - find schema drift, orphan subjects, unused entries",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "research",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "business"
+        ],
+        "commands": [
+          "learn"
+        ],
+        "external_tools": []
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 271
+    },
+    {
+      "command": "/research",
+      "name": "research",
+      "path": "/Users/byronhudson/.claude/commands/research.md",
+      "description": "Deep research on any subject - exhaustive multi-source analysis with unique angles",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebSearch",
+        "WebFetch",
+        "Agent"
+      ],
+      "category": "research",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "business",
+          "geo",
+          "sales",
+          "template"
+        ],
+        "commands": [
+          "rules"
+        ],
+        "external_tools": [
+          "curl"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 733
+    },
+    {
+      "command": "/reset-cluster",
+      "name": "reset-cluster",
+      "path": "/Users/byronhudson/.claude/commands/reset-cluster.md",
+      "description": "/reset-cluster \u2014 Reboot All Cluster Nodes",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "cluster"
+        ],
+        "external_tools": [
+          "node"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "cluster integration"
+      ],
+      "line_count": 46
+    },
+    {
+      "command": "/restart",
+      "name": "restart",
+      "path": "/Users/byronhudson/.claude/commands/restart.md",
+      "description": "[Quick] Kill port 3000 and restart npm dev server",
+      "model": "haiku",
+      "allowed_tools": [
+        "Bash"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "low_value",
+      "status_reason": "redundant with /3 and narrower in scope",
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "lsof",
+          "npm"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "low migration value"
+      ],
+      "line_count": 15
+    },
+    {
+      "command": "/review",
+      "name": "review",
+      "path": "/Users/byronhudson/.claude/commands/review.md",
+      "description": "Re-review current diff \u2014 lightweight two-stage review outside /begin",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Task",
+        "Agent"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [
+          "~/.claude/docs/begin-review.md"
+        ],
+        "skills": [
+          "template"
+        ],
+        "commands": [
+          "begin",
+          "impact"
+        ],
+        "external_tools": [
+          "claude",
+          "curl",
+          "git",
+          "npm",
+          "playwright"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "subagent orchestration",
+        "skill-specific behavior"
+      ],
+      "line_count": 98
+    },
+    {
+      "command": "/roadmap",
+      "name": "roadmap",
+      "path": "/Users/byronhudson/.claude/commands/roadmap.md",
+      "description": "Roadmap - View and manage feature horizons (now/next/later) and releases",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "later"
+        ],
+        "external_tools": []
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 194
+    },
+    {
+      "command": "/root",
+      "name": "root",
+      "path": "/Users/byronhudson/.claude/commands/root.md",
+      "description": "Find the root cause - exhaustive analysis with subagents, 100% confirmed, report only (no action)",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Task",
+        "WebSearch",
+        "WebFetch"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "sales",
+          "template"
+        ],
+        "commands": [
+          "impact",
+          "test"
+        ],
+        "external_tools": [
+          "curl",
+          "git"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "cluster integration",
+        "subagent orchestration",
+        "skill-specific behavior"
+      ],
+      "line_count": 227
+    },
+    {
+      "command": "/rules",
+      "name": "rules",
+      "path": "/Users/byronhudson/.claude/commands/rules.md",
+      "description": "Re-inject project rules into context",
+      "model": "opus",
+      "allowed_tools": [
+        "Read"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "low_value",
+      "status_reason": "policy display helper, not a core runtime workflow",
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "claude"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "low migration value"
+      ],
+      "line_count": 21
+    },
+    {
+      "command": "/sales",
+      "name": "sales",
+      "path": "/Users/byronhudson/.claude/commands/sales.md",
+      "description": "Sales & Marketing Context: /sales",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "business_domain",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "business",
+          "geo",
+          "sales"
+        ],
+        "commands": [
+          "business",
+          "geo",
+          "opus"
+        ],
+        "external_tools": []
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "skill-specific behavior"
+      ],
+      "line_count": 158
+    },
+    {
+      "command": "/save",
+      "name": "save",
+      "path": "/Users/byronhudson/.claude/commands/save.md",
+      "description": "Save session - log decisions, architecture, reasoning, and goals",
+      "model": "haiku",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "low_value",
+      "status_reason": "session helper; low migration priority",
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/backfill-build-history.sh",
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "commit",
+          "why"
+        ],
+        "external_tools": [
+          "claude",
+          "curl",
+          "git",
+          "python3",
+          "supabase"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "low migration value",
+        "browser/web research dependence",
+        "cluster integration"
+      ],
+      "line_count": 170
+    },
+    {
+      "command": "/sdb",
+      "name": "sdb",
+      "path": "/Users/byronhudson/.claude/commands/sdb.md",
+      "description": "Debug Supabase issues - reads supabase.log and analyzes operations",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "sales"
+        ],
+        "commands": [
+          "device"
+        ],
+        "external_tools": [
+          "netlify",
+          "npm",
+          "supabase"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "skill-specific behavior"
+      ],
+      "line_count": 201
+    },
+    {
+      "command": "/setlist",
+      "name": "setlist",
+      "path": "/Users/byronhudson/.claude/commands/setlist.md",
+      "description": "Evidence-based planning with cluster intelligence \u2014 explore, plan, review, approve",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Agent"
+      ],
+      "category": "business_domain",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/adversarial-review.sh",
+          "~/.buildrunner/scripts/cluster-check.sh"
+        ],
+        "docs": [
+          "~/.claude/docs/setlist-explore-lenses.md",
+          "~/.claude/docs/setlist-plan-format.md"
+        ],
+        "skills": [],
+        "commands": [
+          "begin"
+        ],
+        "external_tools": [
+          "claude",
+          "codex",
+          "curl"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "cluster integration",
+        "subagent orchestration"
+      ],
+      "line_count": 156
+    },
+    {
+      "command": "/social",
+      "name": "social",
+      "path": "/Users/byronhudson/.claude/commands/social.md",
+      "description": "Load social media marketing best practices, apply to current session plans",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "category": "business_domain",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/research-search.sh"
+        ],
+        "docs": [],
+        "skills": [
+          "business",
+          "geo",
+          "template"
+        ],
+        "commands": [],
+        "external_tools": [
+          "make"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": true,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "cluster integration",
+        "hook/governance coupling",
+        "skill-specific behavior"
+      ],
+      "line_count": 218
+    },
+    {
+      "command": "/spec",
+      "name": "spec",
+      "path": "/Users/byronhudson/.claude/commands/spec.md",
+      "description": "Strategic project planning - define phases and create BUILD spec",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "AskUserQuestion"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/adversarial-review.sh",
+          "~/.buildrunner/scripts/cluster-check.sh",
+          "~/.buildrunner/scripts/enforce-skill-steps.sh",
+          "~/.buildrunner/scripts/validate-spec-paths.sh"
+        ],
+        "docs": [
+          "~/.claude/docs/setlist-explore-lenses.md"
+        ],
+        "skills": [
+          "template"
+        ],
+        "commands": [
+          "begin"
+        ],
+        "external_tools": [
+          "claude",
+          "codex",
+          "curl",
+          "git",
+          "node",
+          "python3",
+          "supabase"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": true,
+      "hook_dependence": true,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 503
+    },
+    {
+      "command": "/steal",
+      "name": "steal",
+      "path": "/Users/byronhudson/.claude/commands/steal.md",
+      "description": "Find real-world practitioners doing X, analyze their artifacts, and port the best ideas into one of your platforms",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "WebSearch",
+        "WebFetch",
+        "Agent"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "geo",
+          "sales",
+          "template"
+        ],
+        "commands": [
+          "begin",
+          "brief",
+          "sales"
+        ],
+        "external_tools": [
+          "make",
+          "npm",
+          "supabase",
+          "vercel"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": true,
+      "hook_dependence": true,
+      "browser_tool_dependence": true,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "subagent orchestration",
+        "hook/governance coupling",
+        "skill-specific behavior"
+      ],
+      "line_count": 477
+    },
+    {
+      "command": "/supa",
+      "name": "supa",
+      "path": "/Users/byronhudson/.claude/commands/supa.md",
+      "description": "Connect Supabase edge function logging for current project",
+      "model": "haiku",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "misc",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "supabase"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "simple local command flow"
+      ],
+      "line_count": 57
+    },
+    {
+      "command": "/swap",
+      "name": "swap",
+      "path": "/Users/byronhudson/.claude/commands/swap.md",
+      "description": "Swap active Claude Code account across the cluster (one-year tokens)",
+      "model": "haiku",
+      "allowed_tools": [
+        "Bash"
+      ],
+      "category": "cluster_ops",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [
+          "~/.buildrunner/scripts/br-swap-tokens.sh"
+        ],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "autopilot"
+        ],
+        "external_tools": [
+          "claude",
+          "node"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "cluster integration"
+      ],
+      "line_count": 58
+    },
+    {
+      "command": "/switch",
+      "name": "switch",
+      "path": "/Users/byronhudson/.claude/commands/switch.md",
+      "description": "Toggle between Claude Opus 4.5 and Opus 4.6",
+      "model": "haiku",
+      "allowed_tools": [
+        "Bash"
+      ],
+      "category": "session_helper",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "claude",
+          "python3"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "simple local command flow"
+      ],
+      "line_count": 53
+    },
+    {
+      "command": "/test",
+      "name": "test",
+      "path": "/Users/byronhudson/.claude/commands/test.md",
+      "description": "Write failing tests for current task, then commit",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "claude",
+          "git",
+          "npm"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "high",
+      "fallback_runtime": "codex",
+      "effort_estimate": "S",
+      "migration_bucket": "trivial",
+      "portability_rationale": [
+        "simple local command flow"
+      ],
+      "line_count": 100
+    },
+    {
+      "command": "/tuning",
+      "name": "tuning",
+      "path": "/Users/byronhudson/.claude/commands/tuning.md",
+      "description": "/tuning \u2014 Toggle Claude Code Performance Settings",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "misc",
+      "usage_tier": "niche",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "claude"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": true,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "medium",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "M",
+      "migration_bucket": "moderate",
+      "portability_rationale": [
+        "subagent orchestration"
+      ],
+      "line_count": 58
+    },
+    {
+      "command": "/website-build",
+      "name": "website-build",
+      "path": "/Users/byronhudson/.claude/commands/website-build.md",
+      "description": "/website-build \u2014 Intelligence-Driven Website Builder",
+      "model": "default",
+      "allowed_tools": [],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [
+          "business",
+          "chet",
+          "geo",
+          "sales"
+        ],
+        "commands": [
+          "appdesign",
+          "design",
+          "social"
+        ],
+        "external_tools": [
+          "claude",
+          "git",
+          "npm",
+          "playwright",
+          "supabase"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": true,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "browser/web research dependence",
+        "skill-specific behavior"
+      ],
+      "line_count": 319
+    },
+    {
+      "command": "/why",
+      "name": "why",
+      "path": "/Users/byronhudson/.claude/commands/why.md",
+      "description": "Diagnose console errors - explains what's wrong, why, and how to fix (no code, no action)",
+      "model": "opus",
+      "allowed_tools": [
+        "Read",
+        "Bash",
+        "Grep",
+        "Glob"
+      ],
+      "category": "execution",
+      "usage_tier": "standard",
+      "status": "low_value",
+      "status_reason": "explanation helper, not a substantive runtime workflow",
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [],
+        "external_tools": [
+          "make",
+          "npm",
+          "yarn"
+        ]
+      },
+      "cluster_usage": true,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "low",
+      "fallback_runtime": "hybrid",
+      "effort_estimate": "L",
+      "migration_bucket": "hard",
+      "portability_rationale": [
+        "low migration value",
+        "cluster integration"
+      ],
+      "line_count": 151
+    },
+    {
+      "command": "/worktree",
+      "name": "worktree",
+      "path": "/Users/byronhudson/.claude/commands/worktree.md",
+      "description": "Create a git worktree with full project setup \u2014 BR3, Claude config, .env, alias",
+      "model": "opus",
+      "allowed_tools": [
+        "Bash",
+        "Read",
+        "Write",
+        "Edit",
+        "Glob",
+        "Grep",
+        "AskUserQuestion"
+      ],
+      "category": "execution",
+      "usage_tier": "core",
+      "status": "active",
+      "status_reason": null,
+      "dependencies": {
+        "scripts": [],
+        "docs": [],
+        "skills": [],
+        "commands": [
+          "begin",
+          "spec"
+        ],
+        "external_tools": [
+          "claude",
+          "git",
+          "npm",
+          "supabase"
+        ]
+      },
+      "cluster_usage": false,
+      "subagent_usage": false,
+      "hook_dependence": false,
+      "browser_tool_dependence": false,
+      "portability_rating": "claude_first",
+      "fallback_runtime": "claude",
+      "effort_estimate": "XL",
+      "migration_bucket": "keep-Claude-first",
+      "portability_rationale": [
+        "planning/research/design command remains Claude-first by policy"
+      ],
+      "line_count": 354
+    }
+  ]
+}

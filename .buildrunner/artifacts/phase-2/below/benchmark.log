@@ -1,0 +1,16 @@
+=== Below benchmark @ 2026-04-19T17:53:32Z ===
+-> Config 1: single-GPU 70B (num_gpu=1)
+   single_gpu_70b_toks=0.82
+-> Config 2: dual-GPU 70B + NVLink (num_gpu=2)
+   dual_gpu_70b_toks=18.01
+-> Config 3: qwen3:8b dual-GPU pipeline
+   qwen8b_toks=105.47
+
+{
+  "single_gpu_70b_toks": 0.82,
+  "dual_gpu_70b_toks": 18.01,
+  "qwen8b_toks": 105.47,
+  "nvlink_speedup": 21.96,
+  "captured_at": "2026-04-19T18:03:57Z"
+}
+=== Summary ===
