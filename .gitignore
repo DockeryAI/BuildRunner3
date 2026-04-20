@@ -54,3 +54,6 @@ Thumbs.db
 .dispatch-worktrees/
 .buildrunner/build-reports/
 .buildrunner/builds/BUILD_e2e-dispatch-test.md
+
+# Local git backup directory — never commit
+.git.remote-backup/
