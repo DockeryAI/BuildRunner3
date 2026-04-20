@@ -978,3 +978,4 @@
   DEFERRED: (1) Benchmark a pure CPU-path qwen3:8b side-by-side to prove the co-residency workaround; (2) Try a smaller 70B quant (Q3_K_M or Q2_K) if co-residency with 8B becomes needed for specific workflows.
 2026-04-20T18:49:12Z Phase 1: hardware install complete — Below dual-3090 NVLink (4×14.062 GB/s), Jimmy online at 10.0.1.106 [autopilot]
 2026-04-20T18:53:57Z Phase 0: AGENTS.md authored — router + 5 scopes (6 files total, in-repo + staged) — total 11907 bytes [autopilot]
+2026-04-20T19:30:00Z Phase 6: OllamaRuntime registered — local_ready capability live, fallback verified, AGENTS.md updated [autopilot]

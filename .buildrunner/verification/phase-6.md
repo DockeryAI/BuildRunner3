@@ -1,8 +1,20 @@
-# Phase 6 Verification: Cluster Health Monitor
+# Phase 6 Verification: Runtime Registry Extension (OllamaRuntime)
+
+**Date:** 2026-04-20T19:30:00Z
+**Status:** COMPLETE
 
 ## Deliverables Verified
 
-1. **Poll all 6 nodes every 60s** — PASS
+1. **SUPPORTED_RUNTIMES includes ollama** — PASS (config.py)
+2. **OllamaRuntime implemented** — PASS (ollama_runtime.py, ruff clean)
+3. **Registry registration** — PASS (registry.get('ollama').name == 'ollama')
+4. **command_capabilities.json local_ready** — PASS (4 capabilities, all 5 members present)
+5. **Silent fallback on 503/timeout/health-fail** — PASS (3 fallback tests)
+6. **Test suite: 16/16 pass** — PASS
+7. **AGENTS.md updated** — PASS (OllamaRuntime + local_ready, ≤400 bytes added)
+8. **Claude/Codex unchanged** — PASS (byte-identical, not modified)
+
+## Cluster Health Monitor (prior phase-6 content)
    - Reads cluster.json master + 5 worker nodes
    - Main loop sleeps 60s between polls (1s increments for signal responsiveness)
 
