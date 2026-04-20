@@ -1,0 +1,50 @@
+Sun Apr 19 08:51:51 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.97                 Driver Version: 580.97         CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3090      WDDM  |   00000000:01:00.0  On |                  N/A |
+| 30%   51C    P8             19W /  400W |   21450MiB /  24576MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA GeForce RTX 3090      WDDM  |   00000000:02:00.0 Off |                  N/A |
+| 30%   35C    P8             14W /  400W |   21450MiB /  24576MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            1836    C+G   C:\Windows\System32\dwm.exe           N/A      |
+|    0   N/A  N/A            2280    C+G   ....0.3912.72\msedgewebview2.exe      N/A      |
+|    0   N/A  N/A            3056    C+G   ...xyewy\ShellExperienceHost.exe      N/A      |
+|    0   N/A  N/A            3172      C   C:\Tools\Ollama\ollama.exe            N/A      |
+|    0   N/A  N/A            5916      C   C:\Tools\Ollama\ollama.exe            N/A      |
+|    0   N/A  N/A            6296    C+G   ...h_cw5n1h2txyewy\SearchApp.exe      N/A      |
+|    0   N/A  N/A            7236    C+G   ...TRIX CARRY\P508PowerAgent.exe      N/A      |
+|    0   N/A  N/A            8444    C+G   C:\Windows\explorer.exe               N/A      |
+|    0   N/A  N/A            9204    C+G   ...5n1h2txyewy\TextInputHost.exe      N/A      |
+|    0   N/A  N/A            9624    C+G   ...y\StartMenuExperienceHost.exe      N/A      |
+|    0   N/A  N/A           10100    C+G   ...s\Mozilla Firefox\firefox.exe      N/A      |
+|    0   N/A  N/A           10304    C+G   ...h_cw5n1h2txyewy\SearchApp.exe      N/A      |
+|    0   N/A  N/A           10920    C+G   ...s\Mozilla Firefox\firefox.exe      N/A      |
+|    0   N/A  N/A           12260    C+G   ....0.3912.72\msedgewebview2.exe      N/A      |
+|    1   N/A  N/A            1836    C+G   C:\Windows\System32\dwm.exe           N/A      |
+|    1   N/A  N/A            2280    C+G   ....0.3912.72\msedgewebview2.exe      N/A      |
+|    1   N/A  N/A            3056    C+G   ...xyewy\ShellExperienceHost.exe      N/A      |
+|    1   N/A  N/A            3172      C   C:\Tools\Ollama\ollama.exe            N/A      |
+|    1   N/A  N/A            6296    C+G   ...h_cw5n1h2txyewy\SearchApp.exe      N/A      |
+|    1   N/A  N/A            7236    C+G   ...TRIX CARRY\P508PowerAgent.exe      N/A      |
+|    1   N/A  N/A            8444    C+G   C:\Windows\explorer.exe               N/A      |
+|    1   N/A  N/A            9204    C+G   ...5n1h2txyewy\TextInputHost.exe      N/A      |
+|    1   N/A  N/A            9624    C+G   ...y\StartMenuExperienceHost.exe      N/A      |
+|    1   N/A  N/A           10100    C+G   ...s\Mozilla Firefox\firefox.exe      N/A      |
+|    1   N/A  N/A           10304    C+G   ...h_cw5n1h2txyewy\SearchApp.exe      N/A      |
+|    1   N/A  N/A           10920    C+G   ...s\Mozilla Firefox\firefox.exe      N/A      |
+|    1   N/A  N/A           12260    C+G   ....0.3912.72\msedgewebview2.exe      N/A      |
++-----------------------------------------------------------------------------------------+

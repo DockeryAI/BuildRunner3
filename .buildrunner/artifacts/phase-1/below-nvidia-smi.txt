@@ -1,0 +1,13 @@
+GPU 0: NVIDIA GeForce RTX 3090 (UUID: GPU-83abab40-8b77-ffcc-832f-5bd064cca065)
+	 Link 0: 14.062 GB/s
+	 Link 1: 14.062 GB/s
+	 Link 2: 14.062 GB/s
+	 Link 3: 14.062 GB/s
+GPU 1: NVIDIA GeForce RTX 3090 (UUID: GPU-65cd2a32-6cd5-14dc-a829-6bcc53f1463f)
+	 Link 0: 14.062 GB/s
+	 Link 1: 14.062 GB/s
+	 Link 2: 14.062 GB/s
+	 Link 3: 14.062 GB/s
+index, name, memory.total [MiB]
+0, NVIDIA GeForce RTX 3090, 24576 MiB
+1, NVIDIA GeForce RTX 3090, 24576 MiB

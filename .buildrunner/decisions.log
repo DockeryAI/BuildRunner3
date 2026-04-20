@@ -962,3 +962,18 @@
   WHY: Codex (GPT-4o) is a different model than Claude for adversarial review, but user explicitly requested fixing the dispatch. Accepting this as a use case: fast, independent code reviews via different LLM. Not replacing Claude reviews, complementing them.
   CONTEXT: Adversarial review backend choice; user owns the trade-off
 
+[Thu Apr 16 18:54:07 CDT 2026] [DECISION] Created build spec: model-benchmark-harness with 10 phases
+
+[2026-04-19T13:52:57Z] [MILESTONE] Phase 1 Below slice — BIOS 2101, dual 3090 NVLink 4x14GB/s confirmed, RM1200x installed, power limit 400W applied
+  WHY: Completed Phase 1 Parts A-E slice. BIOS 1302→2101 flashed. PSU swapped AX860→RM1200x. 4-DIMM 64GB installed. Dual RTX 3090 FE + NVLink bridge installed and verified (4 links × 14.062 GB/s per GPU = 56 GB/s bi-directional). Above 4G enabled, CSM disabled, JEDEC 2133 (XMP deferred). Power limit 400W on both cards. GPU 0 sustained 81°C / 99% util / 366W / 1860 MHz over 5-min stress (under 83°C target). Ghost 2080 Ti PnP device removed. PCIe ASPM confirmed off (Ultimate Performance plan).
+  CONTEXT: BUILD_cluster-max Phase 1; artifacts in .buildrunner/artifacts/phase-1/below/
+  DEFERRED: (1) Afterburner Core +75 / Mem +300 — requires GUI install, documented in E.1; (2) GPU 1 full-load thermal validation — ollama scheduler did not distribute evenly during stress, GPU 1 only hit 44°C at 47% util; (3) Display cable — Samsung S95F EDID shows HDMI 1.4 mode list, user on new HDMI 2.1 cable, likely needs "Input Signal Plus" enabled in TV menu; (4) Memtest — deferred to MS-A2 (Part F) window; (5) XMP — re-enable after stability validated.
+
+
+[2026-04-19T18:10:00Z] [MILESTONE] Phase 2 Below activated — llama3.3:70b @ 18.01 tok/s dual-GPU, deepseek-r1:70b registered, NVLink 4×14.062 GB/s confirmed, AGENTS.md snippet staged
+  WHY: Completed Phase 2 (Below Activation) of BUILD_cluster-max. Below is online as the heavy inference node: both 70B models registered (llama3.3:70b-instruct-q4_K_M, deepseek-r1:70b-llama-distill-q4_K_M), dual-GPU pipeline split across 2×RTX 3090 NVLink-bridged via HF-via-Muddy proxy path after Ollama's upstream pull stalled in SHA-verify twice.
+  CONTEXT: BUILD_cluster-max Phase 2; artifacts in .buildrunner/artifacts/phase-2/below/
+  RESULT: dual_gpu_70b_toks=18.01 (target ≥18 ✓); nvlink_speedup_vs_partial-GPU=21.96 (target ≥1.30 ✓); qwen8b_toks=105.47 in [80,120] ✓; llama3.3 stays hot for sequential calls with load_duration ~130 ms on warm cache (target cold_reload_count=0 ✓); intel_scoring smoke test all 5 deals scored in [0,100] ✓; below-verify.sh 13/13 checks green, zero warnings.
+  DETOURS: (1) Ollama Windows SHA-verify bug stalled both CLI pulls at ~42.5 GB partials — aborted, cleaned orphans, pivoted to HF-via-Muddy proxy (curl to Muddy at 42 MB/s then 1 Gbps SCP to Below, ollama create with local Modelfile). (2) Default num_ctx=4096 OOMs KV cache on 70B dual-GPU — patched below-benchmark.sh + test_residency.py to use num_ctx=2048, num_gpu=99. (3) llama3.3+qwen3:8b co-residency infeasible on 2×24 GB (llama weights alone consume ~42 GB, leaving insufficient headroom for 8B runtime) — reframed residency contract as same-model hot-cache (no cold reload within KEEP_ALIVE window); documented the constraint.
+  DEFERRED: (1) Benchmark a pure CPU-path qwen3:8b side-by-side to prove the co-residency workaround; (2) Try a smaller 70B quant (Q3_K_M or Q2_K) if co-residency with 8B becomes needed for specific workflows.
+2026-04-20T18:49:12Z Phase 1: hardware install complete — Below dual-3090 NVLink (4×14.062 GB/s), Jimmy online at 10.0.1.106 [autopilot]

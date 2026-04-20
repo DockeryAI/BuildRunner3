@@ -1,39 +1,327 @@
 # Build: cluster-max
 
 **Created:** 2026-04-12
-**Last Revised:** 2026-04-16 (Codex-optimization pass: AGENTS.md as Phase 0 + recurring lever, four-element prompts per phase, mandatory Claude Review per phase, Multi-Model Context Parity phase added)
-**Status:** Phase 0 not_started
+**Last Revised:** 2026-04-20 (Autopilot pass: single source-of-truth section at top, research-backed role split per phase, context-poisoning triggers, Jimmy memory cutover, overflow reserve design, LiteLLM replaced by RuntimeRegistry shim, deepseek-r1 / budget_tokens / 12KB threshold / round-cap-3 dropped)
+**Status:** Phases 1-1 Complete — Phase 0 In Progress
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
+
+---
+
+## AUTOPILOT PROTOCOL — READ FIRST (SOURCE OF TRUTH)
+
+This section is authoritative. Everything below it is implementation reference. When anything in a later phase contradicts this section, THIS section wins. When `/autopilot go cluster max` is invoked on a fresh Claude instance, read this section first, then the "Final Decisions Override" table, then jump to the current phase.
+
+### Fresh-Instance Bootstrap (in this order)
+
+1. Read this file top-to-bottom through "Final Decisions Override" (≈ lines 1–400). That is the full operating contract.
+2. Read `.buildrunner/decisions.log` tail (last 50 lines). Every phase appends one line — the tail tells you what actually shipped.
+3. Read `.buildrunner/CLAUDE.md` for current-work snapshot.
+4. Check the Status Table (All Phases) below. Locate the next `not_started` phase; verify its blockers are `completed`.
+5. Read only the current phase's block in the Phases section and the AGENTS.md files it touches. Do NOT read earlier phases' details — they are noise for current work.
+6. Announce to the user: "Resuming cluster-max at the next open phase — [role] work, [builder model]. OK to proceed?"
+7. On approval, dispatch per the Role Matrix.
+
+### Role Matrix (Architect / Builder / Reviewer per Phase)
+
+Research-backed split. Opus architects the hard phases; gpt-5.4 builds the mechanical 70%; gpt-5.3-codex owns terminal-heavy work; Sonnet + gpt-5.4 co-equal review every phase; Opus arbitrates disagreement only.
+
+| Ph  | Architect                      | Builder                  | Reviewers (parallel) | Arbiter (on disagreement) | Notes                                               |
+| --- | ------------------------------ | ------------------------ | -------------------- | ------------------------- | --------------------------------------------------- |
+| 0   | Opus 4.7                       | gpt-5.4 `effort:medium`  | Sonnet 4.6 + gpt-5.4 | Opus 4.7 `effort:xhigh`   | AGENTS.md human-authored, never LLM-generated       |
+| 1   | Opus 4.7                       | (human hardware install) | —                    | —                         | Physical BIOS/overclock                             |
+| 2   | Opus 4.7                       | gpt-5.3-codex            | Sonnet + gpt-5.4     | Opus                      | Terminal-heavy (SSH/Ollama) — COMPLETE              |
+| 3   | Opus 4.7                       | gpt-5.3-codex            | Sonnet + gpt-5.4     | Opus                      | Terminal-heavy; now Jimmy memory node setup         |
+| 4   | Opus 4.7                       | gpt-5.4 `effort:high`    | Sonnet + gpt-5.4     | Opus                      | 7-node priority + overflow dispatcher               |
+| 5   | Opus 4.7                       | gpt-5.4 `effort:high`    | Sonnet + gpt-5.4     | Opus                      | Below skill integration                             |
+| 6   | Opus 4.7                       | gpt-5.4 `effort:high`    | Sonnet + gpt-5.4     | Opus                      | OllamaRuntime — architectural                       |
+| 7   | REPLACED — see Final Decisions | gpt-5.4 `effort:high`    | Sonnet + gpt-5.4     | Opus                      | RuntimeRegistry shim + pre-commit hook, NOT LiteLLM |
+| 8   | Opus 4.7                       | gpt-5.4 `effort:high`    | Sonnet + gpt-5.4     | Opus                      | Cache engineering + byte-identity test — SHIP FIRST |
+| 9   | Opus 4.7                       | gpt-5.4 `effort:xhigh`   | Sonnet + gpt-5.4     | Opus                      | Review pipeline itself — highest stakes             |
+| 10  | Opus 4.7                       | gpt-5.4 `effort:high`    | Sonnet + gpt-5.4     | Opus                      | Auto-context + research command redesign            |
+| 11  | Opus 4.7                       | gpt-5.4 `effort:high`    | Sonnet + gpt-5.4     | Opus                      | Dashboard + Jimmy cutover + overflow wake/drain     |
+| 12  | Opus 4.7                       | gpt-5.4 `effort:high`    | Sonnet + gpt-5.4     | Opus                      | Multi-model context parity — architectural          |
+| 13  | Opus 4.7                       | gpt-5.3-codex            | Sonnet + gpt-5.4     | Opus                      | Cutover/terminal + flag flip                        |
+| 14  | Opus 4.7                       | gpt-5.3-codex            | Sonnet + gpt-5.4     | Opus                      | Self-maintenance crons                              |
+
+Claude (this instance) acts as Opus architect + orchestrator. Claude never also builds — builds dispatch to the Builder column via the runtime registry.
+
+### Dispatch Rules
+
+- **Opus (this instance) authors:** the per-phase plan addendum (any decisions not already pinned in the phase block), the review prompt, the arbitration prompt if invoked.
+- **Builder** executes the phase's Deliverables list under its specified `effort` level. Builder reads only: this section, the phase block, the staged AGENTS.md patches, and its own scope files.
+- **Reviewers** run in parallel on the same diff. Single rebuttal round. If both pass → ship. If both flag overlapping issues → fix and re-run once. If they disagree after rebuttal → Opus arbiter terminal ruling.
+- **Escalation is the exit,** not more rounds. Persistent blocker → stop, alert user with both review reports side by side.
+
+### Context-Poisoning Detection (Alert User to Start Fresh Session)
+
+Fresh context is required when ANY of these fire. Stop work, tell the user exactly which trigger fired, paste the resume command, wait.
+
+| Trigger                                                                     | Why it poisons context                                                                             | Resume command                                 |
+| --------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Context window >70% full (≥140K used of 200K)                               | Long-context retrieval degrades past 200K; Opus 4.7 specifically regresses 91.9% → 59.2% past 400K | `/autopilot go cluster max --resume phase-N`   |
+| Conversation has touched ≥3 phases                                          | Cross-phase details bleed; builder mis-scopes                                                      | `/autopilot go cluster max --resume phase-N`   |
+| After any arbiter ruling                                                    | Arbitration loads both review reports + rebuttals — heavy context residue that skews next phase    | `/autopilot go cluster max --resume phase-N+1` |
+| Role switched mid-session (architect → builder, or builder → reviewer)      | Role-prompt residue causes wrong-voice output                                                      | New session per role                           |
+| Build plan itself edited mid-phase                                          | The file you're reading just changed; re-read from disk in fresh context                           | `/autopilot go cluster max --resume phase-N`   |
+| >2h elapsed on a single phase                                               | Drift risk; decisions earlier in session may no longer match file                                  | `/autopilot go cluster max --resume phase-N`   |
+| User corrected a factual error                                              | Correction lingers as anti-example, affects unrelated decisions                                    | `/autopilot go cluster max --resume phase-N`   |
+| `.buildrunner/decisions.log` tail doesn't match your memory of what shipped | You're out of sync with reality                                                                    | `/autopilot go cluster max --resume phase-N`   |
+
+**Alert format:** "CONTEXT POISONING TRIGGER: [which one]. Start fresh session with: `/autopilot go cluster max --resume phase-N`. Current state is saved in decisions.log and the build plan is up to date."
+
+### Self-Updating Source-of-Truth Protocol
+
+The build plan stays current. Every phase that ships updates this file in the same commit as its code changes. No exceptions.
+
+**On phase start:**
+
+- Builder sets phase Status line to `in_progress` with timestamp
+- Builder claims the phase lock under `.buildrunner/locks/phase-N/claim.json`
+
+**On phase complete (blocking — phase is not "done" until all of these are satisfied):**
+
+1. Append a single line to `.buildrunner/decisions.log`: `PHASE-N COMPLETE <timestamp> <model-used> <key-decision-summary>`
+2. Update the Status Table (All Phases) below: mark the phase `completed` with timestamp + 1-line summary (e.g., "70B dual-GPU 18.01 tok/s")
+3. Update the "Last Revised" date at top of file with 1-line change summary
+4. If the phase changed a decision that contradicts the Final Decisions Override table → update the table inline, do NOT leave stale rows
+5. If the phase added a new convention → it already updated the correct AGENTS.md (per Per-Phase AGENTS.md Mapping table); verify the line is in the right file
+6. Remove the phase lock; release claim
+
+**On any drop/replacement discovered during execution:**
+
+- Append to the "Dropped / Replaced (post-plan)" table below with: what, why, evidence, replacement
+- Update any phase block that references the dropped item with a `> **SUPERSEDED (Phase N):** see Final Decisions` line at the top
+
+**Reviewer gate:** Sonnet + gpt-5.4 MUST verify all 6 completion steps before passing a phase. Reviewer failure on any step = phase rejected, not "fix in follow-up."
+
+---
+
+## Final Decisions Override (post-discussion, 2026-04-20)
+
+These override anything written later in the file. If a phase block below says otherwise, the phase block is stale — follow this table.
+
+### Models (Final)
+
+| Model                   | Role                                | Where               | Proven for                                                                                                                     |
+| ----------------------- | ----------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Claude Opus 4.7         | Architect + Arbiter                 | Muddy (Claude Code) | Spec, planning, arbitration, /root, /diag                                                                                      |
+| Claude Sonnet 4.6       | Primary reviewer + frontend author  | Muddy (Claude Code) | 95% vuln detection, ~5× cheaper than Opus for volume                                                                           |
+| Codex gpt-5.4           | Primary builder + co-equal reviewer | Muddy/Otis (Codex)  | Default builder, cross-family review voice                                                                                     |
+| Codex gpt-5.3-codex     | Terminal-only                       | Otis/Muddy          | Terminal-Bench lead; SSH/Ollama/shell phases                                                                                   |
+| llama3.3:70b @ Q4_K_M   | Summarization                       | Below dual-GPU      | 18 tok/s measured, NVLink validated                                                                                            |
+| qwen3:8b @ Q4           | Classification/extraction           | Below               | 131 tok/s, schema-mode only                                                                                                    |
+| nomic-embed-text        | Embeddings                          | Below               | 768-dim, 8K context                                                                                                            |
+| BAAI/bge-reranker-v2-m3 | Reranker (gated)                    | Jimmy CPU           | Phase 10 BLOCKING validation: ≥15% precision@5 lift on 20-query human-rate, or ship disabled with jina-v3/Cohere as named swap |
+
+### Dropped / Replaced (post-plan)
+
+| Item                                                      | Why dropped                                                                                                    | Replacement                                                                                                                                                 |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| deepseek-r1:70b                                           | Research library: reasoning model, wrong tool for extraction/adversarial review                                | (none — Sonnet + gpt-5.4 do review)                                                                                                                         |
+| LiteLLM gateway                                           | Stability risk + another failure surface                                                                       | `RuntimeRegistry.execute()` shim as the ONLY runtime dispatch path; pre-commit hook rejects direct `ollama`/`curl`/`requests.post` calls to local endpoints |
+| 12KB summarize-before-escalate threshold                  | Arbitrary                                                                                                      | Cache-driven rule: anything reused ≥2 times in a session is cached/summarized                                                                               |
+| Review round cap = 3                                      | Research says 1 is optimal; more rounds don't converge                                                         | Cap = 1 rebuttal round, then Opus arbiter or escalate                                                                                                       |
+| `budget_tokens: 32000`                                    | Deprecated on Opus 4.7; throws 400                                                                             | Adaptive thinking via `effort: "high"` / `"xhigh"`                                                                                                          |
+| 3-way review (adding r1 as third voice)                   | Same-family debate is mathematically null (martingale); r1 not a reviewer anyway                               | 2-way Sonnet + gpt-5.4 parallel, Opus arbiter on disagreement                                                                                               |
+| "Default reviews to Below since it's the beefiest"        | 23-point quality gap (llama 72% vs Sonnet 95% vuln detection). Hardware doesn't raise model capability ceiling | Below runs qwen3:8b pre-filter + llama diff compression; paid models always do the actual review                                                            |
+| Distributed test sharding across 3 nodes                  | Test suite too small; coordination risk > savings                                                              | Walter stays full suite; Lomax sharding only triggered by overflow                                                                                          |
+| Continuous tsc/eslint watch on remote M2s                 | IDE already does this; remote adds sync pipeline for zero gain                                                 | Dropped entirely                                                                                                                                            |
+| MLX inference pool as default                             | Speculative without measured queue depth                                                                       | MLX on Lockwood/Lomax lives ONLY as overflow (VRAM <1GB headroom or Below unreachable)                                                                      |
+| Parallel research indexing as default                     | Weekly op; 4-min savings not worth complexity                                                                  | Sequential on Below; parallelize only when >20 docs queued                                                                                                  |
+| Codex-warm on Lockwood/Lomax                              | Marginal cold-start win for continuous memory cost                                                             | Only Otis stays warm; overflow accepts ~5s cold-start                                                                                                       |
+| Auto code comments / JSDoc / test stubs / PR title skills | Claude/Codex already produce inline; separate skills = noise                                                   | Dropped                                                                                                                                                     |
+
+### Jimmy = New Memory/Semantic Backbone (not just staging/gateway)
+
+Jimmy absorbs Lockwood's memory role. 64GB DDR5 + CPU is sufficient for vector DB + reranker (both CPU-friendly). Consolidation simplifies the dependency graph.
+
+**Jimmy (always-on):** Vector DB (LanceDB), session state, build history, research library storage, bge-reranker, intel crons, dashboard WS, context parity API, cost ledger, self-health, runtime log aggregation, **central backup target for all cluster state + every ~/Projects repo**.
+
+**Lockwood:** Freed to be true warm reserve (see Overflow Design below).
+
+### Jimmy Storage Layout (2TB NVMe)
+
+All paths under `/srv/jimmy/`. Single drive, directory-scoped, no partitioning — keeps free-space fungible across purposes.
+
+| Path                                         | Purpose                                                                                      | Est. working size                        |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `/srv/jimmy/research-library/`               | Canonical research library (Muddy rsyncs FROM here; this is authoritative)                   | ~5 GB                                    |
+| `/srv/jimmy/lancedb/`                        | Vector index (embeddings + metadata)                                                         | ~20 GB                                   |
+| `/srv/jimmy/memory/`                         | `memory.db`, `intel.db`, `build_history`, session summaries, research-queue                  | ~10 GB                                   |
+| `/srv/jimmy/backups/projects/`               | **Nightly incremental snapshots of ALL of `~/Projects/` from Muddy** (rsync --link-dest)     | ~50 GB hot + ~200 GB across 30 snapshots |
+| `/srv/jimmy/backups/buildrunner-state/`      | Nightly snapshot of `~/Projects/BuildRunner3/.buildrunner/` + decisions.log from Muddy       | ~5 GB                                    |
+| `/srv/jimmy/backups/git-mirrors/`            | Hourly `git fetch --all` bare clones of every repo in `~/Projects/` (fast disaster-recovery) | ~20 GB                                   |
+| `/srv/jimmy/backups/supabase/`               | Daily Supabase DB dumps from Below                                                           | ~50 GB                                   |
+| `/srv/jimmy/backups/brlogger/`               | Rotated browser/supabase/device/query logs (90-day retention)                                | ~30 GB                                   |
+| `/srv/jimmy/archive/adversarial-reviews/`    | Historical review JSONs (already 495, growing fast)                                          | ~10 GB                                   |
+| `/srv/jimmy/archive/cost-ledger/`            | Daily cost rollups for long-term analytics                                                   | ~5 GB                                    |
+| `/srv/jimmy/archive/lockwood-pre-migration/` | Frozen snapshot of old Lockwood DBs after Phase 11 cutover (keep indefinitely)               | ~10 GB                                   |
+
+Total working set: ~415 GB. Leaves ~1.5 TB headroom for years of growth.
+
+### Nightly Incremental Backup of ~/Projects (from Muddy to Jimmy)
+
+**Pattern:** `rsync -aHAXv --link-dest=<previous>` snapshot. Each nightly run creates `/srv/jimmy/backups/projects/YYYY-MM-DD/` that hardlinks unchanged files to the prior night — changed files cost full disk, unchanged cost zero. Every snapshot is a complete browsable tree; restore is `cp -a` or `rsync` from any snapshot date.
+
+- **Schedule:** 03:00 local every night via `br3-nightly-backup.timer` on Muddy (not Jimmy — source-initiated so the pull fails loudly if Muddy is offline, and Muddy's systemd is where Projects lives)
+- **Source:** `~/Projects/` with excludes: `node_modules/`, `.venv/`, `dist/`, `build/`, `target/`, `.next/`, `.turbo/`, `*.sock`, and anything matched by a top-level `.backupignore` the user drops in a project
+- **Destination:** `byronhudson@10.0.1.106:/srv/jimmy/backups/projects/YYYY-MM-DD/`
+- **Retention:** 30 daily snapshots + 12 monthly (1st of month, promoted from that day's daily) + 3 yearly (Jan 1). Prune script runs after every nightly success.
+- **Integrity:** sha256sum of snapshot root written to `manifest.sha256` at end of run; weekly job spot-checks 10 random files against their manifest hash
+- **Alerting:** if a nightly backup fails (rsync exit ≠ 0, or snapshot size <80% of prior night without a corresponding `.backupignore` diff), email via local MTA + dashboard red banner
+- **Off-site:** weekly `rclone sync /srv/jimmy/backups/projects/<latest>/` → cloud (B2 or Wasabi) so a whole-Jimmy failure isn't total loss
+
+**Deliverable ownership:** Phase 3 (Jimmy activation) creates the filesystem layout + backup scripts; Phase 11 dashboard adds storage-health + last-backup tile; Phase 14 self-maintenance owns the pruning cron + off-site sync.
+
+### Hardware Utilization (Final)
+
+| Node                               | Role                                                                             | State           |
+| ---------------------------------- | -------------------------------------------------------------------------------- | --------------- |
+| Muddy (M5)                         | Claude Code workstation, dispatch orchestrator, primary dev                      | Always on       |
+| Below (Win, dual 3090 NVLink 48GB) | Local inference stack (~46/48GB resident), doc writing, embedding, summarization | Always on       |
+| Jimmy (64GB DDR5 CPU)              | Memory/semantic backbone (see above)                                             | Always on       |
+| Walter (M2)                        | Continuous vitest + Playwright + flaky detection                                 | Always on       |
+| Otis (M2)                          | Parallel Codex dispatch, warm codex-agent                                        | Always on, warm |
+| Lockwood (M2)                      | Warm reserve (was memory — migrated to Jimmy in Phase 11)                        | Warm reserve    |
+| Lomax (M2)                         | Warm reserve + VRT Docker + staging server                                       | Warm reserve    |
+
+### Below VRAM Ceiling Policy (real risk — 4% headroom)
+
+Baseline 46/48GB = 2GB margin. KV cache growth on long context can eat that.
+
+- Dispatcher tracks live VRAM every 5s
+- Headroom <1GB for >30s → new 70B requests queue; new overflow-eligible jobs route to Lockwood MLX
+- Hard max context-length cap on llama3.3:70b enforced in RuntimeRegistry — force summarize-before-escalate at ceiling; no OOM possible
+- qwen3:8b + embeddings evict first under pressure
+- Phase 3 includes a stress test driving to 47GB, confirms queuing + capping work
+
+### Overflow Design — Warm Reserve That Scales On Demand
+
+Lockwood and Lomax stay idle by default. They have pre-configured overflow roles that wake instantly when real load arrives, and drain back when it clears. No forced daily work.
+
+**Pre-configured overflow (dormant):**
+
+- Lockwood: secondary qwen3:8b (MLX), secondary embedding (MLX), chunking + metadata extraction worker, vitest shard 2/3
+- Lomax: vitest shard 3/3, Playwright overflow, third parallel Codex builder (cold-start OK); VRT+staging stay primary
+
+**Wake triggers:**
+| Trigger | Threshold | Action |
+|---|---|---|
+| Below VRAM headroom | <1GB for >30s | Lockwood MLX picks up classification/embedding |
+| Walter test queue depth | >2 phases queued | Lomax runs shard 3/3 (+ Lockwood 2/3 if deeper) |
+| Parallel worktree dispatch | >2 concurrent phases | Lomax joins as third builder |
+| Bulk research ingestion | >20 docs queued | Lockwood parallelizes chunking/metadata |
+| Below unreachable | Health-check fails 3× in 15s | Lockwood + Lomax absorb qwen3:8b via MLX |
+
+**Drain:** Trigger clear for >5 min → overflow node finishes current job, reports complete, returns idle. Overflow runs at nice-level priority; primary role (VRT/staging) never preempted.
+
+**Dispatcher (on Muddy):** Central queue with per-node VRAM/queue/latency metrics. Each job tagged `node_affinity` + `overflow_eligible`. Dispatcher only promotes overflow-eligible jobs to reserve nodes when primary saturated. All decisions logged via RuntimeRegistry.
+
+**Dashboard:** per-node util/VRAM/queue, reserve state (`idle`/`warming`/`active`/`draining`), trigger events with cause, historical overflow frequency for threshold tuning.
+
+### Research Command Redesign
+
+1. Claude researches (WebFetch/WebSearch/tool calls) — gather raw sources.
+2. Claude synthesizes — judgment stays with Claude (research library: llama3.3:70b not benchmarked for judgment).
+3. Claude gives immediate summary to user, applies to current discussion.
+4. Handoff to Below in background: llama3.3:70b reformats to library template → qwen3:8b metadata → nomic embeddings → indexed into LanceDB on Jimmy.
+5. Below writes `.buildrunner/research-queue/completed.jsonl` record with doc path, chunk count, status.
+6. Claude reads that record next turn and reports to user: "Research indexed at `<doc-id>`, Y chunks, available to all models."
+
+User never talks to a local model directly. Claude is the single voice.
+
+### Adversarial Review Pipeline (Final)
+
+1. `/review` invoked on diff.
+2. **Below qwen3:8b pre-filter** — structural/syntax/schema check. Fails obvious issues without paid tokens.
+3. **Below llama3.3:70b diff compression** — if reuse ≥2× in session or diff is large, compress to structured summary.
+4. **Parallel paid review** (co-equal): Sonnet 4.6 + gpt-5.4 read compressed diff + critical excerpts.
+5. **Single rebuttal round** — each sees the other's findings.
+6. Consensus → ship. Disagreement → **Opus 4.7 arbiter** (`effort: xhigh`, adaptive thinking) reads both reviews + rebuttals + summary. Ruling is terminal.
+7. Below indexes review outcome for future reference.
+
+### Prompt Cache Design (Final)
+
+3 breakpoints: (1) system+tools, (2) project+skill context, (3) task payload. Cache anything reused ≥2× in a session.
+
+**Byte-identity test (Phase 8 BLOCKING):** Send two consecutive identical requests, assert byte-identical cached prefixes up to breakpoint 3. Finds hidden dynamic sources (f-string timestamps, dict ordering, `.now()`, `uuid`, env reads, config mtime). Ships Phase 8 only when byte-identity holds. Runs in CI on every prompt-template change.
+
+### Quality Firewall (Structurally Enforced)
+
+- Below/Jimmy/Lockwood/Lomax NEVER own final artifacts for code, diagnoses, frontend, architecture, reviews
+- All local outputs tagged `draft=true` by RuntimeRegistry
+- Only `RuntimeRegistry.execute()` dispatches local model calls — ONLY path
+- Pre-commit hook rejects direct `ollama`/`curl`/`requests.post` to local endpoints outside the registry module
+- Silent fallback to paid models on any local failure — no user-visible error
+
+### Status Table (All Phases — UPDATE ON EVERY PHASE COMPLETION)
+
+| #   | Status      | Completed         | 1-line summary                                                              |
+| --- | ----------- | ----------------- | --------------------------------------------------------------------------- |
+| 0   | not_started | —                 | AGENTS.md authoring                                                         |
+| 1   | in_progress | —                 | Hardware install, BIOS, overclock                                           |
+| 2   | completed   | 2026-04-19T18:10Z | 70B dual-GPU 18.01 tok/s, NVLink 4×14.062 GB/s, same-model residency proven |
+| 3   | not_started | —                 | Jimmy activation + memory-node setup (not just staging)                     |
+| 4   | not_started | —                 | 7-node priority + overflow dispatcher                                       |
+| 5   | not_started | —                 | Below skill integration                                                     |
+| 6   | not_started | —                 | OllamaRuntime                                                               |
+| 7   | REPLACED    | —                 | Was LiteLLM; now RuntimeRegistry shim + pre-commit hook                     |
+| 8   | not_started | —                 | Prompt cache + byte-identity test (SHIP FIRST of remaining)                 |
+| 9   | not_started | —                 | 2-way review + Opus arbiter (NOT 3-way, NOT r1)                             |
+| 10  | not_started | —                 | Auto-context hook + research redesign                                       |
+| 11  | not_started | —                 | Dashboard + Jimmy cutover + overflow wake/drain                             |
+| 12  | not_started | —                 | Multi-model context parity                                                  |
+| 13  | not_started | —                 | Shadow → cutover + flag flip                                                |
+| 14  | not_started | —                 | Self-maintenance crons                                                      |
+
+### Recommended Ship Order (inside remaining phases)
+
+1. **Phase 8 cache engineering** — biggest single ROI (59–70%), byte-identity test first
+2. **Phase 5 Below skill integration** — unlocks ~30% paid-token reduction
+3. **Phase 10 auto-context + research redesign** — daily workflow win
+4. **Phase 11 Jimmy cutover + overflow dispatcher** — unlocks scalable reserve
+5. **Phase 9 2-way review pipeline** — quality floor + cost (requires phases 5/8)
+6. **Phase 10 reranker** — ship 80% value (vector-only) first, reranker after blocking validation
+7. **Phase 13 shadow cutover** — quality gate for everything before
+
+### Reporting Chain
+
+Below and Jimmy report completion to Claude via `.buildrunner/*-queue/completed.jsonl`. Claude reports to user at next conversation turn. User never talks to a local model.
+
+---
 
 ## Overview
 
-Upgrade Below to dual RTX 3090 NVLink (48GB VRAM), add Minisforum MS-A2 as memory+staging+gateway node (64GB DDR5, 10GbE-ready), reconfigure all 7 cluster nodes as build workers with priority cascade, and wire Below 70B inference deep into the BR3 runtime pipeline. Ollama serves all inference — llama3.3:70b + qwen3:8b resident simultaneously (46GB of 48GB VRAM), deepseek-r1:70b swapped in on demand for reasoning + adversarial review. No vLLM, no permanent model swapping.
+Upgrade Below to dual RTX 3090 NVLink (48GB VRAM), add **Jimmy** (Minisforum MS-A2, 64GB DDR5, 10GbE-ready) as the new memory/semantic backbone node, reconfigure all 7 cluster nodes per the Hardware Utilization table above, and wire Below 70B inference deep into the BR3 runtime pipeline. Ollama serves all local inference — llama3.3:70b + qwen3:8b + nomic-embed-text resident simultaneously (~46GB of 48GB VRAM). **No deepseek-r1, no vLLM, no LiteLLM** (see Final Decisions Override).
 
-**Builds on top of the completed Codex integration (BUILD_codex-full-br3-integration).** The runtime abstraction (`core/runtime/`), `RuntimeTask`/`RuntimeResult` contracts, preflight/postflight policy, `command_capabilities.json`, shadow runner, and consensus adversarial review all exist. This plan extends that abstraction to include a local-inference runtime, adds a LiteLLM gateway, engineers the prompt cache, adds a context-injection hook, ships a cluster dashboard, and brings Codex + Below to context parity with Claude (logs, memory, research).
+**Builds on top of the completed Codex integration (BUILD_codex-full-br3-integration).** The runtime abstraction (`core/runtime/`), `RuntimeTask`/`RuntimeResult` contracts, preflight/postflight policy, `command_capabilities.json`, shadow runner, and consensus adversarial review all exist. This plan extends that abstraction with a local-inference runtime (OllamaRuntime), the RuntimeRegistry shim as the ONLY dispatch path for local models (replaces the original LiteLLM gateway idea), prompt-cache engineering, a context-injection hook, a cluster dashboard (updated to surface Jimmy as a first-class node), and multi-model context parity for Codex + Below.
 
-**Parallel build principle.** Every new component is built alongside existing BR3 code paths without disrupting them. No existing node is removed — Lockwood and Lomax stay active as parallel-builder overflow workers; MS-A2 is added. No existing skill loses its current behavior — new behavior is opt-in via feature flags (`BR3_CLUSTER_MAX=on`, `BR3_LOCAL_ROUTING=on`, `BR3_AUTO_CONTEXT=on`, `BR3_GATEWAY=on`, `BR3_MULTI_MODEL_CONTEXT=on`) until cutover. Current `/spec`, `/begin`, `/autopilot`, `/review`, `/commit` flows continue to work unchanged while the new paths are validated. Cutover is an explicit phase, not a side effect.
+**Parallel build principle.** Every new component is built alongside existing BR3 code paths without disrupting them. No existing node is removed — Jimmy is added as the memory backbone; Lockwood's memory role migrates to Jimmy in Phase 11 via shadow-mode cutover; Lockwood and Lomax become warm reserves (see Overflow Design). No existing skill loses its current behavior — new behavior is opt-in via feature flags (`BR3_CLUSTER_MAX=on`, `BR3_LOCAL_ROUTING=on`, `BR3_AUTO_CONTEXT=on`, `BR3_GATEWAY=on`, `BR3_MULTI_MODEL_CONTEXT=on`, `BR3_OVERFLOW=on`) until cutover. Current `/spec`, `/begin`, `/autopilot`, `/review`, `/commit` flows continue to work unchanged while the new paths are validated. Cutover is an explicit phase, not a side effect.
 
-**Not BR4.** Nothing is rewritten. The Codex integration already delivered the multi-runtime architecture. This is BR3 getting a third runtime (Ollama), a gateway, one hook, a dashboard, multi-model context parity, and self-maintenance, on expanded hardware. The BR3 repo, skill set, sidecar, registry, and state machine all stay.
+**Not BR4.** Nothing is rewritten. The Codex integration already delivered the multi-runtime architecture. This is BR3 getting a third runtime (Ollama), one hook, a dashboard, multi-model context parity, and self-maintenance, on expanded hardware. The BR3 repo, skill set, sidecar, registry, and state machine all stay.
 
-**Quality firewall (unchanged).** Nothing Below or MS-A2 generates ships without one of: a Claude pass, a Walter test pass, or user approval. Final code edits, frontend/UX, architecture decisions, `/diag`, `/root`, and the adversarial arbiter step all stay on Muddy's Claude Opus 4.7.
+**Quality firewall (unchanged).** Nothing Below or Jimmy generates ships without one of: a Claude pass, a Walter test pass, or user approval. Final code edits, frontend/UX, architecture decisions, `/diag`, `/root`, and the adversarial arbiter step all stay on Muddy's Claude Opus 4.7. Enforcement is structural — only `RuntimeRegistry.execute()` can dispatch a local model call, and a pre-commit hook rejects direct endpoint calls outside the registry.
 
 ---
 
 ## Codex Execution Model (applies to every phase)
 
-This BUILD is dispatched primarily by Codex with a mandatory Claude Opus 4.7 review gate per phase. Defaults below; per-phase overrides are called out explicitly.
+**SEE AUTOPILOT PROTOCOL → Role Matrix at the top of this file for authoritative Architect/Builder/Reviewer assignment.** The table below is implementation detail; Role Matrix wins on any conflict.
 
-| Setting            | Default                                                                             | Override Pattern                                                                    |
-| ------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Codex model        | `gpt-5.4`                                                                           | `gpt-5.3-codex` for terminal-heavy phases (2, 3, 13, 14)                            |
-| Effort             | `medium`                                                                            | `low` for boilerplate (Phase 0, parts of 4); `high` only for Phase 9 arbiter wiring |
-| Sandbox            | `workspace-write` + `network_access=true`                                           | Phase 2/3 require network for Ollama pulls + apt installs                           |
-| Approval policy    | `on-request`                                                                        | `never` only inside Phase 13 cutover dry-run                                        |
-| Plan Mode          | Skip for the easiest 25% (file-scoped MODIFYs); use for any phase with ≥4 NEW files | —                                                                                   |
-| Worktree isolation | One worktree per parallel phase wave                                                | Required for Wave 2 (Phases 2+3+6) and Wave 3 (4+7+8)                               |
-| Cache breakpoints  | 3 per Anthropic pattern (system+tools / project+skill / task payload)               | Set in Phase 8; validated in Phase 13                                               |
-| Verification rule  | Every deliverable has an explicit `Verify:` command                                 | No deliverable accepted without one                                                 |
-| Review gate        | Claude Opus 4.7 review per phase, blocking                                          | No phase marks complete without review pass                                         |
+Opus 4.7 architects every phase; gpt-5.4 is default builder; gpt-5.3-codex owns terminal-heavy phases; Sonnet + gpt-5.4 co-equal review every phase; Opus arbitrates disagreement only. Single rebuttal round, then escalate.
+
+| Setting            | Default                                                                              | Override Pattern                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Codex model        | `gpt-5.4`                                                                            | `gpt-5.3-codex` for terminal-heavy phases (2, 3, 13, 14)                          |
+| Effort             | `high` for coding/agentic (OpenAI recommendation); `medium` for classification       | `xhigh` for Phase 9 review-pipeline wiring; `low` for boilerplate (Phase 0 parts) |
+| Sandbox            | `workspace-write` + `network_access=true`                                            | Phase 2/3 require network for Ollama pulls + apt installs                         |
+| Approval policy    | `on-request`                                                                         | `never` only inside Phase 13 cutover dry-run                                      |
+| Plan Mode          | Skip for the easiest 25% (file-scoped MODIFYs); use for any phase with ≥4 NEW files  | —                                                                                 |
+| Worktree isolation | One worktree per parallel phase wave                                                 | Required for Wave 2 (Phases 2+3+6) and Wave 3 (4+7+8)                             |
+| Cache breakpoints  | 3 per Anthropic pattern (system+tools / project+skill / task payload)                | Byte-identity test ships Phase 8 as BLOCKING deliverable                          |
+| Verification rule  | Every deliverable has an explicit `Verify:` command                                  | No deliverable accepted without one                                               |
+| Review gate        | 2-way parallel (Sonnet 4.6 + gpt-5.4), Opus 4.7 arbiter on disagreement, cap 1 round | No phase marks complete without both reviewers passing or arbiter ruling          |
+| `budget_tokens`    | **DO NOT USE** — deprecated on Opus 4.7, throws 400                                  | Use `effort: "high"`/`"xhigh"` for adaptive thinking instead                      |
 
 **Codex behavioral guardrails (encoded in AGENTS.md, Phase 0):**
 
@@ -67,16 +355,16 @@ AGENTS.md is the steering wheel — Codex applies its rules every loop, automati
 | ----- | ----------------------------------------------------------------------- | --------------------------------------------------------------------- |
 | 0     | All 5 (initial authoring)                                               | Foundational                                                          |
 | 2     | `core/cluster/AGENTS.md`                                                | NVLink dual-GPU detection rule                                        |
-| 3     | `~/AGENTS.md` on MS-A2 (deploy staged file); `core/cluster/AGENTS.md`   | Linux dispatch + systemd unit naming                                  |
+| 3     | `~/AGENTS.md` on Jimmy (deploy staged file); `core/cluster/AGENTS.md`   | Linux dispatch + systemd unit naming                                  |
 | 4     | `core/cluster/AGENTS.md`                                                | 7-node priority order + overflow workers                              |
 | 5     | `core/cluster/AGENTS.md`                                                | Routing table + flag-gated skill behavior                             |
 | 6     | `core/runtime/AGENTS.md`                                                | OllamaRuntime + `local_ready` capability                              |
 | 7     | `core/cluster/AGENTS.md`                                                | Gateway routing + cost-ledger schema                                  |
 | 8     | `core/runtime/AGENTS.md`                                                | Cache breakpoint contract + summarizer rule                           |
 | 9     | `core/cluster/AGENTS.md`                                                | 3-way + arbiter pattern; ultrathink budget                            |
-| 10    | `core/cluster/AGENTS.md`; `~/AGENTS.md` on MS-A2                        | Auto-context hook contract + budget                                   |
+| 10    | `core/cluster/AGENTS.md`; `~/AGENTS.md` on Jimmy                        | Auto-context hook contract + budget                                   |
 | 11    | `ui/dashboard/AGENTS.md`                                                | New panel registry + WebSocket reconnect                              |
-| 12    | `core/cluster/AGENTS.md`; `~/AGENTS.md` on MS-A2; `~/AGENTS.md` on Otis | `/context/{model}` endpoint + per-model budgets + read-mount contract |
+| 12    | `core/cluster/AGENTS.md`; `~/AGENTS.md` on Jimmy; `~/AGENTS.md` on Otis | `/context/{model}` endpoint + per-model budgets + read-mount contract |
 | 13    | Root `AGENTS.md`; `core/cluster/AGENTS.md`                              | Default-on flags + cutover state                                      |
 | 14    | `core/cluster/AGENTS.md`                                                | Self-health timers + rebalance contract                               |
 
@@ -177,15 +465,15 @@ Every review gate in this build — per-phase Claude Review, wave-merge review, 
 | 0     | AGENTS.md (root) + 4 scoped sub-AGENTS.md                                            | 1                 | —                         | gpt-5.4 / low  |
 | 1     | Hardware install guide (no code files)                                               | 0                 | —                         | N/A (physical) |
 | 2     | below-verify.sh, below-benchmark.sh, ollama-below.env, node_inference.py             | 3, 6              | 0, 1 (hardware gate)      | gpt-5.3-codex  |
-| 3     | ms-a2-bootstrap.sh, migrate-lockwood-data.sh, ms-a2-verify.sh, systemd svcs          | 2, 6              | 0, 1 (hardware gate)      | gpt-5.3-codex  |
+| 3     | jimmy-bootstrap.sh, migrate-lockwood-data.sh, jimmy-verify.sh, systemd svcs          | 2, 6              | 0, 1 (hardware gate)      | gpt-5.3-codex  |
 | 4     | cluster.json, node-matrix.mjs, events.mjs, ~20 files with IP additions (additive)    | —                 | 0, 2, 3                   | gpt-5.4 / low  |
 | 5     | below-route.sh, skill .md files, adversarial-review.sh (opt-in via flag)             | 7, 8              | 0, 4                      | gpt-5.4        |
 | 6     | core/runtime/runtime_registry.py, core/runtime/ollama_runtime.py, SUPPORTED_RUNTIMES | 2, 3              | 0                         | gpt-5.4        |
-| 7     | LiteLLM config on MS-A2, br3-gateway.service, cost-ledger.py                         | 5, 8              | 0, 3, 6                   | gpt-5.4        |
+| 7     | LiteLLM config on Jimmy, br3-gateway.service, cost-ledger.py                         | 5, 8              | 0, 3, 6                   | gpt-5.4        |
 | 8     | core/cluster/cross_model_review.py (cache breakpoints + summarize step)              | 5, 7              | 0, 6                      | gpt-5.4        |
 | 9     | cross_model_review.py (3-way + Opus arbiter), cross_model_review_config.json         | 10                | 0, 6, 8                   | gpt-5.4 / high |
-| 10    | hooks/auto-context.sh, api/retrieve.py on MS-A2, reranker model                      | 9                 | 0, 3, 6                   | gpt-5.4        |
-| 11    | ui/ dashboard panels (port 4400), WebSocket from MS-A2                               | 12                | 0, 7, 9                   | gpt-5.4        |
+| 10    | hooks/auto-context.sh, api/retrieve.py on Jimmy, reranker model                      | 9                 | 0, 3, 6                   | gpt-5.4        |
+| 11    | ui/ dashboard panels (port 4400), WebSocket from Jimmy                               | 12                | 0, 7, 9                   | gpt-5.4        |
 | 12    | context_bundle.py, /context/{model}, codex-bridge.sh, below-route.sh, read-mounts    | 11                | 0, 3, 6, 7, 10            | gpt-5.4        |
 | 13    | feature-flag defaults, decisions.log, cutover checklist                              | —                 | 0, 5, 7, 8, 9, 10, 11, 12 | gpt-5.3-codex  |
 | 14    | self-health monitor, auto-rebalance, model-update workflow                           | —                 | 0, 13                     | gpt-5.3-codex  |
@@ -193,7 +481,7 @@ Every review gate in this build — per-phase Claude Review, wave-merge review, 
 **Optimal Execution Waves (each wave ends with the Shared-File Merge Gate before any phase in the wave is marked complete):**
 
 - **Wave 1 (parallel):** Phase 0 (AGENTS.md authoring, 1 worktree) + Phase 1 (hardware install, physical work) — independent
-- **Wave 2 (parallel, 3 worktrees):** Phase 2 (Below activation) + Phase 3 (MS-A2 activation) + Phase 6 (runtime registry extension)
+- **Wave 2 (parallel, 3 worktrees):** Phase 2 (Below activation) + Phase 3 (Jimmy activation) + Phase 6 (runtime registry extension)
   - Shared-file conflicts in this wave: Phase 2 stages `core/cluster/AGENTS.md.append-phase2.txt`; Phase 3 stages `core/cluster/AGENTS.md.append-phase3.txt`. Phase 6 edits `core/runtime/AGENTS.md` directly (no other phase in this wave touches it).
 - **Wave 3 (parallel, 3 worktrees):** Phase 4 (cluster recon) + Phase 7 (LiteLLM gateway) + Phase 8 (cache + summarize)
   - Shared-file conflicts: Phase 4 stages `core/cluster/AGENTS.md.append-phase4.txt`; Phase 7 stages `core/cluster/AGENTS.md.append-phase7.txt`. Phase 8 edits `core/runtime/AGENTS.md` directly (no other phase in this wave touches it).
@@ -219,7 +507,7 @@ Every review gate in this build — per-phase Claude Review, wave-merge review, 
 
 #### Goal
 
-Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGENTS.md files (3 in-repo: `core/runtime`, `core/cluster`, `ui/dashboard`; 2 staged for remote nodes: `~/.buildrunner/agents-md/ms-a2.md`, `~/.buildrunner/agents-md/otis.md`) for the directories and remote nodes Codex will modify or run on across this build. Total artifacts: SIX. Encode every non-inferable rule in this BUILD as an enforced AGENTS.md constraint so Codex applies them every loop without prompting.
+Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGENTS.md files (3 in-repo: `core/runtime`, `core/cluster`, `ui/dashboard`; 2 staged for remote nodes: `~/.buildrunner/agents-md/jimmy.md`, `~/.buildrunner/agents-md/otis.md`) for the directories and remote nodes Codex will modify or run on across this build. Total artifacts: SIX. Encode every non-inferable rule in this BUILD as an enforced AGENTS.md constraint so Codex applies them every loop without prompting.
 
 #### Context
 
@@ -229,7 +517,7 @@ Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGEN
 - `core/runtime/AGENTS.md` (NEW)
 - `core/cluster/AGENTS.md` (NEW)
 - `ui/dashboard/AGENTS.md` (NEW)
-- `~/.buildrunner/agents-md/ms-a2.md` (NEW — staged on Muddy; deployed to MS-A2 home dir as `AGENTS.md` during Phase 3)
+- `~/.buildrunner/agents-md/jimmy.md` (NEW — staged on Muddy; deployed to Jimmy home dir as `AGENTS.md` during Phase 3)
 - `~/.buildrunner/agents-md/otis.md` (NEW — staged on Muddy; deployed to Otis home dir as `AGENTS.md` during Phase 12 — Codex runs there)
 
 **Why this exists (non-inferable):** This BUILD adds 14 phases of context across ~6 directories and 3 remote nodes that run agents. Without scoped AGENTS.md, Codex either burns tokens re-discovering conventions or violates them. ETH Zurich data: human-curated AGENTS.md = +4% task success, LLM-generated = −3% (actively harmful). 32KB silent truncation risk if all rules live in one file. The router pattern (Harness Engineering) keeps each scope ≤8KB.
@@ -257,8 +545,8 @@ Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGEN
 - [ ] **`ui/dashboard/AGENTS.md`** — vanilla HTML + JS panels, no React/no framework, port 4400 only. Per-file validation (eslint single-file). WebSocket reconnect contract (exponential backoff, cap 30s).
   - Verify: file mentions "vanilla HTML" and "no React".
 
-- [ ] **MS-A2 AGENTS.md** at `~/.buildrunner/agents-md/ms-a2.md` (deployed in Phase 3) — Linux conventions, systemd unit naming (`br3-*.service`), dispatcher rsync vs tar+scp rule, port allocation (8100 semantic, 4400 dashboard, 4500 gateway).
-  - Verify: file lists all 3 ports. `grep -c "br3-" ~/.buildrunner/agents-md/ms-a2.md` ≥3.
+- [ ] **Jimmy AGENTS.md** at `~/.buildrunner/agents-md/jimmy.md` (deployed in Phase 3) — Linux conventions, systemd unit naming (`br3-*.service`), dispatcher rsync vs tar+scp rule, port allocation (8100 semantic, 4400 dashboard, 4500 gateway).
+  - Verify: file lists all 3 ports. `grep -c "br3-" ~/.buildrunner/agents-md/jimmy.md` ≥3.
 
 - [ ] **Otis AGENTS.md** at `~/.buildrunner/agents-md/otis.md` (deployed in Phase 12) — encodes Otis as a Codex-execution worker; read-only context mounts; `/context/codex` fetch rule before any task.
   - Verify: file mentions "/context/codex" and "read-only".
@@ -280,8 +568,8 @@ Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGEN
 #### Done When
 
 - [ ] All 6 AGENTS.md files exist at declared paths (4 in-repo + 2 staged in `~/.buildrunner/agents-md/`).
-- [ ] Combined size verify (includes BOTH in-repo files AND staged remote files): `(find . -name AGENTS.md -not -path './node_modules/*'; ls ~/.buildrunner/agents-md/ms-a2.md ~/.buildrunner/agents-md/otis.md) | xargs wc -c | tail -1` total ≤24576.
-- [ ] Per-file size cap: `for f in AGENTS.md core/runtime/AGENTS.md core/cluster/AGENTS.md ui/dashboard/AGENTS.md ~/.buildrunner/agents-md/ms-a2.md ~/.buildrunner/agents-md/otis.md; do test "$(wc -c < "$f")" -le 8192 || echo "OVER: $f"; done` prints nothing.
+- [ ] Combined size verify (includes BOTH in-repo files AND staged remote files): `(find . -name AGENTS.md -not -path './node_modules/*'; ls ~/.buildrunner/agents-md/jimmy.md ~/.buildrunner/agents-md/otis.md) | xargs wc -c | tail -1` total ≤24576.
+- [ ] Per-file size cap: `for f in AGENTS.md core/runtime/AGENTS.md core/cluster/AGENTS.md ui/dashboard/AGENTS.md ~/.buildrunner/agents-md/jimmy.md ~/.buildrunner/agents-md/otis.md; do test "$(wc -c < "$f")" -le 8192 || echo "OVER: $f"; done` prints nothing.
 - [ ] `wc -l AGENTS.md` ≤100 (root file).
 - [ ] Claude review passed with zero P0/P1 findings.
 - [ ] `decisions.log` entry: `Phase 0: AGENTS.md authored — router + 5 scopes (6 files total, in-repo + staged) — total Nbytes`.
@@ -290,7 +578,7 @@ Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGEN
 
 ### Phase 1: Hardware Installation, BIOS & Overclocking
 
-**Status:** in_progress
+**Status:** ✅ COMPLETE (2026-04-20) — Below: 2× RTX 3090 + NVLink 4×14.062 GB/s verified; Jimmy: Ubuntu 24.04 at 10.0.1.106, 60GB RAM, 1.8TB NVMe
 **Codex model:** N/A (physical work; verification scripts authored in Phase 2)
 **Worktree:** N/A
 **Blocked by:** None (parts arriving Apr 13-19)
@@ -385,40 +673,40 @@ Adding 2×16GB Corsair Vengeance LPX DDR4-3200 (CMW32GX4M2C3200C16) to A1+B1.
 - [ ] VRAM thermal: `nvidia-smi -q -d TEMPERATURE` Memory <100°C.
   - Verify: Afterburner profile screenshot + thermal log.
 
-#### Part F: MS-A2 Assembly
+#### Part F: Jimmy Assembly
 
 **Deliverables:**
 
-- [ ] Open MS-A2 panel. Install 64GB DDR5-5600 SODIMM kit + WD Blue SN5000 2TB NVMe (slot 1).
+- [ ] Open Jimmy panel. Install 64GB DDR5-5600 SODIMM kit + WD Blue SN5000 2TB NVMe (slot 1).
 - [ ] Power on. BIOS verifies 64GB + 2TB. Enable XMP/EXPO.
-- [ ] Install Ubuntu Server 24.04 LTS. Hostname `ms-a2`. SSH server. Static IP `10.0.1.106`.
+- [ ] Install Ubuntu Server 24.04 LTS. Hostname `jimmy`. SSH server. Static IP `10.0.1.106`.
 - [ ] SSH from Muddy works; `free -h` shows 64GB; `lsblk` shows 2TB.
   - Verify: `ssh byronhudson@10.0.1.106 'free -h && lsblk'` from Muddy.
 
 #### Part G: Verification Checklist
 
 - [ ] Below: 2× RTX 3090 detected, NVLink active, 48GB VRAM, 64GB RAM, 1200W PSU, BIOS updated, OC applied, stable.
-- [ ] MS-A2: 64GB DDR5, 2TB NVMe, Ubuntu Server installed, SSH accessible, static IP.
+- [ ] Jimmy: 64GB DDR5, 2TB NVMe, Ubuntu Server installed, SSH accessible, static IP.
 - [ ] Old 2080 Ti: set aside.
 
 #### Claude Review (mandatory before Phase 1 marked complete)
 
 - Reviewer: `claude-opus-4-7` (Muddy)
 - Trigger: user uploads Part G verification artifacts → `/review --phase 1 --artifacts ./artifacts/phase-1/`
-- Required findings: NVLink confirmed via `NV#`; PSU rating ≥1200W; 3090s thermally stable; MS-A2 reachable; BIOS newer than v1302.
-- Block-on: any artifact missing, NVLink shows `PHB`, sustained temps >83°C, or MS-A2 unreachable.
+- Required findings: NVLink confirmed via `NV#`; PSU rating ≥1200W; 3090s thermally stable; Jimmy reachable; BIOS newer than v1302.
+- Block-on: any artifact missing, NVLink shows `PHB`, sustained temps >83°C, or Jimmy unreachable.
 
 #### Done When
 
 - [ ] All 7 verification checklist items in Part G satisfied.
 - [ ] Claude artifact review passed with zero P0/P1 findings.
-- [ ] `decisions.log` entry: `Phase 1: hardware install complete — Below dual-3090 NVLink, MS-A2 online at 10.0.1.106`.
+- [ ] `decisions.log` entry: `Phase 1: hardware install complete — Below dual-3090 NVLink, Jimmy online at 10.0.1.106`.
 
 ---
 
 ### Phase 2: Below Activation
 
-**Status:** not_started
+**Status:** completed (2026-04-19T18:10Z) — 70B dual-GPU 18.01 tok/s, NVLink 4×14.062 GB/s, same-model residency hot-cache proven
 **Codex model:** gpt-5.3-codex (terminal-heavy: SSH, Ollama config, shell scripts)
 **Codex effort:** medium
 **Worktree:** `worktrees/wave2-below`
@@ -487,7 +775,7 @@ Dual 3090 NVLink operational, Ollama serving 70B models at ≥18 tok/s, existing
 
 ---
 
-### Phase 3: MS-A2 Activation
+### Phase 3: Jimmy Activation
 
 **Status:** not_started
 **Codex model:** gpt-5.3-codex
@@ -498,63 +786,79 @@ Dual 3090 NVLink operational, Ollama serving 70B models at ≥18 tok/s, existing
 
 #### Goal
 
-MS-A2 running all Lockwood + Lomax services on systemd, data migrated, all endpoints responding identically. MS-A2 AGENTS.md deployed at `~/AGENTS.md` so Codex on MS-A2 has scoped rules.
+Jimmy running all Lockwood + Lomax services on systemd, data migrated, all endpoints responding identically. Jimmy AGENTS.md deployed at `~/AGENTS.md` so Codex on Jimmy has scoped rules.
 
 #### Context
 
 **Files (touch only these):**
 
-- `~/.buildrunner/scripts/ms-a2-bootstrap.sh` (NEW)
+- `~/.buildrunner/scripts/jimmy-bootstrap.sh` (NEW)
+- `~/.buildrunner/scripts/jimmy-storage-init.sh` (NEW — provisions `/srv/jimmy/` layout)
+- `~/.buildrunner/scripts/nightly-projects-backup.sh` (NEW — Muddy-side, rsync --link-dest to Jimmy)
+- `~/.buildrunner/scripts/git-mirrors-sync.sh` (NEW — Jimmy-side hourly `git fetch --all` across bare clones)
 - `~/.buildrunner/scripts/migrate-lockwood-data.sh` (NEW)
-- `~/.buildrunner/scripts/ms-a2-verify.sh` (NEW)
-- `~/.buildrunner/agents-md/ms-a2.md` (DEPLOY → `~/AGENTS.md` on MS-A2)
+- `~/.buildrunner/scripts/jimmy-verify.sh` (NEW)
+- `~/.buildrunner/agents-md/jimmy.md` (DEPLOY → `~/AGENTS.md` on Jimmy)
 - `core/cluster/AGENTS.md.append-phase3.txt` (NEW — staged snippet; merged at Wave 2 end)
-- systemd units on MS-A2: `/etc/systemd/system/br3-{semantic,intel,staging}.service` (NEW)
-- `~/.buildrunner/logs/ms-a2-activation.log` (NEW — output artifact)
+- systemd units on Jimmy: `/etc/systemd/system/br3-{semantic,intel,staging,git-mirrors}.service|.timer` (NEW)
+- systemd units on Muddy: `/etc/systemd/system/br3-nightly-backup.service|.timer` (NEW — 03:00 nightly)
+- `~/.buildrunner/logs/jimmy-activation.log` (NEW — output artifact)
 
 **HARDWARE GATE:** Phase 1 Part F checklist passed.
 
 #### Constraints
 
 - IMPORTANT: Old Lockwood (10.0.1.101) MUST stay online during migration.
-- IMPORTANT: Deploy MS-A2 AGENTS.md to `~/AGENTS.md` on MS-A2 BEFORE running any Codex task on that host.
+- IMPORTANT: Deploy Jimmy AGENTS.md to `~/AGENTS.md` on Jimmy BEFORE running any Codex task on that host.
 - NEVER `rm` source data on Lockwood — copy only.
-- NEVER expose Ollama port (11434) on MS-A2.
+- NEVER expose Ollama port (11434) on Jimmy.
 
 #### Deliverables
 
-- [ ] `ms-a2-bootstrap.sh` — apt installs (python3, python3-venv, node 22, npm, git, rsync, build-essential, sqlite3); SSH key deploy; firewall opens 8100 (semantic), 8200 (staging), 4400 (dashboard), 4500 (gateway). Port 11434 (Ollama) MUST stay closed on MS-A2 (Below is the only Ollama host).
-  - Verify: `ssh ms-a2 'systemctl is-active ssh && command -v python3 node sqlite3 && sudo ufw status | grep -E "8100|8200|4400|4500"'` succeeds and shows all 4 ports open. `ssh ms-a2 'sudo ufw status | grep 11434'` returns nothing.
-- [ ] Deploy BR3 codebase to `~/repos/BuildRunner3` on MS-A2; venv + pip install.
-  - Verify: `ssh ms-a2 'cd ~/repos/BuildRunner3 && .venv/bin/python -c "import fastapi, lancedb, httpx"'` exits 0.
+- [ ] `jimmy-bootstrap.sh` — apt installs (python3, python3-venv, node 22, npm, git, rsync, build-essential, sqlite3); SSH key deploy; firewall opens 8100 (semantic), 8200 (staging), 4400 (dashboard), 4500 (gateway). Port 11434 (Ollama) MUST stay closed on Jimmy (Below is the only Ollama host).
+  - Verify: `ssh jimmy 'systemctl is-active ssh && command -v python3 node sqlite3 && sudo ufw status | grep -E "8100|8200|4400|4500"'` succeeds and shows all 4 ports open. `ssh jimmy 'sudo ufw status | grep 11434'` returns nothing.
+- [ ] Deploy BR3 codebase to `~/repos/BuildRunner3` on Jimmy; venv + pip install.
+  - Verify: `ssh jimmy 'cd ~/repos/BuildRunner3 && .venv/bin/python -c "import fastapi, lancedb, httpx"'` exits 0.
 - [ ] Deploy `node_semantic.py` as `br3-semantic.service`. uvicorn port 8100. LanceDB + embedding models loaded.
   - Verify: `curl http://10.0.1.106:8100/api/search?q=test` returns 200.
 - [ ] Deploy `node_intelligence.py` as `br3-intel.service`. 5 background crons. Env vars set.
-  - Verify: `ssh ms-a2 'systemctl is-active br3-intel'` returns `active`.
+  - Verify: `ssh jimmy 'systemctl is-active br3-intel'` returns `active`.
 - [ ] Deploy `node_staging.py` as `br3-staging.service`. Preview deploy + build validation.
   - Verify: `curl http://10.0.1.106:8200/health` returns 200.
-- [ ] `migrate-lockwood-data.sh` — rsync `~/.lockwood/` from 10.0.1.101 → MS-A2. Row counts match across LanceDB tables, `memory.db`, `intel.db`.
+- [ ] `migrate-lockwood-data.sh` — rsync `~/.lockwood/` from 10.0.1.101 → Jimmy. Row counts match across LanceDB tables, `memory.db`, `intel.db`.
   - Verify: `python scripts/compare_lockwood_msa2_rows.py` returns 0 row diffs.
-- [ ] **Deploy MS-A2 AGENTS.md** — `scp ~/.buildrunner/agents-md/ms-a2.md byronhudson@10.0.1.106:~/AGENTS.md`. Verify byte-for-byte.
-  - Verify: `ssh ms-a2 'sha256sum ~/AGENTS.md'` matches `sha256sum ~/.buildrunner/agents-md/ms-a2.md`.
-- [ ] **AGENTS.md staged snippet** — write to `core/cluster/AGENTS.md.append-phase3.txt`: Linux node dispatch rule (rsync, not tar+scp); systemd unit naming convention `br3-*.service`; MS-A2 port allocation (8100/8200/4400/4500). ≤300 staged bytes. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 2 merge gate applies.
+- [ ] **Deploy Jimmy AGENTS.md** — `scp ~/.buildrunner/agents-md/jimmy.md byronhudson@10.0.1.106:~/AGENTS.md`. Verify byte-for-byte.
+  - Verify: `ssh jimmy 'sha256sum ~/AGENTS.md'` matches `sha256sum ~/.buildrunner/agents-md/jimmy.md`.
+- [ ] **AGENTS.md staged snippet** — write to `core/cluster/AGENTS.md.append-phase3.txt`: Linux node dispatch rule (rsync, not tar+scp); systemd unit naming convention `br3-*.service`; Jimmy port allocation (8100/8200/4400/4500). ≤300 staged bytes. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 2 merge gate applies.
   - Verify: `wc -c core/cluster/AGENTS.md.append-phase3.txt` ≤300; `grep -c "br3-\|systemd\|rsync\|8200" core/cluster/AGENTS.md.append-phase3.txt` ≥3.
-- [ ] `ms-a2-verify.sh` — all endpoints 200; SessionStart brief structurally identical to old Lockwood; semantic search returns relevant results; intel scoring cron fires + connects to Below; reboot test passes.
-  - Verify: `~/.buildrunner/scripts/ms-a2-verify.sh; echo $?` returns 0.
+- [ ] `jimmy-storage-init.sh` — provisions `/srv/jimmy/` with all subdirectories per the Jimmy Storage Layout table above. Sets ownership (`byronhudson:byronhudson`), mode 0750, SELinux/AppArmor labels if applicable.
+  - Verify: `ssh jimmy 'test -d /srv/jimmy/research-library && test -d /srv/jimmy/lancedb && test -d /srv/jimmy/memory && test -d /srv/jimmy/backups/projects && test -d /srv/jimmy/backups/buildrunner-state && test -d /srv/jimmy/backups/git-mirrors && test -d /srv/jimmy/backups/supabase && test -d /srv/jimmy/backups/brlogger && test -d /srv/jimmy/archive/adversarial-reviews && test -d /srv/jimmy/archive/cost-ledger && test -d /srv/jimmy/archive/lockwood-pre-migration'` exits 0.
+- [ ] `nightly-projects-backup.sh` (on **Muddy**) — `rsync -aHAXv --delete --link-dest=../$(cat /srv/jimmy/backups/projects/LATEST 2>/dev/null || echo 0000-00-00) --exclude-from=~/.buildrunner/config/backup-excludes.list ~/Projects/ byronhudson@10.0.1.106:/srv/jimmy/backups/projects/$(date -u +%Y-%m-%d)/`. On success, update `LATEST` pointer and write `manifest.sha256`. Exit non-zero on rsync error or snapshot <80% of prior night (unless `.backupignore` diff accounts for it).
+  - Verify: Dry-run `bash -x ~/.buildrunner/scripts/nightly-projects-backup.sh --dry-run` shows full tree scan and planned snapshot path; `ls /srv/jimmy/backups/projects/` shows dated directory after non-dry run; `ls /srv/jimmy/backups/projects/<date>/manifest.sha256` exists.
+- [ ] `br3-nightly-backup.timer` on Muddy — `OnCalendar=*-*-* 03:00:00`, `Persistent=true`, `RandomizedDelaySec=300`. Enabled and started.
+  - Verify: `systemctl is-enabled br3-nightly-backup.timer && systemctl list-timers br3-nightly-backup.timer | grep -E "03:00"` succeeds.
+- [ ] `backup-excludes.list` — `node_modules/`, `.venv/`, `venv/`, `dist/`, `build/`, `target/`, `.next/`, `.turbo/`, `.cache/`, `*.sock`, `.DS_Store`, any line starting with `#` ignored.
+  - Verify: `test $(wc -l < ~/.buildrunner/config/backup-excludes.list) -ge 8`.
+- [ ] `git-mirrors-sync.sh` on **Jimmy** — for each dir in `~/Projects/` on Muddy (discovered via `ssh muddy 'ls -d ~/Projects/*/.git'`), maintain a bare mirror at `/srv/jimmy/backups/git-mirrors/<repo>.git`. `br3-git-mirrors.timer` fires hourly (`OnCalendar=hourly`, `Persistent=true`).
+  - Verify: `ssh jimmy 'ls /srv/jimmy/backups/git-mirrors/*.git | wc -l'` ≥ number of git repos in `~/Projects/`; `ssh jimmy 'cd /srv/jimmy/backups/git-mirrors/BuildRunner3.git && git log --oneline -1'` returns the latest BR3 commit.
+- [ ] `jimmy-verify.sh` — all endpoints 200; SessionStart brief structurally identical to old Lockwood; semantic search returns relevant results; intel scoring cron fires + connects to Below; reboot test passes; storage layout exists; nightly-backup timer active on Muddy; git-mirrors timer active on Jimmy.
+  - Verify: `~/.buildrunner/scripts/jimmy-verify.sh; echo $?` returns 0.
 
 #### Claude Review (mandatory before Phase 3 marked complete)
 
 - Reviewer: `claude-opus-4-7` (Muddy)
-- Trigger: `/review --phase 3 --target "~/.buildrunner/scripts/ms-a2-*.sh,~/.buildrunner/scripts/migrate-lockwood-data.sh,~/.buildrunner/agents-md/ms-a2.md,core/cluster/AGENTS.md.append-phase3.txt"`
-- Required findings: (1) MS-A2 AGENTS.md deployed and matches staged copy byte-for-byte; (2) old Lockwood untouched; (3) all 3 systemd services survive reboot; (4) row-count parity; (5) firewall opens all 4 service ports (8100/8200/4400/4500) AND keeps 11434 closed; (6) `curl http://10.0.1.106:8200/health` from Muddy returns 200 (proves staging is reachable through firewall); (7) staged AGENTS.md snippet exists and is within budget.
-- Block-on: any service fails reboot test, row-count drift, AGENTS.md not deployed, old Lockwood data modified, port 8200 unreachable through firewall, direct edit to `core/cluster/AGENTS.md` (must be staged).
+- Trigger: `/review --phase 3 --target "~/.buildrunner/scripts/jimmy-*.sh,~/.buildrunner/scripts/nightly-projects-backup.sh,~/.buildrunner/scripts/git-mirrors-sync.sh,~/.buildrunner/scripts/migrate-lockwood-data.sh,~/.buildrunner/config/backup-excludes.list,~/.buildrunner/agents-md/jimmy.md,core/cluster/AGENTS.md.append-phase3.txt"`
+- Required findings: (1) Jimmy AGENTS.md deployed and matches staged copy byte-for-byte; (2) old Lockwood untouched; (3) all systemd services (semantic, intel, staging, git-mirrors on Jimmy; nightly-backup on Muddy) survive reboot; (4) row-count parity post-migration; (5) firewall opens all 4 service ports (8100/8200/4400/4500) AND keeps 11434 closed; (6) `curl http://10.0.1.106:8200/health` from Muddy returns 200; (7) `/srv/jimmy/` storage layout fully provisioned; (8) `br3-nightly-backup.timer` active on Muddy with correct 03:00 schedule + Persistent=true; (9) `br3-git-mirrors.timer` active on Jimmy; (10) dry-run of nightly backup produces plausible snapshot plan and manifest; (11) staged AGENTS.md snippet within budget.
+- Block-on: any service fails reboot test, row-count drift, AGENTS.md not deployed, old Lockwood data modified, port 8200 unreachable, direct edit to `core/cluster/AGENTS.md` (must be staged), storage layout incomplete, nightly-backup timer missing or misscheduled, git-mirrors timer missing, backup-excludes.list missing or empty.
 
 #### Done When
 
 - [ ] All deliverable verification commands pass.
-- [ ] AGENTS.md updated and reviewed (both MS-A2 deployment + `core/cluster/AGENTS.md` append).
+- [ ] First nightly backup runs successfully; `/srv/jimmy/backups/projects/<today>/` exists with manifest.
+- [ ] Git mirrors populated for every repo in `~/Projects/`.
+- [ ] AGENTS.md updated and reviewed (both Jimmy deployment + `core/cluster/AGENTS.md` append).
 - [ ] Claude review passed with zero P0/P1 findings.
-- [ ] `decisions.log` entry: `Phase 3: MS-A2 activated — services live, row parity, AGENTS.md deployed`.
+- [ ] `decisions.log` entry: `Phase 3: Jimmy activated — services live, row parity, /srv/jimmy/ provisioned, nightly backup of ~/Projects scheduled, AGENTS.md deployed`.
 
 ---
 
@@ -589,7 +893,7 @@ All 7 nodes registered as build workers, hardcoded IPs updated, dispatch works t
 #### Constraints
 
 - IMPORTANT: Additive only — DO NOT remove Lockwood (10.0.1.101) or Lomax (10.0.1.104); they remain as overflow workers.
-- IMPORTANT: The hardcoded-IP rewrite is **role-scoped**, not blanket. Only PRIMARY-role references (semantic-search, intel, staging) for Lockwood are rewritten to MS-A2 (10.0.1.106). OVERFLOW-role and worker-pool references for Lockwood (10.0.1.101) MUST be preserved in `cluster.json`, `node-matrix.mjs`, `dispatch-to-node.sh`, `ssh-warmup.sh`, and any health/heartbeat surface. The `is_overflow_worker(node)` helper (added in Deliverable 5b) is the single classifier the rewrite respects.
+- IMPORTANT: The hardcoded-IP rewrite is **role-scoped**, not blanket. Only PRIMARY-role references (semantic-search, intel, staging) for Lockwood are rewritten to Jimmy (10.0.1.106). OVERFLOW-role and worker-pool references for Lockwood (10.0.1.101) MUST be preserved in `cluster.json`, `node-matrix.mjs`, `dispatch-to-node.sh`, `ssh-warmup.sh`, and any health/heartbeat surface. The `is_overflow_worker(node)` helper (added in Deliverable 5b) is the single classifier the rewrite respects.
 - IMPORTANT: Run grep BEFORE editing — produce the full list as Deliverable 1.
 - NEVER touch `cluster.json` schema fields not listed in Deliverables.
 
@@ -597,20 +901,20 @@ All 7 nodes registered as build workers, hardcoded IPs updated, dispatch works t
 
 - [ ] **Discovery grep** — produce canonical hit list:
   - Verify: `grep -rl "10.0.1.101\|10.0.1.104" ~/.buildrunner/ core/cluster/ > /tmp/phase4-targets.txt && wc -l /tmp/phase4-targets.txt` returns the full count (~20).
-- [ ] `cluster.json` — add MS-A2 node (`roles: [semantic-search, staging-server, parallel-builder]`, `platform: "linux"`); update Below spec; mark Lockwood + Lomax as overflow.
-  - Verify: `jq '.nodes | map(select(.name == "ms-a2")) | length' ~/.buildrunner/cluster.json` returns 1.
-- [ ] `node-matrix.mjs` — 7 workers ranked by health + load. Priority: otis, below, ms-a2, lockwood, lomax, muddy, walter.
+- [ ] `cluster.json` — add Jimmy node (`roles: [semantic-search, staging-server, parallel-builder]`, `platform: "linux"`); update Below spec; mark Lockwood + Lomax as overflow.
+  - Verify: `jq '.nodes | map(select(.name == "jimmy")) | length' ~/.buildrunner/cluster.json` returns 1.
+- [ ] `node-matrix.mjs` — 7 workers ranked by health + load. Priority: otis, below, jimmy, lockwood, lomax, muddy, walter.
   - Verify: `node ~/.buildrunner/scripts/node-matrix.mjs --dry-run | jq 'length'` returns 7.
-- [ ] `dispatch-to-node.sh` + `_dispatch-core.sh` — add `is_linux_node()` for MS-A2 (rsync vs tar+scp).
-  - Verify: `bash ~/.buildrunner/scripts/dispatch-to-node.sh --dry-run --node ms-a2 --task ping` exits 0.
+- [ ] `dispatch-to-node.sh` + `_dispatch-core.sh` — add `is_linux_node()` for Jimmy (rsync vs tar+scp).
+  - Verify: `bash ~/.buildrunner/scripts/dispatch-to-node.sh --dry-run --node jimmy --task ping` exits 0.
 - [ ] **`is_overflow_worker(node)` helper** — single classifier in `~/.buildrunner/scripts/_dispatch-core.sh` returning true for Lockwood + Lomax post-Phase-3, false for primary roles. Used by every rewrite to skip overflow paths.
   - Verify: `bash -c 'source ~/.buildrunner/scripts/_dispatch-core.sh && is_overflow_worker lockwood && is_overflow_worker lomax && ! is_overflow_worker otis'` exits 0.
-- [ ] Hardcoded-IP rewrite — every file in `/tmp/phase4-targets.txt`. **Only PRIMARY-role Lockwood references** rewrite to MS-A2 (semantic-search endpoints, intel cron targets, staging deploys). OVERFLOW-role + worker-pool + heartbeat references retain Lockwood's IP. Add MS-A2 to node lists. The rewrite tool consults `is_overflow_worker()` for every match before substituting.
+- [ ] Hardcoded-IP rewrite — every file in `/tmp/phase4-targets.txt`. **Only PRIMARY-role Lockwood references** rewrite to Jimmy (semantic-search endpoints, intel cron targets, staging deploys). OVERFLOW-role + worker-pool + heartbeat references retain Lockwood's IP. Add Jimmy to node lists. The rewrite tool consults `is_overflow_worker()` for every match before substituting.
   - Verify: `grep -rn "10.0.1.101" ~/.buildrunner/ core/cluster/ > /tmp/phase4-remaining-101.txt`; every remaining reference must be in an overflow-pool / heartbeat / cluster.json context — `python scripts/audit_overflow_refs.py /tmp/phase4-remaining-101.txt` exits 0 (audits each remaining hit is overflow-classified).
 - [ ] **Overflow dispatch smoke** — `bash ~/.buildrunner/scripts/dispatch-to-node.sh --dry-run --node lockwood --task echo` exits 0; `node ~/.buildrunner/scripts/node-matrix.mjs --include-overflow | jq 'map(select(.name == "lockwood")) | length'` returns 1.
-- [ ] **AGENTS.md staged snippet** — write to `core/cluster/AGENTS.md.append-phase4.txt`: 7-node priority order (otis > below > ms-a2 > lockwood > lomax > muddy > walter); overflow workers explicitly named (lockwood, lomax) with the role-scoped rewrite rule. ≤400 staged bytes. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 3 merge gate applies.
-  - Verify: `wc -c core/cluster/AGENTS.md.append-phase4.txt` ≤400; `grep -c "otis\|below\|ms-a2\|lockwood\|lomax\|muddy\|walter" core/cluster/AGENTS.md.append-phase4.txt` ≥7.
-- [ ] Smoke test — SessionStart brief from MS-A2; dispatch dry-run to all 7.
+- [ ] **AGENTS.md staged snippet** — write to `core/cluster/AGENTS.md.append-phase4.txt`: 7-node priority order (otis > below > jimmy > lockwood > lomax > muddy > walter); overflow workers explicitly named (lockwood, lomax) with the role-scoped rewrite rule. ≤400 staged bytes. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 3 merge gate applies.
+  - Verify: `wc -c core/cluster/AGENTS.md.append-phase4.txt` ≤400; `grep -c "otis\|below\|jimmy\|lockwood\|lomax\|muddy\|walter" core/cluster/AGENTS.md.append-phase4.txt` ≥7.
+- [ ] Smoke test — SessionStart brief from Jimmy; dispatch dry-run to all 7.
   - Verify: `~/.buildrunner/scripts/cluster-check.sh all --dry-run` reports all 7 reachable.
 
 #### Claude Review (mandatory before Phase 4 marked complete)
@@ -625,7 +929,7 @@ All 7 nodes registered as build workers, hardcoded IPs updated, dispatch works t
 - [ ] `cluster-check.sh` returns correct URLs for all 7 nodes.
 - [ ] AGENTS.md updated and reviewed for this scope.
 - [ ] Claude review passed with zero P0/P1 findings.
-- [ ] `decisions.log` entry: `Phase 4: 7-worker cluster live — MS-A2 added, overflow retained, AGENTS.md updated`.
+- [ ] `decisions.log` entry: `Phase 4: 7-worker cluster live — Jimmy added, overflow retained, AGENTS.md updated`.
 
 ---
 
@@ -771,7 +1075,9 @@ Extend the existing `core/runtime/` abstraction so Below/Ollama is a first-class
 
 ---
 
-### Phase 7: LiteLLM Gateway + Cost/Cache Observability on MS-A2
+### Phase 7: LiteLLM Gateway + Cost/Cache Observability on Jimmy
+
+> **SUPERSEDED by Final Decisions Override (see top of file):** LiteLLM is DROPPED. Replace this phase with implementation of the `RuntimeRegistry.execute()` shim (`core/runtime/runtime_registry.py`) as the ONLY local-model dispatch path, enforced by the pre-commit hook that rejects direct `ollama`, `requests.post("http://10.0.1.*")`, and raw `curl` calls to cluster nodes. Cost/cache observability (token counts, cache-hit rate, per-model spend) is implemented inside the shim and written to `/srv/jimmy/ledger/cost.jsonl`. The Codex proxy, budget guards, and dashboard wiring below remain relevant — retarget them at the RuntimeRegistry shim instead of LiteLLM. Autopilot: skip the LiteLLM install/config steps, implement the shim + pre-commit enforcement, preserve the observability deliverables. Original content retained below for historical context only.
 
 **Status:** not_started
 **Codex model:** gpt-5.4
@@ -782,14 +1088,14 @@ Extend the existing `core/runtime/` abstraction so Below/Ollama is a first-class
 
 #### Goal
 
-One HTTP endpoint on MS-A2 fronts all LLM calls. Every call logged with model, tokens in/out, cached tokens, cost, latency.
+One HTTP endpoint on Jimmy fronts all LLM calls. Every call logged with model, tokens in/out, cached tokens, cost, latency.
 
 #### Context
 
 **Files (touch only these):**
 
-- `~/.buildrunner/config/litellm.yaml` on MS-A2 (NEW)
-- `/etc/systemd/system/br3-gateway.service` on MS-A2 (NEW)
+- `~/.buildrunner/config/litellm.yaml` on Jimmy (NEW)
+- `/etc/systemd/system/br3-gateway.service` on Jimmy (NEW)
 - `core/cluster/gateway_client.py` (NEW)
 - `core/cluster/cost_ledger.py` (NEW)
 - `api/routes/cluster_metrics.py` (MODIFY)
@@ -803,18 +1109,18 @@ One HTTP endpoint on MS-A2 fronts all LLM calls. Every call logged with model, t
 
 #### Deliverables
 
-- [ ] Install LiteLLM on MS-A2 in dedicated venv. Routes: claude (Anthropic passthrough), ollama (`http://10.0.1.105:11434`), codex (codex-bridge).
-  - Verify: `ssh ms-a2 'systemctl is-active br3-gateway'` returns `active`.
+- [ ] Install LiteLLM on Jimmy in dedicated venv. Routes: claude (Anthropic passthrough), ollama (`http://10.0.1.105:11434`), codex (codex-bridge).
+  - Verify: `ssh jimmy 'systemctl is-active br3-gateway'` returns `active`.
 - [ ] `br3-gateway.service` systemd unit, port 4500, enabled on boot. `/health` returns 200.
   - Verify: `curl http://10.0.1.106:4500/health` returns 200.
-- [ ] `gateway_client.py` — `call(task)` posts to MS-A2:4500 `/v1/chat/completions`. OpenAI-shape. Respects `cache_control`.
+- [ ] `gateway_client.py` — `call(task)` posts to Jimmy:4500 `/v1/chat/completions`. OpenAI-shape. Respects `cache_control`.
   - Verify: `pytest tests/cluster/test_gateway_client.py -x`.
 - [ ] `cost_ledger.py` — JSONL: `{ts, runtime, model, input_tokens, cache_read_tokens, cache_write_tokens, output_tokens, cost_usd, latency_ms, skill, phase}`. Weekly rotation.
   - Verify: `pytest tests/cluster/test_cost_ledger.py::test_jsonl_shape -x`.
 - [ ] `/cluster/cost` returns rolling 24h + 7d cost. `/cluster/cache` returns hit-rate per runtime.
   - Verify: `curl http://localhost:8000/cluster/cost` returns valid JSON with both windows.
 - [ ] Feature flag `BR3_GATEWAY=on`. Default off; flipped Phase 13.
-  - Verify: with flag off, no requests reach MS-A2:4500.
+  - Verify: with flag off, no requests reach Jimmy:4500.
 - [ ] **AGENTS.md staged snippet** — write to `core/cluster/AGENTS.md.append-phase7.txt`: gateway routing rule (when flag on); cost-ledger schema (**11 fields**: `ts, runtime, model, input_tokens, cache_read_tokens, cache_write_tokens, output_tokens, cost_usd, latency_ms, skill, phase`); cache_control passthrough invariant. ≤600 staged bytes. The "11 fields" count MUST match `cost_ledger.py` exactly — Claude Review block-on includes count cross-check. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 3 merge gate applies.
   - Verify: `wc -c core/cluster/AGENTS.md.append-phase7.txt` ≤600; `grep -c "gateway\|cost_ledger\|cache_control" core/cluster/AGENTS.md.append-phase7.txt` ≥3; `grep -E "11 fields" core/cluster/AGENTS.md.append-phase7.txt` matches.
 
@@ -991,7 +1297,7 @@ Adversarial loop: Sonnet 4.6 + Codex GPT-5.4 + Below deepseek-r1:70b in parallel
 
 #### Goal
 
-One hook injects relevant context into every Claude prompt. Pulls from research library, Lockwood/MS-A2 memory, recent `decisions.log`, active BUILD spec. Uses MS-A2 cross-encoder reranker.
+One hook injects relevant context into every Claude prompt. Pulls from research library, Lockwood/Jimmy memory, recent `decisions.log`, active BUILD spec. Uses Jimmy cross-encoder reranker.
 
 #### Context
 
@@ -999,13 +1305,13 @@ One hook injects relevant context into every Claude prompt. Pulls from research 
 
 - `~/.buildrunner/hooks/auto-context.sh` (NEW)
 - `~/.claude/settings.json` (MODIFY — register hook for PromptSubmit + PhaseStart)
-- `api/routes/retrieve.py` on MS-A2 (NEW)
-- `core/cluster/reranker.py` on MS-A2 (NEW — `BAAI/bge-reranker-v2-m3` CPU)
+- `api/routes/retrieve.py` on Jimmy (NEW)
+- `core/cluster/reranker.py` on Jimmy (NEW — `BAAI/bge-reranker-v2-m3` CPU)
 - `~/.buildrunner/config/auto-context.yaml` (NEW)
 - `~/.buildrunner/auto-context-ledger.jsonl` (NEW — output artifact)
 - `~/.buildrunner/scripts/count-tokens.sh` (NEW — wraps `tiktoken` (cl100k_base for Claude/Codex bundles) and `transformers` (`Qwen/Qwen2.5-7B`/llama tokenizer for Below) for tokenizer-true counts; single helper used by Phases 10 + 12 + 13)
 - `core/cluster/AGENTS.md.append-phase10.txt` (NEW — staged snippet; merged at Wave 4 end)
-- `~/.buildrunner/agents-md/ms-a2.md` (MODIFY — document `/retrieve` endpoint; MS-A2 is solo on this file in Wave 4 → direct edit OK)
+- `~/.buildrunner/agents-md/jimmy.md` (MODIFY — document `/retrieve` endpoint; Jimmy is solo on this file in Wave 4 → direct edit OK)
 
 #### Constraints
 
@@ -1016,8 +1322,8 @@ One hook injects relevant context into every Claude prompt. Pulls from research 
 
 #### Deliverables
 
-- [ ] `reranker.py` on MS-A2 — loads `bge-reranker-v2-m3` on CPU. `rerank(query, candidates, top_k) -> list[Scored]`.
-  - Verify: `ssh ms-a2 'curl http://localhost:8100/rerank/health'` returns 200.
+- [ ] `reranker.py` on Jimmy — loads `bge-reranker-v2-m3` on CPU. `rerank(query, candidates, top_k) -> list[Scored]`.
+  - Verify: `ssh jimmy 'curl http://localhost:8100/rerank/health'` returns 200.
 - [ ] `/retrieve` endpoint — query + source filters (research, lockwood-code, lockwood-memory, decisions). Stage 1 vector → Stage 2 rerank. Returns top-K snippets with source URLs + line ranges.
   - Verify: `curl -X POST http://10.0.1.106:8100/retrieve -d '{"query":"runtime fallback","top_k":3}'` returns 3 results.
 - [ ] **`count-tokens.sh` helper** — `count-tokens.sh --model {claude|codex|ollama} <file-or-stdin>` returns integer token count using the model-appropriate tokenizer (cl100k_base for Claude/Codex; llama tokenizer for ollama bundles). Exit 2 on missing tokenizer (NOT a fallback to byte count — the budget MUST be tokenizer-true or fail closed).
@@ -1034,14 +1340,14 @@ One hook injects relevant context into every Claude prompt. Pulls from research 
   - Verify: file passes YAML lint; contains exclusion patterns.
 - [ ] Golden test — known phase pulls matching spec section + decisions entry + research doc. Trivial prompts produce zero ledger entries.
   - Verify: `pytest tests/integration/test_auto_context_golden.py -x`.
-- [ ] **AGENTS.md updates** — (a) **staged snippet** at `core/cluster/AGENTS.md.append-phase10.txt`: hook contract (4 sources, 4K **tokenizer-true** budget via `count-tokens.sh`, trivial-skip patterns, ledger schema). ≤500 staged bytes. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 4 merge gate applies. (b) **direct append** to MS-A2 AGENTS.md (`~/.buildrunner/agents-md/ms-a2.md`, redeployed via Phase 12 sync OR ad-hoc scp): `/retrieve` endpoint shape; the Phase 10 mirror is solo on this file in Wave 4 (no other phase touches MS-A2 AGENTS.md until Phase 12), so direct edit is allowed. ≤200 added bytes.
-  - Verify: `wc -c core/cluster/AGENTS.md.append-phase10.txt` ≤500; `grep -c "auto-context\|retrieve\|count-tokens" core/cluster/AGENTS.md.append-phase10.txt` ≥2; `grep -c "/retrieve" ~/.buildrunner/agents-md/ms-a2.md` ≥1.
+- [ ] **AGENTS.md updates** — (a) **staged snippet** at `core/cluster/AGENTS.md.append-phase10.txt`: hook contract (4 sources, 4K **tokenizer-true** budget via `count-tokens.sh`, trivial-skip patterns, ledger schema). ≤500 staged bytes. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 4 merge gate applies. (b) **direct append** to Jimmy AGENTS.md (`~/.buildrunner/agents-md/jimmy.md`, redeployed via Phase 12 sync OR ad-hoc scp): `/retrieve` endpoint shape; the Phase 10 mirror is solo on this file in Wave 4 (no other phase touches Jimmy AGENTS.md until Phase 12), so direct edit is allowed. ≤200 added bytes.
+  - Verify: `wc -c core/cluster/AGENTS.md.append-phase10.txt` ≤500; `grep -c "auto-context\|retrieve\|count-tokens" core/cluster/AGENTS.md.append-phase10.txt` ≥2; `grep -c "/retrieve" ~/.buildrunner/agents-md/jimmy.md` ≥1.
 
 #### Claude Review (mandatory before Phase 10 marked complete)
 
 - Reviewer: `claude-opus-4-7` (Muddy)
-- Trigger: `/review --phase 10 --target "~/.buildrunner/hooks/auto-context.sh,api/routes/retrieve.py,core/cluster/reranker.py,~/.buildrunner/scripts/count-tokens.sh,~/.buildrunner/config/auto-context.yaml,core/cluster/AGENTS.md.append-phase10.txt,~/.buildrunner/agents-md/ms-a2.md"`
-- Required findings: (1) trivial skip works; (2) **tokenizer-true** token budget never exceeded — `count-tokens.sh` is invoked at every emit and fails closed if tokenizer absent (no byte-count fallback); (3) exclusions block secrets/logs; (4) ledger entries written; (5) flag off → zero behavior change; (6) staged AGENTS.md snippet within budget; (7) MS-A2 AGENTS.md endpoint section current; (8) no direct edit to `core/cluster/AGENTS.md`.
+- Trigger: `/review --phase 10 --target "~/.buildrunner/hooks/auto-context.sh,api/routes/retrieve.py,core/cluster/reranker.py,~/.buildrunner/scripts/count-tokens.sh,~/.buildrunner/config/auto-context.yaml,core/cluster/AGENTS.md.append-phase10.txt,~/.buildrunner/agents-md/jimmy.md"`
+- Required findings: (1) trivial skip works; (2) **tokenizer-true** token budget never exceeded — `count-tokens.sh` is invoked at every emit and fails closed if tokenizer absent (no byte-count fallback); (3) exclusions block secrets/logs; (4) ledger entries written; (5) flag off → zero behavior change; (6) staged AGENTS.md snippet within budget; (7) Jimmy AGENTS.md endpoint section current; (8) no direct edit to `core/cluster/AGENTS.md`.
 - Block-on: missed skip, budget breach, secret leak path, missing ledger entry, behavior change with flag off, byte-count fallback in budget enforcement, staged snippet missing/oversized, direct edit to `core/cluster/AGENTS.md`.
 
 #### Done When
@@ -1068,18 +1374,20 @@ One hook injects relevant context into every Claude prompt. Pulls from research 
 
 #### Goal
 
-Upgrade the existing port-4400 dashboard with 4 new panels. Vanilla HTML; WebSocket from MS-A2 for live updates.
+Upgrade the existing port-4400 dashboard with 5 new panels — including a first-class **Jimmy** node tile (the new Minisforum MS-A2 memory/semantic backbone) and an **overflow-reserve** panel showing Lockwood/Lomax wake/drain state. Vanilla HTML; WebSocket from Jimmy for live updates.
 
 #### Context
 
 **Files (touch only these):**
 
 - `ui/dashboard/index.html` (MODIFY)
-- `ui/dashboard/panels/node-health.js` (NEW)
+- `ui/dashboard/panels/node-health.js` (NEW — 7-tile grid INCLUDING Jimmy tile: CPU, RAM, LanceDB query depth, reranker queue, context-API latency)
+- `ui/dashboard/panels/overflow-reserve.js` (NEW — Lockwood + Lomax reserve state `idle`/`warming`/`active`/`draining`, wake-trigger event log, historical overflow frequency)
+- `ui/dashboard/panels/storage-health.js` (NEW — Jimmy `/srv/jimmy/` directory usage, last-backup timestamps per source, off-site sync status, disk-free trend)
 - `ui/dashboard/panels/routing-ledger.js` (NEW)
 - `ui/dashboard/panels/cost-cache.js` (NEW)
 - `ui/dashboard/panels/consensus-viewer.js` (NEW)
-- `api/routes/dashboard_stream.py` on MS-A2 (NEW — runs as part of the existing dashboard service on port **4400** under WS path `/ws`; MUST NOT bind 4500, which is owned exclusively by `br3-gateway` LiteLLM)
+- `api/routes/dashboard_stream.py` on Jimmy (NEW — runs as part of the existing dashboard service on port **4400** under WS path `/ws`; emits `node-health`, `overflow-reserve`, `routing`, `cost`, `consensus` events)
 - `ui/dashboard/AGENTS.md` (MODIFY — register new panels + WebSocket reconnect; Phase 11 is solo on this file in Wave 5 → direct edit OK)
 
 #### Constraints
@@ -1091,16 +1399,20 @@ Upgrade the existing port-4400 dashboard with 4 new panels. Vanilla HTML; WebSoc
 
 #### Deliverables
 
-- [ ] `node-health.js` — 7-tile grid (all nodes). Per tile: online, CPU, RAM, GPU, active tasks, last heartbeat.
-  - Verify: `npx eslint ui/dashboard/panels/node-health.js`; manual visual = 7 tiles.
+- [ ] `node-health.js` — 7-tile grid including **Jimmy tile**. Per tile: online, CPU, RAM, GPU (Below only), VRAM headroom (Below only), active tasks, last heartbeat. Jimmy tile additionally shows: LanceDB query depth, reranker queue depth, context-API p95 latency.
+  - Verify: `npx eslint ui/dashboard/panels/node-health.js`; manual visual = 7 tiles with Jimmy labelled distinctly; Below tile shows VRAM headroom gauge that turns red when <1GB for >30s.
+- [ ] `overflow-reserve.js` — Lockwood + Lomax reserve panel. Shows current state (`idle`/`warming`/`active`/`draining`), last 20 wake/drain events with trigger cause (`vram_low`, `test_queue_deep`, `parallel_dispatch`, `bulk_ingest`, `below_unreachable`), and historical overflow frequency per 24h.
+  - Verify: `npx eslint ui/dashboard/panels/overflow-reserve.js`; manual visual = 2 reserve tiles (Lockwood, Lomax) with live state + event log.
+- [ ] `storage-health.js` — Jimmy storage panel: per-directory usage bar for each `/srv/jimmy/` subtree, last-backup timestamps per source (nightly-projects, buildrunner-state, git-mirrors, supabase, brlogger), off-site sync status (last rclone run, success/fail), 30-day disk-free trend line, **disk-guard tier badge** reading `/srv/jimmy/status/disk-guard.json` (green `OK <80%` / amber `WARN 80-92%` / red `CRIT 92-96%` / magenta `PAGE ≥96%`), last `archive-prune` + `lancedb-compact` run timestamps, `backups-paused` flag indicator (visible red pill when set). Red banner if any nightly backup is >36h old or off-site sync >8 days old. Magenta banner if `backups-paused` is present.
+  - Verify: `npx eslint ui/dashboard/panels/storage-health.js`; manual visual shows all directory bars + timestamps + off-site status + disk-guard tier badge + archive/compact timestamps; force an old-backup condition and confirm red banner appears; write a fake `backups-paused` flag and confirm magenta banner appears.
 - [ ] `routing-ledger.js` — last 50 routing decisions: timestamp, skill, phase, runtime, reason.
   - Verify: `npx eslint ui/dashboard/panels/routing-ledger.js`.
 - [ ] `cost-cache.js` — stacked bar 24h cost + line chart cache hit rate.
   - Verify: `npx eslint ui/dashboard/panels/cost-cache.js`.
 - [ ] `consensus-viewer.js` — live state of 3-way review.
   - Verify: `npx eslint ui/dashboard/panels/consensus-viewer.js`.
-- [ ] WebSocket broadcaster on MS-A2 at `ws://10.0.1.106:4400/ws` (sharing the dashboard service port; LiteLLM gateway on 4500 stays untouched). Dashboard subscribes via one socket.
-  - Verify: `wscat -c ws://10.0.1.106:4400/ws` receives event within 5s; `ss -tnlp | grep -E ":4500\s"` on MS-A2 shows ONLY `br3-gateway` bound to 4500 (no dashboard process); `curl http://10.0.1.106:4500/health` still returns 200 (LiteLLM unaffected).
+- [ ] WebSocket broadcaster on Jimmy at `ws://10.0.1.106:4400/ws` (sharing the dashboard service port; LiteLLM gateway on 4500 stays untouched). Dashboard subscribes via one socket.
+  - Verify: `wscat -c ws://10.0.1.106:4400/ws` receives event within 5s; `ss -tnlp | grep -E ":4500\s"` on Jimmy shows ONLY `br3-gateway` bound to 4500 (no dashboard process); `curl http://10.0.1.106:4500/health` still returns 200 (LiteLLM unaffected).
 - [ ] Sanity check — all 4 panels render with live data during a test `/begin`. No console errors.
   - Verify: `playwright test tests/e2e/dashboard.spec.ts` passes.
 - [ ] **AGENTS.md update** — append to `ui/dashboard/AGENTS.md`: panel registry (4 new files); WebSocket reconnect contract (exp backoff cap 30s); refresh-proof rule. ≤300 added bytes.
@@ -1110,16 +1422,19 @@ Upgrade the existing port-4400 dashboard with 4 new panels. Vanilla HTML; WebSoc
 
 - Reviewer: `claude-opus-4-7` (Muddy)
 - Trigger: `/review --phase 11 --target "ui/dashboard/index.html,ui/dashboard/panels/*.js,api/routes/dashboard_stream.py,ui/dashboard/AGENTS.md"`
-- Required findings: (1) zero React/framework deps; (2) reconnect backoff implemented; (3) all 7 nodes visible; (4) refresh-proof; (5) eslint clean; (6) WebSocket bound to 4400 only — `dashboard_stream.py` does not import or `bind` to 4500; (7) AGENTS.md updated.
-- Block-on: framework introduced, missing reconnect, panel missing a node, console errors, any 4500 binding in dashboard code, AGENTS.md stale.
+- Required findings: (1) zero React/framework deps; (2) reconnect backoff implemented; (3) all 7 nodes visible INCLUDING Jimmy tile with Jimmy-specific metrics (LanceDB, reranker queue, context-API latency); (4) overflow-reserve panel renders Lockwood + Lomax with live state + wake/drain event log; (5) storage-health panel renders all `/srv/jimmy/` directories + last-backup timestamps + off-site sync status; (6) Below VRAM headroom gauge turns red when <1GB; (7) red-banner conditions (old backup, stale off-site sync) visually trigger when simulated; (8) refresh-proof; (9) eslint clean; (10) WebSocket bound to 4400 only — `dashboard_stream.py` does not import or `bind` to 4500; (11) AGENTS.md updated.
+- Block-on: framework introduced, missing reconnect, panel missing a node, Jimmy tile missing its specific metrics, overflow-reserve panel missing, storage-health panel missing, red-banner not triggering on stale backups, console errors, any 4500 binding in dashboard code, AGENTS.md stale.
 
 #### Done When
 
 - [ ] `localhost:4400` shows routing decisions streaming, cost panel updating, node health live.
-- [ ] All 7 nodes visible.
+- [ ] All 7 nodes visible INCLUDING Jimmy as a first-class node tile with its specific metrics.
+- [ ] Overflow-reserve panel live, showing Lockwood + Lomax state + wake/drain events.
+- [ ] Storage-health panel live, showing `/srv/jimmy/` usage + last-backup timestamps + off-site sync status.
+- [ ] Below VRAM headroom gauge visible and responsive to load.
 - [ ] AGENTS.md updated and reviewed.
 - [ ] Claude review passed with zero P0/P1 findings.
-- [ ] `decisions.log` entry: `Phase 11: dashboard live — 4 panels at :4400, WebSocket from MS-A2, AGENTS.md updated`.
+- [ ] `decisions.log` entry: `Phase 11: dashboard live — 6 panels at :4400, Jimmy + overflow-reserve + storage-health added, WebSocket from Jimmy, AGENTS.md updated`.
 
 ---
 
@@ -1129,7 +1444,7 @@ Upgrade the existing port-4400 dashboard with 4 new panels. Vanilla HTML; WebSoc
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave5-parity`
-**Blocked by:** Phase 0, Phase 3 (MS-A2 hosts retrieve), Phase 6 (registry), Phase 7 (gateway), Phase 10 (auto-context infra)
+**Blocked by:** Phase 0, Phase 3 (Jimmy hosts retrieve), Phase 6 (registry), Phase 7 (gateway), Phase 10 (auto-context infra)
 **Can parallelize:** Phase 11
 
 #### Goal
@@ -1144,17 +1459,17 @@ This is the parity phase. After it lands, asking Codex about a recent log patter
 
 - `core/cluster/context_bundle.py` (NEW — assembles per-model unified bundle)
 - `core/cluster/context_router.py` (NEW — picks the right bundle size per model)
-- `api/routes/context.py` on MS-A2 (NEW — `GET /context/{model}` endpoint)
+- `api/routes/context.py` on Jimmy (NEW — `GET /context/{model}` endpoint)
 - `~/.buildrunner/scripts/codex-bridge.sh` (MODIFY — pre-prompt context fetch)
 - `~/.buildrunner/scripts/below-route.sh` (MODIFY — context fetch on non-summary tasks)
 - `core/runtime/context_injector.py` (NEW — registry-side injection wrapper)
-- `~/.buildrunner/scripts/sync-cluster-context.sh` (NEW — read-only mirror to Otis + Below for offline-fast access; FILTERS `[private]` lines AT THE MIRROR before any bytes leave Muddy/MS-A2)
+- `~/.buildrunner/scripts/sync-cluster-context.sh` (NEW — read-only mirror to Otis + Below for offline-fast access; FILTERS `[private]` lines AT THE MIRROR before any bytes leave Muddy/Jimmy)
 - `~/.buildrunner/scripts/filter-private-decisions.sh` (NEW — single canonical filter; reads `decisions.log`, drops every line tagged `[private]`, emits `decisions.public.log`. Used by both the mirror (Phase 12) and the extractor inside `context_bundle.py`)
-- `/etc/systemd/system/br3-context-sync.timer` on MS-A2 (NEW — 5-min sync cadence)
+- `/etc/systemd/system/br3-context-sync.timer` on Jimmy (NEW — 5-min sync cadence)
 - `~/.buildrunner/config/context-sources.yaml` (NEW — source registry, per-model budgets, exclusions)
 - `~/.buildrunner/agents-md/otis.md` (DEPLOY → `~/AGENTS.md` on Otis)
 - `core/cluster/AGENTS.md.append-phase12.txt` (NEW — staged snippet; merged at Wave 5 end)
-- `~/.buildrunner/agents-md/ms-a2.md` (MODIFY — document `/context/{model}` endpoint; Phase 10 already touched this file in Wave 4 which is closed by the time Wave 5 starts, so direct edit is safe)
+- `~/.buildrunner/agents-md/jimmy.md` (MODIFY — document `/context/{model}` endpoint; Phase 10 already touched this file in Wave 4 which is closed by the time Wave 5 starts, so direct edit is safe)
 - `tests/cluster/test_multi_model_parity.py` (NEW)
 
 #### Constraints
@@ -1170,13 +1485,13 @@ This is the parity phase. After it lands, asking Codex about a recent log patter
 
 #### Deliverables
 
-- [ ] `context_bundle.py` — assembles `{logs: [...], memory: {...}, research: [...], decisions: [...], spec: ...}` from MS-A2 sources + research library + Lockwood DBs. Returns sized bundle.
+- [ ] `context_bundle.py` — assembles `{logs: [...], memory: {...}, research: [...], decisions: [...], spec: ...}` from Jimmy sources + research library + Lockwood DBs. Returns sized bundle.
   - Verify: `pytest tests/cluster/test_context_bundle.py -x`.
 - [ ] `context_router.py` — given `model` (`claude` | `codex` | `ollama`), returns appropriate sources + budget. Single source of truth.
   - Verify: `pytest tests/cluster/test_context_router.py::test_per_model_budgets -x`.
-- [ ] `GET /context/{model}` on MS-A2 (port 4500, behind gateway) — accepts `query` + `phase` + `skill`, returns sized bundle. Reranker (Phase 10) re-orders within budget. Per-model budget enforcement is **tokenizer-true** via `count-tokens.sh` (Phase 10 helper); the response includes a `budget: {limit, used, tokenizer}` field.
+- [ ] `GET /context/{model}` on Jimmy (port 4500, behind gateway) — accepts `query` + `phase` + `skill`, returns sized bundle. Reranker (Phase 10) re-orders within budget. Per-model budget enforcement is **tokenizer-true** via `count-tokens.sh` (Phase 10 helper); the response includes a `budget: {limit, used, tokenizer}` field.
   - Verify: `curl 'http://10.0.1.106:4500/context/codex?query=runtime+fallback&phase=6&skill=begin' | jq '.bundle' | ~/.buildrunner/scripts/count-tokens.sh --model codex` returns ≤48000; response `.budget.tokenizer` field equals the model-specific tokenizer name (NOT `bytes`).
-- [ ] `codex-bridge.sh` — fetches `/context/codex` BEFORE each Codex dispatch; injects bundle as system-prompt prefix. If MS-A2 unreachable → log warning + proceed without bundle (graceful degrade).
+- [ ] `codex-bridge.sh` — fetches `/context/codex` BEFORE each Codex dispatch; injects bundle as system-prompt prefix. If Jimmy unreachable → log warning + proceed without bundle (graceful degrade).
   - Verify: `bash ~/.buildrunner/scripts/codex-bridge.sh --dry-run --task "echo ok"` shows `<cluster-context>` block in printed prompt.
 - [ ] `below-route.sh` MODIFY — for non-summary tasks (`--mode draft`, `--mode review`), fetch `/context/ollama` and prepend. Summary tasks skip (avoids context bloat on small inputs).
   - Verify: `~/.buildrunner/scripts/below-route.sh --mode draft "What was decided about runtime fallback?"` includes a memory excerpt in output reasoning.
@@ -1184,7 +1499,7 @@ This is the parity phase. After it lands, asking Codex about a recent log patter
   - Verify: `pytest tests/runtime/test_context_injector.py::test_all_three_runtimes -x`.
 - [ ] `filter-private-decisions.sh` — `cat decisions.log | filter-private-decisions.sh > decisions.public.log`. Drops every line containing the literal token `[private]` (case-sensitive, anchored as `\b\[private\]\b` to avoid matching e.g. `[privately]`). Idempotent. Used by both the mirror and `context_bundle.py`.
   - Verify: `printf '%s\n' '[public] foo' '[private] secret' '[public] bar' | ~/.buildrunner/scripts/filter-private-decisions.sh | wc -l` returns 2; output contains no `[private]` substring.
-- [ ] `sync-cluster-context.sh` — runs every 5 min on MS-A2 via `br3-context-sync.timer`. Read-only `rsync` of: `~/.buildrunner/*.log` (browser, supabase, device, query), `~/.lockwood/memory.db`, `~/.lockwood/intel.db`, `~/Projects/research-library/` to `/srv/br3-context/` mirror on Otis (10.0.1.103) and Below (10.0.1.105). For `decisions.log` specifically: pipe through `filter-private-decisions.sh` FIRST and rsync the resulting `decisions.public.log` to the mirror. The raw `decisions.log` MUST NEVER appear in `/srv/br3-context/` on either node. Read-only mount/permission (chmod 444).
+- [ ] `sync-cluster-context.sh` — runs every 5 min on Jimmy via `br3-context-sync.timer`. Read-only `rsync` of: `~/.buildrunner/*.log` (browser, supabase, device, query), `~/.lockwood/memory.db`, `~/.lockwood/intel.db`, `~/Projects/research-library/` to `/srv/br3-context/` mirror on Otis (10.0.1.103) and Below (10.0.1.105). For `decisions.log` specifically: pipe through `filter-private-decisions.sh` FIRST and rsync the resulting `decisions.public.log` to the mirror. The raw `decisions.log` MUST NEVER appear in `/srv/br3-context/` on either node. Read-only mount/permission (chmod 444).
   - Verify: `ssh otis 'ls /srv/br3-context/.buildrunner/'` shows `decisions.public.log` and NOT `decisions.log`; `ssh below 'ls /srv/br3-context/.buildrunner/decisions.log 2>&1'` returns "No such file or directory"; `ssh otis 'grep -c "\\[private\\]" /srv/br3-context/.buildrunner/decisions.public.log'` returns 0; mirror file permissions are `-r--r--r--`.
 - [ ] `context-sources.yaml` — registry of: source paths (logs, dbs, research roots), per-model budgets, exclusion globs (secrets, auth, tokens), TTL per source (research = 30d, decisions = no TTL, logs = 7d).
   - Verify: file passes YAML lint; declares all 5 source types + 3 model budgets + ≥4 exclusion globs.
@@ -1194,15 +1509,15 @@ This is the parity phase. After it lands, asking Codex about a recent log patter
   - Verify: `pytest tests/cluster/test_multi_model_parity.py -x --tb=short -k all_five_sources` all 3 models pass; the test report prints per-model `sources_cited` set.
 - [ ] **Private-decision leak test** — `tests/cluster/test_no_private_leak.py`: write a synthetic `decisions.log` line `[private] secret-canary-token-XYZ`, run a sync, then on each of Otis and Below run `grep -r "secret-canary-token-XYZ" /srv/br3-context/` AND fetch `/context/codex` + `/context/ollama` for a query crafted to surface the canary. Assert the canary appears NOWHERE on the mirror AND in NO bundle response.
   - Verify: `pytest tests/cluster/test_no_private_leak.py -x` passes.
-- [ ] **AGENTS.md updates** — (a) **staged snippet** at `core/cluster/AGENTS.md.append-phase12.txt`: `/context/{model}` contract; `context_router.py` is single source of truth; read-mount rule; per-model token budgets enforced via `count-tokens.sh` (NOT byte count); two-layer `[private]` filter (mirror + extraction); `BR3_MULTI_MODEL_CONTEXT` default OFF until Phase 13. ≤600 staged bytes. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 5 merge gate applies. (b) **direct append** to MS-A2 AGENTS.md (`~/.buildrunner/agents-md/ms-a2.md`): endpoint shape + per-model token budgets; redeploy via scp + sha256 verify. ≤300 added bytes. (c) **direct append** to Otis AGENTS.md (`~/.buildrunner/agents-md/otis.md`): read-mount path `/srv/br3-context/`, sync timer cadence, `decisions.public.log` is the ONLY decisions surface visible. ≤300 added bytes.
-  - Verify: `wc -c core/cluster/AGENTS.md.append-phase12.txt` ≤600; `grep -c "/context/\|context_router\|count-tokens\|filter-private\|BR3_MULTI_MODEL_CONTEXT" core/cluster/AGENTS.md.append-phase12.txt` ≥4; `grep -c "/context/" ~/.buildrunner/agents-md/ms-a2.md` ≥1; `grep -c "/srv/br3-context\|decisions.public" ~/.buildrunner/agents-md/otis.md` ≥2.
+- [ ] **AGENTS.md updates** — (a) **staged snippet** at `core/cluster/AGENTS.md.append-phase12.txt`: `/context/{model}` contract; `context_router.py` is single source of truth; read-mount rule; per-model token budgets enforced via `count-tokens.sh` (NOT byte count); two-layer `[private]` filter (mirror + extraction); `BR3_MULTI_MODEL_CONTEXT` default OFF until Phase 13. ≤600 staged bytes. Direct edits to `core/cluster/AGENTS.md` FORBIDDEN — Wave 5 merge gate applies. (b) **direct append** to Jimmy AGENTS.md (`~/.buildrunner/agents-md/jimmy.md`): endpoint shape + per-model token budgets; redeploy via scp + sha256 verify. ≤300 added bytes. (c) **direct append** to Otis AGENTS.md (`~/.buildrunner/agents-md/otis.md`): read-mount path `/srv/br3-context/`, sync timer cadence, `decisions.public.log` is the ONLY decisions surface visible. ≤300 added bytes.
+  - Verify: `wc -c core/cluster/AGENTS.md.append-phase12.txt` ≤600; `grep -c "/context/\|context_router\|count-tokens\|filter-private\|BR3_MULTI_MODEL_CONTEXT" core/cluster/AGENTS.md.append-phase12.txt` ≥4; `grep -c "/context/" ~/.buildrunner/agents-md/jimmy.md` ≥1; `grep -c "/srv/br3-context\|decisions.public" ~/.buildrunner/agents-md/otis.md` ≥2.
 
 #### Claude Review (mandatory before Phase 12 marked complete)
 
 - Reviewer: `claude-opus-4-7` (Muddy)
-- Trigger: `/review --phase 12 --target "core/cluster/context_bundle.py,core/cluster/context_router.py,api/routes/context.py,~/.buildrunner/scripts/codex-bridge.sh,~/.buildrunner/scripts/below-route.sh,~/.buildrunner/scripts/sync-cluster-context.sh,~/.buildrunner/scripts/filter-private-decisions.sh,core/runtime/context_injector.py,~/.buildrunner/config/context-sources.yaml,core/cluster/AGENTS.md.append-phase12.txt,~/.buildrunner/agents-md/ms-a2.md,~/.buildrunner/agents-md/otis.md"`
-- Required findings: (1) read-only contract enforced — no mutation paths; (2) exclusion globs block all secret patterns; (3) per-model budgets respected and **tokenizer-true** via `count-tokens.sh` (no byte-count fallback); (4) `context_router.py` is the only path to model-specific bundles; (5) graceful degrade when MS-A2 unreachable; (6) staged AGENTS.md snippet within budget + MS-A2 + Otis AGENTS.md updated; (7) read-mount permissions are 444 on Otis + Below; (8) **TWO-LAYER `[private]` filter**: (a) `sync-cluster-context.sh` calls `filter-private-decisions.sh` BEFORE rsync and the raw `decisions.log` is absent from `/srv/br3-context/` on both Otis AND Below, (b) `context_bundle.py` independently re-filters before any extraction; (9) `test_no_private_leak.py` passes (canary token nowhere); (10) parity test cites all 5 source types per model.
-- Block-on: any mutation path, secret leak path, budget breach, router bypass, hard-fail on MS-A2 outage, AGENTS.md stale, write permission anywhere on the mirrors, ANY private-tag leak (mirror or bundle), parity test failing on any source type, byte-count fallback in budget enforcement, direct edit to `core/cluster/AGENTS.md`.
+- Trigger: `/review --phase 12 --target "core/cluster/context_bundle.py,core/cluster/context_router.py,api/routes/context.py,~/.buildrunner/scripts/codex-bridge.sh,~/.buildrunner/scripts/below-route.sh,~/.buildrunner/scripts/sync-cluster-context.sh,~/.buildrunner/scripts/filter-private-decisions.sh,core/runtime/context_injector.py,~/.buildrunner/config/context-sources.yaml,core/cluster/AGENTS.md.append-phase12.txt,~/.buildrunner/agents-md/jimmy.md,~/.buildrunner/agents-md/otis.md"`
+- Required findings: (1) read-only contract enforced — no mutation paths; (2) exclusion globs block all secret patterns; (3) per-model budgets respected and **tokenizer-true** via `count-tokens.sh` (no byte-count fallback); (4) `context_router.py` is the only path to model-specific bundles; (5) graceful degrade when Jimmy unreachable; (6) staged AGENTS.md snippet within budget + Jimmy + Otis AGENTS.md updated; (7) read-mount permissions are 444 on Otis + Below; (8) **TWO-LAYER `[private]` filter**: (a) `sync-cluster-context.sh` calls `filter-private-decisions.sh` BEFORE rsync and the raw `decisions.log` is absent from `/srv/br3-context/` on both Otis AND Below, (b) `context_bundle.py` independently re-filters before any extraction; (9) `test_no_private_leak.py` passes (canary token nowhere); (10) parity test cites all 5 source types per model.
+- Block-on: any mutation path, secret leak path, budget breach, router bypass, hard-fail on Jimmy outage, AGENTS.md stale, write permission anywhere on the mirrors, ANY private-tag leak (mirror or bundle), parity test failing on any source type, byte-count fallback in budget enforcement, direct edit to `core/cluster/AGENTS.md`.
 
 #### Done When
 
@@ -1211,7 +1526,7 @@ This is the parity phase. After it lands, asking Codex about a recent log patter
 - [ ] Private-decision leak test passes — synthetic `[private]` canary appears nowhere on either mirror and in no bundle response.
 - [ ] Read-mounts on Otis + Below show `-r--r--r--` permissions and recent mtime; `decisions.public.log` present and `decisions.log` absent.
 - [ ] `BR3_MULTI_MODEL_CONTEXT=on` produces `<cluster-context>` blocks for Codex + Below; flag off = zero behavior change.
-- [ ] AGENTS.md updated (staged snippet + MS-A2 + Otis) and reviewed.
+- [ ] AGENTS.md updated (staged snippet + Jimmy + Otis) and reviewed.
 - [ ] Claude review passed with zero P0/P1 findings.
 - [ ] `decisions.log` entry: `Phase 12: multi-model context parity live — Codex+Below see logs+memory+research, two-layer private filter, AGENTS.md updated on 3 scopes`.
 
@@ -1310,19 +1625,28 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
 - `core/cluster/auto_rebalance.py` (NEW)
 - `~/.buildrunner/scripts/model-update.sh` (NEW)
 - `core/cluster/cost_alerts.py` (NEW)
-- `/etc/systemd/system/br3-self-health.service` on MS-A2 (NEW — `Type=oneshot`, called by the timer)
-- `/etc/systemd/system/br3-self-health.timer` on MS-A2 (NEW — `OnUnitActiveSec=5min`, `Persistent=true`)
-- `/etc/systemd/system/br3-cost-alerts.service` on MS-A2 (NEW — `Type=oneshot`, called by the timer)
-- `/etc/systemd/system/br3-cost-alerts.timer` on MS-A2 (NEW — `OnCalendar=daily`, `Persistent=true`)
-- `/etc/systemd/system/br3-model-update.service` on MS-A2 (NEW — `Type=oneshot`, called by the timer)
-- `/etc/systemd/system/br3-model-update.timer` on MS-A2 (NEW — `OnCalendar=weekly`, `Persistent=true`)
-- `core/cluster/AGENTS.md` (MODIFY — encode self-health timers + rebalance contract; Phase 14 is a single-phase wave → direct edit OK)
+- `~/.buildrunner/scripts/backup-prune.sh` (NEW — enforces 30 daily + 12 monthly + 3 yearly retention under `/srv/jimmy/backups/projects/`)
+- `~/.buildrunner/scripts/offsite-sync.sh` (NEW — weekly `rclone sync` of `/srv/jimmy/backups/` to cloud bucket)
+- `~/.buildrunner/scripts/backup-integrity-check.sh` (NEW — weekly spot-check: 10 random files per snapshot, compared to manifest.sha256)
+- `~/.buildrunner/scripts/archive-prune.sh` (NEW — unified retention enforcement across all non-projects Jimmy subtrees: brlogger 90d; supabase 14d+8w+12m; git-mirrors monthly `git gc --aggressive --prune=now`; adversarial-reviews 90d raw + monthly `.tar.zst` of older; cost-ledger raw events 180d + daily rollups forever; memory session-summaries 180d)
+- `~/.buildrunner/scripts/lancedb-compact.sh` (NEW — quarterly LanceDB `compact_files()` + `cleanup_old_versions()` on `/srv/jimmy/lancedb/`, with pre-run row-count check that must match post-run)
+- `~/.buildrunner/scripts/disk-guard.sh` (NEW — 15-min timer, reads `df /srv/jimmy`: WARN at 80% → dashboard red banner + `decisions.log`; CRIT at 92% → emergency prune of oldest `backups/projects/` daily snapshots one at a time until ≤88%, never touching monthly/yearly; PAGE at 96% → stop accepting new backups + loud alert)
+- `/etc/systemd/system/br3-self-health.service|.timer` on Jimmy (NEW — `OnUnitActiveSec=5min`, `Persistent=true`)
+- `/etc/systemd/system/br3-cost-alerts.service|.timer` on Jimmy (NEW — `OnCalendar=daily`, `Persistent=true`)
+- `/etc/systemd/system/br3-model-update.service|.timer` on Jimmy (NEW — `OnCalendar=weekly`, `Persistent=true`)
+- `/etc/systemd/system/br3-backup-prune.service|.timer` on Jimmy (NEW — `OnCalendar=*-*-* 04:30:00`, fires 90 min after nightly backup finishes; `Persistent=true`)
+- `/etc/systemd/system/br3-offsite-sync.service|.timer` on Jimmy (NEW — `OnCalendar=Sun *-*-* 05:00:00`, weekly; `Persistent=true`)
+- `/etc/systemd/system/br3-backup-integrity.service|.timer` on Jimmy (NEW — `OnCalendar=Sun *-*-* 06:00:00`, weekly; `Persistent=true`)
+- `/etc/systemd/system/br3-archive-prune.service|.timer` on Jimmy (NEW — `OnCalendar=*-*-* 04:45:00`, fires 15 min after backup-prune; `Persistent=true`)
+- `/etc/systemd/system/br3-lancedb-compact.service|.timer` on Jimmy (NEW — `OnCalendar=*-01,04,07,10-01 03:00:00`, quarterly; `Persistent=true`)
+- `/etc/systemd/system/br3-disk-guard.service|.timer` on Jimmy (NEW — `OnUnitActiveSec=15min`, `Persistent=true`)
+- `core/cluster/AGENTS.md` (MODIFY — encode self-health timers + rebalance contract + full retention matrix (projects/brlogger/supabase/git-mirrors/adversarial/cost/memory/lancedb) + off-site cadence + disk-guard thresholds; Phase 14 is a single-phase wave → direct edit OK)
 
 #### Constraints
 
 - IMPORTANT: Auto-rebalance must NEVER drop in-flight work silently — reassign and log every move.
 - IMPORTANT: Model update promotes new version ONLY if benchmark stays within 10% of prior tok/s.
-- IMPORTANT: Cadences are enforced by `.timer` units (NOT `cron`, NOT `at`, NOT internal `time.sleep` loops). A `.service` without an enabled `.timer` is a Phase 14 ship-block — `Done When` requires `systemctl is-active <name>.timer` and `systemctl list-timers --all` to show the next-fire time. `Persistent=true` on every timer so a brief MS-A2 outage doesn't skip a window.
+- IMPORTANT: Cadences are enforced by `.timer` units (NOT `cron`, NOT `at`, NOT internal `time.sleep` loops). A `.service` without an enabled `.timer` is a Phase 14 ship-block — `Done When` requires `systemctl is-active <name>.timer` and `systemctl list-timers --all` to show the next-fire time. `Persistent=true` on every timer so a brief Jimmy outage doesn't skip a window.
 - NEVER let `cost_alerts.py` page on routine variation — only >2x day-over-day spike.
 
 #### Deliverables
@@ -1335,48 +1659,80 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
   - Verify: `shellcheck ~/.buildrunner/scripts/model-update.sh`; dry-run with mocked benchmark exits 0.
 - [ ] `cost_alerts.py` — daily reads `cost_ledger`; flags >2x DoD increase by runtime. Writes alert to `decisions.log` + dashboard banner.
   - Verify: `pytest tests/cluster/test_cost_alerts.py::test_2x_threshold -x`.
+- [ ] `backup-prune.sh` — enforces retention on `/srv/jimmy/backups/projects/`: keep last 30 daily snapshots, promote 1st-of-month snapshot to `monthly/` (keep 12), promote Jan 1 snapshot to `yearly/` (keep 3). Deletes nothing until promotion completes successfully. Logs every delete to `/srv/jimmy/logs/backup-prune.log`.
+  - Verify: `shellcheck ~/.buildrunner/scripts/backup-prune.sh`; dry-run on a fixture with 45 daily snapshots promotes correctly and lists exactly 15 planned deletions.
+- [ ] `offsite-sync.sh` — weekly `rclone sync /srv/jimmy/backups/ <remote>:br3-jimmy-backups/ --fast-list --transfers=4 --checksum`. Writes last-success timestamp to `/srv/jimmy/status/offsite-last-success`. Exits non-zero on any rclone error.
+  - Verify: `shellcheck ~/.buildrunner/scripts/offsite-sync.sh`; `--dry-run` with rclone remote configured produces plausible sync plan.
+- [ ] `backup-integrity-check.sh` — weekly, picks 10 random files per snapshot in `/srv/jimmy/backups/projects/*/` (sample the 4 most recent snapshots), re-hashes them, compares to `manifest.sha256`. On mismatch, writes alert to `decisions.log` + dashboard banner.
+  - Verify: `shellcheck ~/.buildrunner/scripts/backup-integrity-check.sh`; intentional corruption of one tracked file triggers alert within next run.
+- [ ] `archive-prune.sh` — enforces retention across all non-projects Jimmy subtrees:
+  - `backups/brlogger/` — delete files older than 90 days
+  - `backups/supabase/` — keep last 14 daily dumps + 8 weekly (Sunday) + 12 monthly (1st); delete rest
+  - `backups/git-mirrors/` — run `git -C <each-mirror> gc --aggressive --prune=now` monthly (first Sunday)
+  - `archive/adversarial-reviews/` — keep last 90 days of raw JSON; older: bundle per-month into `YYYY-MM.tar.zst` with level 19, then delete raw
+  - `archive/cost-ledger/` — daily rollups kept forever; raw per-request events deleted after 180 days
+  - `memory/session-summaries/` — delete summaries older than 180 days (full builds preserved in `build_history` indefinitely)
+  - Every delete/compress logged to `/srv/jimmy/logs/archive-prune.log`. Deletes nothing until the corresponding promotion/compression succeeds.
+  - Verify: `shellcheck ~/.buildrunner/scripts/archive-prune.sh`; dry-run on a fixture containing one file per subtree at each boundary age prints an exact plan matching the rules above; wet-run on the fixture leaves expected survivors.
+- [ ] `lancedb-compact.sh` — quarterly `compact_files()` + `cleanup_old_versions(older_than=7d)` against `/srv/jimmy/lancedb/`. Before running, captures `SELECT COUNT(*) FROM <each_table>`; after running, re-captures and aborts with alert if any count drops. Logs reclaimed bytes to `/srv/jimmy/logs/lancedb-compact.log`.
+  - Verify: `shellcheck ~/.buildrunner/scripts/lancedb-compact.sh`; dry-run on a staging LanceDB copy reports rows-pre = rows-post and a non-negative reclaim figure.
+- [ ] `disk-guard.sh` — every 15 min on Jimmy. Reads `df -B1 /srv/jimmy | awk 'NR==2 {print $5}'` (usage %). Thresholds:
+  - **80%** (WARN): dashboard red banner + one-line `decisions.log` entry (rate-limited to 1/day).
+  - **92%** (CRIT): begin **emergency prune** — delete the oldest `backups/projects/YYYY-MM-DD/` daily snapshot, re-check; repeat one-at-a-time until usage ≤ 88%. NEVER touches `monthly/`, `yearly/`, `archive/`, `lancedb/`, `memory/`, or the 7 most recent daily snapshots. Each emergency delete logs to `decisions.log` with the freed-byte count.
+  - **96%** (PAGE): in addition to CRIT action, write `/srv/jimmy/status/backups-paused` (read by `nightly-projects-backup.sh` as a hard stop) and raise a dashboard PAGE banner that persists until manually cleared.
+  - All state written atomically to `/srv/jimmy/status/disk-guard.json` (usage%, threshold-tier, last-action, next-fire).
+  - Verify: `shellcheck ~/.buildrunner/scripts/disk-guard.sh`; simulate 82% → banner appears, no deletes; simulate 93% on a fixture → exactly one oldest-daily deleted, `monthly/` + `yearly/` untouched; simulate 97% → `backups-paused` flag written and nightly-backup refuses to run while flag present.
+- [ ] `br3-archive-prune.service` (oneshot) + `br3-archive-prune.timer` (`OnCalendar=*-*-* 04:45:00`, `Persistent=true`). Enabled at boot.
+  - Verify: `ssh jimmy 'systemctl is-enabled br3-archive-prune.timer && systemctl list-timers br3-archive-prune.timer | grep "04:45"'` succeeds.
+- [ ] `br3-lancedb-compact.service` (oneshot) + `br3-lancedb-compact.timer` (`OnCalendar=*-01,04,07,10-01 03:00:00`, `Persistent=true`). Enabled at boot.
+  - Verify: `ssh jimmy 'systemctl is-enabled br3-lancedb-compact.timer && systemctl list-timers --all | grep br3-lancedb-compact'` succeeds; `list-timers` next-fire is on a Jan/Apr/Jul/Oct 1st.
+- [ ] `br3-disk-guard.service` (oneshot) + `br3-disk-guard.timer` (`OnUnitActiveSec=15min`, `Persistent=true`). Enabled at boot. Runs BEFORE nightly-backup so the `backups-paused` flag can gate it.
+  - Verify: `ssh jimmy 'systemctl is-enabled br3-disk-guard.timer && systemctl is-active br3-disk-guard.timer && systemctl list-timers br3-disk-guard.timer | grep "15min\|15 min"'` succeeds; `cat /srv/jimmy/status/disk-guard.json` exists and parses.
 - [ ] `br3-self-health.service` (oneshot) — runs `self_health.py` once per fire.
-  - Verify: `ssh ms-a2 'systemctl cat br3-self-health.service | grep -E "Type=oneshot"'` succeeds.
+  - Verify: `ssh jimmy 'systemctl cat br3-self-health.service | grep -E "Type=oneshot"'` succeeds.
 - [ ] `br3-self-health.timer` — `OnUnitActiveSec=5min`, `Persistent=true`, `Unit=br3-self-health.service`. Enabled at boot.
-  - Verify: `ssh ms-a2 'systemctl is-enabled br3-self-health.timer && systemctl is-active br3-self-health.timer && systemctl list-timers --all | grep br3-self-health'` succeeds and shows next-fire ≤5min away.
+  - Verify: `ssh jimmy 'systemctl is-enabled br3-self-health.timer && systemctl is-active br3-self-health.timer && systemctl list-timers --all | grep br3-self-health'` succeeds and shows next-fire ≤5min away.
 - [ ] `br3-cost-alerts.service` (oneshot) + `br3-cost-alerts.timer` (`OnCalendar=daily`, `Persistent=true`). Enabled at boot.
-  - Verify: `ssh ms-a2 'systemctl is-enabled br3-cost-alerts.timer && systemctl list-timers br3-cost-alerts.timer | grep "1 day"'` succeeds.
+  - Verify: `ssh jimmy 'systemctl is-enabled br3-cost-alerts.timer && systemctl list-timers br3-cost-alerts.timer | grep "1 day"'` succeeds.
 - [ ] `br3-model-update.service` (oneshot) + `br3-model-update.timer` (`OnCalendar=weekly`, `Persistent=true`). Enabled at boot.
-  - Verify: `ssh ms-a2 'systemctl is-enabled br3-model-update.timer && systemctl list-timers br3-model-update.timer | grep "1 week"'` succeeds.
-- [ ] **Persistent recovery test** — stop MS-A2's `systemd-timesyncd` for 6 minutes (simulates clock skew), restart it, confirm the next `br3-self-health` fire happens within 1 minute (Persistent semantics catch the missed window).
-  - Verify: `ssh ms-a2 'sudo systemctl stop systemd-timesyncd; sleep 360; sudo systemctl start systemd-timesyncd; sleep 60; journalctl -u br3-self-health.service --since "2 minutes ago" | grep -c Started'` ≥1.
+  - Verify: `ssh jimmy 'systemctl is-enabled br3-model-update.timer && systemctl list-timers br3-model-update.timer | grep "1 week"'` succeeds.
+- [ ] **Persistent recovery test** — stop Jimmy's `systemd-timesyncd` for 6 minutes (simulates clock skew), restart it, confirm the next `br3-self-health` fire happens within 1 minute (Persistent semantics catch the missed window).
+  - Verify: `ssh jimmy 'sudo systemctl stop systemd-timesyncd; sleep 360; sudo systemctl start systemd-timesyncd; sleep 60; journalctl -u br3-self-health.service --since "2 minutes ago" | grep -c Started'` ≥1.
 - [ ] Dry-run validation — disconnect Otis 10 min: `auto_rebalance` shifts work; `self_health` flags Otis; recovery on return.
   - Verify: structured log shows reassignment + flag + recovery.
-- [ ] **AGENTS.md update** — append to `core/cluster/AGENTS.md`: self-health 5-min cadence (via `.timer`); rebalance no-silent-drop rule; model-update 10% gate (weekly `.timer`); cost-alert 2x threshold (daily `.timer`); cadences are `.timer`-driven, never internal sleep loops. ≤400 added bytes.
-  - Verify: `grep -c "self_health\|rebalance\|cost_alert\|.timer" core/cluster/AGENTS.md` ≥4.
+- [ ] **AGENTS.md update** — append to `core/cluster/AGENTS.md`: self-health 5-min cadence (via `.timer`); rebalance no-silent-drop rule; model-update 10% gate (weekly `.timer`); cost-alert 2x threshold (daily `.timer`); backup retention matrix (projects 30d+12m+3y / brlogger 90d / supabase 14d+8w+12m / git-mirrors monthly gc / adversarial 90d raw + monthly `.tar.zst` / cost raw 180d + rollups ∞ / memory summaries 180d); lancedb compact quarterly; disk-guard thresholds 80/92/96%; `backups-paused` flag is the single hard-stop for nightly-backup; cadences are `.timer`-driven, never internal sleep loops. ≤900 added bytes.
+  - Verify: `grep -c "self_health\|rebalance\|cost_alert\|.timer\|retention\|disk-guard\|backups-paused" core/cluster/AGENTS.md` ≥7.
 
 #### Claude Review (mandatory before Phase 14 marked complete)
 
 - Reviewer: `claude-opus-4-7` (Muddy)
-- Trigger: `/review --phase 14 --target "core/cluster/self_health.py,core/cluster/auto_rebalance.py,~/.buildrunner/scripts/model-update.sh,core/cluster/cost_alerts.py,/etc/systemd/system/br3-{self-health,cost-alerts,model-update}.{service,timer},core/cluster/AGENTS.md"`
-- Required findings: (1) zero silent work-drop; (2) model-update tok/s gate enforced; (3) cost-alert threshold correct; (4) dry-run validation log present; (5) **all 3 `.timer` units enabled, active, and scheduling correctly** (5-min/daily/weekly with `Persistent=true`); (6) zero internal `time.sleep()` cadence loops in `self_health.py`/`cost_alerts.py`/`auto_rebalance.py` — they are oneshot scripts driven by the timers; (7) AGENTS.md updated and cites timer cadence not sleep loops.
-- Block-on: silent drop, missing gate, threshold drift, missing dry-run, ANY timer not enabled+active, ANY service running as a long-lived sleep loop instead of oneshot+timer, AGENTS.md stale.
+- Trigger: `/review --phase 14 --target "core/cluster/self_health.py,core/cluster/auto_rebalance.py,~/.buildrunner/scripts/model-update.sh,core/cluster/cost_alerts.py,~/.buildrunner/scripts/{backup-prune,offsite-sync,backup-integrity-check,archive-prune,lancedb-compact,disk-guard}.sh,/etc/systemd/system/br3-{self-health,cost-alerts,model-update,backup-prune,offsite-sync,backup-integrity,archive-prune,lancedb-compact,disk-guard}.{service,timer},core/cluster/AGENTS.md"`
+- Required findings: (1) zero silent work-drop; (2) model-update tok/s gate enforced; (3) cost-alert threshold correct; (4) dry-run validation log present for auto-rebalance; (5) **all 9 `.timer` units enabled, active, scheduling correctly with `Persistent=true`** (self-health 5min / cost-alerts daily / model-update weekly / backup-prune 04:30 / offsite-sync Sun 05:00 / backup-integrity Sun 06:00 / archive-prune 04:45 / lancedb-compact quarterly / disk-guard 15min); (6) zero internal `time.sleep()` cadence loops in any Phase 14 service — all are oneshot scripts driven by timers; (7) archive-prune never deletes raw before its compressed bundle is written and fsync'd; (8) disk-guard emergency prune NEVER touches `monthly/`, `yearly/`, `archive/`, `lancedb/`, `memory/`, or the 7 most recent daily snapshots; (9) `backups-paused` flag gates nightly-backup AND is cleared only by manual intervention (never self-cleared); (10) lancedb-compact aborts on any pre/post row-count drop; (11) AGENTS.md updated and cites the full retention matrix + disk-guard thresholds, not sleep loops.
+- Block-on: silent drop, missing gate, threshold drift, missing dry-run, ANY of the 9 timers not enabled+active, ANY service running as a long-lived sleep loop instead of oneshot+timer, archive-prune deleting raw before compression verified, disk-guard touching protected subtrees, `backups-paused` self-clearing, lancedb row-count regression uncaught, AGENTS.md stale.
 
 #### Done When
 
 - [ ] Node taken offline detected within 5 min; work rerouted automatically.
 - [ ] Model update runs and rolls back on regression.
 - [ ] Cost alert fires on simulated spike.
-- [ ] All 3 `.timer` units (self-health, cost-alerts, model-update) show `is-active=active`, `is-enabled=enabled`, and a future `next-fire` in `systemctl list-timers`.
-- [ ] AGENTS.md updated and reviewed.
+- [ ] All 9 `.timer` units show `is-active=active`, `is-enabled=enabled`, and a future `next-fire` in `systemctl list-timers`.
+- [ ] Archive-prune dry-run matches expected plan across all 6 non-projects subtrees; wet-run leaves only expected survivors.
+- [ ] LanceDB compact dry-run reports rows-pre = rows-post and non-negative reclaim.
+- [ ] Disk-guard WARN/CRIT/PAGE all verified against fixtures; emergency prune never touches protected subtrees; `backups-paused` flag gates nightly-backup.
+- [ ] AGENTS.md updated and reviewed with full retention matrix + disk-guard thresholds.
 - [ ] Claude review passed with zero P0/P1 findings.
-- [ ] `decisions.log` entry: `Phase 14: BR3 self-maintenance live — 5min/daily/weekly timers active, auto-rebalance + cost alerts, AGENTS.md updated`.
+- [ ] `decisions.log` entry: `Phase 14: BR3 self-maintenance live — 9 timers active, auto-rebalance + cost alerts + archive-prune + lancedb-compact + disk-guard, AGENTS.md updated with full retention matrix`.
 
 ---
 
 ## Out of Scope (Future / Roadmap)
 
 - vLLM / SGLang / vllm-mlx — Ollama is committed. Deferred unless Ollama tok/s becomes the actual bottleneck.
-- Langfuse full-stack observability on MS-A2 — `cost_ledger` + dashboard panels cover v1. Revisit if detailed trace-level debugging is demanded.
+- Langfuse full-stack observability on Jimmy — `cost_ledger` + dashboard panels cover v1. Revisit if detailed trace-level debugging is demanded.
 - Codestral FIM / inline completion routing to Below — out of scope for this build.
 - Query expansion on the auto-context hook — start with vector + reranker; add expansion only if retrieval quality is poor.
 - Multi-round adversarial rebuttal (more than one) — v1 is single rebuttal then escalate.
-- MCP hosting on MS-A2 — skills still invoked via existing BR3 dispatch.
+- MCP hosting on Jimmy — skills still invoked via existing BR3 dispatch.
 - Commit-message auto-drafting via Below — manual commits stay.
 - Sidecar field rename (`claude_pid/pgid` → `runtime_pid/pgid`) — cosmetic.
 - EXO Labs distributed inference — revisit when models exceed 48GB VRAM.
@@ -1385,8 +1741,8 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
 - 10GbE switch upgrade — upgrade only if vector search latency becomes the bottleneck.
 - Mac Studio M4 Max for Muddy daily driver — separate project.
 - Third Claude subscription — monitor if 7 workers saturate 1-2 subscriptions.
-- Proxmox/VM isolation on MS-A2 — bare metal Linux is simpler for v1.
-- VRT Docker stack migration from old Lomax to MS-A2 — stays on Lomax for v1.
+- Proxmox/VM isolation on Jimmy — bare metal Linux is simpler for v1.
+- VRT Docker stack migration from old Lomax to Jimmy — stays on Lomax for v1.
 - React dashboard (ui/) full rebuild — Phase 11 adds panels to vanilla HTML; full React port is a separate project.
 - Overnight automation (batch /review + /guard + /dead across projects) — build manually first.
 - Auto-generated AGENTS.md — formally rejected. ETH Zurich data: −3% task success when LLM-generated. Always human-authored.
