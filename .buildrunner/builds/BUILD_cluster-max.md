@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-12
 **Last Revised:** 2026-04-20T22:10Z (Phase 8 complete: cache_policy + summarizer + cross_model_review refactor, 31/31 tests pass)
-**Status:** Phases 0-3 + 6 + 8 Complete — Phase 4 Next (cluster reconfiguration, blocks 5+)
+**Status:** Phases 1-5 Complete — Phase 2 In Progress
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
