@@ -1,8 +1,8 @@
 # Build: cluster-max
 
 **Created:** 2026-04-12
-**Last Revised:** 2026-04-20T21:59Z (Phase 3 FULLY complete: `/srv/jimmy/` layout provisioned, UFW active with correct ports, passwordless sudo configured on Jimmy, 26 git mirrors cloned + hourly timer enabled, 3 systemd services active)
-**Status:** Phases 0-3 + 6 Complete — Phase 8 Next (ship-order priority: cache engineering)
+**Last Revised:** 2026-04-20T22:10Z (Phase 8 complete: cache_policy + summarizer + cross_model_review refactor, 31/31 tests pass)
+**Status:** Phases 0-3 + 6 + 8 Complete — Phase 4 Next (cluster reconfiguration, blocks 5+)
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
@@ -266,7 +266,7 @@ User never talks to a local model directly. Claude is the single voice.
 | 5   | not_started | —                 | Below skill integration                                                                                                      |
 | 6   | completed   | 2026-04-20T19:30Z | OllamaRuntime registered, local_ready capability live                                                                        |
 | 7   | REPLACED    | —                 | Was LiteLLM; now RuntimeRegistry shim + pre-commit hook                                                                      |
-| 8   | not_started | —                 | Prompt cache + byte-identity test (SHIP FIRST of remaining)                                                                  |
+| 8   | completed   | 2026-04-20T22:10Z | cache_policy (3 ephemeral breakpoints) + summarizer (qwen3:8b); cross_model_review hard-truncation removed; 31/31 tests pass |
 | 9   | not_started | —                 | 2-way review + Opus arbiter (NOT 3-way, NOT r1)                                                                              |
 | 10  | not_started | —                 | Auto-context hook + research redesign                                                                                        |
 | 11  | not_started | —                 | Dashboard + Jimmy cutover + overflow wake/drain                                                                              |
@@ -1144,7 +1144,7 @@ One HTTP endpoint on Jimmy fronts all LLM calls. Every call logged with model, t
 
 ### Phase 8: Prompt Cache Engineering + Summarize-Before-Escalate
 
-**Status:** not_started
+**Status:** ✅ COMPLETE (2026-04-20T22:10Z) — cache_policy.py (3 ephemeral breakpoints) + summarizer.py (qwen3:8b via RuntimeRegistry) live; cross_model_review.py hard-truncation slices removed (grep=0); 12KB summarize-before-escalate threshold wired; AGENTS.md 3-breakpoint contract added (7 keyword hits); 31/31 tests pass; ruff clean. gateway_client.py deliverable dropped per Phase 7 REPLACED.
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave3-cache`
