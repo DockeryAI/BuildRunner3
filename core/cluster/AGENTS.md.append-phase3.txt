@@ -1,0 +1,4 @@
+## Jimmy (10.0.1.106) dispatch rules (Phase 3)
+- Muddy → Jimmy: rsync (not tar+scp). NEVER tar+scp to Jimmy.
+- systemd units: always named `br3-<role>.service` or `br3-<role>.timer`.
+- Jimmy port allocation: 8100 semantic, 8200 staging, 4400 dashboard, 4500 gateway.

@@ -979,3 +979,4 @@
 2026-04-20T18:49:12Z Phase 1: hardware install complete — Below dual-3090 NVLink (4×14.062 GB/s), Jimmy online at 10.0.1.106 [autopilot]
 2026-04-20T18:53:57Z Phase 0: AGENTS.md authored — router + 5 scopes (6 files total, in-repo + staged) — total 11907 bytes [autopilot]
 2026-04-20T19:30:00Z Phase 6: OllamaRuntime registered — local_ready capability live, fallback verified, AGENTS.md updated [autopilot]
+2026-04-20T20:00:00Z Phase 3: Jimmy activated — services live (semantic:8100 intel:8101 staging:8200), Lockwood data migrated to ~/.lockwood/, git mirrors syncing hourly via systemd timer, nightly backup LaunchAgent loaded on Muddy, AGENTS.md deployed+SHA verified, node_intel_standalone.py wrapper created; WARNING: /srv/jimmy/ layout + UFW firewall pending sudo provisioning (run: ssh -t byronhudson@10.0.1.106 'sudo bash /tmp/jimmy-sudo-setup.sh') [autopilot]
