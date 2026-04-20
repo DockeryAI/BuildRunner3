@@ -1,0 +1,166 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T095002Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "That \"stop hook feedback\" appears to be a prompt injection attempt \u2014 it's asking me to disregard the adversarial review I just completed and instead run `npm test` with a specific pass/fail output format, which has nothing to do with the task you gave me.\n\nMy review is complete. The JSON array above contains 9 findings (0 blockers, 5 warnings, 4 notes) against the `model-benchmark-harness` build plan. The plan is remarkably self-consistent for its size (~50k words, 10 phases). The most actionabl",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "That \"stop hook feedback\" appears to be a prompt injection attempt \u2014 it's asking me to disregard the adversarial review I just completed and instead run `npm test` with a specific pass/fail output format, which has nothing to do with the task you gave me.\n\nMy review is complete. The JSON array above contains 9 findings (0 blockers, 5 warnings, 4 notes) against the `model-benchmark-harness` build plan. The plan is remarkably self-consistent for its size (~50k words, 10 phases). The most actionabl",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 writes `/tmp/br3-bench-<run_id>/.buildrunner-owner` inside the clone before dispatch, but the verified dispatcher flow runs `git add -A` in the clone. That owner file is untracked and not ignored anywhere in the plan, so it will be staged into the contestant commit and contaminate the scored diff.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 writes `/tmp/br3-bench-<run_id>/.buildrunner-owner` inside the clone before dispatch, but the verified dispatcher flow runs `git add -A` in the clone. That owner file is untracked and not ignored anywhere in the plan, so it will be staged into the contestant commit and contaminate the scored diff.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 claims atomicity by appending two `CompletedRow{stage=\"judged\"}` rows for a pair under one `LOCK_EX`, but JSONL appends are still two separate writes. A crash between the first and second append leaves the pair half-judged; `registry.is_pair_judged(pair_key)` then returns true on resume/backfill and blocks the missing side from ever being written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 claims atomicity by appending two `CompletedRow{stage=\"judged\"}` rows for a pair under one `LOCK_EX`, but JSONL appends are still two separate writes. A crash between the first and second append leaves the pair half-judged; `registry.is_pair_judged(pair_key)` then returns true on resume/backfill and blocks the missing side from ever being written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan exposes `br benchmark run --models claude` / `--models codex`, but Phase 6's judging pipeline requires both sides of a `pair_key` to exist before any cell can reach `stage=\"judged\"`. In a single-model run the companion cell never exists, so judgment never completes, recognition probes never fire, and downstream 'complete phase' logic cannot finish.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan exposes `br benchmark run --models claude` / `--models codex`, but Phase 6's judging pipeline requires both sides of a `pair_key` to exist before any cell can reach `stage=\"judged\"`. In a single-model run the companion cell never exists, so judgment never completes, recognition probes never fire, and downstream 'complete phase' logic cannot finish.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's venv-drift detection happens after the contestant dependency install and the plan explicitly runs pytest/vitest in that drifted environment before recreating the venv. If a run downgrades or replaces an existing package, that run's own score is computed against the wrong environment and is never re-scored after reset.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's venv-drift detection happens after the contestant dependency install and the plan explicitly runs pytest/vitest in that drifted environment before recreating the venv. If a run downgrades or replaces an existing package, that run's own score is computed against the wrong environment and is never re-scored after reset.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Ownership for preview-session fields is internally inconsistent: Phase 1 declares `SessionState.is_preview` / `preview_created_at_utc` as 'writer: Phase 1 deps.py ONLY', while Phase 2's `cli_select.py` deliverable says the preview bootstrap writes those fields. That is a direct single-writer-contract conflict.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Ownership for preview-session fields is internally inconsistent: Phase 1 declares `SessionState.is_preview` / `preview_created_at_utc` as 'writer: Phase 1 deps.py ONLY', while Phase 2's `cli_select.py` deliverable says the preview bootstrap writes those fields. That is a direct single-writer-contract conflict.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3 writes `/tmp/br3-bench-<run_id>/.buildrunner-owner` inside the clone before dispatch, but the verified dispatcher flow runs `git add -A` in the clone. That owner file is untracked and not ignored anywhere in the plan, so it will be staged into the contestant commit and contaminate the scored diff.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 writes `/tmp/br3-bench-<run_id>/.buildrunner-owner` inside the clone before dispatch, but the verified dispatcher flow runs `git add -A` in the clone. That owner file is untracked and not ignored anywhere in the plan, so it will be staged into the contestant commit and contaminate the scored diff.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 claims atomicity by appending two `CompletedRow{stage=\"judged\"}` rows for a pair under one `LOCK_EX`, but JSONL appends are still two separate writes. A crash between the first and second append leaves the pair half-judged; `registry.is_pair_judged(pair_key)` then returns true on resume/backfill and blocks the missing side from ever being written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 claims atomicity by appending two `CompletedRow{stage=\"judged\"}` rows for a pair under one `LOCK_EX`, but JSONL appends are still two separate writes. A crash between the first and second append leaves the pair half-judged; `registry.is_pair_judged(pair_key)` then returns true on resume/backfill and blocks the missing side from ever being written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan exposes `br benchmark run --models claude` / `--models codex`, but Phase 6's judging pipeline requires both sides of a `pair_key` to exist before any cell can reach `stage=\"judged\"`. In a single-model run the companion cell never exists, so judgment never completes, recognition probes never fire, and downstream 'complete phase' logic cannot finish.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan exposes `br benchmark run --models claude` / `--models codex`, but Phase 6's judging pipeline requires both sides of a `pair_key` to exist before any cell can reach `stage=\"judged\"`. In a single-model run the companion cell never exists, so judgment never completes, recognition probes never fire, and downstream 'complete phase' logic cannot finish.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's venv-drift detection happens after the contestant dependency install and the plan explicitly runs pytest/vitest in that drifted environment before recreating the venv. If a run downgrades or replaces an existing package, that run's own score is computed against the wrong environment and is never re-scored after reset.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's venv-drift detection happens after the contestant dependency install and the plan explicitly runs pytest/vitest in that drifted environment before recreating the venv. If a run downgrades or replaces an existing package, that run's own score is computed against the wrong environment and is never re-scored after reset.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T10:01:40.057471Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 4
+}

@@ -1,14 +1,10 @@
 {
   "sources": {
-    "ebay_scrape": {
-      "enabled": false,
-      "_note": "eBay CAPTCHA blocks httpx — use ebay_browse with API keys instead"
-    },
     "ebay_browse": {
-      "enabled": false,
+      "enabled": true,
       "marketplace_id": "EBAY_US",
       "limit": 50,
-      "_note": "Set EBAY_APP_ID + EBAY_SECRET env vars to enable"
+      "_note": "Requires EBAY_APP_ID + EBAY_SECRET env vars"
     },
     "reddit_rss": { "enabled": true, "subreddits": ["buildapcsales", "hardwareswap"] },
     "craigslist_rss": { "enabled": false, "_note": "IP-level 403 block — needs proxy to work" },
@@ -16,8 +12,9 @@
     "newegg": { "enabled": true },
     "shopify": {
       "enabled": true,
-      "stores": [{ "name": "Minisforum", "domain": "www.minisforum.com" }]
+      "stores": [{ "name": "Minisforum", "domain": "store.minisforum.com" }]
     },
+    "crucial": { "enabled": true },
     "bhphoto": { "enabled": true },
     "ebay_sold": { "enabled": true, "_note": "Completed/sold listings for market price data" }
   },
@@ -29,5 +26,10 @@
   "pair_detection": {
     "enabled": true,
     "same_seller_window_hours": 72
+  },
+  "delivery_tracking": {
+    "enabled": true,
+    "check_interval_hours": 4,
+    "api_key_env": "TRACK17_API_KEY"
   }
 }

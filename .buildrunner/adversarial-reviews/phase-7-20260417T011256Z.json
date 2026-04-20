@@ -1,0 +1,320 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T010731Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 1 states 'the repo-local scripts/dispatch-bench-run.sh wrapper (created in Phase 3) handles prompt-file reading entirely on the repo side and pipes the content to the unchanged global script via stdin.' Phase 3 explicitly states 'No wrapper script is needed; no changes to the global dispatcher are needed' and instead passes the prompt as a positional argv argument directly to dispatch-to-node.sh. Phase 3's file list does not include scripts/dispatch-bench-run.sh. These are contradictory prompt-delivery mechanisms (stdin pipe vs positional arg) and the wrapper file is never created.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 states 'the repo-local scripts/dispatch-bench-run.sh wrapper (created in Phase 3) handles prompt-file reading entirely on the repo side and pipes the content to the unchanged global script via stdin.' Phase 3 explicitly states 'No wrapper script is needed; no changes to the global dispatcher are needed' and instead passes the prompt as a positional argv argument directly to dispatch-to-node.sh. Phase 3's file list does not include scripts/dispatch-bench-run.sh. These are contradictory prompt-delivery mechanisms (stdin pipe vs positional arg) and the wrapper file is never created.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 lists Below local Qwen-2.5-Coder as the paraphraser fallback, but the only verified Below endpoint is POST /api/classify (a classifier). Paraphrasing requires text generation (spec rewriting), not classification. No text generation endpoint on Below (e.g. Ollama /api/generate or /api/chat) is verified in the dependency table. The paraphraser fallback path has no confirmed API to call.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 lists Below local Qwen-2.5-Coder as the paraphraser fallback, but the only verified Below endpoint is POST /api/classify (a classifier). Paraphrasing requires text generation (spec rewriting), not classification. No text generation endpoint on Below (e.g. Ollama /api/generate or /api/chat) is verified in the dependency table. The paraphraser fallback path has no confirmed API to call.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 deliverables create core/benchmark/lockres.py (NEW, created in this phase) but the file is missing from Phase 2's file list. Phase 3 imports lockres.py and lists Phase 2 as a blocker based on it. An implementer following only the file list would miss creating this file.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 deliverables create core/benchmark/lockres.py (NEW, created in this phase) but the file is missing from Phase 2's file list. Phase 3 imports lockres.py and lists Phase 2 as a blocker based on it. An implementer following only the file list would miss creating this file.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Repository Preconditions state 'Phase 2 creates tests/benchmark/__init__.py (NEW)' but this file does not appear in any phase's file list. Without it, Python test discovery for tests/benchmark/test_selector.py and test_api_clients.py may fail depending on test runner configuration.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Repository Preconditions state 'Phase 2 creates tests/benchmark/__init__.py (NEW)' but this file does not appear in any phase's file list. Without it, Python test discovery for tests/benchmark/test_selector.py and test_api_clients.py may fail depending on test runner configuration.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 success criteria states 'All 7 x 2 x 3 x 2 = 84 runs produce valid RunResult rows' but the same deliverable says 5-6 surviving candidates after paraphrase filtering is acceptable. If only 5 survive, there are 60 runs, not 84. The success criteria contradicts the degraded-N handling.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 success criteria states 'All 7 x 2 x 3 x 2 = 84 runs produce valid RunResult rows' but the same deliverable says 5-6 surviving candidates after paraphrase filtering is acceptable. If only 5 survive, there are 60 runs, not 84. The success criteria contradicts the degraded-N handling.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 deliverable specifies 'an offline calibration set of 20 hand-labeled (original, paraphrase) pairs (10 true-equivalent, 10 true-divergent)' for Below calibration, but no phase is responsible for producing these labeled pairs. Who creates them, when, and from what source material is unspecified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 deliverable specifies 'an offline calibration set of 20 hand-labeled (original, paraphrase) pairs (10 true-equivalent, 10 true-divergent)' for Below calibration, but no phase is responsible for producing these labeled pairs. Who creates them, when, and from what source material is unspecified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 passes full prompt text as a positional command-line argument (argv[5]) to dispatch-to-node.sh, which is an unmodified shell script whose internal handling of $4 is not shown. If the script uses unquoted variable expansion, eval, or passes the argument through another shell layer, prompts containing shell metacharacters will break despite subprocess.Popen(shell=False) on the Python side.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 passes full prompt text as a positional command-line argument (argv[5]) to dispatch-to-node.sh, which is an unmodified shell script whose internal handling of $4 is not shown. If the script uses unquoted variable expansion, eval, or passes the argument through another shell layer, prompts containing shell metacharacters will break despite subprocess.Popen(shell=False) on the Python side.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 creates requirements-benchmark.txt with 'full pin list (see Phase 5 file list for the canonical contents)' and scripts/install-benchmark-deps.sh to install them. Phase 5 creates scripts/install-benchmark-tools.sh which also runs 'python -m venv .venv-benchmark && .venv-benchmark/bin/pip install -r requirements-benchmark.txt'. The venv creation and pip install are duplicated across two scripts with unclear ownership.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 creates requirements-benchmark.txt with 'full pin list (see Phase 5 file list for the canonical contents)' and scripts/install-benchmark-deps.sh to install them. Phase 5 creates scripts/install-benchmark-tools.sh which also runs 'python -m venv .venv-benchmark && .venv-benchmark/bin/pip install -r requirements-benchmark.txt'. The venv creation and pip install are duplicated across two scripts with unclear ownership.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan declares model names Codex 5.4 and Claude Opus 4.7, but training_cutoffs.py lists cutoff dates as plan constants without a verification mechanism. If the actual model IDs or cutoff dates differ at execution time, the stratification analysis is silently wrong. No preflight check validates model identity against the dispatch runtime.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan declares model names Codex 5.4 and Claude Opus 4.7, but training_cutoffs.py lists cutoff dates as plan constants without a verification mechanism. If the actual model IDs or cutoff dates differ at execution time, the stratification analysis is silently wrong. No preflight check validates model identity against the dispatch runtime.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 de-blinding classifier uses an 80/20 split on pilot data from Phase 9, but the pilot has only 84 runs (42 pairs). An 80/20 split yields ~8 held-out pairs, not the 20 stated in Phase 6 deliverables. The 20-pair holdout requirement cannot be met from the pilot sample size.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 de-blinding classifier uses an 80/20 split on pilot data from Phase 9, but the pilot has only 84 runs (42 pairs). An 80/20 split yields ~8 held-out pairs, not the 20 stated in Phase 6 deliverables. The 20-pair holdout requirement cannot be met from the pilot sample size.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's paraphraser fallback is fabricated: it says the fallback paraphraser is 'Below local Qwen-2.5-Coder', but the only verified Below contract in the cited material is `POST /api/classify` returning `{category, confidence}`. No text-generation/paraphrasing endpoint or local generation API is cited for Below.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4's paraphraser fallback is fabricated: it says the fallback paraphraser is 'Below local Qwen-2.5-Coder', but the only verified Below contract in the cited material is `POST /api/classify` returning `{category, confidence}`. No text-generation/paraphrasing endpoint or local generation API is cited for Below.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The Lomax integration is unsafe under the plan's parallel execution model. The verified Lomax API only exposes `POST /api/projects/{project}/build` and `GET /api/projects/{project}/build/status` with no build-specific or ref-specific status endpoint, yet the benchmark runs many parallel worktrees of the same project slug and reads verdicts from project-level status. Without an explicit global serialization lock around Lomax builds, statuses can be overwritten and attributed to the wrong run.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The Lomax integration is unsafe under the plan's parallel execution model. The verified Lomax API only exposes `POST /api/projects/{project}/build` and `GET /api/projects/{project}/build/status` with no build-specific or ref-specific status endpoint, yet the benchmark runs many parallel worktrees of the same project slug and reads verdicts from project-level status. Without an explicit global serialization lock around Lomax builds, statuses can be overwritten and attributed to the wrong run.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 and Phase 3 contradict each other about dispatching. Phase 1 says Phase 3 will create a repo-local `scripts/dispatch-bench-run.sh` wrapper to handle prompt-file reading, while Phase 3 later says no wrapper script is needed and the prompt is passed directly as an argv positional argument.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 and Phase 3 contradict each other about dispatching. Phase 1 says Phase 3 will create a repo-local `scripts/dispatch-bench-run.sh` wrapper to handle prompt-file reading, while Phase 3 later says no wrapper script is needed and the prompt is passed directly as an argv positional argument.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 makes format normalization mandatory before judging, but it never defines a failure path for invalid contestant outputs. Prettier, Black, and `ruff --fix` will fail on malformed `.ts/.js/.json/.py/...` files, so broken model outputs can crash the judge pipeline instead of being scored as low-quality runs.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 makes format normalization mandatory before judging, but it never defines a failure path for invalid contestant outputs. Prettier, Black, and `ruff --fix` will fail on malformed `.ts/.js/.json/.py/...` files, so broken model outputs can crash the judge pipeline instead of being scored as low-quality runs.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The de-blinding gate is internally inconsistent. Phase 6 requires a held-out set of 20 pairs for the classifier acceptance test, but Phase 9's pilot is only 7 phases, which yields at most 14 phase\u00d7sub-study comparison pairs. The stated acceptance set cannot be formed from the pilot as written.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The de-blinding gate is internally inconsistent. Phase 6 requires a held-out set of 20 pairs for the classifier acceptance test, but Phase 9's pilot is only 7 phases, which yields at most 14 phase\u00d7sub-study comparison pairs. The stated acceptance set cannot be formed from the pilot as written.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase-drop handling is incomplete. Phase 1 says dropped phases are filtered by `is_phase_dropped(phase_id)` in the aggregator and reporter, but the runner/resume path is only specified to skip completed `run_id`s. Nothing says the executor stops launching remaining cells for a phase after a drop tombstone is written, so dropped phases can keep consuming runs and corrupt balance.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase-drop handling is incomplete. Phase 1 says dropped phases are filtered by `is_phase_dropped(phase_id)` in the aggregator and reporter, but the runner/resume path is only specified to skip completed `run_id`s. Nothing says the executor stops launching remaining cells for a phase after a drop tombstone is written, so dropped phases can keep consuming runs and corrupt balance.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 states 'the repo-local scripts/dispatch-bench-run.sh wrapper (created in Phase 3) handles prompt-file reading entirely on the repo side and pipes the content to the unchanged global script via stdin.' Phase 3 explicitly states 'No wrapper script is needed; no changes to the global dispatcher are needed' and instead passes the prompt as a positional argv argument directly to dispatch-to-node.sh. Phase 3's file list does not include scripts/dispatch-bench-run.sh. These are contradictory prompt-delivery mechanisms (stdin pipe vs positional arg) and the wrapper file is never created.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 states 'the repo-local scripts/dispatch-bench-run.sh wrapper (created in Phase 3) handles prompt-file reading entirely on the repo side and pipes the content to the unchanged global script via stdin.' Phase 3 explicitly states 'No wrapper script is needed; no changes to the global dispatcher are needed' and instead passes the prompt as a positional argv argument directly to dispatch-to-node.sh. Phase 3's file list does not include scripts/dispatch-bench-run.sh. These are contradictory prompt-delivery mechanisms (stdin pipe vs positional arg) and the wrapper file is never created.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 lists Below local Qwen-2.5-Coder as the paraphraser fallback, but the only verified Below endpoint is POST /api/classify (a classifier). Paraphrasing requires text generation (spec rewriting), not classification. No text generation endpoint on Below (e.g. Ollama /api/generate or /api/chat) is verified in the dependency table. The paraphraser fallback path has no confirmed API to call.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 lists Below local Qwen-2.5-Coder as the paraphraser fallback, but the only verified Below endpoint is POST /api/classify (a classifier). Paraphrasing requires text generation (spec rewriting), not classification. No text generation endpoint on Below (e.g. Ollama /api/generate or /api/chat) is verified in the dependency table. The paraphraser fallback path has no confirmed API to call.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's paraphraser fallback is fabricated: it says the fallback paraphraser is 'Below local Qwen-2.5-Coder', but the only verified Below contract in the cited material is `POST /api/classify` returning `{category, confidence}`. No text-generation/paraphrasing endpoint or local generation API is cited for Below.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4's paraphraser fallback is fabricated: it says the fallback paraphraser is 'Below local Qwen-2.5-Coder', but the only verified Below contract in the cited material is `POST /api/classify` returning `{category, confidence}`. No text-generation/paraphrasing endpoint or local generation API is cited for Below.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The Lomax integration is unsafe under the plan's parallel execution model. The verified Lomax API only exposes `POST /api/projects/{project}/build` and `GET /api/projects/{project}/build/status` with no build-specific or ref-specific status endpoint, yet the benchmark runs many parallel worktrees of the same project slug and reads verdicts from project-level status. Without an explicit global serialization lock around Lomax builds, statuses can be overwritten and attributed to the wrong run.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The Lomax integration is unsafe under the plan's parallel execution model. The verified Lomax API only exposes `POST /api/projects/{project}/build` and `GET /api/projects/{project}/build/status` with no build-specific or ref-specific status endpoint, yet the benchmark runs many parallel worktrees of the same project slug and reads verdicts from project-level status. Without an explicit global serialization lock around Lomax builds, statuses can be overwritten and attributed to the wrong run.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 makes format normalization mandatory before judging, but it never defines a failure path for invalid contestant outputs. Prettier, Black, and `ruff --fix` will fail on malformed `.ts/.js/.json/.py/...` files, so broken model outputs can crash the judge pipeline instead of being scored as low-quality runs.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 makes format normalization mandatory before judging, but it never defines a failure path for invalid contestant outputs. Prettier, Black, and `ruff --fix` will fail on malformed `.ts/.js/.json/.py/...` files, so broken model outputs can crash the judge pipeline instead of being scored as low-quality runs.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T01:12:56.702001Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

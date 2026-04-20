@@ -49,6 +49,82 @@ export interface BuildSession {
   features: Feature[];
   currentComponent?: string;
   currentFeature?: string;
+  runtime: string;
+  backend?: string;
+  runtimeSource?: string;
+  runtimeSessionId?: string;
+  capabilities?: Record<string, unknown>;
+  dispatchMode?: string;
+  shadowRuntime?: string;
+  shadowStatus?: string;
+}
+
+type BuildSessionPayload = Partial<BuildSession> | Record<string, unknown>;
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+}
+
+function asPlainObject(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+  return value as Record<string, unknown>;
+}
+
+export function normalizeBuildSession(payload: BuildSessionPayload): Partial<BuildSession> {
+  const raw = asRecord(payload);
+  const session = payload as Partial<BuildSession>;
+  const capabilities =
+    asPlainObject(raw.capabilities) ??
+    asPlainObject(raw.runtime_capabilities) ??
+    asPlainObject(session.capabilities);
+  const normalized: Partial<BuildSession> = {
+    ...session,
+    id: (raw.id as string | undefined) ?? session.id,
+    projectName: (raw.projectName as string | undefined) ?? (raw.project_name as string | undefined) ?? session.projectName,
+    projectAlias: (raw.projectAlias as string | undefined) ?? (raw.project_alias as string | undefined) ?? session.projectAlias,
+    projectPath: (raw.projectPath as string | undefined) ?? (raw.project_path as string | undefined) ?? session.projectPath,
+    startTime: (raw.startTime as number | undefined) ?? (raw.start_time as number | undefined) ?? session.startTime,
+    endTime: (raw.endTime as number | undefined) ?? (raw.end_time as number | undefined) ?? session.endTime,
+    currentComponent:
+      (raw.currentComponent as string | undefined) ??
+      (raw.current_component as string | undefined) ??
+      session.currentComponent,
+    currentFeature:
+      (raw.currentFeature as string | undefined) ??
+      (raw.current_feature as string | undefined) ??
+      session.currentFeature,
+    runtime: (raw.runtime as string | undefined) ?? session.runtime,
+    backend: (raw.backend as string | undefined) ?? session.backend,
+    runtimeSource:
+      (raw.runtimeSource as string | undefined) ??
+      (raw.runtime_source as string | undefined) ??
+      session.runtimeSource,
+    runtimeSessionId:
+      (raw.runtimeSessionId as string | undefined) ??
+      (raw.runtime_session_id as string | undefined) ??
+      session.runtimeSessionId,
+    capabilities,
+    dispatchMode:
+      (raw.dispatchMode as string | undefined) ??
+      (raw.dispatch_mode as string | undefined) ??
+      session.dispatchMode,
+    shadowRuntime:
+      (raw.shadowRuntime as string | undefined) ??
+      (raw.shadow_runtime as string | undefined) ??
+      session.shadowRuntime,
+    shadowStatus:
+      (raw.shadowStatus as string | undefined) ??
+      (raw.shadow_status as string | undefined) ??
+      session.shadowStatus,
+    components: (raw.components as Component[] | undefined) ?? session.components,
+    features: (raw.features as Feature[] | undefined) ?? session.features,
+    status: (raw.status as BuildSession['status'] | undefined) ?? session.status,
+  };
+  return Object.fromEntries(
+    Object.entries(normalized).filter(([, value]) => value !== undefined)
+  ) as Partial<BuildSession>;
 }
 
 export interface TerminalLine {
@@ -68,6 +144,7 @@ interface BuildStore {
   };
 
   setSession: (session: BuildSession) => void;
+  patchSession: (session: Partial<BuildSession> | BuildSessionPayload) => void;
   updateComponent: (componentId: string, updates: Partial<Component>) => void;
   updateFeature: (featureId: string, updates: Partial<Feature>) => void;
   addTerminalLine: (line: TerminalLine) => void;
@@ -85,7 +162,20 @@ export const useBuildStore = create<BuildStore>()(
       terminalLines: [],
       websocket: { connected: false, reconnecting: false, error: null },
 
-      setSession: (session) => set({ session }),
+      setSession: (session) => set({ session: normalizeBuildSession(session) as BuildSession }),
+
+      patchSession: (session) =>
+        set((state) => {
+          if (!state.session) {
+            return { session: normalizeBuildSession(session) as BuildSession };
+          }
+          return {
+            session: {
+              ...state.session,
+              ...normalizeBuildSession(session),
+            },
+          };
+        }),
 
       updateComponent: (componentId, updates) =>
         set((state) => {

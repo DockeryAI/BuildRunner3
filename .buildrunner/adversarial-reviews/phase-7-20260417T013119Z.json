@@ -1,0 +1,376 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T012553Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 dispatch_run passes the full prompt text as a positional argv argument (argv[5]). macOS ARG_MAX is ~1 MiB total across all argv+envp, but dispatch-to-node.sh itself may embed the prompt into an SSH command or rsync payload, effectively re-serializing it through additional shell layers. The plan only validates the local argv limit (<200 KB) but does not account for the remote execution path inside dispatch-to-node.sh, which may have tighter limits (e.g., SSH command-line length) or re-introduce shell expansion despite shell=False locally.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 dispatch_run passes the full prompt text as a positional argv argument (argv[5]). macOS ARG_MAX is ~1 MiB total across all argv+envp, but dispatch-to-node.sh itself may embed the prompt into an SSH command or rsync payload, effectively re-serializing it through additional shell layers. The plan only validates the local argv limit (<200 KB) but does not account for the remote execution path inside dispatch-to-node.sh, which may have tighter limits (e.g., SSH command-line length) or re-introduce shell expansion despite shell=False locally.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 runs local tests in the worktree via 'cd ui && npm test', but BUILD specs are for the BuildRunner3 repo which is a Python CLI project \u2014 there is no evidence of a 'ui/' directory in the file tree. If no ui/ directory exists, the Node test command will fail. The scorer should gate the Node test path on directory existence.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 runs local tests in the worktree via 'cd ui && npm test', but BUILD specs are for the BuildRunner3 repo which is a Python CLI project \u2014 there is no evidence of a 'ui/' directory in the file tree. If no ui/ directory exists, the Node test command will fail. The scorer should gate the Node test path on directory existence.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 equivalence validator sends a composed multi-line text to Below's POST /api/classify, which has a verified contract of {text: str, categories: [str]} for single-text classification. The plan repurposes this as a natural language inference (NLI) task by encoding both documents into the text field with a question suffix. This is semantic abuse of a classification endpoint \u2014 the model behind /api/classify may not handle comparative reasoning well, and the Phase 4 calibration gate (16/20) is the only safeguard. If Below's model is a simple classifier (not an instruction-following LLM), this will likely fail calibration, forcing all equivalence to DeepSeek and making the 'fourth system' invariant (Invariant 4) hollow.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 equivalence validator sends a composed multi-line text to Below's POST /api/classify, which has a verified contract of {text: str, categories: [str]} for single-text classification. The plan repurposes this as a natural language inference (NLI) task by encoding both documents into the text field with a question suffix. This is semantic abuse of a classification endpoint \u2014 the model behind /api/classify may not handle comparative reasoning well, and the Phase 4 calibration gate (16/20) is the only safeguard. If Below's model is a simple classifier (not an instruction-following LLM), this will likely fail calibration, forcing all equivalence to DeepSeek and making the 'fourth system' invariant (Invariant 4) hollow.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 de-blinding classifier uses 84 pilot rows with an 80/20 split yielding ~16 holdout rows. With n=16, the binomial CI threshold of 62.5% means the classifier needs to correctly identify only 11/16 to fail the gate. A classifier with true accuracy of 75% (meaningfully above chance) has a ~40% probability of producing \u226410/16 correct and passing the gate. The test is severely underpowered \u2014 it will rarely catch real blinding failures at this sample size.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 de-blinding classifier uses 84 pilot rows with an 80/20 split yielding ~16 holdout rows. With n=16, the binomial CI threshold of 62.5% means the classifier needs to correctly identify only 11/16 to fail the gate. A classifier with true accuracy of 75% (meaningfully above chance) has a ~40% probability of producing \u226410/16 correct and passing the gate. The test is severely underpowered \u2014 it will rarely catch real blinding failures at this sample size.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 commits to the worktree's detached HEAD via 'git commit' with -c user.email and -c user.name overrides. These commits are on a detached HEAD that is removed by 'git worktree remove --force'. The plan claims commits remain reachable via reflog for 90 days, but worktree removal with --force prunes the worktree's HEAD ref \u2014 detached HEAD commits with no branch ref are only protected by the main repo's reflog if the worktree HEAD was tracked there, which is not guaranteed. Audit artifacts may be silently garbage-collected.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 commits to the worktree's detached HEAD via 'git commit' with -c user.email and -c user.name overrides. These commits are on a detached HEAD that is removed by 'git worktree remove --force'. The plan claims commits remain reachable via reflog for 90 days, but worktree removal with --force prunes the worktree's HEAD ref \u2014 detached HEAD commits with no branch ref are only protected by the main repo's reflog if the worktree HEAD was tracked there, which is not guaranteed. Audit artifacts may be silently garbage-collected.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 pilot over-draws 10 candidates but Phase 2's selector.redraw() is designed for the full run's phase-drop replacement. The pilot's over-draw-then-filter-to-7 logic is described only in Phase 9's deliverables and has no corresponding implementation specified in Phase 2's selector \u2014 Phase 2 only defines select(count=N) and redraw(dropped_phase_id). The pilot needs a different selection mode (select 10, filter to 7) that is not in the selector's API surface.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 pilot over-draws 10 candidates but Phase 2's selector.redraw() is designed for the full run's phase-drop replacement. The pilot's over-draw-then-filter-to-7 logic is described only in Phase 9's deliverables and has no corresponding implementation specified in Phase 2's selector \u2014 Phase 2 only defines select(count=N) and redraw(dropped_phase_id). The pilot needs a different selection mode (select 10, filter to 7) that is not in the selector's API surface.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phases 4 and 5 are listed as parallelizable, but Phase 5's scorer.py needs to call toolchain.run_local_tests() which is independent of Phase 4. However, Phase 6 depends on Phase 5 (hard) for toolchain, and Phase 6 also depends on Phase 3. The plan says Phase 4 is blocked by Phase 3 and Phase 5 is blocked by Phases 2 and 3 \u2014 this is consistent. No ordering issue here, but: Phase 4's paraphraser must run BEFORE Phase 3's dispatch (the contestant sees the paraphrased spec, not the original). Yet Phase 4 is blocked by Phase 3. This is a fundamental ordering conflict \u2014 the paraphrasing must happen before dispatch, but Phase 4 (paraphrasing) depends on Phase 3 (dispatch).",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phases 4 and 5 are listed as parallelizable, but Phase 5's scorer.py needs to call toolchain.run_local_tests() which is independent of Phase 4. However, Phase 6 depends on Phase 5 (hard) for toolchain, and Phase 6 also depends on Phase 3. The plan says Phase 4 is blocked by Phase 3 and Phase 5 is blocked by Phases 2 and 3 \u2014 this is consistent. No ordering issue here, but: Phase 4's paraphraser must run BEFORE Phase 3's dispatch (the contestant sees the paraphrased spec, not the original). Yet Phase 4 is blocked by Phase 3. This is a fundamental ordering conflict \u2014 the paraphrasing must happen before dispatch, but Phase 4 (paraphrasing) depends on Phase 3 (dispatch).",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan states contestants see the paraphrased spec (Invariant 6: 'Never fall back to the original spec'), yet Phase 4 (which produces paraphrases) is blocked by Phase 3 (which dispatches runs to contestants). If Phase 3 dispatches before Phase 4 paraphrases, contestants see the original spec, violating the contamination defense. The execution engine in Phase 3 must call the paraphraser before dispatch, meaning Phase 3 needs Phase 4's code, but Phase 4 is listed as blocked by Phase 3.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan states contestants see the paraphrased spec (Invariant 6: 'Never fall back to the original spec'), yet Phase 4 (which produces paraphrases) is blocked by Phase 3 (which dispatches runs to contestants). If Phase 3 dispatches before Phase 4 paraphrases, contestants see the original spec, violating the contamination defense. The execution engine in Phase 3 must call the paraphraser before dispatch, meaning Phase 3 needs Phase 4's code, but Phase 4 is listed as blocked by Phase 3.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "prompts.py is created in Phase 1 (empty templates), then MODIFIED by Phase 3 (dispatch prompts), Phase 6 (judge prompt), and Phase 8 (report templates). Phases 4 and 5 run in parallel but neither modifies prompts.py. However, Phase 3 modifies prompts.py and Phase 6 also modifies it \u2014 these are sequential (6 blocked by 3,5) so no conflict. The merge-by-convention note only matters if worktrees are used for parallel phases 4+5, neither of which touches prompts.py. No actual conflict here.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "prompts.py is created in Phase 1 (empty templates), then MODIFIED by Phase 3 (dispatch prompts), Phase 6 (judge prompt), and Phase 8 (report templates). Phases 4 and 5 run in parallel but neither modifies prompts.py. However, Phase 3 modifies prompts.py and Phase 6 also modifies it \u2014 these are sequential (6 blocked by 3,5) so no conflict. The merge-by-convention note only matters if worktrees are used for parallel phases 4+5, neither of which touches prompts.py. No actual conflict here.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's API contract discovery spike records vcrpy fixtures from live Walter/Lomax/Below endpoints. These fixtures become the 'frozen contract' for the harness. But Walter/Lomax APIs may change between Phase 2 (fixture recording) and Phase 9/10 (actual benchmark runs weeks later). The plan has no re-validation of fixtures at run time \u2014 only a schema-drift hard-fail that requires manual re-recording. If APIs evolve silently (e.g., new optional fields), the pydantic strict models may reject valid responses.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's API contract discovery spike records vcrpy fixtures from live Walter/Lomax/Below endpoints. These fixtures become the 'frozen contract' for the harness. But Walter/Lomax APIs may change between Phase 2 (fixture recording) and Phase 9/10 (actual benchmark runs weeks later). The plan has no re-validation of fixtures at run time \u2014 only a schema-drift hard-fail that requires manual re-recording. If APIs evolve silently (e.g., new optional fields), the pydantic strict models may reject valid responses.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 mixed-effects logistic regression uses recognition_score as a covariate, but Phase 4 states recognition probes run 'after the final replication of the neutral sub-study for that pair completes.' If a phase is partially completed (e.g., native sub-study done, neutral sub-study incomplete due to crash), the recognition probe never fires, and the covariate is NaN. The plan handles this with 'pairwise-complete data' but does not address whether partially-completed phases should be excluded from the decision rule entirely.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7 mixed-effects logistic regression uses recognition_score as a covariate, but Phase 4 states recognition probes run 'after the final replication of the neutral sub-study for that pair completes.' If a phase is partially completed (e.g., native sub-study done, neutral sub-study incomplete due to crash), the recognition probe never fires, and the covariate is NaN. The plan handles this with 'pairwise-complete data' but does not address whether partially-completed phases should be excluded from the decision rule entirely.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references Codex 5.4 and Claude Opus 4.7 as contestants, but training_cutoffs.py declares cutoffs of 2025-09-01 and 2026-01-01 respectively. These are hardcoded plan constants. If the actual model training cutoffs differ from these assumptions (which are not publicly documented with precision), the pre/post stratification is meaningless. The plan acknowledges this is 'sensitivity analysis, not the headline number' but still uses it to stratify phase selection, potentially biasing the candidate pool.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references Codex 5.4 and Claude Opus 4.7 as contestants, but training_cutoffs.py declares cutoffs of 2025-09-01 and 2026-01-01 respectively. These are hardcoded plan constants. If the actual model training cutoffs differ from these assumptions (which are not publicly documented with precision), the pre/post stratification is meaningless. The plan acknowledges this is 'sensitivity analysis, not the headline number' but still uses it to stratify phase selection, potentially biasing the candidate pool.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "NodeAllocator in Phase 3 balances model\u00d7node within each phase across {Otis, Lomax}. But Lomax is also the staging server running build validation via its API. Phase 5 serializes Lomax build triggers through a file lock, but concurrent benchmark RUNS dispatched to Lomax (via dispatch-to-node.sh) may contend with Lomax's own staging workload. The plan mentions a 10% wall-clock variance threshold before dropping Lomax from the pool, but does not specify how this is measured during the run (retroactively? per-phase? rolling window?).",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "NodeAllocator in Phase 3 balances model\u00d7node within each phase across {Otis, Lomax}. But Lomax is also the staging server running build validation via its API. Phase 5 serializes Lomax build triggers through a file lock, but concurrent benchmark RUNS dispatched to Lomax (via dispatch-to-node.sh) may contend with Lomax's own staging workload. The plan mentions a 10% wall-clock variance threshold before dropping Lomax from the pool, but does not specify how this is measured during the run (retroactively? per-phase? rolling window?).",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 creates requirements-benchmark.txt with 'black>=24.3,<25.0' but the plan also says Phase 6 applies Black for format normalization. Black 24.x may produce different formatting than Black 25.x (if a user has it globally). The pin is correct for reproducibility within the venv, but toolchain.py must ensure it invokes .venv-benchmark/bin/black specifically \u2014 which it does via PROJECT_TOOLS. No issue if toolchain discipline holds.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 creates requirements-benchmark.txt with 'black>=24.3,<25.0' but the plan also says Phase 6 applies Black for format normalization. Black 24.x may produce different formatting than Black 25.x (if a user has it globally). The pin is correct for reproducibility within the venv, but toolchain.py must ensure it invokes .venv-benchmark/bin/black specifically \u2014 which it does via PROJECT_TOOLS. No issue if toolchain discipline holds.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 hardcodes frontend test execution as `(cd ui && npm test -- --run --reporter=basic)`, but no `ui/` directory is present in the provided project tree or cited excerpts. That path will fail immediately on the first scored run.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 hardcodes frontend test execution as `(cd ui && npm test -- --run --reporter=basic)`, but no `ui/` directory is present in the provided project tree or cited excerpts. That path will fail immediately on the first scored run.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 says dropped-phase exclusions are logged to `.buildrunner/benchmarks/results/<run-id>/exclusions.jsonl`, but paraphrase/equivalence failure happens before a scored run exists for that phase, so there may be no `run-id` to key that path. The logging target is undefined at the moment it is needed.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 says dropped-phase exclusions are logged to `.buildrunner/benchmarks/results/<run-id>/exclusions.jsonl`, but paraphrase/equivalence failure happens before a scored run exists for that phase, so there may be no `run-id` to key that path. The logging target is undefined at the moment it is needed.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 requires `equivalence_validator` to enter the Phase 7 regression as a covariate, but Phase 7's regression deliverable only controls for `recognition_score` and `node_name`. That drops a variance source the earlier phases explicitly said must be modeled.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 requires `equivalence_validator` to enter the Phase 7 regression as a covariate, but Phase 7's regression deliverable only controls for `recognition_score` and `node_name`. That drops a variance source the earlier phases explicitly said must be modeled.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's Walter/Lomax enrichment path is self-contradictory: it passes `post_run_commit_sha` from a detached local worktree while also stating that commit is unreachable from Walter/Lomax checkouts 'by design'. If the remote APIs actually require a resolvable ref/sha, the enrichment calls will fail whenever they are enabled.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's Walter/Lomax enrichment path is self-contradictory: it passes `post_run_commit_sha` from a detached local worktree while also stating that commit is unreachable from Walter/Lomax checkouts 'by design'. If the remote APIs actually require a resolvable ref/sha, the enrichment calls will fail whenever they are enabled.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The benchmark corpus size is inconsistent inside the plan: the preconditions say `.buildrunner/builds/BUILD_*.md` has 34 files, while the dependency table says 40+ files. With additional self-containment, external-only, prior-registry, and dropped-phase filters, the plan cannot guarantee the Phase 10 requirement of 30 phases / 360 runs.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The benchmark corpus size is inconsistent inside the plan: the preconditions say `.buildrunner/builds/BUILD_*.md` has 34 files, while the dependency table says 40+ files. With additional self-containment, external-only, prior-registry, and dropped-phase filters, the plan cannot guarantee the Phase 10 requirement of 30 phases / 360 runs.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 8 promises a raw-data export at `(phase, model, replication, sub_study, item)` granularity, but no earlier schema guarantees per-item scores are persisted in `RunResult`, `ObjectiveMetrics`, `AdherenceMetrics`, or registry rows. The report step depends on item-level data that has not been structurally defined.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 8 promises a raw-data export at `(phase, model, replication, sub_study, item)` granularity, but no earlier schema guarantees per-item scores are persisted in `RunResult`, `ObjectiveMetrics`, `AdherenceMetrics`, or registry rows. The report step depends on item-level data that has not been structurally defined.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The Phase 7 note says `requirements-benchmark.txt` and `.venv-benchmark/` are owned by Phase 5, but Phase 1 already creates and owns both. That ownership conflict is minor but makes the build order and maintenance responsibility inconsistent.",
+      "severity": "note",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The Phase 7 note says `requirements-benchmark.txt` and `.venv-benchmark/` are owned by Phase 5, but Phase 1 already creates and owns both. That ownership conflict is minor but makes the build order and maintenance responsibility inconsistent.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The one-time Lomax ops step references `POST http://10.0.1.104:8100/api/projects`, but the verified Lomax contract in the plan only includes `/health`, `GET /api/projects`, `GET /api/projects/{project}/build`, `GET /api/projects/{project}/build/status`, and `GET /api/projects/{project}/preview`. `POST /api/projects` is not verified anywhere in the provided excerpts.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The one-time Lomax ops step references `POST http://10.0.1.104:8100/api/projects`, but the verified Lomax contract in the plan only includes `/health`, `GET /api/projects`, `GET /api/projects/{project}/build`, `GET /api/projects/{project}/build/status`, and `GET /api/projects/{project}/preview`. `POST /api/projects` is not verified anywhere in the provided excerpts.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phases 4 and 5 are listed as parallelizable, but Phase 5's scorer.py needs to call toolchain.run_local_tests() which is independent of Phase 4. However, Phase 6 depends on Phase 5 (hard) for toolchain, and Phase 6 also depends on Phase 3. The plan says Phase 4 is blocked by Phase 3 and Phase 5 is blocked by Phases 2 and 3 \u2014 this is consistent. No ordering issue here, but: Phase 4's paraphraser must run BEFORE Phase 3's dispatch (the contestant sees the paraphrased spec, not the original). Yet Phase 4 is blocked by Phase 3. This is a fundamental ordering conflict \u2014 the paraphrasing must happen before dispatch, but Phase 4 (paraphrasing) depends on Phase 3 (dispatch).",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phases 4 and 5 are listed as parallelizable, but Phase 5's scorer.py needs to call toolchain.run_local_tests() which is independent of Phase 4. However, Phase 6 depends on Phase 5 (hard) for toolchain, and Phase 6 also depends on Phase 3. The plan says Phase 4 is blocked by Phase 3 and Phase 5 is blocked by Phases 2 and 3 \u2014 this is consistent. No ordering issue here, but: Phase 4's paraphraser must run BEFORE Phase 3's dispatch (the contestant sees the paraphrased spec, not the original). Yet Phase 4 is blocked by Phase 3. This is a fundamental ordering conflict \u2014 the paraphrasing must happen before dispatch, but Phase 4 (paraphrasing) depends on Phase 3 (dispatch).",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan states contestants see the paraphrased spec (Invariant 6: 'Never fall back to the original spec'), yet Phase 4 (which produces paraphrases) is blocked by Phase 3 (which dispatches runs to contestants). If Phase 3 dispatches before Phase 4 paraphrases, contestants see the original spec, violating the contamination defense. The execution engine in Phase 3 must call the paraphraser before dispatch, meaning Phase 3 needs Phase 4's code, but Phase 4 is listed as blocked by Phase 3.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan states contestants see the paraphrased spec (Invariant 6: 'Never fall back to the original spec'), yet Phase 4 (which produces paraphrases) is blocked by Phase 3 (which dispatches runs to contestants). If Phase 3 dispatches before Phase 4 paraphrases, contestants see the original spec, violating the contamination defense. The execution engine in Phase 3 must call the paraphraser before dispatch, meaning Phase 3 needs Phase 4's code, but Phase 4 is listed as blocked by Phase 3.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 hardcodes frontend test execution as `(cd ui && npm test -- --run --reporter=basic)`, but no `ui/` directory is present in the provided project tree or cited excerpts. That path will fail immediately on the first scored run.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 hardcodes frontend test execution as `(cd ui && npm test -- --run --reporter=basic)`, but no `ui/` directory is present in the provided project tree or cited excerpts. That path will fail immediately on the first scored run.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T01:31:19.880515Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

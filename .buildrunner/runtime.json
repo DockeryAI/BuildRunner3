@@ -1,0 +1,4 @@
+{
+  "schema_version": "br3.runtime.config.v1",
+  "default_runtime": "claude"
+}

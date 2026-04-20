@@ -1,0 +1,194 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T070018Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 6 lists `tests/benchmark/test_cli_probe.py` as MODIFY ('replaces Phase 4's initial test') but no prior phase creates this file. Phase 4 creates `tests/benchmark/test_recognition_probe.py`, not `test_cli_probe.py`. Phase 6 will fail attempting to modify a nonexistent file.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 lists `tests/benchmark/test_cli_probe.py` as MODIFY ('replaces Phase 4's initial test') but no prior phase creates this file. Phase 4 creates `tests/benchmark/test_recognition_probe.py`, not `test_cli_probe.py`. Phase 6 will fail attempting to modify a nonexistent file.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Venv lock timeout (10-min ceiling) is scored as `install_failed` \u2014 a model failure outcome \u2014 but it is actually harness resource contention between concurrent orchestrators. Under high concurrency (two `br benchmark run` sessions on Muddy), one model could be systematically penalized if its runs happen to queue behind the other's long-running pytest, introducing a confound the regression does not control for.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Venv lock timeout (10-min ceiling) is scored as `install_failed` \u2014 a model failure outcome \u2014 but it is actually harness resource contention between concurrent orchestrators. Under high concurrency (two `br benchmark run` sessions on Muddy), one model could be systematically penalized if its runs happen to queue behind the other's long-running pytest, introducing a confound the regression does not control for.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "`git clone --local --shared --no-hardlinks`: `--no-hardlinks` is redundant when combined with `--shared`. `--shared` sets up `.git/objects/info/alternates` and skips all object copying, so `--no-hardlinks` has no effect. Not harmful, but signals possible misunderstanding of the clone's object-sharing semantics \u2014 worth verifying the author's assumption that the clone is 'fully mutable without affecting the parent' holds when alternates are in use (it does, but only for new objects; a `git gc` or `git repack` in the parent while a clone exists can break the clone).",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "`git clone --local --shared --no-hardlinks`: `--no-hardlinks` is redundant when combined with `--shared`. `--shared` sets up `.git/objects/info/alternates` and skips all object copying, so `--no-hardlinks` has no effect. Not harmful, but signals possible misunderstanding of the clone's object-sharing semantics \u2014 worth verifying the author's assumption that the clone is 'fully mutable without affecting the parent' holds when alternates are in use (it does, but only for new objects; a `git gc` or `git repack` in the parent while a clone exists can break the clone).",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "BinomialBayesMixedGLM with variational Bayes (`fit_vb()`) used for phase-level random intercepts: with only 30 groups (phases) in the full study and 7 in the pilot, VB approximations to random-intercept posteriors are known to underestimate between-group variance. The acknowledged caveat ('may be anticonservative') could be severe enough at N=7 pilot to render pilot-stage mixed-model results misleading. The cluster-robust fixed-effects logit fallback is the safer default at pilot scale.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "BinomialBayesMixedGLM with variational Bayes (`fit_vb()`) used for phase-level random intercepts: with only 30 groups (phases) in the full study and 7 in the pilot, VB approximations to random-intercept posteriors are known to underestimate between-group variance. The acknowledged caveat ('may be anticonservative') could be severe enough at N=7 pilot to render pilot-stage mixed-model results misleading. The cluster-robust fixed-effects logit fallback is the safer default at pilot scale.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Below `/api/classify` calibration uses 20 pairs with a 16/20 (80%) agreement threshold. The exact 95% Clopper-Pearson CI for 16/20 is [56.3%, 94.3%] \u2014 wide enough that a validator with true agreement as low as 57% could pass the gate by chance. The plan discloses this as a limitation but does not size the calibration set to a target CI width.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Below `/api/classify` calibration uses 20 pairs with a 16/20 (80%) agreement threshold. The exact 95% Clopper-Pearson CI for 16/20 is [56.3%, 94.3%] \u2014 wide enough that a validator with true agreement as low as 57% could pass the gate by chance. The plan discloses this as a limitation but does not size the calibration set to a target CI width.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 defines `BenchmarkConfig.registry` with only `lease_seconds`, but Phase 6's judge-lock flow reads `config.registry.judge_lease_seconds`. That config field is never declared in the frozen Phase 1 schema, so the judge claim path cannot load its lease duration.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `BenchmarkConfig.registry` with only `lease_seconds`, but Phase 6's judge-lock flow reads `config.registry.judge_lease_seconds`. That config field is never declared in the frozen Phase 1 schema, so the judge claim path cannot load its lease duration.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `test_installer_order.py` expects a synthetic repo with `pytest<9.0` and `pytest>=9.0` to install a pytest version satisfying the harness pin, but the same plan later states that this exact conflict should raise pip `ResolutionImpossible` and be scored as `install_failed`. Those requirements are mutually exclusive; the test and the runtime contract cannot both be correct.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's `test_installer_order.py` expects a synthetic repo with `pytest<9.0` and `pytest>=9.0` to install a pytest version satisfying the harness pin, but the same plan later states that this exact conflict should raise pip `ResolutionImpossible` and be scored as `install_failed`. Those requirements are mutually exclusive; the test and the runtime contract cannot both be correct.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The OpenRouter preflight contract is contradictory. In `session_state.py`'s Phase 1 description, startup is described as doing a live `GET /api/v1/models` check, while later `deps.py` deliverables explicitly say `/api/v1/models` is never called and only `POST /api/v1/chat/completions` probes are allowed. That leaves two incompatible implementations for the same preflight.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The OpenRouter preflight contract is contradictory. In `session_state.py`'s Phase 1 description, startup is described as doing a live `GET /api/v1/models` check, while later `deps.py` deliverables explicitly say `/api/v1/models` is never called and only `POST /api/v1/chat/completions` probes are allowed. That leaves two incompatible implementations for the same preflight.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The GPG-signing preflight does not actually verify the condition it claims to guard. `ssh <node> 'git config --global --get commit.gpgsign || echo false'` only tells you whether signing is enabled, not whether a usable signing key exists. A node with `commit.gpgsign=true` and a broken/missing key will still pass this probe and then fail remote commits at runtime.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The GPG-signing preflight does not actually verify the condition it claims to guard. `ssh <node> 'git config --global --get commit.gpgsign || echo false'` only tells you whether signing is enabled, not whether a usable signing key exists. A node with `commit.gpgsign=true` and a broken/missing key will still pass this probe and then fail remote commits at runtime.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6 lists `tests/benchmark/test_cli_probe.py` as MODIFY ('replaces Phase 4's initial test') but no prior phase creates this file. Phase 4 creates `tests/benchmark/test_recognition_probe.py`, not `test_cli_probe.py`. Phase 6 will fail attempting to modify a nonexistent file.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 lists `tests/benchmark/test_cli_probe.py` as MODIFY ('replaces Phase 4's initial test') but no prior phase creates this file. Phase 4 creates `tests/benchmark/test_recognition_probe.py`, not `test_cli_probe.py`. Phase 6 will fail attempting to modify a nonexistent file.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 defines `BenchmarkConfig.registry` with only `lease_seconds`, but Phase 6's judge-lock flow reads `config.registry.judge_lease_seconds`. That config field is never declared in the frozen Phase 1 schema, so the judge claim path cannot load its lease duration.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `BenchmarkConfig.registry` with only `lease_seconds`, but Phase 6's judge-lock flow reads `config.registry.judge_lease_seconds`. That config field is never declared in the frozen Phase 1 schema, so the judge claim path cannot load its lease duration.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `test_installer_order.py` expects a synthetic repo with `pytest<9.0` and `pytest>=9.0` to install a pytest version satisfying the harness pin, but the same plan later states that this exact conflict should raise pip `ResolutionImpossible` and be scored as `install_failed`. Those requirements are mutually exclusive; the test and the runtime contract cannot both be correct.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's `test_installer_order.py` expects a synthetic repo with `pytest<9.0` and `pytest>=9.0` to install a pytest version satisfying the harness pin, but the same plan later states that this exact conflict should raise pip `ResolutionImpossible` and be scored as `install_failed`. Those requirements are mutually exclusive; the test and the runtime contract cannot both be correct.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T07:10:44.289063Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

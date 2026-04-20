@@ -1,0 +1,320 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T090947Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 5's cli_run.py MODIFY constructs `Runner(scorer=BenchmarkScorer())` but Phase 3 declares `Runner.__init__` with `config: BenchmarkConfig` as its first REQUIRED positional argument (no default). This is a TypeError at runtime. Phase 3's own forward reference correctly states `Runner(config=config, scorer=BenchmarkScorer(config))` \u2014 Phase 5's own wording contradicts Phase 3's.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's cli_run.py MODIFY constructs `Runner(scorer=BenchmarkScorer())` but Phase 3 declares `Runner.__init__` with `config: BenchmarkConfig` as its first REQUIRED positional argument (no default). This is a TypeError at runtime. Phase 3's own forward reference correctly states `Runner(config=config, scorer=BenchmarkScorer(config))` \u2014 Phase 5's own wording contradicts Phase 3's.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's cli_resume.py MODIFY has the same defect \u2014 'same one-line wiring as cli_run.py: construct Runner(scorer=BenchmarkScorer())' \u2014 also omitting the required `config` argument to both Runner and BenchmarkScorer.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's cli_resume.py MODIFY has the same defect \u2014 'same one-line wiring as cli_run.py: construct Runner(scorer=BenchmarkScorer())' \u2014 also omitting the required `config` argument to both Runner and BenchmarkScorer.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "BenchmarkScorer constructor is inconsistent: Phase 5 cli_run.py says `BenchmarkScorer()` (no args), but Phase 1 declares ScorerConfig fields (python_test_timeout_seconds, node_test_timeout_seconds, install_timeout_seconds, venv_lock_timeout_seconds) that the scorer must read from config. Phase 6 corrects to `BenchmarkScorer(config)` but Phase 5 would fail first since build order is 5 before 6.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "BenchmarkScorer constructor is inconsistent: Phase 5 cli_run.py says `BenchmarkScorer()` (no args), but Phase 1 declares ScorerConfig fields (python_test_timeout_seconds, node_test_timeout_seconds, install_timeout_seconds, venv_lock_timeout_seconds) that the scorer must read from config. Phase 6 corrects to `BenchmarkScorer(config)` but Phase 5 would fail first since build order is 5 before 6.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's probe.py declares ProbeScheduler with `_maybe_fire(phase_id)` that fires recognition probes for both models, but the actual probe dispatch call into Phase 4's recognition_probe.py module is never explicitly specified \u2014 no import path, no function name, no call signature is stated for how ProbeScheduler._maybe_fire invokes the actual recognition probe logic.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's probe.py declares ProbeScheduler with `_maybe_fire(phase_id)` that fires recognition probes for both models, but the actual probe dispatch call into Phase 4's recognition_probe.py module is never explicitly specified \u2014 no import path, no function name, no call signature is stated for how ProbeScheduler._maybe_fire invokes the actual recognition probe logic.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's _reinstall_contestant_requirements helper 'shells out to bash -c' with interpolated clone_path, breaking the shell=False discipline used by dispatch_run. While clone paths are UUID-based (/tmp/br3-bench-<uuid>/) making injection impractical, this is a deviation from the harness's stated security posture.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's _reinstall_contestant_requirements helper 'shells out to bash -c' with interpolated clone_path, breaking the shell=False discipline used by dispatch_run. While clone paths are UUID-based (/tmp/br3-bench-<uuid>/) making injection impractical, this is a deviation from the harness's stated security posture.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The phase-scoped paraphrase lock path `/tmp/br3-bench-paraphrase-<phase_id>.lock` has no documented constraint on phase_id character set. If a BUILD file yields a phase_id containing filesystem-unsafe characters (/, NUL, or characters exceeding NAME_MAX), the lock file creation would fail silently.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The phase-scoped paraphrase lock path `/tmp/br3-bench-paraphrase-<phase_id>.lock` has no documented constraint on phase_id character set. If a BUILD file yields a phase_id containing filesystem-unsafe characters (/, NUL, or characters exceeding NAME_MAX), the lock file creation would fail silently.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "No error handling is specified for the case where `git clone --local --shared` fails because the parent repo's object store is locked or corrupted. setup_clone documents non-SHA lockres outcomes (no_lock, merge_commit_lock) but does not document the git-clone-failure recovery path.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "No error handling is specified for the case where `git clone --local --shared` fails because the parent repo's object store is locked or corrupted. setup_clone documents non-SHA lockres outcomes (no_lock, merge_commit_lock) but does not document the git-clone-failure recovery path.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The project file tree provided is from /private/tmp (the current working directory), not from /Users/byronhudson/Projects/BuildRunner3 where the plan targets. Independent file existence verification is not possible from the provided tree; all verification relies on the plan's self-cited excerpts.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The project file tree provided is from /private/tmp (the current working directory), not from /Users/byronhudson/Projects/BuildRunner3 where the plan targets. Independent file existence verification is not possible from the provided tree; all verification relies on the plan's self-cited excerpts.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 wires `cli_run.py` and `cli_resume.py` to construct `Runner(scorer=BenchmarkScorer())`, but Phase 3 defines `Runner(config: BenchmarkConfig, ...)` with required `config`, and later phases consistently treat the scorer constructor as `BenchmarkScorer(config)`. Those Phase-5 constructor calls are incompatible and will fail before any run starts.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 wires `cli_run.py` and `cli_resume.py` to construct `Runner(scorer=BenchmarkScorer())`, but Phase 3 defines `Runner(config: BenchmarkConfig, ...)` with required `config`, and later phases consistently treat the scorer constructor as `BenchmarkScorer(config)`. Those Phase-5 constructor calls are incompatible and will fail before any run starts.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's probe/judge wiring relies on registry module APIs `scan_pending_probes(session_id)` and `scan_for_judged_rows(session_id)`, but Phase 1's declared registry surface never defines either function. The probe scheduler and resume path depend on undeclared registry APIs.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's probe/judge wiring relies on registry module APIs `scan_pending_probes(session_id)` and `scan_for_judged_rows(session_id)`, but Phase 1's declared registry surface never defines either function. The probe scheduler and resume path depend on undeclared registry APIs.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 says `cli_record_contracts.py` will call `api_clients.record_contracts()`, but the Phase-2 `api_clients.py` deliverables only define `WalterClient`, `LomaxClient`, and `BelowClient`; no `record_contracts` function or method is declared anywhere.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 says `cli_record_contracts.py` will call `api_clients.record_contracts()`, but the Phase-2 `api_clients.py` deliverables only define `WalterClient`, `LomaxClient`, and `BelowClient`; no `record_contracts` function or method is declared anywhere.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's scoring plan calls `runner._reinstall_contestant_requirements(clone_path)` and even references a test for it, but the Phase-5 `core/benchmark/runner.py` ownership list does not declare that helper among the methods being added. The scoring path depends on an undeclared Runner API.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's scoring plan calls `runner._reinstall_contestant_requirements(clone_path)` and even references a test for it, but the Phase-5 `core/benchmark/runner.py` ownership list does not declare that helper among the methods being added. The scoring path depends on an undeclared Runner API.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan states in Phase 1 that `deps.py` is Phase 1's sole-owned file (`tests/benchmark/test_deps.py` is listed on that basis), then Phase 10 later modifies `core/benchmark/deps.py` to add `read_pilot_contention()`. That ownership invariant is self-contradictory and leaves the later change outside the stated Phase-1 test coverage.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan states in Phase 1 that `deps.py` is Phase 1's sole-owned file (`tests/benchmark/test_deps.py` is listed on that basis), then Phase 10 later modifies `core/benchmark/deps.py` to add `read_pilot_contention()`. That ownership invariant is self-contradictory and leaves the later change outside the stated Phase-1 test coverage.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's exit-code-2 classifier assumes it can inspect `refs/heads/bench-src-<run_id>` or `.dispatch-worktrees/bench-dispatch-<run_id>/` after a failed dispatch, but exit 2 also covers pre-dispatch validation failures where neither ref nor worktree may exist. The classifier can crash on the very failure mode it is supposed to classify.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's exit-code-2 classifier assumes it can inspect `refs/heads/bench-src-<run_id>` or `.dispatch-worktrees/bench-dispatch-<run_id>/` after a failed dispatch, but exit 2 also covers pre-dispatch validation failures where neither ref nor worktree may exist. The classifier can crash on the very failure mode it is supposed to classify.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 5's cli_run.py MODIFY constructs `Runner(scorer=BenchmarkScorer())` but Phase 3 declares `Runner.__init__` with `config: BenchmarkConfig` as its first REQUIRED positional argument (no default). This is a TypeError at runtime. Phase 3's own forward reference correctly states `Runner(config=config, scorer=BenchmarkScorer(config))` \u2014 Phase 5's own wording contradicts Phase 3's.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's cli_run.py MODIFY constructs `Runner(scorer=BenchmarkScorer())` but Phase 3 declares `Runner.__init__` with `config: BenchmarkConfig` as its first REQUIRED positional argument (no default). This is a TypeError at runtime. Phase 3's own forward reference correctly states `Runner(config=config, scorer=BenchmarkScorer(config))` \u2014 Phase 5's own wording contradicts Phase 3's.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's cli_resume.py MODIFY has the same defect \u2014 'same one-line wiring as cli_run.py: construct Runner(scorer=BenchmarkScorer())' \u2014 also omitting the required `config` argument to both Runner and BenchmarkScorer.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's cli_resume.py MODIFY has the same defect \u2014 'same one-line wiring as cli_run.py: construct Runner(scorer=BenchmarkScorer())' \u2014 also omitting the required `config` argument to both Runner and BenchmarkScorer.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "BenchmarkScorer constructor is inconsistent: Phase 5 cli_run.py says `BenchmarkScorer()` (no args), but Phase 1 declares ScorerConfig fields (python_test_timeout_seconds, node_test_timeout_seconds, install_timeout_seconds, venv_lock_timeout_seconds) that the scorer must read from config. Phase 6 corrects to `BenchmarkScorer(config)` but Phase 5 would fail first since build order is 5 before 6.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "BenchmarkScorer constructor is inconsistent: Phase 5 cli_run.py says `BenchmarkScorer()` (no args), but Phase 1 declares ScorerConfig fields (python_test_timeout_seconds, node_test_timeout_seconds, install_timeout_seconds, venv_lock_timeout_seconds) that the scorer must read from config. Phase 6 corrects to `BenchmarkScorer(config)` but Phase 5 would fail first since build order is 5 before 6.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 wires `cli_run.py` and `cli_resume.py` to construct `Runner(scorer=BenchmarkScorer())`, but Phase 3 defines `Runner(config: BenchmarkConfig, ...)` with required `config`, and later phases consistently treat the scorer constructor as `BenchmarkScorer(config)`. Those Phase-5 constructor calls are incompatible and will fail before any run starts.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 wires `cli_run.py` and `cli_resume.py` to construct `Runner(scorer=BenchmarkScorer())`, but Phase 3 defines `Runner(config: BenchmarkConfig, ...)` with required `config`, and later phases consistently treat the scorer constructor as `BenchmarkScorer(config)`. Those Phase-5 constructor calls are incompatible and will fail before any run starts.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's probe/judge wiring relies on registry module APIs `scan_pending_probes(session_id)` and `scan_for_judged_rows(session_id)`, but Phase 1's declared registry surface never defines either function. The probe scheduler and resume path depend on undeclared registry APIs.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's probe/judge wiring relies on registry module APIs `scan_pending_probes(session_id)` and `scan_for_judged_rows(session_id)`, but Phase 1's declared registry surface never defines either function. The probe scheduler and resume path depend on undeclared registry APIs.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 says `cli_record_contracts.py` will call `api_clients.record_contracts()`, but the Phase-2 `api_clients.py` deliverables only define `WalterClient`, `LomaxClient`, and `BelowClient`; no `record_contracts` function or method is declared anywhere.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 says `cli_record_contracts.py` will call `api_clients.record_contracts()`, but the Phase-2 `api_clients.py` deliverables only define `WalterClient`, `LomaxClient`, and `BelowClient`; no `record_contracts` function or method is declared anywhere.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's scoring plan calls `runner._reinstall_contestant_requirements(clone_path)` and even references a test for it, but the Phase-5 `core/benchmark/runner.py` ownership list does not declare that helper among the methods being added. The scoring path depends on an undeclared Runner API.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's scoring plan calls `runner._reinstall_contestant_requirements(clone_path)` and even references a test for it, but the Phase-5 `core/benchmark/runner.py` ownership list does not declare that helper among the methods being added. The scoring path depends on an undeclared Runner API.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T09:20:25.156922Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 8
+}

@@ -1,0 +1,390 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T001637Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 modifies `prompts.py` (add `build_native_prompt` + `build_neutral_prompt`) and Phase 6 also modifies `prompts.py` (judge prompt template). Phase 8 modifies it again (report template strings). Phases 4-6 are marked parallel, but Phase 6's `prompts.py` modification will conflict with Phase 3's changes if 3 isn't fully merged first. The parallelization matrix says 6 is blocked by 3 only, so this is safe sequentially \u2014 but if 4/5/6 run in parallel on separate worktrees and merge back, `prompts.py` will have merge conflicts.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 modifies `prompts.py` (add `build_native_prompt` + `build_neutral_prompt`) and Phase 6 also modifies `prompts.py` (judge prompt template). Phase 8 modifies it again (report template strings). Phases 4-6 are marked parallel, but Phase 6's `prompts.py` modification will conflict with Phase 3's changes if 3 isn't fully merged first. The parallelization matrix says 6 is blocked by 3 only, so this is safe sequentially \u2014 but if 4/5/6 run in parallel on separate worktrees and merge back, `prompts.py` will have merge conflicts.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Plan references `cli/main.py` as an existing Typer app with `app.add_typer` calls, but the project file tree shows `cli/main.py` exists. However, there is no verification that it actually uses Typer or has an `app` object. The plan assumes `app.add_typer(benchmark_app, name='benchmark')` will work alongside existing `add_typer` calls \u2014 if `cli/main.py` uses a different CLI framework (click, argparse, fire), this will fail.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Plan references `cli/main.py` as an existing Typer app with `app.add_typer` calls, but the project file tree shows `cli/main.py` exists. However, there is no verification that it actually uses Typer or has an `app` object. The plan assumes `app.add_typer(benchmark_app, name='benchmark')` will work alongside existing `add_typer` calls \u2014 if `cli/main.py` uses a different CLI framework (click, argparse, fire), this will fail.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 deliverable says 'BUILD-spec markdown parser extracting phase number, files, checklist items, and the lock: commit SHA \u2014 SHA is pulled from git log --grep'. But there is no BUILD spec file listed in the project file tree for the benchmark's own target project. The plan never specifies WHICH repo's BUILD spec is parsed or where the 30 candidate phases come from. If this is meant to parse other BR3 project BUILD specs, those paths are never declared as an external dependency.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 deliverable says 'BUILD-spec markdown parser extracting phase number, files, checklist items, and the lock: commit SHA \u2014 SHA is pulled from git log --grep'. But there is no BUILD spec file listed in the project file tree for the benchmark's own target project. The plan never specifies WHICH repo's BUILD spec is parsed or where the 30 candidate phases come from. If this is meant to parse other BR3 project BUILD specs, those paths are never declared as an external dependency.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 dispatches via `dispatch-to-node.sh --runtime {codex|claude} <node> <worktree> <prompt>` but the actual CLI signature of dispatch-to-node.sh is unverified. The plan lists it as an external dependency but never documents its actual argument format. If the script takes different flags (e.g., `--node` instead of positional, or `--prompt-file` instead of inline prompt), the runner will fail on every dispatch.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 dispatches via `dispatch-to-node.sh --runtime {codex|claude} <node> <worktree> <prompt>` but the actual CLI signature of dispatch-to-node.sh is unverified. The plan lists it as an external dependency but never documents its actual argument format. If the script takes different flags (e.g., `--node` instead of positional, or `--prompt-file` instead of inline prompt), the runner will fail on every dispatch.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 says format normalization applies Prettier and Black to 'both pre- and post-edit trees, then regenerate the diff', but Phase 5's `toolchain.py` is where Prettier/Black installation is verified. Phase 6 is parallel with Phase 5, meaning Phase 6 could run before `install-benchmark-tools.sh` and `toolchain.ensure_installed()` exist. If Phase 6 development tests format normalization, the tools may not be installed yet.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 says format normalization applies Prettier and Black to 'both pre- and post-edit trees, then regenerate the diff', but Phase 5's `toolchain.py` is where Prettier/Black installation is verified. Phase 6 is parallel with Phase 5, meaning Phase 6 could run before `install-benchmark-tools.sh` and `toolchain.ensure_installed()` exist. If Phase 6 development tests format normalization, the tools may not be installed yet.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 requires `statsmodels` or similar for mixed-effects logistic regression, linear mixed models, and Bradley-Terry fitting. No Python statistical library (statsmodels, choix, scipy) is listed in the external dependencies table or in any requirements file. These are non-trivial dependencies \u2014 `pip install` of the wrong version could conflict with existing project deps.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7 requires `statsmodels` or similar for mixed-effects logistic regression, linear mixed models, and Bradley-Terry fitting. No Python statistical library (statsmodels, choix, scipy) is listed in the external dependencies table or in any requirements file. These are non-trivial dependencies \u2014 `pip install` of the wrong version could conflict with existing project deps.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Design Invariant 14 says node assignment draws from {Otis, Lomax} uniformly, but the cluster table shows Otis is an M2 Mac Mini and Lomax is also an M2 Mac Mini with different roles (parallel-builder vs staging-server). Lomax is the staging server that also runs build validation (Phase 5 uses Lomax API for build verdicts). Running benchmark phases ON Lomax while also using Lomax's API to validate builds creates a resource contention and potential circular dependency \u2014 Lomax judges its own builds.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Design Invariant 14 says node assignment draws from {Otis, Lomax} uniformly, but the cluster table shows Otis is an M2 Mac Mini and Lomax is also an M2 Mac Mini with different roles (parallel-builder vs staging-server). Lomax is the staging server that also runs build validation (Phase 5 uses Lomax API for build verdicts). Running benchmark phases ON Lomax while also using Lomax's API to validate builds creates a resource contention and potential circular dependency \u2014 Lomax judges its own builds.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 expects 7 \u00d7 2 \u00d7 3 \u00d7 2 = 84 runs, but the plan says the pilot uses 7 phases. Phase 2's selector excludes phases referencing deliverables from later phases and phases already in the registry. If fewer than 7 phases pass all filters (self-containment, external-only-files, registry exclusion), the pilot will fail to reach 84 runs with no fallback specified.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 expects 7 \u00d7 2 \u00d7 3 \u00d7 2 = 84 runs, but the plan says the pilot uses 7 phases. Phase 2's selector excludes phases referencing deliverables from later phases and phases already in the registry. If fewer than 7 phases pass all filters (self-containment, external-only-files, registry exclusion), the pilot will fail to reach 84 runs with no fallback specified.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 deliverable says equivalence validator calls Below `/api/classify` with `{text_a, text_b, categories: ['equivalent','partial','diverged']}`, but the external dependencies table describes Below as 'Local NLI-style classifier'. NLI classifiers typically use `{premise, hypothesis, labels: ['entailment','neutral','contradiction']}` \u2014 the request schema may not match Below's actual API. No fixture or contract test is specified for Below's classify endpoint specifically.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 deliverable says equivalence validator calls Below `/api/classify` with `{text_a, text_b, categories: ['equivalent','partial','diverged']}`, but the external dependencies table describes Below as 'Local NLI-style classifier'. NLI classifiers typically use `{premise, hypothesis, labels: ['entailment','neutral','contradiction']}` \u2014 the request schema may not match Below's actual API. No fixture or contract test is specified for Below's classify endpoint specifically.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 modifies `.buildrunner/runtime.json` which already exists in the file tree. The plan says it's modified 'only if the pre-registered decision rule is satisfied', but never specifies what key in `runtime.json` is changed or what the current schema looks like. If `runtime.json` has a different structure than assumed (e.g., no `default_runtime` key), the update will either silently write a wrong key or crash.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 10 modifies `.buildrunner/runtime.json` which already exists in the file tree. The plan says it's modified 'only if the pre-registered decision rule is satisfied', but never specifies what key in `runtime.json` is changed or what the current schema looks like. If `runtime.json` has a different structure than assumed (e.g., no `default_runtime` key), the update will either silently write a wrong key or crash.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references 'Codex 5.4' and 'Claude Opus 4.7' as contestants, but the training cutoffs in `training_cutoffs.py` are declared as plan constants (Codex 5.4 cutoff = 2025-09-01, Claude Opus 4.7 cutoff = 2026-01-01). These are fabricated model versions \u2014 current Claude is Opus 4.6, and Codex 5.4 does not exist as a public model. If these are real internal/beta models, fine, but if the plan author assumed future versions, the dispatch and token-parsing logic may not work with whatever models are actually available.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references 'Codex 5.4' and 'Claude Opus 4.7' as contestants, but the training cutoffs in `training_cutoffs.py` are declared as plan constants (Codex 5.4 cutoff = 2025-09-01, Claude Opus 4.7 cutoff = 2026-01-01). These are fabricated model versions \u2014 current Claude is Opus 4.6, and Codex 5.4 does not exist as a public model. If these are real internal/beta models, fine, but if the plan author assumed future versions, the dispatch and token-parsing logic may not work with whatever models are actually available.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` invokes `dispatch-to-node.sh` 'in a fresh OS process with a cleared env except an allowlist', but the plan never specifies what's on the allowlist. If `PATH`, `HOME`, or SSH keys needed to reach Otis/Lomax are stripped, every dispatch will fail. If `OPENROUTER_API_KEY` is stripped, the model being dispatched (if it needs it) will fail.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `dispatch_run` invokes `dispatch-to-node.sh` 'in a fresh OS process with a cleared env except an allowlist', but the plan never specifies what's on the allowlist. If `PATH`, `HOME`, or SSH keys needed to reach Otis/Lomax are stripped, every dispatch will fail. If `OPENROUTER_API_KEY` is stripped, the model being dispatched (if it needs it) will fail.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 says 'A de-blinding classifier trained on normalized diffs fails to exceed chance on a held-out test of 20 pairs' as a success criterion. This requires training a classifier as part of the build, but no ML library, training script, or classifier implementation is mentioned in the phase's files or deliverables. This success criterion is unimplementable as specified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 says 'A de-blinding classifier trained on normalized diffs fails to exceed chance on a held-out test of 20 pairs' as a success criterion. This requires training a classifier as part of the build, but no ML library, training script, or classifier implementation is mentioned in the phase's files or deliverables. This success criterion is unimplementable as specified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 references `scripts/install-benchmark-tools.sh` but the project appears to be Python-based (pyproject.toml, requirements-api.txt). Installing Node.js tools (Prettier, eslint, tsc) and Python tools (Black, ruff) plus jscpd and lizard in a single shell script across the cluster nodes is non-trivial. No verification that npm/node is available on all cluster nodes, and no specification of whether tools are installed globally or in a project-local context.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 references `scripts/install-benchmark-tools.sh` but the project appears to be Python-based (pyproject.toml, requirements-api.txt). Installing Node.js tools (Prettier, eslint, tsc) and Python tools (Black, ruff) plus jscpd and lizard in a single shell script across the cluster nodes is non-trivial. No verification that npm/node is available on all cluster nodes, and no specification of whether tools are installed globally or in a project-local context.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan modifies `cli/main.py` as an existing Typer entrypoint, but `cli/main.py` does not appear in the provided project tree or cited excerpts. Phase 1 cannot wire `app.add_typer(benchmark_app, name=\"benchmark\")` into a file that is not present.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan modifies `cli/main.py` as an existing Typer entrypoint, but `cli/main.py` does not appear in the provided project tree or cited excerpts. Phase 1 cannot wire `app.add_typer(benchmark_app, name=\"benchmark\")` into a file that is not present.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Invariant 14 and Phase 3 require randomizing each `(phase, model, replication, sub_study)` across `{Otis, Lomax}`, but the only verified dispatch contract says `dispatch-to-node.sh` routes Codex to Otis and Claude to Lomax via `--runtime {claude|codex}`. Those requirements conflict: either node randomization is impossible, or the dispatch contract is being called with unsupported model/node combinations.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Invariant 14 and Phase 3 require randomizing each `(phase, model, replication, sub_study)` across `{Otis, Lomax}`, but the only verified dispatch contract says `dispatch-to-node.sh` routes Codex to Otis and Claude to Lomax via `--runtime {claude|codex}`. Those requirements conflict: either node randomization is impossible, or the dispatch contract is being called with unsupported model/node combinations.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's native sub-study depends on loading model-specific skill preambles `(/codex` and `/opus`)`, but no such files, commands, or project APIs are present in the provided tree or cited excerpts. The plan is assuming interfaces that are not verified to exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's native sub-study depends on loading model-specific skill preambles `(/codex` and `/opus`)`, but no such files, commands, or project APIs are present in the provided tree or cited excerpts. The plan is assuming interfaces that are not verified to exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 is declared parallelizable with Phase 5 and blocked only by Phase 3, yet its format-normalization path requires `prettier` and `black`, and the only installation/preflight machinery for those tools is introduced in Phase 5 (`toolchain.py` and `install-benchmark-tools.sh`). Running Phase 6 before Phase 5 will fail or force unplanned duplicate setup logic.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 is declared parallelizable with Phase 5 and blocked only by Phase 3, yet its format-normalization path requires `prettier` and `black`, and the only installation/preflight machinery for those tools is introduced in Phase 5 (`toolchain.py` and `install-benchmark-tools.sh`). Running Phase 6 before Phase 5 will fail or force unplanned duplicate setup logic.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's success criterion requires 'a de-blinding classifier trained on normalized diffs' and a held-out test of 20 pairs, but no phase creates that classifier, its training data, or any file/module for it. The acceptance test depends on an unplanned component.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's success criterion requires 'a de-blinding classifier trained on normalized diffs' and a held-out test of 20 pairs, but no phase creates that classifier, its training data, or any file/module for it. The acceptance test depends on an unplanned component.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2/3 resolve the baseline commit solely via `git log --grep='^lock: claim Phase N'`, but the plan does not handle zero matches, multiple matches, or missing/ambiguous `lock:` history. `select` and `setup_worktree()` can fail or pick the wrong commit at the repo boundary.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2/3 resolve the baseline commit solely via `git log --grep='^lock: claim Phase N'`, but the plan does not handle zero matches, multiple matches, or missing/ambiguous `lock:` history. `select` and `setup_worktree()` can fail or pick the wrong commit at the repo boundary.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 allows paraphrase/equivalence failures to exclude a `(phase, replication)` after three retries, but later phases still assume fixed replication counts and perfectly balanced model\u00d7node cells within each phase. The plan does not specify reallocation or analysis repair for these exclusions, so pass@k and regression inputs can violate the stated design invariants.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 allows paraphrase/equivalence failures to exclude a `(phase, replication)` after three retries, but later phases still assume fixed replication counts and perfectly balanced model\u00d7node cells within each phase. The plan does not specify reallocation or analysis repair for these exclusions, so pass@k and regression inputs can violate the stated design invariants.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 2 deliverable says 'BUILD-spec markdown parser extracting phase number, files, checklist items, and the lock: commit SHA \u2014 SHA is pulled from git log --grep'. But there is no BUILD spec file listed in the project file tree for the benchmark's own target project. The plan never specifies WHICH repo's BUILD spec is parsed or where the 30 candidate phases come from. If this is meant to parse other BR3 project BUILD specs, those paths are never declared as an external dependency.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 deliverable says 'BUILD-spec markdown parser extracting phase number, files, checklist items, and the lock: commit SHA \u2014 SHA is pulled from git log --grep'. But there is no BUILD spec file listed in the project file tree for the benchmark's own target project. The plan never specifies WHICH repo's BUILD spec is parsed or where the 30 candidate phases come from. If this is meant to parse other BR3 project BUILD specs, those paths are never declared as an external dependency.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 requires `statsmodels` or similar for mixed-effects logistic regression, linear mixed models, and Bradley-Terry fitting. No Python statistical library (statsmodels, choix, scipy) is listed in the external dependencies table or in any requirements file. These are non-trivial dependencies \u2014 `pip install` of the wrong version could conflict with existing project deps.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7 requires `statsmodels` or similar for mixed-effects logistic regression, linear mixed models, and Bradley-Terry fitting. No Python statistical library (statsmodels, choix, scipy) is listed in the external dependencies table or in any requirements file. These are non-trivial dependencies \u2014 `pip install` of the wrong version could conflict with existing project deps.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan modifies `cli/main.py` as an existing Typer entrypoint, but `cli/main.py` does not appear in the provided project tree or cited excerpts. Phase 1 cannot wire `app.add_typer(benchmark_app, name=\"benchmark\")` into a file that is not present.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan modifies `cli/main.py` as an existing Typer entrypoint, but `cli/main.py` does not appear in the provided project tree or cited excerpts. Phase 1 cannot wire `app.add_typer(benchmark_app, name=\"benchmark\")` into a file that is not present.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Invariant 14 and Phase 3 require randomizing each `(phase, model, replication, sub_study)` across `{Otis, Lomax}`, but the only verified dispatch contract says `dispatch-to-node.sh` routes Codex to Otis and Claude to Lomax via `--runtime {claude|codex}`. Those requirements conflict: either node randomization is impossible, or the dispatch contract is being called with unsupported model/node combinations.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Invariant 14 and Phase 3 require randomizing each `(phase, model, replication, sub_study)` across `{Otis, Lomax}`, but the only verified dispatch contract says `dispatch-to-node.sh` routes Codex to Otis and Claude to Lomax via `--runtime {claude|codex}`. Those requirements conflict: either node randomization is impossible, or the dispatch contract is being called with unsupported model/node combinations.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's native sub-study depends on loading model-specific skill preambles `(/codex` and `/opus`)`, but no such files, commands, or project APIs are present in the provided tree or cited excerpts. The plan is assuming interfaces that are not verified to exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's native sub-study depends on loading model-specific skill preambles `(/codex` and `/opus`)`, but no such files, commands, or project APIs are present in the provided tree or cited excerpts. The plan is assuming interfaces that are not verified to exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T00:21:07.134032Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 9
+}

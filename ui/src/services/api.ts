@@ -284,12 +284,21 @@ export const dealsAPI = {
     if (filters?.hunt_id) params.hunt_id = filters.hunt_id;
     if (filters?.min_score !== undefined) params.min_score = filters.min_score;
     if (filters?.limit) params.limit = filters.limit;
+    if (filters?.ready_only !== undefined) params.ready_only = filters.ready_only;
+    if (filters?.in_stock_only !== undefined) params.in_stock_only = filters.in_stock_only;
+    if (filters?.seller_verified_only !== undefined)
+      params.seller_verified_only = filters.seller_verified_only;
     const response = await intelApi.get('/api/deals/items', { params });
     return response.data;
   },
 
   async getHunts(): Promise<{ hunts: Hunt[] }> {
     const response = await intelApi.get('/api/deals/hunts');
+    return response.data;
+  },
+
+  async getArchivedHunts(): Promise<{ hunts: Hunt[]; count: number }> {
+    const response = await intelApi.get('/api/deals/hunts/archived');
     return response.data;
   },
 
@@ -317,6 +326,20 @@ export const dealsAPI = {
 
   async markDealRead(id: number): Promise<{ status: string }> {
     const response = await intelApi.post(`/api/deals/items/${id}/read`);
+    return response.data;
+  },
+
+  async updateDeal(
+    id: number,
+    updates: {
+      purchased?: number;
+      delivery_status?: string;
+      purchased_price?: number;
+      tracking_number?: string;
+      carrier?: string;
+    }
+  ): Promise<{ status: string }> {
+    const response = await intelApi.patch(`/api/deals/items/${id}`, updates);
     return response.data;
   },
 };

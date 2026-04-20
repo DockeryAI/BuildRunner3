@@ -1,0 +1,292 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T100726Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 6 runner.py MODIFY introduces `notify_cell_scored(phase_id, model)` on ProbeScheduler for single-model runs, but this method is NOT listed in Phase 6's `probe.py` file entry API surface (which only declares schedule, notify_cell_judged, notify_pair_judged, run_pending, _maybe_fire). The probe.py implementation would omit it, causing AttributeError at runtime when a single-model run reaches the scoring stage.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 runner.py MODIFY introduces `notify_cell_scored(phase_id, model)` on ProbeScheduler for single-model runs, but this method is NOT listed in Phase 6's `probe.py` file entry API surface (which only declares schedule, notify_cell_judged, notify_pair_judged, run_pending, _maybe_fire). The probe.py implementation would omit it, causing AttributeError at runtime when a single-model run reaches the scoring stage.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 runner.py MODIFY describes `notify_cell_scored` as 'declared in Phase 4's probe.py file entry' but probe.py is a Phase 6 file, not Phase 4. Phase 4 owns recognition_probe.py. This cross-reference error will cause implementers to look in the wrong file/phase.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 runner.py MODIFY describes `notify_cell_scored` as 'declared in Phase 4's probe.py file entry' but probe.py is a Phase 6 file, not Phase 4. Phase 4 owns recognition_probe.py. This cross-reference error will cause implementers to look in the wrong file/phase.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 runner.py MODIFY references `test_aggregator.py::test_single_model_run_uses_scored_as_terminal` as a unit test obligation, but test_aggregator.py is a Phase 7 NEW file. Build order is 6 before 7, so this test cannot exist when Phase 6 lands. Phase 7's deliverables and files list do not mention this specific test either, so it may be orphaned.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 runner.py MODIFY references `test_aggregator.py::test_single_model_run_uses_scored_as_terminal` as a unit test obligation, but test_aggregator.py is a Phase 7 NEW file. Build order is 6 before 7, so this test cannot exist when Phase 6 lands. Phase 7's deliverables and files list do not mention this specific test either, so it may be orphaned.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 deliverables describe mixed-effects regression, Bradley-Terry, and the full analysis pipeline, but contain no mention of handling single-model sessions where stage='scored' is the terminal stage (introduced in Phase 6). Phase 6 says 'Phase 7's aggregator applies the same rule' and 'no Bradley-Terry ratings are produced' for single-model runs, but Phase 7 has no deliverable, guard, or code path for this mode. The aggregator would likely crash or produce invalid BT fits when encountering scored-only terminal rows.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7 deliverables describe mixed-effects regression, Bradley-Terry, and the full analysis pipeline, but contain no mention of handling single-model sessions where stage='scored' is the terminal stage (introduced in Phase 6). Phase 6 says 'Phase 7's aggregator applies the same rule' and 'no Bradley-Terry ratings are produced' for single-model runs, but Phase 7 has no deliverable, guard, or code path for this mode. The aggregator would likely crash or produce invalid BT fits when encountering scored-only terminal rows.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "git clone --local --shared creates alternates pointing to the parent repo's object store. During a 24-48 hour benchmark run, if any process on Muddy triggers git gc/prune on the parent repo (e.g., another BR3 build, cron, or even git's auto-gc threshold), clones with in-flight runs would reference pruned objects, causing 'missing object' errors on git diff/rev-parse in finalize_run. No gc-protection (e.g., keepalive refs, gc.auto=0 during runs) is specified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "git clone --local --shared creates alternates pointing to the parent repo's object store. During a 24-48 hour benchmark run, if any process on Muddy triggers git gc/prune on the parent repo (e.g., another BR3 build, cron, or even git's auto-gc threshold), clones with in-flight runs would reference pruned objects, causing 'missing object' errors on git diff/rev-parse in finalize_run. No gc-protection (e.g., keepalive refs, gc.auto=0 during runs) is specified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's config.yaml is listed as NEW but no canonical YAML content is provided \u2014 only the BenchmarkConfig pydantic schema. If the template YAML omits any non-Optional field (e.g., blinding.blind_salt, any of the five openrouter role fields, any pilot.* field), load_config() will raise a pydantic ValidationError at first use. The risk is acute because config.yaml is consumed by nearly every phase's preflight.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's config.yaml is listed as NEW but no canonical YAML content is provided \u2014 only the BenchmarkConfig pydantic schema. If the template YAML omits any non-Optional field (e.g., blinding.blind_salt, any of the five openrouter role fields, any pilot.* field), load_config() will raise a pydantic ValidationError at first use. The risk is acute because config.yaml is consumed by nearly every phase's preflight.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 scorer runs .venv-benchmark/bin/pytest -q --tb=no -p no:cacheprovider but does not pass --timeout. Since pytest-timeout>=2.2 is installed in the venv, any timeout configured in the project's pyproject.toml [tool.pytest.ini_options] will apply to contestant test runs, potentially causing inconsistent timeout behavior across phases that do vs don't have that config. The 5-min subprocess kill is the outer bound but inner pytest-timeout kills would surface as 'fail' not 'timeout'.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 scorer runs .venv-benchmark/bin/pytest -q --tb=no -p no:cacheprovider but does not pass --timeout. Since pytest-timeout>=2.2 is installed in the venv, any timeout configured in the project's pyproject.toml [tool.pytest.ini_options] will apply to contestant test runs, potentially causing inconsistent timeout behavior across phases that do vs don't have that config. The 5-min subprocess kill is the outer bound but inner pytest-timeout kills would surface as 'fail' not 'timeout'.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's selector.set_paraphrase() writes to session_state.selector_cache via set_map_entry under the session-state atomic write path, while Phase 3's runner acquires a phase-scoped flock at /tmp/br3-bench-paraphrase-<phase_id>.lock. But the session-state atomic write (tmp+fsync+rename) is NOT protected by that phase-scoped flock \u2014 two concurrent run_cell invocations for different phases could race on the session-state file's tmp+fsync+rename (both write to the same per-session file). The phase-scoped flock only serializes within a single phase_id.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's selector.set_paraphrase() writes to session_state.selector_cache via set_map_entry under the session-state atomic write path, while Phase 3's runner acquires a phase-scoped flock at /tmp/br3-bench-paraphrase-<phase_id>.lock. But the session-state atomic write (tmp+fsync+rename) is NOT protected by that phase-scoped flock \u2014 two concurrent run_cell invocations for different phases could race on the session-state file's tmp+fsync+rename (both write to the same per-session file). The phase-scoped flock only serializes within a single phase_id.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan pins statsmodels>=0.14,<0.15 but references BinomialBayesMixedGLM.fit_vb(). statsmodels 0.14.x's BinomialBayesMixedGLM.fit_vb() uses a variational Bayes approximation that is documented as experimental and has known convergence issues with small N. With 7 pilot phases as random intercepts and ~84 observations, convergence is not guaranteed. The logit fallback is specified but the trigger condition (200 iterations) may not surface all convergence failure modes (e.g., singular Hessian).",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan pins statsmodels>=0.14,<0.15 but references BinomialBayesMixedGLM.fit_vb(). statsmodels 0.14.x's BinomialBayesMixedGLM.fit_vb() uses a variational Bayes approximation that is documented as experimental and has known convergence issues with small N. With 7 pilot phases as random intercepts and ~84 observations, convergence is not guaranteed. The logit fallback is specified but the trigger condition (200 iterations) may not surface all convergence failure modes (e.g., singular Hessian).",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's dispatch_run writes the prompt to .buildrunner/benchmarks/prompts/{run_id}.txt in the parent repo. With 360 runs at ~50KB each, this accumulates ~18MB. The gc-anchors sweep has a --keep-days threshold, but during the multi-day Phase 10 run, all 360 prompt files accumulate simultaneously. If the benchmark is interrupted and restarted multiple times, prompt files from superseded runs also accumulate. Not a crash risk but unbounded disk growth during the study.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's dispatch_run writes the prompt to .buildrunner/benchmarks/prompts/{run_id}.txt in the parent repo. With 360 runs at ~50KB each, this accumulates ~18MB. The gc-anchors sweep has a --keep-days threshold, but during the multi-day Phase 10 run, all 360 prompt files accumulate simultaneously. If the benchmark is interrupted and restarted multiple times, prompt files from superseded runs also accumulate. Not a crash risk but unbounded disk growth during the study.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's contention measurement uses median wall-clock grouped by node_name, but the plan specifies NodeAllocator balances model\u00d7node within each phase. With 7 pilot phases \u00d7 3 replications \u00d7 2 sub-studies = 42 runs per model, and balanced allocation across 2 nodes, each node gets ~21 runs per model = ~42 total per node. The min_samples_per_bucket default is 8, so this passes. However, if 2+ phases are dropped (paraphrase failure), the per-node count could drop below 8 for one bucket while exceeding it for another due to the balanced-within-phase allocation, causing the contention check to silently fall back to the no-data path.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's contention measurement uses median wall-clock grouped by node_name, but the plan specifies NodeAllocator balances model\u00d7node within each phase. With 7 pilot phases \u00d7 3 replications \u00d7 2 sub-studies = 42 runs per model, and balanced allocation across 2 nodes, each node gets ~21 runs per model = ~42 total per node. The min_samples_per_bucket default is 8, so this passes. However, if 2+ phases are dropped (paraphrase failure), the per-node count could drop below 8 for one bucket while exceeding it for another due to the balanced-within-phase allocation, causing the contention check to silently fall back to the no-data path.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's single-model path calls `ProbeScheduler.notify_cell_scored(phase_id, model)`, but the declared `core/benchmark/probe.py` API surface only defines `schedule`, `notify_cell_judged`, `notify_pair_judged`, `run_pending`, and `_maybe_fire`. `notify_cell_scored` is never declared anywhere in the plan, so the runner would call an undefined method.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's single-model path calls `ProbeScheduler.notify_cell_scored(phase_id, model)`, but the declared `core/benchmark/probe.py` API surface only defines `schedule`, `notify_cell_judged`, `notify_pair_judged`, `run_pending`, and `_maybe_fire`. `notify_cell_scored` is never declared anywhere in the plan, so the runner would call an undefined method.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The recognition-probe trigger is internally inconsistent: Phase 4 requires the probe to fire only after every cell for the phase is `stage=\"judged\"`, but Phase 6's single-model mode skips judging entirely and fires probing from scored rows via `notify_cell_scored`. That makes the contamination covariate mean different things in different sessions and breaks the stated non-priming contract.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The recognition-probe trigger is internally inconsistent: Phase 4 requires the probe to fire only after every cell for the phase is `stage=\"judged\"`, but Phase 6's single-model mode skips judging entirely and fires probing from scored rows via `notify_cell_scored`. That makes the contamination covariate mean different things in different sessions and breaks the stated non-priming contract.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 routes both `br benchmark judge` and `br benchmark probe` through `deps.execution_preflight()`, which hard-requires `dispatch-to-node.sh` and `cluster-check.sh`. That conflicts with the later offline backfill design for judging/probing completed runs from registry data and will block those commands in exactly the environments where the plan says they should still work.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 routes both `br benchmark judge` and `br benchmark probe` through `deps.execution_preflight()`, which hard-requires `dispatch-to-node.sh` and `cluster-check.sh`. That conflicts with the later offline backfill design for judging/probing completed runs from registry data and will block those commands in exactly the environments where the plan says they should still work.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Ownership of `SessionState.is_preview` conflicts across phases: Phase 2's `cli_select.py` section says the field is added there with 'single-writer = deps.py', while Phase 1's `session_state.py` contract says `is_preview` is written exclusively by Phase 2's `cli_select.py`. The plan assigns two different writers/specs to the same field.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Ownership of `SessionState.is_preview` conflicts across phases: Phase 2's `cli_select.py` section says the field is added there with 'single-writer = deps.py', while Phase 1's `session_state.py` contract says `is_preview` is written exclusively by Phase 2's `cli_select.py`. The plan assigns two different writers/specs to the same field.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 defines the stratification key as `PhaseSpec.layer`, but its fallback rule says `fallback_fullstack` phases are 'drawn uniformly from the fallback subset rather than counted toward the fullstack stratum's quota'. That creates an implicit extra stratum not represented in `PhaseSpec.layer`, conflicting with the later same-stratum redraw logic and the Phase 7 layer-based analysis.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 defines the stratification key as `PhaseSpec.layer`, but its fallback rule says `fallback_fullstack` phases are 'drawn uniformly from the fallback subset rather than counted toward the fullstack stratum's quota'. That creates an implicit extra stratum not represented in `PhaseSpec.layer`, conflicting with the later same-stratum redraw logic and the Phase 7 layer-based analysis.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's backfill logic describes `registry.is_pair_judged(pair_key)` as meaning 'a `CompletedRow{stage=\"judged\"}` exists', but Phase 1 explicitly redefines `is_pair_judged` to key off `JudgeDecisionRow` instead. Those are different commit points; implementing the stale definition will reintroduce duplicate-judging and half-written-pair recovery bugs.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's backfill logic describes `registry.is_pair_judged(pair_key)` as meaning 'a `CompletedRow{stage=\"judged\"}` exists', but Phase 1 explicitly redefines `is_pair_judged` to key off `JudgeDecisionRow` instead. Those are different commit points; implementing the stale definition will reintroduce duplicate-judging and half-written-pair recovery bugs.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6 runner.py MODIFY introduces `notify_cell_scored(phase_id, model)` on ProbeScheduler for single-model runs, but this method is NOT listed in Phase 6's `probe.py` file entry API surface (which only declares schedule, notify_cell_judged, notify_pair_judged, run_pending, _maybe_fire). The probe.py implementation would omit it, causing AttributeError at runtime when a single-model run reaches the scoring stage.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 runner.py MODIFY introduces `notify_cell_scored(phase_id, model)` on ProbeScheduler for single-model runs, but this method is NOT listed in Phase 6's `probe.py` file entry API surface (which only declares schedule, notify_cell_judged, notify_pair_judged, run_pending, _maybe_fire). The probe.py implementation would omit it, causing AttributeError at runtime when a single-model run reaches the scoring stage.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's single-model path calls `ProbeScheduler.notify_cell_scored(phase_id, model)`, but the declared `core/benchmark/probe.py` API surface only defines `schedule`, `notify_cell_judged`, `notify_pair_judged`, `run_pending`, and `_maybe_fire`. `notify_cell_scored` is never declared anywhere in the plan, so the runner would call an undefined method.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's single-model path calls `ProbeScheduler.notify_cell_scored(phase_id, model)`, but the declared `core/benchmark/probe.py` API surface only defines `schedule`, `notify_cell_judged`, `notify_pair_judged`, `run_pending`, and `_maybe_fire`. `notify_cell_scored` is never declared anywhere in the plan, so the runner would call an undefined method.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T10:17:40.344231Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 2
+}

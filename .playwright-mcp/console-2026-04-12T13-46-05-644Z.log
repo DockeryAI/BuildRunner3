@@ -1,0 +1,145 @@
+[      56ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:3001/node_modules/.vite/deps/chunk-Y62RWVFB.js?v=a87921e9:21550
+[      64ms] [WARNING] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: WebSocket is closed before the connection is established. @ http://localhost:3001/src/hooks/useWebSocket.ts:66
+[      71ms] [ERROR] Error loading tasks: AxiosError @ http://localhost:3001/src/components/TaskList.tsx:38
+[      72ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/tasks:0
+[      72ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[      72ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[      72ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[      73ms] [ERROR] Error loading tasks: AxiosError @ http://localhost:3001/src/components/TaskList.tsx:38
+[      73ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/tasks:0
+[      73ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[      73ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[      73ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[      74ms] [WARNING] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: WebSocket is closed before the connection is established. @ http://localhost:3001/src/hooks/useWebSocket.ts:66
+[     393ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/src/hooks/useWebSocket.ts:22
+[    3155ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/src/hooks/useWebSocket.ts:22
+[    3461ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/src/hooks/useWebSocket.ts:22
+[    5072ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[    5072ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[    5072ms] [ERROR] Error loading tasks: AxiosError @ http://localhost:3001/src/components/TaskList.tsx:38
+[    5073ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/tasks:0
+[    5073ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[    6235ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/src/hooks/useWebSocket.ts:22
+[    6274ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/src/hooks/useWebSocket.ts:22
+[    8191ms] [ERROR] Warning: validateDOMNesting(...): %s cannot appear as a descendant of <%s>.%s <button> button 
+    at button
+    at button
+    at div
+    at div
+    at div
+    at DealsTab (http://localhost:3001/src/components/DealsTab.tsx:22:28)
+    at div
+    at div
+    at Dashboard (http://localhost:3001/src/components/Dashboard.tsx:29:31)
+    at RenderedRoute (http://localhost:3001/node_modules/.vite/deps/react-router-dom.js?v=f3f419af:6021:26)
+    at Routes (http://localhost:3001/node_modules/.vite/deps/react-router-dom.js?v=f3f419af:6815:3)
+    at div
+    at Router (http://localhost:3001/node_modules/.vite/deps/react-router-dom.js?v=f3f419af:6758:13)
+    at BrowserRouter (http://localhost:3001/node_modules/.vite/deps/react-router-dom.js?v=f3f419af:9878:3)
+    at App @ http://localhost:3001/node_modules/.vite/deps/chunk-Y62RWVFB.js?v=a87921e9:520
+[    8211ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3001/src/hooks/useWebSocket.ts:22
+[   10069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   10069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   10069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   15070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   15070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   15070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   20070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   20070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   20070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   25068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   25068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   25069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   30069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   30069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   30069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   35070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   35070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   35070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   40068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   40068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   40068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   45069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   45069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   45069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   50069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   50069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   50070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   55069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   55069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   55069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   60070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   60070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   60070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   65068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   65068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   65068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   70069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   70069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   70069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   75068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   75069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   75069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   80069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   80069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   80069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   85068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   85068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   85069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   90068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   90068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   90068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   95068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[   95068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   95068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  100068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  100068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  100068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  105069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  105069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  105069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  110070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  110070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  110070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  115070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  115070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  115071ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  120071ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  120071ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  120072ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  125070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  125070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  125071ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  130068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  130068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  130068ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  135069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  135069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  135069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  140070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  140070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  140070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  145070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  145070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  145070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  150070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  150070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  150070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  155071ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  155071ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  155071ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  160070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  160070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  160070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  165068ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  165069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  165069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  170070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  170070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  170070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  175070ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  175070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  175070ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[  180069ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3001/src/components/Dashboard.tsx:58
+[  180069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[  180069ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0

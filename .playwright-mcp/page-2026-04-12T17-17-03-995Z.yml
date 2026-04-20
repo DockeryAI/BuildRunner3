@@ -1,0 +1,101 @@
+- generic [ref=e3]:
+  - main [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img
+        - generic [ref=e9]:
+          - generic [ref=e10]:
+            - img [ref=e11]
+            - generic [ref=e12]: CultureCook
+          - heading "Discover any dish" [level=1] [ref=e13]
+          - paragraph [ref=e14]: Search for a dish, describe a craving, or explore what's happening in kitchens around the world.
+          - generic [ref=e17]:
+            - img [ref=e18]
+            - textbox "Describe a craving — 'something smoky and rich with noodles'..." [ref=e21]
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - heading "Trending Around the World" [level=2] [ref=e24]
+          - generic [ref=e25]: Live
+        - generic [ref=e27]:
+          - img [ref=e28]
+          - generic [ref=e30]: Finding what the world is cooking...
+      - generic [ref=e32]:
+        - heading "What's In Season" [level=2] [ref=e33]
+        - generic [ref=e34]: April
+      - generic [ref=e51]: ✦
+      - generic [ref=e53]:
+        - generic [ref=e54]:
+          - heading "Explore" [level=2] [ref=e55]
+          - generic [ref=e56]: Browse
+        - paragraph [ref=e57]: Pick a way in — browse by culture, cooking method, technique, ingredient, or combine dimensions together.
+        - generic [ref=e58]:
+          - button "🌍 By Culture Browse a cuisine's dishes in native language" [ref=e59]:
+            - generic [ref=e60]: 🌍
+            - generic [ref=e61]: By Culture
+            - generic [ref=e62]: Browse a cuisine's dishes in native language
+          - button "🔥 By Method Grill, wok, tandoor, smoker, clay pot..." [ref=e63]:
+            - generic [ref=e64]: 🔥
+            - generic [ref=e65]: By Method
+            - generic [ref=e66]: Grill, wok, tandoor, smoker, clay pot...
+          - button "⚡ By Technique Braising, fermenting, emulsifying..." [ref=e67]:
+            - generic [ref=e68]: ⚡
+            - generic [ref=e69]: By Technique
+            - generic [ref=e70]: Braising, fermenting, emulsifying...
+          - button "🥬 By Ingredient What can I make with lamb, miso, saffron?" [ref=e71]:
+            - generic [ref=e72]: 🥬
+            - generic [ref=e73]: By Ingredient
+            - generic [ref=e74]: What can I make with lamb, miso, saffron?
+          - button "✨ Combine Mix method + cuisine + mood + protein" [ref=e75]:
+            - generic [ref=e76]: ✨
+            - generic [ref=e77]: Combine
+            - generic [ref=e78]: Mix method + cuisine + mood + protein
+      - generic [ref=e81]: ✦
+      - heading "Surprise Me" [level=2] [ref=e85]
+      - generic [ref=e95]:
+        - generic [ref=e96]:
+          - img [ref=e97]
+          - generic [ref=e99]: Endangered & Heritage Foods
+        - paragraph [ref=e101]: Foods at risk of disappearing. Slow Food Ark of Taste preserves endangered ingredients and preparations. UNESCO recognizes culinary traditions as intangible cultural heritage.
+        - generic [ref=e102]:
+          - button "All" [ref=e103]
+          - button "Ark of Taste" [ref=e104]
+          - button "UNESCO ICH" [ref=e105]
+        - button "All" [ref=e107]
+        - img [ref=e109]
+      - generic [ref=e111]:
+        - img [ref=e114]
+        - blockquote [ref=e116]:
+          - paragraph [ref=e117]: "\"Every technique you learn through one dish makes the next dish in a different cuisine more approachable.\""
+          - generic [ref=e118]: The technique graph compounds
+  - complementary [ref=e119]:
+    - generic [ref=e121]:
+      - img [ref=e122]
+      - generic [ref=e123]: CultureCook
+    - navigation [ref=e124]:
+      - link "Discover" [ref=e125] [cursor=pointer]:
+        - /url: /discover
+        - img [ref=e126]
+        - generic [ref=e127]: Discover
+      - link "Collection" [ref=e128] [cursor=pointer]:
+        - /url: /collection
+        - img [ref=e129]
+        - generic [ref=e131]: Collection
+    - generic [ref=e133]:
+      - button "Trending" [ref=e135]:
+        - img [ref=e136]
+        - generic [ref=e139]: Trending
+      - button "Seasonal" [ref=e140]:
+        - img [ref=e141]
+        - generic [ref=e144]: Seasonal
+      - button "Explore" [ref=e145]:
+        - img [ref=e146]
+        - generic [ref=e149]: Explore
+      - button "Surprise" [ref=e150]:
+        - img [ref=e151]
+        - generic [ref=e153]: Surprise
+      - button "Heritage" [ref=e154]:
+        - img [ref=e155]
+        - generic [ref=e157]: Heritage
+    - 'button "Theme: system" [ref=e159]':
+      - img
+      - generic [ref=e161]: system

@@ -1,0 +1,180 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T044033Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Adversarial review returned malformed output",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Adversarial review returned malformed output",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 attaches `venv_drift_report` to `LocalTestResult`, but Phase 1 freezes `LocalTestResult` without that field and explicitly says later phases must not add schema fields. That is a direct schema conflict and will fail pydantic validation unless the plan breaks its own Phase 1 invariants.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 attaches `venv_drift_report` to `LocalTestResult`, but Phase 1 freezes `LocalTestResult` without that field and explicitly says later phases must not add schema fields. That is a direct schema conflict and will fail pydantic validation unless the plan breaks its own Phase 1 invariants.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The session-state storage contract is internally inconsistent: preconditions and Phase 1 describe a top-level `.buildrunner/benchmarks/session-state.json`, then the same Phase 1 section says the real on-disk path is `.buildrunner/benchmarks/sessions/<session_id>.json` plus `sessions/index.json` and that `session-state.json` is only a logical label. Tests, resume logic, and preflight writers will not agree on the file location.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The session-state storage contract is internally inconsistent: preconditions and Phase 1 describe a top-level `.buildrunner/benchmarks/session-state.json`, then the same Phase 1 section says the real on-disk path is `.buildrunner/benchmarks/sessions/<session_id>.json` plus `sessions/index.json` and that `session-state.json` is only a logical label. Tests, resume logic, and preflight writers will not agree on the file location.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "`br benchmark select` is exempted from preflight because it is described as a pure offline corpus operation, but Phase 2 layer assignment can call Below `/api/classify` for ambiguous phases. That contradicts the no-network assumption and leaves selection without the preflight/degrade path the plan claims it does not need.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "`br benchmark select` is exempted from preflight because it is described as a pure offline corpus operation, but Phase 2 layer assignment can call Below `/api/classify` for ambiguous phases. That contradicts the no-network assumption and leaves selection without the preflight/degrade path the plan claims it does not need.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Training-cutoff ownership is contradictory. Invariant 5 says cutoffs are constants in `core/benchmark/training_cutoffs.py`, while the preconditions and Phase 1 say `training_cutoffs.py` must read cutoff values from `.buildrunner/benchmarks/config.yaml` and contain no hardcoded date. Phase 2 then refers to `training_cutoffs.py` constants again.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Training-cutoff ownership is contradictory. Invariant 5 says cutoffs are constants in `core/benchmark/training_cutoffs.py`, while the preconditions and Phase 1 say `training_cutoffs.py` must read cutoff values from `.buildrunner/benchmarks/config.yaml` and contain no hardcoded date. Phase 2 then refers to `training_cutoffs.py` constants again.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "`ExclusionRow` is specified twice with conflicting ownership: Phase 1 says it is already declared in `core/benchmark/models.py`, while Phase 2 says the exclusions schema is declared in Phase 2 as the first writer. That creates a cross-phase schema-definition conflict.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "`ExclusionRow` is specified twice with conflicting ownership: Phase 1 says it is already declared in `core/benchmark/models.py`, while Phase 2 says the exclusions schema is declared in Phase 2 as the first writer. That creates a cross-phase schema-definition conflict.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 says `.buildrunner/benchmarks/layer-cache.json` is git-ignored by `.buildrunner/.gitignore`, but `.buildrunner/.gitignore` does not appear in the project tree, the cited excerpts, or any Files list entry to be created.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 says `.buildrunner/benchmarks/layer-cache.json` is git-ignored by `.buildrunner/.gitignore`, but `.buildrunner/.gitignore` does not appear in the project tree, the cited excerpts, or any Files list entry to be created.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 relies on `tests/benchmark/test_openrouter_min_contract.py` to enforce the additive-only contract between `openrouter_min.py` and Phase 6 `openrouter.py`, but that test file is missing from both the project tree/excerpts and the phase Files lists.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 relies on `tests/benchmark/test_openrouter_min_contract.py` to enforce the additive-only contract between `openrouter_min.py` and Phase 6 `openrouter.py`, but that test file is missing from both the project tree/excerpts and the phase Files lists.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 depends on `.buildrunner/benchmarks/equivalence-calibration.json` as the persisted calibration artifact, but that file path is missing from both the project tree/excerpts and the Phase 4 Files list, so the plan has no declared owner for a required artifact.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 depends on `.buildrunner/benchmarks/equivalence-calibration.json` as the persisted calibration artifact, but that file path is missing from both the project tree/excerpts and the Phase 4 Files list, so the plan has no declared owner for a required artifact.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 5 attaches `venv_drift_report` to `LocalTestResult`, but Phase 1 freezes `LocalTestResult` without that field and explicitly says later phases must not add schema fields. That is a direct schema conflict and will fail pydantic validation unless the plan breaks its own Phase 1 invariants.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 attaches `venv_drift_report` to `LocalTestResult`, but Phase 1 freezes `LocalTestResult` without that field and explicitly says later phases must not add schema fields. That is a direct schema conflict and will fail pydantic validation unless the plan breaks its own Phase 1 invariants.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The session-state storage contract is internally inconsistent: preconditions and Phase 1 describe a top-level `.buildrunner/benchmarks/session-state.json`, then the same Phase 1 section says the real on-disk path is `.buildrunner/benchmarks/sessions/<session_id>.json` plus `sessions/index.json` and that `session-state.json` is only a logical label. Tests, resume logic, and preflight writers will not agree on the file location.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The session-state storage contract is internally inconsistent: preconditions and Phase 1 describe a top-level `.buildrunner/benchmarks/session-state.json`, then the same Phase 1 section says the real on-disk path is `.buildrunner/benchmarks/sessions/<session_id>.json` plus `sessions/index.json` and that `session-state.json` is only a logical label. Tests, resume logic, and preflight writers will not agree on the file location.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T04:50:41.806530Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

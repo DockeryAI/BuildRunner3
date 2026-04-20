@@ -11,12 +11,11 @@ import asyncio
 import json
 import logging
 import os
-import sys
 import time
-import hashlib
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+from core.cluster.utils import url_hash, last_checked_lock, cosine_similarity
 
 try:
     import httpx
@@ -30,6 +29,7 @@ CONFIG_PATH = Path(__file__).parent / "hunt_sourcer_config.json"
 LOCKWOOD_URL = os.environ.get("LOCKWOOD_URL", "http://10.0.1.101:8100")
 BELOW_OLLAMA_URL = os.environ.get("BELOW_OLLAMA_URL", "http://10.0.1.105:11434")
 BELOW_MODEL = os.environ.get("BELOW_MODEL", "qwen3:8b")
+BELOW_EMBED_MODEL = os.environ.get("BELOW_EMBED_MODEL", "nomic-embed-text")
 CHECK_HUNTS_INTERVAL = int(os.environ.get("CHECK_HUNTS_INTERVAL", "300"))  # 5min
 
 
@@ -39,8 +39,7 @@ def _load_config() -> dict:
         return json.loads(CONFIG_PATH.read_text())
     return {
         "sources": {
-            "ebay_scrape": {"enabled": True},
-            "ebay_browse": {"enabled": False, "marketplace_id": "EBAY_US", "limit": 50},
+            "ebay_browse": {"enabled": True, "marketplace_id": "EBAY_US", "limit": 50},
             "reddit_rss": {"enabled": True, "subreddits": ["buildapcsales", "hardwareswap"]},
             "craigslist_rss": {"enabled": True, "cities": ["sfbay", "losangeles", "seattle"]},
             "pcpartpicker": {"enabled": True, "use_playwright": False},
@@ -55,8 +54,7 @@ def _load_config() -> dict:
     }
 
 
-def _url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
+# _url_hash moved to core.cluster.utils
 
 
 # --- Lockwood Client ---
@@ -132,9 +130,9 @@ async def _post_deal_item(item: dict) -> Optional[int]:
 def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> tuple[bool, str]:
     """Validate a deal item against hunt requirements.
     Returns (passed, reason). Reason is empty string if passed.
+    Hard gates: relevance checks (wrong product, excluded terms, out of stock).
     """
     if not requirements:
-        # Legacy hunts without requirements — apply basic keyword exclusion only
         excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
         name_lower = item.get("name", "").lower()
         if excluded and any(ex in name_lower for ex in excluded):
@@ -143,7 +141,6 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
 
     filters = requirements.get("filters", {})
     name_lower = item.get("name", "").lower()
-    price = item.get("price")
     attrs = item.get("attributes", {})
     if isinstance(attrs, str):
         try:
@@ -155,15 +152,6 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
     if filters.get("in_stock_only", True):
         if isinstance(attrs, dict) and attrs.get("in_stock") is False:
             return False, "out of stock"
-
-    # Price range
-    if price is not None:
-        price_min = filters.get("price_min")
-        price_max = filters.get("price_max")
-        if price_min and price < price_min:
-            return False, f"price ${price} below min ${price_min}"
-        if price_max and price > price_max:
-            return False, f"price ${price} above max ${price_max}"
 
     # Title must contain (AND — all must be present)
     must_contain = filters.get("title_must_contain", [])
@@ -198,11 +186,29 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
             if c.lower() in condition:
                 return False, f"condition '{condition}' is rejected"
 
-    # Seller minimums
-    seller_rating = item.get("seller_rating")
+    # Domestic-only check (reject international sellers/locations)
+    if filters.get("domestic_only", False):
+        item_location = ""
+        if isinstance(attrs, dict):
+            item_location = (attrs.get("item_location", "") or "").lower()
+        seller_location = (item.get("seller_location", "") or "").lower()
+        location = item_location or seller_location
+        if location and location not in ("us", "usa", "united states", ""):
+            return False, f"international seller/location: {location}"
+
+    # Min seller feedback count
+    min_feedback = filters.get("min_seller_feedback")
+    if min_feedback:
+        feedback = item.get("seller_feedback_count") or (attrs.get("seller_feedback_count") if isinstance(attrs, dict) else None)
+        if feedback is not None and feedback < min_feedback:
+            return False, f"seller feedback {feedback} below minimum {min_feedback}"
+
+    # Min seller rating percentage
     min_rating = filters.get("min_seller_rating")
-    if min_rating and seller_rating is not None and seller_rating < min_rating:
-        return False, f"seller rating {seller_rating}% below min {min_rating}%"
+    if min_rating:
+        rating = item.get("seller_rating")
+        if rating is not None and rating < min_rating:
+            return False, f"seller rating {rating}% below minimum {min_rating}%"
 
     # Also check keyword-based exclusions as fallback
     excluded = [kw[1:].lower() for kw in hunt_keywords.split() if kw.startswith("-")]
@@ -212,21 +218,57 @@ def _validate_item(item: dict, requirements: dict, hunt_keywords: str = "") -> t
     return True, ""
 
 
+def _check_price_range(item: dict, requirements: dict) -> bool:
+    """Check if item price falls within the hunt's target range.
+    Returns True if in range (highlighted), False if outside.
+    """
+    if not requirements:
+        return True
+    filters = requirements.get("filters", {})
+    price = item.get("price")
+    if price is None:
+        return False
+    price_min = filters.get("price_min")
+    price_max = filters.get("price_max")
+    if price_min and price < price_min:
+        return False
+    if price_max and price > price_max:
+        return False
+    return True
+
+
 # --- Batch Insert via Direct DB (Lockwood-local) or API ---
 
+TOP_N_DEALS = 10  # Always insert top N cheapest relevant items per hunt
+
+
 async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dict = None, hunt_keywords: str = "") -> int:
-    """Insert deal items, deduplicating against existing. Returns count of new items.
-    Validates every item against hunt requirements before insert.
+    """Insert top N cheapest relevant deal items per hunt cycle.
+    Relevance = passes hard gates (title match, excluded terms, stock).
+    Price range is a soft flag (in_range), not a gate — items always insert.
+    Returns count of new items inserted.
     """
     existing_urls = await _get_existing_deal_urls(hunt_id)
     new_count = 0
+    skip_dup = 0
+    skip_relevance = 0
+    skip_insert = 0
 
+    # Phase 1: filter to relevant items only (hard gates — wrong product, excluded, OOS)
+    relevant = []
     for item in items:
         source_url = item.get("source_url", "")
         if source_url in existing_urls:
+            skip_dup += 1
             continue
 
-        # Log every price to market data BEFORE validation — rejected items are valid market data
+        passed, reason = _validate_item(item, requirements, hunt_keywords)
+        if not passed:
+            skip_relevance += 1
+            logger.debug(f"  Irrelevant '{item.get('name', '')[:60]}': {reason}")
+            continue
+
+        # Log price ONLY for validated items (prevents accessory pollution)
         item_price = item.get("price")
         if item_price and item_price > 0:
             try:
@@ -243,35 +285,43 @@ async def _batch_insert_deals(items: list[dict], hunt_id: int, requirements: dic
             except Exception as e:
                 logger.debug(f"Market price log failed: {e}")
 
-        # Validate against hunt requirements
-        passed, reason = _validate_item(item, requirements, hunt_keywords)
-        if not passed:
-            continue
+        relevant.append(item)
 
-        # Use Lockwood's create_deal_item directly if running on Lockwood,
-        # otherwise POST to API
-        try:
-            from core.cluster.intel_collector import create_deal_item
-            deal_id = create_deal_item(
-                hunt_id=item["hunt_id"],
-                name=item["name"],
-                category=item.get("category"),
-                attributes=item.get("attributes"),
-                source_url=source_url,
-                price=item.get("price"),
-                condition=item.get("condition"),
-                seller=item.get("seller"),
-                seller_rating=item.get("seller_rating"),
-                listing_url=item.get("listing_url"),
-            )
-            if deal_id:
-                new_count += 1
-                existing_urls.add(source_url)
-        except ImportError:
-            deal_id = await _post_deal_item(item)
-            if deal_id:
-                new_count += 1
-                existing_urls.add(source_url)
+    # Phase 2: sort by price ascending, take top N cheapest
+    relevant.sort(key=lambda x: x.get("price") or float("inf"))
+    top_items = relevant[:TOP_N_DEALS]
+
+    # Phase 3: insert all top items, flag in_range
+    in_range_count = 0
+    for rank, item in enumerate(top_items, 1):
+        source_url = item.get("source_url", "")
+        in_range = _check_price_range(item, requirements)
+        if in_range:
+            in_range_count += 1
+
+        # Inject flags into attributes
+        attrs = item.get("attributes", {})
+        if isinstance(attrs, str):
+            try:
+                attrs = json.loads(attrs)
+            except (json.JSONDecodeError, TypeError):
+                attrs = {}
+        attrs["in_range"] = in_range
+        attrs["price_rank"] = rank
+        item["attributes"] = attrs
+
+        # Always use API to insert (sourcer runs on Walter, DB is on Lockwood)
+        deal_id = await _post_deal_item(item)
+        if deal_id:
+            new_count += 1
+            existing_urls.add(source_url)
+        else:
+            skip_insert += 1
+
+    # Log summary
+    logger.info(f"  Insert: {len(items)} scraped, {len(relevant)} relevant, top {len(top_items)} → {new_count} new ({in_range_count} in range)")
+    if skip_dup:
+        logger.info(f"    {skip_dup} url-dup, {skip_relevance} irrelevant, {skip_insert} db-dup")
 
     return new_count
 
@@ -351,7 +401,7 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
                 try:
                     resp = await client.post(
                         f"{BELOW_OLLAMA_URL}/api/embed",
-                        json={"model": BELOW_MODEL, "input": title},
+                        json={"model": BELOW_EMBED_MODEL, "input": title},
                     )
                     if resp.status_code == 200:
                         data = resp.json()
@@ -364,8 +414,7 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
             if len(embeddings) < 2:
                 return items
 
-            # Remove duplicates
-            import math
+            # Remove duplicates using shared cosine_similarity
             kept = []
             seen_ids = set()
 
@@ -384,15 +433,10 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
                     kept_emb = embeddings.get(id(kept_item))
                     if not kept_emb:
                         continue
-                    # Cosine similarity
-                    dot = sum(a * b for a, b in zip(emb, kept_emb))
-                    mag1 = math.sqrt(sum(a * a for a in emb))
-                    mag2 = math.sqrt(sum(b * b for b in kept_emb))
-                    if mag1 > 0 and mag2 > 0:
-                        sim = dot / (mag1 * mag2)
-                        if sim > threshold:
-                            is_dup = True
-                            break
+                    sim = cosine_similarity(emb, kept_emb)
+                    if sim > threshold:
+                        is_dup = True
+                        break
 
                 if not is_dup:
                     kept.append(item)
@@ -413,9 +457,7 @@ async def _dedup_by_title_similarity(items: list[dict], threshold: float = 0.85)
 async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list[dict]:
     """Run a single source search for a hunt."""
     try:
-        if source_name == "ebay_scrape":
-            from core.cluster.hunt_sources.ebay_scrape import search
-        elif source_name == "ebay_sold":
+        if source_name == "ebay_sold":
             from core.cluster.hunt_sources.ebay_sold import search
         elif source_name == "ebay_browse":
             # Only enable when BOTH API keys present
@@ -437,6 +479,8 @@ async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list
             from core.cluster.hunt_sources.shopify import search
         elif source_name == "bhphoto":
             from core.cluster.hunt_sources.bhphoto import search
+        elif source_name == "crucial":
+            from core.cluster.hunt_sources.crucial import search
         else:
             logger.warning(f"Unknown source: {source_name}")
             return []
@@ -453,7 +497,7 @@ async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list
 _last_checked: dict[int, float] = {}
 
 
-BELOW_NEEDS_LLM = {"ebay_scrape", "newegg", "bhphoto"}
+BELOW_NEEDS_LLM = {"newegg", "bhphoto"}
 
 
 async def _check_below_online() -> bool:
@@ -482,13 +526,14 @@ async def check_hunts_once():
     for hunt in hunts:
         hunt_id = hunt["id"]
         interval = hunt.get("check_interval_minutes", 60) * 60
-        last = _last_checked.get(hunt_id, 0)
 
-        if now - last < interval:
-            continue
+        with last_checked_lock:
+            last = _last_checked.get(hunt_id, 0)
+            if now - last < interval:
+                continue
+            _last_checked[hunt_id] = now
 
-        logger.info(f"Checking hunt [{hunt_id}] '{hunt['name']}'")
-        _last_checked[hunt_id] = now
+        logger.info(f"Checking hunt [{hunt_id}] '{hunt['name']}'")  # noqa: Q000
 
         below_online = await _check_below_online()
         if not below_online:

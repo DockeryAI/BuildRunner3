@@ -53,3 +53,4 @@ Thumbs.db
 ../br3-*/
 .dispatch-worktrees/
 .buildrunner/build-reports/
+.buildrunner/builds/BUILD_e2e-dispatch-test.md

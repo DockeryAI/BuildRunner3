@@ -5,9 +5,10 @@ Free, no API key needed. Uses .rss endpoint.
 """
 
 import logging
-import hashlib
 import re
 from typing import Optional
+
+from core.cluster.utils import url_hash
 
 try:
     import httpx
@@ -20,10 +21,6 @@ DEFAULT_SUBREDDITS = [
     "buildapcsales",
     "hardwareswap",
 ]
-
-
-def _url_hash(url: str) -> str:
-    return hashlib.sha256(url.strip().lower().encode()).hexdigest()[:16]
 
 
 def _extract_price(text: str) -> Optional[float]:
@@ -92,7 +89,7 @@ def _parse_rss_xml(xml_text: str) -> list[dict]:
 
 
 async def search(hunt: dict, config: dict) -> list[dict]:
-    """Search Reddit RSS feeds for items matching a hunt.
+    """Search Reddit JSON API for items matching a hunt.
 
     Args:
         hunt: Hunt dict with keys: id, name, keywords, target_price, category
@@ -140,7 +137,8 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                 timeout=10.0,
                 headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"},
             ) as client:
-                url = f"https://www.reddit.com/r/{subreddit}/new/.rss?limit={limit}"
+                # Use JSON API instead of RSS — JSON includes flair data
+                url = f"https://www.reddit.com/r/{subreddit}/new/.json?limit={limit}"
                 resp = await client.get(url)
 
                 if resp.status_code == 429:
@@ -150,11 +148,27 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                     logger.warning(f"Reddit r/{subreddit} returned {resp.status_code}")
                     continue
 
-                entries = _parse_rss_xml(resp.text)
+                try:
+                    data = resp.json()
+                except Exception:
+                    logger.warning(f"Reddit r/{subreddit} returned invalid JSON")
+                    continue
 
-                for entry in entries:
-                    title = entry.get("title", "")
+                children = data.get("data", {}).get("children", [])
+
+                for child in children:
+                    post = child.get("data", {})
+                    title = post.get("title", "")
                     title_lower = title.lower()
+                    flair = (post.get("link_flair_text") or "").lower()
+                    selftext = post.get("selftext", "")
+
+                    # Skip sold/closed listings — check flair first (most reliable)
+                    if flair in ("sold", "closed", "traded"):
+                        continue
+                    # Also check title for sold/closed (some sellers edit title)
+                    if "sold" in title_lower or "closed" in title_lower:
+                        continue
 
                     # Skip [W] want-to-buy posts from hardwareswap
                     # These are people looking to buy, not sell
@@ -170,6 +184,11 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                             core_in_have = sum(1 for ct in core_terms if ct in before_w)
                             if core_in_want > core_in_have:
                                 continue
+
+                    # Skip bundle/prebuilt posts — they contain component keywords
+                    # but price is for the whole system, not the component
+                    if re.match(r'\[(?:prebuilt|bundle|combo)\]', title_lower):
+                        continue
 
                     # Smart matching: require model number + brand/product term
                     if model_terms and brand_terms:
@@ -188,11 +207,13 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                     if any(ex in title_lower for ex in excluded):
                         continue
 
-                    content = entry.get("content", "")
-                    combined_text = f"{title} {content}"
+                    combined_text = f"{title} {selftext}"
                     price = _extract_price(combined_text)
                     condition = _extract_condition(combined_text)
-                    post_url = entry.get("url", "")
+                    permalink = post.get("permalink", "")
+                    post_url = f"https://www.reddit.com{permalink}" if permalink else ""
+                    author = post.get("author", "")
+                    created_utc = post.get("created_utc", 0)
 
                     items.append({
                         "hunt_id": hunt["id"],
@@ -200,19 +221,20 @@ async def search(hunt: dict, config: dict) -> list[dict]:
                         "category": hunt.get("category", "other"),
                         "attributes": {
                             "subreddit": subreddit,
-                            "author": entry.get("author", ""),
-                            "published": entry.get("published", ""),
+                            "author": author,
+                            "flair": flair,
+                            "created_utc": created_utc,
                         },
-                        "source_url": f"reddit:{_url_hash(post_url)}",
+                        "source_url": f"reddit:{url_hash(post_url)}",
                         "price": price,
                         "condition": condition,
-                        "seller": entry.get("author", ""),
+                        "seller": author,
                         "seller_rating": None,
                         "listing_url": post_url,
                     })
 
         except Exception as e:
-            logger.error(f"Reddit RSS search failed for r/{subreddit}: {e}")
+            logger.error(f"Reddit JSON search failed for r/{subreddit}: {e}")
 
     logger.info(f"Reddit search for '{keywords}' returned {len(items)} items across {len(subreddits)} subreddits")
     return items
@@ -265,15 +287,30 @@ async def search_historical(hunt: dict, config: dict) -> list[dict]:
                 data = resp.json()
                 children = data.get("data", {}).get("children", [])
 
+                target_price = hunt.get("target_price")
+                price_ceiling = target_price * 3 if target_price else None
+                price_floor = target_price * 0.1 if target_price else None
+
                 for child in children:
                     post = child.get("data", {})
                     title = post.get("title", "")
                     if not title:
                         continue
 
+                    # Skip bundle/prebuilt posts
+                    title_lower = title.lower()
+                    if re.match(r'\[(?:prebuilt|bundle|combo)\]', title_lower):
+                        continue
+
                     # Extract price from title
                     price = _extract_price(title)
                     if not price or price <= 0:
+                        continue
+
+                    # Skip prices that are clearly bundles (3x+ target) or accessories (< 10% target)
+                    if price_ceiling and price > price_ceiling:
+                        continue
+                    if price_floor and price < price_floor:
                         continue
 
                     permalink = post.get("permalink", "")

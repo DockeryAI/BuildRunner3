@@ -1,0 +1,432 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T014619Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 is blocked by Phase 4, but Phase 3's `prompts.py` MODIFY (adding `build_native_prompt` + `build_neutral_prompt`) must land before Phase 6 and Phase 8 also MODIFY `prompts.py`. The plan says these are sequential per build order, but Phase 3's prompt templates are needed by Phase 3's own `runner.py` to build the dispatch prompt \u2014 yet the runner also imports `paraphraser.paraphrase_spec()` from Phase 4. This means prompts.py is modified in Phase 3, which is after Phase 4, but Phase 4's `openrouter_min.py` has no dependency on prompts.py. This ordering is consistent. No issue here \u2014 withdrawing this finding.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 is blocked by Phase 4, but Phase 3's `prompts.py` MODIFY (adding `build_native_prompt` + `build_neutral_prompt`) must land before Phase 6 and Phase 8 also MODIFY `prompts.py`. The plan says these are sequential per build order, but Phase 3's prompt templates are needed by Phase 3's own `runner.py` to build the dispatch prompt \u2014 yet the runner also imports `paraphraser.paraphrase_spec()` from Phase 4. This means prompts.py is modified in Phase 3, which is after Phase 4, but Phase 4's `openrouter_min.py` has no dependency on prompts.py. This ordering is consistent. No issue here \u2014 withdrawing this finding.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 deliverable says `run_local_tests` does `.venv-benchmark/bin/pip install --no-deps --quiet -e <worktree>` for editable install, then `pip uninstall -y <package>` in teardown. But `<package>` is unspecified \u2014 editable installs register under the package name from setup.py/pyproject.toml, which varies per worktree content. If the contestant modifies pyproject.toml to change the package name, the uninstall will silently fail, leaving a stale editable install that pollutes the next run's import resolution.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 deliverable says `run_local_tests` does `.venv-benchmark/bin/pip install --no-deps --quiet -e <worktree>` for editable install, then `pip uninstall -y <package>` in teardown. But `<package>` is unspecified \u2014 editable installs register under the package name from setup.py/pyproject.toml, which varies per worktree content. If the contestant modifies pyproject.toml to change the package name, the uninstall will silently fail, leaving a stale editable install that pollutes the next run's import resolution.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 creates git commits with `-c commit.gpgsign=false` and synthetic identity `bench@local`, then anchors via `git update-ref refs/heads/bench/{run_id} <sha>`. With 360 runs in Phase 10, this creates 360 branch refs in the parent repo. The plan mentions `br benchmark gc-anchors` for cleanup but this command is never defined in any phase's deliverables or file list \u2014 it is fabricated.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 creates git commits with `-c commit.gpgsign=false` and synthetic identity `bench@local`, then anchors via `git update-ref refs/heads/bench/{run_id} <sha>`. With 360 runs in Phase 10, this creates 360 branch refs in the parent repo. The plan mentions `br benchmark gc-anchors` for cleanup but this command is never defined in any phase's deliverables or file list \u2014 it is fabricated.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier uses 5-fold stratified CV over 84 pilot rows, but Phase 6 is blocked by Phases 3, 4, 5 \u2014 not Phase 9. The classifier is defined in Phase 6 but can only be evaluated with pilot data from Phase 9. Phase 6's success criterion says 'The de-blinding classifier scores at or below the size-adjusted chance threshold' \u2014 this cannot be verified at Phase 6 completion since no pilot data exists yet. The success criterion is unachievable at the phase where it's declared.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses 5-fold stratified CV over 84 pilot rows, but Phase 6 is blocked by Phases 3, 4, 5 \u2014 not Phase 9. The classifier is defined in Phase 6 but can only be evaluated with pilot data from Phase 9. Phase 6's success criterion says 'The de-blinding classifier scores at or below the size-adjusted chance threshold' \u2014 this cannot be verified at Phase 6 completion since no pilot data exists yet. The success criterion is unachievable at the phase where it's declared.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `api_contracts.md` and vcrpy fixture recording spike exercises each cluster endpoint once with a real request. But Phase 2's test file `test_api_clients.py` uses `responses/vcrpy against recorded fixtures` \u2014 if the spike fails to record a fixture (e.g. Walter is down during Phase 2 development), the tests have no fixtures to replay against and will fail. No fallback for fixture generation is specified for the test suite itself, only for the runtime clients.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's `api_contracts.md` and vcrpy fixture recording spike exercises each cluster endpoint once with a real request. But Phase 2's test file `test_api_clients.py` uses `responses/vcrpy against recorded fixtures` \u2014 if the spike fails to record a fixture (e.g. Walter is down during Phase 2 development), the tests have no fixtures to replay against and will fail. No fallback for fixture generation is specified for the test suite itself, only for the runtime clients.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's equivalence validator sends a compound prompt to Below's `/api/classify` endpoint: `{text: 'A:\\n<original>\\n\\n---\\n\\nB:\\n<paraphrase>\\nAre A and B semantically equivalent?', categories: ['equivalent','partial','diverged']}`. The verified contract is single-text multi-category classification, not NLI. The classifier was trained for topic/sentiment classification \u2014 there is no evidence it can perform semantic equivalence judgment. The calibration step (20-pair check, 80% threshold) mitigates this, but if Below fails calibration, the entire equivalence pipeline falls to DeepSeek via OpenRouter, making the 'fourth independent system' invariant (Invariant 4) collapse to just another OpenRouter model.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4's equivalence validator sends a compound prompt to Below's `/api/classify` endpoint: `{text: 'A:\\n<original>\\n\\n---\\n\\nB:\\n<paraphrase>\\nAre A and B semantically equivalent?', categories: ['equivalent','partial','diverged']}`. The verified contract is single-text multi-category classification, not NLI. The classifier was trained for topic/sentiment classification \u2014 there is no evidence it can perform semantic equivalence judgment. The calibration step (20-pair check, 80% threshold) mitigates this, but if Below fails calibration, the entire equivalence pipeline falls to DeepSeek via OpenRouter, making the 'fourth independent system' invariant (Invariant 4) collapse to just another OpenRouter model.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's Node/UI dependency install runs `npm ci` or `npm install` inside `<worktree>/ui/` with a 3-min timeout. But `npm ci` deletes `node_modules/` before installing, and a fresh install of a typical BR3 UI project can easily exceed 3 minutes on an M2 Mac (especially if the npm cache is cold). Timeout would mark the run as `install_failed` (scored as test failure), systematically penalizing both models equally but inflating the failure rate and reducing statistical power.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's Node/UI dependency install runs `npm ci` or `npm install` inside `<worktree>/ui/` with a 3-min timeout. But `npm ci` deletes `node_modules/` before installing, and a fresh install of a typical BR3 UI project can easily exceed 3 minutes on an M2 Mac (especially if the npm cache is cold). Timeout would mark the run as `install_failed` (scored as test failure), systematically penalizing both models equally but inflating the failure rate and reducing statistical power.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` passes prompt_text as argv[5] to `dispatch-to-node.sh` via `subprocess.Popen(argv, shell=False)`. The plan claims a 100KB hard limit for SSH command-line safety. But `dispatch-to-node.sh` embeds the prompt in a heredoc over SSH \u2014 the actual limit is the remote node's `ARG_MAX` for the SSH-spawned shell, which on macOS is ~256KB for the full argument+environment block. A 100KB prompt plus SSH overhead plus environment could approach this limit. More critically, the plan doesn't account for the paraphrased spec potentially being longer than the original (paraphrasing often expands text), so the 50KB 'expected' estimate may undercount.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `dispatch_run` passes prompt_text as argv[5] to `dispatch-to-node.sh` via `subprocess.Popen(argv, shell=False)`. The plan claims a 100KB hard limit for SSH command-line safety. But `dispatch-to-node.sh` embeds the prompt in a heredoc over SSH \u2014 the actual limit is the remote node's `ARG_MAX` for the SSH-spawned shell, which on macOS is ~256KB for the full argument+environment block. A 100KB prompt plus SSH overhead plus environment could approach this limit. More critically, the plan doesn't account for the paraphrased spec potentially being longer than the original (paraphrasing often expands text), so the 50KB 'expected' estimate may undercount.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 modifies `.buildrunner/runtime.json` atomically, but the plan never specifies what happens if Phase 10 is resumed after a crash that occurred mid-write. The atomic write (tmp+fsync+rename) protects against partial writes, but the decision of whether to write is based on statistical analysis of all 360 runs. If the run is resumed and new runs complete, the analysis could change. There is no idempotency check on the runtime.json write \u2014 resume could flip the default back and forth.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 10 modifies `.buildrunner/runtime.json` atomically, but the plan never specifies what happens if Phase 10 is resumed after a crash that occurred mid-write. The atomic write (tmp+fsync+rename) protects against partial writes, but the decision of whether to write is based on statistical analysis of all 360 runs. If the run is resumed and new runs complete, the analysis could change. There is no idempotency check on the runtime.json write \u2014 resume could flip the default back and forth.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 creates `benchmark_registry.jsonl` on first `br benchmark` invocation, and the registry uses `fcntl.flock(LOCK_EX)` for concurrency. But Phase 10 runs Otis and Lomax in parallel \u2014 each node runs its own Python process. `fcntl.flock` only works for processes on the same machine accessing the same filesystem. If Otis and Lomax each write to their own local copy of the registry (since dispatch-to-node.sh rsyncs the repo to the remote node), the registry will have split-brain: two separate JSONL files on two nodes, with no merge strategy. The plan never addresses how results from remote nodes are collected back into the single registry.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 creates `benchmark_registry.jsonl` on first `br benchmark` invocation, and the registry uses `fcntl.flock(LOCK_EX)` for concurrency. But Phase 10 runs Otis and Lomax in parallel \u2014 each node runs its own Python process. `fcntl.flock` only works for processes on the same machine accessing the same filesystem. If Otis and Lomax each write to their own local copy of the registry (since dispatch-to-node.sh rsyncs the repo to the remote node), the registry will have split-brain: two separate JSONL files on two nodes, with no merge strategy. The plan never addresses how results from remote nodes are collected back into the single registry.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` calls `subprocess.Popen(argv, shell=False, cwd=worktree)` where argv includes the worktree path as the `<project_path>` argument. `dispatch-to-node.sh` rsyncs this path to the remote node and runs the runtime there. But the runner expects to read stdout/stderr from the Popen call to capture token counts, wall-clock, exit code, and the resulting diff. The dispatch script runs the model on a REMOTE node via SSH \u2014 stdout/stderr from the local subprocess is the SSH session's stdout/stderr, which may include SSH connection messages, rsync output, and other non-model output mixed in. The token-count parsing rules (Phase 1's `TokenCounts.source` rules) would need to handle this noise, but no stripping of dispatch-script output is specified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `dispatch_run` calls `subprocess.Popen(argv, shell=False, cwd=worktree)` where argv includes the worktree path as the `<project_path>` argument. `dispatch-to-node.sh` rsyncs this path to the remote node and runs the runtime there. But the runner expects to read stdout/stderr from the Popen call to capture token counts, wall-clock, exit code, and the resulting diff. The dispatch script runs the model on a REMOTE node via SSH \u2014 stdout/stderr from the local subprocess is the SSH session's stdout/stderr, which may include SSH connection messages, rsync output, and other non-model output mixed in. The token-count parsing rules (Phase 1's `TokenCounts.source` rules) would need to handle this noise, but no stripping of dispatch-script output is specified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `finalize_worktree` captures the diff via `git diff <pre_run_commit_sha>..<post_run_commit_sha>`, but the contestant's work happens on the REMOTE node (Otis/Lomax). The worktree on the local machine is the pre-run state. After `dispatch-to-node.sh` completes, the contestant's changes exist only on the remote node's copy. The plan never describes how the remote node's changes are synced back to the local worktree before `finalize_worktree` runs `git add -A` and commits.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `finalize_worktree` captures the diff via `git diff <pre_run_commit_sha>..<post_run_commit_sha>`, but the contestant's work happens on the REMOTE node (Otis/Lomax). The worktree on the local machine is the pre-run state. After `dispatch-to-node.sh` completes, the contestant's changes exist only on the remote node's copy. The plan never describes how the remote node's changes are synced back to the local worktree before `finalize_worktree` runs `git add -A` and commits.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 runs 84 pilot runs (7\u00d72\u00d73\u00d72) but Phase 6's de-blinding classifier operates on normalized diffs. Each run produces one diff, but the classifier needs labeled training data (which model produced which diff). With 84 samples split across 5 folds, each fold has ~17 samples (~8-9 per class). Logistic regression with TF-IDF char n-grams (3-5) on such a small dataset is prone to high variance \u2014 the 5-fold CV accuracy estimate will be noisy, making the binomial test gate unreliable. The plan acknowledges n=84 is better than n=16 but doesn't address whether the feature space (char n-grams) is appropriate for this sample size.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 runs 84 pilot runs (7\u00d72\u00d73\u00d72) but Phase 6's de-blinding classifier operates on normalized diffs. Each run produces one diff, but the classifier needs labeled training data (which model produced which diff). With 84 samples split across 5 folds, each fold has ~17 samples (~8-9 per class). Logistic regression with TF-IDF char n-grams (3-5) on such a small dataset is prone to high variance \u2014 the 5-fold CV accuracy estimate will be noisy, making the binomial test gate unreliable. The plan acknowledges n=84 is better than n=16 but doesn't address whether the feature space (char n-grams) is appropriate for this sample size.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's selector parses BUILD spec markdown files to extract phases, but the parsing contract (how phases are delimited, how checklist items are identified, how declared files are extracted) is not specified beyond 'BUILD-spec markdown parser'. BUILD specs across the 34 files likely have inconsistent formatting. No schema or grammar for the BUILD spec format is referenced, and no error handling for malformed specs is described.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's selector parses BUILD spec markdown files to extract phases, but the parsing contract (how phases are delimited, how checklist items are identified, how declared files are extracted) is not specified beyond 'BUILD-spec markdown parser'. BUILD specs across the 34 files likely have inconsistent formatting. No schema or grammar for the BUILD spec format is referenced, and no error handling for malformed specs is described.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's paraphraser preserves 'file paths and identifier names verbatim (regex-enforced post-check)'. But the regex for detecting file paths and identifiers in arbitrary markdown prose is not specified. False negatives (failing to detect a path like `src/lib/utils.ts` embedded in a sentence) would allow the paraphraser to rewrite it, breaking the spec. False positives (treating ordinary words as identifiers) would over-constrain the paraphrase.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4's paraphraser preserves 'file paths and identifier names verbatim (regex-enforced post-check)'. But the regex for detecting file paths and identifiers in arbitrary markdown prose is not specified. False negatives (failing to detect a path like `src/lib/utils.ts` embedded in a sentence) would allow the paraphraser to rewrite it, breaking the spec. False positives (treating ordinary words as identifiers) would over-constrain the paraphrase.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan specifies Codex 5.4 and Claude Opus 4.7 as contestants, but the current environment shows Claude Opus 4.6 as the latest model. Claude Opus 4.7 does not exist as of the knowledge cutoff (May 2025) or the session date (2026-04-16). The `training_cutoffs.py` declares Opus 4.7 cutoff as 2026-01-01, but if this model doesn't exist yet, the entire benchmark is speculative.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan specifies Codex 5.4 and Claude Opus 4.7 as contestants, but the current environment shows Claude Opus 4.6 as the latest model. Claude Opus 4.7 does not exist as of the knowledge cutoff (May 2025) or the session date (2026-04-16). The `training_cutoffs.py` declares Opus 4.7 cutoff as 2026-01-01, but if this model doesn't exist yet, the entire benchmark is speculative.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 assumes `dispatch-to-node.sh` rsyncs the worktree to a node and that the contestant's edits are available back in the local worktree for `finalize_worktree()` to commit, but the only verified contract in the prompt is the CLI signature. No cited excerpt proves any sync-back behavior or any way to recover remote edits, so the scorer can end up committing and judging an unchanged local tree.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 assumes `dispatch-to-node.sh` rsyncs the worktree to a node and that the contestant's edits are available back in the local worktree for `finalize_worktree()` to commit, but the only verified contract in the prompt is the CLI signature. No cited excerpt proves any sync-back behavior or any way to recover remote edits, so the scorer can end up committing and judging an unchanged local tree.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 runs `.venv-benchmark/bin/pytest` and says Phase 1's benchmark venv already has pytest installed, but the canonical `requirements-benchmark.txt` pin list in Phase 1 does not include `pytest`. Local test execution and the benchmark test suite will fail on a fresh install.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 runs `.venv-benchmark/bin/pytest` and says Phase 1's benchmark venv already has pytest installed, but the canonical `requirements-benchmark.txt` pin list in Phase 1 does not include `pytest`. Local test execution and the benchmark test suite will fail on a fresh install.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's primary scoring path depends on an existing `ui/package.json` with `scripts.test = \"vitest\"`, but `ui/package.json` appears in neither the Project File Tree nor the Cited File Excerpts. That file is not verified to exist, so the Node test/install path is built on an unconfirmed file.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's primary scoring path depends on an existing `ui/package.json` with `scripts.test = \"vitest\"`, but `ui/package.json` appears in neither the Project File Tree nor the Cited File Excerpts. That file is not verified to exist, so the Node test/install path is built on an unconfirmed file.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `resolve_lock(build_file, phase_number)` implementation greps only `^lock: claim Phase N` across git history. Because many BUILD files can have their own `Phase 1`, `Phase 2`, etc., this can resolve a phase to a lock commit from the wrong BUILD file, corrupting both cutoff stratification and the Phase 3 checkout base.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's `resolve_lock(build_file, phase_number)` implementation greps only `^lock: claim Phase N` across git history. Because many BUILD files can have their own `Phase 1`, `Phase 2`, etc., this can resolve a phase to a lock commit from the wrong BUILD file, corrupting both cutoff stratification and the Phase 3 checkout base.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's equivalence rules are internally inconsistent: one bullet says the primary validator must return `equivalent` on both directions, but the next bullet says that if Below returns `partial`/`diverged` or low confidence, DeepSeek can confirm and the paraphrase is accepted. Those two rules cannot both be true, and the current wording can let a primary rejection still pass.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4's equivalence rules are internally inconsistent: one bullet says the primary validator must return `equivalent` on both directions, but the next bullet says that if Below returns `partial`/`diverged` or low confidence, DeepSeek can confirm and the paraphrase is accepted. Those two rules cannot both be true, and the current wording can let a primary rejection still pass.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 hard-fails startup if Walter or Lomax `/health` is down, but Phase 5 explicitly defines Walter and Lomax as optional enrichment outside the critical scoring path. That contradiction means transient cluster-health issues can block `benchmark` commands that should still be able to run locally.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 hard-fails startup if Walter or Lomax `/health` is down, but Phase 5 explicitly defines Walter and Lomax as optional enrichment outside the critical scoring path. That contradiction means transient cluster-health issues can block `benchmark` commands that should still be able to run locally.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3/Phase 1 treat token accounting as if Codex/Claude dispatches expose a parseable `stdout_json` or `stderr_usage_line`, but no cited excerpt verifies any dispatch output schema. Token-count capture is therefore based on an unverified API surface and can silently collapse to `source=\"none\"` for most runs.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3/Phase 1 treat token accounting as if Codex/Claude dispatches expose a parseable `stdout_json` or `stderr_usage_line`, but no cited excerpt verifies any dispatch output schema. Token-count capture is therefore based on an unverified API surface and can silently collapse to `source=\"none\"` for most runs.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 creates `benchmark_registry.jsonl` on first `br benchmark` invocation, and the registry uses `fcntl.flock(LOCK_EX)` for concurrency. But Phase 10 runs Otis and Lomax in parallel \u2014 each node runs its own Python process. `fcntl.flock` only works for processes on the same machine accessing the same filesystem. If Otis and Lomax each write to their own local copy of the registry (since dispatch-to-node.sh rsyncs the repo to the remote node), the registry will have split-brain: two separate JSONL files on two nodes, with no merge strategy. The plan never addresses how results from remote nodes are collected back into the single registry.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 creates `benchmark_registry.jsonl` on first `br benchmark` invocation, and the registry uses `fcntl.flock(LOCK_EX)` for concurrency. But Phase 10 runs Otis and Lomax in parallel \u2014 each node runs its own Python process. `fcntl.flock` only works for processes on the same machine accessing the same filesystem. If Otis and Lomax each write to their own local copy of the registry (since dispatch-to-node.sh rsyncs the repo to the remote node), the registry will have split-brain: two separate JSONL files on two nodes, with no merge strategy. The plan never addresses how results from remote nodes are collected back into the single registry.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `finalize_worktree` captures the diff via `git diff <pre_run_commit_sha>..<post_run_commit_sha>`, but the contestant's work happens on the REMOTE node (Otis/Lomax). The worktree on the local machine is the pre-run state. After `dispatch-to-node.sh` completes, the contestant's changes exist only on the remote node's copy. The plan never describes how the remote node's changes are synced back to the local worktree before `finalize_worktree` runs `git add -A` and commits.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `finalize_worktree` captures the diff via `git diff <pre_run_commit_sha>..<post_run_commit_sha>`, but the contestant's work happens on the REMOTE node (Otis/Lomax). The worktree on the local machine is the pre-run state. After `dispatch-to-node.sh` completes, the contestant's changes exist only on the remote node's copy. The plan never describes how the remote node's changes are synced back to the local worktree before `finalize_worktree` runs `git add -A` and commits.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 assumes `dispatch-to-node.sh` rsyncs the worktree to a node and that the contestant's edits are available back in the local worktree for `finalize_worktree()` to commit, but the only verified contract in the prompt is the CLI signature. No cited excerpt proves any sync-back behavior or any way to recover remote edits, so the scorer can end up committing and judging an unchanged local tree.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 assumes `dispatch-to-node.sh` rsyncs the worktree to a node and that the contestant's edits are available back in the local worktree for `finalize_worktree()` to commit, but the only verified contract in the prompt is the CLI signature. No cited excerpt proves any sync-back behavior or any way to recover remote edits, so the scorer can end up committing and judging an unchanged local tree.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 runs `.venv-benchmark/bin/pytest` and says Phase 1's benchmark venv already has pytest installed, but the canonical `requirements-benchmark.txt` pin list in Phase 1 does not include `pytest`. Local test execution and the benchmark test suite will fail on a fresh install.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 runs `.venv-benchmark/bin/pytest` and says Phase 1's benchmark venv already has pytest installed, but the canonical `requirements-benchmark.txt` pin list in Phase 1 does not include `pytest`. Local test execution and the benchmark test suite will fail on a fresh install.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's primary scoring path depends on an existing `ui/package.json` with `scripts.test = \"vitest\"`, but `ui/package.json` appears in neither the Project File Tree nor the Cited File Excerpts. That file is not verified to exist, so the Node test/install path is built on an unconfirmed file.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's primary scoring path depends on an existing `ui/package.json` with `scripts.test = \"vitest\"`, but `ui/package.json` appears in neither the Project File Tree nor the Cited File Excerpts. That file is not verified to exist, so the Node test/install path is built on an unconfirmed file.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `resolve_lock(build_file, phase_number)` implementation greps only `^lock: claim Phase N` across git history. Because many BUILD files can have their own `Phase 1`, `Phase 2`, etc., this can resolve a phase to a lock commit from the wrong BUILD file, corrupting both cutoff stratification and the Phase 3 checkout base.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's `resolve_lock(build_file, phase_number)` implementation greps only `^lock: claim Phase N` across git history. Because many BUILD files can have their own `Phase 1`, `Phase 2`, etc., this can resolve a phase to a lock commit from the wrong BUILD file, corrupting both cutoff stratification and the Phase 3 checkout base.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T01:51:00.536037Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 8
+}

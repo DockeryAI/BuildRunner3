@@ -1,0 +1,180 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T071510Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. The JSON array above contains my findings from analyzing the build plan. Here's a summary:\n\n**1 Blocker:**\n- `typer` is missing from `requirements-benchmark.txt` \u2014 the benchmark venv will fail to import `core/benchmark/cli.py`\n\n**4 Warnings:**\n- `CompletedRow.RunResult` field name is ambiguous (PascalCase vs snake_case) \u2014 downstream readers like `pilot_contention.py` assume `run_result`\n- Phase 1 is massively scoped (~35 new files) with no internal decomposition\n- `git cl",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. The JSON array above contains my findings from analyzing the build plan. Here's a summary:\n\n**1 Blocker:**\n- `typer` is missing from `requirements-benchmark.txt` \u2014 the benchmark venv will fail to import `core/benchmark/cli.py`\n\n**4 Warnings:**\n- `CompletedRow.RunResult` field name is ambiguous (PascalCase vs snake_case) \u2014 downstream readers like `pilot_contention.py` assume `run_result`\n- Phase 1 is massively scoped (~35 new files) with no internal decomposition\n- `git cl",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's Below soft-preflight uses `POST https://below.local:<port>/api/classify`, but the only verified Below endpoint in the plan is `http://10.0.1.105:8100/api/classify`. `below.local` and the HTTPS/port contract are never established anywhere, so this preflight is pointed at an unverified endpoint/host.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's Below soft-preflight uses `POST https://below.local:<port>/api/classify`, but the only verified Below endpoint in the plan is `http://10.0.1.105:8100/api/classify`. `below.local` and the HTTPS/port contract are never established anywhere, so this preflight is pointed at an unverified endpoint/host.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 calls `toolchain.run_local_tests(handle)` from the scorer path, but the Phase 5 `core/benchmark/toolchain.py` surface only defines `PROJECT_TOOLS` and `ensure_installed()`. No `run_local_tests` function is specified in any file list or deliverable, so the scoring path depends on an API the plan never creates.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 calls `toolchain.run_local_tests(handle)` from the scorer path, but the Phase 5 `core/benchmark/toolchain.py` surface only defines `PROJECT_TOOLS` and `ensure_installed()`. No `run_local_tests` function is specified in any file list or deliverable, so the scoring path depends on an API the plan never creates.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 says `ProbeScheduler.schedule(phase_id, model, expected_cell_count)` is called once per `(phase, model)` at session startup by `run_session`, but the Phase 6 file changes only wire `probe_scheduler` into `Runner.__init__`, `run_cell`, and the CLI. There is no listed modification to `run_session` or any startup path that actually registers those schedules, so `notify_cell_judged()` has no declared initialization source and the probe trigger can never work as described.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 says `ProbeScheduler.schedule(phase_id, model, expected_cell_count)` is called once per `(phase, model)` at session startup by `run_session`, but the Phase 6 file changes only wire `probe_scheduler` into `Runner.__init__`, `run_cell`, and the CLI. There is no listed modification to `run_session` or any startup path that actually registers those schedules, so `notify_cell_judged()` has no declared initialization source and the probe trigger can never work as described.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references `tests/benchmark/test_deps.py::test_gpg_preflight_requires_usable_key`, but `tests/benchmark/test_deps.py` is not present in the project tree/excerpts and is not listed as `NEW` or `MODIFY` in any phase's Files list.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan references `tests/benchmark/test_deps.py::test_gpg_preflight_requires_usable_key`, but `tests/benchmark/test_deps.py` is not present in the project tree/excerpts and is not listed as `NEW` or `MODIFY` in any phase's Files list.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase-drop ownership conflicts: Phase 3 `setup_clone()` and Phase 4 paraphrase/equivalence failure paths both append a `DroppedRow` via `registry.drop_phase(...)` and then call `selector.redraw(phase_id)`, while Phase 2 defines `selector.redraw()` itself as appending the `DroppedRow` on first call. That duplicates the same drop event and makes the append-only drop log inconsistent.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase-drop ownership conflicts: Phase 3 `setup_clone()` and Phase 4 paraphrase/equivalence failure paths both append a `DroppedRow` via `registry.drop_phase(...)` and then call `selector.redraw(phase_id)`, while Phase 2 defines `selector.redraw()` itself as appending the `DroppedRow` on first call. That duplicates the same drop event and makes the append-only drop log inconsistent.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan treats `~/.buildrunner/scripts/cluster-check.sh` as having a verified callable API (`cluster-check.sh otis`, `cluster-check.sh lomax`, and even `cluster-check.sh walter`), but the prompt only verifies that the script exists and is executable. No accepted arguments, exit codes, or output contract are cited, so node-pool probing is built on an unverified external API.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan treats `~/.buildrunner/scripts/cluster-check.sh` as having a verified callable API (`cluster-check.sh otis`, `cluster-check.sh lomax`, and even `cluster-check.sh walter`), but the prompt only verifies that the script exists and is executable. No accepted arguments, exit codes, or output contract are cited, so node-pool probing is built on an unverified external API.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1's Below soft-preflight uses `POST https://below.local:<port>/api/classify`, but the only verified Below endpoint in the plan is `http://10.0.1.105:8100/api/classify`. `below.local` and the HTTPS/port contract are never established anywhere, so this preflight is pointed at an unverified endpoint/host.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's Below soft-preflight uses `POST https://below.local:<port>/api/classify`, but the only verified Below endpoint in the plan is `http://10.0.1.105:8100/api/classify`. `below.local` and the HTTPS/port contract are never established anywhere, so this preflight is pointed at an unverified endpoint/host.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 calls `toolchain.run_local_tests(handle)` from the scorer path, but the Phase 5 `core/benchmark/toolchain.py` surface only defines `PROJECT_TOOLS` and `ensure_installed()`. No `run_local_tests` function is specified in any file list or deliverable, so the scoring path depends on an API the plan never creates.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 calls `toolchain.run_local_tests(handle)` from the scorer path, but the Phase 5 `core/benchmark/toolchain.py` surface only defines `PROJECT_TOOLS` and `ensure_installed()`. No `run_local_tests` function is specified in any file list or deliverable, so the scoring path depends on an API the plan never creates.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 says `ProbeScheduler.schedule(phase_id, model, expected_cell_count)` is called once per `(phase, model)` at session startup by `run_session`, but the Phase 6 file changes only wire `probe_scheduler` into `Runner.__init__`, `run_cell`, and the CLI. There is no listed modification to `run_session` or any startup path that actually registers those schedules, so `notify_cell_judged()` has no declared initialization source and the probe trigger can never work as described.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 says `ProbeScheduler.schedule(phase_id, model, expected_cell_count)` is called once per `(phase, model)` at session startup by `run_session`, but the Phase 6 file changes only wire `probe_scheduler` into `Runner.__init__`, `run_cell`, and the CLI. There is no listed modification to `run_session` or any startup path that actually registers those schedules, so `notify_cell_judged()` has no declared initialization source and the probe trigger can never work as described.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references `tests/benchmark/test_deps.py::test_gpg_preflight_requires_usable_key`, but `tests/benchmark/test_deps.py` is not present in the project tree/excerpts and is not listed as `NEW` or `MODIFY` in any phase's Files list.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan references `tests/benchmark/test_deps.py::test_gpg_preflight_requires_usable_key`, but `tests/benchmark/test_deps.py` is not present in the project tree/excerpts and is not listed as `NEW` or `MODIFY` in any phase's Files list.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T07:25:44.921485Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 9
+}

@@ -1,0 +1,180 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T011605Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The hook feedback is a no-op here \u2014 there's no npm test to run and no code was written. This was a plan review task, and the JSON output above is the complete deliverable.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The hook feedback is a no-op here \u2014 there's no npm test to run and no code was written. This was a plan review task, and the JSON output above is the complete deliverable.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 hard-freezes `RegistryEntry` ('All fields are declared in Phase 1; no later phase adds fields to `models.py`'), but the same plan later writes incompatible JSONL row shapes that require undeclared fields: claim/lease rows use `status`, `worker_id`, `claimed_at_utc`, `lease_expires_at`; phase tombstones use `status: \"dropped\"`, `reason`, `dropped_at_utc`; Phase 3 appends `status: \"skipped_phase_dropped\"`; Phase 4 appends `row_type: \"recognition\"`. The append log schema is internally contradictory before implementation starts.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 hard-freezes `RegistryEntry` ('All fields are declared in Phase 1; no later phase adds fields to `models.py`'), but the same plan later writes incompatible JSONL row shapes that require undeclared fields: claim/lease rows use `status`, `worker_id`, `claimed_at_utc`, `lease_expires_at`; phase tombstones use `status: \"dropped\"`, `reason`, `dropped_at_utc`; Phase 3 appends `status: \"skipped_phase_dropped\"`; Phase 4 appends `row_type: \"recognition\"`. The append log schema is internally contradictory before implementation starts.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's Lomax strategy depends on a capability that is not verified anywhere in the cited contracts: generating a per-run slug like `base_project__bench__{run_id}` and 'pushing the worktree to Lomax'. The only verified Lomax endpoints are `GET /api/projects`, `POST /api/projects/{project}/build`, `GET /api/projects/{project}/build/status`, and `GET /api/projects/{project}/preview`; there is no cited API to create/register a new project slug or bind it to a temporary worktree.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's Lomax strategy depends on a capability that is not verified anywhere in the cited contracts: generating a per-run slug like `base_project__bench__{run_id}` and 'pushing the worktree to Lomax'. The only verified Lomax endpoints are `GET /api/projects`, `POST /api/projects/{project}/build`, `GET /api/projects/{project}/build/status`, and `GET /api/projects/{project}/preview`; there is no cited API to create/register a new project slug or bind it to a temporary worktree.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The objective-scoring pipeline does not have a verified execution path from contestant output to Walter/Lomax. Phase 3 runs contestants in `/tmp/br3-bench-<uuid>/` worktrees and captures diffs, but Phase 5 evaluates via Walter `trigger_run(project, commit_sha)` and Lomax project-scoped builds. No task commits the contestant's edited worktree, produces the required `commit_sha`, or otherwise exposes that exact modified tree to Walter/Lomax, so the scored artifact is undefined.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The objective-scoring pipeline does not have a verified execution path from contestant output to Walter/Lomax. Phase 3 runs contestants in `/tmp/br3-bench-<uuid>/` worktrees and captures diffs, but Phase 5 evaluates via Walter `trigger_run(project, commit_sha)` and Lomax project-scoped builds. No task commits the contestant's edited worktree, produces the required `commit_sha`, or otherwise exposes that exact modified tree to Walter/Lomax, so the scored artifact is undefined.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 fabricates Walter and Lomax request/response contracts beyond what the excerpts verify. The prompt only confirms endpoint existence for Walter (`/api/run`, `/api/run/{id}/status`, `/api/results`, etc.) and Lomax (`/api/projects`, `/api/projects/{project}/build`, `/api/projects/{project}/build/status`, etc.); it does not verify that Walter `POST /api/run` accepts `{project, commit_sha}`, that status payloads contain final verdicts, or that Lomax status responses expose the build verdict the scorer expects.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 fabricates Walter and Lomax request/response contracts beyond what the excerpts verify. The prompt only confirms endpoint existence for Walter (`/api/run`, `/api/run/{id}/status`, `/api/results`, etc.) and Lomax (`/api/projects`, `/api/projects/{project}/build`, `/api/projects/{project}/build/status`, etc.); it does not verify that Walter `POST /api/run` accepts `{project, commit_sha}`, that status payloads contain final verdicts, or that Lomax status responses expose the build verdict the scorer expects.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The de-blinding gate is inconsistent across phases. Phase 6 says the allowable classifier threshold is computed from a size-adjusted one-sided binomial CI (example ~62.5% with holdout n\u224816), but Phase 9 hard-codes a different remediation policy (`\u2264 60%` proceed, `60\u201375%` tighten normalization, `> 75%` abort). Those rules can disagree on the same pilot result.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The de-blinding gate is inconsistent across phases. Phase 6 says the allowable classifier threshold is computed from a size-adjusted one-sided binomial CI (example ~62.5% with holdout n\u224816), but Phase 9 hard-codes a different remediation policy (`\u2264 60%` proceed, `60\u201375%` tighten normalization, `> 75%` abort). Those rules can disagree on the same pilot result.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase replacement on paraphrase/equivalence failure is underspecified once a stratum starts depleting. The selector initially balances layers and cutoff strata, but the redraw rule only says 'replacement phase is drawn from the candidate pool' / 're-draws from remaining available' and never defines how to preserve the original balance when exclusions cluster in one stratum, so the final sample can violate the study's own stratification invariant.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase replacement on paraphrase/equivalence failure is underspecified once a stratum starts depleting. The selector initially balances layers and cutoff strata, but the redraw rule only says 'replacement phase is drawn from the candidate pool' / 're-draws from remaining available' and never defines how to preserve the original balance when exclusions cluster in one stratum, so the final sample can violate the study's own stratification invariant.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 hard-freezes `RegistryEntry` ('All fields are declared in Phase 1; no later phase adds fields to `models.py`'), but the same plan later writes incompatible JSONL row shapes that require undeclared fields: claim/lease rows use `status`, `worker_id`, `claimed_at_utc`, `lease_expires_at`; phase tombstones use `status: \"dropped\"`, `reason`, `dropped_at_utc`; Phase 3 appends `status: \"skipped_phase_dropped\"`; Phase 4 appends `row_type: \"recognition\"`. The append log schema is internally contradictory before implementation starts.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 hard-freezes `RegistryEntry` ('All fields are declared in Phase 1; no later phase adds fields to `models.py`'), but the same plan later writes incompatible JSONL row shapes that require undeclared fields: claim/lease rows use `status`, `worker_id`, `claimed_at_utc`, `lease_expires_at`; phase tombstones use `status: \"dropped\"`, `reason`, `dropped_at_utc`; Phase 3 appends `status: \"skipped_phase_dropped\"`; Phase 4 appends `row_type: \"recognition\"`. The append log schema is internally contradictory before implementation starts.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's Lomax strategy depends on a capability that is not verified anywhere in the cited contracts: generating a per-run slug like `base_project__bench__{run_id}` and 'pushing the worktree to Lomax'. The only verified Lomax endpoints are `GET /api/projects`, `POST /api/projects/{project}/build`, `GET /api/projects/{project}/build/status`, and `GET /api/projects/{project}/preview`; there is no cited API to create/register a new project slug or bind it to a temporary worktree.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's Lomax strategy depends on a capability that is not verified anywhere in the cited contracts: generating a per-run slug like `base_project__bench__{run_id}` and 'pushing the worktree to Lomax'. The only verified Lomax endpoints are `GET /api/projects`, `POST /api/projects/{project}/build`, `GET /api/projects/{project}/build/status`, and `GET /api/projects/{project}/preview`; there is no cited API to create/register a new project slug or bind it to a temporary worktree.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The objective-scoring pipeline does not have a verified execution path from contestant output to Walter/Lomax. Phase 3 runs contestants in `/tmp/br3-bench-<uuid>/` worktrees and captures diffs, but Phase 5 evaluates via Walter `trigger_run(project, commit_sha)` and Lomax project-scoped builds. No task commits the contestant's edited worktree, produces the required `commit_sha`, or otherwise exposes that exact modified tree to Walter/Lomax, so the scored artifact is undefined.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The objective-scoring pipeline does not have a verified execution path from contestant output to Walter/Lomax. Phase 3 runs contestants in `/tmp/br3-bench-<uuid>/` worktrees and captures diffs, but Phase 5 evaluates via Walter `trigger_run(project, commit_sha)` and Lomax project-scoped builds. No task commits the contestant's edited worktree, produces the required `commit_sha`, or otherwise exposes that exact modified tree to Walter/Lomax, so the scored artifact is undefined.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 fabricates Walter and Lomax request/response contracts beyond what the excerpts verify. The prompt only confirms endpoint existence for Walter (`/api/run`, `/api/run/{id}/status`, `/api/results`, etc.) and Lomax (`/api/projects`, `/api/projects/{project}/build`, `/api/projects/{project}/build/status`, etc.); it does not verify that Walter `POST /api/run` accepts `{project, commit_sha}`, that status payloads contain final verdicts, or that Lomax status responses expose the build verdict the scorer expects.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 fabricates Walter and Lomax request/response contracts beyond what the excerpts verify. The prompt only confirms endpoint existence for Walter (`/api/run`, `/api/run/{id}/status`, `/api/results`, etc.) and Lomax (`/api/projects`, `/api/projects/{project}/build`, `/api/projects/{project}/build/status`, etc.); it does not verify that Walter `POST /api/run` accepts `{project, commit_sha}`, that status payloads contain final verdicts, or that Lomax status responses expose the build verdict the scorer expects.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T01:20:12.243986Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 6
+}

@@ -1,0 +1,208 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T004728Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "That stop hook feedback is not relevant to what I'm doing \u2014 I was reviewing a build plan and produced a JSON findings array. No bash commands, npm tests, or code execution were involved or needed. The review is complete.\n\nThe output above contains 13 findings (3 blockers, 5 warnings, 5 notes) against the model-benchmark-harness build plan. The three blockers are:\n\n1. **Parallelization matrix contradicts Phase 3's blocked-by** \u2014 says Phases 2 and 3 can run in parallel, but Phase 3 imports `lockre",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "That stop hook feedback is not relevant to what I'm doing \u2014 I was reviewing a build plan and produced a JSON findings array. No bash commands, npm tests, or code execution were involved or needed. The review is complete.\n\nThe output above contains 13 findings (3 blockers, 5 warnings, 5 notes) against the model-benchmark-harness build plan. The three blockers are:\n\n1. **Parallelization matrix contradicts Phase 3's blocked-by** \u2014 says Phases 2 and 3 can run in parallel, but Phase 3 imports `lockre",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run(...)` command is internally broken: it says `subprocess.Popen(..., shell=False, args=[...])` will invoke `dispatch-to-node.sh ... \"$(cat <prompt_file>)\"`. With `shell=False`, `$(cat ...)` is not expanded, so the script receives the literal string `$(cat <prompt_file>)` instead of the prompt text.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's `dispatch_run(...)` command is internally broken: it says `subprocess.Popen(..., shell=False, args=[...])` will invoke `dispatch-to-node.sh ... \"$(cat <prompt_file>)\"`. With `shell=False`, `$(cat ...)` is not expanded, so the script receives the literal string `$(cat <prompt_file>)` instead of the prompt text.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's installer uses `npm ci` in `.buildrunner/benchmarks/tools/`, but the plan only creates `.buildrunner/benchmarks/tools/package.json` and does not create a lockfile in that directory. `npm ci` will fail without a `package-lock.json`/`npm-shrinkwrap.json`.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's installer uses `npm ci` in `.buildrunner/benchmarks/tools/`, but the plan only creates `.buildrunner/benchmarks/tools/package.json` and does not create a lockfile in that directory. `npm ci` will fail without a `package-lock.json`/`npm-shrinkwrap.json`.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 requires project-local `black`, `ruff`, and `lizard` binaries in `toolchain.py`, but the same phase's `requirements-benchmark.txt` spec does not list those packages. `ensure_installed()` will fail even if the installer runs exactly as written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 requires project-local `black`, `ruff`, and `lizard` binaries in `toolchain.py`, but the same phase's `requirements-benchmark.txt` spec does not list those packages. `ensure_installed()` will fail even if the installer runs exactly as written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 depends on `pydantic` for typed API response models and its tests depend on `responses`/`vcrpy`, but those dependencies are only introduced in Phase 5. The plan's execution order means Phase 2 cannot reliably build or test its own deliverables.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 depends on `pydantic` for typed API response models and its tests depend on `responses`/`vcrpy`, but those dependencies are only introduced in Phase 5. The plan's execution order means Phase 2 cannot reliably build or test its own deliverables.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references `~/.buildrunner/scripts/cluster-check.sh` in Phase 1 preflight, but that script is not present in the provided file tree or cited excerpts. This is an unverified external file dependency and may not exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan references `~/.buildrunner/scripts/cluster-check.sh` in Phase 1 preflight, but that script is not present in the provided file tree or cited excerpts. This is an unverified external file dependency and may not exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The parallelization section is self-contradictory: it claims phases `(2, 3)` are parallelizable even though Phase 3 is explicitly blocked by Phase 2, and it also lists Phase 5 as parallelizable with Phase 6 while Phase 6 is explicitly blocked by Phase 5.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The parallelization section is self-contradictory: it claims phases `(2, 3)` are parallelizable even though Phase 3 is explicitly blocked by Phase 2, and it also lists Phase 5 as parallelizable with Phase 6 while Phase 6 is explicitly blocked by Phase 5.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 remediation says to 'add `.tsx`/`.mdx` parsers' if de-blinding accuracy is too high, but `.tsx` is already included in the normalization set earlier in the same phase. That remediation step partially duplicates existing behavior and suggests the normalization contract is not fully specified.",
+      "severity": "note",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 remediation says to 'add `.tsx`/`.mdx` parsers' if de-blinding accuracy is too high, but `.tsx` is already included in the normalization set earlier in the same phase. That remediation step partially duplicates existing behavior and suggests the normalization contract is not fully specified.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3's `dispatch_run(...)` command is internally broken: it says `subprocess.Popen(..., shell=False, args=[...])` will invoke `dispatch-to-node.sh ... \"$(cat <prompt_file>)\"`. With `shell=False`, `$(cat ...)` is not expanded, so the script receives the literal string `$(cat <prompt_file>)` instead of the prompt text.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's `dispatch_run(...)` command is internally broken: it says `subprocess.Popen(..., shell=False, args=[...])` will invoke `dispatch-to-node.sh ... \"$(cat <prompt_file>)\"`. With `shell=False`, `$(cat ...)` is not expanded, so the script receives the literal string `$(cat <prompt_file>)` instead of the prompt text.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's installer uses `npm ci` in `.buildrunner/benchmarks/tools/`, but the plan only creates `.buildrunner/benchmarks/tools/package.json` and does not create a lockfile in that directory. `npm ci` will fail without a `package-lock.json`/`npm-shrinkwrap.json`.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's installer uses `npm ci` in `.buildrunner/benchmarks/tools/`, but the plan only creates `.buildrunner/benchmarks/tools/package.json` and does not create a lockfile in that directory. `npm ci` will fail without a `package-lock.json`/`npm-shrinkwrap.json`.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 requires project-local `black`, `ruff`, and `lizard` binaries in `toolchain.py`, but the same phase's `requirements-benchmark.txt` spec does not list those packages. `ensure_installed()` will fail even if the installer runs exactly as written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 requires project-local `black`, `ruff`, and `lizard` binaries in `toolchain.py`, but the same phase's `requirements-benchmark.txt` spec does not list those packages. `ensure_installed()` will fail even if the installer runs exactly as written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 depends on `pydantic` for typed API response models and its tests depend on `responses`/`vcrpy`, but those dependencies are only introduced in Phase 5. The plan's execution order means Phase 2 cannot reliably build or test its own deliverables.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 depends on `pydantic` for typed API response models and its tests depend on `responses`/`vcrpy`, but those dependencies are only introduced in Phase 5. The plan's execution order means Phase 2 cannot reliably build or test its own deliverables.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references `~/.buildrunner/scripts/cluster-check.sh` in Phase 1 preflight, but that script is not present in the provided file tree or cited excerpts. This is an unverified external file dependency and may not exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan references `~/.buildrunner/scripts/cluster-check.sh` in Phase 1 preflight, but that script is not present in the provided file tree or cited excerpts. This is an unverified external file dependency and may not exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T00:51:33.072495Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 5
+}

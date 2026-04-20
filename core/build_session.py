@@ -61,6 +61,14 @@ class BuildSession:
     current_component: Optional[str] = None
     current_feature: Optional[str] = None
     end_time: Optional[int] = None
+    runtime: str = "claude"
+    backend: Optional[str] = None
+    runtime_source: Optional[str] = None
+    runtime_session_id: Optional[str] = None
+    capabilities: Dict[str, object] = field(default_factory=dict)
+    dispatch_mode: str = "direct"
+    shadow_runtime: Optional[str] = None
+    shadow_status: Optional[str] = None
 
 
 class SessionManager:
@@ -75,7 +83,18 @@ class SessionManager:
         return cls._instance
 
     def create_session(
-        self, project_name: str, project_alias: str, project_path: str
+        self,
+        project_name: str,
+        project_alias: str,
+        project_path: str,
+        runtime: str = "claude",
+        backend: Optional[str] = None,
+        runtime_source: Optional[str] = None,
+        runtime_session_id: Optional[str] = None,
+        capabilities: Optional[Dict[str, object]] = None,
+        dispatch_mode: str = "direct",
+        shadow_runtime: Optional[str] = None,
+        shadow_status: Optional[str] = None,
     ) -> BuildSession:
         session_id = f"session-{datetime.now().timestamp()}"
         session = BuildSession(
@@ -84,6 +103,14 @@ class SessionManager:
             project_alias=project_alias,
             project_path=project_path,
             start_time=int(datetime.now().timestamp() * 1000),
+            runtime=runtime,
+            backend=backend,
+            runtime_source=runtime_source,
+            runtime_session_id=runtime_session_id,
+            capabilities=capabilities or {},
+            dispatch_mode=dispatch_mode,
+            shadow_runtime=shadow_runtime,
+            shadow_status=shadow_status,
         )
         self._sessions[project_alias] = session
         return session
@@ -117,6 +144,42 @@ class SessionManager:
 
     def list_sessions(self) -> List[BuildSession]:
         return list(self._sessions.values())
+
+    def update_runtime_metadata(
+        self,
+        project_alias: str,
+        *,
+        runtime: Optional[str] = None,
+        backend: Optional[str] = None,
+        runtime_source: Optional[str] = None,
+        runtime_session_id: Optional[str] = None,
+        capabilities: Optional[Dict[str, object]] = None,
+        dispatch_mode: Optional[str] = None,
+        shadow_runtime: Optional[str] = None,
+        shadow_status: Optional[str] = None,
+    ) -> Optional[BuildSession]:
+        session = self._sessions.get(project_alias)
+        if not session:
+            return None
+
+        if runtime is not None:
+            session.runtime = runtime
+        if backend is not None:
+            session.backend = backend
+        if runtime_source is not None:
+            session.runtime_source = runtime_source
+        if runtime_session_id is not None:
+            session.runtime_session_id = runtime_session_id
+        if capabilities is not None:
+            session.capabilities = capabilities
+        if dispatch_mode is not None:
+            session.dispatch_mode = dispatch_mode
+        if shadow_runtime is not None:
+            session.shadow_runtime = shadow_runtime
+        if shadow_status is not None:
+            session.shadow_status = shadow_status
+
+        return session
 
 
 session_manager = SessionManager()

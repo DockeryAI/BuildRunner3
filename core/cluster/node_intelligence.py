@@ -6,6 +6,7 @@ Run: uvicorn core.cluster.node_intelligence:app --host 0.0.0.0 --port 8100
 (Shares port with node_semantic — mount as sub-app or run separately)
 """
 
+import asyncio
 import os
 import hmac
 import hashlib
@@ -24,6 +25,7 @@ DISABLE_POLLERS = os.environ.get("DISABLE_POLLERS", "true").lower() in ("true", 
 DISABLE_SCORING = os.environ.get("DISABLE_SCORING", "true").lower() in ("true", "1", "yes")
 DISABLE_VERIFIER = os.environ.get("DISABLE_VERIFIER", "false").lower() in ("true", "1", "yes")
 DISABLE_SOURCER = os.environ.get("DISABLE_SOURCER", "false").lower() in ("true", "1", "yes")
+DISABLE_SELLER_VERIFIER = os.environ.get("DISABLE_SELLER_VERIFIER", "false").lower() in ("true", "1", "yes")
 
 # --- Router (included by node_semantic.py) ---
 router = APIRouter()
@@ -73,7 +75,16 @@ class OpusDealReview(BaseModel):
 # --- Startup ---
 
 async def intel_startup():
-    """Initialize DB tables and start pollers if enabled. Called by node_semantic on startup."""
+    """Initialize DB tables and start pollers if enabled. Called by node_semantic on startup.
+
+    Crons are staggered to avoid overwhelming the M2's single-core SQLite I/O:
+    - Pollers start immediately (lightweight RSS/webhook receivers)
+    - Scoring starts after 30s (Below API calls, not I/O heavy)
+    - Verifier starts after 60s (HTTP checks, moderate I/O)
+    - Sourcer starts after 90s (heavy: external scrapes + SQLite writes)
+    """
+    import asyncio
+
     from core.cluster.intel_collector import _get_intel_db
     # Ensure tables exist on startup
     conn = _get_intel_db()
@@ -86,23 +97,37 @@ async def intel_startup():
     else:
         logger.info("DISABLE_POLLERS=true — skipping background pollers")
 
-    if not DISABLE_SCORING:
-        from core.cluster.intel_scoring import start_scoring_cron
-        start_scoring_cron()
-    else:
-        logger.info("DISABLE_SCORING=true — skipping scoring cron")
+    # Stagger cron startups so they don't all hit SQLite simultaneously
+    async def _deferred_crons():
+        if not DISABLE_SCORING:
+            await asyncio.sleep(30)
+            from core.cluster.intel_scoring import start_scoring_cron
+            start_scoring_cron()
+        else:
+            logger.info("DISABLE_SCORING=true — skipping scoring cron")
 
-    if not DISABLE_VERIFIER:
-        from core.cluster.intel_verifier import start_verifier_cron
-        start_verifier_cron()
-    else:
-        logger.info("DISABLE_VERIFIER=true — skipping deal verifier cron")
+        if not DISABLE_VERIFIER:
+            await asyncio.sleep(30)
+            from core.cluster.intel_verifier import start_verifier_cron
+            start_verifier_cron()
+        else:
+            logger.info("DISABLE_VERIFIER=true — skipping deal verifier cron")
 
-    if not DISABLE_SOURCER:
-        from core.cluster.hunt_sourcer import start_sourcer_cron
-        start_sourcer_cron()
-    else:
-        logger.info("DISABLE_SOURCER=true — skipping hunt sourcer cron")
+        if not DISABLE_SOURCER:
+            await asyncio.sleep(30)
+            from core.cluster.hunt_sourcer import start_sourcer_cron
+            start_sourcer_cron()
+        else:
+            logger.info("DISABLE_SOURCER=true — skipping hunt sourcer cron")
+
+        if not DISABLE_SELLER_VERIFIER:
+            await asyncio.sleep(30)
+            from core.cluster.seller_verifier import start_seller_verifier_cron
+            start_seller_verifier_cron()
+        else:
+            logger.info("DISABLE_SELLER_VERIFIER=true — skipping seller verifier cron")
+
+    asyncio.create_task(_deferred_crons())
 
 
 # --- Manual Intel Submission ---
@@ -312,15 +337,60 @@ async def get_deal_items(
     read: Optional[bool] = None,
     verified_only: Optional[bool] = None,
     in_stock_only: Optional[bool] = None,
+    seller_verified_only: Optional[bool] = None,
+    ready_only: bool = True,
     limit: int = 50,
 ):
-    """Get deal items with filters."""
+    """Get deal items with filters.
+
+    By default (ready_only=True), only returns deals that are:
+    - in_stock = 1 (verified available for purchase)
+    - seller_verified = 1 (seller legitimacy verified via Apify)
+
+    Set ready_only=False to see all deals regardless of verification status.
+    """
     from core.cluster.intel_collector import get_deal_items as _get_deals
     items = _get_deals(
         hunt_id=hunt_id, min_score=min_score, limit=limit,
         verified_only=verified_only, in_stock_only=in_stock_only,
+        seller_verified_only=seller_verified_only, ready_only=ready_only,
     )
     return {"items": items, "count": len(items)}
+
+
+class DealItemCreate(BaseModel):
+    """Deal item for insertion via API."""
+    hunt_id: int
+    name: str
+    category: Optional[str] = None
+    attributes: Optional[dict] = None
+    source_url: Optional[str] = None
+    price: Optional[float] = None
+    condition: Optional[str] = None
+    seller: Optional[str] = None
+    seller_rating: Optional[float] = None
+    listing_url: Optional[str] = None
+
+
+@router.post("/api/deals/items")
+async def create_deal_item_endpoint(item: DealItemCreate):
+    """Create a new deal item (used by remote sourcer)."""
+    from core.cluster.intel_collector import create_deal_item
+    deal_id = create_deal_item(
+        hunt_id=item.hunt_id,
+        name=item.name,
+        category=item.category,
+        attributes=item.attributes,
+        source_url=item.source_url,
+        price=item.price,
+        condition=item.condition,
+        seller=item.seller,
+        seller_rating=item.seller_rating,
+        listing_url=item.listing_url,
+    )
+    if deal_id:
+        return {"id": deal_id, "status": "created"}
+    return {"id": None, "status": "duplicate"}
 
 
 @router.get("/api/deals/hunts")
@@ -342,6 +412,38 @@ async def create_hunt(hunt: HuntCreate):
         source_urls=hunt.source_urls,
     )
     return {"id": hunt_id, "status": "created"}
+
+
+@router.get("/api/deals/hunts/archived")
+async def get_archived_hunts_endpoint():
+    """Get archived/completed hunts with item counts and total spent."""
+    from core.cluster.intel_collector import get_archived_hunts
+    hunts = get_archived_hunts()
+    return {"hunts": hunts, "count": len(hunts)}
+
+
+@router.patch("/api/deals/hunts/{hunt_id}")
+async def update_hunt(hunt_id: int, body: dict):
+    """Update hunt fields (requirements, keywords, target_price, etc.)."""
+    from core.cluster.intel_collector import _get_intel_db
+    conn = _get_intel_db()
+    allowed = {"requirements", "keywords", "target_price", "check_interval_minutes", "source_urls", "name", "category"}
+    updates = []
+    params = []
+    for key, val in body.items():
+        if key not in allowed:
+            continue
+        if key in ("requirements", "source_urls") and not isinstance(val, str):
+            val = json.dumps(val)
+        updates.append(f"{key} = ?")
+        params.append(val)
+    if not updates:
+        return {"status": "nothing to update"}
+    params.append(hunt_id)
+    conn.execute(f"UPDATE active_hunts SET {', '.join(updates)} WHERE id = ?", params)
+    conn.commit()
+    conn.close()
+    return {"status": "updated", "hunt_id": hunt_id}
 
 
 @router.post("/api/deals/hunts/{hunt_id}/archive")
@@ -399,8 +501,28 @@ async def verify_single_deal(item_id: int):
 
     result = await verify_deal_link(row["listing_url"])
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    current_price = result.get("current_price")
 
     conn = _get_intel_db()
+    # Update price if the API returned a new one
+    if current_price is not None:
+        old_price = conn.execute("SELECT price FROM deal_items WHERE id = ?", (item_id,)).fetchone()
+        if old_price and old_price["price"] is not None:
+            try:
+                old_price_num = float(str(old_price["price"]).replace("$", "").replace(",", ""))
+                if abs(current_price - old_price_num) > 0.01:
+                    conn.execute(
+                        """UPDATE deal_items SET verified = 1, link_status = ?, in_stock = ?, last_checked = ?,
+                           price = ?, price_updated_at = ? WHERE id = ?""",
+                        (result["status"], result["in_stock"], now, current_price, now, item_id)
+                    )
+                    conn.commit()
+                    conn.close()
+                    return {"status": "ok", "link_status": result["status"], "in_stock": result["in_stock"],
+                            "reason": result["reason"], "current_price": current_price, "price_updated": True}
+            except (ValueError, TypeError):
+                pass
+
     conn.execute(
         "UPDATE deal_items SET verified = 1, link_status = ?, in_stock = ?, last_checked = ? WHERE id = ?",
         (result["status"], result["in_stock"], now, item_id)
@@ -408,7 +530,8 @@ async def verify_single_deal(item_id: int):
     conn.commit()
     conn.close()
 
-    return {"status": "ok", "link_status": result["status"], "in_stock": result["in_stock"], "reason": result["reason"]}
+    return {"status": "ok", "link_status": result["status"], "in_stock": result["in_stock"],
+            "reason": result["reason"], "current_price": current_price}
 
 
 @router.post("/api/deals/items/{item_id}/opus-review")
@@ -425,10 +548,20 @@ async def opus_review_deal(item_id: int, review: OpusDealReview):
 class DealItemUpdate(BaseModel):
     purchased: Optional[int] = None
     purchased_price: Optional[float] = None
-    notes: Optional[str] = None
+    user_notes: Optional[str] = None
     dismissed: Optional[int] = None
     deal_score: Optional[int] = None
     verdict: Optional[str] = None
+    received: Optional[int] = None
+    received_at: Optional[str] = None
+    actual_url: Optional[str] = None
+    tracking_number: Optional[str] = None
+    carrier: Optional[str] = None
+    delivery_status: Optional[str] = None
+    seller_verified: Optional[int] = None
+    in_stock: Optional[int] = None
+    listing_url: Optional[str] = None
+    price: Optional[float] = None
 
 
 @router.get("/api/deals/market/{hunt_id}")
@@ -458,9 +591,13 @@ async def get_deals_summary():
     from core.cluster.intel_collector import _get_intel_db
     conn = _get_intel_db()
 
-    # Get per-hunt stats
+    # Get per-hunt stats (include completed hunts that have purchased items)
     hunts = conn.execute(
-        "SELECT id, name, category, target_price FROM active_hunts WHERE active = 1 ORDER BY id"
+        """SELECT DISTINCT h.id, h.name, h.category, h.target_price
+           FROM active_hunts h
+           LEFT JOIN deal_items d ON d.hunt_id = h.id AND d.purchased = 1
+           WHERE h.active = 1 OR d.id IS NOT NULL
+           ORDER BY h.id"""
     ).fetchall()
 
     hunt_stats = []
@@ -632,14 +769,83 @@ async def webhook_changedetection(request: Request):
     return {"status": "ok", "items_created": len(items), "items": items}
 
 
+_sourcer_task: Optional[asyncio.Task] = None
+
+
 @router.post("/api/deals/source")
 async def trigger_sourcer():
-    """Manually trigger one sourcer check cycle."""
-    import asyncio
-    try:
-        from core.cluster.hunt_sourcer import check_hunts_once
-        await check_hunts_once()
-        return {"status": "ok", "message": "Sourcer check completed"}
-    except Exception as e:
-        logger.error(f"Manual sourcer trigger failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    """Manually trigger one sourcer check cycle. Fire-and-forget — returns immediately."""
+    global _sourcer_task
+    if _sourcer_task and not _sourcer_task.done():
+        return {"status": "running", "message": "Sourcer cycle already in progress"}
+
+    async def _run_sourcer():
+        try:
+            from core.cluster.hunt_sourcer import check_hunts_once, _last_checked
+            _last_checked.clear()
+            await check_hunts_once()
+            logger.info("Manual sourcer cycle completed")
+        except Exception as e:
+            logger.error(f"Manual sourcer trigger failed: {e}")
+
+    _sourcer_task = asyncio.create_task(_run_sourcer())
+    return {"status": "started", "message": "Sourcer cycle started in background"}
+
+
+@router.get("/api/deals/source/status")
+async def sourcer_status():
+    """Check if a sourcer cycle is currently running."""
+    if _sourcer_task and not _sourcer_task.done():
+        return {"status": "running"}
+    return {"status": "idle"}
+
+
+# --- Item Lifecycle Endpoints ---
+
+
+@router.delete("/api/deals/items/{item_id}")
+async def delete_deal_item_endpoint(item_id: int):
+    """Delete a deal item and its price history."""
+    from core.cluster.intel_collector import delete_deal_item
+    success = delete_deal_item(item_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Deal item not found")
+    return {"status": "deleted"}
+
+
+class HuntCompleteBody(BaseModel):
+    completion_notes: Optional[str] = None
+
+
+@router.post("/api/deals/hunts/{hunt_id}/complete")
+async def complete_hunt_endpoint(hunt_id: int, body: HuntCompleteBody = None):
+    """Complete a hunt — sets active=0, completed_at=now, optional notes."""
+    from core.cluster.intel_collector import complete_hunt
+    notes = body.completion_notes if body else None
+    complete_hunt(hunt_id, completion_notes=notes)
+    return {"status": "completed"}
+
+
+@router.post("/api/deals/hunts/{hunt_id}/revive")
+async def revive_hunt_endpoint(hunt_id: int):
+    """Revive an archived hunt — sets active=1, clears completed_at."""
+    from core.cluster.intel_collector import revive_hunt
+    revive_hunt(hunt_id)
+    return {"status": "revived"}
+
+
+class ItemReviveBody(BaseModel):
+    target_hunt_id: Optional[int] = None
+    new_hunt_name: Optional[str] = None
+
+
+@router.post("/api/deals/items/{item_id}/revive")
+async def revive_item_endpoint(item_id: int, body: ItemReviveBody = None):
+    """Revive a deal item — clone into target hunt or create new hunt."""
+    from core.cluster.intel_collector import revive_item
+    target_hunt_id = body.target_hunt_id if body else None
+    new_hunt_name = body.new_hunt_name if body else None
+    result = revive_item(item_id, target_hunt_id=target_hunt_id, new_hunt_name=new_hunt_name)
+    if "error" in result:
+        raise HTTPException(status_code=404, detail=result["error"])
+    return {"status": "revived", **result}

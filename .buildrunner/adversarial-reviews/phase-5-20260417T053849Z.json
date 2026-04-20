@@ -1,0 +1,180 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T052853Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. The JSON array above contains my findings. Here's a summary:\n\n**4 warnings, 0 blockers:**\n\n1. **Scorer wiring location ambiguity** \u2014 Phase 5 says it MODIFYs `runner.py` with \"one-line integration,\" but the actual `Runner(scorer=BenchmarkScorer())` instantiation logically belongs in `cli_run.py` (where the CLI entry point constructs the Runner). Clarify which file gets the wiring line.\n\n2. **`deps.py` as session-state writer is architecturally odd** \u2014 Phase 1 declares `dep",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. The JSON array above contains my findings. Here's a summary:\n\n**4 warnings, 0 blockers:**\n\n1. **Scorer wiring location ambiguity** \u2014 Phase 5 says it MODIFYs `runner.py` with \"one-line integration,\" but the actual `Runner(scorer=BenchmarkScorer())` instantiation logically belongs in `cli_run.py` (where the CLI entry point constructs the Runner). Clarify which file gets the wiring line.\n\n2. **`deps.py` as session-state writer is architecturally odd** \u2014 Phase 1 declares `dep",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 defines `core/benchmark/__main__.py` as `from .cli import app; app()`, but `cli/main.py` is supposed to import `benchmark_app` from `core.benchmark.cli`. The plan never settles whether `core/benchmark/cli.py` exports `app` or `benchmark_app`, so the CLI wiring is internally inconsistent and will fail at import time in one of those paths.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `core/benchmark/__main__.py` as `from .cli import app; app()`, but `cli/main.py` is supposed to import `benchmark_app` from `core.benchmark.cli`. The plan never settles whether `core/benchmark/cli.py` exports `app` or `benchmark_app`, so the CLI wiring is internally inconsistent and will fail at import time in one of those paths.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's lock-resolution contract is contradictory: it says there is 'No Stage 3 fallback' and that a phase with no BUILD-file-touching lock commit must return `no_lock`, but the same deliverable later says the unit test should assert 'the fall-back path returns the most-recent match'. Those behaviors are mutually exclusive, so the runner cannot implement a single correct `resolve_lock()` contract.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's lock-resolution contract is contradictory: it says there is 'No Stage 3 fallback' and that a phase with no BUILD-file-touching lock commit must return `no_lock`, but the same deliverable later says the unit test should assert 'the fall-back path returns the most-recent match'. Those behaviors are mutually exclusive, so the runner cannot implement a single correct `resolve_lock()` contract.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 says the scorer is wired in by having the CLI entry point construct `Runner(scorer=BenchmarkScorer())`, but Phase 5's Files list does not modify `core/benchmark/cli_run.py` and only lists a `core/benchmark/runner.py` change. The described integration point and the files actually being changed do not match, so the full run path can remain on the Phase 3 `scorer=None` path.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 says the scorer is wired in by having the CLI entry point construct `Runner(scorer=BenchmarkScorer())`, but Phase 5's Files list does not modify `core/benchmark/cli_run.py` and only lists a `core/benchmark/runner.py` change. The described integration point and the files actually being changed do not match, so the full run path can remain on the Phase 3 `scorer=None` path.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The whole-phase replacement flow is incomplete. Phase 3 and Phase 4 failure paths call `selector.redraw(phase_id)` and explicitly do not dispatch the replacement cells themselves, but no phase owns the scheduler that reads `redraw_map` and enqueues the replacement phase's full `2 models \u00d7 3 replications \u00d7 2 sub-studies` matrix. That breaks Invariant 16's 'phase is re-drawn' guarantee.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The whole-phase replacement flow is incomplete. Phase 3 and Phase 4 failure paths call `selector.redraw(phase_id)` and explicitly do not dispatch the replacement cells themselves, but no phase owns the scheduler that reads `redraw_map` and enqueues the replacement phase's full `2 models \u00d7 3 replications \u00d7 2 sub-studies` matrix. That breaks Invariant 16's 'phase is re-drawn' guarantee.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 gates UI testing on post-run `<clone_path>/ui/package.json` existence. A contestant can delete or rename `ui/package.json` and the scorer will mark the Node surface `no_tests_discovered`/`partial_pass` instead of failing a broken UI change. The same hole exists for the Python surface if `tests/` is removed.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 gates UI testing on post-run `<clone_path>/ui/package.json` existence. A contestant can delete or rename `ui/package.json` and the scorer will mark the Node surface `no_tests_discovered`/`partial_pass` instead of failing a broken UI change. The same hole exists for the Python surface if `tests/` is removed.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The shared `.venv-benchmark` intentionally keeps net-new packages from prior runs and treats pure additions as non-drift. That means a later contestant can import an undeclared dependency and pass only because an earlier run already installed it, which contaminates the benchmark across cells.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The shared `.venv-benchmark` intentionally keeps net-new packages from prior runs and treats pure additions as non-drift. That means a later contestant can import an undeclared dependency and pass only because an earlier run already installed it, which contaminates the benchmark across cells.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 defines `core/benchmark/__main__.py` as `from .cli import app; app()`, but `cli/main.py` is supposed to import `benchmark_app` from `core.benchmark.cli`. The plan never settles whether `core/benchmark/cli.py` exports `app` or `benchmark_app`, so the CLI wiring is internally inconsistent and will fail at import time in one of those paths.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `core/benchmark/__main__.py` as `from .cli import app; app()`, but `cli/main.py` is supposed to import `benchmark_app` from `core.benchmark.cli`. The plan never settles whether `core/benchmark/cli.py` exports `app` or `benchmark_app`, so the CLI wiring is internally inconsistent and will fail at import time in one of those paths.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's lock-resolution contract is contradictory: it says there is 'No Stage 3 fallback' and that a phase with no BUILD-file-touching lock commit must return `no_lock`, but the same deliverable later says the unit test should assert 'the fall-back path returns the most-recent match'. Those behaviors are mutually exclusive, so the runner cannot implement a single correct `resolve_lock()` contract.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's lock-resolution contract is contradictory: it says there is 'No Stage 3 fallback' and that a phase with no BUILD-file-touching lock commit must return `no_lock`, but the same deliverable later says the unit test should assert 'the fall-back path returns the most-recent match'. Those behaviors are mutually exclusive, so the runner cannot implement a single correct `resolve_lock()` contract.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 says the scorer is wired in by having the CLI entry point construct `Runner(scorer=BenchmarkScorer())`, but Phase 5's Files list does not modify `core/benchmark/cli_run.py` and only lists a `core/benchmark/runner.py` change. The described integration point and the files actually being changed do not match, so the full run path can remain on the Phase 3 `scorer=None` path.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 says the scorer is wired in by having the CLI entry point construct `Runner(scorer=BenchmarkScorer())`, but Phase 5's Files list does not modify `core/benchmark/cli_run.py` and only lists a `core/benchmark/runner.py` change. The described integration point and the files actually being changed do not match, so the full run path can remain on the Phase 3 `scorer=None` path.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The whole-phase replacement flow is incomplete. Phase 3 and Phase 4 failure paths call `selector.redraw(phase_id)` and explicitly do not dispatch the replacement cells themselves, but no phase owns the scheduler that reads `redraw_map` and enqueues the replacement phase's full `2 models \u00d7 3 replications \u00d7 2 sub-studies` matrix. That breaks Invariant 16's 'phase is re-drawn' guarantee.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The whole-phase replacement flow is incomplete. Phase 3 and Phase 4 failure paths call `selector.redraw(phase_id)` and explicitly do not dispatch the replacement cells themselves, but no phase owns the scheduler that reads `redraw_map` and enqueues the replacement phase's full `2 models \u00d7 3 replications \u00d7 2 sub-studies` matrix. That breaks Invariant 16's 'phase is re-drawn' guarantee.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T05:38:49.056221Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 5
+}

@@ -1,0 +1,446 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T002531Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "cli/main.py is referenced as MODIFY in Phase 1 ('add from core.benchmark.cli import benchmark_app') but cli/main.py does not appear in the Project File Tree. The plan claims it is 'verified present' with specific line numbers (54-58) but no Cited File Excerpts section was provided to confirm this. If this file does not exist, Phase 1 will fail on the MODIFY step.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "cli/main.py is referenced as MODIFY in Phase 1 ('add from core.benchmark.cli import benchmark_app') but cli/main.py does not appear in the Project File Tree. The plan claims it is 'verified present' with specific line numbers (54-58) but no Cited File Excerpts section was provided to confirm this. If this file does not exist, Phase 1 will fail on the MODIFY step.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The entire core/ directory does not exist in the Project File Tree. All 10 phases create files under core/benchmark/. While these are NEW files, the parent directory core/ must be created first \u2014 no phase explicitly creates core/ or core/benchmark/ as directories, and no __init__.py for the core package itself is mentioned. Python will fail to import core.benchmark without a core/__init__.py.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The entire core/ directory does not exist in the Project File Tree. All 10 phases create files under core/benchmark/. While these are NEW files, the parent directory core/ must be created first \u2014 no phase explicitly creates core/ or core/benchmark/ as directories, and no __init__.py for the core package itself is mentioned. Python will fail to import core.benchmark without a core/__init__.py.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "No tests/ directory exists in the Project File Tree. Phases 2-8 create test files under tests/benchmark/ but no phase creates tests/__init__.py or tests/benchmark/__init__.py, and the tests directory itself does not appear to exist.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "No tests/ directory exists in the Project File Tree. Phases 2-8 create test files under tests/benchmark/ but no phase creates tests/__init__.py or tests/benchmark/__init__.py, and the tests directory itself does not appear to exist.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 prompts.py is listed as MODIFY but Phase 1 creates it as NEW with 'empty templates'. Phase 6 and Phase 8 also MODIFY prompts.py. The parallelization matrix says (4, 5) can run in parallel and Phase 6 is after 5 \u2014 but Phase 4 (blocked by 3) and Phase 6 (blocked by 3, 5) both modify prompts.py. The plan acknowledges this with a 'namespaced section' merge convention, but Phase 3 is the one that actually modifies prompts.py (not 4), and the convention requires manual merge resolution that is not automated in the harness.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 prompts.py is listed as MODIFY but Phase 1 creates it as NEW with 'empty templates'. Phase 6 and Phase 8 also MODIFY prompts.py. The parallelization matrix says (4, 5) can run in parallel and Phase 6 is after 5 \u2014 but Phase 4 (blocked by 3) and Phase 6 (blocked by 3, 5) both modify prompts.py. The plan acknowledges this with a 'namespaced section' merge convention, but Phase 3 is the one that actually modifies prompts.py (not 4), and the convention requires manual merge resolution that is not automated in the harness.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 adds scikit-learn>=1.4 to requirements-benchmark.txt for the deblind classifier, but requirements-benchmark.txt is created in Phase 7. Phase 6 is blocked by Phases 3 and 5 but NOT by Phase 7. The file does not exist when Phase 6 needs to add scikit-learn to it. Either Phase 6 must create the file, or requirements-benchmark.txt must move to Phase 5 or earlier.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 adds scikit-learn>=1.4 to requirements-benchmark.txt for the deblind classifier, but requirements-benchmark.txt is created in Phase 7. Phase 6 is blocked by Phases 3 and 5 but NOT by Phase 7. The file does not exist when Phase 6 needs to add scikit-learn to it. Either Phase 6 must create the file, or requirements-benchmark.txt must move to Phase 5 or earlier.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 deliverable says 'Requires toolchain.ensure_installed() from Phase 5 to be green' and the parallelization matrix shows Phase 6 blocked by Phase 5. However, the matrix also says Phase 6 'Can Parallel With: 4'. Phase 4 is blocked by Phase 3, Phase 5 is blocked by Phase 3, and Phase 6 is blocked by both 3 AND 5. This is consistent \u2014 but the text in the Parallelization Matrix says Phase 5 can parallel with '4, 6' which contradicts Phase 6 being blocked by Phase 5.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 deliverable says 'Requires toolchain.ensure_installed() from Phase 5 to be green' and the parallelization matrix shows Phase 6 blocked by Phase 5. However, the matrix also says Phase 6 'Can Parallel With: 4'. Phase 4 is blocked by Phase 3, Phase 5 is blocked by Phase 3, and Phase 6 is blocked by both 3 AND 5. This is consistent \u2014 but the text in the Parallelization Matrix says Phase 5 can parallel with '4, 6' which contradicts Phase 6 being blocked by Phase 5.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Below API contract mismatch: Phase 4 sends {text: 'A:\\n<original>\\n\\n---\\n\\nB:\\n<paraphrase>\\nAre A and B semantically equivalent?', categories: ['equivalent','partial','diverged']} but the verified contract says Below /api/classify is 'single-text multi-category' accepting {text: str, categories: [str]}. The plan packs TWO texts into a single text field with a delimiter, which is a creative workaround \u2014 but this is not NLI, it's asking a classifier to parse a formatted string. If Below's model interprets this as a single-document classification rather than a comparison, equivalence results will be meaningless.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Below API contract mismatch: Phase 4 sends {text: 'A:\\n<original>\\n\\n---\\n\\nB:\\n<paraphrase>\\nAre A and B semantically equivalent?', categories: ['equivalent','partial','diverged']} but the verified contract says Below /api/classify is 'single-text multi-category' accepting {text: str, categories: [str]}. The plan packs TWO texts into a single text field with a delimiter, which is a creative workaround \u2014 but this is not NLI, it's asking a classifier to parse a formatted string. If Below's model interprets this as a single-document classification rather than a comparison, equivalence results will be meaningless.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan says dispatch-to-node.sh CLI is '[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]' but Phase 3 invokes it as 'dispatch-to-node.sh --runtime {codex|claude} <node> <worktree> <prompt>'. The verified CLI shows <project_path> as the third positional arg, but the plan passes <worktree> (a /tmp path). If the script expects a registered project path rather than an arbitrary directory, dispatch will fail.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan says dispatch-to-node.sh CLI is '[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]' but Phase 3 invokes it as 'dispatch-to-node.sh --runtime {codex|claude} <node> <worktree> <prompt>'. The verified CLI shows <project_path> as the third positional arg, but the plan passes <worktree> (a /tmp path). If the script expects a registered project path rather than an arbitrary directory, dispatch will fail.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 references 'lock: commit SHA' parsed from BUILD spec files via 'git log --grep=^lock: claim Phase N'. This is a bespoke convention \u2014 no evidence in the file tree or plan excerpts confirms BUILD_*.md files contain 'lock:' markers or that such commit messages exist. If the convention was never adopted, the selector will exclude all phases (zero matches) and the entire benchmark has no candidates.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 references 'lock: commit SHA' parsed from BUILD spec files via 'git log --grep=^lock: claim Phase N'. This is a bespoke convention \u2014 no evidence in the file tree or plan excerpts confirms BUILD_*.md files contain 'lock:' markers or that such commit messages exist. If the convention was never adopted, the selector will exclude all phases (zero matches) and the entire benchmark has no candidates.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 expects 7 \u00d7 2 \u00d7 3 \u00d7 2 = 84 runs but acknowledges 'If the selector can produce fewer than 7 candidates after all filters, the pilot runs against the maximum available (minimum 5)'. Given the lock: commit dependency, self-containment filter, external-only-files filter, and registry exclusion, the effective candidate pool could easily be < 7 or even 0. No fallback is defined if fewer than 5 candidates survive filtering.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 expects 7 \u00d7 2 \u00d7 3 \u00d7 2 = 84 runs but acknowledges 'If the selector can produce fewer than 7 candidates after all filters, the pilot runs against the maximum available (minimum 5)'. Given the lock: commit dependency, self-containment filter, external-only-files filter, and registry exclusion, the effective candidate pool could easily be < 7 or even 0. No fallback is defined if fewer than 5 candidates survive filtering.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 creates .venv-benchmark/ via install-benchmark-tools.sh, but this script is created in Phase 5. The plan says Phase 7 is blocked by Phases 5 and 6, which is correct for ordering. However, the Phase 7 'Installation' section describes what install-benchmark-tools.sh does as if it's Phase 7's responsibility \u2014 this is confusing but not a bug since Phase 5 creates the script and Phase 7 just documents it uses the venv.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7 creates .venv-benchmark/ via install-benchmark-tools.sh, but this script is created in Phase 5. The plan says Phase 7 is blocked by Phases 5 and 6, which is correct for ordering. However, the Phase 7 'Installation' section describes what install-benchmark-tools.sh does as if it's Phase 7's responsibility \u2014 this is confusing but not a bug since Phase 5 creates the script and Phase 7 just documents it uses the venv.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Node pool is {Otis, Lomax} but Lomax is described as 'Forge \u2014 staging server + build validation' in the cluster table. The plan claims 'Lomax's staging-server role is served via its API endpoints... not contended by concurrent benchmark runs'. However, Lomax is also used by the Lomax API client (Phase 2) to get build verdicts. If a benchmark run is executing ON Lomax while simultaneously the scorer queries Lomax's /api/projects/{p}/build for build status, those could contend \u2014 the benchmark run may trigger builds that the scorer then picks up as verdicts for the wrong run.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Node pool is {Otis, Lomax} but Lomax is described as 'Forge \u2014 staging server + build validation' in the cluster table. The plan claims 'Lomax's staging-server role is served via its API endpoints... not contended by concurrent benchmark runs'. However, Lomax is also used by the Lomax API client (Phase 2) to get build verdicts. If a benchmark run is executing ON Lomax while simultaneously the scorer queries Lomax's /api/projects/{p}/build for build status, those could contend \u2014 the benchmark run may trigger builds that the scorer then picks up as verdicts for the wrong run.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references 'Codex 5.4' and 'Claude Opus 4.7' as the two models. Current knowledge shows Claude Opus 4.6 as the latest. If Opus 4.7 does not exist at execution time, the dispatch will fail or fall back to a different model. Training cutoff constants in training_cutoffs.py (Opus 4.7 = 2026-01-01) would be wrong.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references 'Codex 5.4' and 'Claude Opus 4.7' as the two models. Current knowledge shows Claude Opus 4.6 as the latest. If Opus 4.7 does not exist at execution time, the dispatch will fail or fall back to a different model. Training cutoff constants in training_cutoffs.py (Opus 4.7 = 2026-01-01) would be wrong.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "No phase creates or verifies .buildrunner/benchmarks/ directory exists before Phase 1 tries to write config.yaml and benchmark_registry.jsonl into it. The plan says registry is 'created by first br benchmark invocation' but config.yaml is listed as a Phase 1 deliverable \u2014 the directory must exist first.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "No phase creates or verifies .buildrunner/benchmarks/ directory exists before Phase 1 tries to write config.yaml and benchmark_registry.jsonl into it. The plan says registry is 'created by first br benchmark invocation' but config.yaml is listed as a Phase 1 deliverable \u2014 the directory must exist first.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's equivalence fallback uses 'deepseek/deepseek-v3.1' via OpenRouter as a fifth model. The plan carefully tracks model separation (contestants, judge, paraphraser, equivalence validator) but the fallback path means equivalence checking could use DeepSeek OR Below's local model. If DeepSeek's NLI behavior differs significantly from Below's classifier, equivalence results will be inconsistent across phases \u2014 some validated by Below, others by DeepSeek \u2014 introducing a hidden covariate not tracked in the analysis.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4's equivalence fallback uses 'deepseek/deepseek-v3.1' via OpenRouter as a fifth model. The plan carefully tracks model separation (contestants, judge, paraphraser, equivalence validator) but the fallback path means equivalence checking could use DeepSeek OR Below's local model. If DeepSeek's NLI behavior differs significantly from Below's classifier, equivalence results will be inconsistent across phases \u2014 some validated by Below, others by DeepSeek \u2014 introducing a hidden covariate not tracked in the analysis.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan says Phase 3 env allowlist includes 'BR3_RUNTIME' and 'BR3_SHADOW_RUNTIME' but these are not documented anywhere in the plan as being set or consumed. If dispatch-to-node.sh reads BR3_RUNTIME from the environment to determine the runtime (instead of the --runtime flag), the allowlist could create a conflict where both the flag and the env var are present with different values.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan says Phase 3 env allowlist includes 'BR3_RUNTIME' and 'BR3_SHADOW_RUNTIME' but these are not documented anywhere in the plan as being set or consumed. If dispatch-to-node.sh reads BR3_RUNTIME from the environment to determine the runtime (instead of the --runtime flag), the allowlist could create a conflict where both the flag and the env var are present with different values.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `benchmark_registry.jsonl` writer is specified as `tmp + fsync + rename` \"atomic append\" and Phase 3 resumes/appends per run, but rename-based whole-file rewrites are not append-safe under concurrent writers. Parallel benchmark runs can overwrite each other's rows and corrupt the registry/resume state.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's `benchmark_registry.jsonl` writer is specified as `tmp + fsync + rename` \"atomic append\" and Phase 3 resumes/appends per run, but rename-based whole-file rewrites are not append-safe under concurrent writers. Parallel benchmark runs can overwrite each other's rows and corrupt the registry/resume state.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 requires `toolchain.ensure_installed()` to verify `tsc`, `eslint`, `prettier`, `black`, `ruff`, `jscpd`, and `lizard` on `PATH`, but the dependency contract says the Node tools live under `.buildrunner/benchmarks/tools/node_modules/` and Python tools live in `.venv-benchmark/` specifically to avoid the main environment. Without explicit wrapper paths or venv activation, the preflight will either fail or pick unrelated global binaries.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 requires `toolchain.ensure_installed()` to verify `tsc`, `eslint`, `prettier`, `black`, `ruff`, `jscpd`, and `lizard` on `PATH`, but the dependency contract says the Node tools live under `.buildrunner/benchmarks/tools/node_modules/` and Python tools live in `.venv-benchmark/` specifically to avoid the main environment. Without explicit wrapper paths or venv activation, the preflight will either fail or pick unrelated global binaries.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 depends on `scikit-learn` for `deblind_classifier.py`, but `requirements-benchmark.txt` is only created in Phase 7 and the installation step that populates `.venv-benchmark/` is also described in Phase 7. The Phase 6 classifier cannot be implemented/test-run in the stated order.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 depends on `scikit-learn` for `deblind_classifier.py`, but `requirements-benchmark.txt` is only created in Phase 7 and the installation step that populates `.venv-benchmark/` is also described in Phase 7. The Phase 6 classifier cannot be implemented/test-run in the stated order.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 is allowed to run in parallel with Phase 2 and re-resolves `lock:` commits itself via `git log --grep`, while Phase 2 defines the exclusion rules for `no_lock`, `ambiguous_lock`, merge-commit locks, and training-cutoff tagging. That creates two independent lock-resolution paths with different rules, so the runner can execute a commit that the selector would have excluded or scored differently.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 is allowed to run in parallel with Phase 2 and re-resolves `lock:` commits itself via `git log --grep`, while Phase 2 defines the exclusion rules for `no_lock`, `ambiguous_lock`, merge-commit locks, and training-cutoff tagging. That creates two independent lock-resolution paths with different rules, so the runner can execute a commit that the selector would have excluded or scored differently.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan says recognition is logged as a per-`(phase, model)` covariate, but benchmark execution is per `(phase, model, replication, sub_study)` and the probe is described as running after \"the scored run\". The plan never defines which run generates the single covariate or how multiple replications/sub-studies are collapsed consistently.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan says recognition is logged as a per-`(phase, model)` covariate, but benchmark execution is per `(phase, model, replication, sub_study)` and the probe is described as running after \"the scored run\". The plan never defines which run generates the single covariate or how multiple replications/sub-studies are collapsed consistently.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Invariant 16 requires dropping and re-drawing an entire phase when paraphrasing/equivalence fails, but the selector only targets `--count 30` and the full-study phase has no contingency when the filtered candidate pool cannot supply replacements after exclusions. Phase 10 can dead-end short of 30 phases with no recovery rule.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Invariant 16 requires dropping and re-drawing an entire phase when paraphrasing/equivalence fails, but the selector only targets `--count 30` and the full-study phase has no contingency when the filtered candidate pool cannot supply replacements after exclusions. Phase 10 can dead-end short of 30 phases with no recovery rule.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's format-normalization contract only specifies Prettier parsers `typescript|babel` for TS/JS files and Black for Python. It does not cover common BR3 source variants like TSX/JSX, so normalization can fail or leave model-identifying style differences in exactly the files the judge is supposed to see blinded.",
+      "severity": "note",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's format-normalization contract only specifies Prettier parsers `typescript|babel` for TS/JS files and Black for Python. It does not cover common BR3 source variants like TSX/JSX, so normalization can fail or leave model-identifying style differences in exactly the files the judge is supposed to see blinded.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "cli/main.py is referenced as MODIFY in Phase 1 ('add from core.benchmark.cli import benchmark_app') but cli/main.py does not appear in the Project File Tree. The plan claims it is 'verified present' with specific line numbers (54-58) but no Cited File Excerpts section was provided to confirm this. If this file does not exist, Phase 1 will fail on the MODIFY step.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "cli/main.py is referenced as MODIFY in Phase 1 ('add from core.benchmark.cli import benchmark_app') but cli/main.py does not appear in the Project File Tree. The plan claims it is 'verified present' with specific line numbers (54-58) but no Cited File Excerpts section was provided to confirm this. If this file does not exist, Phase 1 will fail on the MODIFY step.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The entire core/ directory does not exist in the Project File Tree. All 10 phases create files under core/benchmark/. While these are NEW files, the parent directory core/ must be created first \u2014 no phase explicitly creates core/ or core/benchmark/ as directories, and no __init__.py for the core package itself is mentioned. Python will fail to import core.benchmark without a core/__init__.py.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The entire core/ directory does not exist in the Project File Tree. All 10 phases create files under core/benchmark/. While these are NEW files, the parent directory core/ must be created first \u2014 no phase explicitly creates core/ or core/benchmark/ as directories, and no __init__.py for the core package itself is mentioned. Python will fail to import core.benchmark without a core/__init__.py.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 adds scikit-learn>=1.4 to requirements-benchmark.txt for the deblind classifier, but requirements-benchmark.txt is created in Phase 7. Phase 6 is blocked by Phases 3 and 5 but NOT by Phase 7. The file does not exist when Phase 6 needs to add scikit-learn to it. Either Phase 6 must create the file, or requirements-benchmark.txt must move to Phase 5 or earlier.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 adds scikit-learn>=1.4 to requirements-benchmark.txt for the deblind classifier, but requirements-benchmark.txt is created in Phase 7. Phase 6 is blocked by Phases 3 and 5 but NOT by Phase 7. The file does not exist when Phase 6 needs to add scikit-learn to it. Either Phase 6 must create the file, or requirements-benchmark.txt must move to Phase 5 or earlier.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 deliverable says 'Requires toolchain.ensure_installed() from Phase 5 to be green' and the parallelization matrix shows Phase 6 blocked by Phase 5. However, the matrix also says Phase 6 'Can Parallel With: 4'. Phase 4 is blocked by Phase 3, Phase 5 is blocked by Phase 3, and Phase 6 is blocked by both 3 AND 5. This is consistent \u2014 but the text in the Parallelization Matrix says Phase 5 can parallel with '4, 6' which contradicts Phase 6 being blocked by Phase 5.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 deliverable says 'Requires toolchain.ensure_installed() from Phase 5 to be green' and the parallelization matrix shows Phase 6 blocked by Phase 5. However, the matrix also says Phase 6 'Can Parallel With: 4'. Phase 4 is blocked by Phase 3, Phase 5 is blocked by Phase 3, and Phase 6 is blocked by both 3 AND 5. This is consistent \u2014 but the text in the Parallelization Matrix says Phase 5 can parallel with '4, 6' which contradicts Phase 6 being blocked by Phase 5.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `benchmark_registry.jsonl` writer is specified as `tmp + fsync + rename` \"atomic append\" and Phase 3 resumes/appends per run, but rename-based whole-file rewrites are not append-safe under concurrent writers. Parallel benchmark runs can overwrite each other's rows and corrupt the registry/resume state.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's `benchmark_registry.jsonl` writer is specified as `tmp + fsync + rename` \"atomic append\" and Phase 3 resumes/appends per run, but rename-based whole-file rewrites are not append-safe under concurrent writers. Parallel benchmark runs can overwrite each other's rows and corrupt the registry/resume state.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 requires `toolchain.ensure_installed()` to verify `tsc`, `eslint`, `prettier`, `black`, `ruff`, `jscpd`, and `lizard` on `PATH`, but the dependency contract says the Node tools live under `.buildrunner/benchmarks/tools/node_modules/` and Python tools live in `.venv-benchmark/` specifically to avoid the main environment. Without explicit wrapper paths or venv activation, the preflight will either fail or pick unrelated global binaries.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 requires `toolchain.ensure_installed()` to verify `tsc`, `eslint`, `prettier`, `black`, `ruff`, `jscpd`, and `lizard` on `PATH`, but the dependency contract says the Node tools live under `.buildrunner/benchmarks/tools/node_modules/` and Python tools live in `.venv-benchmark/` specifically to avoid the main environment. Without explicit wrapper paths or venv activation, the preflight will either fail or pick unrelated global binaries.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 depends on `scikit-learn` for `deblind_classifier.py`, but `requirements-benchmark.txt` is only created in Phase 7 and the installation step that populates `.venv-benchmark/` is also described in Phase 7. The Phase 6 classifier cannot be implemented/test-run in the stated order.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 depends on `scikit-learn` for `deblind_classifier.py`, but `requirements-benchmark.txt` is only created in Phase 7 and the installation step that populates `.venv-benchmark/` is also described in Phase 7. The Phase 6 classifier cannot be implemented/test-run in the stated order.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T00:30:02.861949Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 5
+}

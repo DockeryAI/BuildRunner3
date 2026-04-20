@@ -1,0 +1,208 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T120900Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 6 `probe.py` (ProbeScheduler) must dispatch actual recognition probes via Phase 4's `recognition_probe.py`, but no import or dependency between these two modules is explicitly declared \u2014 ProbeScheduler.run_pending() and _maybe_fire() have no stated mechanism to invoke the probe dispatch logic that lives in the Phase 4 module",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 `probe.py` (ProbeScheduler) must dispatch actual recognition probes via Phase 4's `recognition_probe.py`, but no import or dependency between these two modules is explicitly declared \u2014 ProbeScheduler.run_pending() and _maybe_fire() have no stated mechanism to invoke the probe dispatch logic that lives in the Phase 4 module",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "exclusions.jsonl locking is inconsistent: writers (selector.redraw) hold session-state + registry flocks but do NOT hold a lock on exclusions.jsonl itself, while the reader (pool_survivors_after_paraphrase_equivalence property) takes LOCK_SH on the exclusions.jsonl file descriptor \u2014 these are different lock targets so a concurrent reader could observe a partial append if O_APPEND atomicity is violated for lines exceeding PIPE_BUF",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "exclusions.jsonl locking is inconsistent: writers (selector.redraw) hold session-state + registry flocks but do NOT hold a lock on exclusions.jsonl itself, while the reader (pool_survivors_after_paraphrase_equivalence property) takes LOCK_SH on the exclusions.jsonl file descriptor \u2014 these are different lock targets so a concurrent reader could observe a partial append if O_APPEND atomicity is violated for lines exceeding PIPE_BUF",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "requirements-benchmark.txt pins numpy>=1.26 with no upper bound while pinning scipy>=1.11,<2.0 and statsmodels>=0.14,<0.15 \u2014 numpy 2.x introduced C-API breaking changes that required downstream recompilation; if pip resolves numpy 2.x against an older statsmodels/scipy binary wheel, import-time crashes (ValueError on C-contiguous array checks) could occur in the benchmark venv",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "requirements-benchmark.txt pins numpy>=1.26 with no upper bound while pinning scipy>=1.11,<2.0 and statsmodels>=0.14,<0.15 \u2014 numpy 2.x introduced C-API breaking changes that required downstream recompilation; if pip resolves numpy 2.x against an older statsmodels/scipy binary wheel, import-time crashes (ValueError on C-contiguous array checks) could occur in the benchmark venv",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "scripts/install-benchmark-deps.sh is declared as a bash script with a required --session-id flag for gc.auto backup lifecycle, but no bash argument parsing implementation (getopts, positional shift, etc.) is specified \u2014 the script body only describes set -euo pipefail, the two-pass pip install loop, and the gc.auto backup write, with no indication of how --session-id is extracted from argv",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "scripts/install-benchmark-deps.sh is declared as a bash script with a required --session-id flag for gc.auto backup lifecycle, but no bash argument parsing implementation (getopts, positional shift, etc.) is specified \u2014 the script body only describes set -euo pipefail, the two-pass pip install loop, and the gc.auto backup write, with no indication of how --session-id is extracted from argv",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "gc-anchors sweep class (b) reads /tmp/br3-bench-*.owner sibling files to detect orphaned clones, but does not handle the case where the .owner file persists after the clone directory was manually removed or crashed mid-teardown (teardown does rm -rf clone THEN os.unlink .owner \u2014 a crash between them leaves a dangling .owner with no clone to sweep, causing gc-anchors to attempt removal of a non-existent directory on every run)",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "gc-anchors sweep class (b) reads /tmp/br3-bench-*.owner sibling files to detect orphaned clones, but does not handle the case where the .owner file persists after the clone directory was manually removed or crashed mid-teardown (teardown does rm -rf clone THEN os.unlink .owner \u2014 a crash between them leaves a dangling .owner with no clone to sweep, causing gc-anchors to attempt removal of a non-existent directory on every run)",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 regression uses statsmodels.genmod.bayes_mixed_glm.BinomialBayesMixedGLM with fit_vb() for the mixed-effects logistic model, but the plan also lists a fallback to statsmodels.discrete.discrete_model.Logit with cov_type='cluster' \u2014 the Logit fallback path uses a different estimator (frequentist MLE vs variational Bayes) whose coefficient scale and CI semantics differ, yet the report template does not distinguish which estimator produced each table, making cross-phase reproducibility ambiguous if different pilot/full runs trigger different paths",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7 regression uses statsmodels.genmod.bayes_mixed_glm.BinomialBayesMixedGLM with fit_vb() for the mixed-effects logistic model, but the plan also lists a fallback to statsmodels.discrete.discrete_model.Logit with cov_type='cluster' \u2014 the Logit fallback path uses a different estimator (frequentist MLE vs variational Bayes) whose coefficient scale and CI semantics differ, yet the report template does not distinguish which estimator produced each table, making cross-phase reproducibility ambiguous if different pilot/full runs trigger different paths",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The two-pass pip install order (Pass 1: non-harness requirements, Pass 2: requirements-benchmark.txt) relies on pip resolving version conflicts by downgrading/upgrading packages from Pass 1 to satisfy Pass 2 pins \u2014 but pip's resolver does not guarantee 'last write wins'; it resolves the intersection of all installed constraints, and if a Pass 1 package has a transitive dep that conflicts with a Pass 2 pin, pip emits ResolutionImpossible rather than silently preferring Pass 2. The plan handles this only for the pytest>=9.0 case (scored as install_failed) but not for arbitrary transitive-dep conflicts from project requirements-api.txt",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The two-pass pip install order (Pass 1: non-harness requirements, Pass 2: requirements-benchmark.txt) relies on pip resolving version conflicts by downgrading/upgrading packages from Pass 1 to satisfy Pass 2 pins \u2014 but pip's resolver does not guarantee 'last write wins'; it resolves the intersection of all installed constraints, and if a Pass 1 package has a transitive dep that conflicts with a Pass 2 pin, pip emits ResolutionImpossible rather than silently preferring Pass 2. The plan handles this only for the pytest>=9.0 case (scored as install_failed) but not for arbitrary transitive-dep conflicts from project requirements-api.txt",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 pilot_contention.py reads CompletedRow.run_result.wall_clock_ms through the nested RunResult pydantic model, but the module's CLI entrypoint uses 'if __name__ == \"__main__\": main()' with argparse/typer parsing --registry, --out, --session-id \u2014 this entrypoint must also call load_config() to read pilot.contention_ratio_threshold and pilot.contention_min_samples_per_bucket, but the CLI arg parser does not accept a --config path flag, implying it reads .buildrunner/benchmarks/config.yaml from CWD. If the operator invokes the module from a different working directory, load_config() will fail with FileNotFoundError",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 pilot_contention.py reads CompletedRow.run_result.wall_clock_ms through the nested RunResult pydantic model, but the module's CLI entrypoint uses 'if __name__ == \"__main__\": main()' with argparse/typer parsing --registry, --out, --session-id \u2014 this entrypoint must also call load_config() to read pilot.contention_ratio_threshold and pilot.contention_min_samples_per_bucket, but the CLI arg parser does not accept a --config path flag, implying it reads .buildrunner/benchmarks/config.yaml from CWD. If the operator invokes the module from a different working directory, load_config() will fail with FileNotFoundError",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `setup_clone` still uses `(<clone_path>/tests/).rglob(\"test**.py\")` for Python test-surface detection. That glob does not match standard pytest files like `test_models.py`, so the scorer can misclassify an existing Python test surface as absent and incorrectly fall through to `no_tests_discovered` or miss the planned test-surface-deletion guard.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's `setup_clone` still uses `(<clone_path>/tests/).rglob(\"test**.py\")` for Python test-surface detection. That glob does not match standard pytest files like `test_models.py`, so the scorer can misclassify an existing Python test surface as absent and incorrectly fall through to `no_tests_discovered` or miss the planned test-surface-deletion guard.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The remote GPG-signing preflight is specified in Phase 3 as new behavior inside `core/benchmark/deps.py` / `deps.probe_node_pool()`, but Phase 3's Files list does not modify `core/benchmark/deps.py`. The plan requires new SSH/GPG validation logic before dispatch, yet no owning phase actually edits the file that must implement it.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The remote GPG-signing preflight is specified in Phase 3 as new behavior inside `core/benchmark/deps.py` / `deps.probe_node_pool()`, but Phase 3's Files list does not modify `core/benchmark/deps.py`. The plan requires new SSH/GPG validation logic before dispatch, yet no owning phase actually edits the file that must implement it.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 contradicts itself about replication ownership: the deliverables define `run_cell(phase, model, sub_study, replication_index)` as a single-cell/single-replication entry point, but the Phase 3 success criteria says a single `runner.run_cell(...)` should produce `N RunResult rows, N = replications`. That mismatch will push implementation and tests toward incompatible APIs.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 contradicts itself about replication ownership: the deliverables define `run_cell(phase, model, sub_study, replication_index)` as a single-cell/single-replication entry point, but the Phase 3 success criteria says a single `runner.run_cell(...)` should produce `N RunResult rows, N = replications`. That mismatch will push implementation and tests toward incompatible APIs.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3's `setup_clone` still uses `(<clone_path>/tests/).rglob(\"test**.py\")` for Python test-surface detection. That glob does not match standard pytest files like `test_models.py`, so the scorer can misclassify an existing Python test surface as absent and incorrectly fall through to `no_tests_discovered` or miss the planned test-surface-deletion guard.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's `setup_clone` still uses `(<clone_path>/tests/).rglob(\"test**.py\")` for Python test-surface detection. That glob does not match standard pytest files like `test_models.py`, so the scorer can misclassify an existing Python test surface as absent and incorrectly fall through to `no_tests_discovered` or miss the planned test-surface-deletion guard.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The remote GPG-signing preflight is specified in Phase 3 as new behavior inside `core/benchmark/deps.py` / `deps.probe_node_pool()`, but Phase 3's Files list does not modify `core/benchmark/deps.py`. The plan requires new SSH/GPG validation logic before dispatch, yet no owning phase actually edits the file that must implement it.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The remote GPG-signing preflight is specified in Phase 3 as new behavior inside `core/benchmark/deps.py` / `deps.probe_node_pool()`, but Phase 3's Files list does not modify `core/benchmark/deps.py`. The plan requires new SSH/GPG validation logic before dispatch, yet no owning phase actually edits the file that must implement it.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T12:19:13.468273Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 1
+}

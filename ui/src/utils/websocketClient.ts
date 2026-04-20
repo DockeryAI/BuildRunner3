@@ -1,4 +1,14 @@
-type MessageType = 'connection' | 'component_update' | 'feature_update' | 'checkpoint_update' | 'terminal_output' | 'build_progress' | 'file_change' | 'error';
+type MessageType =
+  | 'connection'
+  | 'component_update'
+  | 'feature_update'
+  | 'checkpoint_update'
+  | 'terminal_output'
+  | 'build_progress'
+  | 'runtime_update'
+  | 'file_change'
+  | 'pong'
+  | 'error';
 
 interface WSMessage {
   type: MessageType;
@@ -19,7 +29,7 @@ export class WebSocketClient {
   private url: string = '';
 
   constructor() {
-    const types: MessageType[] = ['connection', 'component_update', 'feature_update', 'checkpoint_update', 'terminal_output', 'build_progress', 'file_change', 'error'];
+    const types: MessageType[] = ['connection', 'component_update', 'feature_update', 'checkpoint_update', 'terminal_output', 'build_progress', 'runtime_update', 'file_change', 'pong', 'error'];
     types.forEach((type) => this.handlers.set(type, new Set()));
   }
 

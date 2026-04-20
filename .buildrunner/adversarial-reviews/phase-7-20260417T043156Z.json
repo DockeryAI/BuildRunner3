@@ -1,0 +1,138 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T042138Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. Here's a summary of the findings:\n\n**2 Blockers:**\n\n1. **`deps.py` forward-reference to Phase 9 artifact** \u2014 Phase 10's preflight needs `deps.py` to read `pilot_contention.json` (created in Phase 9), but `deps.py` is not in Phase 10's Files list and Phase 1 is declared as its sole owner. Either Phase 1 must implement the reader logic upfront (forward-referencing Phase 9's schema), or `deps.py` must appear in Phase 10's Files list as MODIFY.\n\n2. **Phase 4 test references P",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. Here's a summary of the findings:\n\n**2 Blockers:**\n\n1. **`deps.py` forward-reference to Phase 9 artifact** \u2014 Phase 10's preflight needs `deps.py` to read `pilot_contention.json` (created in Phase 9), but `deps.py` is not in Phase 10's Files list and Phase 1 is declared as its sole owner. Either Phase 1 must implement the reader logic upfront (forward-referencing Phase 9's schema), or `deps.py` must appear in Phase 10's Files list as MODIFY.\n\n2. **Phase 4 test references P",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Training-cutoff sources conflict. The plan's 'External Dependencies' section says `core/benchmark/training_cutoffs.py` will hardcode Codex=`2025-09-01` and Claude=`2026-01-01`, but Phase 1 freezes different cutoff values in `BenchmarkConfig` (`codex_training_cutoff_utc=\"2025-11-01T00:00:00Z\"`, `claude_training_cutoff_utc=\"2026-01-31T00:00:00Z\"`) and later says `training_cutoffs.py` reads those config fields. Phase selection and pre/post-cutoff stratification cannot be reproducible with two incompatible cutoff definitions.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Training-cutoff sources conflict. The plan's 'External Dependencies' section says `core/benchmark/training_cutoffs.py` will hardcode Codex=`2025-09-01` and Claude=`2026-01-01`, but Phase 1 freezes different cutoff values in `BenchmarkConfig` (`codex_training_cutoff_utc=\"2025-11-01T00:00:00Z\"`, `claude_training_cutoff_utc=\"2026-01-31T00:00:00Z\"`) and later says `training_cutoffs.py` reads those config fields. Phase selection and pre/post-cutoff stratification cannot be reproducible with two incompatible cutoff definitions.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's recognition-probe trigger is internally contradictory: it allows the probe to fire when the current model's cells are only `stage in {\"scored\",\"judged\"}` while requiring the opposing model's cells to be `judged`. That still permits some current-model cells to remain unjudged, so future pairwise judging can occur after the probe, violating the stated 'post-scoring, non-priming, no future judgment taint' invariant.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4's recognition-probe trigger is internally contradictory: it allows the probe to fire when the current model's cells are only `stage in {\"scored\",\"judged\"}` while requiring the opposing model's cells to be `judged`. That still permits some current-model cells to remain unjudged, so future pairwise judging can occur after the probe, violating the stated 'post-scoring, non-priming, no future judgment taint' invariant.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The shared `.venv-benchmark` reuse strategy in Phase 5 only detects downgrades and cross-major version changes. It does not detect dependency removals or same-major replacements, so packages left behind by one contestant can satisfy imports for later runs and turn a missing-dependency failure into a false pass. That is cross-run contamination in the primary local test metric.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The shared `.venv-benchmark` reuse strategy in Phase 5 only detects downgrades and cross-major version changes. It does not detect dependency removals or same-major replacements, so packages left behind by one contestant can satisfy imports for later runs and turn a missing-dependency failure into a false pass. That is cross-run contamination in the primary local test metric.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan explicitly supports multiple orchestrator processes contending on `benchmark_registry.jsonl`, but `session-state.json` stores a single global `resume_session_id` that Phase 1's `deps.py` overwrites on startup. Concurrent `br benchmark run` / `resume` invocations can clobber each other's session id and break the stated resume semantics.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan explicitly supports multiple orchestrator processes contending on `benchmark_registry.jsonl`, but `session-state.json` stores a single global `resume_session_id` that Phase 1's `deps.py` overwrites on startup. Concurrent `br benchmark run` / `resume` invocations can clobber each other's session id and break the stated resume semantics.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Several runtime files are referenced as required artifacts but are missing from both the project tree/excerpts and the phase file lists that are supposed to create them: `.buildrunner/benchmarks/layer-cache.json`, `.buildrunner/benchmarks/api-status.json`, `.buildrunner/benchmarks/layer_provenance.json`, `format_coverage.json`, `run_meta.json`, and `.buildrunner/benchmarks/reports/pilot_deblind.md`. Code paths depend on these names, but no phase actually owns creating them.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Several runtime files are referenced as required artifacts but are missing from both the project tree/excerpts and the phase file lists that are supposed to create them: `.buildrunner/benchmarks/layer-cache.json`, `.buildrunner/benchmarks/api-status.json`, `.buildrunner/benchmarks/layer_provenance.json`, `format_coverage.json`, `run_meta.json`, and `.buildrunner/benchmarks/reports/pilot_deblind.md`. Code paths depend on these names, but no phase actually owns creating them.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Training-cutoff sources conflict. The plan's 'External Dependencies' section says `core/benchmark/training_cutoffs.py` will hardcode Codex=`2025-09-01` and Claude=`2026-01-01`, but Phase 1 freezes different cutoff values in `BenchmarkConfig` (`codex_training_cutoff_utc=\"2025-11-01T00:00:00Z\"`, `claude_training_cutoff_utc=\"2026-01-31T00:00:00Z\"`) and later says `training_cutoffs.py` reads those config fields. Phase selection and pre/post-cutoff stratification cannot be reproducible with two incompatible cutoff definitions.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Training-cutoff sources conflict. The plan's 'External Dependencies' section says `core/benchmark/training_cutoffs.py` will hardcode Codex=`2025-09-01` and Claude=`2026-01-01`, but Phase 1 freezes different cutoff values in `BenchmarkConfig` (`codex_training_cutoff_utc=\"2025-11-01T00:00:00Z\"`, `claude_training_cutoff_utc=\"2026-01-31T00:00:00Z\"`) and later says `training_cutoffs.py` reads those config fields. Phase selection and pre/post-cutoff stratification cannot be reproducible with two incompatible cutoff definitions.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's recognition-probe trigger is internally contradictory: it allows the probe to fire when the current model's cells are only `stage in {\"scored\",\"judged\"}` while requiring the opposing model's cells to be `judged`. That still permits some current-model cells to remain unjudged, so future pairwise judging can occur after the probe, violating the stated 'post-scoring, non-priming, no future judgment taint' invariant.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4's recognition-probe trigger is internally contradictory: it allows the probe to fire when the current model's cells are only `stage in {\"scored\",\"judged\"}` while requiring the opposing model's cells to be `judged`. That still permits some current-model cells to remain unjudged, so future pairwise judging can occur after the probe, violating the stated 'post-scoring, non-priming, no future judgment taint' invariant.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T04:31:56.662610Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

@@ -1,0 +1,152 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T114657Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. Here's a summary of the findings:\n\n**3 Blockers:**\n\n1. **Typer version pin conflict** \u2014 `requirements-benchmark.txt` pins `typer>=0.9,<1.0`, but the project's `pyproject.toml` likely pins a newer version. Phase 5's per-run `pip install -e` would install typer 1.x+, triggering baseline drift, venv recreation, and then the same conflict again \u2014 an infinite recreate loop.\n\n2. **Deadlock between registry flock and session-state flock** \u2014 `selector.redraw()` acquires the regis",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. Here's a summary of the findings:\n\n**3 Blockers:**\n\n1. **Typer version pin conflict** \u2014 `requirements-benchmark.txt` pins `typer>=0.9,<1.0`, but the project's `pyproject.toml` likely pins a newer version. Phase 5's per-run `pip install -e` would install typer 1.x+, triggering baseline drift, venv recreation, and then the same conflict again \u2014 an infinite recreate loop.\n\n2. **Deadlock between registry flock and session-state flock** \u2014 `selector.redraw()` acquires the regis",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 defines `registry.claim_judge(pair_key, worker_id, session_id, ...)` and `registry.release_judge(pair_key, worker_id, session_id, reason=...)`, but Phase 6 repeatedly calls `registry.claim_judge(pair_key, worker_id)` and `registry.release_judge(pair_key, worker_id, reason=...)` without the required `session_id`. That is a direct API-signature conflict that will break judging wiring unless one side is rewritten.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `registry.claim_judge(pair_key, worker_id, session_id, ...)` and `registry.release_judge(pair_key, worker_id, session_id, reason=...)`, but Phase 6 repeatedly calls `registry.claim_judge(pair_key, worker_id)` and `registry.release_judge(pair_key, worker_id, reason=...)` without the required `session_id`. That is a direct API-signature conflict that will break judging wiring unless one side is rewritten.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan uses two incompatible sentinels for 'already judged'. Phase 1 redefines `is_pair_judged(pair_key)` and the pair commit point around `JudgeDecisionRow`, but Phase 6 still describes `claim_judge`/single-writer logic in places as checking for existing `CompletedRow{stage=\"judged\"}`. After a crash between the decision-row append and the convenience judged-row appends, one code path would think the pair is judged and another would think it is not, causing duplicate or skipped judging.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan uses two incompatible sentinels for 'already judged'. Phase 1 redefines `is_pair_judged(pair_key)` and the pair commit point around `JudgeDecisionRow`, but Phase 6 still describes `claim_judge`/single-writer logic in places as checking for existing `CompletedRow{stage=\"judged\"}`. After a crash between the decision-row append and the convenience judged-row appends, one code path would think the pair is judged and another would think it is not, causing duplicate or skipped judging.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's preview-session test/flow references `br benchmark run --resume`, but Phase 3's declared `cli_run.py` flag surface does not define a `--resume` option; resume is a separate `br benchmark resume` subcommand. The test and command contract cannot both be true as written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's preview-session test/flow references `br benchmark run --resume`, but Phase 3's declared `cli_run.py` flag surface does not define a `--resume` option; resume is a separate `br benchmark resume` subcommand. The test and command contract cannot both be true as written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 says `.buildrunner/.gitignore` is the canonical ignore list for runtime artifacts that must never be committed, but its listed contents omit several runtime files/directories introduced later in the plan, including `.buildrunner/benchmarks/benchmark_registry.jsonl`, `.buildrunner/benchmarks/exclusions.jsonl`, and `.buildrunner/benchmarks/previews/`. That conflicts with the stated 'must never be committed' requirement and will leak benchmark state into git status.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 says `.buildrunner/.gitignore` is the canonical ignore list for runtime artifacts that must never be committed, but its listed contents omit several runtime files/directories introduced later in the plan, including `.buildrunner/benchmarks/benchmark_registry.jsonl`, `.buildrunner/benchmarks/exclusions.jsonl`, and `.buildrunner/benchmarks/previews/`. That conflicts with the stated 'must never be committed' requirement and will leak benchmark state into git status.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 executes `pip install -e <clone_path>` on contestant-generated code in the shared host venv with no sandboxing. A bad `setup.py`/PEP 517 backend can mutate the host environment or filesystem outside the clone before tests even start, contaminating later runs and defeating the shared-venv isolation model.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 executes `pip install -e <clone_path>` on contestant-generated code in the shared host venv with no sandboxing. A bad `setup.py`/PEP 517 backend can mutate the host environment or filesystem outside the clone before tests even start, contaminating later runs and defeating the shared-venv isolation model.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 defines `registry.claim_judge(pair_key, worker_id, session_id, ...)` and `registry.release_judge(pair_key, worker_id, session_id, reason=...)`, but Phase 6 repeatedly calls `registry.claim_judge(pair_key, worker_id)` and `registry.release_judge(pair_key, worker_id, reason=...)` without the required `session_id`. That is a direct API-signature conflict that will break judging wiring unless one side is rewritten.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `registry.claim_judge(pair_key, worker_id, session_id, ...)` and `registry.release_judge(pair_key, worker_id, session_id, reason=...)`, but Phase 6 repeatedly calls `registry.claim_judge(pair_key, worker_id)` and `registry.release_judge(pair_key, worker_id, reason=...)` without the required `session_id`. That is a direct API-signature conflict that will break judging wiring unless one side is rewritten.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan uses two incompatible sentinels for 'already judged'. Phase 1 redefines `is_pair_judged(pair_key)` and the pair commit point around `JudgeDecisionRow`, but Phase 6 still describes `claim_judge`/single-writer logic in places as checking for existing `CompletedRow{stage=\"judged\"}`. After a crash between the decision-row append and the convenience judged-row appends, one code path would think the pair is judged and another would think it is not, causing duplicate or skipped judging.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan uses two incompatible sentinels for 'already judged'. Phase 1 redefines `is_pair_judged(pair_key)` and the pair commit point around `JudgeDecisionRow`, but Phase 6 still describes `claim_judge`/single-writer logic in places as checking for existing `CompletedRow{stage=\"judged\"}`. After a crash between the decision-row append and the convenience judged-row appends, one code path would think the pair is judged and another would think it is not, causing duplicate or skipped judging.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's preview-session test/flow references `br benchmark run --resume`, but Phase 3's declared `cli_run.py` flag surface does not define a `--resume` option; resume is a separate `br benchmark resume` subcommand. The test and command contract cannot both be true as written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's preview-session test/flow references `br benchmark run --resume`, but Phase 3's declared `cli_run.py` flag surface does not define a `--resume` option; resume is a separate `br benchmark resume` subcommand. The test and command contract cannot both be true as written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T11:57:19.673328Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 4
+}

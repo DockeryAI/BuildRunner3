@@ -1,0 +1,292 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T054233Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 4 states `CalibrationPair` is declared in Phase 1's `models.py` ('declared as a pydantic model in Phase 1's models.py alongside the other benchmark row types'), but Phase 1's exhaustive dataclass/model list does not include `CalibrationPair`. Phase 1 also declares 'no later phase modifies config.py/models.py'. Either Phase 1 must add CalibrationPair (plan amendment needed) or Phase 4 must declare it locally (violating the single-owner invariant stated in Phase 1).",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 states `CalibrationPair` is declared in Phase 1's `models.py` ('declared as a pydantic model in Phase 1's models.py alongside the other benchmark row types'), but Phase 1's exhaustive dataclass/model list does not include `CalibrationPair`. Phase 1 also declares 'no later phase modifies config.py/models.py'. Either Phase 1 must add CalibrationPair (plan amendment needed) or Phase 4 must declare it locally (violating the single-owner invariant stated in Phase 1).",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `install-benchmark-deps.sh` deliverable references 'A unit-level test in tests/benchmark/test_installer_order.py asserts that after install...' but `test_installer_order.py` does not appear in any phase's Files list. The file is never created.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's `install-benchmark-deps.sh` deliverable references 'A unit-level test in tests/benchmark/test_installer_order.py asserts that after install...' but `test_installer_order.py` does not appear in any phase's Files list. The file is never created.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 invokes `br benchmark run --phases 7 --replications 3 --sub-studies native,neutral --pilot` but the `--pilot` flag is not defined in Phase 3's cli_run.py deliverables (which owns the `run` subcommand implementation) nor in any other phase's MODIFY of cli_run.py. Phase 9's own Files list contains no cli_run.py MODIFY entry. The flag does not exist.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 invokes `br benchmark run --phases 7 --replications 3 --sub-studies native,neutral --pilot` but the `--pilot` flag is not defined in Phase 3's cli_run.py deliverables (which owns the `run` subcommand implementation) nor in any other phase's MODIFY of cli_run.py. Phase 9's own Files list contains no cli_run.py MODIFY entry. The flag does not exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's deliverables section (under 'Attempt \u2192 cell reducer') claims 'The reducer is exercised by a test_aggregator.py unit test that feeds a synthetic claim \u2192 superseded \u2192 claim \u2192 judged + dispatch_abandoned sequence'. But test_aggregator.py is created in Phase 7's Files list, not Phase 1's. If Phase 1's success criteria depend on this test passing, it will fail; the test module does not exist until 6 phases later.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's deliverables section (under 'Attempt \u2192 cell reducer') claims 'The reducer is exercised by a test_aggregator.py unit test that feeds a synthetic claim \u2192 superseded \u2192 claim \u2192 judged + dispatch_abandoned sequence'. But test_aggregator.py is created in Phase 7's Files list, not Phase 1's. If Phase 1's success criteria depend on this test passing, it will fail; the test module does not exist until 6 phases later.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's replacement-phase scheduler deliverable references `selector.get_phase(replacement_phase_id)` and states it is 'added to Phase 2's selector API surface'. Phase 2's Selector API Surface deliverable does document `get_phase(phase_id) -> Optional[PhaseSpec]`. However, Phase 3's own deliverable section then re-declares it as a Phase 3 deliverable ('selector.get_phase(phase_id) -> Optional[PhaseSpec] \u2014 read-only helper added to Phase 2's selector API surface, cross-referenced here because Phase 3's scheduler is the consumer'). This dual-ownership language is confusing \u2014 if Phase 2's selector.py implements it and Phase 3 documents it as a deliverable, which phase's test suite must cover it? Both test_selector.py (Phase 2) and test_runner.py (Phase 3) claim to test it.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's replacement-phase scheduler deliverable references `selector.get_phase(replacement_phase_id)` and states it is 'added to Phase 2's selector API surface'. Phase 2's Selector API Surface deliverable does document `get_phase(phase_id) -> Optional[PhaseSpec]`. However, Phase 3's own deliverable section then re-declares it as a Phase 3 deliverable ('selector.get_phase(phase_id) -> Optional[PhaseSpec] \u2014 read-only helper added to Phase 2's selector API surface, cross-referenced here because Phase 3's scheduler is the consumer'). This dual-ownership language is confusing \u2014 if Phase 2's selector.py implements it and Phase 3 documents it as a deliverable, which phase's test suite must cover it? Both test_selector.py (Phase 2) and test_runner.py (Phase 3) claim to test it.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 modifies cli_run.py and cli_resume.py to wire in BenchmarkScorer, but Phase 5's Files list also includes `core/benchmark/runner.py (MODIFY)` described as a documentation-only change. If Phase 5's runner.py MODIFY is truly no-op (just a comment), this is benign; but the MODIFY tag risks merge confusion with Phase 3's initial runner.py creation in a serialized build, especially if a reviewer or toolchain treats MODIFY as a content edit requiring diff review.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 modifies cli_run.py and cli_resume.py to wire in BenchmarkScorer, but Phase 5's Files list also includes `core/benchmark/runner.py (MODIFY)` described as a documentation-only change. If Phase 5's runner.py MODIFY is truly no-op (just a comment), this is benign; but the MODIFY tag risks merge confusion with Phase 3's initial runner.py creation in a serialized build, especially if a reviewer or toolchain treats MODIFY as a content edit requiring diff review.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's session_state.py deliverable declares `resume_session_id: str` as a field with writer 'Phase 1 deps.py ONLY', but `br benchmark run` mints a fresh `session_id = uuid4()` and writes it as `resume_session_id=<session_id>` in the per-session file. The field name `resume_session_id` is misleading \u2014 it stores the session's own ID, not a 'resume target'. More importantly, the field is written at run-start (not resume), and `br benchmark resume` reads it but never writes it. If the field is meant to be immutable after creation, there is no enforcement described.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's session_state.py deliverable declares `resume_session_id: str` as a field with writer 'Phase 1 deps.py ONLY', but `br benchmark run` mints a fresh `session_id = uuid4()` and writes it as `resume_session_id=<session_id>` in the per-session file. The field name `resume_session_id` is misleading \u2014 it stores the session's own ID, not a 'resume target'. More importantly, the field is written at run-start (not resume), and `br benchmark resume` reads it but never writes it. If the field is meant to be immutable after creation, there is no enforcement described.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's pre-run baseline drift guard runs `_detect_baseline_drift(baseline_freeze, current_freeze)` and recreates the venv on ANY difference including pure additions. But the venv recreation calls `scripts/install-benchmark-deps.sh` which runs Pass 1 (all requirements*.txt except benchmark) then Pass 2 (requirements-benchmark.txt). If a prior run modified a root requirements*.txt inside its clone (which is deleted by teardown), the parent repo's requirements*.txt files are unchanged, so recreation produces the same baseline. However, if a contestant committed a new root-level requirements*.txt to the parent repo via the anchor ref fetch, and a subsequent `git checkout` or merge picked it up, the baseline would shift. The plan does not address this because anchor refs are never checked out on the parent \u2014 but the gap between 'baseline_freeze written once at install' and 'requirements*.txt could theoretically change on the parent between sessions' is unguarded.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's pre-run baseline drift guard runs `_detect_baseline_drift(baseline_freeze, current_freeze)` and recreates the venv on ANY difference including pure additions. But the venv recreation calls `scripts/install-benchmark-deps.sh` which runs Pass 1 (all requirements*.txt except benchmark) then Pass 2 (requirements-benchmark.txt). If a prior run modified a root requirements*.txt inside its clone (which is deleted by teardown), the parent repo's requirements*.txt files are unchanged, so recreation produces the same baseline. However, if a contestant committed a new root-level requirements*.txt to the parent repo via the anchor ref fetch, and a subsequent `git checkout` or merge picked it up, the baseline would shift. The plan does not address this because anchor refs are never checked out on the parent \u2014 but the gap between 'baseline_freeze written once at install' and 'requirements*.txt could theoretically change on the parent between sessions' is unguarded.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan specifies `fcntl.flock(LOCK_SH)` for selector's `pool_survivors_after_paraphrase_equivalence` property (Phase 2), which is a shared/read lock on the exclusions.jsonl file. But the exclusions.jsonl writer uses `fcntl.flock(LOCK_EX)` (exclusive). These are compatible (LOCK_SH blocks LOCK_EX and vice versa), but the plan never specifies which file descriptor the LOCK_SH is taken on \u2014 exclusions.jsonl or the registry. The property description says 'under the same fcntl.flock(LOCK_SH) lock used by the registry reducer', but the registry reducer locks benchmark_registry.jsonl, not exclusions.jsonl. These are different files with different locks.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan specifies `fcntl.flock(LOCK_SH)` for selector's `pool_survivors_after_paraphrase_equivalence` property (Phase 2), which is a shared/read lock on the exclusions.jsonl file. But the exclusions.jsonl writer uses `fcntl.flock(LOCK_EX)` (exclusive). These are compatible (LOCK_SH blocks LOCK_EX and vice versa), but the plan never specifies which file descriptor the LOCK_SH is taken on \u2014 exclusions.jsonl or the registry. The property description says 'under the same fcntl.flock(LOCK_SH) lock used by the registry reducer', but the registry reducer locks benchmark_registry.jsonl, not exclusions.jsonl. These are different files with different locks.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier uses `StratifiedGroupKFold(n_splits=5)` with `groups=phase_id`. With 7 pilot phases, each fold holds out 1-2 phases. But StratifiedGroupKFold requires that each group belongs to exactly one fold AND maintains class balance. With 7 groups (phases), each having exactly 6 rows per class (2 sub-studies \u00d7 3 reps), a 5-fold split where each fold has 1-2 groups means some folds train on as few as 5 groups (60 rows) and test on 2 groups (24 rows). If the achieved pilot N drops to 5 phases, n_splits is clamped to min(5, 5)=5, but 5 groups into 5 folds means each fold tests on exactly 1 group (12 rows) with only 4 training groups (48 rows). With such small group counts and only 2 classes, StratifiedGroupKFold may fail to maintain stratification \u2014 scikit-learn will raise if it cannot place at least one sample of each class in each fold, which is satisfied here, but the per-fold sample size (12) yields high variance in the accuracy estimate.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses `StratifiedGroupKFold(n_splits=5)` with `groups=phase_id`. With 7 pilot phases, each fold holds out 1-2 phases. But StratifiedGroupKFold requires that each group belongs to exactly one fold AND maintains class balance. With 7 groups (phases), each having exactly 6 rows per class (2 sub-studies \u00d7 3 reps), a 5-fold split where each fold has 1-2 groups means some folds train on as few as 5 groups (60 rows) and test on 2 groups (24 rows). If the achieved pilot N drops to 5 phases, n_splits is clamped to min(5, 5)=5, but 5 groups into 5 folds means each fold tests on exactly 1 group (12 rows) with only 4 training groups (48 rows). With such small group counts and only 2 classes, StratifiedGroupKFold may fail to maintain stratification \u2014 scikit-learn will raise if it cannot place at least one sample of each class in each fold, which is satisfied here, but the per-fold sample size (12) yields high variance in the accuracy estimate.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 creates `lockres.py` using `git log --all --extended-regexp --grep='^lock: claim Phase N($|[^0-9])'`. The `--all` flag searches all refs including remote tracking branches and tags. If the repo has stale remote branches with duplicate 'lock: claim Phase N' subjects from other BUILD files, these would enter the candidate set. Stage 2's BUILD-file pathspec filter handles disambiguation, but the scan could be slow on repos with many refs. More critically, if a remote branch has a lock commit that touches the target BUILD file but was never merged (abandoned work), it would be preferred over a main-branch commit \u2014 the resolver picks 'most recent non-merge' without filtering by branch ancestry.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 creates `lockres.py` using `git log --all --extended-regexp --grep='^lock: claim Phase N($|[^0-9])'`. The `--all` flag searches all refs including remote tracking branches and tags. If the repo has stale remote branches with duplicate 'lock: claim Phase N' subjects from other BUILD files, these would enter the candidate set. Stage 2's BUILD-file pathspec filter handles disambiguation, but the scan could be slow on repos with many refs. More critically, if a remote branch has a lock commit that touches the target BUILD file but was never merged (abandoned work), it would be preferred over a main-branch commit \u2014 the resolver picks 'most recent non-merge' without filtering by branch ancestry.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's local Python test command is `.venv-benchmark/bin/pytest -q --no-cov --tb=no`, but Phase 1's `requirements-benchmark.txt` pin list does not include `pytest-cov`. On a plain pytest install, `--no-cov` is an unrecognized argument, so scoring will fail before tests run.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's local Python test command is `.venv-benchmark/bin/pytest -q --no-cov --tb=no`, but Phase 1's `requirements-benchmark.txt` pin list does not include `pytest-cov`. On a plain pytest install, `--no-cov` is an unrecognized argument, so scoring will fail before tests run.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 hardcodes the Node test invocation to `(cd <clone_path>/ui && npm test -- --run)` while only gating on `ui/package.json` having a `scripts.test` key. That is coupled to the current `vitest` script and will mis-score any run that changes `scripts.test` to a non-Vitest runner or wrapper command, because `--run` will be passed regardless.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 hardcodes the Node test invocation to `(cd <clone_path>/ui && npm test -- --run)` while only gating on `ui/package.json` having a `scripts.test` key. That is coupled to the current `vitest` script and will mis-score any run that changes `scripts.test` to a non-Vitest runner or wrapper command, because `--run` will be passed regardless.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 makes the recognition probe a one-shot post-judgment action, but the plan defines no retry, resume, or backfill path if the probe subprocess/OpenRouter call fails after a phase is fully judged. Phase 7 then consumes `recognition_score` as a regression covariate with `NaN` fallthrough, so otherwise-complete phases can silently lose that control variable due to transient probe failure.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 makes the recognition probe a one-shot post-judgment action, but the plan defines no retry, resume, or backfill path if the probe subprocess/OpenRouter call fails after a phase is fully judged. Phase 7 then consumes `recognition_score` as a regression covariate with `NaN` fallthrough, so otherwise-complete phases can silently lose that control variable due to transient probe failure.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 retries every dispatcher exit code `1/2/3/4/5/6` on another node, but the plan's own mapping says exit code `2` also covers deterministic local/validation failures such as unsupported runtime and argument/path validation. Retrying those on a different node is the wrong execution path and can create duplicate abandoned attempts instead of surfacing the real failure immediately.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 retries every dispatcher exit code `1/2/3/4/5/6` on another node, but the plan's own mapping says exit code `2` also covers deterministic local/validation failures such as unsupported runtime and argument/path validation. Retrying those on a different node is the wrong execution path and can create duplicate abandoned attempts instead of surfacing the real failure immediately.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 4 states `CalibrationPair` is declared in Phase 1's `models.py` ('declared as a pydantic model in Phase 1's models.py alongside the other benchmark row types'), but Phase 1's exhaustive dataclass/model list does not include `CalibrationPair`. Phase 1 also declares 'no later phase modifies config.py/models.py'. Either Phase 1 must add CalibrationPair (plan amendment needed) or Phase 4 must declare it locally (violating the single-owner invariant stated in Phase 1).",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 states `CalibrationPair` is declared in Phase 1's `models.py` ('declared as a pydantic model in Phase 1's models.py alongside the other benchmark row types'), but Phase 1's exhaustive dataclass/model list does not include `CalibrationPair`. Phase 1 also declares 'no later phase modifies config.py/models.py'. Either Phase 1 must add CalibrationPair (plan amendment needed) or Phase 4 must declare it locally (violating the single-owner invariant stated in Phase 1).",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `install-benchmark-deps.sh` deliverable references 'A unit-level test in tests/benchmark/test_installer_order.py asserts that after install...' but `test_installer_order.py` does not appear in any phase's Files list. The file is never created.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's `install-benchmark-deps.sh` deliverable references 'A unit-level test in tests/benchmark/test_installer_order.py asserts that after install...' but `test_installer_order.py` does not appear in any phase's Files list. The file is never created.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 invokes `br benchmark run --phases 7 --replications 3 --sub-studies native,neutral --pilot` but the `--pilot` flag is not defined in Phase 3's cli_run.py deliverables (which owns the `run` subcommand implementation) nor in any other phase's MODIFY of cli_run.py. Phase 9's own Files list contains no cli_run.py MODIFY entry. The flag does not exist.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 invokes `br benchmark run --phases 7 --replications 3 --sub-studies native,neutral --pilot` but the `--pilot` flag is not defined in Phase 3's cli_run.py deliverables (which owns the `run` subcommand implementation) nor in any other phase's MODIFY of cli_run.py. Phase 9's own Files list contains no cli_run.py MODIFY entry. The flag does not exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's local Python test command is `.venv-benchmark/bin/pytest -q --no-cov --tb=no`, but Phase 1's `requirements-benchmark.txt` pin list does not include `pytest-cov`. On a plain pytest install, `--no-cov` is an unrecognized argument, so scoring will fail before tests run.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's local Python test command is `.venv-benchmark/bin/pytest -q --no-cov --tb=no`, but Phase 1's `requirements-benchmark.txt` pin list does not include `pytest-cov`. On a plain pytest install, `--no-cov` is an unrecognized argument, so scoring will fail before tests run.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T05:52:39.594128Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 6
+}

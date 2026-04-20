@@ -1,0 +1,166 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T092211Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The stop hook feedback is about an environment constraint unrelated to this task. My output above is the complete adversarial review \u2014 a JSON array of findings. No code was written, no tests need to run, and no bash commands are required. The review is finished.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The stop hook feedback is about an environment constraint unrelated to this task. My output above is the complete adversarial review \u2014 a JSON array of findings. No code was written, no tests need to run, and no bash commands are required. The review is finished.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 says `finalize_run` sets `no_changes: true` on `RunResult`, but Phase 1's declared `RunResult` schema does not include a `no_changes` field. Any code or serialization that treats `RunResult.no_changes` as real will fail schema validation or crash.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 says `finalize_run` sets `no_changes: true` on `RunResult`, but Phase 1's declared `RunResult` schema does not include a `no_changes` field. Any code or serialization that treats `RunResult.no_changes` as real will fail schema validation or crash.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's success criterion requires standalone `br benchmark select --count 30`, but the selector/session-state contract is session-scoped (`selected_phase_ids`, `selector_cache`, `redraw_map`, exclusions filtering by `session_id`) and the plan only defines session-id creation in `br benchmark run`. There is no specified session bootstrap path for standalone `select`, so the command's persistence/read paths are underspecified and can fail or read stale state.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's success criterion requires standalone `br benchmark select --count 30`, but the selector/session-state contract is session-scoped (`selected_phase_ids`, `selector_cache`, `redraw_map`, exclusions filtering by `session_id`) and the plan only defines session-id creation in `br benchmark run`. There is no specified session bootstrap path for standalone `select`, so the command's persistence/read paths are underspecified and can fail or read stale state.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The probe scheduler is hardcoded around both models (`for model in (\"claude\", \"codex\")`, both-model completion gate), while `cli_run.py` explicitly supports `--models` subsets. A run launched with `--models claude` or any non-default model set will never satisfy the scheduler's both-model watermark, so recognition probes will not fire as specified.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The probe scheduler is hardcoded around both models (`for model in (\"claude\", \"codex\")`, both-model completion gate), while `cli_run.py` explicitly supports `--models` subsets. A run launched with `--models claude` or any non-default model set will never satisfy the scheduler's both-model watermark, so recognition probes will not fire as specified.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 establishes the probe/recognition dedup key as `(session_id, phase_id, model)`, but the Phase 6 `cli_probe.py` backfill description scans pending probes without a matching `RecognitionRow` for only `(phase_id, model)`. That cross-session key mismatch will cause one session's recognition row to suppress another session's pending probe.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 establishes the probe/recognition dedup key as `(session_id, phase_id, model)`, but the Phase 6 `cli_probe.py` backfill description scans pending probes without a matching `RecognitionRow` for only `(phase_id, model)`. That cross-session key mismatch will cause one session's recognition row to suppress another session's pending probe.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's failure paths for `setup_clone`/paraphrase rely on the top-level `run_session` scheduler to enqueue the replacement phase, but the same phase declares a standalone `runner.run_cell(...)` end-to-end success criterion. In the standalone `run_cell` path there is no scheduler to consume `selector.redraw(...)`, so the invariant that a dropped phase is re-drawn is not actually satisfied.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's failure paths for `setup_clone`/paraphrase rely on the top-level `run_session` scheduler to enqueue the replacement phase, but the same phase declares a standalone `runner.run_cell(...)` end-to-end success criterion. In the standalone `run_cell` path there is no scheduler to consume `selector.redraw(...)`, so the invariant that a dropped phase is re-drawn is not actually satisfied.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3 says `finalize_run` sets `no_changes: true` on `RunResult`, but Phase 1's declared `RunResult` schema does not include a `no_changes` field. Any code or serialization that treats `RunResult.no_changes` as real will fail schema validation or crash.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 says `finalize_run` sets `no_changes: true` on `RunResult`, but Phase 1's declared `RunResult` schema does not include a `no_changes` field. Any code or serialization that treats `RunResult.no_changes` as real will fail schema validation or crash.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's success criterion requires standalone `br benchmark select --count 30`, but the selector/session-state contract is session-scoped (`selected_phase_ids`, `selector_cache`, `redraw_map`, exclusions filtering by `session_id`) and the plan only defines session-id creation in `br benchmark run`. There is no specified session bootstrap path for standalone `select`, so the command's persistence/read paths are underspecified and can fail or read stale state.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's success criterion requires standalone `br benchmark select --count 30`, but the selector/session-state contract is session-scoped (`selected_phase_ids`, `selector_cache`, `redraw_map`, exclusions filtering by `session_id`) and the plan only defines session-id creation in `br benchmark run`. There is no specified session bootstrap path for standalone `select`, so the command's persistence/read paths are underspecified and can fail or read stale state.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The probe scheduler is hardcoded around both models (`for model in (\"claude\", \"codex\")`, both-model completion gate), while `cli_run.py` explicitly supports `--models` subsets. A run launched with `--models claude` or any non-default model set will never satisfy the scheduler's both-model watermark, so recognition probes will not fire as specified.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The probe scheduler is hardcoded around both models (`for model in (\"claude\", \"codex\")`, both-model completion gate), while `cli_run.py` explicitly supports `--models` subsets. A run launched with `--models claude` or any non-default model set will never satisfy the scheduler's both-model watermark, so recognition probes will not fire as specified.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 establishes the probe/recognition dedup key as `(session_id, phase_id, model)`, but the Phase 6 `cli_probe.py` backfill description scans pending probes without a matching `RecognitionRow` for only `(phase_id, model)`. That cross-session key mismatch will cause one session's recognition row to suppress another session's pending probe.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 establishes the probe/recognition dedup key as `(session_id, phase_id, model)`, but the Phase 6 `cli_probe.py` backfill description scans pending probes without a matching `RecognitionRow` for only `(phase_id, model)`. That cross-session key mismatch will cause one session's recognition row to suppress another session's pending probe.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T09:32:38.214278Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 10
+}

@@ -1,0 +1,30 @@
+{
+  "backends": {
+    "codex": {
+      "enabled": true,
+      "command": "codex",
+      "args": ["exec", "--"],
+      "timeout_seconds": 60,
+      "priority": 1
+    },
+    "openrouter": {
+      "enabled": true,
+      "model": "openai/gpt-4o",
+      "api_url": "https://openrouter.ai/api/v1/chat/completions",
+      "timeout_seconds": 60,
+      "priority": 2
+    },
+    "below": {
+      "enabled": false,
+      "endpoint": "http://10.0.1.105:11434/api/generate",
+      "model": "qwen3:30b",
+      "timeout_seconds": 120,
+      "priority": 3
+    }
+  },
+  "budget": {
+    "monthly_cap_usd": 50,
+    "spend_log": "~/.buildrunner/logs/cross-review-spend.json"
+  },
+  "cache_dir": "~/.buildrunner/cache/cross-reviews"
+}

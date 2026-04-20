@@ -1,0 +1,250 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T075812Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 1's `set_map_entry(key, sub_key, sub_value)` helper is documented as operating on `dict[str, str]` fields, but `selector_cache` is declared as `dict[str, dict]` \u2014 calling `set_map_entry(\"selector_cache\", phase_id, phase_spec_dict)` where `phase_spec_dict` is a dict (from `PhaseSpec.model_dump()`) would fail the described `dict[str, str]` type validation. Either `set_map_entry` must accept `dict[str, Any]` sub-values or a separate helper is needed for dict-of-dict fields.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's `set_map_entry(key, sub_key, sub_value)` helper is documented as operating on `dict[str, str]` fields, but `selector_cache` is declared as `dict[str, dict]` \u2014 calling `set_map_entry(\"selector_cache\", phase_id, phase_spec_dict)` where `phase_spec_dict` is a dict (from `PhaseSpec.model_dump()`) would fail the described `dict[str, str]` type validation. Either `set_map_entry` must accept `dict[str, Any]` sub-values or a separate helper is needed for dict-of-dict fields.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` invokes `dispatch-to-node.sh` via `subprocess.Popen` but specifies no hard timeout on the subprocess itself. The 30-min lease expiry is an indirect safeguard, but a hung dispatch (e.g. SSH stall, remote node wedged) blocks a node for the full lease period. With only 2 nodes in the pool, one hung dispatch halves throughput for 30 minutes before the lease-takeover path even triggers.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `dispatch_run` invokes `dispatch-to-node.sh` via `subprocess.Popen` but specifies no hard timeout on the subprocess itself. The 30-min lease expiry is an indirect safeguard, but a hung dispatch (e.g. SSH stall, remote node wedged) blocks a node for the full lease period. With only 2 nodes in the pool, one hung dispatch halves throughput for 30 minutes before the lease-takeover path even triggers.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's deliverable invokes `python -m core.benchmark.pilot_contention --registry ... --out ... --session-id <id>` using bare `python` rather than `.venv-benchmark/bin/python`. The module imports `pydantic` (via `models.py`) and `yaml` (via `config.py`), both of which are pinned only in `requirements-benchmark.txt`. If the system/project Python lacks these at the required versions, the invocation fails. The `br benchmark` CLI entrypoints use the venv Python implicitly, but this standalone module invocation does not.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's deliverable invokes `python -m core.benchmark.pilot_contention --registry ... --out ... --session-id <id>` using bare `python` rather than `.venv-benchmark/bin/python`. The module imports `pydantic` (via `models.py`) and `yaml` (via `config.py`), both of which are pinned only in `requirements-benchmark.txt`. If the system/project Python lacks these at the required versions, the invocation fails. The `br benchmark` CLI entrypoints use the venv Python implicitly, but this standalone module invocation does not.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's `core/benchmark/probe.py` (ProbeScheduler) must call Phase 4's `core/benchmark/recognition_probe.py` to actually execute the recognition probe, but no import relationship between the two modules is declared in either phase's file list or deliverables. The scheduler's `_maybe_fire(phase_id)` method fires probes but the plan never states which function from `recognition_probe.py` it calls or how the two modules connect.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's `core/benchmark/probe.py` (ProbeScheduler) must call Phase 4's `core/benchmark/recognition_probe.py` to actually execute the recognition probe, but no import relationship between the two modules is declared in either phase's file list or deliverables. The scheduler's `_maybe_fire(phase_id)` method fires probes but the plan never states which function from `recognition_probe.py` it calls or how the two modules connect.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's deblind classifier uses `StratifiedGroupKFold(n_splits=5)` with `groups=phase_id`. At the minimum viable pilot (5 surviving phases), each fold holds out exactly 1 phase (12 rows). Training on 4 phases (48 rows) with a TF-IDF + LogisticRegression pipeline over char n-grams is likely to overfit badly on such small groups, producing noisy accuracy estimates that could randomly exceed `k_crit` and trigger a false blinding-failure abort.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's deblind classifier uses `StratifiedGroupKFold(n_splits=5)` with `groups=phase_id`. At the minimum viable pilot (5 surviving phases), each fold holds out exactly 1 phase (12 rows). Training on 4 phases (48 rows) with a TF-IDF + LogisticRegression pipeline over char n-grams is likely to overfit badly on such small groups, producing noisy accuracy estimates that could randomly exceed `k_crit` and trigger a false blinding-failure abort.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan declares `PhaseSpec.paraphrased_prompt_native` and `paraphrased_prompt_neutral` as `Optional[str] = None` in Phase 1's frozen schema. Phase 3's `run_cell` populates these via `selector.set_paraphrase()`. But `selector_cache` serializes `PhaseSpec` via `model_dump()` and deserializes via pydantic validation. When a resumed orchestrator calls `selector.get_phase(phase_id)`, it reconstructs a `PhaseSpec` from the cached dict \u2014 if the cached dict was written by a different sub_study's cell (e.g. only `paraphrased_prompt_native` is set, `paraphrased_prompt_neutral` is still None), the neutral-sub-study cell would see None and re-run the paraphraser for the neutral prompt. This is actually correct behavior (each sub_study gets its own paraphrase), but the phase-scoped lock is keyed on `phase_id` alone, not `(phase_id, sub_study)`, so two concurrent cells for different sub_studies of the same phase would serialize on the same lock even though they write different fields.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan declares `PhaseSpec.paraphrased_prompt_native` and `paraphrased_prompt_neutral` as `Optional[str] = None` in Phase 1's frozen schema. Phase 3's `run_cell` populates these via `selector.set_paraphrase()`. But `selector_cache` serializes `PhaseSpec` via `model_dump()` and deserializes via pydantic validation. When a resumed orchestrator calls `selector.get_phase(phase_id)`, it reconstructs a `PhaseSpec` from the cached dict \u2014 if the cached dict was written by a different sub_study's cell (e.g. only `paraphrased_prompt_native` is set, `paraphrased_prompt_neutral` is still None), the neutral-sub-study cell would see None and re-run the paraphraser for the neutral prompt. This is actually correct behavior (each sub_study gets its own paraphrase), but the phase-scoped lock is keyed on `phase_id` alone, not `(phase_id, sub_study)`, so two concurrent cells for different sub_studies of the same phase would serialize on the same lock even though they write different fields.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's baseline-drift pre-run guard recreates `.venv-benchmark/` via `scripts/install-benchmark-deps.sh` when any drift is detected (including pure additions from prior runs). With 360 runs and an expected drift rate of <5-10%, this means 18-36 venv recreations at ~30s each = 9-18 minutes of added overhead. But the pre-run guard also fires on the FIRST run of a session if the venv was not reset after the previous session, meaning every Phase 10 launch that follows a Phase 9 pilot (which accumulates contestant deps) triggers an immediate recreation \u2014 this is correct but undocumented as expected first-run latency.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's baseline-drift pre-run guard recreates `.venv-benchmark/` via `scripts/install-benchmark-deps.sh` when any drift is detected (including pure additions from prior runs). With 360 runs and an expected drift rate of <5-10%, this means 18-36 venv recreations at ~30s each = 9-18 minutes of added overhead. But the pre-run guard also fires on the FIRST run of a session if the venv was not reset after the previous session, meaning every Phase 10 launch that follows a Phase 9 pilot (which accumulates contestant deps) triggers an immediate recreation \u2014 this is correct but undocumented as expected first-run latency.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan specifies `PilotContention.ratio` as `Optional[float]` and `otis_median_ms`/`lomax_median_ms` as `Optional[int]`, with all three going null together on the insufficient-sample path. But Phase 10's `deps.read_pilot_contention()` must handle the case where the file exists but `drop_lomax=false` AND `ratio=null` (insufficient samples) vs `drop_lomax=false` AND `ratio=1.05` (measured but below threshold). The `preflight_single_node` derivation formula `(live_node_count == 1) OR (pilot_contention.json exists AND drop_lomax)` correctly ignores both sub-cases, but the report should distinguish 'measured and acceptable' from 'unmeasured' \u2014 no reporting path is specified for the insufficient-sample case.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan specifies `PilotContention.ratio` as `Optional[float]` and `otis_median_ms`/`lomax_median_ms` as `Optional[int]`, with all three going null together on the insufficient-sample path. But Phase 10's `deps.read_pilot_contention()` must handle the case where the file exists but `drop_lomax=false` AND `ratio=null` (insufficient samples) vs `drop_lomax=false` AND `ratio=1.05` (measured but below threshold). The `preflight_single_node` derivation formula `(live_node_count == 1) OR (pilot_contention.json exists AND drop_lomax)` correctly ignores both sub-cases, but the report should distinguish 'measured and acceptable' from 'unmeasured' \u2014 no reporting path is specified for the insufficient-sample case.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `finalize_run` fetches the contestant's commit into the parent repo via `git fetch <clone_path> refs/heads/bench-src-<run_id>:refs/heads/bench/<run_id>`. Over 360 runs this creates 360 refs. Each ref's objects include the full tree snapshot (not just the diff), so object storage grows by contestant-tree-size \u00d7 360. With git's delta compression this is manageable, but `git gc` during the run could repack objects that active clones reference via alternates, potentially causing alternates-based clones to fail on object lookup until the clone is recreated.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `finalize_run` fetches the contestant's commit into the parent repo via `git fetch <clone_path> refs/heads/bench-src-<run_id>:refs/heads/bench/<run_id>`. Over 360 runs this creates 360 refs. Each ref's objects include the full tree snapshot (not just the diff), so object storage grows by contestant-tree-size \u00d7 360. With git's delta compression this is manageable, but `git gc` during the run could repack objects that active clones reference via alternates, potentially causing alternates-based clones to fail on object lookup until the clone is recreated.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 contradicts the Phase 1 config contract for training cutoffs. Phase 1/preconditions define the single source of truth as `.buildrunner/benchmarks/config.yaml:contestants.*_training_cutoff_utc` read via `BenchmarkConfig.contestants`, but the Phase 2 `training_cutoffs.py` deliverable switches to a different `training_cutoffs: {claude, codex}` object. One of those schemas will be wrong, so selector stratification will read the wrong config shape.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 contradicts the Phase 1 config contract for training cutoffs. Phase 1/preconditions define the single source of truth as `.buildrunner/benchmarks/config.yaml:contestants.*_training_cutoff_utc` read via `BenchmarkConfig.contestants`, but the Phase 2 `training_cutoffs.py` deliverable switches to a different `training_cutoffs: {claude, codex}` object. One of those schemas will be wrong, so selector stratification will read the wrong config shape.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan's `SessionState` API is internally inconsistent and then used with the wrong signatures. Phase 1 declares session-scoped helpers like `get_flag(session_id, key)` and `set_flag(session_id, key, value)`, but Phase 2/3 call patterns such as `SessionState.get_flag(\"selector_cache\", phase_id)` and `SessionState.set_map_entry(\"selector_cache\", phase_id, updated_dict)` omit `session_id` and treat `get_flag` like a map lookup. If implemented literally, selector paraphrase persistence and resume reconstruction will break.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan's `SessionState` API is internally inconsistent and then used with the wrong signatures. Phase 1 declares session-scoped helpers like `get_flag(session_id, key)` and `set_flag(session_id, key, value)`, but Phase 2/3 call patterns such as `SessionState.get_flag(\"selector_cache\", phase_id)` and `SessionState.set_map_entry(\"selector_cache\", phase_id, updated_dict)` omit `session_id` and treat `get_flag` like a map lookup. If implemented literally, selector paraphrase persistence and resume reconstruction will break.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The Walter/Lomax reachability contract conflicts with itself. The dependency table says Walter/Lomax `/health` and `/api/health` paths are 'verified', but the Phase 1 preflight deliverable later says the dependency matrix does NOT verify any `/health` endpoint on Walter/Lomax/Below and preflight must avoid unverified health endpoints. That leaves `deps.py` and `api_clients.py` with incompatible endpoint assumptions for the same services.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The Walter/Lomax reachability contract conflicts with itself. The dependency table says Walter/Lomax `/health` and `/api/health` paths are 'verified', but the Phase 1 preflight deliverable later says the dependency matrix does NOT verify any `/health` endpoint on Walter/Lomax/Below and preflight must avoid unverified health endpoints. That leaves `deps.py` and `api_clients.py` with incompatible endpoint assumptions for the same services.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 references `tests/benchmark/test_training_cutoffs.py::test_cutoffs_loaded_from_config`, but `tests/benchmark/test_training_cutoffs.py` is not listed in any phase Files section and does not appear in the provided tree or cited excerpts. The training-cutoff contract is therefore referenced but unowned.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 references `tests/benchmark/test_training_cutoffs.py::test_cutoffs_loaded_from_config`, but `tests/benchmark/test_training_cutoffs.py` is not listed in any phase Files section and does not appear in the provided tree or cited excerpts. The training-cutoff contract is therefore referenced but unowned.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Recognition-probe rows are declared without `session_id` even though the plan explicitly supports concurrent benchmark sessions and session-scoped analysis elsewhere. Probe dedup/backfill is keyed only by `(phase_id, model)`, so a `RecognitionRow` from another session can suppress probe execution or be joined into the wrong session's analysis.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Recognition-probe rows are declared without `session_id` even though the plan explicitly supports concurrent benchmark sessions and session-scoped analysis elsewhere. Probe dedup/backfill is keyed only by `(phase_id, model)`, so a `RecognitionRow` from another session can suppress probe execution or be joined into the wrong session's analysis.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 2 contradicts the Phase 1 config contract for training cutoffs. Phase 1/preconditions define the single source of truth as `.buildrunner/benchmarks/config.yaml:contestants.*_training_cutoff_utc` read via `BenchmarkConfig.contestants`, but the Phase 2 `training_cutoffs.py` deliverable switches to a different `training_cutoffs: {claude, codex}` object. One of those schemas will be wrong, so selector stratification will read the wrong config shape.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 contradicts the Phase 1 config contract for training cutoffs. Phase 1/preconditions define the single source of truth as `.buildrunner/benchmarks/config.yaml:contestants.*_training_cutoff_utc` read via `BenchmarkConfig.contestants`, but the Phase 2 `training_cutoffs.py` deliverable switches to a different `training_cutoffs: {claude, codex}` object. One of those schemas will be wrong, so selector stratification will read the wrong config shape.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan's `SessionState` API is internally inconsistent and then used with the wrong signatures. Phase 1 declares session-scoped helpers like `get_flag(session_id, key)` and `set_flag(session_id, key, value)`, but Phase 2/3 call patterns such as `SessionState.get_flag(\"selector_cache\", phase_id)` and `SessionState.set_map_entry(\"selector_cache\", phase_id, updated_dict)` omit `session_id` and treat `get_flag` like a map lookup. If implemented literally, selector paraphrase persistence and resume reconstruction will break.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan's `SessionState` API is internally inconsistent and then used with the wrong signatures. Phase 1 declares session-scoped helpers like `get_flag(session_id, key)` and `set_flag(session_id, key, value)`, but Phase 2/3 call patterns such as `SessionState.get_flag(\"selector_cache\", phase_id)` and `SessionState.set_map_entry(\"selector_cache\", phase_id, updated_dict)` omit `session_id` and treat `get_flag` like a map lookup. If implemented literally, selector paraphrase persistence and resume reconstruction will break.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T08:08:53.266447Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 5
+}

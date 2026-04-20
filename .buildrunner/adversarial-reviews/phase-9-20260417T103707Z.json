@@ -1,0 +1,138 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T102652Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The stop hook feedback is unrelated to my task \u2014 it's a hook configuration issue triggered by the environment, not by anything I did. My review is complete.\n\nThe output above is the final adversarial review of the build plan. Key findings:\n\n- **5 warnings** \u2014 writer attribution conflict on `selected_models`, git gc backup race under concurrent sessions, gc backup loss on crash, `.gitignore` overwrite risk, and missing `notify_cell_scored` call site in `run_cell()` body\n- **5 notes** \u2014 reduced-N",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The stop hook feedback is unrelated to my task \u2014 it's a hook configuration issue triggered by the environment, not by anything I did. My review is complete.\n\nThe output above is the final adversarial review of the build plan. Key findings:\n\n- **5 warnings** \u2014 writer attribution conflict on `selected_models`, git gc backup race under concurrent sessions, gc backup loss on crash, `.gitignore` overwrite risk, and missing `notify_cell_scored` call site in `run_cell()` body\n- **5 notes** \u2014 reduced-N",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's offline `br benchmark score --run-id <id>` path is underspecified against the Phase 1 session-state contract. `session_state.py` is explicitly per-session only (`.buildrunner/benchmarks/sessions/<session_id>.json`) with 'no global-session read path', but `scoring_preflight()` still writes/read soft-preflight flags and the plan never defines how `score --run-id` resolves a `session_id` from a bare `run_id`. That leaves the offline rescore path without a valid session-state target.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's offline `br benchmark score --run-id <id>` path is underspecified against the Phase 1 session-state contract. `session_state.py` is explicitly per-session only (`.buildrunner/benchmarks/sessions/<session_id>.json`) with 'no global-session read path', but `scoring_preflight()` still writes/read soft-preflight flags and the plan never defines how `score --run-id` resolves a `session_id` from a bare `run_id`. That leaves the offline rescore path without a valid session-state target.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 hardcodes imports/calls to `BenchmarkJudge(config)` and `judge.judge_pair(pair_key)` from `core/benchmark/judge.py`, but the plan never declares those exports or their signatures anywhere in the `judge.py` deliverables. The runner and `cli_judge.py` depend on exact names that are not actually specified, so import/signature drift is likely.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 hardcodes imports/calls to `BenchmarkJudge(config)` and `judge.judge_pair(pair_key)` from `core/benchmark/judge.py`, but the plan never declares those exports or their signatures anywhere in the `judge.py` deliverables. The runner and `cli_judge.py` depend on exact names that are not actually specified, so import/signature drift is likely.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The single-model support added in Phase 6 is internally inconsistent on resume. The new single-model path fires probes from `notify_cell_scored(...)`, but the same Phase 6 resume logic rebuilds probe-scheduler counters only from `stage=\"judged\"` rows / `scan_for_judged_rows(session_id)`. In a `--models claude` or `--models codex` session, resume will reconstruct the scheduler from the wrong terminal stage.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The single-model support added in Phase 6 is internally inconsistent on resume. The new single-model path fires probes from `notify_cell_scored(...)`, but the same Phase 6 resume logic rebuilds probe-scheduler counters only from `stage=\"judged\"` rows / `scan_for_judged_rows(session_id)`. In a `--models claude` or `--models codex` session, resume will reconstruct the scheduler from the wrong terminal stage.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 serializes the full `install -> pytest -> npm test -> uninstall` sequence behind one shared `/tmp/br3-bench-venv.lock` for all runs, while Phase 10's budget assumes roughly 20 end-to-end runs/hour with two nodes. The plan never reconciles the shared local-scoring bottleneck with that throughput estimate, so the runtime budget is likely materially optimistic.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 serializes the full `install -> pytest -> npm test -> uninstall` sequence behind one shared `/tmp/br3-bench-venv.lock` for all runs, while Phase 10's budget assumes roughly 20 end-to-end runs/hour with two nodes. The plan never reconciles the shared local-scoring bottleneck with that throughput estimate, so the runtime budget is likely materially optimistic.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` classifies dispatcher exit code 2 by checking for a post-run commit or stderr markers, but the same plan also allows `post_run_commit_sha == pre_run_commit_sha` as a legitimate no-op outcome. An exit-2 runtime failure with no commit and no matching validation marker collapses into `runtime_nonzero_scored` with an empty diff, which is indistinguishable from a true no-op and can mis-score a failed runtime as a normal zero-adherence run.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's `dispatch_run` classifies dispatcher exit code 2 by checking for a post-run commit or stderr markers, but the same plan also allows `post_run_commit_sha == pre_run_commit_sha` as a legitimate no-op outcome. An exit-2 runtime failure with no commit and no matching validation marker collapses into `runtime_nonzero_scored` with an empty diff, which is indistinguishable from a true no-op and can mis-score a failed runtime as a normal zero-adherence run.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 5's offline `br benchmark score --run-id <id>` path is underspecified against the Phase 1 session-state contract. `session_state.py` is explicitly per-session only (`.buildrunner/benchmarks/sessions/<session_id>.json`) with 'no global-session read path', but `scoring_preflight()` still writes/read soft-preflight flags and the plan never defines how `score --run-id` resolves a `session_id` from a bare `run_id`. That leaves the offline rescore path without a valid session-state target.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's offline `br benchmark score --run-id <id>` path is underspecified against the Phase 1 session-state contract. `session_state.py` is explicitly per-session only (`.buildrunner/benchmarks/sessions/<session_id>.json`) with 'no global-session read path', but `scoring_preflight()` still writes/read soft-preflight flags and the plan never defines how `score --run-id` resolves a `session_id` from a bare `run_id`. That leaves the offline rescore path without a valid session-state target.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 hardcodes imports/calls to `BenchmarkJudge(config)` and `judge.judge_pair(pair_key)` from `core/benchmark/judge.py`, but the plan never declares those exports or their signatures anywhere in the `judge.py` deliverables. The runner and `cli_judge.py` depend on exact names that are not actually specified, so import/signature drift is likely.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 hardcodes imports/calls to `BenchmarkJudge(config)` and `judge.judge_pair(pair_key)` from `core/benchmark/judge.py`, but the plan never declares those exports or their signatures anywhere in the `judge.py` deliverables. The runner and `cli_judge.py` depend on exact names that are not actually specified, so import/signature drift is likely.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T10:37:07.082589Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 9
+}

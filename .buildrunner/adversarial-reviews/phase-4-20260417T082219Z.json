@@ -1,0 +1,152 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T081153Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete \u2014 that was a pure analysis task with no bash commands needed. The JSON array above is the full output.\n\n**Summary of findings:**\n\n- **2 blockers**: `StratifiedGroupKFold` doesn't accept `shuffle`/`random_state` params (will `TypeError`), and `BenchmarkScorer` has no back-reference to `Runner` to call its private helpers\n- **4 warnings**: `run_cell` signature inconsistency (per-cell vs per-phase), scorer-to-toolchain wiring gap, Below calibration set too small (n=20), pip \"",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete \u2014 that was a pure analysis task with no bash commands needed. The JSON array above is the full output.\n\n**Summary of findings:**\n\n- **2 blockers**: `StratifiedGroupKFold` doesn't accept `shuffle`/`random_state` params (will `TypeError`), and `BenchmarkScorer` has no back-reference to `Runner` to call its private helpers\n- **4 warnings**: `run_cell` signature inconsistency (per-cell vs per-phase), scorer-to-toolchain wiring gap, Below calibration set too small (n=20), pip \"",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4\u2019s recognition-probe deliverables define `RecognitionRow` and `ProbePendingRow` without `session_id`, but Phase 1\u2019s frozen registry schema requires `session_id` on both row types. Any writer implemented from the Phase 4 contract will fail Pydantic validation when appending those rows.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4\u2019s recognition-probe deliverables define `RecognitionRow` and `ProbePendingRow` without `session_id`, but Phase 1\u2019s frozen registry schema requires `session_id` on both row types. Any writer implemented from the Phase 4 contract will fail Pydantic validation when appending those rows.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 splits venv logic across incompatible owners: `toolchain.py` is declared to expose `run_local_tests(handle)` and to internally call `_detect_baseline_drift`, `_detect_venv_drift`, `_acquire_venv_lock`, and `_cleanup_editable_install`, but the same phase says those helpers live on `Runner` in `core/benchmark/runner.py` and are called through `self.runner.*`. `run_local_tests(handle)` has no declared `Runner` dependency, so the scoring path is underspecified and will not wire cleanly.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 splits venv logic across incompatible owners: `toolchain.py` is declared to expose `run_local_tests(handle)` and to internally call `_detect_baseline_drift`, `_detect_venv_drift`, `_acquire_venv_lock`, and `_cleanup_editable_install`, but the same phase says those helpers live on `Runner` in `core/benchmark/runner.py` and are called through `self.runner.*`. `run_local_tests(handle)` has no declared `Runner` dependency, so the scoring path is underspecified and will not wire cleanly.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5\u2019s per-run dependency reinstall path (`for req in <clone_path>/requirements*.txt; do pip install -r \"$req\"; done`) contradicts Phase 1\u2019s mandatory two-pass installer contract that requires `requirements-benchmark.txt` to be installed last so harness pins win. A contestant-edited requirements set can therefore silently override the harness pins during scoring.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5\u2019s per-run dependency reinstall path (`for req in <clone_path>/requirements*.txt; do pip install -r \"$req\"; done`) contradicts Phase 1\u2019s mandatory two-pass installer contract that requires `requirements-benchmark.txt` to be installed last so harness pins win. A contestant-edited requirements set can therefore silently override the harness pins during scoring.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1\u2019s success criterion says the 'Startup dep check passes against the live cluster', but the same phase later makes preflight run only inside work subcommands and explicitly disables any preflight on `--help`. Since Phase 1\u2019s shipped command is `br benchmark --help`, the phase cannot satisfy its own stated success criterion.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1\u2019s success criterion says the 'Startup dep check passes against the live cluster', but the same phase later makes preflight run only inside work subcommands and explicitly disables any preflight on `--help`. Since Phase 1\u2019s shipped command is `br benchmark --help`, the phase cannot satisfy its own stated success criterion.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 adds automatic judging inside `Runner.run_cell()` after scoring, but also keeps a standalone `br benchmark judge` command that 'dispatches pairs to GPT-5 + Gemini 2.5 ... and writes `JudgeVerdict` rows'. The plan never defines one as the sole writer. Without an explicit single-owner rule, the same `pair_key` can be judged from two different command paths and produce duplicate or competing `stage=\"judged\"` rows.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 adds automatic judging inside `Runner.run_cell()` after scoring, but also keeps a standalone `br benchmark judge` command that 'dispatches pairs to GPT-5 + Gemini 2.5 ... and writes `JudgeVerdict` rows'. The plan never defines one as the sole writer. Without an explicit single-owner rule, the same `pair_key` can be judged from two different command paths and produce duplicate or competing `stage=\"judged\"` rows.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10\u2019s budget math charges paraphrasing (~20s) and equivalence checking (~15s) per run, but Phase 3/4 explicitly cache paraphrase+equivalence once per `(phase_id, sub_study)` and reuse the result across all cells. The execution budget is based on the wrong unit of work and will materially overstate runtime/cost planning.",
+      "severity": "note",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10\u2019s budget math charges paraphrasing (~20s) and equivalence checking (~15s) per run, but Phase 3/4 explicitly cache paraphrase+equivalence once per `(phase_id, sub_study)` and reuse the result across all cells. The execution budget is based on the wrong unit of work and will materially overstate runtime/cost planning.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 4\u2019s recognition-probe deliverables define `RecognitionRow` and `ProbePendingRow` without `session_id`, but Phase 1\u2019s frozen registry schema requires `session_id` on both row types. Any writer implemented from the Phase 4 contract will fail Pydantic validation when appending those rows.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4\u2019s recognition-probe deliverables define `RecognitionRow` and `ProbePendingRow` without `session_id`, but Phase 1\u2019s frozen registry schema requires `session_id` on both row types. Any writer implemented from the Phase 4 contract will fail Pydantic validation when appending those rows.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 splits venv logic across incompatible owners: `toolchain.py` is declared to expose `run_local_tests(handle)` and to internally call `_detect_baseline_drift`, `_detect_venv_drift`, `_acquire_venv_lock`, and `_cleanup_editable_install`, but the same phase says those helpers live on `Runner` in `core/benchmark/runner.py` and are called through `self.runner.*`. `run_local_tests(handle)` has no declared `Runner` dependency, so the scoring path is underspecified and will not wire cleanly.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 splits venv logic across incompatible owners: `toolchain.py` is declared to expose `run_local_tests(handle)` and to internally call `_detect_baseline_drift`, `_detect_venv_drift`, `_acquire_venv_lock`, and `_cleanup_editable_install`, but the same phase says those helpers live on `Runner` in `core/benchmark/runner.py` and are called through `self.runner.*`. `run_local_tests(handle)` has no declared `Runner` dependency, so the scoring path is underspecified and will not wire cleanly.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T08:22:19.839454Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 4
+}

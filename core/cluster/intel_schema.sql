@@ -62,6 +62,23 @@ CREATE TABLE IF NOT EXISTS deal_items (
     listing_url_hash TEXT,  -- SHA256[:16] of listing_url for dedup
     purchased INTEGER NOT NULL DEFAULT 0,  -- 1=bought this item
     purchased_price REAL,  -- actual purchase price (may differ from listing)
+    -- Lifecycle tracking
+    received INTEGER NOT NULL DEFAULT 0,  -- 1=item received
+    received_at TEXT,
+    user_notes TEXT,  -- user-editable notes (separate from AI assessments)
+    actual_url TEXT,  -- user-corrected URL (may differ from listing_url)
+    tracking_number TEXT,
+    carrier TEXT,
+    delivery_status TEXT NOT NULL DEFAULT 'none',  -- none/ordered/shipped/in_transit/out_for_delivery/delivered
+    delivery_updated_at TEXT,
+    -- Seller verification (Apify-powered)
+    seller_verified INTEGER NOT NULL DEFAULT 0,  -- 1=verified, 0=unverified
+    seller_account_age_years REAL,  -- Reddit/eBay account age
+    seller_karma INTEGER,  -- Reddit karma or eBay feedback count
+    seller_trades INTEGER,  -- hardwareswap confirmed trades
+    seller_verification_source TEXT,  -- 'apify_reddit', 'apify_ebay', 'ebay_api'
+    seller_verified_at TEXT,  -- when verification ran
+    seller_verification_error TEXT,  -- error message if verification failed
     FOREIGN KEY (hunt_id) REFERENCES active_hunts(id)
 );
 
@@ -71,6 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_deal_read ON deal_items(read);
 CREATE INDEX IF NOT EXISTS idx_deal_verified ON deal_items(verified);
 CREATE INDEX IF NOT EXISTS idx_deal_in_stock ON deal_items(in_stock);
 CREATE INDEX IF NOT EXISTS idx_deal_url_hash ON deal_items(listing_url_hash);
+CREATE INDEX IF NOT EXISTS idx_deal_seller_verified ON deal_items(seller_verified);
 
 -- Price history for tracking deals over time + market price collection
 CREATE TABLE IF NOT EXISTS price_history (
@@ -112,6 +130,8 @@ CREATE TABLE IF NOT EXISTS active_hunts (
     source_urls TEXT,  -- JSON array
     requirements TEXT,  -- JSON: filters, pair_rules, notes (see hunt_sourcer.py)
     active INTEGER NOT NULL DEFAULT 1,
+    completed_at TEXT,
+    completion_notes TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

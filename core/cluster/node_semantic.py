@@ -226,9 +226,11 @@ def run_research_index():
     global _research_dir_mtime, _research_stats, _research_table
 
     if _research_indexing:
+        print("Research index: already running, skipping")
         return
     _research_indexing = True
     start = time.time()
+    print("Research index: starting...")
 
     try:
         from core.cluster.research_chunker import discover_research_docs, chunk_research_doc
@@ -243,6 +245,7 @@ def run_research_index():
         if docs_path.exists():
             current_mtime = _get_dir_mtime(docs_path)
             if current_mtime == _research_dir_mtime and _research_file_hashes:
+                _research_last_index_time = time.time()  # update even on no-change check
                 return  # nothing changed
             _research_dir_mtime = current_mtime
 
@@ -669,13 +672,15 @@ def run_index():
                 if table is None:
                     table = _get_or_create_table(embed_dim)
 
+            # Process in small batches: embed and insert immediately to avoid OOM
             batch_size = 32
-            rows = []
+            total_inserted = 0
             for i in range(0, len(chunks_to_add), batch_size):
                 batch = chunks_to_add[i:i + batch_size]
                 texts = [c["text"] for c in batch]
                 try:
                     embeddings = embedder.encode(texts, show_progress_bar=False).tolist()
+                    rows = []
                     for j, c in enumerate(batch):
                         meta = c.get("metadata", {})
                         rows.append({
@@ -690,22 +695,16 @@ def run_index():
                             "block_type": meta.get("block_type", ""),
                             "vector": embeddings[j],
                         })
-                    if (i // batch_size) % 10 == 0:
-                        print(f"  Progress: {i + len(batch)}/{len(chunks_to_add)} chunks")
+                    # Insert immediately after embedding
+                    table.add(rows)
+                    total_inserted += len(rows)
+                    if (i // batch_size) % 50 == 0:
+                        print(f"  Progress: {total_inserted}/{len(chunks_to_add)} chunks")
                 except Exception as e:
                     print(f"  Batch error at {i}: {e}")
 
-            # Bulk insert all rows
-            if rows:
-                try:
-                    if not _file_hashes:
-                        # First run — overwrite
-                        table = _get_or_create_table(embed_dim)
-                    table.add(rows)
-                    _table = table
-                    print(f"  Added {len(rows)} rows to LanceDB")
-                except Exception as e:
-                    print(f"  LanceDB insert error: {e}")
+            _table = table
+            print(f"  Indexed {total_inserted} chunks to LanceDB")
 
         _file_hashes = new_hashes
         _last_index_time = time.time()
@@ -769,9 +768,10 @@ def _ingest_memory():
 
 
 def _init_research_stats():
-    """Load stats from existing research_library table on startup (pre-built index).
-    Also populates file hashes so the indexer skips the first reindex."""
-    global _research_stats, _research_file_hashes, _research_dir_mtime
+    """Load stats from existing research_library table on startup.
+    Does NOT populate file hashes — the first reindex will do a full scan
+    to ensure new files added while Lockwood was down are always detected."""
+    global _research_stats
     try:
         db, _ = _get_db()
         if "research_library" in db.table_names():
@@ -786,14 +786,9 @@ def _init_research_stats():
                     "last_duration": 0.0,
                     "changed_files": 0,
                 }
-                # Populate file hashes so indexer skips first run (index is pre-built)
-                for f in files:
-                    _research_file_hashes[str(f)] = file_hash(f)
-                # Set dir mtime so mtime check passes
-                docs_path = Path(RESEARCH_DIR) / "docs"
-                if docs_path.exists():
-                    _research_dir_mtime = _get_dir_mtime(docs_path)
-                print(f"Research index loaded: {count} chunks from {len(files)} docs (pre-built)")
+                # Don't populate _research_file_hashes — let first reindex scan all files
+                # This ensures any files added while Lockwood was down get indexed
+                print(f"Research index loaded: {count} chunks, {len(files)} docs on disk (full scan on first reindex)")
     except Exception as e:
         print(f"Research stats init: {e}")
 
@@ -1245,9 +1240,12 @@ async def research_vsearch(req: Request):
 
 @app.post("/api/research/reindex")
 async def research_reindex():
-    """Trigger immediate research library re-index."""
+    """Trigger immediate research library re-index. Clears mtime cache so new files are detected."""
+    global _research_dir_mtime
     if _research_indexing:
         return {"status": "already_indexing"}
+    # Clear mtime cache so the indexer doesn't skip based on stale directory mtime
+    _research_dir_mtime = 0.0
     t = threading.Thread(target=run_research_index, daemon=True)
     t.start()
     return {"status": "started"}

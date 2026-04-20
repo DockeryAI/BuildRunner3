@@ -86,8 +86,8 @@ class ModelSelector:
             output_cost_per_1m=1.25,
             rate_limit_rpm=50,
             rate_limit_tpm=100000,
-            model_id="claude-haiku-3-5-20241022",
-            version="3.5",
+            model_id="claude-haiku-4-5-20251001",
+            version="4.5",
         ),
         "sonnet": ModelConfig(
             name="sonnet",
@@ -101,8 +101,8 @@ class ModelSelector:
             output_cost_per_1m=15.0,
             rate_limit_rpm=50,
             rate_limit_tpm=100000,
-            model_id="claude-sonnet-4-5-20250929",
-            version="4.5",
+            model_id="claude-sonnet-4-6",
+            version="4.6",
         ),
         "opus": ModelConfig(
             name="opus",
@@ -116,8 +116,8 @@ class ModelSelector:
             output_cost_per_1m=75.0,
             rate_limit_rpm=50,
             rate_limit_tpm=100000,
-            model_id="claude-opus-4-20250514",
-            version="4.0",
+            model_id="claude-opus-4-7",
+            version="4.7",
         ),
     }
 

@@ -1,0 +1,166 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T034959Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The adversarial review is complete. The output above is the full JSON array of findings \u2014 1 blocker, 7 warnings, and 4 notes.\n\n**The critical blocker**: Phase 5 introduces `partial_pass` to a Literal type and `LocalTestResult` as a new dataclass, but Phase 1's contract states all model fields are declared up-front and no later phase adds new fields/variants. Phase 5 isn't listed as modifying `models.py`, so this will either require a Phase 1 amendment or a Phase 5 file-list correction before bui",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The adversarial review is complete. The output above is the full JSON array of findings \u2014 1 blocker, 7 warnings, and 4 notes.\n\n**The critical blocker**: Phase 5 introduces `partial_pass` to a Literal type and `LocalTestResult` as a new dataclass, but Phase 1's contract states all model fields are declared up-front and no later phase adds new fields/variants. Phase 5 isn't listed as modifying `models.py`, so this will either require a Phase 1 amendment or a Phase 5 file-list correction before bui",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 makes `deps.py` run hard preflight checks at startup (`OPENROUTER_API_KEY`, live OpenRouter call, cluster scripts), but the same phase\u2019s success criteria require `br benchmark --help` to work. If preflight is wired into CLI startup rather than only execution paths, `--help` will fail in any environment missing cluster/OpenRouter access.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 makes `deps.py` run hard preflight checks at startup (`OPENROUTER_API_KEY`, live OpenRouter call, cluster scripts), but the same phase\u2019s success criteria require `br benchmark --help` to work. If preflight is wired into CLI startup rather than only execution paths, `--help` will fail in any environment missing cluster/OpenRouter access.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 requires `python -m core.benchmark.cli --help` to return 0, but the plan never specifies a module entrypoint in `core/benchmark/cli.py` (for example calling the Typer app under `if __name__ == \"__main__\":`). Creating a Typer app object alone does not make `python -m core.benchmark.cli` execute the CLI.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 requires `python -m core.benchmark.cli --help` to return 0, but the plan never specifies a module entrypoint in `core/benchmark/cli.py` (for example calling the Typer app under `if __name__ == \"__main__\":`). Creating a Typer app object alone does not make `python -m core.benchmark.cli` execute the CLI.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase replacement is underspecified and internally inconsistent: Phase 3/4 call `selector.redraw(phase_id)` from per-cell failure paths (`run_cell` / paraphrase failure), but the benchmark is phase-balanced across all models, sub-studies, and replications. Triggering redraw from a single-cell path can schedule duplicate replacements for the same dropped phase or drop N without ever enqueuing the replacement phase across the full cell matrix.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase replacement is underspecified and internally inconsistent: Phase 3/4 call `selector.redraw(phase_id)` from per-cell failure paths (`run_cell` / paraphrase failure), but the benchmark is phase-balanced across all models, sub-studies, and replications. Triggering redraw from a single-cell path can schedule duplicate replacements for the same dropped phase or drop N without ever enqueuing the replacement phase across the full cell matrix.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5\u2019s Python test setup assumes all needed dependencies come from root `requirements*.txt`, then does `pip install --no-deps -e <clone_path>` when `pyproject.toml` exists. The repo tree shows `pyproject.toml` is present. Any dependency declared only in `pyproject.toml` and not duplicated in a root requirements file will be missing in `.venv-benchmark/`, causing import/test failures in fresh clones.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5\u2019s Python test setup assumes all needed dependencies come from root `requirements*.txt`, then does `pip install --no-deps -e <clone_path>` when `pyproject.toml` exists. The repo tree shows `pyproject.toml` is present. Any dependency declared only in `pyproject.toml` and not duplicated in a root requirements file will be missing in `.venv-benchmark/`, causing import/test failures in fresh clones.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 has conflicting completion requirements: one deliverable says `br benchmark run --phases 30 ...` completes all 360 runs, while the same phase also allows `selector` to return fewer than 30 phases and defers to degraded-sample rules when achieved N < 30. Those two success conditions cannot both be true for the same run.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10 has conflicting completion requirements: one deliverable says `br benchmark run --phases 30 ...` completes all 360 runs, while the same phase also allows `selector` to return fewer than 30 phases and defers to degraded-sample rules when achieved N < 30. Those two success conditions cannot both be true for the same run.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 makes `deps.py` run hard preflight checks at startup (`OPENROUTER_API_KEY`, live OpenRouter call, cluster scripts), but the same phase\u2019s success criteria require `br benchmark --help` to work. If preflight is wired into CLI startup rather than only execution paths, `--help` will fail in any environment missing cluster/OpenRouter access.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 makes `deps.py` run hard preflight checks at startup (`OPENROUTER_API_KEY`, live OpenRouter call, cluster scripts), but the same phase\u2019s success criteria require `br benchmark --help` to work. If preflight is wired into CLI startup rather than only execution paths, `--help` will fail in any environment missing cluster/OpenRouter access.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 requires `python -m core.benchmark.cli --help` to return 0, but the plan never specifies a module entrypoint in `core/benchmark/cli.py` (for example calling the Typer app under `if __name__ == \"__main__\":`). Creating a Typer app object alone does not make `python -m core.benchmark.cli` execute the CLI.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 requires `python -m core.benchmark.cli --help` to return 0, but the plan never specifies a module entrypoint in `core/benchmark/cli.py` (for example calling the Typer app under `if __name__ == \"__main__\":`). Creating a Typer app object alone does not make `python -m core.benchmark.cli` execute the CLI.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase replacement is underspecified and internally inconsistent: Phase 3/4 call `selector.redraw(phase_id)` from per-cell failure paths (`run_cell` / paraphrase failure), but the benchmark is phase-balanced across all models, sub-studies, and replications. Triggering redraw from a single-cell path can schedule duplicate replacements for the same dropped phase or drop N without ever enqueuing the replacement phase across the full cell matrix.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase replacement is underspecified and internally inconsistent: Phase 3/4 call `selector.redraw(phase_id)` from per-cell failure paths (`run_cell` / paraphrase failure), but the benchmark is phase-balanced across all models, sub-studies, and replications. Triggering redraw from a single-cell path can schedule duplicate replacements for the same dropped phase or drop N without ever enqueuing the replacement phase across the full cell matrix.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5\u2019s Python test setup assumes all needed dependencies come from root `requirements*.txt`, then does `pip install --no-deps -e <clone_path>` when `pyproject.toml` exists. The repo tree shows `pyproject.toml` is present. Any dependency declared only in `pyproject.toml` and not duplicated in a root requirements file will be missing in `.venv-benchmark/`, causing import/test failures in fresh clones.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5\u2019s Python test setup assumes all needed dependencies come from root `requirements*.txt`, then does `pip install --no-deps -e <clone_path>` when `pyproject.toml` exists. The repo tree shows `pyproject.toml` is present. Any dependency declared only in `pyproject.toml` and not duplicated in a root requirements file will be missing in `.venv-benchmark/`, causing import/test failures in fresh clones.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T04:00:10.915481Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

@@ -23,8 +23,10 @@ print(f"OpenRouter API Key present: {bool(os.getenv('OPENROUTER_API_KEY'))}")
 
 # Import routes
 from api.routes import orchestrator, telemetry, agents, execute
+from api.routes.build import router as build_router
 from api.routes.prd_builder import router as prd_router
 from api.routes.prd_sync import router as prd_sync_router
+from api.websocket_handler import router as build_websocket_router
 from api.websockets import live_updates
 from api.workspace_api import router as workspace_router
 
@@ -117,9 +119,11 @@ app.include_router(orchestrator.router, prefix="/api/orchestrator", tags=["orche
 app.include_router(telemetry.router, prefix="/api/telemetry", tags=["telemetry"])
 app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
 app.include_router(execute.router, prefix="/api", tags=["execute"])
+app.include_router(build_router)
 app.include_router(prd_router, prefix="/api", tags=["prd"])
 app.include_router(prd_sync_router, tags=["prd-sync"])
 app.include_router(workspace_router, tags=["workspace"])
+app.include_router(build_websocket_router)
 
 # Include WebSocket
 app.include_router(live_updates.router, prefix="/ws", tags=["websocket"])

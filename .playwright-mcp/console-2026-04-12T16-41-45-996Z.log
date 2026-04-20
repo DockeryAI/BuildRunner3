@@ -1,0 +1,2 @@
+[      31ms] [LOG] [TWS] Picker initialized, nodes: 6 @ http://localhost:4400/js/ws-terminal.js?v=20260411b:627
+[     147ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4400/favicon.ico:0

@@ -1,0 +1,110 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T093420Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. The JSON array above contains my findings \u2014 2 blockers, 5 warnings, and 4 notes.\n\n**The two blockers that must be fixed before implementation:**\n\n1. **`is_preview` / `preview_created_at_utc` undeclared in Phase 1's frozen SessionState** \u2014 Phase 2 tries to write these fields but Phase 1's pydantic schema will reject them at runtime. Fix: add both fields to Phase 1's SessionState declaration.\n\n2. **Phase 2 references `test_cli_run.py` which Phase 3 creates** \u2014 build order i",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. The JSON array above contains my findings \u2014 2 blockers, 5 warnings, and 4 notes.\n\n**The two blockers that must be fixed before implementation:**\n\n1. **`is_preview` / `preview_created_at_utc` undeclared in Phase 1's frozen SessionState** \u2014 Phase 2 tries to write these fields but Phase 1's pydantic schema will reject them at runtime. Fix: add both fields to Phase 1's SessionState declaration.\n\n2. **Phase 2 references `test_cli_run.py` which Phase 3 creates** \u2014 build order i",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 contradicts Phase 1's frozen SessionState contract by introducing new fields `is_preview` and `preview_created_at_utc` for `cli_select.py`. Phase 1 explicitly says the full `SessionState` schema is declared up front and no later phase adds fields, so writing these Phase-2-only keys will either fail pydantic validation or require an unplanned Phase 1 schema change.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 contradicts Phase 1's frozen SessionState contract by introducing new fields `is_preview` and `preview_created_at_utc` for `cli_select.py`. Phase 1 explicitly says the full `SessionState` schema is declared up front and no later phase adds fields, so writing these Phase-2-only keys will either fail pydantic validation or require an unplanned Phase 1 schema change.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The preview-session flow conflicts with the existing session-index logic. Phase 1 says `resume` behavior is driven by `.buildrunner/benchmarks/sessions/index.json` and `active_session_ids`, but Phase 2's `br benchmark select` creates an ephemeral preview session and only says run/resume 'scan only `is_preview=False` entries'. The plan never updates the Phase 1 index contract to exclude or remove preview sessions from `active_session_ids`, so preview runs can incorrectly make `resume` think multiple active sessions exist or require `--session-id` unexpectedly.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The preview-session flow conflicts with the existing session-index logic. Phase 1 says `resume` behavior is driven by `.buildrunner/benchmarks/sessions/index.json` and `active_session_ids`, but Phase 2's `br benchmark select` creates an ephemeral preview session and only says run/resume 'scan only `is_preview=False` entries'. The plan never updates the Phase 1 index contract to exclude or remove preview sessions from `active_session_ids`, so preview runs can incorrectly make `resume` think multiple active sessions exist or require `--session-id` unexpectedly.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's probe-scheduler wiring hardcodes both models even though Phase 3 explicitly allows `--models` subsets. The `run_session`/replacement scheduling snippets call `probe_scheduler.schedule(..., \"claude\")` and `probe_scheduler.schedule(..., \"codex\")` unconditionally, while `ProbeScheduler` later claims subset-aware gating based only on registered models. In a single-model run like `--models claude`, the hardcoded codex registration means the scheduler waits for codex completions that will never exist, so recognition probes never fire.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's probe-scheduler wiring hardcodes both models even though Phase 3 explicitly allows `--models` subsets. The `run_session`/replacement scheduling snippets call `probe_scheduler.schedule(..., \"claude\")` and `probe_scheduler.schedule(..., \"codex\")` unconditionally, while `ProbeScheduler` later claims subset-aware gating based only on registered models. In a single-model run like `--models claude`, the hardcoded codex registration means the scheduler waits for codex completions that will never exist, so recognition probes never fire.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 2 contradicts Phase 1's frozen SessionState contract by introducing new fields `is_preview` and `preview_created_at_utc` for `cli_select.py`. Phase 1 explicitly says the full `SessionState` schema is declared up front and no later phase adds fields, so writing these Phase-2-only keys will either fail pydantic validation or require an unplanned Phase 1 schema change.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 contradicts Phase 1's frozen SessionState contract by introducing new fields `is_preview` and `preview_created_at_utc` for `cli_select.py`. Phase 1 explicitly says the full `SessionState` schema is declared up front and no later phase adds fields, so writing these Phase-2-only keys will either fail pydantic validation or require an unplanned Phase 1 schema change.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's probe-scheduler wiring hardcodes both models even though Phase 3 explicitly allows `--models` subsets. The `run_session`/replacement scheduling snippets call `probe_scheduler.schedule(..., \"claude\")` and `probe_scheduler.schedule(..., \"codex\")` unconditionally, while `ProbeScheduler` later claims subset-aware gating based only on registered models. In a single-model run like `--models claude`, the hardcoded codex registration means the scheduler waits for codex completions that will never exist, so recognition probes never fire.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's probe-scheduler wiring hardcodes both models even though Phase 3 explicitly allows `--models` subsets. The `run_session`/replacement scheduling snippets call `probe_scheduler.schedule(..., \"claude\")` and `probe_scheduler.schedule(..., \"codex\")` unconditionally, while `ProbeScheduler` later claims subset-aware gating based only on registered models. In a single-model run like `--models claude`, the hardcoded codex registration means the scheduler waits for codex completions that will never exist, so recognition probes never fire.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T09:44:43.472049Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 8
+}

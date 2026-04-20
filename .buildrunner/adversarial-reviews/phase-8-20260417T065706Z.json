@@ -1,0 +1,124 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T064643Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete \u2014 that was a pure analysis task with no code execution needed, so the hook about `npm test` / `TEST_PLAN.md` doesn't apply here.\n\nThe key finding from the adversarial review:\n\n**1 Blocker:** Paraphrasing appears to run per-cell inside `run_cell()`, meaning each `(phase, model, sub_study, replication)` cell would generate a **different** paraphrase via a separate LLM call. Two models being compared on the same phase would receive different specs, destroying the controlled c",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete \u2014 that was a pure analysis task with no code execution needed, so the hook about `npm test` / `TEST_PLAN.md` doesn't apply here.\n\nThe key finding from the adversarial review:\n\n**1 Blocker:** Paraphrasing appears to run per-cell inside `run_cell()`, meaning each `(phase, model, sub_study, replication)` cell would generate a **different** paraphrase via a separate LLM call. Two models being compared on the same phase would receive different specs, destroying the controlled c",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 makes `Runner.run_cell()` call `judge_pair(pair_key)` as soon as it sees the companion cell at `stage=\"scored\"`, but the plan never defines a pair-level lock or claim for judging. With the concurrent orchestrators the plan explicitly supports, both sides of the same pair can observe the other as scored and both append their own `stage=\"judged\"` rows, producing duplicate verdicts for one `pair_key` and corrupting aggregation.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 makes `Runner.run_cell()` call `judge_pair(pair_key)` as soon as it sees the companion cell at `stage=\"scored\"`, but the plan never defines a pair-level lock or claim for judging. With the concurrent orchestrators the plan explicitly supports, both sides of the same pair can observe the other as scored and both append their own `stage=\"judged\"` rows, producing duplicate verdicts for one `pair_key` and corrupting aggregation.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 introduces `core/benchmark/probe.py` as the owner of `ProbeScheduler`, pending-probe retries, and the `ProbePendingRow` backfill flow, but `core/benchmark/cli_probe.py` is only modified in Phase 4 and is never updated in Phase 6 to call the new scheduler/backfill path. The plan therefore leaves `br benchmark probe` wired to the old Phase-4 implementation while Phase 6 depends on new probe APIs, so the pending-probe recovery path is not actually reachable.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 introduces `core/benchmark/probe.py` as the owner of `ProbeScheduler`, pending-probe retries, and the `ProbePendingRow` backfill flow, but `core/benchmark/cli_probe.py` is only modified in Phase 4 and is never updated in Phase 6 to call the new scheduler/backfill path. The plan therefore leaves `br benchmark probe` wired to the old Phase-4 implementation while Phase 6 depends on new probe APIs, so the pending-probe recovery path is not actually reachable.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 says `deps.execution_preflight()` is called by `score`, but Phase 5 defines `br benchmark score --run-id <id>` as a local/offline re-score path that works from `refs/heads/bench/<run_id>` and does not require OpenRouter or dispatch. Hard-gating `score` behind execution preflight conflicts with that design and will fail re-scoring in exactly the offline scenario the plan says should work.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 says `deps.execution_preflight()` is called by `score`, but Phase 5 defines `br benchmark score --run-id <id>` as a local/offline re-score path that works from `refs/heads/bench/<run_id>` and does not require OpenRouter or dispatch. Hard-gating `score` behind execution preflight conflicts with that design and will fail re-scoring in exactly the offline scenario the plan says should work.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan assigns new assertions to `tests/benchmark/test_runner.py` in Phase 5 (`test_detect_baseline_drift_classifies_four_cases`, `test_pre_run_guard_rejects_baseline_pure_addition`, `test_editable_install_cleanup`) and again in Phase 6 (`test_run_cell_appends_two_judged_rows_per_pair`), but neither Phase 5 nor Phase 6 lists `tests/benchmark/test_runner.py` as a file to modify. Those test obligations have no owning file change in the build plan.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan assigns new assertions to `tests/benchmark/test_runner.py` in Phase 5 (`test_detect_baseline_drift_classifies_four_cases`, `test_pre_run_guard_rejects_baseline_pure_addition`, `test_editable_install_cleanup`) and again in Phase 6 (`test_run_cell_appends_two_judged_rows_per_pair`), but neither Phase 5 nor Phase 6 lists `tests/benchmark/test_runner.py` as a file to modify. Those test obligations have no owning file change in the build plan.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6 makes `Runner.run_cell()` call `judge_pair(pair_key)` as soon as it sees the companion cell at `stage=\"scored\"`, but the plan never defines a pair-level lock or claim for judging. With the concurrent orchestrators the plan explicitly supports, both sides of the same pair can observe the other as scored and both append their own `stage=\"judged\"` rows, producing duplicate verdicts for one `pair_key` and corrupting aggregation.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 makes `Runner.run_cell()` call `judge_pair(pair_key)` as soon as it sees the companion cell at `stage=\"scored\"`, but the plan never defines a pair-level lock or claim for judging. With the concurrent orchestrators the plan explicitly supports, both sides of the same pair can observe the other as scored and both append their own `stage=\"judged\"` rows, producing duplicate verdicts for one `pair_key` and corrupting aggregation.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 introduces `core/benchmark/probe.py` as the owner of `ProbeScheduler`, pending-probe retries, and the `ProbePendingRow` backfill flow, but `core/benchmark/cli_probe.py` is only modified in Phase 4 and is never updated in Phase 6 to call the new scheduler/backfill path. The plan therefore leaves `br benchmark probe` wired to the old Phase-4 implementation while Phase 6 depends on new probe APIs, so the pending-probe recovery path is not actually reachable.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 introduces `core/benchmark/probe.py` as the owner of `ProbeScheduler`, pending-probe retries, and the `ProbePendingRow` backfill flow, but `core/benchmark/cli_probe.py` is only modified in Phase 4 and is never updated in Phase 6 to call the new scheduler/backfill path. The plan therefore leaves `br benchmark probe` wired to the old Phase-4 implementation while Phase 6 depends on new probe APIs, so the pending-probe recovery path is not actually reachable.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T06:57:06.400918Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 8
+}

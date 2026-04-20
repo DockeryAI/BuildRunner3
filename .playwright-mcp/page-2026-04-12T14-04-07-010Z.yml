@@ -1,0 +1,603 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "7"
+      - text: Intelligence
+    - generic [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+      - text: Terminal
+    - generic [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Builds
+    - generic [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - text: Research
+    - generic [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - text: Monitor
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: BR3 The Band
+        - generic [ref=e34]: Intelligence
+      - generic [ref=e35]:
+        - generic [ref=e37]: "Tokens: 0k"
+        - generic [ref=e39]: "SSE: 4"
+        - generic [ref=e40]: "Uptime: 47m"
+        - generic [ref=e41]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e895]:
+      - generic [ref=e896]:
+        - generic [ref=e897]:
+          - generic [ref=e898]: Intelligence
+          - generic [ref=e899]:
+            - generic [ref=e1233]:
+              - strong [ref=e1234]: "14"
+              - text: total
+            - generic [ref=e1235]:
+              - strong [ref=e1236]: "1"
+              - text: critical
+            - generic [ref=e1237]:
+              - strong [ref=e1238]: "7"
+              - text: high
+            - generic [ref=e1239]:
+              - strong [ref=e1240]: "7"
+              - text: improve
+            - generic [ref=e1241]:
+              - strong [ref=e1242]: "13"
+              - text: unread
+        - generic [ref=e912]: 1s
+      - generic [ref=e913]:
+        - button "Intelligence 13 7" [ref=e914] [cursor=pointer]:
+          - text: Intelligence
+          - generic [ref=e915]: "13"
+          - generic [ref=e916]: "7"
+        - button "Deals" [ref=e917] [cursor=pointer]
+      - generic [ref=e1243]:
+        - generic [ref=e1244]:
+          - generic [ref=e1245]:
+            - generic [ref=e1246]: Active Hunts
+            - button "+ Add Hunt" [ref=e1247] [cursor=pointer]
+          - generic [ref=e1248]:
+            - generic [ref=e1249]:
+              - generic [ref=e1250]:
+                - generic [ref=e1251]: NVLink 3-Slot Bridge Alternative
+                - generic [ref=e1252]: active
+              - generic [ref=e1253]:
+                - generic [ref=e1254]:
+                  - strong [ref=e1255]: $250
+                  - text: target
+                - generic [ref=e1256]:
+                  - strong [ref=e1257]: "0"
+                  - text: found
+              - button "Archive" [ref=e1259] [cursor=pointer]
+            - generic [ref=e1260]:
+              - generic [ref=e1261]:
+                - generic [ref=e1262]: Crucial P3 Plus 1TB NVMe SSD
+                - generic [ref=e1263]: active
+              - generic [ref=e1264]:
+                - generic [ref=e1265]:
+                  - strong [ref=e1266]: $62
+                  - text: target
+                - generic [ref=e1267]:
+                  - strong [ref=e1268]: "0"
+                  - text: found
+              - button "Archive" [ref=e1270] [cursor=pointer]
+            - generic [ref=e1271]:
+              - generic [ref=e1272]:
+                - generic [ref=e1273]: RTX 3090 Matching Pair (Any Brand)
+                - generic [ref=e1274]: active
+              - generic [ref=e1275]:
+                - generic [ref=e1276]:
+                  - strong [ref=e1277]: $900
+                  - text: target
+                - generic [ref=e1278]:
+                  - strong [ref=e1279]: "0"
+                  - text: found
+              - button "Archive" [ref=e1281] [cursor=pointer]
+            - generic [ref=e1282]:
+              - generic [ref=e1283]:
+                - generic [ref=e1284]: NVIDIA P3669 NVLink 3-Slot Bridge
+                - generic [ref=e1285]: active
+              - generic [ref=e1286]:
+                - generic [ref=e1287]:
+                  - strong [ref=e1288]: $379
+                  - text: target
+                - generic [ref=e1289]:
+                  - strong [ref=e1290]: "0"
+                  - text: found
+              - button "Archive" [ref=e1292] [cursor=pointer]
+            - generic [ref=e1293]:
+              - generic [ref=e1294]:
+                - generic [ref=e1295]: Corsair RM1200x SHIFT 1200W PSU
+                - generic [ref=e1296]: active
+              - generic [ref=e1297]:
+                - generic [ref=e1298]:
+                  - strong [ref=e1299]: $195
+                  - text: target
+                - generic [ref=e1300]:
+                  - strong [ref=e1301]: "0"
+                  - text: found
+              - button "Archive" [ref=e1303] [cursor=pointer]
+            - generic [ref=e1304]:
+              - generic [ref=e1305]:
+                - generic [ref=e1306]: Corsair Vengeance RGB Pro 32GB DDR4-3200
+                - generic [ref=e1307]: active
+              - generic [ref=e1308]:
+                - generic [ref=e1309]:
+                  - strong [ref=e1310]: $280
+                  - text: target
+                - generic [ref=e1311]:
+                  - strong [ref=e1312]: "0"
+                  - text: found
+              - button "Archive" [ref=e1314] [cursor=pointer]
+            - generic [ref=e1315]:
+              - generic [ref=e1316]:
+                - generic [ref=e1317]: Minisforum MS-A2 Barebones (9955HX)
+                - generic [ref=e1318]: active
+              - generic [ref=e1319]:
+                - generic [ref=e1320]:
+                  - strong [ref=e1321]: $799
+                  - text: target
+                - generic [ref=e1322]:
+                  - strong [ref=e1323]: "0"
+                  - text: found
+              - button "Archive" [ref=e1325] [cursor=pointer]
+            - generic [ref=e1326]:
+              - generic [ref=e1327]:
+                - generic [ref=e1328]: Crucial 64GB DDR5-5600 SODIMM
+                - generic [ref=e1329]: active
+              - generic [ref=e1330]:
+                - generic [ref=e1331]:
+                  - strong [ref=e1332]: $586
+                  - text: target
+                - generic [ref=e1333]:
+                  - strong [ref=e1334]: "0"
+                  - text: found
+              - button "Archive" [ref=e1336] [cursor=pointer]
+            - generic [ref=e1337]:
+              - generic [ref=e1338]:
+                - generic [ref=e1339]: EVGA RTX 3090 FTW3 Ultra Pair
+                - generic [ref=e1340]: active
+              - generic [ref=e1341]:
+                - generic [ref=e1342]:
+                  - strong [ref=e1343]: $879
+                  - text: target
+                - generic [ref=e1344]:
+                  - strong [ref=e1345]: "0"
+                  - text: found
+              - button "Archive" [ref=e1347] [cursor=pointer]
+        - generic [ref=e1348]:
+          - textbox "Search deals..." [ref=e1349]
+          - generic [ref=e1350]:
+            - generic [ref=e1351]:
+              - strong [ref=e1352]: "45"
+              - text: deals
+            - generic [ref=e1353]:
+              - strong [ref=e1354]: "0"
+              - text: bought
+            - generic [ref=e1355]:
+              - strong [ref=e1356]: $0
+              - text: / $4,330 (0%)
+            - generic [ref=e1357]:
+              - strong [ref=e1358]: "9"
+              - text: hunts
+        - generic [ref=e1359]:
+          - generic [ref=e1360]:
+            - generic [ref=e1361]:
+              - generic [ref=e1362]: Crucial P3 Plus 1TB NVMe SSD
+              - generic [ref=e1363]:
+                - generic [ref=e1364]: "Target: $62"
+                - generic [ref=e1365]: "Median: $35.99"
+                - generic [ref=e1366]: 6 deals
+            - generic [ref=e1367] [cursor=pointer]:
+              - generic [ref=e1368]: "#1"
+              - generic [ref=e1369]: CT1000P3PSSD8 - Crucial P3 Plus SSD 1TB PCIe (NVMe)
+              - generic [ref=e1370]: overnightcomputers
+              - generic [ref=e1371]: PASS
+              - generic [ref=e1372]: 2d ago
+              - generic [ref=e1373]:
+                - text: $182.58
+                - generic [ref=e1374]: +$121 over
+            - button "▼ Show 5 more $195 — $349.99" [ref=e1375] [cursor=pointer]:
+              - generic [ref=e1376]: ▼
+              - generic [ref=e1377]: Show 5 more
+              - generic [ref=e1378]: $195 — $349.99
+          - generic [ref=e1379]:
+            - generic [ref=e1380]:
+              - generic [ref=e1381]: Corsair RM1200x SHIFT 1200W PSU
+              - generic [ref=e1382]:
+                - generic [ref=e1383]: "Target: $195"
+                - generic [ref=e1384]: "Median: $132.5"
+                - generic [ref=e1385]: 4 deals
+            - generic [ref=e1386] [cursor=pointer]:
+              - generic [ref=e1387]: "#1"
+              - generic [ref=e1388]: Corsair RM1200x SHIFT Fully Modular ATX 3.0 Power Supply 1200W 80 PLUS Gold
+              - generic [ref=e1389]: "*athq*"
+              - generic [ref=e1390]: PASS
+              - generic [ref=e1391]: 2d ago
+              - generic [ref=e1392]:
+                - text: $198.99
+                - generic [ref=e1393]: +$4 over
+            - button "▼ Show 3 more $200 — $17.99" [ref=e1394] [cursor=pointer]:
+              - generic [ref=e1395]: ▼
+              - generic [ref=e1396]: Show 3 more
+              - generic [ref=e1397]: $200 — $17.99
+          - generic [ref=e1398]:
+            - generic [ref=e1399]:
+              - generic [ref=e1400]: NVLink 3-Slot Bridge Alternative
+              - generic [ref=e1401]:
+                - generic [ref=e1402]: "Target: $250"
+                - generic [ref=e1403]: "Median: $378"
+                - generic [ref=e1404]: 2 deals
+            - generic [ref=e1405] [cursor=pointer]:
+              - generic [ref=e1406]: "#1"
+              - generic [ref=e1407]: NVIDIA NVLink Bridge 3-Slot P3669 *Read Description*
+              - generic [ref=e1408]: dz_compute
+              - generic [ref=e1409]: PASS
+              - generic [ref=e1410]: 2d ago
+              - generic [ref=e1411]:
+                - text: $419
+                - generic [ref=e1412]: +$169 over
+            - button "▼ Show 1 more $378 — $378" [ref=e1413] [cursor=pointer]:
+              - generic [ref=e1414]: ▼
+              - generic [ref=e1415]: Show 1 more
+              - generic [ref=e1416]: $378 — $378
+          - generic [ref=e1417]:
+            - generic [ref=e1418]:
+              - generic [ref=e1419]: NVIDIA P3669 NVLink 3-Slot Bridge
+              - generic [ref=e1420]:
+                - generic [ref=e1421]: "Target: $379"
+                - generic [ref=e1422]: "Median: $445.99"
+                - generic [ref=e1423]: 10 deals
+            - generic [ref=e1424] [cursor=pointer]:
+              - generic [ref=e1425]: "#1"
+              - generic [ref=e1426]: NVLink Bridge A5000 Graphics bridge A6000 RTX 3-SLOT For NVIDIA card
+              - generic [ref=e1427]: polish
+              - generic [ref=e1428]: PASS
+              - generic [ref=e1429]: 2d ago
+              - generic [ref=e1430]:
+                - text: $458.99
+                - generic [ref=e1431]: +$80 over
+            - button "▲ Hide $463.83 — $378" [active] [ref=e1512] [cursor=pointer]:
+              - generic [ref=e1433]: ▲
+              - generic [ref=e1434]: Hide
+              - generic [ref=e1435]: $463.83 — $378
+            - generic [ref=e1513]:
+              - generic [ref=e1514] [cursor=pointer]:
+                - generic [ref=e1515]:
+                  - generic [ref=e1516]:
+                    - generic [ref=e1517]: NVLink Bridge A5000 Graphics bridge A6000 RTX 3-SLOT For NVIDIA card
+                    - generic [ref=e1518]:
+                      - generic [ref=e1519]: upgraderr
+                      - generic [ref=e1520]: New
+                      - generic [ref=e1521]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1522]:
+                    - generic [ref=e1523]: $463.83
+                    - generic [ref=e1524]: PASS
+                - generic [ref=e1525]:
+                  - generic [ref=e1526]:
+                    - 'generic "P25: $382" [ref=e1527]'
+                    - 'generic "Median: $445.99" [ref=e1528]'
+                    - 'generic "P75: $458.67" [ref=e1529]'
+                    - 'generic "This deal: $463.83" [ref=e1530]'
+                  - generic [ref=e1531]:
+                    - generic [ref=e1532]: $269
+                    - generic [ref=e1533]: median $445.99
+                    - generic [ref=e1534]: $476.32
+                - generic [ref=e1535]: + add notes
+                - generic [ref=e1536]:
+                  - generic [ref=e1538]: 2d ago
+                  - generic [ref=e1539]:
+                    - button "Mark Bought" [ref=e1540]
+                    - button "Open" [ref=e1541]
+                    - button "✕" [ref=e1542]
+              - generic [ref=e1543] [cursor=pointer]:
+                - generic [ref=e1544]:
+                  - generic [ref=e1545]:
+                    - generic [ref=e1546]: NVLink Bridge A5000 Graphics bridge A6000 RTX 3-SLOT For NVIDIA card
+                    - generic [ref=e1547]:
+                      - generic [ref=e1548]: upgraderr
+                      - generic [ref=e1549]: New
+                      - generic [ref=e1550]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1551]:
+                    - generic [ref=e1552]: $476.32
+                    - generic [ref=e1553]: PASS
+                - generic [ref=e1554]:
+                  - generic [ref=e1555]:
+                    - 'generic "P25: $382" [ref=e1556]'
+                    - 'generic "Median: $445.99" [ref=e1557]'
+                    - 'generic "P75: $458.67" [ref=e1558]'
+                    - 'generic "This deal: $476.32" [ref=e1559]'
+                  - generic [ref=e1560]:
+                    - generic [ref=e1561]: $269
+                    - generic [ref=e1562]: median $445.99
+                    - generic [ref=e1563]: $476.32
+                - generic [ref=e1564]: + add notes
+                - generic [ref=e1565]:
+                  - generic [ref=e1567]: 2d ago
+                  - generic [ref=e1568]:
+                    - button "Mark Bought" [ref=e1569]
+                    - button "Open" [ref=e1570]
+                    - button "✕" [ref=e1571]
+              - generic [ref=e1572] [cursor=pointer]:
+                - generic [ref=e1573]:
+                  - generic [ref=e1574]:
+                    - generic [ref=e1575]: NVLink Bridge A5000 Graphics bridge A6000 RTX 3-SLOT For NVIDIA card
+                    - generic [ref=e1576]:
+                      - generic [ref=e1577]: refines
+                      - generic [ref=e1578]: New
+                      - generic [ref=e1579]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1580]:
+                    - generic [ref=e1581]: $445.99
+                    - generic [ref=e1582]: FAIR
+                - generic [ref=e1583]:
+                  - generic [ref=e1584]:
+                    - 'generic "P25: $382" [ref=e1585]'
+                    - 'generic "Median: $445.99" [ref=e1586]'
+                    - 'generic "P75: $458.67" [ref=e1587]'
+                    - 'generic "This deal: $445.99" [ref=e1588]'
+                  - generic [ref=e1589]:
+                    - generic [ref=e1590]: $269
+                    - generic [ref=e1591]: median $445.99
+                    - generic [ref=e1592]: $476.32
+                - generic [ref=e1593]: + add notes
+                - generic [ref=e1594]:
+                  - generic [ref=e1596]: 2d ago
+                  - generic [ref=e1597]:
+                    - button "Mark Bought" [ref=e1598]
+                    - button "Open" [ref=e1599]
+                    - button "✕" [ref=e1600]
+              - generic [ref=e1601] [cursor=pointer]:
+                - generic [ref=e1602]:
+                  - generic [ref=e1603]:
+                    - generic [ref=e1604]: NVLink Bridge A5000 Graphics bridge A6000 RTX 3-SLOT For NVIDIA card
+                    - generic [ref=e1605]:
+                      - generic [ref=e1606]: polish
+                      - generic [ref=e1607]: New
+                      - generic [ref=e1608]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1609]:
+                    - generic [ref=e1610]: $445.99
+                    - generic [ref=e1611]: FAIR
+                - generic [ref=e1612]:
+                  - generic [ref=e1613]:
+                    - 'generic "P25: $382" [ref=e1614]'
+                    - 'generic "Median: $445.99" [ref=e1615]'
+                    - 'generic "P75: $458.67" [ref=e1616]'
+                    - 'generic "This deal: $445.99" [ref=e1617]'
+                  - generic [ref=e1618]:
+                    - generic [ref=e1619]: $269
+                    - generic [ref=e1620]: median $445.99
+                    - generic [ref=e1621]: $476.32
+                - generic [ref=e1622]: + add notes
+                - generic [ref=e1623]:
+                  - generic [ref=e1625]: 2d ago
+                  - generic [ref=e1626]:
+                    - button "Mark Bought" [ref=e1627]
+                    - button "Open" [ref=e1628]
+                    - button "✕" [ref=e1629]
+              - generic [ref=e1630] [cursor=pointer]:
+                - generic [ref=e1631]:
+                  - generic [ref=e1632]:
+                    - generic [ref=e1633]: NVLink Bridge A5000 Graphics bridge A6000 RTX 3-SLOT For NVIDIA card
+                    - generic [ref=e1634]:
+                      - generic [ref=e1635]: refines
+                      - generic [ref=e1636]: New
+                      - generic [ref=e1637]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1638]:
+                    - generic [ref=e1639]: $458
+                    - generic [ref=e1640]: FAIR
+                - generic [ref=e1641]:
+                  - generic [ref=e1642]:
+                    - 'generic "P25: $382" [ref=e1643]'
+                    - 'generic "Median: $445.99" [ref=e1644]'
+                    - 'generic "P75: $458.67" [ref=e1645]'
+                    - 'generic "This deal: $458" [ref=e1646]'
+                  - generic [ref=e1647]:
+                    - generic [ref=e1648]: $269
+                    - generic [ref=e1649]: median $445.99
+                    - generic [ref=e1650]: $476.32
+                - generic [ref=e1651]: + add notes
+                - generic [ref=e1652]:
+                  - generic [ref=e1654]: 2d ago
+                  - generic [ref=e1655]:
+                    - button "Mark Bought" [ref=e1656]
+                    - button "Open" [ref=e1657]
+                    - button "✕" [ref=e1658]
+              - generic [ref=e1659] [cursor=pointer]:
+                - generic [ref=e1660]:
+                  - generic [ref=e1661]:
+                    - generic [ref=e1662]: NVLink Bridge A5000 Graphics bridge A6000 RTX 3-SLOT For NVIDIA card
+                    - generic [ref=e1663]:
+                      - generic [ref=e1664]: polish
+                      - generic [ref=e1665]: New
+                      - generic [ref=e1666]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1667]:
+                    - generic [ref=e1668]: $458.35
+                    - generic [ref=e1669]: FAIR
+                - generic [ref=e1670]:
+                  - generic [ref=e1671]:
+                    - 'generic "P25: $382" [ref=e1672]'
+                    - 'generic "Median: $445.99" [ref=e1673]'
+                    - 'generic "P75: $458.67" [ref=e1674]'
+                    - 'generic "This deal: $458.35" [ref=e1675]'
+                  - generic [ref=e1676]:
+                    - generic [ref=e1677]: $269
+                    - generic [ref=e1678]: median $445.99
+                    - generic [ref=e1679]: $476.32
+                - generic [ref=e1680]: + add notes
+                - generic [ref=e1681]:
+                  - generic [ref=e1683]: 2d ago
+                  - generic [ref=e1684]:
+                    - button "Mark Bought" [ref=e1685]
+                    - button "Open" [ref=e1686]
+                    - button "✕" [ref=e1687]
+              - generic [ref=e1688] [cursor=pointer]:
+                - generic [ref=e1689]:
+                  - generic [ref=e1690]:
+                    - generic [ref=e1691]: New Nvidia NVLink Bridge 3-Slot 3090 A5000 A5500 A6000 900-53669-0000-000 P3669
+                    - generic [ref=e1692]:
+                      - generic [ref=e1693]: kempit
+                      - generic [ref=e1694]: New
+                      - generic [ref=e1695]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1696]:
+                    - generic [ref=e1697]: $399
+                    - generic [ref=e1698]: GOOD
+                - generic [ref=e1699]:
+                  - generic [ref=e1700]:
+                    - 'generic "P25: $382" [ref=e1701]'
+                    - 'generic "Median: $445.99" [ref=e1702]'
+                    - 'generic "P75: $458.67" [ref=e1703]'
+                    - 'generic "This deal: $399" [ref=e1704]'
+                  - generic [ref=e1705]:
+                    - generic [ref=e1706]: $269
+                    - generic [ref=e1707]: median $445.99
+                    - generic [ref=e1708]: $476.32
+                - generic [ref=e1709]: + add notes
+                - generic [ref=e1710]:
+                  - generic [ref=e1712]: 2d ago
+                  - generic [ref=e1713]:
+                    - button "Mark Bought" [ref=e1714]
+                    - button "Open" [ref=e1715]
+                    - button "✕" [ref=e1716]
+              - generic [ref=e1717] [cursor=pointer]:
+                - generic [ref=e1718]:
+                  - generic [ref=e1719]:
+                    - generic [ref=e1720]: NVIDIA NVLink Bridge 3-Slot P3669 *Read Description*
+                    - generic [ref=e1721]:
+                      - generic [ref=e1722]: dz_compute
+                      - generic [ref=e1723]: New
+                      - generic [ref=e1724]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1725]:
+                    - generic [ref=e1726]: $419
+                    - generic [ref=e1727]: GOOD
+                - generic [ref=e1728]:
+                  - generic [ref=e1729]:
+                    - 'generic "P25: $382" [ref=e1730]'
+                    - 'generic "Median: $445.99" [ref=e1731]'
+                    - 'generic "P75: $458.67" [ref=e1732]'
+                    - 'generic "This deal: $419" [ref=e1733]'
+                  - generic [ref=e1734]:
+                    - generic [ref=e1735]: $269
+                    - generic [ref=e1736]: median $445.99
+                    - generic [ref=e1737]: $476.32
+                - generic [ref=e1738]: + add notes
+                - generic [ref=e1739]:
+                  - generic [ref=e1741]: 2d ago
+                  - generic [ref=e1742]:
+                    - button "Mark Bought" [ref=e1743]
+                    - button "Open" [ref=e1744]
+                    - button "✕" [ref=e1745]
+              - generic [ref=e1746] [cursor=pointer]:
+                - generic [ref=e1747]:
+                  - generic [ref=e1748]:
+                    - generic [ref=e1749]: Nvidia NVLink Bridge 3-Slot 3090 A800 A5000 A5500 A6000 900-53669-0000-000 P3669
+                    - generic [ref=e1750]:
+                      - generic [ref=e1751]: kempit
+                      - generic [ref=e1752]: Used
+                      - generic [ref=e1753]: NVIDIA P3669 NVLink 3-Slot Bridge
+                  - generic [ref=e1754]:
+                    - generic [ref=e1755]: $378
+                    - generic [ref=e1756]: EXCEPTIONAL
+                - generic [ref=e1757]:
+                  - generic [ref=e1758]:
+                    - 'generic "P25: $382" [ref=e1759]'
+                    - 'generic "Median: $445.99" [ref=e1760]'
+                    - 'generic "P75: $458.67" [ref=e1761]'
+                    - 'generic "This deal: $378" [ref=e1762]'
+                  - generic [ref=e1763]:
+                    - generic [ref=e1764]: $269
+                    - generic [ref=e1765]: median $445.99
+                    - generic [ref=e1766]: $476.32
+                - generic [ref=e1767]: + add notes
+                - generic [ref=e1768]:
+                  - generic [ref=e1770]: 2d ago
+                  - generic [ref=e1771]:
+                    - button "Mark Bought" [ref=e1772]
+                    - button "Open" [ref=e1773]
+                    - button "✕" [ref=e1774]
+          - generic [ref=e1436]:
+            - generic [ref=e1437]:
+              - generic [ref=e1438]: Crucial 64GB DDR5-5600 SODIMM
+              - generic [ref=e1439]:
+                - generic [ref=e1440]: "Target: $586"
+                - generic [ref=e1441]: "Median: $649.99"
+                - generic [ref=e1442]: 4 deals
+            - generic [ref=e1443] [cursor=pointer]:
+              - generic [ref=e1444]: "#1"
+              - generic [ref=e1445]: CT2K32G56C46S5 Crucial 32GB x2 64GB DDR5-5600MHz PC5-44800 SODIMM Non-ECC Memory
+              - generic [ref=e1446]: cloudtech-0
+              - generic [ref=e1447]: PASS
+              - generic [ref=e1448]: 2d ago
+              - generic [ref=e1449]:
+                - text: $920
+                - generic [ref=e1450]: +$334 over
+            - button "▼ Show 3 more $1081.84 — $219.95" [ref=e1451] [cursor=pointer]:
+              - generic [ref=e1452]: ▼
+              - generic [ref=e1453]: Show 3 more
+              - generic [ref=e1454]: $1081.84 — $219.95
+          - generic [ref=e1455]:
+            - generic [ref=e1456]:
+              - generic [ref=e1457]: EVGA RTX 3090 FTW3 Ultra Pair
+              - generic [ref=e1458]:
+                - generic [ref=e1459]: "Target: $879"
+                - generic [ref=e1460]: "Median: $1479.97"
+                - generic [ref=e1461]: 5 deals
+            - generic [ref=e1462] [cursor=pointer]:
+              - generic [ref=e1463]: "#1"
+              - generic [ref=e1464]: EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card, Pre-owned
+              - generic [ref=e1465]: pay-996
+              - generic [ref=e1466]: PASS
+              - generic [ref=e1467]: 2d ago
+              - generic [ref=e1468]:
+                - text: $2500
+                - generic [ref=e1469]: +$1621 over
+            - button "▼ Show 4 more $1479.97 — $970" [ref=e1470] [cursor=pointer]:
+              - generic [ref=e1471]: ▼
+              - generic [ref=e1472]: Show 4 more
+              - generic [ref=e1473]: $1479.97 — $970
+          - generic [ref=e1474]:
+            - generic [ref=e1475]:
+              - generic [ref=e1476]: RTX 3090 Matching Pair (Any Brand)
+              - generic [ref=e1477]:
+                - generic [ref=e1478]: "Target: $900"
+                - generic [ref=e1479]: "Median: $1767"
+                - generic [ref=e1480]: 2 deals
+            - generic [ref=e1481] [cursor=pointer]:
+              - generic [ref=e1482]: "#1"
+              - generic [ref=e1483]: "[USA-WA] [H] EVGA RTX 3090 FTW3 [W] Paypal"
+              - generic [ref=e1484]: De-Stijl
+              - generic [ref=e1485]: EXCEPTIONAL
+              - generic [ref=e1486]: 1d ago
+              - generic [ref=e1487]:
+                - text: $950
+                - generic [ref=e1488]: +$50 over
+            - button "▼ Show 1 more $970 — $970" [ref=e1489] [cursor=pointer]:
+              - generic [ref=e1490]: ▼
+              - generic [ref=e1491]: Show 1 more
+              - generic [ref=e1492]: $970 — $970
+          - generic [ref=e1493]:
+            - generic [ref=e1494]:
+              - generic [ref=e1495]: Corsair Vengeance RGB Pro 32GB DDR4-3200
+              - generic [ref=e1496]:
+                - generic [ref=e1497]: "Target: $280"
+                - generic [ref=e1498]: "Median: $269.99"
+                - generic [ref=e1499]: 2 deals
+            - generic [ref=e1500] [cursor=pointer]:
+              - generic [ref=e1501]: "#1"
+              - generic [ref=e1502]: "[USA-OH] [H] Sealed ASUS X870-P WiFi , Corsair Vengeance Pro RGB 4x 8GB (32GB total) DDR4-3200, ASUS X99-WS/IPMI, (3x) Broken 1080 Ti's for parts/repair/practice [W] PayPal / Cash on Collection"
+              - generic [ref=e1503]: TheMadDutchDude
+              - generic [ref=e1504]: GOOD
+              - generic [ref=e1505]: 22h ago
+              - generic [ref=e1506]:
+                - text: $125
+                - generic [ref=e1507]: $155 under
+            - button "▼ Show 1 more $259 — $259" [ref=e1508] [cursor=pointer]:
+              - generic [ref=e1509]: ▼
+              - generic [ref=e1510]: Show 1 more
+              - generic [ref=e1511]: $259 — $259

@@ -117,12 +117,19 @@ function notify(title: string, msg: string) {
   exec(`osascript -e 'display notification "${escaped}" with title "${title}" sound name "Basso"'`);
 }
 
-function pushToWalter(pattern: { pattern_type: string; severity: string; description: string; count?: number }) {
+function pushToWalter(pattern: {
+  pattern_type: string;
+  severity: string;
+  description: string;
+  count?: number;
+}) {
   exec(`${CLUSTER_CHECK} test-runner`, (_err, walterUrl) => {
     const url = walterUrl?.trim();
     if (!url) return;
     const data = JSON.stringify(pattern);
-    exec(`curl -s --max-time 3 -X POST "${url}/api/alert" -H "Content-Type: application/json" -d '${data.replace(/'/g, "'\\''")}'`);
+    exec(
+      `curl -s --max-time 3 -X POST "${url}/api/alert" -H "Content-Type: application/json" -d '${data.replace(/'/g, "'\\''")}'`
+    );
   });
 }
 
@@ -150,26 +157,32 @@ function autoFixEdgeFunctionDeploy(fnName: string, reason: string) {
 
   // Safeguard: max attempts
   if (!canAutoFix(fnName)) {
-    console.log(`\x1b[33m[br-autofix]\x1b[0m Max auto-fix attempts (${MAX_AUTOFIX_ATTEMPTS}) reached for '${fnName}' — escalating to Claude`);
+    console.log(
+      `\x1b[33m[br-autofix]\x1b[0m Max auto-fix attempts (${MAX_AUTOFIX_ATTEMPTS}) reached for '${fnName}' — escalating to Claude`
+    );
     escalateToClaude(
       `Auto-fix exhausted for edge function '${fnName}'. ${MAX_AUTOFIX_ATTEMPTS} deploy attempts failed. Manual investigation needed.`,
-      `Function: supabase/functions/${fnName}/\nReason: ${reason}\nAttempts: ${MAX_AUTOFIX_ATTEMPTS}\nFix manually: check handler code, run supabase functions deploy ${fnName} --no-verify-jwt`,
+      `Function: supabase/functions/${fnName}/\nReason: ${reason}\nAttempts: ${MAX_AUTOFIX_ATTEMPTS}\nFix manually: check handler code, run supabase functions deploy ${fnName} --no-verify-jwt`
     );
     return;
   }
 
   // Safeguard: deploy lock
   if (isDeployLocked()) {
-    console.log(`\x1b[33m[br-autofix]\x1b[0m Deploy locked (another deploy in progress) — skipping auto-deploy of '${fnName}'`);
+    console.log(
+      `\x1b[33m[br-autofix]\x1b[0m Deploy locked (another deploy in progress) — skipping auto-deploy of '${fnName}'`
+    );
     return;
   }
 
   // Safeguard: type-check before deploying
   if (!typeCheckEdgeFunction(fnName)) {
-    console.error(`\x1b[31m[br-autofix]\x1b[0m Type-check failed for '${fnName}' — not deploying broken code`);
+    console.error(
+      `\x1b[31m[br-autofix]\x1b[0m Type-check failed for '${fnName}' — not deploying broken code`
+    );
     escalateToClaude(
       `Cannot auto-deploy '${fnName}' — code has errors. Fix the code first.`,
-      `Function: supabase/functions/${fnName}/\nReason: ${reason}\nBlocked by: type-check failure`,
+      `Function: supabase/functions/${fnName}/\nReason: ${reason}\nBlocked by: type-check failure`
     );
     return;
   }
@@ -178,22 +191,39 @@ function autoFixEdgeFunctionDeploy(fnName: string, reason: string) {
   notify('BR3 Auto-Fix', `Deploying ${fnName}: ${reason}`);
 
   // Set deploy lock
-  try { fs.writeFileSync(DEPLOY_LOCK, `${fnName}:${Date.now()}`); } catch {}
+  try {
+    fs.writeFileSync(DEPLOY_LOCK, `${fnName}:${Date.now()}`);
+  } catch {}
 
-  execFile('supabase', ['functions', 'deploy', fnName, '--no-verify-jwt'], { cwd: projectRoot, timeout: 120000 }, (err, _stdout, stderr) => {
-    // Clear deploy lock
-    try { fs.unlinkSync(DEPLOY_LOCK); } catch {}
+  execFile(
+    'supabase',
+    ['functions', 'deploy', fnName, '--no-verify-jwt'],
+    { cwd: projectRoot, timeout: 120000 },
+    (err, _stdout, stderr) => {
+      // Clear deploy lock
+      try {
+        fs.unlinkSync(DEPLOY_LOCK);
+      } catch {}
 
-    if (err) {
-      console.error(`\x1b[31m[br-autofix]\x1b[0m Deploy failed: ${stderr?.slice(0, 200)}`);
-      notify('BR3 Auto-Fix FAILED', `${fnName} deploy failed`);
-      pushToWalter({ pattern_type: 'auto_fix_failed', severity: 'critical', description: `Auto-deploy of ${fnName} failed: ${stderr?.slice(0, 100)}` });
-    } else {
-      console.log(`\x1b[32m[br-autofix]\x1b[0m ✓ Deployed ${fnName}`);
-      notify('BR3 Auto-Fix', `✓ Deployed ${fnName}`);
-      pushToWalter({ pattern_type: 'auto_fix_applied', severity: 'info', description: `Auto-deployed ${fnName}: ${reason}` });
+      if (err) {
+        console.error(`\x1b[31m[br-autofix]\x1b[0m Deploy failed: ${stderr?.slice(0, 200)}`);
+        notify('BR3 Auto-Fix FAILED', `${fnName} deploy failed`);
+        pushToWalter({
+          pattern_type: 'auto_fix_failed',
+          severity: 'critical',
+          description: `Auto-deploy of ${fnName} failed: ${stderr?.slice(0, 100)}`,
+        });
+      } else {
+        console.log(`\x1b[32m[br-autofix]\x1b[0m ✓ Deployed ${fnName}`);
+        notify('BR3 Auto-Fix', `✓ Deployed ${fnName}`);
+        pushToWalter({
+          pattern_type: 'auto_fix_applied',
+          severity: 'info',
+          description: `Auto-deployed ${fnName}: ${reason}`,
+        });
+      }
     }
-  });
+  );
 }
 
 function checkForFixableErrors(body: string) {
@@ -229,46 +259,64 @@ function _checkForFixableErrorsInner(body: string) {
     }
 
     // --- Pattern 2: Edge function timeout (ERR with high duration) ---
-    const timeoutMatch = line.match(/\[NET\]\s+\w+\s+https?:\/\/\S*\/functions\/v1\/([\w-]+)\S*\s+ERR\s+(\d+)ms/);
+    const timeoutMatch = line.match(
+      /\[NET\]\s+\w+\s+https?:\/\/\S*\/functions\/v1\/([\w-]+)\S*\s+ERR\s+(\d+)ms/
+    );
     if (timeoutMatch) {
       const fn = timeoutMatch[1];
       const duration = parseInt(timeoutMatch[2]);
       if (duration > 30000) {
         if (canAlert('edge_function_timeout')) {
-          pushToWalter({ pattern_type: 'edge_function_timeout', severity: 'critical', description: `${fn} timed out after ${Math.round(duration / 1000)}s` });
-          notify('BR3: Edge Function Timeout', `${fn} timed out after ${Math.round(duration / 1000)}s`);
+          pushToWalter({
+            pattern_type: 'edge_function_timeout',
+            severity: 'critical',
+            description: `${fn} timed out after ${Math.round(duration / 1000)}s`,
+          });
+          notify(
+            'BR3: Edge Function Timeout',
+            `${fn} timed out after ${Math.round(duration / 1000)}s`
+          );
         }
 
         if (_fixedFingerprints.has(fp)) {
           // Redeploy already tried — escalate to Claude
           escalateToClaude(
             `Edge function '${fn}' timed out after ${Math.round(duration / 1000)}s. Redeploy did not fix it. The handler is too slow — likely the Claude API call inside the handler exceeds Supabase's 150s limit.`,
-            `Function: supabase/functions/${fn}/\nError: timeout after ${Math.round(duration / 1000)}s\nPrevious fix attempt: redeploy (failed)\nNeeded: reduce prompt size, lower effort level, or split into smaller calls`,
+            `Function: supabase/functions/${fn}/\nError: timeout after ${Math.round(duration / 1000)}s\nPrevious fix attempt: redeploy (failed)\nNeeded: reduce prompt size, lower effort level, or split into smaller calls`
           );
         } else {
           _fixedFingerprints.add(fp);
-          autoFixEdgeFunctionDeploy(fn, `timeout after ${Math.round(duration / 1000)}s — clearing stale worker`);
+          autoFixEdgeFunctionDeploy(
+            fn,
+            `timeout after ${Math.round(duration / 1000)}s — clearing stale worker`
+          );
         }
         continue;
       }
     }
 
     // --- Pattern 3: Edge function HTTP error (400, 500, etc.) ---
-    const httpErrMatch = line.match(/\[NET\]\s+\w+\s+https?:\/\/\S*\/functions\/v1\/([\w-]+)\S*\s+(\d{3})\s+\d+ms/);
+    const httpErrMatch = line.match(
+      /\[NET\]\s+\w+\s+https?:\/\/\S*\/functions\/v1\/([\w-]+)\S*\s+(\d{3})\s+\d+ms/
+    );
     if (httpErrMatch) {
       const fn = httpErrMatch[1];
       const status = parseInt(httpErrMatch[2]);
       if (status >= 400) {
         _fixedFingerprints.add(fp);
         if (canAlert('edge_function_error')) {
-          pushToWalter({ pattern_type: 'edge_function_error', severity: status >= 500 ? 'critical' : 'high', description: `${fn} returned ${status}` });
+          pushToWalter({
+            pattern_type: 'edge_function_error',
+            severity: status >= 500 ? 'critical' : 'high',
+            description: `${fn} returned ${status}`,
+          });
           notify('BR3: Edge Function Error', `${fn} returned ${status}`);
         }
         // Escalate 500s to Claude immediately
         if (status >= 500) {
           escalateToClaude(
             `Edge function '${fn}' returned ${status} (server error).`,
-            `Function: supabase/functions/${fn}/\nStatus: ${status}\nCheck Supabase dashboard logs for the full error trace.`,
+            `Function: supabase/functions/${fn}/\nStatus: ${status}\nCheck Supabase dashboard logs for the full error trace.`
           );
         }
         continue;
@@ -276,7 +324,9 @@ function _checkForFixableErrorsInner(body: string) {
     }
 
     // --- Pattern 4: REST API write error (PATCH/POST/PUT returning 400+) → alert only, never auto-push migrations ---
-    const restErrMatch = line.match(/\[NET\]\s+(PATCH|POST|PUT)\s+https?:\/\/\S*\/rest\/v1\/([\w-]+)\S*\s+(\d{3})\s+\d+ms/);
+    const restErrMatch = line.match(
+      /\[NET\]\s+(PATCH|POST|PUT)\s+https?:\/\/\S*\/rest\/v1\/([\w-]+)\S*\s+(\d{3})\s+\d+ms/
+    );
     if (restErrMatch) {
       const method = restErrMatch[1];
       const table = restErrMatch[2];
@@ -284,26 +334,36 @@ function _checkForFixableErrorsInner(body: string) {
       if (status >= 400) {
         _fixedFingerprints.add(fp);
         if (canAlert('rest_api_error')) {
-          pushToWalter({ pattern_type: 'rest_api_error', severity: 'high', description: `${method} ${table} returned ${status}` });
+          pushToWalter({
+            pattern_type: 'rest_api_error',
+            severity: 'high',
+            description: `${method} ${table} returned ${status}`,
+          });
           notify('BR3: Database Error', `${method} ${table} → ${status}`);
         }
         // Always escalate to Claude — never auto-push migrations (too risky)
         escalateToClaude(
           `REST API error: ${method} /rest/v1/${table} returned ${status}. This likely means a migration hasn't been pushed — a column or table is missing in prod.`,
-          `Table: ${table}\nStatus: ${status}\nCheck: ls supabase/migrations/ for unpushed migrations\nFix: verify migration is correct, then run 'supabase db push'`,
+          `Table: ${table}\nStatus: ${status}\nCheck: ls supabase/migrations/ for unpushed migrations\nFix: verify migration is correct, then run 'supabase db push'`
         );
         continue;
       }
     }
 
     // --- Pattern 5: Catch-all for unmatched /functions/ or /rest/ non-200s ---
-    const catchAllMatch = line.match(/\[NET\]\s+\w+\s+https?:\/\/\S*\/(functions\/v1|rest\/v1)\/([\w-]+)\S*\s+(\d{3})\s+\d+ms/);
+    const catchAllMatch = line.match(
+      /\[NET\]\s+\w+\s+https?:\/\/\S*\/(functions\/v1|rest\/v1)\/([\w-]+)\S*\s+(\d{3})\s+\d+ms/
+    );
     if (catchAllMatch) {
       const status = parseInt(catchAllMatch[3]);
       if (status >= 400 && !_fixedFingerprints.has(fp)) {
         _fixedFingerprints.add(fp);
         if (canAlert('unmatched_api_error')) {
-          pushToWalter({ pattern_type: 'api_error', severity: 'high', description: `${catchAllMatch[1]}/${catchAllMatch[2]} returned ${status}` });
+          pushToWalter({
+            pattern_type: 'api_error',
+            severity: 'high',
+            description: `${catchAllMatch[1]}/${catchAllMatch[2]} returned ${status}`,
+          });
         }
       }
     }
@@ -321,7 +381,7 @@ function _checkForFixableErrorsInner(body: string) {
         // Same error again — escalate to Claude
         escalateToClaude(
           `Recurring runtime error: ${msg}`,
-          `This error has occurred multiple times. Auto-fix did not resolve it. Investigate and fix the root cause.`,
+          `This error has occurred multiple times. Auto-fix did not resolve it. Investigate and fix the root cause.`
         );
       }
       _fixedFingerprints.add(fp);
@@ -367,10 +427,16 @@ export function brLoggerPlugin(): Plugin {
 
       // --- Source 2: Prod Realtime broadcast on "br-logs" channel ---
       // Vite plugins run before dotenv — load .env manually
+      // Load both .env and .env.development (projects may use either)
       loadDotenv({ path: path.join(projectRoot, '.env') });
-      const supabaseUrl = process.env.VITE_SUPABASE_URL;
+      loadDotenv({ path: path.join(projectRoot, '.env.development') });
+      // Prefer BR_LOG_SUPABASE_* (points to PROD) over VITE_SUPABASE_* (points to DEV)
+      // Prod logs broadcast to PROD Supabase Realtime, so we must listen there
+      const supabaseUrl = process.env.BR_LOG_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
       const supabaseKey =
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+        process.env.BR_LOG_SUPABASE_KEY ||
+        process.env.SUPABASE_SERVICE_ROLE_KEY ||
+        process.env.VITE_SUPABASE_ANON_KEY;
 
       if (supabaseUrl && supabaseKey) {
         // Dynamic import to avoid requiring @supabase/supabase-js at plugin load time

@@ -270,21 +270,40 @@ def _detect_patterns(entries: list[dict]) -> list[dict]:
     for e in entries:
         by_type[e.get("log_type", "unknown")].append(e)
 
-    # --- Auth refresh loop ---
-    auth_events = [e for e in entries if "TOKEN_REFRESHED" in e.get("message", "") or "token" in e.get("message", "").lower()]
+    # --- Auth refresh loop (only flag if 5+ TOKEN_REFRESHED in 30s window) ---
+    auth_events = [e for e in entries if "TOKEN_REFRESHED" in e.get("message", "")]
     if len(auth_events) >= 5:
-        # Check for rapid succession (5+ in 30 seconds)
-        patterns.append({
-            "pattern_type": "auth_refresh_loop",
-            "severity": "critical",
-            "description": f"{len(auth_events)} auth token events detected — possible refresh loop",
-            "count": len(auth_events),
-        })
+        timestamps = []
+        for e in auth_events:
+            ts = e.get("timestamp", "")
+            if ts:
+                try:
+                    from datetime import datetime
+                    dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                    timestamps.append(dt)
+                except (ValueError, TypeError):
+                    pass
+        timestamps.sort()
+        rapid_burst = False
+        if len(timestamps) >= 5:
+            for i in range(len(timestamps) - 4):
+                window = (timestamps[i + 4] - timestamps[i]).total_seconds()
+                if window <= 30:
+                    rapid_burst = True
+                    break
+        if rapid_burst:
+            patterns.append({
+                "pattern_type": "auth_refresh_loop",
+                "severity": "critical",
+                "description": f"{len(auth_events)} TOKEN_REFRESHED events with rapid bursts (5+ in 30s) — refresh loop",
+                "count": len(auth_events),
+            })
 
     # --- RLS denial spike ---
+    # Exclude HEAD requests — they return 0 bytes by design (count-only queries)
     supabase_entries = by_type.get("supabase", [])
     queries = [e for e in supabase_entries if e.get("event_type") == "query"]
-    empty_200s = [e for e in queries if e.get("status_code") == 200 and e.get("response_size") == 0]
+    empty_200s = [e for e in queries if e.get("status_code") == 200 and e.get("response_size") == 0 and e.get("method", "").upper() != "HEAD"]
     if len(queries) >= 10 and len(empty_200s) / len(queries) > 0.3:
         patterns.append({
             "pattern_type": "rls_denial_spike",
@@ -358,7 +377,17 @@ def _detect_patterns(entries: list[dict]) -> list[dict]:
         })
 
     # --- Latency degradation ---
-    timed_entries = [e for e in supabase_entries if e.get("duration_ms") and e.get("duration_ms") > 0]
+    # Exclude ALL edge function calls — they run arbitrary server work (LLM calls,
+    # scraping, multi-step pipelines) and routinely take 30–90s. The 800ms bar is
+    # a DB/REST latency bar, not an edge-function bar. Also skip any entry tagged
+    # [EDGE_FN] or [EDGE_FN:*] even if the URL parse missed it.
+    def _is_edge_fn_call(e):
+        blob = (e.get("url") or "") + " " + (e.get("message") or "")
+        return "/functions/v1/" in blob or "[EDGE_FN" in blob or (e.get("event_type") or "").startswith("edge_fn")
+    timed_entries = [
+        e for e in supabase_entries
+        if e.get("duration_ms") and e.get("duration_ms") > 0 and not _is_edge_fn_call(e)
+    ]
     if len(timed_entries) >= 10:
         avg_duration = sum(e["duration_ms"] for e in timed_entries) / len(timed_entries)
         slow = [e for e in timed_entries if e["duration_ms"] > 800]
@@ -486,15 +515,43 @@ def _correlate(entries: list[dict]) -> list[dict]:
 _sync_processes = {}
 
 
+BUILDS_REGISTRY = os.path.expanduser("~/.buildrunner/cluster-builds.json")
+SESSIONS_URL = "http://127.0.0.1:4400/api/sessions"
+
+
 def _discover_projects() -> list[str]:
-    """Discover all BR3 projects by looking for .buildrunner/ directories locally."""
-    projects = []
+    """Discover ACTIVE projects only — from build registry + live Claude sessions."""
+    active = set()
+
+    # Source 1: Build registry — running/pending builds
+    try:
+        with open(BUILDS_REGISTRY) as f:
+            reg = json.load(f)
+        for bid, build in reg.get("builds", {}).items():
+            if build.get("status") in ("running", "pending", "registered"):
+                project = build.get("project")
+                if project:
+                    active.add(project)
+    except Exception:
+        pass
+
+    # Source 2: Active Claude Code sessions (ad-hoc fixes)
+    try:
+        import urllib.request
+        resp = urllib.request.urlopen(SESSIONS_URL, timeout=3)
+        data = json.loads(resp.read())
+        for session in data.get("sessions", []):
+            project = session.get("project")
+            if project and project != "--":
+                active.add(project)
+    except Exception:
+        pass
+
+    # Validate: only include projects that actually have .buildrunner/ dirs
     projects_dir = Path(PROJECTS_DIR)
-    if projects_dir.exists():
-        for d in projects_dir.iterdir():
-            if d.is_dir() and (d / ".buildrunner").exists():
-                projects.append(d.name)
-    return projects if projects else ["Synapse", "workfloDock", "BuildRunner3"]
+    validated = [p for p in active if (projects_dir / p / ".buildrunner").exists()]
+
+    return validated if validated else []
 
 
 _known_projects: set[str] = set()
@@ -504,6 +561,85 @@ CLUSTER_CHECK = os.path.expanduser("~/.buildrunner/scripts/cluster-check.sh")
 
 
 # --- Alert + Auto-Fix ---
+ALERTS_DIR = os.path.expanduser("~/.buildrunner/alerts")
+DASHBOARD_EVENT_URL = "http://127.0.0.1:4400/api/events"
+
+
+def _push_alert_to_dashboard(pattern: dict):
+    """Write alert JSON to ~/.buildrunner/alerts/ for dashboard monitor workspace,
+    and emit an event to the dashboard event server."""
+    try:
+        os.makedirs(ALERTS_DIR, exist_ok=True)
+        fp = pattern.get("fingerprint") or hashlib.md5(
+            f"{pattern['pattern_type']}:{pattern.get('description', '')}".encode()
+        ).hexdigest()[:12]
+        alert_data = {
+            "type": "log_analysis",
+            "node": "Muddy",
+            "severity": pattern["severity"],
+            "message": f"{pattern['pattern_type']}: {pattern['description']}",
+            "pattern_type": pattern["pattern_type"],
+            "count": pattern.get("count", 1),
+            "fingerprint": fp,
+            "timestamp": datetime.now().isoformat(),
+        }
+        alert_file = os.path.join(ALERTS_DIR, f"log-{fp}.json")
+        with open(alert_file, "w") as f:
+            json.dump(alert_data, f)
+        print(f"  [ALERT] dashboard alert: {alert_file}")
+    except Exception as e:
+        print(f"  [ALERT] dashboard alert write failed: {e}")
+
+    # Emit event to dashboard event server
+    try:
+        import urllib.request
+        event = json.dumps({
+            "type": "log.analysis.alert",
+            "source": "log-analysis",
+            "data": json.dumps({
+                "pattern_type": pattern["pattern_type"],
+                "severity": pattern["severity"],
+                "description": pattern.get("description", ""),
+                "count": pattern.get("count", 1),
+            }),
+        }).encode()
+        req = urllib.request.Request(
+            DASHBOARD_EVENT_URL,
+            data=event,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        urllib.request.urlopen(req, timeout=3)
+        print(f"  [ALERT] dashboard event emitted: {pattern['pattern_type']}")
+    except Exception as e:
+        print(f"  [ALERT] dashboard event emit failed: {e}")
+
+
+def _clear_resolved_dashboard_alerts():
+    """Remove alert files for patterns that have been resolved."""
+    try:
+        if not os.path.exists(ALERTS_DIR):
+            return
+        processed_dir = os.path.join(ALERTS_DIR, "processed")
+        os.makedirs(processed_dir, exist_ok=True)
+        for f in os.listdir(ALERTS_DIR):
+            if not f.startswith("log-") or not f.endswith(".json"):
+                continue
+            filepath = os.path.join(ALERTS_DIR, f)
+            try:
+                with open(filepath) as fh:
+                    alert = json.load(fh)
+                fp = alert.get("fingerprint", "")
+                if fp in _resolved_fingerprints:
+                    dest = os.path.join(processed_dir, f"remediated-{f}")
+                    os.rename(filepath, dest)
+                    print(f"  [ALERT] resolved alert moved: {f}")
+            except Exception:
+                pass
+    except Exception as e:
+        print(f"  [ALERT] cleanup failed: {e}")
+
+
 def _send_macos_notification(pattern: dict):
     """Fire macOS notification for critical/high patterns."""
     try:
@@ -681,15 +817,19 @@ def _analysis_loop():
                 if not project_dir.exists():
                     continue
 
+                # Skip stale logs (not modified in last 24 hours)
+                max_age_hours = 24
+                now = time.time()
+
                 supa_log = project_dir / "supabase.log"
-                if supa_log.exists():
+                if supa_log.exists() and (now - supa_log.stat().st_mtime) < max_age_hours * 3600:
                     entries = _parse_supabase_log(str(supa_log))
                     for e in entries:
                         e["project"] = project
                     all_entries.extend(entries)
 
                 browser_log = project_dir / "browser.log"
-                if browser_log.exists():
+                if browser_log.exists() and (now - browser_log.stat().st_mtime) < max_age_hours * 3600:
                     entries = _parse_browser_log(str(browser_log))
                     for e in entries:
                         e["project"] = project
@@ -697,7 +837,7 @@ def _analysis_loop():
 
                 for logname, logtype in [("device.log", "device"), ("query.log", "query")]:
                     logpath = project_dir / logname
-                    if logpath.exists():
+                    if logpath.exists() and (now - logpath.stat().st_mtime) < max_age_hours * 3600:
                         entries = _parse_generic_log(str(logpath), logtype)
                         for e in entries:
                             e["project"] = project
@@ -752,6 +892,9 @@ def _analysis_loop():
             if patterns:
                 print(f"Analysis: {len(patterns)} patterns, {len(correlations)} correlations")
 
+            # --- Clean up resolved alerts from dashboard ---
+            _clear_resolved_dashboard_alerts()
+
             # --- Alert + Auto-Fix for critical/high patterns ---
             for p in patterns:
                 fp = p.get("fingerprint") or hashlib.md5(f"{p['pattern_type']}:{p.get('description','')}".encode()).hexdigest()[:12]
@@ -759,6 +902,7 @@ def _analysis_loop():
                     _alerted_fingerprints.add(fp)
                     _send_macos_notification(p)
                     _push_alert_to_walter(p)
+                    _push_alert_to_dashboard(p)
                     _attempt_auto_fix(p, all_entries)
 
         except Exception as e:

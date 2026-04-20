@@ -1,0 +1,306 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T104558Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 10 budget math references `pilot_contention.json` field `observed_scoring_serial_p95_seconds` ('The Phase 9 pilot includes an explicit pilot_contention.json field observed_scoring_serial_p95_seconds'), but the PilotContention schema declared in Phase 1 models.py and Phase 9's pilot_contention.py only defines {drop_lomax, ratio, otis_median_ms, lomax_median_ms, measured_at_utc}. The field does not exist in any schema \u2014 Phase 10's budget-revision gate reads a nonexistent key.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 10 budget math references `pilot_contention.json` field `observed_scoring_serial_p95_seconds` ('The Phase 9 pilot includes an explicit pilot_contention.json field observed_scoring_serial_p95_seconds'), but the PilotContention schema declared in Phase 1 models.py and Phase 9's pilot_contention.py only defines {drop_lomax, ratio, otis_median_ms, lomax_median_ms, measured_at_utc}. The field does not exist in any schema \u2014 Phase 10's budget-revision gate reads a nonexistent key.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's scoring_preflight deliverable references unit tests `test_cli_score.py::test_score_resolves_session_id_from_registry` and `test_cli_score.py::test_score_soft_degrades_on_missing_session_file`, but `tests/benchmark/test_cli_score.py` does not appear in any phase's Files list. Phase 5 owns `cli_score.py` but never lists the corresponding test file. These tests are dangling references that no phase creates.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's scoring_preflight deliverable references unit tests `test_cli_score.py::test_score_resolves_session_id_from_registry` and `test_cli_score.py::test_score_soft_degrades_on_missing_session_file`, but `tests/benchmark/test_cli_score.py` does not appear in any phase's Files list. Phase 5 owns `cli_score.py` but never lists the corresponding test file. These tests are dangling references that no phase creates.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's judge.py file entry states 'a new tests/benchmark/test_judge.py unit test pinning the BenchmarkJudge constructor signature + judge_pair(pair_key) return shape is added to Phase 6's test file list below', but test_judge.py is NOT in Phase 6's Files list. Phase 6 lists test_judge_blinding.py, test_formatter.py, test_deblind_classifier.py, test_openrouter_min_contract.py, test_cli_judge.py, test_cli_probe.py, test_probe.py \u2014 no test_judge.py. The constructor-signature pinning test is never created.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's judge.py file entry states 'a new tests/benchmark/test_judge.py unit test pinning the BenchmarkJudge constructor signature + judge_pair(pair_key) return shape is added to Phase 6's test file list below', but test_judge.py is NOT in Phase 6's Files list. Phase 6 lists test_judge_blinding.py, test_formatter.py, test_deblind_classifier.py, test_openrouter_min_contract.py, test_cli_judge.py, test_cli_probe.py, test_probe.py \u2014 no test_judge.py. The constructor-signature pinning test is never created.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's run_meta.json artifact is at `.buildrunner/benchmarks/results/<run_id>/run_meta.json` (keyed by run_id), while Phase 3's cli_run.py --pilot flag says 'the scheduler writes results under .buildrunner/benchmarks/results/pilot/<session_id>/' (keyed by session_id). Phase 6's format_coverage.json goes to `results/<run_id>/`. The per-run vs per-session result directory hierarchy is never reconciled \u2014 it's unclear whether per-run artifacts sit under `results/<run_id>/` directly or under the session-scoped `results/{pilot|full-n30}/<session_id>/` prefix.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's run_meta.json artifact is at `.buildrunner/benchmarks/results/<run_id>/run_meta.json` (keyed by run_id), while Phase 3's cli_run.py --pilot flag says 'the scheduler writes results under .buildrunner/benchmarks/results/pilot/<session_id>/' (keyed by session_id). Phase 6's format_coverage.json goes to `results/<run_id>/`. The per-run vs per-session result directory hierarchy is never reconciled \u2014 it's unclear whether per-run artifacts sit under `results/<run_id>/` directly or under the session-scoped `results/{pilot|full-n30}/<session_id>/` prefix.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` argv contract passes the prompt as argv[5] positional argument to dispatch-to-node.sh. The prompt includes the full paraphrased BUILD spec (~50 KB). The dispatcher embeds this into a remote SSH heredoc. If the prompt contains the literal string 'PROMPT_EOF' (the heredoc delimiter), the remote heredoc terminates early and the dispatch silently truncates. The plan adds a pre-scan guard, but if a BUILD spec naturally contains the text 'PROMPT_EOF' on its own line, the run is rejected rather than handled \u2014 this is a hard failure on what could be legitimate content.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `dispatch_run` argv contract passes the prompt as argv[5] positional argument to dispatch-to-node.sh. The prompt includes the full paraphrased BUILD spec (~50 KB). The dispatcher embeds this into a remote SSH heredoc. If the prompt contains the literal string 'PROMPT_EOF' (the heredoc delimiter), the remote heredoc terminates early and the dispatch silently truncates. The plan adds a pre-scan guard, but if a BUILD spec naturally contains the text 'PROMPT_EOF' on its own line, the run is rejected rather than handled \u2014 this is a hard failure on what could be legitimate content.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan pins judge models as `openai/gpt-5` and `google/gemini-2.5-pro` on OpenRouter. These are speculative slugs \u2014 GPT-5 availability on OpenRouter is not guaranteed by current (2026-04-17) evidence. The preflight's 1-token dry-probe catches unavailability at startup, but if the slugs are wrong, the entire judging pipeline (Phase 6, 9, 10) is blocked with no automated fallback \u2014 the plan explicitly disallows single-judge fallback.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan pins judge models as `openai/gpt-5` and `google/gemini-2.5-pro` on OpenRouter. These are speculative slugs \u2014 GPT-5 availability on OpenRouter is not guaranteed by current (2026-04-17) evidence. The preflight's 1-token dry-probe catches unavailability at startup, but if the slugs are wrong, the entire judging pipeline (Phase 6, 9, 10) is blocked with no automated fallback \u2014 the plan explicitly disallows single-judge fallback.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's shared `.venv-benchmark/` with `fcntl.flock(LOCK_EX)` serializes ALL scoring across concurrent orchestrators on Muddy. Phase 10 budget estimates ~10 runs/hour (two-node) or ~5 runs/hour (single-node), yielding 36-72 hours of cluster time. But the plan does not account for the judge double-pass (~45s \u00d7 2 per pair) also running on Muddy's orchestrator process while holding context \u2014 if judge API latency spikes (OpenRouter 429s, retries), the effective throughput drops further. The 36-hour two-node estimate may be optimistic by 20-30%.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's shared `.venv-benchmark/` with `fcntl.flock(LOCK_EX)` serializes ALL scoring across concurrent orchestrators on Muddy. Phase 10 budget estimates ~10 runs/hour (two-node) or ~5 runs/hour (single-node), yielding 36-72 hours of cluster time. But the plan does not account for the judge double-pass (~45s \u00d7 2 per pair) also running on Muddy's orchestrator process while holding context \u2014 if judge API latency spikes (OpenRouter 429s, retries), the effective throughput drops further. The 36-hour two-node estimate may be optimistic by 20-30%.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's SessionState schema declares `selected_models: list[str]` with writer 'Phase 1 deps.py ONLY', but the field is written at session-creation time inside `br benchmark run`'s command body (which is Phase 3's cli_run.py). Phase 1's deps.py owns preflight flag writes, but cli_run.py owns the session-creation flow. The writer attribution says 'Phase 1 deps.py' but the actual write site is Phase 3's cli_run.py body \u2014 this is a documentation inconsistency that could confuse implementers about which module's code path writes the field.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's SessionState schema declares `selected_models: list[str]` with writer 'Phase 1 deps.py ONLY', but the field is written at session-creation time inside `br benchmark run`'s command body (which is Phase 3's cli_run.py). Phase 1's deps.py owns preflight flag writes, but cli_run.py owns the session-creation flow. The writer attribution says 'Phase 1 deps.py' but the actual write site is Phase 3's cli_run.py body \u2014 this is a documentation inconsistency that could confuse implementers about which module's code path writes the field.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's pilot uses `selector.select_with_buffer(target=7, buffer=3)` to over-draw 10 candidates, but the minimum-pool gate in Phase 2's selector is 'fail fast if post-filter phase pool < 40'. With 34 BUILD files yielding a 'substantially larger' phase-level pool, this should be fine \u2014 but the plan never states the actual phase-level count after self-containment + external-only-files + registry-exclusion filters. If the filters are aggressive, the 40-phase floor could be close to the actual count, leaving little room for paraphrase/equivalence attrition across both pilot (Phase 9) and full run (Phase 10).",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's pilot uses `selector.select_with_buffer(target=7, buffer=3)` to over-draw 10 candidates, but the minimum-pool gate in Phase 2's selector is 'fail fast if post-filter phase pool < 40'. With 34 BUILD files yielding a 'substantially larger' phase-level pool, this should be fine \u2014 but the plan never states the actual phase-level count after self-containment + external-only-files + registry-exclusion filters. If the filters are aggressive, the 40-phase floor could be close to the actual count, leaving little room for paraphrase/equivalence attrition across both pilot (Phase 9) and full run (Phase 10).",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's setup_clone writes a keepalive ref `refs/keep/bench-<run_id>` and Phase 3's teardown_clone removes it AFTER writing the anchor ref `refs/heads/bench/<run_id>`. But if the process is killed between setup_clone and teardown_clone (e.g., mid-dispatch), the keepalive ref persists indefinitely in the parent repo. gc-anchors sweeps `refs/heads/bench/*` but does not sweep `refs/keep/bench-*` \u2014 orphaned keepalive refs accumulate without cleanup.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's setup_clone writes a keepalive ref `refs/keep/bench-<run_id>` and Phase 3's teardown_clone removes it AFTER writing the anchor ref `refs/heads/bench/<run_id>`. But if the process is killed between setup_clone and teardown_clone (e.g., mid-dispatch), the keepalive ref persists indefinitely in the parent repo. gc-anchors sweeps `refs/heads/bench/*` but does not sweep `refs/keep/bench-*` \u2014 orphaned keepalive refs accumulate without cleanup.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's install-benchmark-deps.sh sets `git config gc.auto 0` on the parent repo at session start and restores from a backup file at session end. If the harness is killed mid-session, gc.auto stays at 0 permanently for the parent repo, silently disabling all automatic git garbage collection for the main BuildRunner3 repo until manually restored.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's install-benchmark-deps.sh sets `git config gc.auto 0` on the parent repo at session start and restores from a backup file at session end. If the harness is killed mid-session, gc.auto stays at 0 permanently for the parent repo, silently disabling all automatic git garbage collection for the main BuildRunner3 repo until manually restored.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 says `judge_pair(pair_key)` reads the two `CompletedRow{stage=\"scored\", pair_key==target}` rows, but Phase 1 explicitly defines `CompletedRow.pair_key` as populated only on `stage=\"judged\"` rows and `None` on `stage=\"run\"` and `stage=\"scored\"`. The judge cannot locate scored pairs with the schema as written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 says `judge_pair(pair_key)` reads the two `CompletedRow{stage=\"scored\", pair_key==target}` rows, but Phase 1 explicitly defines `CompletedRow.pair_key` as populated only on `stage=\"judged\"` rows and `None` on `stage=\"run\"` and `stage=\"scored\"`. The judge cannot locate scored pairs with the schema as written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The pair-judging lock protocol is internally inconsistent: Phase 1's `claim_judge()` still treats existing `CompletedRow{stage=\"judged\"}` rows as the 'already judged' sentinel, while the later atomicity fix redefines the commit point to `JudgeDecisionRow` and `is_pair_judged(pair_key)` checks that row instead. After a crash between `JudgeDecisionRow` and the derived judged `CompletedRow`s, a second claimant can re-judge the same pair.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The pair-judging lock protocol is internally inconsistent: Phase 1's `claim_judge()` still treats existing `CompletedRow{stage=\"judged\"}` rows as the 'already judged' sentinel, while the later atomicity fix redefines the commit point to `JudgeDecisionRow` and `is_pair_judged(pair_key)` checks that row instead. After a crash between `JudgeDecisionRow` and the derived judged `CompletedRow`s, a second claimant can re-judge the same pair.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10's budget-revalidation logic depends on `pilot_contention.json.observed_scoring_serial_p95_seconds`, but the only declared schema for `PilotContention` (Phase 1, Phase 9 file schema, and `pilot_contention.py`) contains only `drop_lomax`, `ratio`, `otis_median_ms`, `lomax_median_ms`, and `measured_at_utc`. The field Phase 10 needs does not exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10's budget-revalidation logic depends on `pilot_contention.json.observed_scoring_serial_p95_seconds`, but the only declared schema for `PilotContention` (Phase 1, Phase 9 file schema, and `pilot_contention.py`) contains only `drop_lomax`, `ratio`, `otis_median_ms`, `lomax_median_ms`, and `measured_at_utc`. The field Phase 10 needs does not exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The recognition-probe trigger conflicts across phases: Phase 4 makes a strict rule that probes fire only after every cell for the phase reaches `stage=\"judged\"`, but Phase 6 introduces single-model mode where no judged rows exist and probes are fired from `notify_cell_scored()` instead. The trigger semantics are no longer one rule, which undermines the stated non-priming contract.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The recognition-probe trigger conflicts across phases: Phase 4 makes a strict rule that probes fire only after every cell for the phase reaches `stage=\"judged\"`, but Phase 6 introduces single-model mode where no judged rows exist and probes are fired from `notify_cell_scored()` instead. The trigger semantics are no longer one rule, which undermines the stated non-priming contract.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 10 budget math references `pilot_contention.json` field `observed_scoring_serial_p95_seconds` ('The Phase 9 pilot includes an explicit pilot_contention.json field observed_scoring_serial_p95_seconds'), but the PilotContention schema declared in Phase 1 models.py and Phase 9's pilot_contention.py only defines {drop_lomax, ratio, otis_median_ms, lomax_median_ms, measured_at_utc}. The field does not exist in any schema \u2014 Phase 10's budget-revision gate reads a nonexistent key.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 10 budget math references `pilot_contention.json` field `observed_scoring_serial_p95_seconds` ('The Phase 9 pilot includes an explicit pilot_contention.json field observed_scoring_serial_p95_seconds'), but the PilotContention schema declared in Phase 1 models.py and Phase 9's pilot_contention.py only defines {drop_lomax, ratio, otis_median_ms, lomax_median_ms, measured_at_utc}. The field does not exist in any schema \u2014 Phase 10's budget-revision gate reads a nonexistent key.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's scoring_preflight deliverable references unit tests `test_cli_score.py::test_score_resolves_session_id_from_registry` and `test_cli_score.py::test_score_soft_degrades_on_missing_session_file`, but `tests/benchmark/test_cli_score.py` does not appear in any phase's Files list. Phase 5 owns `cli_score.py` but never lists the corresponding test file. These tests are dangling references that no phase creates.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's scoring_preflight deliverable references unit tests `test_cli_score.py::test_score_resolves_session_id_from_registry` and `test_cli_score.py::test_score_soft_degrades_on_missing_session_file`, but `tests/benchmark/test_cli_score.py` does not appear in any phase's Files list. Phase 5 owns `cli_score.py` but never lists the corresponding test file. These tests are dangling references that no phase creates.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 says `judge_pair(pair_key)` reads the two `CompletedRow{stage=\"scored\", pair_key==target}` rows, but Phase 1 explicitly defines `CompletedRow.pair_key` as populated only on `stage=\"judged\"` rows and `None` on `stage=\"run\"` and `stage=\"scored\"`. The judge cannot locate scored pairs with the schema as written.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 says `judge_pair(pair_key)` reads the two `CompletedRow{stage=\"scored\", pair_key==target}` rows, but Phase 1 explicitly defines `CompletedRow.pair_key` as populated only on `stage=\"judged\"` rows and `None` on `stage=\"run\"` and `stage=\"scored\"`. The judge cannot locate scored pairs with the schema as written.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The pair-judging lock protocol is internally inconsistent: Phase 1's `claim_judge()` still treats existing `CompletedRow{stage=\"judged\"}` rows as the 'already judged' sentinel, while the later atomicity fix redefines the commit point to `JudgeDecisionRow` and `is_pair_judged(pair_key)` checks that row instead. After a crash between `JudgeDecisionRow` and the derived judged `CompletedRow`s, a second claimant can re-judge the same pair.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The pair-judging lock protocol is internally inconsistent: Phase 1's `claim_judge()` still treats existing `CompletedRow{stage=\"judged\"}` rows as the 'already judged' sentinel, while the later atomicity fix redefines the commit point to `JudgeDecisionRow` and `is_pair_judged(pair_key)` checks that row instead. After a crash between `JudgeDecisionRow` and the derived judged `CompletedRow`s, a second claimant can re-judge the same pair.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10's budget-revalidation logic depends on `pilot_contention.json.observed_scoring_serial_p95_seconds`, but the only declared schema for `PilotContention` (Phase 1, Phase 9 file schema, and `pilot_contention.py`) contains only `drop_lomax`, `ratio`, `otis_median_ms`, `lomax_median_ms`, and `measured_at_utc`. The field Phase 10 needs does not exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10's budget-revalidation logic depends on `pilot_contention.json.observed_scoring_serial_p95_seconds`, but the only declared schema for `PilotContention` (Phase 1, Phase 9 file schema, and `pilot_contention.py`) contains only `drop_lomax`, `ratio`, `otis_median_ms`, `lomax_median_ms`, and `measured_at_utc`. The field Phase 10 needs does not exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T10:56:22.470167Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 2
+}

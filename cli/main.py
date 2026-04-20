@@ -27,6 +27,7 @@ from core.architecture_guard import ArchitectureGuard, ArchitectureViolation
 from core.self_service import SelfServiceManager, ServiceRequirement
 from core.prd_wizard import PRDWizard, SpecState
 from core.claude_md_generator import ClaudeMdGenerator
+from core.runtime.config import RuntimeConfigError, apply_runtime_selection, resolve_runtime_selection
 
 # Import new command groups
 from cli.spec_commands import spec_app, design_app
@@ -55,6 +56,36 @@ app = typer.Typer(
     help="BuildRunner 3.0 - Git-backed governance for AI-assisted development",
     add_completion=False,
 )
+
+
+def configure_runtime_selection(
+    explicit_runtime: Optional[str], project_root: Optional[str] = None
+):
+    """Resolve and apply runtime selection without changing default behavior when omitted."""
+    resolution = resolve_runtime_selection(
+        explicit_runtime=explicit_runtime,
+        project_root=project_root or Path.cwd(),
+    )
+    apply_runtime_selection(resolution)
+    return resolution
+
+
+@app.callback()
+def main_callback(
+    ctx: typer.Context,
+    runtime: Optional[str] = typer.Option(
+        None,
+        "--runtime",
+        help="Select runtime backend (claude or codex); omitted preserves current default resolution",
+    ),
+):
+    """Apply runtime selection early so subcommands inherit the resolved backend."""
+    try:
+        resolution = configure_runtime_selection(runtime, Path.cwd())
+    except RuntimeConfigError as exc:
+        raise typer.BadParameter(str(exc), param_hint="--runtime") from exc
+    ctx.obj = ctx.obj or {}
+    ctx.obj["runtime_resolution"] = resolution.to_dict()
 
 # Add command groups
 app.add_typer(spec_app, name="spec")
@@ -244,20 +275,6 @@ def init(
                 console.print(f"[green]✅ Created alias: {project_name}[/green]")
 
             console.print(f"[dim]💡 Use '{project_name}' from anywhere to open this project[/dim]")
-
-            # Copy planning mode trigger to clipboard
-            planning_trigger = f"plan new project: {project_name}"
-            try:
-                import pyperclip
-
-                pyperclip.copy(planning_trigger)
-                console.print(f"[green]📋 Copied to clipboard: '{planning_trigger}'[/green]")
-                console.print(f"[dim]💡 Paste this in Claude to start planning mode[/dim]")
-            except ImportError:
-                console.print(
-                    f"[yellow]⚠️  Install pyperclip for clipboard support: pip install pyperclip[/yellow]"
-                )
-                console.print(f"[dim]💡 Type this in Claude: '{planning_trigger}'[/dim]")
 
             # Check if UI server is running, start if needed
             import socket

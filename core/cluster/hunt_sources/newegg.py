@@ -7,6 +7,8 @@ import asyncio
 import os
 import logging
 
+from core.cluster.utils import filter_hallucinations
+
 try:
     import httpx
 except ImportError:
@@ -199,6 +201,10 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
             filtered = len(listings) - len(relevant)
             if filtered:
                 logger.info(f"Below filtered {filtered} irrelevant Newegg items for '{hunt_name}'")
+
+            # Hallucination guard: filter items lacking tech indicators
+            relevant = filter_hallucinations(relevant, "Newegg", hunt_name)
+
             logger.info(f"Below extracted {len(relevant)} relevant Newegg listings for '{hunt_name}'")
             return relevant
 

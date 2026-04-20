@@ -1,0 +1,152 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T073031Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete \u2014 the output above is the final result. No tests or code execution were needed for this adversarial plan review; it's a pure analysis task.\n\n**Summary**: The plan is remarkably thorough and internally consistent for its scale (~60 new files, 10 sequential phases). No blockers were found. The three warnings worth addressing before implementation:\n\n1. **`probe.py` \u2192 `recognition_probe.py` import gap** \u2014 Phase 6's `ProbeScheduler` needs an explicit import/call path to Phase 4",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete \u2014 the output above is the final result. No tests or code execution were needed for this adversarial plan review; it's a pure analysis task.\n\n**Summary**: The plan is remarkably thorough and internally consistent for its scale (~60 new files, 10 sequential phases). No blockers were found. The three warnings worth addressing before implementation:\n\n1. **`probe.py` \u2192 `recognition_probe.py` import gap** \u2014 Phase 6's `ProbeScheduler` needs an explicit import/call path to Phase 4",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's `run_session` seeds the probe scheduler with `expected_cell_count=len(config.selector.sub_studies) * config.selector.replications`, but Phase 1's frozen `SelectorConfig` schema defines only `target_phases`, `buffer_phases`, and `replications` \u2014 `config.selector.sub_studies` does not exist anywhere in the declared config model.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's `run_session` seeds the probe scheduler with `expected_cell_count=len(config.selector.sub_studies) * config.selector.replications`, but Phase 1's frozen `SelectorConfig` schema defines only `target_phases`, `buffer_phases`, and `replications` \u2014 `config.selector.sub_studies` does not exist anywhere in the declared config model.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 makes `run_cell()` execute paraphrasing and equivalence checks in the per-cell prelude, so the same phase can be paraphrased multiple times across models/sub-studies/replications. That conflicts with Invariant 16's phase-level drop/redraw contract and can expose different paraphrases of the same phase to different cells before a replacement is enqueued.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 makes `run_cell()` execute paraphrasing and equivalence checks in the per-cell prelude, so the same phase can be paraphrased multiple times across models/sub-studies/replications. That conflicts with Invariant 16's phase-level drop/redraw contract and can expose different paraphrases of the same phase to different cells before a replacement is enqueued.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 says the recognition probe must wait until the entire phase is fully judged across both models, but Phase 6 rewrites the trigger to fire once all cells for a single `(phase, model)` pair are judged. Those are different gates; the Phase 6 trigger can fire before the opposing model's remaining cells for that phase are finished.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 says the recognition probe must wait until the entire phase is fully judged across both models, but Phase 6 rewrites the trigger to fire once all cells for a single `(phase, model)` pair are judged. Those are different gates; the Phase 6 trigger can fire before the opposing model's remaining cells for that phase are finished.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's non-vitest Node path invokes `npm test --silent` for any `scripts.test` that is not classified as vitest. That assumes arbitrary test runners or wrapper scripts accept npm's `--silent` forwarding without changing behavior; many custom scripts do not, so this can create false failures unrelated to the contestant output.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's non-vitest Node path invokes `npm test --silent` for any `scripts.test` that is not classified as vitest. That assumes arbitrary test runners or wrapper scripts accept npm's `--silent` forwarding without changing behavior; many custom scripts do not, so this can create false failures unrelated to the contestant output.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `pool_survivors_after_paraphrase_equivalence` property is defined as `len(selected_phases) - exclusions_scanned`, but the selector API later declares `selected_phase_ids`, `selector_cache`, and `get_phase()` \u2014 not `selected_phases`. The property references selector state that is not part of the declared surface.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's `pool_survivors_after_paraphrase_equivalence` property is defined as `len(selected_phases) - exclusions_scanned`, but the selector API later declares `selected_phase_ids`, `selector_cache`, and `get_phase()` \u2014 not `selected_phases`. The property references selector state that is not part of the declared surface.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6's `run_session` seeds the probe scheduler with `expected_cell_count=len(config.selector.sub_studies) * config.selector.replications`, but Phase 1's frozen `SelectorConfig` schema defines only `target_phases`, `buffer_phases`, and `replications` \u2014 `config.selector.sub_studies` does not exist anywhere in the declared config model.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6's `run_session` seeds the probe scheduler with `expected_cell_count=len(config.selector.sub_studies) * config.selector.replications`, but Phase 1's frozen `SelectorConfig` schema defines only `target_phases`, `buffer_phases`, and `replications` \u2014 `config.selector.sub_studies` does not exist anywhere in the declared config model.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 makes `run_cell()` execute paraphrasing and equivalence checks in the per-cell prelude, so the same phase can be paraphrased multiple times across models/sub-studies/replications. That conflicts with Invariant 16's phase-level drop/redraw contract and can expose different paraphrases of the same phase to different cells before a replacement is enqueued.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 makes `run_cell()` execute paraphrasing and equivalence checks in the per-cell prelude, so the same phase can be paraphrased multiple times across models/sub-studies/replications. That conflicts with Invariant 16's phase-level drop/redraw contract and can expose different paraphrases of the same phase to different cells before a replacement is enqueued.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 says the recognition probe must wait until the entire phase is fully judged across both models, but Phase 6 rewrites the trigger to fire once all cells for a single `(phase, model)` pair are judged. Those are different gates; the Phase 6 trigger can fire before the opposing model's remaining cells for that phase are finished.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 says the recognition probe must wait until the entire phase is fully judged across both models, but Phase 6 rewrites the trigger to fire once all cells for a single `(phase, model)` pair are judged. Those are different gates; the Phase 6 trigger can fire before the opposing model's remaining cells for that phase are finished.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T07:40:41.729105Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 3
+}

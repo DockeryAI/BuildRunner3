@@ -1,0 +1,348 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T025059Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 is blocked by Phase 4, but Phase 3's runner.py calls paraphraser.paraphrase_spec() and equivalence.check_equivalence() at runtime \u2014 this is correct for the build order (4 before 3). However, Phase 3's deliverable says setup_clone calls lockres.resolve_lock() which returns LockResolution with variants {ok, no_lock, ambiguous_lock, merge_commit_lock}, but then states 'ambiguous_lock is NOT treated as a drop \u2014 lockres.resolve_lock itself resolves the ambiguity and always returns ok(sha)'. This is contradictory: if ambiguous_lock is always resolved to ok(sha) inside resolve_lock, then ambiguous_lock should never appear as a return variant that setup_clone pattern-matches on. Either the return type has 4 variants (and setup_clone must handle all 4) or resolve_lock collapses ambiguous to ok internally (and the return type has 3 variants). The plan says both simultaneously.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 is blocked by Phase 4, but Phase 3's runner.py calls paraphraser.paraphrase_spec() and equivalence.check_equivalence() at runtime \u2014 this is correct for the build order (4 before 3). However, Phase 3's deliverable says setup_clone calls lockres.resolve_lock() which returns LockResolution with variants {ok, no_lock, ambiguous_lock, merge_commit_lock}, but then states 'ambiguous_lock is NOT treated as a drop \u2014 lockres.resolve_lock itself resolves the ambiguity and always returns ok(sha)'. This is contradictory: if ambiguous_lock is always resolved to ok(sha) inside resolve_lock, then ambiguous_lock should never appear as a return variant that setup_clone pattern-matches on. Either the return type has 4 variants (and setup_clone must handle all 4) or resolve_lock collapses ambiguous to ok internally (and the return type has 3 variants). The plan says both simultaneously.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 deliverable says ExclusionRow is 'declared in core/benchmark/models.py in Phase 1's declarative-up-front model list', but Phase 1's deliverables list RegistryRow variants (ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow) and separately mention ExclusionRow with its schema \u2014 however ExclusionRow is described as written to exclusions.jsonl not the registry. Phase 1 says it declares ExclusionRow in models.py. Phase 2 says 'Pydantic model ExclusionRow is declared in core/benchmark/models.py in Phase 1's declarative-up-front model list (add to the shared models module alongside RegistryRow)'. These are consistent but the parenthetical '(add to the shared models module...)' reads as an instruction to Phase 2 to add it, conflicting with Phase 1 already having declared it. Minor ambiguity.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 deliverable says ExclusionRow is 'declared in core/benchmark/models.py in Phase 1's declarative-up-front model list', but Phase 1's deliverables list RegistryRow variants (ClaimRow, HeartbeatRow, SupersededRow, CompletedRow, DroppedRow, SkippedRow, RecognitionRow) and separately mention ExclusionRow with its schema \u2014 however ExclusionRow is described as written to exclusions.jsonl not the registry. Phase 1 says it declares ExclusionRow in models.py. Phase 2 says 'Pydantic model ExclusionRow is declared in core/benchmark/models.py in Phase 1's declarative-up-front model list (add to the shared models module alongside RegistryRow)'. These are consistent but the parenthetical '(add to the shared models module...)' reads as an instruction to Phase 2 to add it, conflicting with Phase 1 already having declared it. Minor ambiguity.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 deliverable describes run_local_tests using .venv-benchmark/bin/pytest against the clone, but the contestant's code runs inside the clone while pytest and all test dependencies are in the parent repo's .venv-benchmark/. The editable install step does 'pip install --no-deps -e <clone_path>' which registers the clone's packages in the shared venv. However, if the contestant modified test files that import new third-party packages not in requirements-benchmark.txt or requirements-api.txt (e.g. a contestant adds 'import httpx' to a test), those imports will fail. The plan acknowledges --no-deps but doesn't address contestant-introduced imports. This is arguably by design (contestant should only use existing deps), but is unspecified \u2014 a contestant adding a dependency to requirements-api.txt AND importing it would fail because the shared venv won't pick up the new dep (pip install -e --no-deps skips it, and the venv was pre-built from the pre-run requirements files).",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 deliverable describes run_local_tests using .venv-benchmark/bin/pytest against the clone, but the contestant's code runs inside the clone while pytest and all test dependencies are in the parent repo's .venv-benchmark/. The editable install step does 'pip install --no-deps -e <clone_path>' which registers the clone's packages in the shared venv. However, if the contestant modified test files that import new third-party packages not in requirements-benchmark.txt or requirements-api.txt (e.g. a contestant adds 'import httpx' to a test), those imports will fail. The plan acknowledges --no-deps but doesn't address contestant-introduced imports. This is arguably by design (contestant should only use existing deps), but is unspecified \u2014 a contestant adding a dependency to requirements-api.txt AND importing it would fail because the shared venv won't pick up the new dep (pip install -e --no-deps skips it, and the venv was pre-built from the pre-run requirements files).",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 deliverable says dispatch_run writes the prompt to .buildrunner/benchmarks/prompts/{run_id}.txt in the parent repo, but Phase 1's deps.py creates the prompts/ subdirectory at startup. If br benchmark run is invoked from a different working directory than the repo root, the relative path .buildrunner/benchmarks/prompts/ will resolve incorrectly. The plan doesn't specify whether prompt_audit_path is absolute or relative, or how the parent repo root is resolved in dispatch_run.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 deliverable says dispatch_run writes the prompt to .buildrunner/benchmarks/prompts/{run_id}.txt in the parent repo, but Phase 1's deps.py creates the prompts/ subdirectory at startup. If br benchmark run is invoked from a different working directory than the repo root, the relative path .buildrunner/benchmarks/prompts/ will resolve incorrectly. The plan doesn't specify whether prompt_audit_path is absolute or relative, or how the parent repo root is resolved in dispatch_run.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier uses 5-fold stratified CV over 84 pilot rows, but Phase 9 says the pilot target is 7 phases \u00d7 2 models \u00d7 3 replications \u00d7 2 sub-studies = 84 runs. The classifier trains on normalized diffs to predict which model produced them \u2014 but each phase has runs from BOTH models, so the 84 rows split into 42 per class. With 5-fold CV that's ~17 test samples per fold per class. However, the 3 replications per (phase, model, sub_study) cell mean the classifier sees 3 very similar diffs from the same model on the same phase \u2014 these are not independent observations. Stratified CV that doesn't account for phase-level clustering will leak information (train on replication 1 of phase X from model A, test on replication 2 of same). The plan specifies StratifiedKFold(shuffle=True) which stratifies on model label only, not on phase. This inflates classifier accuracy, making the blinding gate easier to fail (more false alarms). The fix would be GroupKFold or StratifiedGroupKFold with phase as the group.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses 5-fold stratified CV over 84 pilot rows, but Phase 9 says the pilot target is 7 phases \u00d7 2 models \u00d7 3 replications \u00d7 2 sub-studies = 84 runs. The classifier trains on normalized diffs to predict which model produced them \u2014 but each phase has runs from BOTH models, so the 84 rows split into 42 per class. With 5-fold CV that's ~17 test samples per fold per class. However, the 3 replications per (phase, model, sub_study) cell mean the classifier sees 3 very similar diffs from the same model on the same phase \u2014 these are not independent observations. Stratified CV that doesn't account for phase-level clustering will leak information (train on replication 1 of phase X from model A, test on replication 2 of same). The plan specifies StratifiedKFold(shuffle=True) which stratifies on model label only, not on phase. This inflates classifier accuracy, making the blinding gate easier to fail (more false alarms). The fix would be GroupKFold or StratifiedGroupKFold with phase as the group.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 specifies BinomialBayesMixedGLM from statsmodels for the mixed-effects logistic regression. This class exists in statsmodels 0.14 but uses variational Bayes approximation (fit_vb), which has known convergence issues with small sample sizes and many random-intercept levels. With 30 phases as random intercepts and potentially sparse binary outcomes, convergence is not guaranteed. The fallback to cluster-robust fixed-effects Logit is specified, which is good, but the primary path may silently produce poor posterior approximations without failing to converge (VB is known to underestimate variance). No diagnostic check on the VB fit quality is specified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7 specifies BinomialBayesMixedGLM from statsmodels for the mixed-effects logistic regression. This class exists in statsmodels 0.14 but uses variational Bayes approximation (fit_vb), which has known convergence issues with small sample sizes and many random-intercept levels. With 30 phases as random intercepts and potentially sparse binary outcomes, convergence is not guaranteed. The fallback to cluster-robust fixed-effects Logit is specified, which is good, but the primary path may silently produce poor posterior approximations without failing to converge (VB is known to underestimate variance). No diagnostic check on the VB fit quality is specified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's environment allowlist strips ANTHROPIC_API_KEY and OPENAI_API_KEY from the contestant's env, stating 'headless CLIs read credentials from their installed config files on the dispatch node'. But dispatch-to-node.sh rsyncs the project to the remote node and runs the contestant there \u2014 if the remote node's claude/codex CLI config files aren't set up, the contestant will fail to authenticate. This is an ops dependency not verified by deps.py's preflight. The GPG-signing SSH probe is specified but no credential-availability probe for the contestant runtimes on each node is mentioned.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's environment allowlist strips ANTHROPIC_API_KEY and OPENAI_API_KEY from the contestant's env, stating 'headless CLIs read credentials from their installed config files on the dispatch node'. But dispatch-to-node.sh rsyncs the project to the remote node and runs the contestant there \u2014 if the remote node's claude/codex CLI config files aren't set up, the contestant will fail to authenticate. This is an ops dependency not verified by deps.py's preflight. The GPG-signing SSH probe is specified but no credential-availability probe for the contestant runtimes on each node is mentioned.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's npm install uses --ignore-scripts for contestant trees, and the baseline sanity check verifies the current ui/ tree works under --ignore-scripts. But a contestant could add a dependency whose functionality (not just installation) depends on a postinstall script having run (e.g. a native addon that needs node-gyp build). The --ignore-scripts flag would let npm ci succeed but the dependency would be non-functional at runtime/test-time, producing a misleading test failure attributed to the contestant's code rather than the install policy. This is acknowledged as 'scored as model failure' but could systematically penalize a model that correctly identifies and uses native-addon dependencies.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's npm install uses --ignore-scripts for contestant trees, and the baseline sanity check verifies the current ui/ tree works under --ignore-scripts. But a contestant could add a dependency whose functionality (not just installation) depends on a postinstall script having run (e.g. a native addon that needs node-gyp build). The --ignore-scripts flag would let npm ci succeed but the dependency would be non-functional at runtime/test-time, producing a misleading test failure attributed to the contestant's code rather than the install policy. This is acknowledged as 'scored as model failure' but could systematically penalize a model that correctly identifies and uses native-addon dependencies.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 claims dispatch-to-node.sh embeds the prompt in a quoted heredoc <<'PROMPT_EOF' on the remote side, and pre-scans for lines equal to 'PROMPT_EOF'. But the plan also says the prompt is passed as a positional argv argument (argv[5]). These are two different mechanisms \u2014 either the script receives the prompt as an argv string and internally wraps it in a heredoc for the SSH command, or the caller wraps it. The plan should clarify which, because the heredoc-delimiter scan only matters if the script uses a heredoc internally (which the plan asserts but hasn't shown the relevant script lines for).",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 claims dispatch-to-node.sh embeds the prompt in a quoted heredoc <<'PROMPT_EOF' on the remote side, and pre-scans for lines equal to 'PROMPT_EOF'. But the plan also says the prompt is passed as a positional argv argument (argv[5]). These are two different mechanisms \u2014 either the script receives the prompt as an argv string and internally wraps it in a heredoc for the SSH command, or the caller wraps it. The plan should clarify which, because the heredoc-delimiter scan only matters if the script uses a heredoc internally (which the plan asserts but hasn't shown the relevant script lines for).",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's lock resolution helper uses git log --grep='^lock: claim Phase <N>' with a regex ^lock: claim Phase <N>($|[^0-9]) to avoid Phase 10 matching Phase 1. But git --grep uses basic regex by default, and ($|[^0-9]) is an extended regex construct. Without --extended-regexp flag, this pattern may not match correctly in git log. The plan doesn't specify -E or --perl-regexp.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's lock resolution helper uses git log --grep='^lock: claim Phase <N>' with a regex ^lock: claim Phase <N>($|[^0-9]) to avoid Phase 10 matching Phase 1. But git --grep uses basic regex by default, and ($|[^0-9]) is an extended regex construct. Without --extended-regexp flag, this pattern may not match correctly in git log. The plan doesn't specify -E or --perl-regexp.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan specifies 360 runs across 30 phases, but the candidate pool is drawn from 34 BUILD files with an unknown number of phases. Phase 2's selector fails fast if the post-filter phase pool is < 40. If many phases fail the self-containment filter or external-only-files filter, the pool could be tight. With 34 BUILD files and possibly 2-4 phases each, the raw pool might be ~100 phases, but aggressive filtering plus paraphrase failures plus stratum balancing requirements could make 30 + buffer difficult. The plan acknowledges this with degraded-N rules but doesn't estimate the expected post-filter pool size.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan specifies 360 runs across 30 phases, but the candidate pool is drawn from 34 BUILD files with an unknown number of phases. Phase 2's selector fails fast if the post-filter phase pool is < 40. If many phases fail the self-containment filter or external-only-files filter, the pool could be tight. With 34 BUILD files and possibly 2-4 phases each, the raw pool might be ~100 phases, but aggressive filtering plus paraphrase failures plus stratum balancing requirements could make 30 + buffer difficult. The plan acknowledges this with degraded-N rules but doesn't estimate the expected post-filter pool size.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's shared .venv-benchmark/ with fcntl.flock serialization means that if two orchestrators run concurrently (e.g. br benchmark run and br benchmark score --run-id), one blocks for up to 10 minutes. But Phase 10's 360-run execution likely wants to overlap scoring with dispatch for throughput. The plan's single-venv-with-lock design serializes all scoring, which at ~10s per score + potential 5-min test timeout means worst-case ~5 min lock hold per run. With 360 runs this adds significant serial overhead that may break the 18-24 hour budget.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's shared .venv-benchmark/ with fcntl.flock serialization means that if two orchestrators run concurrently (e.g. br benchmark run and br benchmark score --run-id), one blocks for up to 10 minutes. But Phase 10's 360-run execution likely wants to overlap scoring with dispatch for throughput. The plan's single-venv-with-lock design serializes all scoring, which at ~10s per score + potential 5-min test timeout means worst-case ~5 min lock hold per run. With 360 runs this adds significant serial overhead that may break the 18-24 hour budget.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's recognition probe trigger condition requires 'every (phase_id, opposing_model, sub_study, replication) cell has a CompletedRow with stage=judged'. But judging (Phase 6) is a pairwise operation across models \u2014 judge.judge_pair() compares model A's run against model B's run. The probe trigger waits for all judged rows for both models before firing. This means probes cannot fire until the very end of a phase's processing, which is correct for non-priming. However, the plan doesn't specify what happens if one model's runs complete days before the other's (e.g. due to node failures) \u2014 the probe for the first model is blocked until the second model's runs are all judged, which could be much later.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4's recognition probe trigger condition requires 'every (phase_id, opposing_model, sub_study, replication) cell has a CompletedRow with stage=judged'. But judging (Phase 6) is a pairwise operation across models \u2014 judge.judge_pair() compares model A's run against model B's run. The probe trigger waits for all judged rows for both models before firing. This means probes cannot fire until the very end of a phase's processing, which is correct for non-priming. However, the plan doesn't specify what happens if one model's runs complete days before the other's (e.g. due to node failures) \u2014 the probe for the first model is blocked until the second model's runs are all judged, which could be much later.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's claim/lease protocol deduplicates on `run_id` only, but the benchmark's real unit of work is `(phase_id, model, sub_study, replication_index)`. Because retries explicitly mint a new `run_id` in Phase 3, two orchestrators can claim and run the same logical cell concurrently under different `run_id`s, bypassing `registry.claim()` entirely.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's claim/lease protocol deduplicates on `run_id` only, but the benchmark's real unit of work is `(phase_id, model, sub_study, replication_index)`. Because retries explicitly mint a new `run_id` in Phase 3, two orchestrators can claim and run the same logical cell concurrently under different `run_id`s, bypassing `registry.claim()` entirely.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The append-only reducer is defined per `run_id`, not per logical cell. After Phase 3 retries a failed dispatch with a new `run_id`, the plan never defines how Phase 7 chooses a single winner for the same `(phase_id, model, sub_study, replication_index)` cell, so duplicate completed attempts can be double-counted or make completeness checks ambiguous.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The append-only reducer is defined per `run_id`, not per logical cell. After Phase 3 retries a failed dispatch with a new `run_id`, the plan never defines how Phase 7 chooses a single winner for the same `(phase_id, model, sub_study, replication_index)` cell, so duplicate completed attempts can be double-counted or make completeness checks ambiguous.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Walter and Lomax are declared soft-fail optional dependencies in Phase 1 and Phase 5, but Phase 2's success criteria still require the API clients to round-trip against the live cluster in integration tests. That turns optional services into required build-time dependencies and will fail the build whenever Walter or Lomax are down, contradicting the stated degrade path.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Walter and Lomax are declared soft-fail optional dependencies in Phase 1 and Phase 5, but Phase 2's success criteria still require the API clients to round-trip against the live cluster in integration tests. That turns optional services into required build-time dependencies and will fail the build whenever Walter or Lomax are down, contradicting the stated degrade path.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The lock-resolution design assumes `git log --grep='^lock: claim Phase <N>' -- <build_file>` will find the right commit because the lock commit touched the BUILD file, but the cited evidence only proves matching commit subjects exist, not that those commits modified the corresponding BUILD markdown. If the lock commits did not touch `<build_file>`, valid phases resolve to `no_lock` and get dropped.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The lock-resolution design assumes `git log --grep='^lock: claim Phase <N>' -- <build_file>` will find the right commit because the lock commit touched the BUILD file, but the cited evidence only proves matching commit subjects exist, not that those commits modified the corresponding BUILD markdown. If the lock commits did not touch `<build_file>`, valid phases resolve to `no_lock` and get dropped.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `resolve_lock()` contract is internally inconsistent: Phase 2 defines return outcomes `{ok(sha), no_lock, ambiguous_lock, merge_commit_lock}`, but Phase 3 simultaneously assumes `ambiguous_lock` is resolved inside the helper and never reaches callers. Different callers/tests can implement incompatible branches against the same API.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The `resolve_lock()` contract is internally inconsistent: Phase 2 defines return outcomes `{ok(sha), no_lock, ambiguous_lock, merge_commit_lock}`, but Phase 3 simultaneously assumes `ambiguous_lock` is resolved inside the helper and never reaches callers. Different callers/tests can implement incompatible branches against the same API.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 says every `SessionState` field has exactly one writer phase, but `preflight_single_node` is assigned to both Phase 1 (`deps.py`) and Phase 3 (`node_allocator`). That is a direct requirement conflict in the schema ownership model.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 says every `SessionState` field has exactly one writer phase, but `preflight_single_node` is assigned to both Phase 1 (`deps.py`) and Phase 3 (`node_allocator`). That is a direct requirement conflict in the schema ownership model.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6's de-blinding classifier uses 5-fold stratified CV over 84 pilot rows, but Phase 9 says the pilot target is 7 phases \u00d7 2 models \u00d7 3 replications \u00d7 2 sub-studies = 84 runs. The classifier trains on normalized diffs to predict which model produced them \u2014 but each phase has runs from BOTH models, so the 84 rows split into 42 per class. With 5-fold CV that's ~17 test samples per fold per class. However, the 3 replications per (phase, model, sub_study) cell mean the classifier sees 3 very similar diffs from the same model on the same phase \u2014 these are not independent observations. Stratified CV that doesn't account for phase-level clustering will leak information (train on replication 1 of phase X from model A, test on replication 2 of same). The plan specifies StratifiedKFold(shuffle=True) which stratifies on model label only, not on phase. This inflates classifier accuracy, making the blinding gate easier to fail (more false alarms). The fix would be GroupKFold or StratifiedGroupKFold with phase as the group.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses 5-fold stratified CV over 84 pilot rows, but Phase 9 says the pilot target is 7 phases \u00d7 2 models \u00d7 3 replications \u00d7 2 sub-studies = 84 runs. The classifier trains on normalized diffs to predict which model produced them \u2014 but each phase has runs from BOTH models, so the 84 rows split into 42 per class. With 5-fold CV that's ~17 test samples per fold per class. However, the 3 replications per (phase, model, sub_study) cell mean the classifier sees 3 very similar diffs from the same model on the same phase \u2014 these are not independent observations. Stratified CV that doesn't account for phase-level clustering will leak information (train on replication 1 of phase X from model A, test on replication 2 of same). The plan specifies StratifiedKFold(shuffle=True) which stratifies on model label only, not on phase. This inflates classifier accuracy, making the blinding gate easier to fail (more false alarms). The fix would be GroupKFold or StratifiedGroupKFold with phase as the group.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's claim/lease protocol deduplicates on `run_id` only, but the benchmark's real unit of work is `(phase_id, model, sub_study, replication_index)`. Because retries explicitly mint a new `run_id` in Phase 3, two orchestrators can claim and run the same logical cell concurrently under different `run_id`s, bypassing `registry.claim()` entirely.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1's claim/lease protocol deduplicates on `run_id` only, but the benchmark's real unit of work is `(phase_id, model, sub_study, replication_index)`. Because retries explicitly mint a new `run_id` in Phase 3, two orchestrators can claim and run the same logical cell concurrently under different `run_id`s, bypassing `registry.claim()` entirely.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The append-only reducer is defined per `run_id`, not per logical cell. After Phase 3 retries a failed dispatch with a new `run_id`, the plan never defines how Phase 7 chooses a single winner for the same `(phase_id, model, sub_study, replication_index)` cell, so duplicate completed attempts can be double-counted or make completeness checks ambiguous.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The append-only reducer is defined per `run_id`, not per logical cell. After Phase 3 retries a failed dispatch with a new `run_id`, the plan never defines how Phase 7 chooses a single winner for the same `(phase_id, model, sub_study, replication_index)` cell, so duplicate completed attempts can be double-counted or make completeness checks ambiguous.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Walter and Lomax are declared soft-fail optional dependencies in Phase 1 and Phase 5, but Phase 2's success criteria still require the API clients to round-trip against the live cluster in integration tests. That turns optional services into required build-time dependencies and will fail the build whenever Walter or Lomax are down, contradicting the stated degrade path.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Walter and Lomax are declared soft-fail optional dependencies in Phase 1 and Phase 5, but Phase 2's success criteria still require the API clients to round-trip against the live cluster in integration tests. That turns optional services into required build-time dependencies and will fail the build whenever Walter or Lomax are down, contradicting the stated degrade path.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T02:56:16.121404Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 7
+}

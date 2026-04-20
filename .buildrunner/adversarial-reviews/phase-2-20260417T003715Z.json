@@ -1,0 +1,488 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T003233Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 calls `lockres.resolve_lock()` from Phase 2, but Phase 3 is listed as 'Blocked by: Phase 1' \u2014 not Phase 2. The parallelization matrix confirms Phases 2 and 3 can run concurrently. If Phase 3 starts before Phase 2 completes, `core/benchmark/lockres.py` will not exist yet and `runner.py` will fail on import.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 calls `lockres.resolve_lock()` from Phase 2, but Phase 3 is listed as 'Blocked by: Phase 1' \u2014 not Phase 2. The parallelization matrix confirms Phases 2 and 3 can run concurrently. If Phase 3 starts before Phase 2 completes, `core/benchmark/lockres.py` will not exist yet and `runner.py` will fail on import.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 is blocked by Phase 3 and Phase 5, but the parallelization matrix says Phase 6 'Can Parallel With: 4' and 'Blocked By: 3, 5'. Phase 4 is also blocked by Phase 3. So Phases 4 and 6 can run in parallel \u2014 but Phase 6 modifies `prompts.py` and Phase 4 does not, while Phase 3 also modifies `prompts.py`. The plan says Phases 3, 6, and 8 modify `prompts.py` with namespaced sections, but Phase 4 and Phase 5 are listed as parallel-capable with Phase 6. If Phase 5 finishes and Phase 6 starts while Phase 4 is still running (both after Phase 3), there is no conflict \u2014 but confirm the merge convention covers the case where Phase 6's worktree was branched before Phase 3's `prompts.py` edit landed.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 is blocked by Phase 3 and Phase 5, but the parallelization matrix says Phase 6 'Can Parallel With: 4' and 'Blocked By: 3, 5'. Phase 4 is also blocked by Phase 3. So Phases 4 and 6 can run in parallel \u2014 but Phase 6 modifies `prompts.py` and Phase 4 does not, while Phase 3 also modifies `prompts.py`. The plan says Phases 3, 6, and 8 modify `prompts.py` with namespaced sections, but Phase 4 and Phase 5 are listed as parallel-capable with Phase 6. If Phase 5 finishes and Phase 6 starts while Phase 4 is still running (both after Phase 3), there is no conflict \u2014 but confirm the merge convention covers the case where Phase 6's worktree was branched before Phase 3's `prompts.py` edit landed.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 deliverables specify `equivalence_validator: Literal['below','deepseek','both']` on `RegistryEntry`, but `RegistryEntry` is defined in Phase 1's `models.py`. Phase 4 is blocked by Phase 3 (not Phase 1 directly, but transitively yes). However, the `RegistryEntry` dataclass in Phase 1 does not list `equivalence_validator` as a field \u2014 Phase 1 deliverables enumerate `PhaseSpec`, `RunResult`, `ObjectiveMetrics`, `AdherenceMetrics`, `JudgeVerdict`, `BenchmarkConfig`, `RegistryEntry` but never mention `equivalence_validator` or `recognition_score` fields on `RegistryEntry`. Phase 4 assumes these fields exist. Either Phase 1 must define them or Phase 4 must modify `models.py`, which is not listed in Phase 4's files.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 deliverables specify `equivalence_validator: Literal['below','deepseek','both']` on `RegistryEntry`, but `RegistryEntry` is defined in Phase 1's `models.py`. Phase 4 is blocked by Phase 3 (not Phase 1 directly, but transitively yes). However, the `RegistryEntry` dataclass in Phase 1 does not list `equivalence_validator` as a field \u2014 Phase 1 deliverables enumerate `PhaseSpec`, `RunResult`, `ObjectiveMetrics`, `AdherenceMetrics`, `JudgeVerdict`, `BenchmarkConfig`, `RegistryEntry` but never mention `equivalence_validator` or `recognition_score` fields on `RegistryEntry`. Phase 4 assumes these fields exist. Either Phase 1 must define them or Phase 4 must modify `models.py`, which is not listed in Phase 4's files.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 attaches `recognition_score` to `RegistryEntry`, and Phase 7 uses it as a regression covariate. But `recognition_score` is not listed as a field on any Phase 1 dataclass. Same issue as `equivalence_validator` \u2014 `models.py` is not in Phase 4's file list for modification.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 attaches `recognition_score` to `RegistryEntry`, and Phase 7 uses it as a regression covariate. But `recognition_score` is not listed as a field on any Phase 1 dataclass. Same issue as `equivalence_validator` \u2014 `models.py` is not in Phase 4's file list for modification.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 adds `scikit-learn>=1.4` to `requirements-benchmark.txt`, but Phase 6 also states '`scikit-learn>=1.4` added to `requirements-benchmark.txt`' for the de-blinding classifier. Since Phase 5 creates the file and Phase 6 is blocked by Phase 5, this is likely a documentation redundancy \u2014 but if Phase 6 tries to add the line again it will either duplicate or conflict.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 adds `scikit-learn>=1.4` to `requirements-benchmark.txt`, but Phase 6 also states '`scikit-learn>=1.4` added to `requirements-benchmark.txt`' for the de-blinding classifier. Since Phase 5 creates the file and Phase 6 is blocked by Phase 5, this is likely a documentation redundancy \u2014 but if Phase 6 tries to add the line again it will either duplicate or conflict.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier is trained on 'pilot data (Phase 9)' with a held-out 20-pair acceptance set, and blinding must pass before Phase 10. But Phase 6 is blocked by Phases 3 and 5, not Phase 9. The classifier code is written in Phase 6 but cannot be evaluated until Phase 9 completes. If it fails the 60% threshold, the plan says 'normalization pipeline is tightened before Phase 10' \u2014 but there is no phase allocated for this tightening work. It would require re-running Phase 6 logic after Phase 9, which is not in the dependency graph.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier is trained on 'pilot data (Phase 9)' with a held-out 20-pair acceptance set, and blinding must pass before Phase 10. But Phase 6 is blocked by Phases 3 and 5, not Phase 9. The classifier code is written in Phase 6 but cannot be evaluated until Phase 9 completes. If it fails the 60% threshold, the plan says 'normalization pipeline is tightened before Phase 10' \u2014 but there is no phase allocated for this tightening work. It would require re-running Phase 6 logic after Phase 9, which is not in the dependency graph.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references `dispatch-to-node.sh` with the CLI signature `[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]`, but Phase 3 invokes it as `dispatch-to-node.sh --runtime {codex|claude} <node> <worktree> <prompt>`. The verified signature shows `<prompt>` as a positional argument \u2014 passing a potentially multi-kilobyte paraphrased spec as a shell positional argument will hit ARG_MAX limits or require shell escaping that is not discussed. No mention of writing the prompt to a temp file and passing a path instead.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references `dispatch-to-node.sh` with the CLI signature `[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]`, but Phase 3 invokes it as `dispatch-to-node.sh --runtime {codex|claude} <node> <worktree> <prompt>`. The verified signature shows `<prompt>` as a positional argument \u2014 passing a potentially multi-kilobyte paraphrased spec as a shell positional argument will hit ARG_MAX limits or require shell escaping that is not discussed. No mention of writing the prompt to a temp file and passing a path instead.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 creates `core/benchmark/lockres.py` but this file is not listed in Phase 1's files even though Phase 1 creates `core/benchmark/__init__.py`. If `__init__.py` has explicit imports, Phase 2's new module may need `__init__.py` updated \u2014 but `__init__.py` modification is not listed in Phase 2's file list.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 creates `core/benchmark/lockres.py` but this file is not listed in Phase 1's files even though Phase 1 creates `core/benchmark/__init__.py`. If `__init__.py` has explicit imports, Phase 2's new module may need `__init__.py` updated \u2014 but `__init__.py` modification is not listed in Phase 2's file list.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` clears the environment to an allowlist but includes `BR3_RUNTIME` and `BR3_SHADOW_RUNTIME`. If these env vars encode the model identity and are visible inside the contestant's execution context, a sufficiently capable model could inspect its own environment to determine whether it is being benchmarked and which model it is \u2014 a potential contamination vector that contradicts the blinding goals of Phase 6.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `dispatch_run` clears the environment to an allowlist but includes `BR3_RUNTIME` and `BR3_SHADOW_RUNTIME`. If these env vars encode the model identity and are visible inside the contestant's execution context, a sufficiently capable model could inspect its own environment to determine whether it is being benchmarked and which model it is \u2014 a potential contamination vector that contradicts the blinding goals of Phase 6.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The node pool is `{Otis, Lomax}` but the cluster status shows only 5/6 nodes online and does not list which is offline. If the offline node is Otis or Lomax, the balanced node allocation in Phase 3 cannot function as designed. No preflight check for node availability is specified in `node_allocator.py`.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The node pool is `{Otis, Lomax}` but the cluster status shows only 5/6 nodes online and does not list which is offline. If the offline node is Otis or Lomax, the balanced node allocation in Phase 3 cannot function as designed. No preflight check for node availability is specified in `node_allocator.py`.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4's equivalence validator sends a single `text` field with both original and paraphrase concatenated, relying on Below's `/api/classify` to parse the 'Are A and B semantically equivalent?' framing as an NLI task. But the verified contract says `/api/classify` is a 'single-text multi-category' classifier, not an NLI model. Semantic equivalence detection via a generic text classifier prompt-hacked into NLI mode is unreliable \u2014 the model may classify the topic of the text rather than the equivalence relation. No validation that Below's classifier actually understands this NLI framing is specified before the pilot.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4's equivalence validator sends a single `text` field with both original and paraphrase concatenated, relying on Below's `/api/classify` to parse the 'Are A and B semantically equivalent?' framing as an NLI task. But the verified contract says `/api/classify` is a 'single-text multi-category' classifier, not an NLI model. Semantic equivalence detection via a generic text classifier prompt-hacked into NLI mode is unreliable \u2014 the model may classify the topic of the text rather than the equivalence relation. No validation that Below's classifier actually understands this NLI framing is specified before the pilot.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 budget math assumes 360 runs at 4-5 min each = 30-40 hours, scheduled across four overnight windows. But each run also requires: paraphrasing + equivalence check (Phase 4), format normalization (Phase 6), dual-pass judging by two models via OpenRouter (Phase 6), and recognition probe in a fresh OS process (Phase 4). The 4-5 min estimate appears to be dispatch time only. Total per-run overhead could double wall-clock, pushing to 60-80 hours \u2014 potentially exceeding the four-window schedule.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 10 budget math assumes 360 runs at 4-5 min each = 30-40 hours, scheduled across four overnight windows. But each run also requires: paraphrasing + equivalence check (Phase 4), format normalization (Phase 6), dual-pass judging by two models via OpenRouter (Phase 6), and recognition probe in a fresh OS process (Phase 4). The 4-5 min estimate appears to be dispatch time only. Total per-run overhead could double wall-clock, pushing to 60-80 hours \u2014 potentially exceeding the four-window schedule.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 references `choix>=0.3.5` for Bradley-Terry estimation, but the choix library's last PyPI release was 0.3.5 in 2020 and it depends on numpy<2.0. Since `requirements-benchmark.txt` also pins `numpy` (without upper bound) and modern scipy/statsmodels pull numpy>=2.0, there will likely be a dependency conflict at install time.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 7 references `choix>=0.3.5` for Bradley-Terry estimation, but the choix library's last PyPI release was 0.3.5 in 2020 and it depends on numpy<2.0. Since `requirements-benchmark.txt` also pins `numpy` (without upper bound) and modern scipy/statsmodels pull numpy>=2.0, there will likely be a dependency conflict at install time.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's selector parses BUILD specs from `.buildrunner/builds/BUILD_*.md` but the file tree shows no `.buildrunner/builds/` directory \u2014 only `.buildrunner/benchmarks/` and `.buildrunner/runtime.json`. The plan states 'verified 40+ files present' but the file tree does not confirm this. If the glob returns zero files, the selector will produce zero candidates and every downstream phase fails.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's selector parses BUILD specs from `.buildrunner/builds/BUILD_*.md` but the file tree shows no `.buildrunner/builds/` directory \u2014 only `.buildrunner/benchmarks/` and `.buildrunner/runtime.json`. The plan states 'verified 40+ files present' but the file tree does not confirm this. If the glob returns zero files, the selector will produce zero candidates and every downstream phase fails.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phases 4 and 5 are listed as parallelizable in the matrix, but Phase 6 depends on both. Phase 4 modifies no shared files with Phase 5, so the parallelism is safe \u2014 but Phase 5 creates `requirements-benchmark.txt` which Phase 7 consumes, and Phase 4 needs models from Phase 1. The `prompts.py` merge convention only covers Phases 3, 6, 8 \u2014 Phase 4 and 5 do not touch `prompts.py`, so this is fine.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phases 4 and 5 are listed as parallelizable in the matrix, but Phase 6 depends on both. Phase 4 modifies no shared files with Phase 5, so the parallelism is safe \u2014 but Phase 5 creates `requirements-benchmark.txt` which Phase 7 consumes, and Phase 4 needs models from Phase 1. The `prompts.py` merge convention only covers Phases 3, 6, 8 \u2014 Phase 4 and 5 do not touch `prompts.py`, so this is fine.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan\u2019s repository preconditions rely on existing project files that are not present in the provided project tree or cited excerpts, including `cli/main.py`, `core/__init__.py`, `core/build_session.py`, `core/cluster/*`, and `core/runtime/*`. Phase 1 cannot modify `cli/main.py`, and `python -m core.benchmark.cli` cannot work against the provided repo snapshot.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan\u2019s repository preconditions rely on existing project files that are not present in the provided project tree or cited excerpts, including `cli/main.py`, `core/__init__.py`, `core/build_session.py`, `core/cluster/*`, and `core/runtime/*`. Phase 1 cannot modify `cli/main.py`, and `python -m core.benchmark.cli` cannot work against the provided repo snapshot.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 depends on parsing benchmark corpus files at `.buildrunner/builds/BUILD_*.md`, but that path does not exist in the provided project tree or cited excerpts. The selector cannot produce candidates without the source corpus.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 depends on parsing benchmark corpus files at `.buildrunner/builds/BUILD_*.md`, but that path does not exist in the provided project tree or cited excerpts. The selector cannot produce candidates without the source corpus.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 calls `lockres.resolve_lock(...)`, but `core/benchmark/lockres.py` is introduced in Phase 2 while Phase 3 is declared blocked only by Phase 1 and parallelizable with Phase 2. If Phase 3 starts first, it imports a file that does not exist yet.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 calls `lockres.resolve_lock(...)`, but `core/benchmark/lockres.py` is introduced in Phase 2 while Phase 3 is declared blocked only by Phase 1 and parallelizable with Phase 2. If Phase 3 starts first, it imports a file that does not exist yet.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4\u2019s equivalence fallback is internally contradictory: it says to fall back to DeepSeek when Below errors or returns low confidence, but also says a run is accepted only if both validators agree on `equivalent`. When Below errors, there is no second agreeing validator, so the fallback path cannot succeed as specified.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4\u2019s equivalence fallback is internally contradictory: it says to fall back to DeepSeek when Below errors or returns low confidence, but also says a run is accepted only if both validators agree on `equivalent`. When Below errors, there is no second agreeing validator, so the fallback path cannot succeed as specified.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 changes the decision rule mid-study by tightening the CI gate to a 99% lower bound when achieved `N < 25`, which conflicts with the pre-registered 95% CI rule frozen in Invariant 17 and `decision-rule.md`. That breaks the pre-registration requirement.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10 changes the decision rule mid-study by tightening the CI gate to a 99% lower bound when achieved `N < 25`, which conflicts with the pre-registered 95% CI rule frozen in Invariant 17 and `decision-rule.md`. That breaks the pre-registration requirement.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 says `deps.py` will assert Walter, Lomax, and Below all return `200 /health`, but the verified dependency contract for Below only specifies `POST /api/classify`. The plan references an unverified Below health endpoint.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 says `deps.py` will assert Walter, Lomax, and Below all return `200 /health`, but the verified dependency contract for Below only specifies `POST /api/classify`. The plan references an unverified Below health endpoint.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 is marked blocked only by Phase 3, but its deliverables explicitly depend on `api_clients.py` from Phase 2 (`Walter verdict + Lomax build verdict pulled via api_clients.py`). The execution order is underspecified and can fail if Phase 5 starts before Phase 2 is complete.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 is marked blocked only by Phase 3, but its deliverables explicitly depend on `api_clients.py` from Phase 2 (`Walter verdict + Lomax build verdict pulled via api_clients.py`). The execution order is underspecified and can fail if Phase 5 starts before Phase 2 is complete.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7 is marked blocked only by Phases 5 and 6, but its mixed-effects regression requires `recognition_score`, which is produced in Phase 4. The dependency chain is incomplete.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 7 is marked blocked only by Phases 5 and 6, but its mixed-effects regression requires `recognition_score`, which is produced in Phase 4. The dependency chain is incomplete.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The parallelization matrix conflicts with the stated sequencing for Phase 6: the matrix says Phase 5 can parallel with Phase 6, but Phase 6 is also declared blocked by Phase 5 because formatter normalization requires toolchain installation from Phase 5. Those tasks cannot safely run in parallel as written.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The parallelization matrix conflicts with the stated sequencing for Phase 6: the matrix says Phase 5 can parallel with Phase 6, but Phase 6 is also declared blocked by Phase 5 because formatter normalization requires toolchain installation from Phase 5. Those tasks cannot safely run in parallel as written.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 test planning references `pydantic`, `responses`, and `vcrpy`, but the plan never adds those dependencies to any requirements file before those tests are supposed to run. The API-client test suite is likely to fail in a clean environment.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 test planning references `pydantic`, `responses`, and `vcrpy`, but the plan never adds those dependencies to any requirements file before those tests are supposed to run. The API-client test suite is likely to fail in a clean environment.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3 calls `lockres.resolve_lock()` from Phase 2, but Phase 3 is listed as 'Blocked by: Phase 1' \u2014 not Phase 2. The parallelization matrix confirms Phases 2 and 3 can run concurrently. If Phase 3 starts before Phase 2 completes, `core/benchmark/lockres.py` will not exist yet and `runner.py` will fail on import.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 calls `lockres.resolve_lock()` from Phase 2, but Phase 3 is listed as 'Blocked by: Phase 1' \u2014 not Phase 2. The parallelization matrix confirms Phases 2 and 3 can run concurrently. If Phase 3 starts before Phase 2 completes, `core/benchmark/lockres.py` will not exist yet and `runner.py` will fail on import.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 deliverables specify `equivalence_validator: Literal['below','deepseek','both']` on `RegistryEntry`, but `RegistryEntry` is defined in Phase 1's `models.py`. Phase 4 is blocked by Phase 3 (not Phase 1 directly, but transitively yes). However, the `RegistryEntry` dataclass in Phase 1 does not list `equivalence_validator` as a field \u2014 Phase 1 deliverables enumerate `PhaseSpec`, `RunResult`, `ObjectiveMetrics`, `AdherenceMetrics`, `JudgeVerdict`, `BenchmarkConfig`, `RegistryEntry` but never mention `equivalence_validator` or `recognition_score` fields on `RegistryEntry`. Phase 4 assumes these fields exist. Either Phase 1 must define them or Phase 4 must modify `models.py`, which is not listed in Phase 4's files.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 deliverables specify `equivalence_validator: Literal['below','deepseek','both']` on `RegistryEntry`, but `RegistryEntry` is defined in Phase 1's `models.py`. Phase 4 is blocked by Phase 3 (not Phase 1 directly, but transitively yes). However, the `RegistryEntry` dataclass in Phase 1 does not list `equivalence_validator` as a field \u2014 Phase 1 deliverables enumerate `PhaseSpec`, `RunResult`, `ObjectiveMetrics`, `AdherenceMetrics`, `JudgeVerdict`, `BenchmarkConfig`, `RegistryEntry` but never mention `equivalence_validator` or `recognition_score` fields on `RegistryEntry`. Phase 4 assumes these fields exist. Either Phase 1 must define them or Phase 4 must modify `models.py`, which is not listed in Phase 4's files.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 attaches `recognition_score` to `RegistryEntry`, and Phase 7 uses it as a regression covariate. But `recognition_score` is not listed as a field on any Phase 1 dataclass. Same issue as `equivalence_validator` \u2014 `models.py` is not in Phase 4's file list for modification.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 attaches `recognition_score` to `RegistryEntry`, and Phase 7 uses it as a regression covariate. But `recognition_score` is not listed as a field on any Phase 1 dataclass. Same issue as `equivalence_validator` \u2014 `models.py` is not in Phase 4's file list for modification.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan\u2019s repository preconditions rely on existing project files that are not present in the provided project tree or cited excerpts, including `cli/main.py`, `core/__init__.py`, `core/build_session.py`, `core/cluster/*`, and `core/runtime/*`. Phase 1 cannot modify `cli/main.py`, and `python -m core.benchmark.cli` cannot work against the provided repo snapshot.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan\u2019s repository preconditions rely on existing project files that are not present in the provided project tree or cited excerpts, including `cli/main.py`, `core/__init__.py`, `core/build_session.py`, `core/cluster/*`, and `core/runtime/*`. Phase 1 cannot modify `cli/main.py`, and `python -m core.benchmark.cli` cannot work against the provided repo snapshot.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 depends on parsing benchmark corpus files at `.buildrunner/builds/BUILD_*.md`, but that path does not exist in the provided project tree or cited excerpts. The selector cannot produce candidates without the source corpus.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2 depends on parsing benchmark corpus files at `.buildrunner/builds/BUILD_*.md`, but that path does not exist in the provided project tree or cited excerpts. The selector cannot produce candidates without the source corpus.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 calls `lockres.resolve_lock(...)`, but `core/benchmark/lockres.py` is introduced in Phase 2 while Phase 3 is declared blocked only by Phase 1 and parallelizable with Phase 2. If Phase 3 starts first, it imports a file that does not exist yet.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 calls `lockres.resolve_lock(...)`, but `core/benchmark/lockres.py` is introduced in Phase 2 while Phase 3 is declared blocked only by Phase 1 and parallelizable with Phase 2. If Phase 3 starts first, it imports a file that does not exist yet.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4\u2019s equivalence fallback is internally contradictory: it says to fall back to DeepSeek when Below errors or returns low confidence, but also says a run is accepted only if both validators agree on `equivalent`. When Below errors, there is no second agreeing validator, so the fallback path cannot succeed as specified.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4\u2019s equivalence fallback is internally contradictory: it says to fall back to DeepSeek when Below errors or returns low confidence, but also says a run is accepted only if both validators agree on `equivalent`. When Below errors, there is no second agreeing validator, so the fallback path cannot succeed as specified.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 changes the decision rule mid-study by tightening the CI gate to a 99% lower bound when achieved `N < 25`, which conflicts with the pre-registered 95% CI rule frozen in Invariant 17 and `decision-rule.md`. That breaks the pre-registration requirement.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 10 changes the decision rule mid-study by tightening the CI gate to a 99% lower bound when achieved `N < 25`, which conflicts with the pre-registered 95% CI rule frozen in Invariant 17 and `decision-rule.md`. That breaks the pre-registration requirement.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T00:37:15.401934Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 2
+}

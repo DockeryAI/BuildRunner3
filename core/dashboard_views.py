@@ -34,8 +34,14 @@ class ProjectStatus:
     planned: int
     completion_percentage: float
     last_updated: datetime
+    completed_date: Optional[datetime] = None  # When project reached 100%
     blockers: List[str] = field(default_factory=list)
     active_features: List[str] = field(default_factory=list)
+
+    @property
+    def is_complete(self) -> bool:
+        """Check if project is 100% complete"""
+        return self.completion_percentage == 100
 
     @property
     def is_stale(self) -> bool:
@@ -91,7 +97,16 @@ class DashboardScanner:
             except Exception as e:
                 print(f"⚠️  Failed to parse project at {features_file.parent}: {e}")
 
-        return sorted(projects, key=lambda p: p.name)
+        # Default sort: completed projects first (by completion date desc), then by name
+        def sort_key(p: ProjectStatus):
+            # Primary: completed projects first (0 for complete, 1 for incomplete)
+            is_complete = 0 if p.completion_percentage == 100 else 1
+            # Secondary: completion date descending (negate timestamp, or max for None)
+            completed_ts = -(p.completed_date.timestamp() if p.completed_date else 0)
+            # Tertiary: name alphabetically
+            return (is_complete, completed_ts, p.name.lower())
+
+        return sorted(projects, key=sort_key)
 
     def _find_features_files(self, max_depth: int) -> List[Path]:
         """Find all .buildrunner/features.json files"""
@@ -164,6 +179,21 @@ class DashboardScanner:
             # Check for blockers (TODO: could read from .buildrunner/context/blockers.md)
             blockers = []
 
+            # Extract completed_date from features when project is 100% complete
+            completed_date = None
+            if completion == 100 and total > 0:
+                # Get the latest completed_at timestamp from all features
+                completed_dates = []
+                for feat in features:
+                    if feat.get("status") == "complete" and feat.get("completed_at"):
+                        try:
+                            dt = datetime.fromisoformat(feat["completed_at"].replace("Z", "+00:00"))
+                            completed_dates.append(dt)
+                        except:
+                            pass
+                if completed_dates:
+                    completed_date = max(completed_dates)
+
             return ProjectStatus(
                 name=project_name,
                 path=features_file.parent.parent,  # Go up from .buildrunner/features.json
@@ -175,6 +205,7 @@ class DashboardScanner:
                 planned=planned,
                 completion_percentage=completion,
                 last_updated=last_updated,
+                completed_date=completed_date,
                 blockers=blockers,
                 active_features=active_features[:5],  # Limit to 5
             )

@@ -1,0 +1,334 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T030915Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 2's `record-contracts` CLI subcommand is registered in Phase 1's skeleton but its implementation is described as landing in Phase 2's api_clients.py. Phase 2's file list does not include cli.py as a MODIFY target. No phase claims to wire the real implementation into the CLI stub, leaving record-contracts as a permanent no-op stub.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's `record-contracts` CLI subcommand is registered in Phase 1's skeleton but its implementation is described as landing in Phase 2's api_clients.py. Phase 2's file list does not include cli.py as a MODIFY target. No phase claims to wire the real implementation into the CLI stub, leaving record-contracts as a permanent no-op stub.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "No phase's deliverables explicitly assign the contention-measurement code that measures per-run wall-clock on Otis vs Lomax during the Phase 9 pilot and writes `pilot_contention.json`. Invariant 14 describes the schema and how Phase 10's deps.py reads it, but the code to compute the ratio and produce the file is not in any phase's file list or deliverables.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "No phase's deliverables explicitly assign the contention-measurement code that measures per-run wall-clock on Otis vs Lomax during the Phase 9 pilot and writes `pilot_contention.json`. Invariant 14 describes the schema and how Phase 10's deps.py reads it, but the code to compute the ratio and produce the file is not in any phase's file list or deliverables.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 registers gc-anchors as a CLI stub. Phase 3 says implementation lands in runner.py (NEW), but Phase 3's file list does not include cli.py as MODIFY. Similarly, Phase 5 references `gc-anchors --reset-venv` but no phase adds that flag. All subcommand implementations created in later phases (gc-anchors in Phase 3, record-contracts in Phase 2, and the real bodies of select/score/judge/etc.) need cli.py wired to import from their respective modules, but only Phase 1 touches cli.py.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 registers gc-anchors as a CLI stub. Phase 3 says implementation lands in runner.py (NEW), but Phase 3's file list does not include cli.py as MODIFY. Similarly, Phase 5 references `gc-anchors --reset-venv` but no phase adds that flag. All subcommand implementations created in later phases (gc-anchors in Phase 3, record-contracts in Phase 2, and the real bodies of select/score/judge/etc.) need cli.py wired to import from their respective modules, but only Phase 1 touches cli.py.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 invokes `selector.select_with_buffer(target=7, buffer=3)` to get 10 candidates, but paraphrasing happens per-phase at dispatch time inside runner.run_cell (not batch-upfront). If multiple early phases fail paraphrase, redraw pulls from the full remaining pool \u2014 but select_with_buffer already returned a fixed list of 10. The interaction between the pre-selected buffer list and mid-run redraw from the broader pool is underspecified: does redraw draw from the original 10 or from all remaining candidates not in the buffer?",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 invokes `selector.select_with_buffer(target=7, buffer=3)` to get 10 candidates, but paraphrasing happens per-phase at dispatch time inside runner.run_cell (not batch-upfront). If multiple early phases fail paraphrase, redraw pulls from the full remaining pool \u2014 but select_with_buffer already returned a fixed list of 10. The interaction between the pre-selected buffer list and mid-run redraw from the broader pool is underspecified: does redraw draw from the original 10 or from all remaining candidates not in the buffer?",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 creates `.buildrunner/benchmarks/config.yaml` (NEW \u2014 schema) and BenchmarkConfig dataclass, but the config schema is never fully enumerated. Fields like lease_seconds, blind_salt, replications defaults, node_pool, and OpenRouter model IDs are referenced across multiple phases but no single deliverable defines the complete config.yaml shape.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 creates `.buildrunner/benchmarks/config.yaml` (NEW \u2014 schema) and BenchmarkConfig dataclass, but the config schema is never fully enumerated. Fields like lease_seconds, blind_salt, replications defaults, node_pool, and OpenRouter model IDs are referenced across multiple phases but no single deliverable defines the complete config.yaml shape.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 runs `.venv-benchmark/bin/pytest` against historical commits that may have been developed against different pytest versions or plugins. A phase from 2025 that relied on pytest<7.4 behavior could produce spurious test failures when run under the harness's pytest>=7.4, incorrectly scoring the contestant's output as broken.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 runs `.venv-benchmark/bin/pytest` against historical commits that may have been developed against different pytest versions or plugins. A phase from 2025 that relied on pytest<7.4 behavior could produce spurious test failures when run under the harness's pytest>=7.4, incorrectly scoring the contestant's output as broken.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's npm test execution runs contestant-controlled test scripts (whatever `scripts.test` resolves to) without sandboxing beyond a 5-minute timeout. A contestant that modifies package.json to set `scripts.test` to a destructive command would execute it on Muddy. The --ignore-scripts flag only applies to npm install, not npm test.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's npm test execution runs contestant-controlled test scripts (whatever `scripts.test` resolves to) without sandboxing beyond a 5-minute timeout. A contestant that modifies package.json to set `scripts.test` to a destructive command would execute it on Muddy. The --ignore-scripts flag only applies to npm install, not npm test.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's shared .venv-benchmark/ accumulates the union of all contestants' pinned deps across the full 360-run study. A later contestant's pytest run could import a package that an earlier contestant added, masking a missing-dependency bug. The plan dismisses this as acceptable but it creates a scoring asymmetry: early runs are scored against a leaner venv than late runs.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's shared .venv-benchmark/ accumulates the union of all contestants' pinned deps across the full 360-run study. A later contestant's pytest run could import a package that an earlier contestant added, masking a missing-dependency bug. The plan dismisses this as acceptable but it creates a scoring asymmetry: early runs are scored against a leaner venv than late runs.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 says `--reset-venv` flag on gc-anchors triggers end-of-session venv recreation, but this flag appears nowhere in Phase 1's CLI skeleton or Phase 3's gc-anchors implementation deliverables. It is only mentioned in Phase 5 prose with no implementing phase.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 says `--reset-venv` flag on gc-anchors triggers end-of-session venv recreation, but this flag appears nowhere in Phase 1's CLI skeleton or Phase 3's gc-anchors implementation deliverables. It is only mentioned in Phase 5 prose with no implementing phase.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's StratifiedGroupKFold with 7 groups and 5 splits creates highly imbalanced fold sizes (some folds hold out 1 phase = 12 rows, others 2 phases = 24 rows). At reduced pilot N of 5-6 phases, n_splits is clamped to min(5, n_phases), but with 5 phases and 5 folds each fold holds exactly 1 phase \u2014 this is leave-one-group-out CV, which is valid but yields high variance in accuracy estimates.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's StratifiedGroupKFold with 7 groups and 5 splits creates highly imbalanced fold sizes (some folds hold out 1 phase = 12 rows, others 2 phases = 24 rows). At reduced pilot N of 5-6 phases, n_splits is clamped to min(5, n_phases), but with 5 phases and 5 folds each fold holds exactly 1 phase \u2014 this is leave-one-group-out CV, which is valid but yields high variance in accuracy estimates.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references Codex 5.4 and Claude Opus 4.7 as contestant models with hardcoded training cutoff dates (2025-09-01 and 2026-01-01). These are unverifiable future model identifiers. If actual cutoffs differ, the pre/post-cutoff stratification analysis is based on wrong dates. The plan acknowledges this is sensitivity analysis only.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references Codex 5.4 and Claude Opus 4.7 as contestant models with hardcoded training cutoff dates (2025-09-01 and 2026-01-01). These are unverifiable future model identifiers. If actual cutoffs differ, the pre/post-cutoff stratification analysis is based on wrong dates. The plan acknowledges this is sensitivity analysis only.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's prompts.py is listed as MODIFY, and Phases 6 and 8 also MODIFY it. The build order (3\u21925\u21926\u2192...\u21928) is sequential so no merge conflict arises, but the plan notes 'namespaced-sections convention is kept only as a coding-style guideline' \u2014 without enforced namespacing, later phases could accidentally overwrite earlier template strings if they share variable names.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's prompts.py is listed as MODIFY, and Phases 6 and 8 also MODIFY it. The build order (3\u21925\u21926\u2192...\u21928) is sequential so no merge conflict arises, but the plan notes 'namespaced-sections convention is kept only as a coding-style guideline' \u2014 without enforced namespacing, later phases could accidentally overwrite earlier template strings if they share variable names.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 and Phase 6 depend on OpenRouter model identifiers that are not verified anywhere in the cited contracts: `meta-llama/llama-3.1-405b-instruct`, `mistralai/mixtral-8x22b-instruct`, `DeepSeek-V3.1`, `GPT-5`, and `Gemini 2.5`. The only verified OpenRouter contract is the base `/api/v1/chat/completions` endpoint, so these model names can fail at runtime as fabricated or stale API IDs.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 and Phase 6 depend on OpenRouter model identifiers that are not verified anywhere in the cited contracts: `meta-llama/llama-3.1-405b-instruct`, `mistralai/mixtral-8x22b-instruct`, `DeepSeek-V3.1`, `GPT-5`, and `Gemini 2.5`. The only verified OpenRouter contract is the base `/api/v1/chat/completions` endpoint, so these model names can fail at runtime as fabricated or stale API IDs.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan requires two judges on 100% of pairs (`GPT-5` and `Gemini 2.5`) but never defines how conflicting judge outputs are reduced to the single `JudgeVerdict` that Phase 1 stores and Phase 7 uses for Bradley-Terry analysis. `inter-judge agreement logged; reported but not gating` is not a resolution rule, so the primary analysis input is undefined when judges disagree.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan requires two judges on 100% of pairs (`GPT-5` and `Gemini 2.5`) but never defines how conflicting judge outputs are reduced to the single `JudgeVerdict` that Phase 1 stores and Phase 7 uses for Bradley-Terry analysis. `inter-judge agreement logged; reported but not gating` is not a resolution rule, so the primary analysis input is undefined when judges disagree.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's `run_local_tests(handle)` only executes Python tests from `tests/` and Node tests from `ui/package.json`, but the existing repo tree also has a root-level `package.json` and `playwright.config.ts`. Any root JS/TS/E2E test surface is ignored, so runs can be scored as passing while breaking the actual project test suite.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5's `run_local_tests(handle)` only executes Python tests from `tests/` and Node tests from `ui/package.json`, but the existing repo tree also has a root-level `package.json` and `playwright.config.ts`. Any root JS/TS/E2E test surface is ignored, so runs can be scored as passing while breaking the actual project test suite.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The installer contract for `scripts/install-benchmark-deps.sh` uses bash-only features (`shopt -s nullglob`) but the plan never specifies a bash shebang or bash-only invocation. If CI or an operator runs it with `/bin/sh`, the install step fails before Phase 1/5 can provision `.venv-benchmark/`.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The installer contract for `scripts/install-benchmark-deps.sh` uses bash-only features (`shopt -s nullglob`) but the plan never specifies a bash shebang or bash-only invocation. If CI or an operator runs it with `/bin/sh`, the install step fails before Phase 1/5 can provision `.venv-benchmark/`.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Ownership of `ExclusionRow` is internally contradictory: Phase 1 says the schema is fully declared there and no later phase adds models, while Phase 2 says the exclusions schema is 'declared in Phase 2, the first writer'. That ambiguity is likely to produce incompatible implementations of the same JSONL row shape across Phase 2 and Phase 4.",
+      "severity": "note",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Ownership of `ExclusionRow` is internally contradictory: Phase 1 says the schema is fully declared there and no later phase adds models, while Phase 2 says the exclusions schema is 'declared in Phase 2, the first writer'. That ambiguity is likely to produce incompatible implementations of the same JSONL row shape across Phase 2 and Phase 4.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 2's `record-contracts` CLI subcommand is registered in Phase 1's skeleton but its implementation is described as landing in Phase 2's api_clients.py. Phase 2's file list does not include cli.py as a MODIFY target. No phase claims to wire the real implementation into the CLI stub, leaving record-contracts as a permanent no-op stub.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's `record-contracts` CLI subcommand is registered in Phase 1's skeleton but its implementation is described as landing in Phase 2's api_clients.py. Phase 2's file list does not include cli.py as a MODIFY target. No phase claims to wire the real implementation into the CLI stub, leaving record-contracts as a permanent no-op stub.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "No phase's deliverables explicitly assign the contention-measurement code that measures per-run wall-clock on Otis vs Lomax during the Phase 9 pilot and writes `pilot_contention.json`. Invariant 14 describes the schema and how Phase 10's deps.py reads it, but the code to compute the ratio and produce the file is not in any phase's file list or deliverables.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "No phase's deliverables explicitly assign the contention-measurement code that measures per-run wall-clock on Otis vs Lomax during the Phase 9 pilot and writes `pilot_contention.json`. Invariant 14 describes the schema and how Phase 10's deps.py reads it, but the code to compute the ratio and produce the file is not in any phase's file list or deliverables.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 registers gc-anchors as a CLI stub. Phase 3 says implementation lands in runner.py (NEW), but Phase 3's file list does not include cli.py as MODIFY. Similarly, Phase 5 references `gc-anchors --reset-venv` but no phase adds that flag. All subcommand implementations created in later phases (gc-anchors in Phase 3, record-contracts in Phase 2, and the real bodies of select/score/judge/etc.) need cli.py wired to import from their respective modules, but only Phase 1 touches cli.py.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 registers gc-anchors as a CLI stub. Phase 3 says implementation lands in runner.py (NEW), but Phase 3's file list does not include cli.py as MODIFY. Similarly, Phase 5 references `gc-anchors --reset-venv` but no phase adds that flag. All subcommand implementations created in later phases (gc-anchors in Phase 3, record-contracts in Phase 2, and the real bodies of select/score/judge/etc.) need cli.py wired to import from their respective modules, but only Phase 1 touches cli.py.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 and Phase 6 depend on OpenRouter model identifiers that are not verified anywhere in the cited contracts: `meta-llama/llama-3.1-405b-instruct`, `mistralai/mixtral-8x22b-instruct`, `DeepSeek-V3.1`, `GPT-5`, and `Gemini 2.5`. The only verified OpenRouter contract is the base `/api/v1/chat/completions` endpoint, so these model names can fail at runtime as fabricated or stale API IDs.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 4 and Phase 6 depend on OpenRouter model identifiers that are not verified anywhere in the cited contracts: `meta-llama/llama-3.1-405b-instruct`, `mistralai/mixtral-8x22b-instruct`, `DeepSeek-V3.1`, `GPT-5`, and `Gemini 2.5`. The only verified OpenRouter contract is the base `/api/v1/chat/completions` endpoint, so these model names can fail at runtime as fabricated or stale API IDs.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan requires two judges on 100% of pairs (`GPT-5` and `Gemini 2.5`) but never defines how conflicting judge outputs are reduced to the single `JudgeVerdict` that Phase 1 stores and Phase 7 uses for Bradley-Terry analysis. `inter-judge agreement logged; reported but not gating` is not a resolution rule, so the primary analysis input is undefined when judges disagree.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan requires two judges on 100% of pairs (`GPT-5` and `Gemini 2.5`) but never defines how conflicting judge outputs are reduced to the single `JudgeVerdict` that Phase 1 stores and Phase 7 uses for Bradley-Terry analysis. `inter-judge agreement logged; reported but not gating` is not a resolution rule, so the primary analysis input is undefined when judges disagree.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T03:13:38.096681Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 1
+}

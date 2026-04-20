@@ -1,0 +1,306 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T040243Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3 is blocked by Phase 4, but Phase 3's `dispatch_run` recovery policy says 'retry once on a different node' while Phase 4's paraphrase/equivalence failure triggers Invariant 16 whole-phase drop via `selector.redraw()`. Both Phase 3 (`setup_clone` lock failure) and Phase 4 (paraphrase failure) call `selector.redraw(phase_id)`, but the runner in Phase 3 must call `paraphraser.paraphrase_spec()` and `equivalence.check_equivalence()` BEFORE dispatch. This means Phase 3's `run_cell` orchestration loop must interleave Phase 4 calls (paraphrase \u2192 equivalence \u2192 dispatch), yet the plan describes paraphrase as happening 'before the run' without specifying WHERE in the `setup_clone \u2192 dispatch_run \u2192 finalize_run` sequence the paraphrase call lives. If paraphrase happens before `setup_clone`, the clone doesn't exist yet for the paraphraser to read the spec from; if after `setup_clone`, a failed paraphrase wastes a clone setup. The call-site placement is unspecified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 is blocked by Phase 4, but Phase 3's `dispatch_run` recovery policy says 'retry once on a different node' while Phase 4's paraphrase/equivalence failure triggers Invariant 16 whole-phase drop via `selector.redraw()`. Both Phase 3 (`setup_clone` lock failure) and Phase 4 (paraphrase failure) call `selector.redraw(phase_id)`, but the runner in Phase 3 must call `paraphraser.paraphrase_spec()` and `equivalence.check_equivalence()` BEFORE dispatch. This means Phase 3's `run_cell` orchestration loop must interleave Phase 4 calls (paraphrase \u2192 equivalence \u2192 dispatch), yet the plan describes paraphrase as happening 'before the run' without specifying WHERE in the `setup_clone \u2192 dispatch_run \u2192 finalize_run` sequence the paraphrase call lives. If paraphrase happens before `setup_clone`, the clone doesn't exist yet for the paraphraser to read the spec from; if after `setup_clone`, a failed paraphrase wastes a clone setup. The call-site placement is unspecified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 declares `SessionState.redraw_map` with writer = 'Phase 2 selector ONLY', but Phase 1's `session_state.py` uses `set_flag(key, value)` which 'pydantic-validates the key against this schema'. The `redraw_map` field is `dict[str, str]`, not a simple flag \u2014 `set_flag(key, value)` implies scalar flag semantics (bool/str), not dict-append semantics. Phase 2's `redraw()` needs to atomically read-modify-write a dict entry, but the `set_flag`/`get_flag`/`clear_flag` API declared in Phase 1 has no `update_dict_entry` or compare-and-swap primitive for nested dict mutation. Either the API is insufficient or the redraw_map needs its own accessor.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares `SessionState.redraw_map` with writer = 'Phase 2 selector ONLY', but Phase 1's `session_state.py` uses `set_flag(key, value)` which 'pydantic-validates the key against this schema'. The `redraw_map` field is `dict[str, str]`, not a simple flag \u2014 `set_flag(key, value)` implies scalar flag semantics (bool/str), not dict-append semantics. Phase 2's `redraw()` needs to atomically read-modify-write a dict entry, but the `set_flag`/`get_flag`/`clear_flag` API declared in Phase 1 has no `update_dict_entry` or compare-and-swap primitive for nested dict mutation. Either the API is insufficient or the redraw_map needs its own accessor.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 says `run_local_tests` does `pip install -e <clone_path>` when `pyproject.toml` exists, with full deps. BR3's `pyproject.toml` declares `anthropic` as a dependency. The contestant env has `ANTHROPIC_API_KEY` stripped (Phase 3 env allowlist). If any test in the contestant's tree imports `anthropic` and tries to initialize a client at import time, the test will fail not because of contestant code quality but because the harness stripped the env var. This conflates harness-imposed env restrictions with contestant test outcomes \u2014 tests that pass in normal development would fail under benchmark conditions.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5 says `run_local_tests` does `pip install -e <clone_path>` when `pyproject.toml` exists, with full deps. BR3's `pyproject.toml` declares `anthropic` as a dependency. The contestant env has `ANTHROPIC_API_KEY` stripped (Phase 3 env allowlist). If any test in the contestant's tree imports `anthropic` and tries to initialize a client at import time, the test will fail not because of contestant code quality but because the harness stripped the env var. This conflates harness-imposed env restrictions with contestant test outcomes \u2014 tests that pass in normal development would fail under benchmark conditions.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 creates clones at `/tmp/br3-bench-<run_id>/` and Phase 5's re-scoring creates worktrees at `/tmp/br3-bench-rescore-<run_id>`. With 360 runs, if teardown fails or the process crashes mid-run, `/tmp` accumulates stale clones. A full BR3 clone (even with `--shared`) includes the full working tree (~35k files per the Lockwood index). 360 stale clones could exhaust `/tmp` disk space on macOS (which defaults to a RAM-backed tmpfs on some configurations). No periodic `/tmp` cleanup or disk-space preflight is specified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 creates clones at `/tmp/br3-bench-<run_id>/` and Phase 5's re-scoring creates worktrees at `/tmp/br3-bench-rescore-<run_id>`. With 360 runs, if teardown fails or the process crashes mid-run, `/tmp` accumulates stale clones. A full BR3 clone (even with `--shared`) includes the full working tree (~35k files per the Lockwood index). 360 stale clones could exhaust `/tmp` disk space on macOS (which defaults to a RAM-backed tmpfs on some configurations). No periodic `/tmp` cleanup or disk-space preflight is specified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 invokes `pilot_contention.py` as a CLI module (`python -m core.benchmark.pilot_contention --registry ... --out ...`), but Phase 9's Files list creates `core/benchmark/pilot_contention.py` as a NEW file. This module is never registered as a CLI subcommand in Phase 1's `cli.py` stub list (the 12 stubs are: run, select, score, judge, paraphrase, probe, validate, report, resume, status, gc-anchors, record-contracts). Running it via `python -m` requires `if __name__ == '__main__': argparse...` boilerplate that is not part of any phase's deliverables. The module's CLI interface is referenced but never specified.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 invokes `pilot_contention.py` as a CLI module (`python -m core.benchmark.pilot_contention --registry ... --out ...`), but Phase 9's Files list creates `core/benchmark/pilot_contention.py` as a NEW file. This module is never registered as a CLI subcommand in Phase 1's `cli.py` stub list (the 12 stubs are: run, select, score, judge, paraphrase, probe, validate, report, resume, status, gc-anchors, record-contracts). Running it via `python -m` requires `if __name__ == '__main__': argparse...` boilerplate that is not part of any phase's deliverables. The module's CLI interface is referenced but never specified.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's de-blinding classifier uses `StratifiedGroupKFold` with `groups=phase_id`. With 7 pilot phases and 5 folds, some folds hold out 1 phase (12 rows) and train on 6 phases (72 rows). But `StratifiedGroupKFold` requires that the number of groups per class is >= n_splits. With 7 phases \u00d7 2 models, each phase contributes rows to both classes, so there are 7 groups. If any phase was dropped (reducing to 5-6 phases), `n_splits=min(5, n_phases)` could yield folds where one class has zero training examples from certain phases, making stratification impossible. The clamp to `min(5, n_phases)` is mentioned but the interaction with class balance per group is not validated.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's de-blinding classifier uses `StratifiedGroupKFold` with `groups=phase_id`. With 7 pilot phases and 5 folds, some folds hold out 1 phase (12 rows) and train on 6 phases (72 rows). But `StratifiedGroupKFold` requires that the number of groups per class is >= n_splits. With 7 phases \u00d7 2 models, each phase contributes rows to both classes, so there are 7 groups. If any phase was dropped (reducing to 5-6 phases), `n_splits=min(5, n_phases)` could yield folds where one class has zero training examples from certain phases, making stratification impossible. The clamp to `min(5, n_phases)` is mentioned but the interaction with class balance per group is not validated.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `dispatch_run` writes the prompt to `.buildrunner/benchmarks/prompts/{run_id}.txt` in the parent repo. With 360 runs at ~50KB each, this accumulates ~18MB of prompt files. The `gc-anchors` command cleans up `refs/heads/bench/<run_id>` branches but never mentions cleaning up prompt files. Minor disk hygiene issue.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `dispatch_run` writes the prompt to `.buildrunner/benchmarks/prompts/{run_id}.txt` in the parent repo. With 360 runs at ~50KB each, this accumulates ~18MB of prompt files. The `gc-anchors` command cleans up `refs/heads/bench/<run_id>` branches but never mentions cleaning up prompt files. Minor disk hygiene issue.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5's venv locking uses `/tmp/br3-bench-venv.lock` via `fcntl.flock(LOCK_EX)` with a 10-minute ceiling. But Phase 5 also says the editable-install-leaked recovery path 'fully recreates .venv-benchmark/ via scripts/install-benchmark-deps.sh under the same flock'. The installer script creates the venv from scratch (~20-30s) while holding the exclusive lock, which means any concurrent scorer invocation that tries to acquire the lock during recreation will block. If the recreation itself fails (e.g., pip network error), the lock is held until the 10-min timeout or process death, potentially stalling the pipeline.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 5's venv locking uses `/tmp/br3-bench-venv.lock` via `fcntl.flock(LOCK_EX)` with a 10-minute ceiling. But Phase 5 also says the editable-install-leaked recovery path 'fully recreates .venv-benchmark/ via scripts/install-benchmark-deps.sh under the same flock'. The installer script creates the venv from scratch (~20-30s) while holding the exclusive lock, which means any concurrent scorer invocation that tries to acquire the lock during recreation will block. If the recreation itself fails (e.g., pip network error), the lock is held until the 10-min timeout or process death, potentially stalling the pipeline.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's lock resolution helper uses `git log --all --extended-regexp --grep='^lock: claim Phase N'` but the verified git history shows commit messages like 'lock: claim Phase 4 - /commit Hard Walter Gate + Direct Push' (with a suffix after the phase number). The ERE pattern `^lock: claim Phase <N>($|[^0-9])` correctly handles this (the space after '4' matches `[^0-9]`). However, the plan does not account for potential phase numbers in BUILD file names themselves \u2014 e.g., if a BUILD file is named `BUILD_1A_PRD_WIZARD.md`, and the lock commit message says 'lock: claim Phase 1', the pathspec filter in Stage 2 would match this BUILD file's path in the diff. This is correct behavior but worth noting that the Phase 1 vs Phase 1A disambiguation relies entirely on the `phase_number` integer passed to `resolve_lock`, not on the BUILD filename.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's lock resolution helper uses `git log --all --extended-regexp --grep='^lock: claim Phase N'` but the verified git history shows commit messages like 'lock: claim Phase 4 - /commit Hard Walter Gate + Direct Push' (with a suffix after the phase number). The ERE pattern `^lock: claim Phase <N>($|[^0-9])` correctly handles this (the space after '4' matches `[^0-9]`). However, the plan does not account for potential phase numbers in BUILD file names themselves \u2014 e.g., if a BUILD file is named `BUILD_1A_PRD_WIZARD.md`, and the lock commit message says 'lock: claim Phase 1', the pathspec filter in Stage 2 would match this BUILD file's path in the diff. This is correct behavior but worth noting that the Phase 1 vs Phase 1A disambiguation relies entirely on the `phase_number` integer passed to `resolve_lock`, not on the BUILD filename.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references 'Codex 5.4' and 'Claude Opus 4.7' as the two contestants, with training cutoffs declared as constants. However, no phase specifies HOW these model versions map to the `--runtime claude` and `--runtime codex` flags passed to `dispatch-to-node.sh`. The dispatcher accepts `claude|codex` as runtime values, but nothing in the plan pins which specific model version each runtime resolves to on the remote node. If the remote nodes update their installed runtimes mid-study (e.g., auto-update from Opus 4.6 to 4.7), the benchmark would silently compare different versions across runs without detection.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references 'Codex 5.4' and 'Claude Opus 4.7' as the two contestants, with training cutoffs declared as constants. However, no phase specifies HOW these model versions map to the `--runtime claude` and `--runtime codex` flags passed to `dispatch-to-node.sh`. The dispatcher accepts `claude|codex` as runtime values, but nothing in the plan pins which specific model version each runtime resolves to on the remote node. If the remote nodes update their installed runtimes mid-study (e.g., auto-update from Opus 4.6 to 4.7), the benchmark would silently compare different versions across runs without detection.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 declares `requirements-benchmark.txt` with `pytest>=7.4,<9.0` but Phase 5's `run_local_tests` invokes `.venv-benchmark/bin/pytest` against contestant worktrees. If a contestant's `pyproject.toml` declares a pytest plugin or conftest that requires pytest 9+, the pinned upper bound would cause a compatibility failure scored as contestant failure. This is arguably correct behavior but is an undisclosed constraint on the scoring environment.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 declares `requirements-benchmark.txt` with `pytest>=7.4,<9.0` but Phase 5's `run_local_tests` invokes `.venv-benchmark/bin/pytest` against contestant worktrees. If a contestant's `pyproject.toml` declares a pytest plugin or conftest that requires pytest 9+, the pinned upper bound would cause a compatibility failure scored as contestant failure. This is arguably correct behavior but is an undisclosed constraint on the scoring environment.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 creates `core/benchmark/openrouter.py` which 're-exports the same API' from `openrouter_min.py` and 'adds judge-specific retry/structured-error handling'. Phase 4's modules import from `openrouter_min.py`. If Phase 6's `openrouter.py` changes the re-exported API surface (e.g., different default timeout, different retry policy), callers that import from `openrouter_min` directly vs through `openrouter` would get different behavior. The re-export contract is stated but not enforced by any test.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 creates `core/benchmark/openrouter.py` which 're-exports the same API' from `openrouter_min.py` and 'adds judge-specific retry/structured-error handling'. Phase 4's modules import from `openrouter_min.py`. If Phase 6's `openrouter.py` changes the re-exported API surface (e.g., different default timeout, different retry policy), callers that import from `openrouter_min` directly vs through `openrouter` would get different behavior. The re-export contract is stated but not enforced by any test.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 requires unit tests (`tests/benchmark/test_cli_skeleton.py` and the dataclass/registry round-trip tests) but Phase 1's Files list never creates any `tests/benchmark/*` test files and Phase 2 is the first phase that creates `tests/benchmark/__init__.py`; the Phase 1 success criteria cannot be satisfied in the stated build order.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 requires unit tests (`tests/benchmark/test_cli_skeleton.py` and the dataclass/registry round-trip tests) but Phase 1's Files list never creates any `tests/benchmark/*` test files and Phase 2 is the first phase that creates `tests/benchmark/__init__.py`; the Phase 1 success criteria cannot be satisfied in the stated build order.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 says every 'work' subcommand including `report` and `validate` must call `deps.preflight()` first, and `deps.preflight()` hard-fails on live OpenRouter access plus cluster-script checks. That conflicts with Phase 8's offline report/validation workflow: `br benchmark report` and `br benchmark validate` can be blocked by unrelated network or cluster outages even when all benchmark artifacts already exist locally.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 says every 'work' subcommand including `report` and `validate` must call `deps.preflight()` first, and `deps.preflight()` hard-fails on live OpenRouter access plus cluster-script checks. That conflicts with Phase 8's offline report/validation workflow: `br benchmark report` and `br benchmark validate` can be blocked by unrelated network or cluster outages even when all benchmark artifacts already exist locally.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 defines deterministic A/B assignment as `sha256(run_id + blind_salt)`, but judging is pairwise while `run_id` is attempt-scoped to one side of the pair. The plan never defines which side's `run_id` seeds the pair, so the same judged pair can receive inconsistent A/B labels across passes or implementations.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 defines deterministic A/B assignment as `sha256(run_id + blind_salt)`, but judging is pairwise while `run_id` is attempt-scoped to one side of the pair. The plan never defines which side's `run_id` seeds the pair, so the same judged pair can receive inconsistent A/B labels across passes or implementations.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 says `br benchmark judge` writes `JudgeVerdict` rows keyed by `cell_key`, but `cell_key` is model-specific (`phase_id, model, sub_study, replication_index`) while the judge operates on a two-model pair. The storage model has no pair-stable identifier, so Phase 7's Bradley-Terry aggregation cannot unambiguously reconstruct one verdict per judged pair without double-counting or asymmetric attachment.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 says `br benchmark judge` writes `JudgeVerdict` rows keyed by `cell_key`, but `cell_key` is model-specific (`phase_id, model, sub_study, replication_index`) while the judge operates on a two-model pair. The storage model has no pair-stable identifier, so Phase 7's Bradley-Terry aggregation cannot unambiguously reconstruct one verdict per judged pair without double-counting or asymmetric attachment.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's layer-assignment fallback defaults ambiguous or Below-unreachable phases to `fullstack`. That preserves execution but silently distorts the very stratification the selector is supposed to protect, especially when multiple fallback phases cluster into one synthetic layer bucket.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 2's layer-assignment fallback defaults ambiguous or Below-unreachable phases to `fullstack`. That preserves execution but silently distorts the very stratification the selector is supposed to protect, especially when multiple fallback phases cluster into one synthetic layer bucket.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 requires unit tests (`tests/benchmark/test_cli_skeleton.py` and the dataclass/registry round-trip tests) but Phase 1's Files list never creates any `tests/benchmark/*` test files and Phase 2 is the first phase that creates `tests/benchmark/__init__.py`; the Phase 1 success criteria cannot be satisfied in the stated build order.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 requires unit tests (`tests/benchmark/test_cli_skeleton.py` and the dataclass/registry round-trip tests) but Phase 1's Files list never creates any `tests/benchmark/*` test files and Phase 2 is the first phase that creates `tests/benchmark/__init__.py`; the Phase 1 success criteria cannot be satisfied in the stated build order.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 says every 'work' subcommand including `report` and `validate` must call `deps.preflight()` first, and `deps.preflight()` hard-fails on live OpenRouter access plus cluster-script checks. That conflicts with Phase 8's offline report/validation workflow: `br benchmark report` and `br benchmark validate` can be blocked by unrelated network or cluster outages even when all benchmark artifacts already exist locally.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 says every 'work' subcommand including `report` and `validate` must call `deps.preflight()` first, and `deps.preflight()` hard-fails on live OpenRouter access plus cluster-script checks. That conflicts with Phase 8's offline report/validation workflow: `br benchmark report` and `br benchmark validate` can be blocked by unrelated network or cluster outages even when all benchmark artifacts already exist locally.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 says `br benchmark judge` writes `JudgeVerdict` rows keyed by `cell_key`, but `cell_key` is model-specific (`phase_id, model, sub_study, replication_index`) while the judge operates on a two-model pair. The storage model has no pair-stable identifier, so Phase 7's Bradley-Terry aggregation cannot unambiguously reconstruct one verdict per judged pair without double-counting or asymmetric attachment.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 says `br benchmark judge` writes `JudgeVerdict` rows keyed by `cell_key`, but `cell_key` is model-specific (`phase_id, model, sub_study, replication_index`) while the judge operates on a two-model pair. The storage model has no pair-stable identifier, so Phase 7's Bradley-Terry aggregation cannot unambiguously reconstruct one verdict per judged pair without double-counting or asymmetric attachment.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T04:12:40.225092Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 1
+}

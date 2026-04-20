@@ -1,17 +1,23 @@
-# Phase 5 Verification: Auto Code Review on Diffs
+# Phase 5 Verification: Adversarial Dispatch Hardening
 
-## Deliverable Checks
+## Deliverable Checklist
 
 | # | Deliverable | Status | Evidence |
 |---|------------|--------|----------|
-| 1 | Script runs Claude review on diff, outputs JSON | PASS | auto-review-diff.sh: syntax valid, empty-diff and missing-file edge cases return valid JSON |
-| 2 | Auto-triggers when review enters queue | PASS | addReview() calls runAutoReview() after diff fetch; non-blocking with .catch() |
-| 3 | Findings displayed as annotations in diff viewer | PASS | renderDiffFile() injects annotations by line number; color-coded critical/warning/info |
-| 4 | Summary line on review card | PASS | renderAutoReviewBadge() shows counts; displayed on review cards |
-| 5 | Critical findings block Approve button | PASS | Approve disabled when hasCritical; acknowledge checkbox via toggleApproveBlock() re-enables |
+| 1 | Create `_setsid-exec.sh` | PASS | File exists at `~/.buildrunner/scripts/_setsid-exec.sh`, executable, uses `perl POSIX::setsid` |
+| 2 | Replace perl alarm with setsid + pgid timeout | PASS | adversarial-review.sh lines 223-238: remote setsid + watchdog replaces `perl -e 'alarm ...'` |
+| 3 | Add `--bare` flag to claude --print | PASS | Line 226: `claude --print --bare` |
+| 4 | Add NODE_OPTIONS max-old-space-size=3584 | PASS | Line 223: `export NODE_OPTIONS='--max-old-space-size=3584'` |
+| 5 | Increase TIMEOUT_SECONDS to 360 | PASS | Line 28: `TIMEOUT_SECONDS=360` |
+| 6 | Orphan cleanup between retries | PASS | Lines 209-212: `pkill -f "claude.*print"` before retry |
+| 7 | Fix timeout detection exit codes | PASS | Lines 274, 291: only checks `$EXIT_CODE -eq 124`, removed 142 check |
 
-## Edge Cases Tested
-- Empty diff → `{"findings":[],"error":"Empty diff","status":"complete"}`
-- Missing diff file → `{"findings":[],"error":"Diff file not found","status":"failed"}`
-- reviews.mjs imports cleanly (node parse check passed)
-- auto-review-diff.sh passes bash -n syntax check
+## Syntax Validation
+- `bash -n adversarial-review.sh` — PASS
+- `bash -n _setsid-exec.sh` — PASS
+- `bash -n _portable-timeout.sh` — PASS
+
+## Shell Quoting Verification
+- `$REMOTE_DIR` in SSH command: correctly breaks out of single quotes for local expansion
+- `$TIMEOUT_SECONDS` in SSH command: correctly breaks out of single quotes for local expansion
+- Remote-side variables (`$CHILD_PID`, `$WATCHDOG_PID`, etc.) stay inside single quotes — correct

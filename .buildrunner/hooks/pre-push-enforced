@@ -1,9 +1,23 @@
 #!/bin/bash
 # BuildRunner 3.0 - ENFORCED Pre-Push Hook
 # FORCES USE OF 'br github push' INSTEAD OF 'git push'
-# Last Updated: 2024-11-25
+# Last Updated: 2026-04-08
 
 set -e
+
+# Pre-push receives: $1=remote_name, $2=remote_url
+REMOTE_NAME="$1"
+REMOTE_URL="$2"
+
+# Allow cluster node syncing (internal network, not GitHub)
+# These are test/build nodes that need fast automatic syncing
+CLUSTER_NODES="walter lomax otis lockwood below"
+for node in $CLUSTER_NODES; do
+    if [ "$REMOTE_NAME" = "$node" ] || [[ "$REMOTE_URL" == *"10.0.1."* ]]; then
+        # Silent exit for cluster syncing
+        exit 0
+    fi
+done
 
 echo ""
 echo "🚀 BuildRunner 3.0 - ENFORCED Pre-Push Validation"

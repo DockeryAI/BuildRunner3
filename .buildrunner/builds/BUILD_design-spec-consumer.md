@@ -1,6 +1,7 @@
 # BUILD: BR3 /design + /website-build — Synapse Spec Consumer
 
 **Project:** BuildRunner3 (BR3)
+**Status:** Phases 1-10 Complete — Phase 1 In Progress
 **Created:** 2026-04-05
 **Shared Contract:** `/Users/byronhudson/workfloDock/docs/contracts/SYNAPSE_INTEGRATION_CONTRACT.md`
 **Paired Specs:**
@@ -164,7 +165,7 @@ These frameworks already govern the skills — this spec enforces them more stri
 
 ## 3. Phases (12 phases total)
 
-### PHASE 1: DESIGN_SPEC.md Front-Matter Detection (/design Step 1)
+### PHASE 1: DESIGN_SPEC.md Front-Matter Detection (/design Step 1) ✅ COMPLETE
 
 **Goal:** At Step 1 (Redesign Gate), parse front-matter YAML and detect `source: synapse-generated`.
 
@@ -225,7 +226,7 @@ These frameworks already govern the skills — this spec enforces them more stri
 
 ### PHASE 2: [REMOVED] Expand Discovery from 4-Slider to 5-Slider Aaker
 
-**Status:** 🗑️ REMOVED 2026-04-05 — already delivered by `BUILD_design-skill-rebuild.md` Phase 1 + Phase 14 (both COMPLETE). /design wizard already captures all 5 Aaker dimensions.
+**Status:** 🗑️ REMOVED
 
 ---
 
@@ -235,7 +236,7 @@ These frameworks already govern the skills — this spec enforces them more stri
 
 ---
 
-### PHASE 4: Write Front-Matter When /design Writes DESIGN_SPEC.md
+### PHASE 4: Write Front-Matter When /design Writes DESIGN_SPEC.md ✅ COMPLETE
 
 **Goal:** At Step 5 (Selection + Spec Generation), prepend front-matter YAML to DESIGN_SPEC.md when skill writes it.
 
@@ -281,7 +282,7 @@ generated_by: claude-design-skill
 
 ---
 
-### PHASE 5: /website-build — Voice Package Fetch
+### PHASE 5: /website-build — Voice Package Fetch ✅ COMPLETE
 
 **Goal:** At Step 2, after loading brief, fetch voice_package from Synapse by brand_id.
 
@@ -324,7 +325,7 @@ After loading the brief, attempt to hydrate voice_package:
 
 ---
 
-### PHASE 6: /website-build — Use Voice Package Copy at Step 5
+### PHASE 6: /website-build — Use Voice Package Copy at Step 5 ✅ COMPLETE
 
 **Goal:** When voice_package is available, use its per-page copy verbatim instead of LLM-generating copy.
 
@@ -361,7 +362,7 @@ For each page in voice_package.pages:
 
 ---
 
-### PHASE 7: /website-build — GEO + Schema Compliance Gates at Step 6
+### PHASE 7: /website-build — GEO + Schema Compliance Gates at Step 6 ✅ COMPLETE
 
 **Goal:** Enforce GEO/schema/a11y/CWV gates before build is considered complete.
 
@@ -419,7 +420,7 @@ For each page in voice_package.pages:
 
 ---
 
-### PHASE 8: /website-build — E2E Test Suite Generation
+### PHASE 8: /website-build — E2E Test Suite Generation ✅ COMPLETE
 
 **Goal:** Auto-generate Playwright tests matching DESIGN_SPEC's E2E Test Requirements + the compliance gates.
 
@@ -447,7 +448,7 @@ Run `npx playwright test` — blocks ship on failure.
 
 ---
 
-### PHASE 9: /design — Legacy Spec Graceful Fallbacks
+### PHASE 9: /design — Legacy Spec Graceful Fallbacks ✅ COMPLETE
 
 **Goal:** Ensure skill doesn't crash on specs without expected fields.
 
@@ -476,7 +477,7 @@ Log each fallback as warning. Never hard-fail on missing fields.
 
 ---
 
-### PHASE 10: Documentation — Update Synapse Integration Block
+### PHASE 10: Documentation — Update Synapse Integration Block ✅ COMPLETE
 
 **Goal:** Update `<synapse_integration>` block in design.md to reflect implemented behavior.
 
@@ -492,7 +493,7 @@ Similar update for website-build.md — document voice_package fetching.
 
 ---
 
-### PHASE 11: Environment Configuration
+### PHASE 11: Environment Configuration ✅ COMPLETE
 
 **Goal:** Define env vars for Synapse API access.
 
@@ -510,7 +511,7 @@ SYNAPSE_SERVICE_TOKEN=<supabase service role key or user-scoped token>
 
 ---
 
-### PHASE 12: Cross-Skill Integration Test
+### PHASE 12: Cross-Skill Integration Test ✅ COMPLETE
 
 **Goal:** End-to-end test of workfloDock → Synapse → /design → /website-build.
 

@@ -1,0 +1,28 @@
+[      39ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:3005/node_modules/.vite/deps/chunk-Y62RWVFB.js?v=2a28df14:21550
+[      46ms] [WARNING] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: WebSocket is closed before the connection is established. @ http://localhost:3005/src/hooks/useWebSocket.ts:66
+[      54ms] [ERROR] Error loading tasks: AxiosError @ http://localhost:3005/src/components/TaskList.tsx?t=1776085580215:38
+[      55ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/tasks:0
+[      55ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3005/src/components/Dashboard.tsx?t=1776085602348:58
+[      55ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[      56ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[      56ms] [ERROR] Error loading tasks: AxiosError @ http://localhost:3005/src/components/TaskList.tsx?t=1776085580215:38
+[      56ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/tasks:0
+[      56ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3005/src/components/Dashboard.tsx?t=1776085602348:58
+[      56ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[      56ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[      56ms] [WARNING] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: WebSocket is closed before the connection is established. @ http://localhost:3005/src/hooks/useWebSocket.ts:66
+[      73ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3005/src/hooks/useWebSocket.ts:22
+[    3059ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3005/src/hooks/useWebSocket.ts:22
+[    3075ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3005/src/hooks/useWebSocket.ts:22
+[    4807ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3005/src/hooks/useWebSocket.ts:22
+[    4808ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3005/src/hooks/useWebSocket.ts:22
+[    5049ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3005/src/components/Dashboard.tsx?t=1776085602348:58
+[    5049ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[    5049ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[    6062ms] [ERROR] WebSocket connection to 'ws://localhost:8080/ws/updates' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:3005/src/hooks/useWebSocket.ts:22
+[   10048ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3005/src/components/Dashboard.tsx?t=1776085602348:58
+[   10048ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   10048ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0
+[   15049ms] [ERROR] Error loading dashboard data: AxiosError @ http://localhost:3005/src/components/Dashboard.tsx?t=1776085602348:58
+[   15049ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/status:0
+[   15049ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:8080/api/orchestrator/progress:0

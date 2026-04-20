@@ -1,0 +1,846 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - text: Intelligence
+    - generic [ref=e15] [cursor=pointer]:
+      - img [ref=e16]
+      - text: Terminal
+    - generic [ref=e18] [cursor=pointer]:
+      - img [ref=e19]
+      - text: Builds
+    - generic [ref=e22] [cursor=pointer]:
+      - img [ref=e23]
+      - text: Research
+    - generic [ref=e26] [cursor=pointer]:
+      - img [ref=e27]
+      - text: Monitor
+  - generic [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: BR3 The Band
+        - generic [ref=e33]: Dashboard
+      - generic [ref=e34]:
+        - generic [ref=e36]: "Tokens: 204k"
+        - generic [ref=e38]: "SSE: 0"
+        - generic [ref=e39]: "Uptime: 16m"
+        - generic [ref=e40]: ⌘K
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]: Cluster
+        - button "Reset All" [ref=e44] [cursor=pointer]
+      - generic [ref=e45]:
+        - generic [ref=e46] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e47]
+          - generic [ref=e48]:
+            - generic [ref=e49]: Online
+            - generic [ref=e50]: Muddy
+            - img [ref=e51]: Muddy online — click to reset
+            - img [ref=e53]: Plugged in
+            - generic [ref=e55]: M5
+          - generic [ref=e56]: Command · 10.0.1.100
+          - generic [ref=e57]: idle
+          - generic [ref=e59]:
+            - generic [ref=e60]: CPU
+            - generic [ref=e61]: 3.672%
+          - generic [ref=e65]:
+            - generic [ref=e66]: MEM
+            - generic [ref=e67]: 61%
+        - generic [ref=e70] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e71]
+          - generic [ref=e72]:
+            - generic [ref=e73]: Online
+            - generic [ref=e74]: Lockwood
+            - img [ref=e75]: Lockwood online — click to reset
+            - img [ref=e77]: Plugged in
+            - generic [ref=e79]: M2
+          - generic [ref=e80]: Memory · 10.0.1.101
+          - generic [ref=e81]: idle
+          - generic [ref=e83]:
+            - generic [ref=e84]: CPU
+            - generic [ref=e85]: 2.36%
+          - generic [ref=e89]:
+            - generic [ref=e90]: MEM
+            - generic [ref=e91]: 48%
+        - generic [ref=e94] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e95]
+          - generic [ref=e96]:
+            - generic [ref=e97]: Online
+            - generic [ref=e98]: Walter
+            - img [ref=e99]: Walter online — click to reset
+            - img [ref=e101]: Plugged in
+            - generic [ref=e103]: M2
+          - generic [ref=e104]: Sentinel · 10.0.1.102
+          - generic [ref=e105]: idle
+          - generic [ref=e107]:
+            - generic [ref=e108]: CPU
+            - generic [ref=e109]: 1.15%
+          - generic [ref=e113]:
+            - generic [ref=e114]: MEM
+            - generic [ref=e115]: 50%
+        - generic [ref=e118] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e119]
+          - generic [ref=e120]:
+            - generic [ref=e121]: Online
+            - generic [ref=e122]: Otis
+            - img [ref=e123]: Otis online — click to reset
+            - img [ref=e125]: Plugged in
+            - generic [ref=e127]: M2
+          - generic [ref=e128]: Builder · 10.0.1.103
+          - generic [ref=e129]: BUILD_outreach-engine (100%)
+          - generic [ref=e131]:
+            - generic [ref=e132]: CPU
+            - generic [ref=e133]: 1.46%
+          - generic [ref=e137]:
+            - generic [ref=e138]: MEM
+            - generic [ref=e139]: 39%
+        - generic [ref=e142] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e143]
+          - generic [ref=e144]:
+            - generic [ref=e145]: Online
+            - generic [ref=e146]: Lomax
+            - img [ref=e147]: Lomax online — click to reset
+            - img [ref=e149]: Plugged in
+            - generic [ref=e151]: M2
+          - generic [ref=e152]: Forge · 10.0.1.104
+          - generic [ref=e153]: idle
+          - generic [ref=e155]:
+            - generic [ref=e156]: CPU
+            - generic [ref=e157]: 2.19%
+          - generic [ref=e161]:
+            - generic [ref=e162]: MEM
+            - generic [ref=e163]: 37%
+        - generic [ref=e166] [cursor=pointer]:
+          - button "⋮ Actions" [ref=e167]
+          - generic [ref=e168]:
+            - generic [ref=e169]: Online
+            - generic [ref=e170]: Below
+            - img [ref=e171]: Below online — click to reset
+            - img [ref=e173]: Plugged in
+            - generic [ref=e175]: Win
+          - generic [ref=e176]: Workhorse · 10.0.1.105
+          - generic [ref=e177]: idle
+          - generic [ref=e179]:
+            - generic [ref=e180]: CPU
+            - generic [ref=e181]: 0%
+          - generic [ref=e184]:
+            - generic [ref=e185]: MEM
+            - generic [ref=e186]: 11.2%
+      - generic [ref=e189]:
+        - generic [ref=e190]:
+          - generic [ref=e191]: Active Builds
+          - generic [ref=e192]: "1"
+          - generic [ref=e193]: 24 total
+        - generic "Click for account details" [ref=e194] [cursor=pointer]:
+          - generic [ref=e195]:
+            - generic [ref=e196]: Tokens Used
+            - button "SWAP" [ref=e197]
+          - generic [ref=e198]: 40%
+          - generic [ref=e199]: B · B:40% A:529% B:316%
+        - generic [ref=e200]:
+          - generic [ref=e201]: Sessions
+          - generic [ref=e202]: "0"
+          - generic [ref=e203]: none
+        - generic [ref=e204]:
+          - generic [ref=e205]: Reviews
+          - generic [ref=e206]: "0"
+          - generic [ref=e207]: pending
+      - generic [ref=e208]:
+        - generic [ref=e209]:
+          - generic [ref=e210]:
+            - text: Alerts
+            - generic [ref=e211]: "0"
+          - generic [ref=e213]: No alerts
+        - generic [ref=e214]:
+          - generic [ref=e215]:
+            - text: Active Builds
+            - generic [ref=e216]: 1 (+23 done)
+            - button "Pause All" [ref=e217] [cursor=pointer]
+            - button "Show completed (23)" [ref=e218] [cursor=pointer]
+          - table [ref=e220]:
+            - rowgroup [ref=e230]:
+              - row "Build Status Phase Node Progress Updated Health" [ref=e231]:
+                - columnheader "Build" [ref=e232]
+                - columnheader "Status" [ref=e233]
+                - columnheader "Phase" [ref=e234]
+                - columnheader "Node" [ref=e235]
+                - columnheader "Progress" [ref=e236]
+                - columnheader "Updated" [ref=e237]
+                - columnheader "Health" [ref=e238]
+                - columnheader [ref=e239]
+            - rowgroup [ref=e240]:
+              - row "sales-assistant:BUILD_outreach-engine running 24/24 otis 100% 1s ago 100% − -- Pause ⋮" [ref=e241]:
+                - cell "sales-assistant:BUILD_outreach-engine" [ref=e242]:
+                  - link "sales-assistant:BUILD_outreach-engine" [ref=e243] [cursor=pointer]:
+                    - /url: "#"
+                - cell "running" [ref=e244]:
+                  - generic [ref=e245]: running
+                - cell "24/24" [ref=e246]
+                - cell "otis" [ref=e247]
+                - cell "100%" [ref=e248]: 100%
+                - cell "1s ago" [ref=e251]
+                - cell "100% − --" [ref=e252]:
+                  - generic [ref=e255] [cursor=pointer]: 100% − --
+                - cell "Pause ⋮" [ref=e256]:
+                  - button "Pause" [ref=e257] [cursor=pointer]
+                  - button "⋮" [ref=e258] [cursor=pointer]
+        - generic [ref=e259]:
+          - generic [ref=e260]: Build DAG
+          - generic [ref=e264] [cursor=pointer]: sales-assistant:BUIL..
+        - generic [ref=e266]:
+          - generic [ref=e267]:
+            - text: Sessions
+            - generic [ref=e268]: "14"
+            - button "Refresh" [ref=e269] [cursor=pointer]
+          - generic [ref=e271]:
+            - generic [ref=e272] [cursor=pointer]:
+              - generic [ref=e273]:
+                - generic [ref=e274]: muddy
+                - generic [ref=e275]: active
+              - generic [ref=e276]: BuildRunner3
+              - generic [ref=e277]:
+                - generic [ref=e278]: main
+                - generic [ref=e279]: 6:26.11
+              - generic [ref=e280]: CPU 21.6% · MEM 1.4%
+            - generic [ref=e281] [cursor=pointer]:
+              - generic [ref=e282]:
+                - generic [ref=e283]: muddy
+                - generic [ref=e284]: active
+              - generic [ref=e285]: BuildRunner3
+              - generic [ref=e286]:
+                - generic [ref=e287]: main
+                - generic [ref=e288]: 7:54.23
+              - generic [ref=e289]: CPU 3.2% · MEM 0.7%
+            - generic [ref=e290] [cursor=pointer]:
+              - generic [ref=e291]:
+                - generic [ref=e292]: muddy
+                - generic [ref=e293]: active
+              - generic [ref=e294]: workfloDock
+              - generic [ref=e295]:
+                - generic [ref=e296]: main
+                - generic [ref=e297]: 1:25.15
+              - generic [ref=e298]: CPU 0.2% · MEM 0.3%
+            - generic [ref=e299] [cursor=pointer]:
+              - generic [ref=e300]:
+                - generic [ref=e301]: muddy
+                - generic [ref=e302]: active
+              - generic [ref=e303]: workfloDock
+              - generic [ref=e304]:
+                - generic [ref=e305]: main
+                - generic [ref=e306]: 1:45.89
+              - generic [ref=e307]: CPU 0.1% · MEM 0.3%
+            - generic [ref=e308] [cursor=pointer]:
+              - generic [ref=e309]:
+                - generic [ref=e310]: muddy
+                - generic [ref=e311]: zombie
+              - generic [ref=e312]: BuildRunner3
+              - generic [ref=e313]:
+                - generic [ref=e314]: main
+                - generic [ref=e315]: 0:00.01
+              - generic [ref=e316]: CPU 0% · MEM 0%
+            - generic [ref=e317] [cursor=pointer]:
+              - generic [ref=e318]:
+                - generic [ref=e319]: muddy
+                - generic [ref=e320]: zombie
+              - generic [ref=e321]: BuildRunner3
+              - generic [ref=e322]:
+                - generic [ref=e323]: main
+                - generic [ref=e324]: 0:00.01
+              - generic [ref=e325]: CPU 0% · MEM 0%
+            - generic [ref=e326] [cursor=pointer]:
+              - generic [ref=e327]:
+                - generic [ref=e328]: muddy
+                - generic [ref=e329]: zombie
+              - generic [ref=e330]: sales-assistant
+              - generic [ref=e331]:
+                - generic [ref=e332]: main
+                - generic [ref=e333]: 0:00.00
+              - generic [ref=e334]: CPU 0% · MEM 0%
+            - generic [ref=e335] [cursor=pointer]:
+              - generic [ref=e336]:
+                - generic [ref=e337]: muddy
+                - generic [ref=e338]: zombie
+              - generic [ref=e339]: trailsync
+              - generic [ref=e340]:
+                - generic [ref=e341]: fix/trip-detail-lightweight-query
+                - generic [ref=e342]: 0:55.28
+              - generic [ref=e343]: CPU 0% · MEM 0.6%
+            - generic [ref=e344] [cursor=pointer]:
+              - generic [ref=e345]:
+                - generic [ref=e346]: muddy
+                - generic [ref=e347]: zombie
+              - generic [ref=e348]: BuildRunner3
+              - generic [ref=e349]:
+                - generic [ref=e350]: main
+                - generic [ref=e351]: 8:58.04
+              - generic [ref=e352]: CPU 0% · MEM 0.3%
+            - generic [ref=e353] [cursor=pointer]:
+              - generic [ref=e354]:
+                - generic [ref=e355]: muddy
+                - generic [ref=e356]: zombie
+              - generic [ref=e357]: BuildRunner3
+              - generic [ref=e358]:
+                - generic [ref=e359]: main
+                - generic [ref=e360]: 3:04.13
+              - generic [ref=e361]: CPU 0% · MEM 0.3%
+            - generic [ref=e362] [cursor=pointer]:
+              - generic [ref=e363]:
+                - generic [ref=e364]: muddy
+                - generic [ref=e365]: zombie
+              - generic [ref=e366]: BuildRunner3
+              - generic [ref=e367]:
+                - generic [ref=e368]: main
+                - generic [ref=e369]: 1:16.53
+              - generic [ref=e370]: CPU 0% · MEM 0.3%
+            - generic [ref=e371] [cursor=pointer]:
+              - generic [ref=e372]:
+                - generic [ref=e373]: otis
+                - generic [ref=e374]: active
+              - generic [ref=e375]: sales-assistant
+              - generic [ref=e376]:
+                - generic [ref=e377]: "--"
+                - generic [ref=e378]: 0:13.20
+              - generic [ref=e379]: CPU 1.3% · MEM 3.2%
+            - generic [ref=e380] [cursor=pointer]:
+              - generic [ref=e381]:
+                - generic [ref=e382]: otis
+                - generic [ref=e383]: zombie
+              - generic [ref=e384]: sales-assistant
+              - generic [ref=e385]:
+                - generic [ref=e386]: "--"
+                - generic [ref=e387]: 0:00.12
+              - generic [ref=e388]: CPU 0% · MEM 0%
+            - generic [ref=e389] [cursor=pointer]:
+              - generic [ref=e390]:
+                - generic [ref=e391]: otis
+                - generic [ref=e392]: zombie
+              - generic [ref=e393]: sales-assistant
+              - generic [ref=e394]:
+                - generic [ref=e395]: "--"
+                - generic [ref=e396]: 0:00.01
+              - generic [ref=e397]: CPU 0% · MEM 0%
+        - generic [ref=e398]:
+          - generic [ref=e399]:
+            - text: Review Queue
+            - generic [ref=e400]: "0"
+            - button "Refresh" [ref=e401] [cursor=pointer]
+          - generic [ref=e403]: No pending reviews
+        - generic [ref=e404]:
+          - generic [ref=e405]:
+            - text: Event Log
+            - generic [ref=e406]: "100"
+            - generic [ref=e407]:
+              - combobox [ref=e408] [cursor=pointer]:
+                - option "All types" [selected]
+                - option "build.heartbeat"
+                - option "session.update"
+              - combobox [ref=e409] [cursor=pointer]:
+                - option "All time" [selected]
+                - option "Last 1h"
+                - option "Last 6h"
+                - option "Last 24h"
+          - generic [ref=e411]:
+            - generic [ref=e412] [cursor=pointer]:
+              - generic [ref=e413]: 17:30:47
+              - generic [ref=e414]: build.heartbeat
+              - generic [ref=e415]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e416] [cursor=pointer]:
+              - generic [ref=e417]: 17:30:38
+              - generic [ref=e418]: session.update
+              - generic [ref=e419]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e420] [cursor=pointer]:
+              - generic [ref=e421]: 17:30:38
+              - generic [ref=e422]: session.update
+              - generic [ref=e423]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e424] [cursor=pointer]:
+              - generic [ref=e425]: 17:30:34
+              - generic [ref=e426]: build.heartbeat
+              - generic [ref=e427]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e428] [cursor=pointer]:
+              - generic [ref=e429]: 17:30:31
+              - generic [ref=e430]: build.heartbeat
+              - generic [ref=e431]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e432] [cursor=pointer]:
+              - generic [ref=e433]: 17:30:23
+              - generic [ref=e434]: session.update
+              - generic [ref=e435]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e436] [cursor=pointer]:
+              - generic [ref=e437]: 17:30:23
+              - generic [ref=e438]: session.update
+              - generic [ref=e439]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e440] [cursor=pointer]:
+              - generic [ref=e441]: 17:30:19
+              - generic [ref=e442]: build.heartbeat
+              - generic [ref=e443]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e444] [cursor=pointer]:
+              - generic [ref=e445]: 17:30:16
+              - generic [ref=e446]: build.heartbeat
+              - generic [ref=e447]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e448] [cursor=pointer]:
+              - generic [ref=e449]: 17:30:08
+              - generic [ref=e450]: session.update
+              - generic [ref=e451]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e452] [cursor=pointer]:
+              - generic [ref=e453]: 17:30:08
+              - generic [ref=e454]: session.update
+              - generic [ref=e455]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e456] [cursor=pointer]:
+              - generic [ref=e457]: 17:30:04
+              - generic [ref=e458]: build.heartbeat
+              - generic [ref=e459]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e460] [cursor=pointer]:
+              - generic [ref=e461]: 17:30:01
+              - generic [ref=e462]: build.heartbeat
+              - generic [ref=e463]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e464] [cursor=pointer]:
+              - generic [ref=e465]: 17:29:53
+              - generic [ref=e466]: session.update
+              - generic [ref=e467]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e468] [cursor=pointer]:
+              - generic [ref=e469]: 17:29:53
+              - generic [ref=e470]: session.update
+              - generic [ref=e471]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e472] [cursor=pointer]:
+              - generic [ref=e473]: 17:29:49
+              - generic [ref=e474]: build.heartbeat
+              - generic [ref=e475]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e476] [cursor=pointer]:
+              - generic [ref=e477]: 17:29:45
+              - generic [ref=e478]: build.heartbeat
+              - generic [ref=e479]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e480] [cursor=pointer]:
+              - generic [ref=e481]: 17:29:38
+              - generic [ref=e482]: session.update
+              - generic [ref=e483]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e484] [cursor=pointer]:
+              - generic [ref=e485]: 17:29:38
+              - generic [ref=e486]: session.update
+              - generic [ref=e487]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e488] [cursor=pointer]:
+              - generic [ref=e489]: 17:29:33
+              - generic [ref=e490]: build.heartbeat
+              - generic [ref=e491]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e492] [cursor=pointer]:
+              - generic [ref=e493]: 17:29:30
+              - generic [ref=e494]: build.heartbeat
+              - generic [ref=e495]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e496] [cursor=pointer]:
+              - generic [ref=e497]: 17:29:23
+              - generic [ref=e498]: session.update
+              - generic [ref=e499]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e500] [cursor=pointer]:
+              - generic [ref=e501]: 17:29:23
+              - generic [ref=e502]: session.update
+              - generic [ref=e503]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e504] [cursor=pointer]:
+              - generic [ref=e505]: 17:29:18
+              - generic [ref=e506]: build.heartbeat
+              - generic [ref=e507]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e508] [cursor=pointer]:
+              - generic [ref=e509]: 17:29:14
+              - generic [ref=e510]: build.heartbeat
+              - generic [ref=e511]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e512] [cursor=pointer]:
+              - generic [ref=e513]: 17:29:08
+              - generic [ref=e514]: session.update
+              - generic [ref=e515]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e516] [cursor=pointer]:
+              - generic [ref=e517]: 17:29:08
+              - generic [ref=e518]: session.update
+              - generic [ref=e519]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e520] [cursor=pointer]:
+              - generic [ref=e521]: 17:29:03
+              - generic [ref=e522]: build.heartbeat
+              - generic [ref=e523]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e524] [cursor=pointer]:
+              - generic [ref=e525]: 17:28:59
+              - generic [ref=e526]: build.heartbeat
+              - generic [ref=e527]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e528] [cursor=pointer]:
+              - generic [ref=e529]: 17:28:53
+              - generic [ref=e530]: session.update
+              - generic [ref=e531]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e532] [cursor=pointer]:
+              - generic [ref=e533]: 17:28:53
+              - generic [ref=e534]: session.update
+              - generic [ref=e535]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e536] [cursor=pointer]:
+              - generic [ref=e537]: 17:28:48
+              - generic [ref=e538]: build.heartbeat
+              - generic [ref=e539]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e540] [cursor=pointer]:
+              - generic [ref=e541]: 17:28:44
+              - generic [ref=e542]: build.heartbeat
+              - generic [ref=e543]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e544] [cursor=pointer]:
+              - generic [ref=e545]: 17:28:38
+              - generic [ref=e546]: session.update
+              - generic [ref=e547]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e548] [cursor=pointer]:
+              - generic [ref=e549]: 17:28:38
+              - generic [ref=e550]: session.update
+              - generic [ref=e551]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e552] [cursor=pointer]:
+              - generic [ref=e553]: 17:28:33
+              - generic [ref=e554]: build.heartbeat
+              - generic [ref=e555]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e556] [cursor=pointer]:
+              - generic [ref=e557]: 17:28:28
+              - generic [ref=e558]: build.heartbeat
+              - generic [ref=e559]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e560] [cursor=pointer]:
+              - generic [ref=e561]: 17:28:23
+              - generic [ref=e562]: session.update
+              - generic [ref=e563]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e564] [cursor=pointer]:
+              - generic [ref=e565]: 17:28:23
+              - generic [ref=e566]: session.update
+              - generic [ref=e567]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e568] [cursor=pointer]:
+              - generic [ref=e569]: 17:28:17
+              - generic [ref=e570]: build.heartbeat
+              - generic [ref=e571]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e572] [cursor=pointer]:
+              - generic [ref=e573]: 17:28:13
+              - generic [ref=e574]: build.heartbeat
+              - generic [ref=e575]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e576] [cursor=pointer]:
+              - generic [ref=e577]: 17:28:08
+              - generic [ref=e578]: session.update
+              - generic [ref=e579]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e580] [cursor=pointer]:
+              - generic [ref=e581]: 17:28:08
+              - generic [ref=e582]: session.update
+              - generic [ref=e583]: "sessions-integration · {\"count\":14,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e584] [cursor=pointer]:
+              - generic [ref=e585]: 17:28:02
+              - generic [ref=e586]: build.heartbeat
+              - generic [ref=e587]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e588] [cursor=pointer]:
+              - generic [ref=e589]: 17:27:58
+              - generic [ref=e590]: build.heartbeat
+              - generic [ref=e591]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e592] [cursor=pointer]:
+              - generic [ref=e593]: 17:27:53
+              - generic [ref=e594]: session.update
+              - generic [ref=e595]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e596] [cursor=pointer]:
+              - generic [ref=e597]: 17:27:53
+              - generic [ref=e598]: session.update
+              - generic [ref=e599]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e600] [cursor=pointer]:
+              - generic [ref=e601]: 17:27:47
+              - generic [ref=e602]: build.heartbeat
+              - generic [ref=e603]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e604] [cursor=pointer]:
+              - generic [ref=e605]: 17:27:42
+              - generic [ref=e606]: build.heartbeat
+              - generic [ref=e607]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e608] [cursor=pointer]:
+              - generic [ref=e609]: 17:27:38
+              - generic [ref=e610]: session.update
+              - generic [ref=e611]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e612] [cursor=pointer]:
+              - generic [ref=e613]: 17:27:38
+              - generic [ref=e614]: session.update
+              - generic [ref=e615]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e616] [cursor=pointer]:
+              - generic [ref=e617]: 17:27:32
+              - generic [ref=e618]: build.heartbeat
+              - generic [ref=e619]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e620] [cursor=pointer]:
+              - generic [ref=e621]: 17:27:27
+              - generic [ref=e622]: build.heartbeat
+              - generic [ref=e623]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e624] [cursor=pointer]:
+              - generic [ref=e625]: 17:27:23
+              - generic [ref=e626]: session.update
+              - generic [ref=e627]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e628] [cursor=pointer]:
+              - generic [ref=e629]: 17:27:23
+              - generic [ref=e630]: session.update
+              - generic [ref=e631]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e632] [cursor=pointer]:
+              - generic [ref=e633]: 17:27:17
+              - generic [ref=e634]: build.heartbeat
+              - generic [ref=e635]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e636] [cursor=pointer]:
+              - generic [ref=e637]: 17:27:12
+              - generic [ref=e638]: build.heartbeat
+              - generic [ref=e639]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e640] [cursor=pointer]:
+              - generic [ref=e641]: 17:27:08
+              - generic [ref=e642]: session.update
+              - generic [ref=e643]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e644] [cursor=pointer]:
+              - generic [ref=e645]: 17:27:08
+              - generic [ref=e646]: session.update
+              - generic [ref=e647]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e648] [cursor=pointer]:
+              - generic [ref=e649]: 17:27:01
+              - generic [ref=e650]: build.heartbeat
+              - generic [ref=e651]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e652] [cursor=pointer]:
+              - generic [ref=e653]: 17:26:56
+              - generic [ref=e654]: build.heartbeat
+              - generic [ref=e655]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e656] [cursor=pointer]:
+              - generic [ref=e657]: 17:26:53
+              - generic [ref=e658]: session.update
+              - generic [ref=e659]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e660] [cursor=pointer]:
+              - generic [ref=e661]: 17:26:53
+              - generic [ref=e662]: session.update
+              - generic [ref=e663]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e664] [cursor=pointer]:
+              - generic [ref=e665]: 17:26:46
+              - generic [ref=e666]: build.heartbeat
+              - generic [ref=e667]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e668] [cursor=pointer]:
+              - generic [ref=e669]: 17:26:41
+              - generic [ref=e670]: build.heartbeat
+              - generic [ref=e671]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e672] [cursor=pointer]:
+              - generic [ref=e673]: 17:26:38
+              - generic [ref=e674]: session.update
+              - generic [ref=e675]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e676] [cursor=pointer]:
+              - generic [ref=e677]: 17:26:38
+              - generic [ref=e678]: session.update
+              - generic [ref=e679]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e680] [cursor=pointer]:
+              - generic [ref=e681]: 17:26:31
+              - generic [ref=e682]: build.heartbeat
+              - generic [ref=e683]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e684] [cursor=pointer]:
+              - generic [ref=e685]: 17:26:26
+              - generic [ref=e686]: build.heartbeat
+              - generic [ref=e687]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e688] [cursor=pointer]:
+              - generic [ref=e689]: 17:26:23
+              - generic [ref=e690]: session.update
+              - generic [ref=e691]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e692] [cursor=pointer]:
+              - generic [ref=e693]: 17:26:23
+              - generic [ref=e694]: session.update
+              - generic [ref=e695]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e696] [cursor=pointer]:
+              - generic [ref=e697]: 17:26:16
+              - generic [ref=e698]: build.heartbeat
+              - generic [ref=e699]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e700] [cursor=pointer]:
+              - generic [ref=e701]: 17:26:10
+              - generic [ref=e702]: build.heartbeat
+              - generic [ref=e703]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e704] [cursor=pointer]:
+              - generic [ref=e705]: 17:26:08
+              - generic [ref=e706]: session.update
+              - generic [ref=e707]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e708] [cursor=pointer]:
+              - generic [ref=e709]: 17:26:08
+              - generic [ref=e710]: session.update
+              - generic [ref=e711]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e712] [cursor=pointer]:
+              - generic [ref=e713]: 17:26:01
+              - generic [ref=e714]: build.heartbeat
+              - generic [ref=e715]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e716] [cursor=pointer]:
+              - generic [ref=e717]: 17:25:55
+              - generic [ref=e718]: build.heartbeat
+              - generic [ref=e719]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e720] [cursor=pointer]:
+              - generic [ref=e721]: 17:25:53
+              - generic [ref=e722]: session.update
+              - generic [ref=e723]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e724] [cursor=pointer]:
+              - generic [ref=e725]: 17:25:53
+              - generic [ref=e726]: session.update
+              - generic [ref=e727]: "sessions-integration · {\"count\":13,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e728] [cursor=pointer]:
+              - generic [ref=e729]: 17:25:45
+              - generic [ref=e730]: build.heartbeat
+              - generic [ref=e731]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e732] [cursor=pointer]:
+              - generic [ref=e733]: 17:25:40
+              - generic [ref=e734]: build.heartbeat
+              - generic [ref=e735]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e736] [cursor=pointer]:
+              - generic [ref=e737]: 17:25:38
+              - generic [ref=e738]: session.update
+              - generic [ref=e739]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e740] [cursor=pointer]:
+              - generic [ref=e741]: 17:25:38
+              - generic [ref=e742]: session.update
+              - generic [ref=e743]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e744] [cursor=pointer]:
+              - generic [ref=e745]: 17:25:30
+              - generic [ref=e746]: build.heartbeat
+              - generic [ref=e747]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e748] [cursor=pointer]:
+              - generic [ref=e749]: 17:25:24
+              - generic [ref=e750]: build.heartbeat
+              - generic [ref=e751]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e752] [cursor=pointer]:
+              - generic [ref=e753]: 17:25:23
+              - generic [ref=e754]: session.update
+              - generic [ref=e755]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e756] [cursor=pointer]:
+              - generic [ref=e757]: 17:25:23
+              - generic [ref=e758]: session.update
+              - generic [ref=e759]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e760] [cursor=pointer]:
+              - generic [ref=e761]: 17:25:15
+              - generic [ref=e762]: build.heartbeat
+              - generic [ref=e763]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e764] [cursor=pointer]:
+              - generic [ref=e765]: 17:25:09
+              - generic [ref=e766]: build.heartbeat
+              - generic [ref=e767]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e768] [cursor=pointer]:
+              - generic [ref=e769]: 17:25:08
+              - generic [ref=e770]: session.update
+              - generic [ref=e771]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e772] [cursor=pointer]:
+              - generic [ref=e773]: 17:25:08
+              - generic [ref=e774]: session.update
+              - generic [ref=e775]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e776] [cursor=pointer]:
+              - generic [ref=e777]: 17:25:00
+              - generic [ref=e778]: build.heartbeat
+              - generic [ref=e779]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e780] [cursor=pointer]:
+              - generic [ref=e781]: 17:24:54
+              - generic [ref=e782]: build.heartbeat
+              - generic [ref=e783]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e784] [cursor=pointer]:
+              - generic [ref=e785]: 17:24:53
+              - generic [ref=e786]: session.update
+              - generic [ref=e787]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e788] [cursor=pointer]:
+              - generic [ref=e789]: 17:24:53
+              - generic [ref=e790]: session.update
+              - generic [ref=e791]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e792] [cursor=pointer]:
+              - generic [ref=e793]: 17:24:44
+              - generic [ref=e794]: build.heartbeat
+              - generic [ref=e795]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+            - generic [ref=e796] [cursor=pointer]:
+              - generic [ref=e797]: 17:24:38
+              - generic [ref=e798]: build.heartbeat
+              - generic [ref=e799]: "relay · \"{\\\"build_id\\\":\\\"sales-assistant:BUILD_outreach-engine\\\",\\\"node\\\":\\\"otis\\\",\\\"sta..."
+            - generic [ref=e800] [cursor=pointer]:
+              - generic [ref=e801]: 17:24:38
+              - generic [ref=e802]: session.update
+              - generic [ref=e803]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e804] [cursor=pointer]:
+              - generic [ref=e805]: 17:24:38
+              - generic [ref=e806]: session.update
+              - generic [ref=e807]: "sessions-integration · {\"count\":12,\"nodes\":[\"muddy\",\"otis\"],\"sessions\":[{\"node\":\"muddy\",\"project\":\"Buil..."
+            - generic [ref=e808] [cursor=pointer]:
+              - generic [ref=e809]: 17:24:29
+              - generic [ref=e810]: build.heartbeat
+              - generic [ref=e811]: "sidecar · \"{\\\"build_id\\\":\\\"redispatch-otis-1775686778351\\\",\\\"node\\\":\\\"Otis\\\",\\\"status\\\":\\\"..."
+        - generic [ref=e812]:
+          - generic [ref=e813]: Node Health
+          - generic [ref=e814]:
+            - generic [ref=e815]:
+              - generic [ref=e816]: muddy
+              - generic [ref=e818]:
+                - generic [ref=e819]: CPU
+                - generic [ref=e820]: 3.672%
+              - generic [ref=e824]:
+                - generic [ref=e825]: Memory
+                - generic [ref=e826]: 61%
+            - generic [ref=e829]:
+              - generic [ref=e830]: lockwood
+              - generic [ref=e832]:
+                - generic [ref=e833]: CPU
+                - generic [ref=e834]: 2.36%
+              - generic [ref=e838]:
+                - generic [ref=e839]: Memory
+                - generic [ref=e840]: 48%
+            - generic [ref=e843]:
+              - generic [ref=e844]: walter
+              - generic [ref=e846]:
+                - generic [ref=e847]: CPU
+                - generic [ref=e848]: 1.15%
+              - generic [ref=e852]:
+                - generic [ref=e853]: Memory
+                - generic [ref=e854]: 50%
+            - generic [ref=e857]:
+              - generic [ref=e858]: otis
+              - generic [ref=e860]:
+                - generic [ref=e861]: CPU
+                - generic [ref=e862]: 1.46%
+              - generic [ref=e866]:
+                - generic [ref=e867]: Memory
+                - generic [ref=e868]: 39%
+            - generic [ref=e871]:
+              - generic [ref=e872]: lomax
+              - generic [ref=e874]:
+                - generic [ref=e875]: CPU
+                - generic [ref=e876]: 2.19%
+              - generic [ref=e880]:
+                - generic [ref=e881]: Memory
+                - generic [ref=e882]: 37%
+            - generic [ref=e885]:
+              - generic [ref=e886]: below
+              - generic [ref=e888]:
+                - generic [ref=e889]: CPU
+                - generic [ref=e890]: 0%
+              - generic [ref=e893]:
+                - generic [ref=e894]: Memory
+                - generic [ref=e895]: 11.2%
+        - generic [ref=e898]:
+          - generic [ref=e899]:
+            - text: Prod Logs
+            - generic [ref=e900]: "0"
+            - button "Restart" [ref=e901] [cursor=pointer]
+          - generic [ref=e902]:
+            - generic [ref=e903]:
+              - button "All" [ref=e904] [cursor=pointer]
+              - button "Browser" [ref=e905] [cursor=pointer]
+              - button "Supabase" [ref=e906] [cursor=pointer]
+              - button "Device" [ref=e907] [cursor=pointer]
+              - button "Query" [ref=e908] [cursor=pointer]
+            - generic [ref=e910]: No log events yet
+        - generic [ref=e911]:
+          - generic [ref=e912]:
+            - text: Decisions
+            - generic [ref=e913]: "0"
+          - generic [ref=e915]: No decisions yet
+        - generic [ref=e916]:
+          - generic [ref=e917]:
+            - text: Recommendations
+            - generic [ref=e918]: "0"
+          - generic [ref=e920]: No recommendations yet
+        - generic [ref=e921]:
+          - generic [ref=e922]: System Health
+          - generic [ref=e924]: Waiting for health data...
+        - generic [ref=e925]:
+          - generic [ref=e926]:
+            - text: Intelligence
+            - generic [ref=e927]: "0"
+            - generic [ref=e928]:
+              - combobox [ref=e929] [cursor=pointer]:
+                - option "All Sources" [selected]
+                - option "Official"
+                - option "Community"
+                - option "Blog"
+              - combobox [ref=e930] [cursor=pointer]:
+                - option "All Priority" [selected]
+                - option "Critical"
+                - option "High"
+                - option "Medium"
+              - button "Refresh" [ref=e931] [cursor=pointer]
+          - generic [ref=e933]: Connecting to Lockwood...
+        - generic [ref=e934]:
+          - generic [ref=e935]:
+            - text: Deals
+            - generic [ref=e936]: "0"
+            - button "Refresh" [ref=e937] [cursor=pointer]
+          - generic [ref=e939]: Connecting to Lockwood...

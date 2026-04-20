@@ -1,0 +1,362 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T010011Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 6 is listed as 'Can Parallel With: 4' in the matrix, but its Blocked-By includes Phase 5 (hard). Phase 4 is also blocked by Phase 3, and Phase 5 is blocked by Phases 2 and 3. The matrix claims Phase 4 can parallel with '5, 6' \u2014 but Phase 6 cannot parallel with Phase 4 because Phase 6 depends on Phase 5 which depends on Phase 3, while Phase 4 also depends on Phase 3. The real parallelizable pair is only (4, 5) after Phase 3 completes. The matrix's 'Can Parallel With' column for Phase 6 listing '4' is misleading \u2014 Phase 6 cannot start until Phase 5 finishes, so it can never truly run in parallel with Phase 4 unless Phase 5 finishes first, at which point Phase 4 may already be done.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6 is listed as 'Can Parallel With: 4' in the matrix, but its Blocked-By includes Phase 5 (hard). Phase 4 is also blocked by Phase 3, and Phase 5 is blocked by Phases 2 and 3. The matrix claims Phase 4 can parallel with '5, 6' \u2014 but Phase 6 cannot parallel with Phase 4 because Phase 6 depends on Phase 5 which depends on Phase 3, while Phase 4 also depends on Phase 3. The real parallelizable pair is only (4, 5) after Phase 3 completes. The matrix's 'Can Parallel With' column for Phase 6 listing '4' is misleading \u2014 Phase 6 cannot start until Phase 5 finishes, so it can never truly run in parallel with Phase 4 unless Phase 5 finishes first, at which point Phase 4 may already be done.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 deliverable says dispatch_run invokes './scripts/dispatch-bench-run.sh' via subprocess with shell=False, but the script is NEW and created in Phase 3 itself. The script must be written and made executable before runner.py can call it. No explicit ordering within Phase 3 ensures the shell script is created before the Python module that calls it \u2014 but since both are deliverables of the same phase this is an intra-phase sequencing concern for the implementer, not a cross-phase blocker.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 deliverable says dispatch_run invokes './scripts/dispatch-bench-run.sh' via subprocess with shell=False, but the script is NEW and created in Phase 3 itself. The script must be written and made executable before runner.py can call it. No explicit ordering within Phase 3 ensures the shell script is created before the Python module that calls it \u2014 but since both are deliverables of the same phase this is an intra-phase sequencing concern for the implementer, not a cross-phase blocker.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4 equivalence validator sends a composed text string to Below's /api/classify which expects {text: str, categories: [str]}. The plan constructs a prompt asking 'Are A and B semantically equivalent?' and passes categories ['equivalent','partial','diverged']. But Below's /api/classify is described as a classifier, not an NLI engine \u2014 it classifies a single text into one of the given categories. Whether a generic classifier endpoint will reliably perform NLI-style semantic equivalence judgment on a concatenated A/B prompt is unvalidated. The Phase 4 'Below calibration' step addresses this (80% agreement threshold), but if Below fails calibration, the entire equivalence pipeline falls back to DeepSeek alone, removing the 'fourth independent system' invariant (Invariant 4).",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 4 equivalence validator sends a composed text string to Below's /api/classify which expects {text: str, categories: [str]}. The plan constructs a prompt asking 'Are A and B semantically equivalent?' and passes categories ['equivalent','partial','diverged']. But Below's /api/classify is described as a classifier, not an NLI engine \u2014 it classifies a single text into one of the given categories. Whether a generic classifier endpoint will reliably perform NLI-style semantic equivalence judgment on a concatenated A/B prompt is unvalidated. The Phase 4 'Below calibration' step addresses this (80% agreement threshold), but if Below fails calibration, the entire equivalence pipeline falls back to DeepSeek alone, removing the 'fourth independent system' invariant (Invariant 4).",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 creates requirements-benchmark.txt with the 'full pin list' and references Phase 5 for 'canonical contents', but Phase 5 says it 'appends Python toolchain pins if not already present'. If Phase 1 already writes the full pin list (including black, ruff, lizard), Phase 5's append is a no-op. If Phase 1 writes only a subset, Phase 5 must know exactly what Phase 1 wrote. The plan is ambiguous about which pins Phase 1 includes vs Phase 5 adds \u2014 two phases own the same file with unclear division of content.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 creates requirements-benchmark.txt with the 'full pin list' and references Phase 5 for 'canonical contents', but Phase 5 says it 'appends Python toolchain pins if not already present'. If Phase 1 already writes the full pin list (including black, ruff, lizard), Phase 5's append is a no-op. If Phase 1 writes only a subset, Phase 5 must know exactly what Phase 1 wrote. The plan is ambiguous about which pins Phase 1 includes vs Phase 5 adds \u2014 two phases own the same file with unclear division of content.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's environment allowlist strips BR3_RUNTIME and BR3_SHADOW_RUNTIME but explicitly allows 'any ANTHROPIC_* / OPENAI_* credentials'. A contestant model could read ANTHROPIC_API_KEY or OPENAI_API_KEY from its environment to infer its own identity (e.g., Codex would see OPENAI_* keys, Claude would see ANTHROPIC_* keys), partially defeating the blinding described in Invariant 8 and Phase 6.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's environment allowlist strips BR3_RUNTIME and BR3_SHADOW_RUNTIME but explicitly allows 'any ANTHROPIC_* / OPENAI_* credentials'. A contestant model could read ANTHROPIC_API_KEY or OPENAI_API_KEY from its environment to infer its own identity (e.g., Codex would see OPENAI_* keys, Claude would see ANTHROPIC_* keys), partially defeating the blinding described in Invariant 8 and Phase 6.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan states dispatch-to-node.sh accepts the prompt via stdin (Phase 3: 'pipes the content to the unchanged global script via stdin'), but the verified CLI contract in the dependency table shows the signature as '[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]' where <prompt> is a positional argument, not stdin. The wrapper script dispatch-bench-run.sh is supposed to bridge this gap, but if dispatch-to-node.sh expects the prompt as a CLI argument (not stdin), piping via heredoc will not work \u2014 the prompt will be ignored and the positional argument will be missing.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan states dispatch-to-node.sh accepts the prompt via stdin (Phase 3: 'pipes the content to the unchanged global script via stdin'), but the verified CLI contract in the dependency table shows the signature as '[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]' where <prompt> is a positional argument, not stdin. The wrapper script dispatch-bench-run.sh is supposed to bridge this gap, but if dispatch-to-node.sh expects the prompt as a CLI argument (not stdin), piping via heredoc will not work \u2014 the prompt will be ignored and the positional argument will be missing.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 pilot expects 7 \u00d7 2 \u00d7 3 \u00d7 2 = 84 runs, but each phase must first be paraphrased and equivalence-checked. If any of the 7 pilot phases fail paraphrase-equivalence (Invariant 16 drops the entire phase), the pilot could shrink rapidly. The plan allows minimum 5, but with only 7 candidates drawn, losing 3 to paraphrase failure leaves 4 \u2014 below the stated minimum, with no stated handling for that case.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9 pilot expects 7 \u00d7 2 \u00d7 3 \u00d7 2 = 84 runs, but each phase must first be paraphrased and equivalence-checked. If any of the 7 pilot phases fail paraphrase-equivalence (Invariant 16 drops the entire phase), the pilot could shrink rapidly. The plan allows minimum 5, but with only 7 candidates drawn, losing 3 to paraphrase failure leaves 4 \u2014 below the stated minimum, with no stated handling for that case.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 10 budget math assumes 'Otis + Lomax running in parallel' for ~20 runs/hour throughput. But Invariant 14 states 'If observed contention exceeds 10% wall-clock variance vs Otis, node pool is restricted to {Otis} only'. If Lomax is dropped after pilot due to contention (staging-server interference), throughput halves to ~10 runs/hour and the 360-run study would take 36-48 hours \u2014 well beyond the budgeted 'three overnight windows'. The plan mentions extending to four or five windows only for per-run latency increases, not for node-pool reduction.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 10 budget math assumes 'Otis + Lomax running in parallel' for ~20 runs/hour throughput. But Invariant 14 states 'If observed contention exceeds 10% wall-clock variance vs Otis, node pool is restricted to {Otis} only'. If Lomax is dropped after pilot due to contention (staging-server interference), throughput halves to ~10 runs/hour and the 360-run study would take 36-48 hours \u2014 well beyond the budgeted 'three overnight windows'. The plan mentions extending to four or five windows only for per-run latency increases, not for node-pool reduction.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "prompts.py is created in Phase 1 (empty templates), then MODIFIED in Phase 3 (dispatch prompts), Phase 6 (judge prompts), and Phase 8 (report templates). Phases 4 and 5 can run in parallel, and Phase 6 depends on Phase 5. The plan says concurrent worktree edits to prompts.py are merged 'by convention' with namespaced sections. But Phases 4 and 5 run in parallel, and neither modifies prompts.py \u2014 only Phase 3 and Phase 6 do, and they are sequential (6 blocked by 5 blocked by 3). So the merge concern is theoretical, not actual. However, if the parallelization matrix changes, this convention has no enforcement mechanism.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "prompts.py is created in Phase 1 (empty templates), then MODIFIED in Phase 3 (dispatch prompts), Phase 6 (judge prompts), and Phase 8 (report templates). Phases 4 and 5 can run in parallel, and Phase 6 depends on Phase 5. The plan says concurrent worktree edits to prompts.py are merged 'by convention' with namespaced sections. But Phases 4 and 5 run in parallel, and neither modifies prompts.py \u2014 only Phase 3 and Phase 6 do, and they are sequential (6 blocked by 5 blocked by 3). So the merge concern is theoretical, not actual. However, if the parallelization matrix changes, this convention has no enforcement mechanism.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 creates core/benchmark/lockres.py, and Phase 3 imports it. Phase 3's Blocked-By correctly lists Phase 2. However, Phase 5 is listed as blocked by Phases 2 and 3 but does not import lockres.py \u2014 it imports api_clients.py (Phase 2) and runner output shapes (Phase 3). This is correct but worth noting: Phase 5 and Phase 4 can run in parallel after Phase 3, and neither conflicts on lockres.py.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2 creates core/benchmark/lockres.py, and Phase 3 imports it. Phase 3's Blocked-By correctly lists Phase 2. However, Phase 5 is listed as blocked by Phases 2 and 3 but does not import lockres.py \u2014 it imports api_clients.py (Phase 2) and runner output shapes (Phase 3). This is correct but worth noting: Phase 5 and Phase 4 can run in parallel after Phase 3, and neither conflicts on lockres.py.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The recognition probe (Phase 4) runs in a 'fresh OS process' after scoring. But scoring (Phase 5) is not a dependency of Phase 4 \u2014 Phase 4 is blocked only by Phase 3. The probe's deliverable says it runs 'after the scored run and judgement is complete', meaning it actually depends on Phase 5 (scorer) and Phase 6 (judge) being done for each run. This is a runtime dependency not reflected in the phase dependency graph. If Phases 4 and 5 are built in parallel, the probe code will exist before the scorer, but at runtime the probe must wait for scoring+judging. This is fine architecturally (the probe is called by the orchestrator after scoring), but the plan doesn't specify which component orchestrates this sequencing at runtime.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The recognition probe (Phase 4) runs in a 'fresh OS process' after scoring. But scoring (Phase 5) is not a dependency of Phase 4 \u2014 Phase 4 is blocked only by Phase 3. The probe's deliverable says it runs 'after the scored run and judgement is complete', meaning it actually depends on Phase 5 (scorer) and Phase 6 (judge) being done for each run. This is a runtime dependency not reflected in the phase dependency graph. If Phases 4 and 5 are built in parallel, the probe code will exist before the scorer, but at runtime the probe must wait for scoring+judging. This is fine architecturally (the probe is called by the orchestrator after scoring), but the plan doesn't specify which component orchestrates this sequencing at runtime.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 deliverable says 'All fields are declared in Phase 1; no later phase adds fields to models.py.' But Phase 4 introduces recognition_score on RegistryEntry, which is already declared in Phase 1's RegistryEntry as 'recognition_score: Optional[float]'. This is consistent. However, the equivalence_validator field (Literal['below','deepseek','both','na']) is also on RegistryEntry per Phase 1, and its semantics are fully defined only in Phase 4. This is acceptable since the type is declared in Phase 1.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1 deliverable says 'All fields are declared in Phase 1; no later phase adds fields to models.py.' But Phase 4 introduces recognition_score on RegistryEntry, which is already declared in Phase 1's RegistryEntry as 'recognition_score: Optional[float]'. This is consistent. However, the equivalence_validator field (Literal['below','deepseek','both','na']) is also on RegistryEntry per Phase 1, and its semantics are fully defined only in Phase 4. This is acceptable since the type is declared in Phase 1.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan references model names 'Codex 5.4' and 'Claude Opus 4.7' with training cutoffs of 2025-09-01 and 2026-01-01 respectively. These are declared as plan constants in training_cutoffs.py. The current date is 2026-04-16 and the assistant's knowledge cutoff is May 2025 \u2014 'Codex 5.4' and 'Claude Opus 4.7' are not models I can verify exist. If these model identifiers don't match the actual runtime names used by dispatch-to-node.sh's --runtime flag (which accepts 'claude|codex'), the training_cutoffs.py constants may be cosmetic labels only, which is fine, but worth confirming the actual model versions dispatched match these labels.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan references model names 'Codex 5.4' and 'Claude Opus 4.7' with training cutoffs of 2025-09-01 and 2026-01-01 respectively. These are declared as plan constants in training_cutoffs.py. The current date is 2026-04-16 and the assistant's knowledge cutoff is May 2025 \u2014 'Codex 5.4' and 'Claude Opus 4.7' are not models I can verify exist. If these model identifiers don't match the actual runtime names used by dispatch-to-node.sh's --runtime flag (which accepts 'claude|codex'), the training_cutoffs.py constants may be cosmetic labels only, which is fine, but worth confirming the actual model versions dispatched match these labels.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's dispatch wrapper contradicts the verified `dispatch-to-node.sh` contract. The dependency table says the unchanged global script takes a positional `<prompt>` argument (`[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]`), but the plan says `scripts/dispatch-bench-run.sh` will pipe prompt text over stdin and keep the prompt off argv without modifying the global script. That interface is not verified anywhere and is likely incompatible with the existing script.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's dispatch wrapper contradicts the verified `dispatch-to-node.sh` contract. The dependency table says the unchanged global script takes a positional `<prompt>` argument (`[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]`), but the plan says `scripts/dispatch-bench-run.sh` will pipe prompt text over stdin and keep the prompt off argv without modifying the global script. That interface is not verified anywhere and is likely incompatible with the existing script.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 writes the prompt to `<worktree>/.br3-bench-prompt.txt` but then invokes the wrapper with `--prompt-file .br3-bench-prompt.txt`. Unless the wrapper explicitly `chdir`s into the worktree before reading, that relative path points at the repo root, not the worktree file that was just created.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 writes the prompt to `<worktree>/.br3-bench-prompt.txt` but then invokes the wrapper with `--prompt-file .br3-bench-prompt.txt`. Unless the wrapper explicitly `chdir`s into the worktree before reading, that relative path points at the repo root, not the worktree file that was just created.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The registry claim/resume design is not kill-safe. Phase 1 says `registry.claim(run_id)` appends a `status: \"pending\"` tombstone and rejects any later claim for the same `run_id`, but no stale-claim timeout, heartbeat, or takeover path is defined. A crash after claim and before final append will leave that run permanently blocked, which contradicts the Phase 3 success criterion that resume is recoverable after kill.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The registry claim/resume design is not kill-safe. Phase 1 says `registry.claim(run_id)` appends a `status: \"pending\"` tombstone and rejects any later claim for the same `run_id`, but no stale-claim timeout, heartbeat, or takeover path is defined. A crash after claim and before final append will leave that run permanently blocked, which contradicts the Phase 3 success criterion that resume is recoverable after kill.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Recognition-score storage is internally inconsistent. Phase 1 makes `recognition_score` a field on each append-only `RegistryEntry`, but Phase 4 says the probe runs once per `(phase, model)` only after the final neutral replication completes and that single scalar is then attached to every `RegistryEntry` for that pair. The plan never defines how already-written rows are updated in an append-only JSONL log, so earlier replications will either be missing the covariate or require an undocumented rewrite/update path.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Recognition-score storage is internally inconsistent. Phase 1 makes `recognition_score` a field on each append-only `RegistryEntry`, but Phase 4 says the probe runs once per `(phase, model)` only after the final neutral replication completes and that single scalar is then attached to every `RegistryEntry` for that pair. The plan never defines how already-written rows are updated in an append-only JSONL log, so earlier replications will either be missing the covariate or require an undocumented rewrite/update path.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan repeatedly relies on 'session state' flags such as `preflight_below_unreachable = true` and `preflight_single_node = true`, and Phase 7 consumes them to change the regression specification, but no session-state file, model, or API is defined in the file list or deliverables. This is an undeclared cross-phase dependency.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The plan repeatedly relies on 'session state' flags such as `preflight_below_unreachable = true` and `preflight_single_node = true`, and Phase 7 consumes them to change the regression specification, but no session-state file, model, or API is defined in the file list or deliverables. This is an undeclared cross-phase dependency.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The parallelization section conflicts with itself. The matrix says Phase 5 'Can Parallel With 6', while the same matrix marks Phase 6 as 'Blocked by 3, 5 (hard)' and the prose below says 'Phase 6 is strictly blocked by Phase 5'. Those instructions cannot both be followed.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The parallelization section conflicts with itself. The matrix says Phase 5 'Can Parallel With 6', while the same matrix marks Phase 6 as 'Blocked by 3, 5 (hard)' and the prose below says 'Phase 6 is strictly blocked by Phase 5'. Those instructions cannot both be followed.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The repository preconditions claim `.buildrunner/benchmarks/` is 'created by Phase 1', but the provided project file tree already contains `./.buildrunner/benchmarks/`. The plan is assuming ownership of directory creation that is no longer true in the existing codebase.",
+      "severity": "note",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The repository preconditions claim `.buildrunner/benchmarks/` is 'created by Phase 1', but the provided project file tree already contains `./.buildrunner/benchmarks/`. The plan is assuming ownership of directory creation that is no longer true in the existing codebase.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "The plan states dispatch-to-node.sh accepts the prompt via stdin (Phase 3: 'pipes the content to the unchanged global script via stdin'), but the verified CLI contract in the dependency table shows the signature as '[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]' where <prompt> is a positional argument, not stdin. The wrapper script dispatch-bench-run.sh is supposed to bridge this gap, but if dispatch-to-node.sh expects the prompt as a CLI argument (not stdin), piping via heredoc will not work \u2014 the prompt will be ignored and the positional argument will be missing.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan states dispatch-to-node.sh accepts the prompt via stdin (Phase 3: 'pipes the content to the unchanged global script via stdin'), but the verified CLI contract in the dependency table shows the signature as '[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]' where <prompt> is a positional argument, not stdin. The wrapper script dispatch-bench-run.sh is supposed to bridge this gap, but if dispatch-to-node.sh expects the prompt as a CLI argument (not stdin), piping via heredoc will not work \u2014 the prompt will be ignored and the positional argument will be missing.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's dispatch wrapper contradicts the verified `dispatch-to-node.sh` contract. The dependency table says the unchanged global script takes a positional `<prompt>` argument (`[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]`), but the plan says `scripts/dispatch-bench-run.sh` will pipe prompt text over stdin and keep the prompt off argv without modifying the global script. That interface is not verified anywhere and is likely incompatible with the existing script.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's dispatch wrapper contradicts the verified `dispatch-to-node.sh` contract. The dependency table says the unchanged global script takes a positional `<prompt>` argument (`[--runtime claude|codex] <node_name> <project_path> <prompt> [session_name]`), but the plan says `scripts/dispatch-bench-run.sh` will pipe prompt text over stdin and keep the prompt off argv without modifying the global script. That interface is not verified anywhere and is likely incompatible with the existing script.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 writes the prompt to `<worktree>/.br3-bench-prompt.txt` but then invokes the wrapper with `--prompt-file .br3-bench-prompt.txt`. Unless the wrapper explicitly `chdir`s into the worktree before reading, that relative path points at the repo root, not the worktree file that was just created.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 writes the prompt to `<worktree>/.br3-bench-prompt.txt` but then invokes the wrapper with `--prompt-file .br3-bench-prompt.txt`. Unless the wrapper explicitly `chdir`s into the worktree before reading, that relative path points at the repo root, not the worktree file that was just created.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The registry claim/resume design is not kill-safe. Phase 1 says `registry.claim(run_id)` appends a `status: \"pending\"` tombstone and rejects any later claim for the same `run_id`, but no stale-claim timeout, heartbeat, or takeover path is defined. A crash after claim and before final append will leave that run permanently blocked, which contradicts the Phase 3 success criterion that resume is recoverable after kill.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The registry claim/resume design is not kill-safe. Phase 1 says `registry.claim(run_id)` appends a `status: \"pending\"` tombstone and rejects any later claim for the same `run_id`, but no stale-claim timeout, heartbeat, or takeover path is defined. A crash after claim and before final append will leave that run permanently blocked, which contradicts the Phase 3 success criterion that resume is recoverable after kill.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T01:04:59.125292Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 10
+}

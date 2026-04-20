@@ -1,0 +1,208 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T113329Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "The review is complete. The JSON output above contains 9 findings:\n\n- **1 blocker**: Phase 9 adds `p95_sample_size` to `PilotContention` schema, violating Phase 1's frozen-schema invariant \u2014 will fail pydantic validation at runtime.\n- **4 warnings**: `display_label` writer attribution mismatch, `notify_cell_scored` not available until Phase 6 but needed earlier, `_acquire_venv_lock` cross-module private import, and 4 sequential modifications to `cli_run.py` creating fragile edit chains, plus the",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The review is complete. The JSON output above contains 9 findings:\n\n- **1 blocker**: Phase 9 adds `p95_sample_size` to `PilotContention` schema, violating Phase 1's frozen-schema invariant \u2014 will fail pydantic validation at runtime.\n- **4 warnings**: `display_label` writer attribution mismatch, `notify_cell_scored` not available until Phase 6 but needed earlier, `_acquire_venv_lock` cross-module private import, and 4 sequential modifications to `cli_run.py` creating fragile edit chains, plus the",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 defines `ClaimRow` as requiring `session_id`, but the only declared claim API is `registry.claim(cell_key, run_id, worker_id, lease_seconds=1800)` with no `session_id` parameter; later text in Phase 6 references a different `registry.claim(...)` shape. The registry cannot write its required row schema consistently, and callers are coded against incompatible signatures.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `ClaimRow` as requiring `session_id`, but the only declared claim API is `registry.claim(cell_key, run_id, worker_id, lease_seconds=1800)` with no `session_id` parameter; later text in Phase 6 references a different `registry.claim(...)` shape. The registry cannot write its required row schema consistently, and callers are coded against incompatible signatures.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 makes `JudgeClaimRow`, `JudgeSupersededRow`, `JudgeAbandonedRow`, and `JudgeDecisionRow` all require `session_id`, but the declared pair-level APIs `registry.claim_judge(pair_key, worker_id, lease_seconds=None)` and `registry.release_judge(pair_key, worker_id, reason=...)` never accept `session_id`. The judge-lock path cannot populate its own required schema fields.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 makes `JudgeClaimRow`, `JudgeSupersededRow`, `JudgeAbandonedRow`, and `JudgeDecisionRow` all require `session_id`, but the declared pair-level APIs `registry.claim_judge(pair_key, worker_id, lease_seconds=None)` and `registry.release_judge(pair_key, worker_id, reason=...)` never accept `session_id`. The judge-lock path cannot populate its own required schema fields.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's GC-safety design depends on `scripts/install-benchmark-deps.sh` disabling/restoring `git gc.auto` and writing `.buildrunner/benchmarks/.git-gc-config-backup.json`, but that behavior is not actually assigned to any phase-owned file change. Phase 1 owns the installer and does not include this logic; Phase 3 does not modify the installer. The GC-protection/recovery path therefore has no implementable owner.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's GC-safety design depends on `scripts/install-benchmark-deps.sh` disabling/restoring `git gc.auto` and writing `.buildrunner/benchmarks/.git-gc-config-backup.json`, but that behavior is not actually assigned to any phase-owned file change. Phase 1 owns the installer and does not include this logic; Phase 3 does not modify the installer. The GC-protection/recovery path therefore has no implementable owner.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `pilot_contention.json` contract is internally inconsistent: the Phase 9 file schema and Phase 1 `PilotContention` model omit `p95_sample_size`, but a later Phase 9 deliverable extends the artifact with `p95_sample_size` and says Phase 10 will consume it. Producer, schema model, and consumer are not aligned on the same JSON shape.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The `pilot_contention.json` contract is internally inconsistent: the Phase 9 file schema and Phase 1 `PilotContention` model omit `p95_sample_size`, but a later Phase 9 deliverable extends the artifact with `p95_sample_size` and says Phase 10 will consume it. Producer, schema model, and consumer are not aligned on the same JSON shape.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 requires `tests/benchmark/test_cli_gc_anchors.py` (`test_reset_venv_acquires_venv_flock_before_rm`, `test_reset_venv_releases_lock_after_reinstall`), but that file appears in neither the project tree nor the cited excerpts nor any phase Files list. The plan references a test file that is not scheduled to exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 requires `tests/benchmark/test_cli_gc_anchors.py` (`test_reset_venv_acquires_venv_flock_before_rm`, `test_reset_venv_releases_lock_after_reinstall`), but that file appears in neither the project tree nor the cited excerpts nor any phase Files list. The plan references a test file that is not scheduled to exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's `gc-anchors` cleanup targets `.buildrunner/benchmarks/previews/<session_id>/`, but no phase creates or owns that directory anywhere in the plan. The cleanup path is wired to an artifact with no defined producer.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's `gc-anchors` cleanup targets `.buildrunner/benchmarks/previews/<session_id>/`, but no phase creates or owns that directory anywhere in the plan. The cleanup path is wired to an artifact with no defined producer.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 uses conflicting `run_cell` signatures: one deliverable says `runner.run_cell(phase, model, sub_study, replications)`, while the rest of the plan schedules and keys work by `replication_index`. That mismatch leaks into registry keys and scheduler semantics and is likely to produce the wrong loop shape or duplicate/omitted cells.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 uses conflicting `run_cell` signatures: one deliverable says `runner.run_cell(phase, model, sub_study, replications)`, while the rest of the plan schedules and keys work by `replication_index`. That mismatch leaks into registry keys and scheduler semantics and is likely to produce the wrong loop shape or duplicate/omitted cells.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 defines `ClaimRow` as requiring `session_id`, but the only declared claim API is `registry.claim(cell_key, run_id, worker_id, lease_seconds=1800)` with no `session_id` parameter; later text in Phase 6 references a different `registry.claim(...)` shape. The registry cannot write its required row schema consistently, and callers are coded against incompatible signatures.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 defines `ClaimRow` as requiring `session_id`, but the only declared claim API is `registry.claim(cell_key, run_id, worker_id, lease_seconds=1800)` with no `session_id` parameter; later text in Phase 6 references a different `registry.claim(...)` shape. The registry cannot write its required row schema consistently, and callers are coded against incompatible signatures.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 makes `JudgeClaimRow`, `JudgeSupersededRow`, `JudgeAbandonedRow`, and `JudgeDecisionRow` all require `session_id`, but the declared pair-level APIs `registry.claim_judge(pair_key, worker_id, lease_seconds=None)` and `registry.release_judge(pair_key, worker_id, reason=...)` never accept `session_id`. The judge-lock path cannot populate its own required schema fields.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 1 makes `JudgeClaimRow`, `JudgeSupersededRow`, `JudgeAbandonedRow`, and `JudgeDecisionRow` all require `session_id`, but the declared pair-level APIs `registry.claim_judge(pair_key, worker_id, lease_seconds=None)` and `registry.release_judge(pair_key, worker_id, reason=...)` never accept `session_id`. The judge-lock path cannot populate its own required schema fields.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3's GC-safety design depends on `scripts/install-benchmark-deps.sh` disabling/restoring `git gc.auto` and writing `.buildrunner/benchmarks/.git-gc-config-backup.json`, but that behavior is not actually assigned to any phase-owned file change. Phase 1 owns the installer and does not include this logic; Phase 3 does not modify the installer. The GC-protection/recovery path therefore has no implementable owner.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3's GC-safety design depends on `scripts/install-benchmark-deps.sh` disabling/restoring `git gc.auto` and writing `.buildrunner/benchmarks/.git-gc-config-backup.json`, but that behavior is not actually assigned to any phase-owned file change. Phase 1 owns the installer and does not include this logic; Phase 3 does not modify the installer. The GC-protection/recovery path therefore has no implementable owner.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The `pilot_contention.json` contract is internally inconsistent: the Phase 9 file schema and Phase 1 `PilotContention` model omit `p95_sample_size`, but a later Phase 9 deliverable extends the artifact with `p95_sample_size` and says Phase 10 will consume it. Producer, schema model, and consumer are not aligned on the same JSON shape.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "The `pilot_contention.json` contract is internally inconsistent: the Phase 9 file schema and Phase 1 `PilotContention` model omit `p95_sample_size`, but a later Phase 9 deliverable extends the artifact with `p95_sample_size` and says Phase 10 will consume it. Producer, schema model, and consumer are not aligned on the same JSON shape.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5 requires `tests/benchmark/test_cli_gc_anchors.py` (`test_reset_venv_acquires_venv_flock_before_rm`, `test_reset_venv_releases_lock_after_reinstall`), but that file appears in neither the project tree nor the cited excerpts nor any phase Files list. The plan references a test file that is not scheduled to exist.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 5 requires `tests/benchmark/test_cli_gc_anchors.py` (`test_reset_venv_acquires_venv_flock_before_rm`, `test_reset_venv_releases_lock_after_reinstall`), but that file appears in neither the project tree nor the cited excerpts nor any phase Files list. The plan references a test file that is not scheduled to exist.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T11:43:34.132787Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 4
+}

@@ -1,0 +1,40 @@
+{
+  "status": "phase1_complete_parallel_shadow",
+  "updated_at": "2026-04-15T18:45:00-05:00",
+  "live_routing_changed": false,
+  "last_run": {
+    "task_id": "review-spike-phase1synthetic",
+    "mode": "parallel_shadow",
+    "dispatch_mode": "parallel_shadow",
+    "changed_files": [
+      "app.py"
+    ],
+    "file_count": 1,
+    "diff_line_count": 13,
+    "spec_chars": 123,
+    "runtimes": [
+      {
+        "runtime": "claude",
+        "backend": "claude-sonnet-4-5-20250929",
+        "status": "completed",
+        "findings_count": 2,
+        "duration_ms": 10283,
+        "cost_usd": 0.001515,
+        "exit_code": 0,
+        "session_id": "6b00a72e-8117-4862-8610-375534246876",
+        "isolated": true
+      },
+      {
+        "runtime": "codex",
+        "backend": "codex-cli 0.48.0",
+        "status": "completed",
+        "findings_count": 2,
+        "duration_ms": 24220,
+        "cost_usd": 0.0,
+        "exit_code": 0,
+        "session_id": "019d9388-88be-79e2-89b2-51dbd814954a",
+        "isolated": true
+      }
+    ]
+  }
+}

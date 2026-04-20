@@ -1,0 +1,33 @@
+- generic [ref=e4]:
+  - banner [ref=e5]:
+    - heading "BuildRunner 3.2 Dashboard" [level=1] [ref=e6]
+    - generic [ref=e9]: Disconnected
+  - generic [ref=e10]:
+    - button "Tasks" [ref=e11] [cursor=pointer]
+    - button "Agent Pool" [ref=e12] [cursor=pointer]
+    - button "Telemetry" [ref=e13] [cursor=pointer]
+    - button "Intelligence" [ref=e14] [cursor=pointer]
+    - button "Deals" [active] [ref=e15] [cursor=pointer]
+  - generic [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - heading "Hunts" [level=2] [ref=e21]
+        - button "+ New Hunt" [ref=e22] [cursor=pointer]
+      - button "All Hunts 7 items" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: All Hunts
+        - generic [ref=e26]: 7 items
+    - generic [ref=e27]:
+      - heading "All Hunts(7 items across 0 hunts)" [level=3] [ref=e28]:
+        - text: All Hunts
+        - generic [ref=e29]: (7 items across 0 hunts)
+      - generic [ref=e30]:
+        - button "Hunting 0" [ref=e31] [cursor=pointer]:
+          - text: Hunting
+          - generic [ref=e32]: "0"
+        - button "Bought 7" [ref=e33] [cursor=pointer]:
+          - text: Bought
+          - generic [ref=e34]: "7"
+        - button "Delivered 0" [ref=e35] [cursor=pointer]:
+          - text: Delivered
+          - generic [ref=e36]: "0"
+      - generic [ref=e37]: No deals found. Create a hunt to start tracking.

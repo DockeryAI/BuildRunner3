@@ -1,0 +1,5 @@
+[      36ms] [LOG] [TWS] Picker initialized, nodes: 6 @ http://localhost:4400/js/ws-terminal.js?v=20260411b:627
+[   40036ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/health:0
+[   40036ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:4400/api/registry:0
+[   51317ms] [ERROR] Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING @ http://localhost:4400/api/events/stream:0
+[   51317ms] [ERROR] Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING @ http://localhost:4400/api/events/stream:0

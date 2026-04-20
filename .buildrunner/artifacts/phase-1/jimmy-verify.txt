@@ -1,0 +1,13 @@
+jimmy
+    inet 127.0.0.1/8 scope host lo
+    inet 10.0.1.106/24 brd 10.0.1.255 scope global enp4s0
+               total        used        free      shared  buff/cache   available
+Mem:            60Gi       1.2Gi        56Gi       1.5Mi       3.2Gi        59Gi
+Swap:          8.0Gi          0B       8.0Gi
+NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+nvme0n1                   259:0    0  1.8T  0 disk 
+├─nvme0n1p1               259:1    0    1G  0 part /boot/efi
+├─nvme0n1p2               259:2    0    2G  0 part /boot
+└─nvme0n1p3               259:3    0  1.8T  0 part 
+  └─ubuntu--vg-ubuntu--lv 252:0    0  1.8T  0 lvm  /
+Linux jimmy 6.8.0-110-generic #110-Ubuntu SMP PREEMPT_DYNAMIC Thu Mar 19 15:09:20 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux

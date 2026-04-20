@@ -7,6 +7,8 @@ import asyncio
 import os
 import logging
 
+from core.cluster.utils import filter_hallucinations
+
 try:
     import httpx
 except ImportError:
@@ -40,13 +42,19 @@ async def _fetch_search_html(keywords: str, max_price: float = None) -> str:
         "Accept-Encoding": "gzip, deflate, br",
         "Sec-Fetch-Dest": "document",
         "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-Site": "same-origin",
         "Sec-Fetch-User": "?1",
         "Upgrade-Insecure-Requests": "1",
-        "Cache-Control": "max-age=0",
+        "Referer": "https://www.bhphotovideo.com/",
+        "DNT": "1",
     }
     try:
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            # Hit homepage first to get session cookies (avoids 403 on direct search)
+            try:
+                await client.get("https://www.bhphotovideo.com/", headers={"User-Agent": USER_AGENT})
+            except Exception:
+                pass  # Best effort — search may still work without
             resp = await client.get(
                 BH_SEARCH_URL,
                 params=params,
@@ -156,6 +164,10 @@ async def _extract_listings_via_below(html: str, hunt_name: str) -> list[dict]:
             filtered = len(listings) - len(relevant)
             if filtered:
                 logger.info(f"Below filtered {filtered} irrelevant B&H items for '{hunt_name}'")
+
+            # Hallucination guard: filter items lacking tech indicators
+            relevant = filter_hallucinations(relevant, "B&H", hunt_name)
+
             logger.info(f"Below extracted {len(relevant)} relevant B&H listings for '{hunt_name}'")
             return relevant
 

@@ -1,0 +1,250 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "adversarial-20260417T111543Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "status": "blocked",
+  "pass": false,
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "merged_findings": [
+    {
+      "finding": "Phase 3's `setup_clone` references `_safe_parse_package_json` as 'a shared helper in core/benchmark/toolchain.py', but `toolchain.py` is created in Phase 5 (NEW). Build order is 1\u21922\u21924\u21923\u21925, so Phase 3 executes before Phase 5 exists. Phase 3's Files list does not include `toolchain.py`. Phase 5 then back-references it as 'the same shared helper declared in Phase 3' \u2014 a circular attribution with no concrete owner at Phase 3 time.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `setup_clone` references `_safe_parse_package_json` as 'a shared helper in core/benchmark/toolchain.py', but `toolchain.py` is created in Phase 5 (NEW). Build order is 1\u21922\u21924\u21923\u21925, so Phase 3 executes before Phase 5 exists. Phase 3's Files list does not include `toolchain.py`. Phase 5 then back-references it as 'the same shared helper declared in Phase 3' \u2014 a circular attribution with no concrete owner at Phase 3 time.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6's MODIFY of `cli_run.py` adds `from core.benchmark.scorer import BenchmarkScorer` at module scope. Since `cli.py` imports all 12 `cli_*.py` modules at module scope via `register(app)`, and `cli/main.py` does `from core.benchmark.cli import benchmark_app`, running `br --help` after Phase 5+ triggers the full import chain through scorer\u2192pydantic, and after Phase 7+ through aggregator\u2192stats\u2192statsmodels/scipy/scikit-learn. These benchmark-only deps live in `.venv-benchmark/`, not in the main project's Python environment. `br --help` would crash with ImportError unless all benchmark deps are also installed in the main project venv.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 6's MODIFY of `cli_run.py` adds `from core.benchmark.scorer import BenchmarkScorer` at module scope. Since `cli.py` imports all 12 `cli_*.py` modules at module scope via `register(app)`, and `cli/main.py` does `from core.benchmark.cli import benchmark_app`, running `br --help` after Phase 5+ triggers the full import chain through scorer\u2192pydantic, and after Phase 7+ through aggregator\u2192stats\u2192statsmodels/scipy/scikit-learn. These benchmark-only deps live in `.venv-benchmark/`, not in the main project's Python environment. `br --help` would crash with ImportError unless all benchmark deps are also installed in the main project venv.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9's `pilot_contention.py` reads wall-clock via `row.run_result.wall_clock_ms`, which is correct per Phase 1's schema. However, Phase 9's deliverable prose also writes `otis_median_ms = median([row.run_result.wall_clock_ms for row in otis_bucket])` \u2014 but `CompletedRow`'s nested `RunResult` is declared as `Optional[RunResult]` (populated at `stage='run'` and above). The stage-dedupe filter keeps the highest-stage row per run_id, which always has `RunResult` populated, so `run_result` is never `None` after dedup. However, no null-guard is specified for `CompletedRow.run_result` access in `pilot_contention.py` \u2014 a `stage='run'` row with a failed dispatch could carry `RunResult` with `wall_clock_ms=0`, silently pulling medians toward zero.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 9's `pilot_contention.py` reads wall-clock via `row.run_result.wall_clock_ms`, which is correct per Phase 1's schema. However, Phase 9's deliverable prose also writes `otis_median_ms = median([row.run_result.wall_clock_ms for row in otis_bucket])` \u2014 but `CompletedRow`'s nested `RunResult` is declared as `Optional[RunResult]` (populated at `stage='run'` and above). The stage-dedupe filter keeps the highest-stage row per run_id, which always has `RunResult` populated, so `run_result` is never `None` after dedup. However, no null-guard is specified for `CompletedRow.run_result` access in `pilot_contention.py` \u2014 a `stage='run'` row with a failed dispatch could carry `RunResult` with `wall_clock_ms=0`, silently pulling medians toward zero.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1's `SessionState` schema declares `selected_models: list[str]` with writer `Phase 1 deps.py ONLY`, but Phase 1's `deps.py` runs at preflight before the CLI flag `--models` is parsed in `cli_run.py` (Phase 3). The actual write of `selected_models` happens inside `cli_run.py`'s command body after `deps.execution_preflight()` returns. The single-writer attribution to `deps.py` is misleading \u2014 the field is written by the `cli_run.py` body (Phase 3), not by `deps.py` (Phase 1). If `deps.py` actually tried to write this field during preflight, it would not have the `--models` value yet.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 1's `SessionState` schema declares `selected_models: list[str]` with writer `Phase 1 deps.py ONLY`, but Phase 1's `deps.py` runs at preflight before the CLI flag `--models` is parsed in `cli_run.py` (Phase 3). The actual write of `selected_models` happens inside `cli_run.py`'s command body after `deps.execution_preflight()` returns. The single-writer attribution to `deps.py` is misleading \u2014 the field is written by the `cli_run.py` body (Phase 3), not by `deps.py` (Phase 1). If `deps.py` actually tried to write this field during preflight, it would not have the `--models` value yet.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 defines `ScorerProtocol` with signature `score_run(handle, phase, run_result, runner)` and Phase 5 implements `BenchmarkScorer.score_run` matching it. But Phase 5's `cli_score.py` (the `br benchmark score --run-id <id>` offline re-score path) needs to construct a `Runner` to pass as the 4th arg to `score_run`, yet the offline path explicitly avoids `execution_preflight()` (it uses `scoring_preflight()` which skips dispatch/cluster checks). Constructing `Runner(config=config, scorer=BenchmarkScorer(config))` in the offline path still works, but the Runner's `_acquire_venv_lock`, `_detect_baseline_drift` etc. methods (owned by Phase 5's MODIFY of runner.py) will execute against the shared `.venv-benchmark/` \u2014 potentially racing with an in-flight `br benchmark run` session. The plan documents the venv flock but doesn't address the offline-rescore-vs-live-run contention scenario explicitly.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3 defines `ScorerProtocol` with signature `score_run(handle, phase, run_result, runner)` and Phase 5 implements `BenchmarkScorer.score_run` matching it. But Phase 5's `cli_score.py` (the `br benchmark score --run-id <id>` offline re-score path) needs to construct a `Runner` to pass as the 4th arg to `score_run`, yet the offline path explicitly avoids `execution_preflight()` (it uses `scoring_preflight()` which skips dispatch/cluster checks). Constructing `Runner(config=config, scorer=BenchmarkScorer(config))` in the offline path still works, but the Runner's `_acquire_venv_lock`, `_detect_baseline_drift` etc. methods (owned by Phase 5's MODIFY of runner.py) will execute against the shared `.venv-benchmark/` \u2014 potentially racing with an in-flight `br benchmark run` session. The plan documents the venv flock but doesn't address the offline-rescore-vs-live-run contention scenario explicitly.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2's `selector.py` calls Below `POST /api/classify` for layer assignment of ambiguous phases, but Phase 2 is blocked only by Phase 1 (not by any phase that creates `api_clients.py`). However, Phase 2's own Files list includes `core/benchmark/api_clients.py (NEW)`, so it creates the client it needs. This is consistent \u2014 not a defect.",
+      "severity": "note",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 2's `selector.py` calls Below `POST /api/classify` for layer assignment of ambiguous phases, but Phase 2 is blocked only by Phase 1 (not by any phase that creates `api_clients.py`). However, Phase 2's own Files list includes `core/benchmark/api_clients.py (NEW)`, so it creates the client it needs. This is consistent \u2014 not a defect.",
+          "severity": "note"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "The plan states `.venv-benchmark/` is created by `scripts/install-benchmark-deps.sh` and the baseline freeze is written immediately after. But the `--reset-venv` flag on `gc-anchors` (Phase 5) removes and recreates `.venv-benchmark/` mid-session. If a concurrent orchestrator's `run_local_tests` holds the venv flock during the recreation, the recreation would block at the flock. But if the `--reset-venv` path does NOT acquire the flock before removing `.venv-benchmark/`, an in-flight scorer could lose its Python interpreter mid-pytest. The plan says `_recreate_venv_at_session_end()` is invoked by `cli_run.py`'s finally-block, but `gc-anchors --reset-venv` can be invoked by an operator at any time.",
+      "severity": "warning",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "The plan states `.venv-benchmark/` is created by `scripts/install-benchmark-deps.sh` and the baseline freeze is written immediately after. But the `--reset-venv` flag on `gc-anchors` (Phase 5) removes and recreates `.venv-benchmark/` mid-session. If a concurrent orchestrator's `run_local_tests` holds the venv flock during the recreation, the recreation would block at the flock. But if the `--reset-venv` path does NOT acquire the flock before removing `.venv-benchmark/`, an in-flight scorer could lose its Python interpreter mid-pytest. The plan says `_recreate_venv_at_session_end()` is invoked by `cli_run.py`'s finally-block, but `gc-anchors --reset-venv` can be invoked by an operator at any time.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 `cli_judge.py` still describes `CompletedRow.pair_key` as `Optional[PairKey]` present only on `stage=\"judged\"` rows, but Phase 1 explicitly redefines `pair_key` as non-optional and populated on every `CompletedRow` stage. The judge/backfill flow needs `stage=\"scored\"` rows keyed by `pair_key`, so these two contracts cannot both be true.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 `cli_judge.py` still describes `CompletedRow.pair_key` as `Optional[PairKey]` present only on `stage=\"judged\"` rows, but Phase 1 explicitly redefines `pair_key` as non-optional and populated on every `CompletedRow` stage. The judge/backfill flow needs `stage=\"scored\"` rows keyed by `pair_key`, so these two contracts cannot both be true.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 references `training_cutoffs.get_cutoffs(model: Literal[\"claude\",\"codex\"])`, but Phase 2 defines `get_cutoffs() -> dict[Literal[\"claude\",\"codex\"], datetime]` with no parameter. That signature mismatch means the planned caller and planned implementation are incompatible.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 references `training_cutoffs.get_cutoffs(model: Literal[\"claude\",\"codex\"])`, but Phase 2 defines `get_cutoffs() -> dict[Literal[\"claude\",\"codex\"], datetime]` with no parameter. That signature mismatch means the planned caller and planned implementation are incompatible.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 `setup_clone()` depends on `_safe_parse_package_json(...)` and explicitly says that helper lives in `core/benchmark/toolchain.py`, but `toolchain.py` is only created in Phase 5. With the declared build order `1 \u2192 2 \u2192 4 \u2192 3 \u2192 5`, Phase 3 will import or rely on a file that does not exist yet.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 `setup_clone()` depends on `_safe_parse_package_json(...)` and explicitly says that helper lives in `core/benchmark/toolchain.py`, but `toolchain.py` is only created in Phase 5. With the declared build order `1 \u2192 2 \u2192 4 \u2192 3 \u2192 5`, Phase 3 will import or rely on a file that does not exist yet.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Preview-session retention rules conflict: Phase 2 says `gc-anchors` sweeps preview sessions older than 48 hours, while Phase 1/3 describe session pruning via `--prune-sessions` on a 30-day window and Phase 3's `gc-anchors` scope does not include the 48-hour preview rule. The cleanup contract is inconsistent.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Preview-session retention rules conflict: Phase 2 says `gc-anchors` sweeps preview sessions older than 48 hours, while Phase 1/3 describe session pruning via `--prune-sessions` on a 30-day window and Phase 3's `gc-anchors` scope does not include the 48-hour preview rule. The cleanup contract is inconsistent.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 9 `pilot_contention.py` computes `observed_scoring_serial_p95_seconds` with `statistics.quantiles(..., n=20)[18]` but only defines a null fallback for zero scored rows. Partial pilots with 1\u201319 scored rows are not handled and can crash instead of writing the nullable artifact schema the rest of the plan expects.",
+      "severity": "warning",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 9 `pilot_contention.py` computes `observed_scoring_serial_p95_seconds` with `statistics.quantiles(..., n=20)[18]` but only defines a null fallback for zero scored rows. Partial pilots with 1\u201319 scored rows are not handled and can crash instead of writing the nullable artifact schema the rest of the plan expects.",
+          "severity": "warning"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 3's `setup_clone` references `_safe_parse_package_json` as 'a shared helper in core/benchmark/toolchain.py', but `toolchain.py` is created in Phase 5 (NEW). Build order is 1\u21922\u21924\u21923\u21925, so Phase 3 executes before Phase 5 exists. Phase 3's Files list does not include `toolchain.py`. Phase 5 then back-references it as 'the same shared helper declared in Phase 3' \u2014 a circular attribution with no concrete owner at Phase 3 time.",
+      "severity": "blocker",
+      "sources": [
+        "claude"
+      ],
+      "source_details": {
+        "claude": {
+          "finding": "Phase 3's `setup_clone` references `_safe_parse_package_json` as 'a shared helper in core/benchmark/toolchain.py', but `toolchain.py` is created in Phase 5 (NEW). Build order is 1\u21922\u21924\u21923\u21925, so Phase 3 executes before Phase 5 exists. Phase 3's Files list does not include `toolchain.py`. Phase 5 then back-references it as 'the same shared helper declared in Phase 3' \u2014 a circular attribution with no concrete owner at Phase 3 time.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 6 `cli_judge.py` still describes `CompletedRow.pair_key` as `Optional[PairKey]` present only on `stage=\"judged\"` rows, but Phase 1 explicitly redefines `pair_key` as non-optional and populated on every `CompletedRow` stage. The judge/backfill flow needs `stage=\"scored\"` rows keyed by `pair_key`, so these two contracts cannot both be true.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 6 `cli_judge.py` still describes `CompletedRow.pair_key` as `Optional[PairKey]` present only on `stage=\"judged\"` rows, but Phase 1 explicitly redefines `pair_key` as non-optional and populated on every `CompletedRow` stage. The judge/backfill flow needs `stage=\"scored\"` rows keyed by `pair_key`, so these two contracts cannot both be true.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 references `training_cutoffs.get_cutoffs(model: Literal[\"claude\",\"codex\"])`, but Phase 2 defines `get_cutoffs() -> dict[Literal[\"claude\",\"codex\"], datetime]` with no parameter. That signature mismatch means the planned caller and planned implementation are incompatible.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 references `training_cutoffs.get_cutoffs(model: Literal[\"claude\",\"codex\"])`, but Phase 2 defines `get_cutoffs() -> dict[Literal[\"claude\",\"codex\"], datetime]` with no parameter. That signature mismatch means the planned caller and planned implementation are incompatible.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 `setup_clone()` depends on `_safe_parse_package_json(...)` and explicitly says that helper lives in `core/benchmark/toolchain.py`, but `toolchain.py` is only created in Phase 5. With the declared build order `1 \u2192 2 \u2192 4 \u2192 3 \u2192 5`, Phase 3 will import or rely on a file that does not exist yet.",
+      "severity": "blocker",
+      "sources": [
+        "codex"
+      ],
+      "source_details": {
+        "codex": {
+          "finding": "Phase 3 `setup_clone()` depends on `_safe_parse_package_json(...)` and explicitly says that helper lives in `core/benchmark/toolchain.py`, but `toolchain.py` is only created in Phase 5. With the declared build order `1 \u2192 2 \u2192 4 \u2192 3 \u2192 5`, Phase 3 will import or rely on a file that does not exist yet.",
+          "severity": "blocker"
+        }
+      },
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-17T11:26:15.385014Z",
+  "max_rebuttal_rounds": 2,
+  "phase_number": 10
+}

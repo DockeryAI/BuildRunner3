@@ -1,0 +1,495 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]: BR3
+    - generic [ref=e5] [cursor=pointer]:
+      - img [ref=e6]
+      - text: Dashboard
+    - generic [ref=e11] [cursor=pointer]:
+      - img [ref=e12]
+      - generic [ref=e15]: "7"
+      - text: Intelligence
+    - generic [ref=e16] [cursor=pointer]:
+      - img [ref=e17]
+      - text: Terminal
+    - generic [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+      - text: Builds
+    - generic [ref=e23] [cursor=pointer]:
+      - img [ref=e24]
+      - text: Research
+    - generic [ref=e27] [cursor=pointer]:
+      - img [ref=e28]
+      - text: Monitor
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: BR3 The Band
+        - generic [ref=e34]: Intelligence
+      - generic [ref=e35]:
+        - generic [ref=e37]: "Tokens: 0k"
+        - generic [ref=e41]: 4s ago
+        - generic [ref=e42]: "SSE: 4"
+        - generic [ref=e43]: "Uptime: 13m"
+        - generic [ref=e44]: ⌘K
+    - text: Actions Online Muddy online — click to reset Plugged in Actions Online Lockwood online — click to reset Plugged in Actions Online Walter online — click to reset Plugged in Actions Online Otis online — click to reset Plugged in Actions Online Lomax online — click to reset Plugged in Actions Online Below online — click to reset Plugged in
+    - generic [ref=e1740]:
+      - generic [ref=e1741]:
+        - generic [ref=e1742]:
+          - generic [ref=e1743]: Intelligence
+          - generic [ref=e1744]:
+            - generic [ref=e2905]:
+              - strong [ref=e2906]: "14"
+              - text: total
+            - generic [ref=e2907]:
+              - strong [ref=e2908]: "1"
+              - text: critical
+            - generic [ref=e2909]:
+              - strong [ref=e2910]: "7"
+              - text: high
+            - generic [ref=e2911]:
+              - strong [ref=e2912]: "7"
+              - text: improve
+            - generic [ref=e2913]:
+              - strong [ref=e2914]: "13"
+              - text: unread
+        - generic [ref=e1757]: 16s
+      - generic [ref=e1758]:
+        - button "Intelligence 13 7" [ref=e1759] [cursor=pointer]:
+          - text: Intelligence
+          - generic [ref=e1760]: "13"
+          - generic [ref=e1761]: "7"
+        - button "Deals" [ref=e1762] [cursor=pointer]
+      - generic [ref=e2088]:
+        - generic [ref=e2089]:
+          - generic [ref=e2090]:
+            - generic [ref=e2091]: Active Hunts
+            - button "+ Add Hunt" [ref=e2092] [cursor=pointer]
+          - generic [ref=e2093]:
+            - generic [ref=e2915]:
+              - generic [ref=e2916]:
+                - generic [ref=e2917]: NVLink 3-Slot Bridge Alternative
+                - generic [ref=e2918]: active
+              - generic [ref=e2919]:
+                - generic [ref=e2920]:
+                  - strong [ref=e2921]: $250
+                  - text: target
+                - generic [ref=e2922]:
+                  - strong [ref=e2923]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e2925] [cursor=pointer]
+            - generic [ref=e2926]:
+              - generic [ref=e2927]:
+                - generic [ref=e2928]: Crucial P3 Plus 1TB NVMe SSD
+                - generic [ref=e2929]: active
+              - generic [ref=e2930]:
+                - generic [ref=e2931]:
+                  - strong [ref=e2932]: $62
+                  - text: target
+                - generic [ref=e2933]:
+                  - strong [ref=e2934]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e2936] [cursor=pointer]
+            - generic [ref=e2937]:
+              - generic [ref=e2938]:
+                - generic [ref=e2939]: RTX 3090 Matching Pair (Any Brand)
+                - generic [ref=e2940]: active
+              - generic [ref=e2941]:
+                - generic [ref=e2942]:
+                  - strong [ref=e2943]: $900
+                  - text: target
+                - generic [ref=e2944]:
+                  - strong [ref=e2945]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e2947] [cursor=pointer]
+            - generic [ref=e2948]:
+              - generic [ref=e2949]:
+                - generic [ref=e2950]: NVIDIA P3669 NVLink 3-Slot Bridge
+                - generic [ref=e2951]: active
+              - generic [ref=e2952]:
+                - generic [ref=e2953]:
+                  - strong [ref=e2954]: $379
+                  - text: target
+                - generic [ref=e2955]:
+                  - strong [ref=e2956]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e2958] [cursor=pointer]
+            - generic [ref=e2959]:
+              - generic [ref=e2960]:
+                - generic [ref=e2961]: Corsair RM1200x SHIFT 1200W PSU
+                - generic [ref=e2962]: active
+              - generic [ref=e2963]:
+                - generic [ref=e2964]:
+                  - strong [ref=e2965]: $195
+                  - text: target
+                - generic [ref=e2966]:
+                  - strong [ref=e2967]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e2969] [cursor=pointer]
+            - generic [ref=e2970]:
+              - generic [ref=e2971]:
+                - generic [ref=e2972]: Corsair Vengeance RGB Pro 32GB DDR4-3200
+                - generic [ref=e2973]: active
+              - generic [ref=e2974]:
+                - generic [ref=e2975]:
+                  - strong [ref=e2976]: $280
+                  - text: target
+                - generic [ref=e2977]:
+                  - strong [ref=e2978]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e2980] [cursor=pointer]
+            - generic [ref=e2981]:
+              - generic [ref=e2982]:
+                - generic [ref=e2983]: Minisforum MS-A2 Barebones (9955HX)
+                - generic [ref=e2984]: active
+              - generic [ref=e2985]:
+                - generic [ref=e2986]:
+                  - strong [ref=e2987]: $799
+                  - text: target
+                - generic [ref=e2988]:
+                  - strong [ref=e2989]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e2991] [cursor=pointer]
+            - generic [ref=e2992]:
+              - generic [ref=e2993]:
+                - generic [ref=e2994]: Crucial 64GB DDR5-5600 SODIMM
+                - generic [ref=e2995]: active
+              - generic [ref=e2996]:
+                - generic [ref=e2997]:
+                  - strong [ref=e2998]: $586
+                  - text: target
+                - generic [ref=e2999]:
+                  - strong [ref=e3000]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e3002] [cursor=pointer]
+            - generic [ref=e3003]:
+              - generic [ref=e3004]:
+                - generic [ref=e3005]: EVGA RTX 3090 FTW3 Ultra Pair
+                - generic [ref=e3006]: active
+              - generic [ref=e3007]:
+                - generic [ref=e3008]:
+                  - strong [ref=e3009]: $879
+                  - text: target
+                - generic [ref=e3010]:
+                  - strong [ref=e3011]: "0"
+                  - text: found
+              - button "Complete Hunt" [ref=e3013] [cursor=pointer]
+          - button "▼ Archived Hunts (1)" [ref=e3014] [cursor=pointer]:
+            - generic [ref=e3015]: ▼
+            - generic [ref=e3016]: Archived Hunts (1)
+        - generic [ref=e2197]:
+          - textbox "Search deals..." [ref=e2198]
+          - generic [ref=e2199]:
+            - generic [ref=e3017]:
+              - strong [ref=e3018]: "45"
+              - text: deals
+            - generic [ref=e3019]:
+              - strong [ref=e3020]: "0"
+              - text: bought
+            - generic [ref=e3021]:
+              - strong [ref=e3022]: $0
+              - text: / $4,330 (0%)
+            - generic [ref=e3023]:
+              - strong [ref=e3024]: "9"
+              - text: hunts
+        - generic [ref=e2208]:
+          - generic [ref=e3025]:
+            - generic [ref=e3026]:
+              - generic [ref=e3027]: Crucial P3 Plus 1TB NVMe SSD
+              - generic [ref=e3028]:
+                - generic [ref=e3029]: "Target: $62"
+                - generic [ref=e3030]: "Median: $35.99"
+                - generic [ref=e3031]: 6 deals
+            - generic [ref=e3032] [cursor=pointer]:
+              - generic [ref=e3033]: "#1"
+              - generic [ref=e3034]: CT1000P3PSSD8 - Crucial P3 Plus SSD 1TB PCIe (NVMe)
+              - generic [ref=e3035]: overnightcomputers
+              - generic [ref=e3036]: PASS
+              - generic [ref=e3037]: 2d ago
+              - generic [ref=e3038]:
+                - text: $182.58
+                - generic [ref=e3039]: +$121 over
+            - button "▲ Hide $195 — $349.99" [active] [ref=e3177] [cursor=pointer]:
+              - generic [ref=e3041]: ▲
+              - generic [ref=e3042]: Hide
+              - generic [ref=e3043]: $195 — $349.99
+            - generic [ref=e3178]:
+              - generic [ref=e3179] [cursor=pointer]:
+                - generic [ref=e3180]:
+                  - generic [ref=e3181]:
+                    - generic [ref=e3182]: Crucial P3 Plus PCIe Gen4 NVMe 1TB SSD, Up to 5,000MB/s Read, Laptop & Desktop
+                    - generic [ref=e3183]:
+                      - generic [ref=e3184]: co83321
+                      - generic [ref=e3185]: New
+                      - generic [ref=e3186]: Crucial P3 Plus 1TB NVMe SSD
+                  - generic [ref=e3187]:
+                    - generic [ref=e3188]: $195
+                    - generic [ref=e3189]: PASS
+                - generic [ref=e3190]:
+                  - generic [ref=e3191]:
+                    - 'generic "P25: $14.99" [ref=e3192]'
+                    - 'generic "Median: $35.99" [ref=e3193]'
+                    - 'generic "P75: $129.99" [ref=e3194]'
+                    - 'generic "This deal: $195" [ref=e3195]'
+                  - generic [ref=e3196]:
+                    - generic [ref=e3197]: $12.99
+                    - generic [ref=e3198]: median $35.99
+                    - generic [ref=e3199]: $182.58
+                - generic [ref=e3200]: + add note
+                - generic [ref=e3201]:
+                  - generic [ref=e3203]: 2d ago
+                  - generic [ref=e3204]:
+                    - button "Mark Bought" [ref=e3205]
+                    - button "Open" [ref=e3206]
+                    - button "✕" [ref=e3207]
+              - generic [ref=e3208] [cursor=pointer]:
+                - generic [ref=e3209]:
+                  - generic [ref=e3210]:
+                    - generic [ref=e3211]: Crucial P3 plus Pcie Gen4 Nvme 1TB SSD, up to 5,000Mb/S Read, Laptop & Desktop (
+                    - generic [ref=e3212]:
+                      - generic [ref=e3213]: globalpackages52
+                      - generic [ref=e3214]: New
+                      - generic [ref=e3215]: Crucial P3 Plus 1TB NVMe SSD
+                  - generic [ref=e3216]:
+                    - generic [ref=e3217]: $275.99
+                    - generic [ref=e3218]: PASS
+                - generic [ref=e3219]:
+                  - generic [ref=e3220]:
+                    - 'generic "P25: $14.99" [ref=e3221]'
+                    - 'generic "Median: $35.99" [ref=e3222]'
+                    - 'generic "P75: $129.99" [ref=e3223]'
+                    - 'generic "This deal: $275.99" [ref=e3224]'
+                  - generic [ref=e3225]:
+                    - generic [ref=e3226]: $12.99
+                    - generic [ref=e3227]: median $35.99
+                    - generic [ref=e3228]: $182.58
+                - generic [ref=e3229]: + add note
+                - generic [ref=e3230]:
+                  - generic [ref=e3232]: 2d ago
+                  - generic [ref=e3233]:
+                    - button "Mark Bought" [ref=e3234]
+                    - button "Open" [ref=e3235]
+                    - button "✕" [ref=e3236]
+              - generic [ref=e3237] [cursor=pointer]:
+                - generic [ref=e3238]:
+                  - generic [ref=e3239]:
+                    - generic [ref=e3240]: 1TB Crucial P3 Plus M.2 PCI Express 4.0 Internal Solid State Drive
+                    - generic [ref=e3241]:
+                      - generic [ref=e3242]: memoryc_deals
+                      - generic [ref=e3243]: New
+                      - generic [ref=e3244]: Crucial P3 Plus 1TB NVMe SSD
+                  - generic [ref=e3245]:
+                    - generic [ref=e3246]: $285.85
+                    - generic [ref=e3247]: PASS
+                - generic [ref=e3248]:
+                  - generic [ref=e3249]:
+                    - 'generic "P25: $14.99" [ref=e3250]'
+                    - 'generic "Median: $35.99" [ref=e3251]'
+                    - 'generic "P75: $129.99" [ref=e3252]'
+                    - 'generic "This deal: $285.85" [ref=e3253]'
+                  - generic [ref=e3254]:
+                    - generic [ref=e3255]: $12.99
+                    - generic [ref=e3256]: median $35.99
+                    - generic [ref=e3257]: $182.58
+                - generic [ref=e3258]: + add note
+                - generic [ref=e3259]:
+                  - generic [ref=e3261]: 2d ago
+                  - generic [ref=e3262]:
+                    - button "Mark Bought" [ref=e3263]
+                    - button "Open" [ref=e3264]
+                    - button "✕" [ref=e3265]
+              - generic [ref=e3266] [cursor=pointer]:
+                - generic [ref=e3267]:
+                  - generic [ref=e3268]:
+                    - generic [ref=e3269]: "\"NEW\" CT1000P3PSSD8 Crucial P3 Plus 3D NAND 1TB PCIe 4.0 x4 NVMe M.2 2280 SSD"
+                    - generic [ref=e3270]:
+                      - generic [ref=e3271]: backup_servers
+                      - generic [ref=e3272]: New
+                      - generic [ref=e3273]: Crucial P3 Plus 1TB NVMe SSD
+                  - generic [ref=e3274]:
+                    - generic [ref=e3275]: $342
+                    - generic [ref=e3276]: PASS
+                - generic [ref=e3277]:
+                  - generic [ref=e3278]:
+                    - 'generic "P25: $14.99" [ref=e3279]'
+                    - 'generic "Median: $35.99" [ref=e3280]'
+                    - 'generic "P75: $129.99" [ref=e3281]'
+                    - 'generic "This deal: $342" [ref=e3282]'
+                  - generic [ref=e3283]:
+                    - generic [ref=e3284]: $12.99
+                    - generic [ref=e3285]: median $35.99
+                    - generic [ref=e3286]: $182.58
+                - generic [ref=e3287]: + add note
+                - generic [ref=e3288]:
+                  - generic [ref=e3290]: 2d ago
+                  - generic [ref=e3291]:
+                    - button "Mark Bought" [ref=e3292]
+                    - button "Open" [ref=e3293]
+                    - button "✕" [ref=e3294]
+              - generic [ref=e3295] [cursor=pointer]:
+                - generic [ref=e3296]:
+                  - generic [ref=e3297]:
+                    - generic [ref=e3298]: Crucial P3 / P3 Plus 500GB 1TB 2TB 4TB M.2 PCI-Express NVMe 3D NAND Internal LOT
+                    - generic [ref=e3299]:
+                      - generic [ref=e3300]: ic_pro
+                      - generic [ref=e3301]: New
+                      - generic [ref=e3302]: Crucial P3 Plus 1TB NVMe SSD
+                  - generic [ref=e3303]:
+                    - generic [ref=e3304]: $349.99
+                    - generic [ref=e3305]: PASS
+                - generic [ref=e3306]:
+                  - generic [ref=e3307]:
+                    - 'generic "P25: $14.99" [ref=e3308]'
+                    - 'generic "Median: $35.99" [ref=e3309]'
+                    - 'generic "P75: $129.99" [ref=e3310]'
+                    - 'generic "This deal: $349.99" [ref=e3311]'
+                  - generic [ref=e3312]:
+                    - generic [ref=e3313]: $12.99
+                    - generic [ref=e3314]: median $35.99
+                    - generic [ref=e3315]: $182.58
+                - generic [ref=e3316]: + add note
+                - generic [ref=e3317]:
+                  - generic [ref=e3319]: 2d ago
+                  - generic [ref=e3320]:
+                    - button "Mark Bought" [ref=e3321]
+                    - button "Open" [ref=e3322]
+                    - button "✕" [ref=e3323]
+          - generic [ref=e3044]:
+            - generic [ref=e3045]:
+              - generic [ref=e3046]: Corsair RM1200x SHIFT 1200W PSU
+              - generic [ref=e3047]:
+                - generic [ref=e3048]: "Target: $195"
+                - generic [ref=e3049]: "Median: $132.5"
+                - generic [ref=e3050]: 4 deals
+            - generic [ref=e3051] [cursor=pointer]:
+              - generic [ref=e3052]: "#1"
+              - generic [ref=e3053]: Corsair RM1200x SHIFT Fully Modular ATX 3.0 Power Supply 1200W 80 PLUS Gold
+              - generic [ref=e3054]: "*athq*"
+              - generic [ref=e3055]: PASS
+              - generic [ref=e3056]: 2d ago
+              - generic [ref=e3057]:
+                - text: $198.99
+                - generic [ref=e3058]: +$4 over
+            - button "▼ Show 3 more $200 — $17.99" [ref=e3059] [cursor=pointer]:
+              - generic [ref=e3060]: ▼
+              - generic [ref=e3061]: Show 3 more
+              - generic [ref=e3062]: $200 — $17.99
+          - generic [ref=e3063]:
+            - generic [ref=e3064]:
+              - generic [ref=e3065]: NVLink 3-Slot Bridge Alternative
+              - generic [ref=e3066]:
+                - generic [ref=e3067]: "Target: $250"
+                - generic [ref=e3068]: "Median: $378"
+                - generic [ref=e3069]: 2 deals
+            - generic [ref=e3070] [cursor=pointer]:
+              - generic [ref=e3071]: "#1"
+              - generic [ref=e3072]: NVIDIA NVLink Bridge 3-Slot P3669 *Read Description*
+              - generic [ref=e3073]: dz_compute
+              - generic [ref=e3074]: PASS
+              - generic [ref=e3075]: 2d ago
+              - generic [ref=e3076]:
+                - text: $419
+                - generic [ref=e3077]: +$169 over
+            - button "▼ Show 1 more $378 — $378" [ref=e3078] [cursor=pointer]:
+              - generic [ref=e3079]: ▼
+              - generic [ref=e3080]: Show 1 more
+              - generic [ref=e3081]: $378 — $378
+          - generic [ref=e3082]:
+            - generic [ref=e3083]:
+              - generic [ref=e3084]: NVIDIA P3669 NVLink 3-Slot Bridge
+              - generic [ref=e3085]:
+                - generic [ref=e3086]: "Target: $379"
+                - generic [ref=e3087]: "Median: $445.99"
+                - generic [ref=e3088]: 10 deals
+            - generic [ref=e3089] [cursor=pointer]:
+              - generic [ref=e3090]: "#1"
+              - generic [ref=e3091]: NVLink Bridge A5000 Graphics bridge A6000 RTX 3-SLOT For NVIDIA card
+              - generic [ref=e3092]: polish
+              - generic [ref=e3093]: PASS
+              - generic [ref=e3094]: 2d ago
+              - generic [ref=e3095]:
+                - text: $458.99
+                - generic [ref=e3096]: +$80 over
+            - button "▼ Show 9 more $463.83 — $378" [ref=e3097] [cursor=pointer]:
+              - generic [ref=e3098]: ▼
+              - generic [ref=e3099]: Show 9 more
+              - generic [ref=e3100]: $463.83 — $378
+          - generic [ref=e3101]:
+            - generic [ref=e3102]:
+              - generic [ref=e3103]: Crucial 64GB DDR5-5600 SODIMM
+              - generic [ref=e3104]:
+                - generic [ref=e3105]: "Target: $586"
+                - generic [ref=e3106]: "Median: $649.99"
+                - generic [ref=e3107]: 4 deals
+            - generic [ref=e3108] [cursor=pointer]:
+              - generic [ref=e3109]: "#1"
+              - generic [ref=e3110]: CT2K32G56C46S5 Crucial 32GB x2 64GB DDR5-5600MHz PC5-44800 SODIMM Non-ECC Memory
+              - generic [ref=e3111]: cloudtech-0
+              - generic [ref=e3112]: PASS
+              - generic [ref=e3113]: 2d ago
+              - generic [ref=e3114]:
+                - text: $920
+                - generic [ref=e3115]: +$334 over
+            - button "▼ Show 3 more $1081.84 — $219.95" [ref=e3116] [cursor=pointer]:
+              - generic [ref=e3117]: ▼
+              - generic [ref=e3118]: Show 3 more
+              - generic [ref=e3119]: $1081.84 — $219.95
+          - generic [ref=e3120]:
+            - generic [ref=e3121]:
+              - generic [ref=e3122]: EVGA RTX 3090 FTW3 Ultra Pair
+              - generic [ref=e3123]:
+                - generic [ref=e3124]: "Target: $879"
+                - generic [ref=e3125]: "Median: $1479.97"
+                - generic [ref=e3126]: 5 deals
+            - generic [ref=e3127] [cursor=pointer]:
+              - generic [ref=e3128]: "#1"
+              - generic [ref=e3129]: EVGA GeForce RTX 3090 FTW3 ULTRA 24GB GDDR6X Graphics Card, Pre-owned
+              - generic [ref=e3130]: pay-996
+              - generic [ref=e3131]: PASS
+              - generic [ref=e3132]: 2d ago
+              - generic [ref=e3133]:
+                - text: $2500
+                - generic [ref=e3134]: +$1621 over
+            - button "▼ Show 4 more $1479.97 — $970" [ref=e3135] [cursor=pointer]:
+              - generic [ref=e3136]: ▼
+              - generic [ref=e3137]: Show 4 more
+              - generic [ref=e3138]: $1479.97 — $970
+          - generic [ref=e3139]:
+            - generic [ref=e3140]:
+              - generic [ref=e3141]: RTX 3090 Matching Pair (Any Brand)
+              - generic [ref=e3142]:
+                - generic [ref=e3143]: "Target: $900"
+                - generic [ref=e3144]: "Median: $1767"
+                - generic [ref=e3145]: 2 deals
+            - generic [ref=e3146] [cursor=pointer]:
+              - generic [ref=e3147]: "#1"
+              - generic [ref=e3148]: "[USA-WA] [H] EVGA RTX 3090 FTW3 [W] Paypal"
+              - generic [ref=e3149]: De-Stijl
+              - generic [ref=e3150]: EXCEPTIONAL
+              - generic [ref=e3151]: 1d ago
+              - generic [ref=e3152]:
+                - text: $950
+                - generic [ref=e3153]: +$50 over
+            - button "▼ Show 1 more $970 — $970" [ref=e3154] [cursor=pointer]:
+              - generic [ref=e3155]: ▼
+              - generic [ref=e3156]: Show 1 more
+              - generic [ref=e3157]: $970 — $970
+          - generic [ref=e3158]:
+            - generic [ref=e3159]:
+              - generic [ref=e3160]: Corsair Vengeance RGB Pro 32GB DDR4-3200
+              - generic [ref=e3161]:
+                - generic [ref=e3162]: "Target: $280"
+                - generic [ref=e3163]: "Median: $269.99"
+                - generic [ref=e3164]: 2 deals
+            - generic [ref=e3165] [cursor=pointer]:
+              - generic [ref=e3166]: "#1"
+              - generic [ref=e3167]: "[USA-OH] [H] Sealed ASUS X870-P WiFi , Corsair Vengeance Pro RGB 4x 8GB (32GB total) DDR4-3200, ASUS X99-WS/IPMI, (3x) Broken 1080 Ti's for parts/repair/practice [W] PayPal / Cash on Collection"
+              - generic [ref=e3168]: TheMadDutchDude
+              - generic [ref=e3169]: GOOD
+              - generic [ref=e3170]: 23h ago
+              - generic [ref=e3171]:
+                - text: $125
+                - generic [ref=e3172]: $155 under
+            - button "▼ Show 1 more $259 — $259" [ref=e3173] [cursor=pointer]:
+              - generic [ref=e3174]: ▼
+              - generic [ref=e3175]: Show 1 more
+              - generic [ref=e3176]: $259 — $259

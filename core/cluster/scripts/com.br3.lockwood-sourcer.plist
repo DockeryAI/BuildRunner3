@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.br3.lockwood-sourcer</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/byronhudson/repos/BuildRunner3/core/cluster/scripts/lockwood-sourcer.sh</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>300</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/byronhudson/.buildrunner/sourcer-stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/byronhudson/.buildrunner/sourcer-stderr.log</string>
+</dict>
+</plist>

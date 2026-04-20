@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Component } from '../../stores/buildStore';
 
@@ -9,7 +9,7 @@ interface ComponentNodeProps {
   };
 }
 
-export const ComponentNode: React.FC<ComponentNodeProps> = ({ data }) => {
+export const ComponentNode = forwardRef<HTMLDivElement, ComponentNodeProps>(({ data }, ref) => {
   const { component, isActive } = data;
 
   const getStatusColor = (): string => {
@@ -36,11 +36,12 @@ export const ComponentNode: React.FC<ComponentNodeProps> = ({ data }) => {
 
   return (
     <div
+      ref={ref}
       className={`component-node ${isActive ? 'active' : ''} ${component.status}`}
       style={{ borderColor: getStatusColor() }}
     >
       <Handle type="target" position={Position.Top} />
-      
+
       <div className="node-header">
         <span className="node-icon">{getTypeIcon()}</span>
         <span className="node-type">{component.type}</span>
@@ -49,9 +50,9 @@ export const ComponentNode: React.FC<ComponentNodeProps> = ({ data }) => {
       <div className="node-body">
         <h3>{component.name}</h3>
         <div className="progress-bar">
-          <div 
-            className="progress-fill" 
-            style={{ 
+          <div
+            className="progress-fill"
+            style={{
               width: `${component.progress}%`,
               backgroundColor: getStatusColor(),
             }}
@@ -70,4 +71,6 @@ export const ComponentNode: React.FC<ComponentNodeProps> = ({ data }) => {
       <Handle type="source" position={Position.Bottom} />
     </div>
   );
-};
+});
+
+ComponentNode.displayName = 'ComponentNode';
