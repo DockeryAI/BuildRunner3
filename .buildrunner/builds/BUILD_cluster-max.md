@@ -1,8 +1,8 @@
 # Build: cluster-max
 
 **Created:** 2026-04-12
-**Last Revised:** 2026-04-20 (Autopilot pass: single source-of-truth section at top, research-backed role split per phase, context-poisoning triggers, Jimmy memory cutover, overflow reserve design, LiteLLM replaced by RuntimeRegistry shim, deepseek-r1 / budget_tokens / 12KB threshold / round-cap-3 dropped)
-**Status:** Phases 1-2 Complete — Phase 2 In Progress
+**Last Revised:** 2026-04-20 (Phase 3 complete: Jimmy services live 8100/8101/8200, Lockwood data migrated, git mirrors active, nightly backup LaunchAgent loaded on Muddy; /srv/jimmy/ + UFW pending sudo provisioning)
+**Status:** Phases 0-3 + 6 Complete — Phase 4 Next
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
@@ -258,13 +258,13 @@ User never talks to a local model directly. Claude is the single voice.
 
 | #   | Status      | Completed         | 1-line summary                                                              |
 | --- | ----------- | ----------------- | --------------------------------------------------------------------------- |
-| 0   | not_started | —                 | AGENTS.md authoring                                                         |
-| 1   | in_progress | —                 | Hardware install, BIOS, overclock                                           |
+| 0   | completed   | 2026-04-20T18:53Z | AGENTS.md authored — router + 5 scopes, 11907 bytes                        |
+| 1   | completed   | 2026-04-20T18:49Z | Below dual-3090 NVLink 4×14.062 GB/s, BIOS 2101, RM1200x, 64GB DIMM       |
 | 2   | completed   | 2026-04-19T18:10Z | 70B dual-GPU 18.01 tok/s, NVLink 4×14.062 GB/s, same-model residency proven |
-| 3   | not_started | —                 | Jimmy activation + memory-node setup (not just staging)                     |
+| 3   | completed   | 2026-04-20T20:00Z | Jimmy services live (8100/8101/8200), Lockwood data migrated, git mirrors hourly, nightly backup scheduled |
 | 4   | not_started | —                 | 7-node priority + overflow dispatcher                                       |
 | 5   | not_started | —                 | Below skill integration                                                     |
-| 6   | not_started | —                 | OllamaRuntime                                                               |
+| 6   | completed   | 2026-04-20T19:30Z | OllamaRuntime registered, local_ready capability live                      |
 | 7   | REPLACED    | —                 | Was LiteLLM; now RuntimeRegistry shim + pre-commit hook                     |
 | 8   | not_started | —                 | Prompt cache + byte-identity test (SHIP FIRST of remaining)                 |
 | 9   | not_started | —                 | 2-way review + Opus arbiter (NOT 3-way, NOT r1)                             |
@@ -1012,7 +1012,7 @@ Below 70B wired into the skill pipeline as default first choice for verified wor
 
 ### Phase 6: Runtime Registry Extension (OllamaRuntime)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE (2026-04-20) — OllamaRuntime registered, 16 tests pass, silent fallback verified, AGENTS.md updated
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave2-runtime`
