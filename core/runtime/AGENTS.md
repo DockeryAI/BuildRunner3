@@ -59,3 +59,9 @@ IMPORTANT: NEVER inline changing timestamps, random IDs, or user input into brea
 - Model: `llama3.3:70b`. Health: `cluster-check.sh inference`.
 - Silent-fallback: 503/timeout/fail → `ClaudeRuntime`, no user error, WARNING log only.
 - `local_ready`: plan-draft, structural-review, governance-lint, intel-scoring, summarize. Enabled by `BR3_RUNTIME_OLLAMA=1`.
+
+## Cache + Summarizer Contract (Phase 8)
+
+- **3-breakpoint rule**: every Claude request uses `cache_policy.build_cached_prompt(system, skill_context, task_payload)`. No inline `cache_control` dicts anywhere else.
+- **12KB threshold**: if diff exceeds 12KB, call `summarizer.summarize_diff(diff)` before placing into breakpoint 3. Below offline → original returned, `truncated=True`.
+- **Summarizer is pre-summary only**: `summarizer.py` NEVER produces final-form code, diagnoses, or authoritative reviews. All summarizer output is tagged `draft=True` by RuntimeRegistry.

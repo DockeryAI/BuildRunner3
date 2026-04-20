@@ -31,6 +31,8 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
+from core.runtime.cache_policy import build_cached_prompt
+
 HOME = Path.home()
 CONFIG_PATH = Path(__file__).parent / "cross_model_review_config.json"
 CACHE_DIR = HOME / ".buildrunner" / "cache" / "cross-reviews"
@@ -511,8 +513,8 @@ def parse_findings(text):
             return arr
         except (json.JSONDecodeError, ValueError):
             return [{"finding": "Cross-model review returned malformed output", "severity": "warning"}]
-    # No JSON array found — wrap raw text
-    return [{"finding": text.strip()[:500], "severity": "note"}]
+    # No JSON array found — wrap raw text (no hard truncation; callers may summarize upstream)
+    return [{"finding": text.strip(), "severity": "note"}]
 
 
 def parse_codex_event_stream(stdout):
@@ -545,12 +547,46 @@ def extract_codex_message_and_usage(events):
     return final_message, usage
 
 
-def build_review_prompt(diff_text, spec_text):
-    """Build the review prompt shared by the live helper and the Phase 1 spike."""
-    return (
-        f"{REVIEW_PROMPT}\n\n---\n\n## Build Spec Context:\n{spec_text[:3000]}"
-        f"\n\n---\n\n## Diff to Review:\n{diff_text[:8000]}"
+_DIFF_SIZE_THRESHOLD = 12 * 1024  # 12 KB — summarize-before-escalate threshold
+
+
+def build_review_prompt(diff_text: str, spec_text: str) -> str:
+    """Build the review prompt using cache_policy breakpoints.
+
+    Breakpoint layout (per AGENTS.md 3-breakpoint contract):
+      1. system + tools       — REVIEW_PROMPT (stable, cached)
+      2. project/skill context — spec text (stable within a session, cached)
+      3. task payload          — diff text (per-request, not cached)
+
+    If diff_text exceeds 12KB (summarize-before-escalate threshold), it is
+    compressed via summarizer.summarize_diff() before being placed into
+    breakpoint 3.  Below offline → original diff used, no truncation.
+
+    NEVER inline timestamps, UUIDs, or other dynamic values into breakpoints 1–2.
+    """
+    from core.cluster.summarizer import summarize_diff
+
+    diff_payload = diff_text
+    if len(diff_text.encode("utf-8")) > _DIFF_SIZE_THRESHOLD:
+        result = summarize_diff(diff_text)
+        # Use the summary as the payload; if truncated=True (Below offline),
+        # result["summary"] is the original diff — no content is lost.
+        diff_payload = result["summary"]
+        if result["excerpts"]:
+            diff_payload += (
+                "\n\n--- CRITICAL EXCERPTS (preserved verbatim) ---\n"
+                + "\n".join(result["excerpts"])
+            )
+
+    blocks = build_cached_prompt(
+        system_text=REVIEW_PROMPT,
+        skill_context=f"## Build Spec Context:\n{spec_text}",
+        task_payload=f"## Diff to Review:\n{diff_payload}",
     )
+    # Flatten to a plain string for the existing Codex/OpenRouter backends
+    # which accept a single string prompt.  The structured block list is the
+    # authoritative form for Anthropic SDK callers.
+    return "\n\n---\n\n".join(block["text"] for block in blocks)
 
 
 def review_via_codex(prompt, config, project_root=None, commit_sha=None):
@@ -602,7 +638,7 @@ def review_via_codex(prompt, config, project_root=None, commit_sha=None):
             if "auth" in stderr or "login" in stderr or "token" in stderr or "401" in stderr:
                 raise CodexAuthError("Codex auth expired during review. Run: codex")
             # Other failure
-            stderr = result.stderr.strip()[:200] if result.stderr else "no output"
+            stderr = result.stderr.strip() if result.stderr else "no output"
             raise RuntimeError(f"Codex exit {result.returncode}: {stderr}")
     except subprocess.TimeoutExpired:
         error = RuntimeError(f"Codex timed out after {timeout}s")
