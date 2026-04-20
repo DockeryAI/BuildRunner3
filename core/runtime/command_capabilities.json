@@ -5,6 +5,30 @@
     "claude_first_support_level": "claude_only",
     "non_claude_first_support_level": "codex_ready"
   },
+  "capabilities": {
+    "claude_only": {
+      "description": "Claude executes; never route elsewhere.",
+      "members": []
+    },
+    "codex_workflow_only": {
+      "description": "Codex executes only inside a workflow (begin/spec/autopilot).",
+      "members": ["begin", "spec"]
+    },
+    "codex_ready": {
+      "description": "Codex may execute on explicit invocation.",
+      "members": ["business", "sales", "test"]
+    },
+    "local_ready": {
+      "description": "Ollama (Below or Jimmy) may execute when BR3_RUNTIME_OLLAMA=1.",
+      "members": [
+        "plan-draft",
+        "structural-review",
+        "governance-lint",
+        "intel-scoring",
+        "summarize"
+      ]
+    }
+  },
   "commands": {
     "business": {
       "support_level": "codex_ready",
@@ -31,17 +55,16 @@
       "support_level": "codex_shadow_only",
       "fallback_runtime": "claude",
       "codex_skill_names": ["security-rules"],
-      "notes": ["Advisory-only Codex shadow mode remains the only promoted review path after Phase 8."]
+      "notes": [
+        "Advisory-only Codex shadow mode remains the only promoted review path after Phase 8."
+      ]
     },
     "begin": {
       "support_level": "codex_workflow_only",
       "fallback_runtime": "claude",
       "workflow_name": "begin_workflow",
       "codex_skill_names": ["security-rules"],
-      "context_files": [
-        ".buildrunner/builds/*.md",
-        ".buildrunner/plans/phase-*-plan.md"
-      ],
+      "context_files": [".buildrunner/builds/*.md", ".buildrunner/plans/phase-*-plan.md"],
       "notes": [
         "Codex `/begin` is enabled only through the BR3-owned bounded sequential workflow.",
         "BR3 retains lock handling, approval gates, and phase-by-phase capability admission."

@@ -7,8 +7,9 @@ from dataclasses import dataclass
 from core.runtime.base import BaseRuntime
 from core.runtime.claude_runtime import ClaudeRuntime
 from core.runtime.codex_runtime import CodexRuntime
+from core.runtime.ollama_runtime import OllamaRuntime
 
-SUPPORTED_RUNTIME_NAMES = ("claude", "codex")
+SUPPORTED_RUNTIME_NAMES = ("claude", "codex", "ollama")
 
 
 @dataclass
@@ -59,9 +60,22 @@ def create_runtime_registry(config: dict | None = None) -> RuntimeRegistry:
     """Build the runtime registry used by BR3 runtime-aware paths."""
     config = config or {}
     timeout = config.get("backends", {}).get("codex", {}).get("timeout_seconds", 60)
+    ollama_cfg = config.get("backends", {}).get("ollama", {})
     registry = RuntimeRegistry()
     registry.register(RuntimeRegistration(name="claude", adapter=ClaudeRuntime()))
     registry.register(RuntimeRegistration(name="codex", adapter=CodexRuntime(timeout_seconds=timeout)))
+    registry.register(
+        RuntimeRegistration(
+            name="ollama",
+            adapter=OllamaRuntime(
+                model=ollama_cfg.get("model", "llama3.3:70b"),
+                host=ollama_cfg.get("host"),
+                port=ollama_cfg.get("port", 11434),
+                timeout=ollama_cfg.get("timeout", 120),
+            ),
+            dispatch_mode="local_inference",
+        )
+    )
     return registry
 
 

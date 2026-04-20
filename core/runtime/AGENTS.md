@@ -52,3 +52,10 @@ IMPORTANT: NEVER inline changing timestamps, random IDs, or user input into brea
 
 - `preflight.py` validates task shape before dispatch. On invalid shape: raise `InvalidTaskError`.
 - `postflight.py` validates result shape before returning to caller. On invalid shape: log and return `RuntimeResult(status="error", error="postflight_schema_mismatch")` — NEVER raise upward.
+
+## OllamaRuntime (Phase 6)
+
+- `OllamaRuntime` host from cluster.json role=inference (default 10.0.1.105:11434).
+- Model: `llama3.3:70b`. Health: `cluster-check.sh inference`.
+- Silent-fallback: 503/timeout/fail → `ClaudeRuntime`, no user error, WARNING log only.
+- `local_ready`: plan-draft, structural-review, governance-lint, intel-scoring, summarize. Enabled by `BR3_RUNTIME_OLLAMA=1`.

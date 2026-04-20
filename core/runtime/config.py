@@ -10,7 +10,7 @@ from typing import Any
 
 
 RUNTIME_CONFIG_SCHEMA_VERSION = "br3.runtime.config.v1"
-SUPPORTED_RUNTIMES = ("claude", "codex")
+SUPPORTED_RUNTIMES = ("claude", "codex", "ollama")
 PROJECT_RUNTIME_CONFIG_RELATIVE_PATH = Path(".buildrunner/runtime.json")
 
 
