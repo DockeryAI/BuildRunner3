@@ -864,7 +864,7 @@ Jimmy running all Lockwood + Lomax services on systemd, data migrated, all endpo
 
 ### Phase 4: Cluster Reconfiguration — 7 Workers
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Codex model:** gpt-5.4
 **Codex effort:** low
 **Worktree:** `worktrees/wave3-cluster`
@@ -1079,7 +1079,7 @@ Extend the existing `core/runtime/` abstraction so Below/Ollama is a first-class
 
 > **SUPERSEDED by Final Decisions Override (see top of file):** LiteLLM is DROPPED. Replace this phase with implementation of the `RuntimeRegistry.execute()` shim (`core/runtime/runtime_registry.py`) as the ONLY local-model dispatch path, enforced by the pre-commit hook that rejects direct `ollama`, `requests.post("http://10.0.1.*")`, and raw `curl` calls to cluster nodes. Cost/cache observability (token counts, cache-hit rate, per-model spend) is implemented inside the shim and written to `/srv/jimmy/ledger/cost.jsonl`. The Codex proxy, budget guards, and dashboard wiring below remain relevant — retarget them at the RuntimeRegistry shim instead of LiteLLM. Autopilot: skip the LiteLLM install/config steps, implement the shim + pre-commit enforcement, preserve the observability deliverables. Original content retained below for historical context only.
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave3-gateway`
