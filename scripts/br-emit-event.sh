@@ -60,7 +60,8 @@ for k, v in meta.items():
         sanitized[str(k)[:64]] = v
 
 row_id = str(uuid.uuid4())
-ts = datetime.utcnow().isoformat()
+from datetime import timezone as _tz
+ts = datetime.now(_tz.utc).isoformat()
 
 conn = sqlite3.connect(str(db_path))
 try:

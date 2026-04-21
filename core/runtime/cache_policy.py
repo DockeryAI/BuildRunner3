@@ -53,7 +53,7 @@ def _emit_cache_hit(breakpoint_index: int) -> None:
                 (
                     str(_uuid.uuid4()),
                     "cache_hit",
-                    _dt.utcnow().isoformat(),
+                    _dt.now(__import__('datetime').timezone.utc).isoformat(),
                     _json.dumps(metadata),
                     1,
                 ),

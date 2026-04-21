@@ -58,7 +58,7 @@ def _emit_runtime_dispatched(runtime_name: str, task: "RuntimeTask") -> None:
         row = {
             "event_id": str(_uuid.uuid4()),
             "event_type": EventType.RUNTIME_DISPATCHED.value,
-            "timestamp": _dt.utcnow().isoformat(),
+            "timestamp": _dt.now(__import__('datetime').timezone.utc).isoformat(),
             "session_id": None,
             "metadata": _json.dumps(metadata),
             "success": 1,

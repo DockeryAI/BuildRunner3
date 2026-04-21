@@ -131,7 +131,7 @@ def _emit_adversarial_review_ran(mode: str, verdict: str, findings_count: int, c
                 (
                     str(_uuid.uuid4()),
                     "adversarial_review_ran",
-                    _dt.utcnow().isoformat(),
+                    _dt.now(__import__('datetime').timezone.utc).isoformat(),
                     json.dumps(metadata),
                     1 if verdict in ("APPROVED", "REVIEWER_ERROR") else 0,
                 ),
