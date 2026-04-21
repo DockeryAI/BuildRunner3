@@ -1365,7 +1365,7 @@ One hook injects relevant context into every Claude prompt. Pulls from research 
 
 ### Phase 11: Cluster Max Dashboard @ Port 4400
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave5-dashboard`
@@ -1440,7 +1440,7 @@ Upgrade the existing port-4400 dashboard with 5 new panels — including a first
 
 ### Phase 12: Multi-Model Context Parity (Logs, Memory, Research)
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave5-parity`
