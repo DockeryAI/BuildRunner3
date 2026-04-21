@@ -1168,3 +1168,4 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-21T01:07:50.367863Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
 [2026-04-21T01:07:50.367996Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
 2026-04-21T01:09:50Z Phase 12: multi-model context parity live — Codex+Below see logs+memory+research, two-layer private filter, AGENTS.md updated on 3 scopes
+[2026-04-21T22:27:06Z] Phase 1 decisions: context.py already had no module-level app (clean state). node_semantic.py is core/cluster/node_semantic.py (not api/). BUILD_cluster-max.md migrated with 15 phases. All 15 tests pass. Jimmy reachable, smoke test HTTP 200.
