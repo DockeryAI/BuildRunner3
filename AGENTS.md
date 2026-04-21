@@ -26,7 +26,8 @@
 
 ## Feature flags (all default OFF until Phase 13)
 
-- `BR3_RUNTIME_OLLAMA` — enables OllamaRuntime selection
+- `BR3_LOCAL_ROUTING` — canonical flag: enables OllamaRuntime selection + Below/Ollama routing via `runtime-dispatch.sh`. Use this name everywhere.
+- `BR3_RUNTIME_OLLAMA` — **DEPRECATED alias** for `BR3_LOCAL_ROUTING`. Aliased for one release via shim in `scripts/runtime-dispatch.sh` and `~/.buildrunner/scripts/below-route.sh`. Removal target: next release after cluster-activation ships. Do not use in new code.
 - `BR3_CACHE_BREAKPOINTS` — enables 3-breakpoint prompt cache contract
 - `BR3_ADVERSARIAL_3WAY` — enables Sonnet+gpt-5.4 parallel review with Opus arbiter on disagreement
 - `BR3_AUTO_CONTEXT` — UserPromptSubmit hook injection (context-bundle at :4500)
