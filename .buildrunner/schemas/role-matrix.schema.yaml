@@ -105,4 +105,4 @@ $defs:
         description: >
           Source paths injected as context for this phase's builder.
           Relative to project root. Used by codex-bridge.sh for pre-dispatch context.
-        minItems: 1
+          Empty array allowed for human-only phases (builder: human).
