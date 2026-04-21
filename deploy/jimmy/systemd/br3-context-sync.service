@@ -1,0 +1,17 @@
+[Unit]
+Description=BR3 Context Sync — mirror logs+memory+research to Otis+Below
+Documentation=https://github.com/byronhudson/BuildRunner3
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=byronhudson
+ExecStart=/home/byronhudson/.buildrunner/scripts/sync-cluster-context.sh
+StandardOutput=journal
+StandardError=journal
+# Do not fail the timer if a single sync has partial errors
+SuccessExitStatus=0 1
+
+[Install]
+WantedBy=multi-user.target
