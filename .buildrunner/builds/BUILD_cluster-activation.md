@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-21
 **Last Revised:** 2026-04-21 (Revision 3 — cluster-max authoring-contract conformance)
-**Status:** Phase 1 not_started
+**Status:** Phases 1-2 Complete — Phase 3 In Progress
 **Deploy:** local — BR3 framework internals; no user-facing deploy target.
 **Supersedes:** closes the 10 post-cutover gaps in `BUILD_cluster-max`. Consumes the infrastructure cluster-max shipped (RuntimeRegistry, codex-bridge, feature flags, dashboard) and makes `/begin` + `/autopilot` actually use it.
 **Source Plan File:** .buildrunner/plans/cluster-activation-plan.md
@@ -97,7 +97,7 @@ role_matrix:
 
 ### Phase 1: Foundation — Role Matrix schema + context router extraction + :4500 mount
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Architect:** Opus 4.7
@@ -121,15 +121,15 @@ role_matrix:
 
 **Deliverables:**
 
-- [ ] Define role_matrix YAML schema (phase_N: builder, reviewers, context, assigned_node)
-- [ ] Migration script converts prose Role Matrix in `BUILD_cluster-max.md` to YAML block
-- [ ] Append `role_matrix` YAML block to `BUILD_cluster-max.md`
-- [ ] Extract APIRouter: remove module-level `app = create_app(role='context-api')` from `api/routes/context.py`
-- [ ] Move standalone app bootstrap to `api/services/context_api_standalone.py` with `if __name__ == "__main__"` guard
-- [ ] Import and mount `context_router` in `api/node_semantic.py`
-- [ ] Unit test asserts `import api.routes.context` does not instantiate FastAPI app
-- [ ] Smoke test: `curl http://10.0.1.106:4500/context/codex?phase=2` returns HTTP 200
-- [ ] Document role_matrix schema in `core/cluster/AGENTS.md`
+- [x] Define role_matrix YAML schema (phase_N: builder, reviewers, context, assigned_node)
+- [x] Migration script converts prose Role Matrix in `BUILD_cluster-max.md` to YAML block
+- [x] Append `role_matrix` YAML block to `BUILD_cluster-max.md`
+- [x] Extract APIRouter: remove module-level `app = create_app(role='context-api')` from `api/routes/context.py`
+- [x] Move standalone app bootstrap to `api/services/context_api_standalone.py` with `if __name__ == "__main__"` guard
+- [x] Import and mount `context_router` in `api/node_semantic.py`
+- [x] Unit test asserts `import api.routes.context` does not instantiate FastAPI app
+- [x] Smoke test: `curl http://10.0.1.106:4500/context/codex?phase=2` returns HTTP 200
+- [x] Document role_matrix schema in `core/cluster/AGENTS.md`
 
 **Success Criteria:** YAML parser extracts `builder=codex` for phase_2. `curl :4500/context/codex` returns HTTP 200 with JSON payload. No duplicate FastAPI app detectable via `importlib` introspection.
 
@@ -143,7 +143,7 @@ role_matrix:
 
 ### Phase 2: Unified dispatcher — bash/Python bridge + flag cleanup
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Codex model:** gpt-5.3-codex
 **Codex effort:** medium
 **Architect:** Opus 4.7
@@ -165,13 +165,13 @@ role_matrix:
 
 **Deliverables:**
 
-- [ ] Add CLI entry to `runtime_registry.py`: `python -m core.runtime.runtime_registry execute <builder> <spec_path>`
-- [ ] Ship `scripts/runtime-dispatch.sh` that shells into CLI entry
-- [ ] Refactor `below-route.sh` to call `runtime-dispatch.sh` instead of direct Ollama curl
-- [ ] Canonicalize flag: `BR3_LOCAL_ROUTING` canonical; `BR3_RUNTIME_OLLAMA` aliased one release, then removed. Document in `AGENTS.md`.
-- [ ] Delete dead `$BELOW_URL/api/summarize` call at `autopilot.md:755`. Auto-triage out of scope.
-- [ ] Unit tests for CLI entry (success + unknown builder + malformed spec)
-- [ ] Integration test: bash `runtime-dispatch.sh claude test-spec.md` returns Claude output
+- [x] Add CLI entry to `runtime_registry.py`: `python -m core.runtime.runtime_registry execute <builder> <spec_path>`
+- [x] Ship `scripts/runtime-dispatch.sh` that shells into CLI entry
+- [x] Refactor `below-route.sh` to call `runtime-dispatch.sh` instead of direct Ollama curl
+- [x] Canonicalize flag: `BR3_LOCAL_ROUTING` canonical; `BR3_RUNTIME_OLLAMA` aliased one release, then removed. Document in `AGENTS.md`.
+- [x] Delete dead `$BELOW_URL/api/summarize` call at `autopilot.md:755`. Auto-triage out of scope.
+- [x] Unit tests for CLI entry (success + unknown builder + malformed spec)
+- [x] Integration test: bash `runtime-dispatch.sh claude test-spec.md` returns Claude output
 
 **Success Criteria:** `below-route.sh` contains no direct Ollama curl. Bash dispatch and Python workflows produce identical outputs for the same spec. Grep for `api/summarize` in `autopilot.md` returns zero hits.
 
