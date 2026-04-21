@@ -42,6 +42,15 @@ NEVER default any flag to ON before Phase 13 shadow validation completes.
 - NEVER hardcode a node IP in Python. Import from `load_cluster_config()` helper.
 - Heartbeat path for autopilot phases: `.buildrunner/locks/phase-<N>/heartbeat` (ISO-8601 UTC, updated every ≤60 s while running).
 
+## role_matrix schema (Phase 1)
+
+- Schema: `.buildrunner/schemas/role-matrix.schema.yaml`
+- Each phase entry requires: `builder`, `reviewers`, `assigned_node`, `context`
+- `builder` values: `claude | codex | below | human`
+- `assigned_node` must match a node in `~/.buildrunner/cluster.json`
+- Migration: `python3 scripts/migrate-role-matrix.py` converts prose tables to YAML
+- Consumed by Phase 3 `load-role-matrix.sh` → dispatches to correct LLM per phase
+
 ## Per-file validation
 
 - `pytest tests/cluster/test_<file>.py -x`
