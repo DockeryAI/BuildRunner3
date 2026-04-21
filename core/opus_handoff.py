@@ -23,6 +23,11 @@ class HandoffPackage:
     atomic_tasks: List[Dict]
     context_files: List[str]
     success_criteria: List[str]
+    # 4.7 posture hints — downstream callers should inherit these when making
+    # their own messages.create() calls so the effort tier and model stay
+    # consistent across the Opus → Sonnet handoff.
+    effort_tier: str = "high"
+    model_hint: str = "claude-opus-4-7"
 
 
 class OpusHandoff:
@@ -232,6 +237,8 @@ This project builds a {spec.use_case} for the {spec.industry} industry.
             "atomic_tasks": package.atomic_tasks,
             "context_files": package.context_files,
             "success_criteria": package.success_criteria,
+            "effort_tier": package.effort_tier,
+            "model_hint": package.model_hint,
         }
 
         with open(output, "w") as f:

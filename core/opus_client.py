@@ -1,15 +1,78 @@
 """
-Real Anthropic Opus API client for PRD generation
+Real Anthropic Opus API client for PRD generation — Claude 4.7 edition
 
 Provides intelligent PROJECT_SPEC generation, requirements analysis,
-design token creation, and spec validation using Claude Opus.
+design token creation, and spec validation using Claude Opus 4.7.
+
+--- SDK PATH NOTE (2026-04-21) ---
+Installed anthropic SDK v0.73.x does not expose `output_config` as a named
+parameter on `messages.create()`. Structured outputs (effort tier, etc.) are
+therefore routed via extra_body={"output_config": {"effort": <tier>}} as the
+interim path. The SDK's `thinking` parameter accepts the "enabled" type with
+budget_tokens in the formal TypedDict — adaptive thinking (type="adaptive",
+display="summarized") is passed as a plain dict since the TypedDict is
+total=False and accepts extra keys at runtime.
+Upgrade to an SDK that natively exposes output_config and thinking.type=adaptive
+when available; remove this note and the extra_body shim at that point.
+Minimum SDK version required: 0.73.0 (ThinkingBlock, extra_body support).
+----------------------------------
 """
 
 import os
 import json
 import asyncio
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 from anthropic import Anthropic, AsyncAnthropic
+from anthropic.types import Message
+
+
+# ---------------------------------------------------------------------------
+# Model constants
+# ---------------------------------------------------------------------------
+
+# Default model — override via ANTHROPIC_MODEL env var or pass model= arg.
+# Supports "opusplan" alias: pass model="opusplan" to have the client resolve
+# to the current Opus planning model automatically.
+_DEFAULT_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-7")
+_OPUSPLAN_ALIAS = "opusplan"
+_OPUSPLAN_RESOLVED = "claude-opus-4-7"
+
+# Per-method max_tokens (right-sized for 4.7 tokenizer; 1.0–1.35× inflation
+# means old 4096 ceilings are too low for xhigh reasoning).
+_MAX_TOKENS = {
+    "pre_fill_spec": 16000,       # Spec output can be 2–8k; give generous headroom
+    "analyze_requirements": 4096, # JSON response; 4k sufficient
+    "generate_design_tokens": 4096,
+    "validate_spec": 2048,        # Classification/completeness check only
+}
+
+# Effort tiers per method routed via extra_body["output_config"]["effort"]
+# xhigh = spec generation (full reasoning pass)
+# high  = requirements + design tokens (substantive but not exhaustive)
+# medium = validation (classification-grade; per 4.7 effort guidance)
+_EFFORT_TIERS = {
+    "pre_fill_spec": "xhigh",
+    "analyze_requirements": "high",
+    "generate_design_tokens": "high",
+    "validate_spec": "medium",
+}
+
+# Adaptive thinking config — passed as plain dict to avoid TypedDict literal
+# constraint on "type" field. SDK v0.74.1 allows this at runtime.
+_ADAPTIVE_THINKING = {"type": "adaptive", "display": "summarized"}
+
+
+def _extract_text(message: Message) -> str:
+    """
+    Type-safe text extractor. Adaptive thinking puts ThinkingBlock first in
+    content[] — positional indexing (message.content[0].text) crashes. This
+    skips all non-text blocks and returns the first text block's content, or
+    empty string if none found.
+    """
+    return next(
+        (b.text for b in message.content if getattr(b, "type", None) == "text"),
+        "",
+    )
 
 
 class OpusAPIError(Exception):
@@ -36,9 +99,7 @@ def with_retry(max_retries: int = 3):
                     return await func(*args, **kwargs)
                 except Exception as e:
                     if attempt == max_retries - 1:
-                        # Last attempt failed, re-raise
                         raise
-                    # Exponential backoff: 2^attempt seconds
                     await asyncio.sleep(2**attempt)
                     continue
 
@@ -48,14 +109,17 @@ def with_retry(max_retries: int = 3):
 
 
 class OpusClient:
-    """Real Opus API client for PRD wizard"""
+    """Opus 4.7 API client for PRD wizard"""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         """
         Initialize Opus client
 
         Args:
             api_key: Anthropic API key (defaults to ANTHROPIC_API_KEY env var)
+            model: Model name; pass "opusplan" to resolve to the current Opus
+                   planning model. Defaults to ANTHROPIC_MODEL env var or
+                   "claude-opus-4-7".
 
         Raises:
             ValueError: If API key not found
@@ -66,8 +130,29 @@ class OpusClient:
 
         self.client = Anthropic(api_key=self.api_key)
         self.async_client = AsyncAnthropic(api_key=self.api_key)
-        self.model = "claude-opus-4-20250514"  # Latest Opus
-        self.max_tokens = 4096
+
+        raw_model = model or _DEFAULT_MODEL
+        self.model = _OPUSPLAN_RESOLVED if raw_model == _OPUSPLAN_ALIAS else raw_model
+
+    def _make_create_kwargs(self, method_name: str, messages: List[Dict]) -> Dict[str, Any]:
+        """
+        Build kwargs for messages.create, applying per-method effort tier,
+        adaptive thinking, and right-sized max_tokens.
+
+        The effort tier is routed via extra_body["output_config"] (interim SDK
+        path — see module docstring). The thinking param uses adaptive mode.
+        """
+        return {
+            "model": self.model,
+            "max_tokens": _MAX_TOKENS[method_name],
+            "messages": messages,
+            "thinking": _ADAPTIVE_THINKING,
+            "extra_body": {
+                "output_config": {
+                    "effort": _EFFORT_TIERS[method_name],
+                }
+            },
+        }
 
     @with_retry(max_retries=3)
     async def pre_fill_spec(self, industry: str, use_case: str, user_input: Dict[str, str]) -> str:
@@ -89,12 +174,12 @@ class OpusClient:
 
         try:
             message = await self.async_client.messages.create(
-                model=self.model,
-                max_tokens=self.max_tokens,
-                messages=[{"role": "user", "content": prompt}],
+                **self._make_create_kwargs(
+                    "pre_fill_spec",
+                    [{"role": "user", "content": prompt}],
+                )
             )
-
-            return message.content[0].text
+            return _extract_text(message)
         except Exception as e:
             raise OpusAPIError(f"Opus API error during spec pre-fill: {e}")
 
@@ -138,10 +223,12 @@ Respond in JSON format with the following structure:
 
         try:
             message = await self.async_client.messages.create(
-                model=self.model, max_tokens=2048, messages=[{"role": "user", "content": prompt}]
+                **self._make_create_kwargs(
+                    "analyze_requirements",
+                    [{"role": "user", "content": prompt}],
+                )
             )
-
-            response_text = message.content[0].text
+            response_text = _extract_text(message)
             return json.loads(response_text)
         except json.JSONDecodeError as e:
             raise OpusAPIError(f"Failed to parse JSON response: {e}")
@@ -201,10 +288,12 @@ Example structure:
 
         try:
             message = await self.async_client.messages.create(
-                model=self.model, max_tokens=2048, messages=[{"role": "user", "content": prompt}]
+                **self._make_create_kwargs(
+                    "generate_design_tokens",
+                    [{"role": "user", "content": prompt}],
+                )
             )
-
-            response_text = message.content[0].text
+            response_text = _extract_text(message)
             return json.loads(response_text)
         except json.JSONDecodeError as e:
             raise OpusAPIError(f"Failed to parse design tokens JSON: {e}")
@@ -250,10 +339,12 @@ Respond in JSON format with:
 
         try:
             message = await self.async_client.messages.create(
-                model=self.model, max_tokens=1024, messages=[{"role": "user", "content": prompt}]
+                **self._make_create_kwargs(
+                    "validate_spec",
+                    [{"role": "user", "content": prompt}],
+                )
             )
-
-            response_text = message.content[0].text
+            response_text = _extract_text(message)
             return json.loads(response_text)
         except json.JSONDecodeError as e:
             raise OpusAPIError(f"Failed to parse validation JSON: {e}")
