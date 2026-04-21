@@ -38,10 +38,10 @@ app.include_router(context_router)
 
 
 def _log_startup_info() -> None:
-    flag = os.environ.get("BR3_MULTI_MODEL_CONTEXT", "off")
+    flag = os.environ.get("BR3_AUTO_CONTEXT", "off")
     port = int(os.environ.get("CONTEXT_API_PORT", "4500"))
     logger.info(
-        "Context API standalone — port=%d BR3_MULTI_MODEL_CONTEXT=%s",
+        "Context API standalone — port=%d BR3_AUTO_CONTEXT=%s",
         port,
         flag,
     )

@@ -245,6 +245,101 @@ def test_raw_decisions_log_is_filtered(canary_sources) -> None:
     assert "[private]" not in section.content
 
 
+# ---------------------------------------------------------------------------
+# test_shared_private_filter — core.cluster.private_filter is the single source
+# ---------------------------------------------------------------------------
+
+def test_shared_private_filter_module_is_source_of_truth() -> None:
+    """context_bundle.filter_private_lines must be the same symbol as core.cluster.private_filter."""
+    from core.cluster import context_bundle, private_filter
+
+    assert context_bundle.filter_private_lines is private_filter.filter_private_lines, (
+        "filter_private_lines must re-export from core.cluster.private_filter "
+        "so every egress path shares one implementation."
+    )
+
+
+# ---------------------------------------------------------------------------
+# test_research_canary — research docs must not leak [private] into bundles
+# ---------------------------------------------------------------------------
+
+RESEARCH_CANARY = "research-canary-sensitive-ABC"
+RESEARCH_PRIVATE_LINE = f"[private] {RESEARCH_CANARY}"
+
+
+def test_research_canary_never_reaches_bundle(tmp_path: Path) -> None:
+    """Research library doc containing [private] must be stripped before bundle append."""
+    from core.cluster import context_bundle
+    from core.cluster.context_bundle import ContextBundleAssembler
+
+    research_dir = tmp_path / "research-library"
+    research_dir.mkdir()
+    (research_dir / "tainted.md").write_text(
+        f"# Tainted doc\n\n{RESEARCH_PRIVATE_LINE}\n\n[public] safe body line.\n"
+    )
+    br_dir = tmp_path / ".buildrunner"
+    br_dir.mkdir()
+    (br_dir / "decisions.log").write_text(PUBLIC_LINE_1 + "\n")
+    (br_dir / "decisions.public.log").write_text(PUBLIC_LINE_1 + "\n")
+    (br_dir / "browser.log").write_text("")
+    (br_dir / "supabase.log").write_text("")
+    (br_dir / "device.log").write_text("")
+    (br_dir / "query.log").write_text("")
+
+    mem_dir = tmp_path / ".lockwood"
+    mem_dir.mkdir()
+    missing_db = mem_dir / "nonexistent.db"
+
+    with mock.patch.multiple(
+        "core.cluster.context_bundle",
+        _RESEARCH_LIBRARY=research_dir,
+        _JIMMY_RESEARCH=research_dir,
+        _BROWSER_LOG=br_dir / "browser.log",
+        _SUPABASE_LOG=br_dir / "supabase.log",
+        _DEVICE_LOG=br_dir / "device.log",
+        _QUERY_LOG=br_dir / "query.log",
+        _DECISIONS_LOG=br_dir / "decisions.log",
+        _DECISIONS_PUBLIC_LOG=br_dir / "decisions.public.log",
+        _MEMORY_DB=missing_db,
+        _INTEL_DB=missing_db,
+        _JIMMY_MEMORY_DB=missing_db,
+        _JIMMY_INTEL_DB=missing_db,
+    ):
+        with mock.patch.object(context_bundle, "count_tokens", return_value=100):
+            with mock.patch.dict(os.environ, {"BR3_AUTO_CONTEXT": "on"}):
+                assembler = ContextBundleAssembler()
+                bundle = assembler.assemble(model="claude", token_budget=32_000)
+                prompt = bundle.to_prompt_block()
+
+    assert RESEARCH_CANARY not in prompt, (
+        f"PRIVATE LEAK: research canary '{RESEARCH_CANARY}' appeared in bundle prompt"
+    )
+    assert "[private]" not in prompt
+
+
+def test_retrieve_route_scrubs_private_lines(monkeypatch, tmp_path: Path) -> None:
+    """POST /retrieve must scrub [private] lines from every source row."""
+    from api.routes import retrieve as retrieve_mod
+
+    # Seed a decisions.log containing the research canary on a [private] line.
+    decisions_log = tmp_path / "decisions.log"
+    decisions_log.write_text(
+        "\n".join([
+            PUBLIC_LINE_1,
+            f"[private] {RESEARCH_CANARY}",
+            PUBLIC_LINE_2,
+        ])
+    )
+    monkeypatch.setattr(retrieve_mod, "DECISIONS_LOG", str(decisions_log))
+
+    hits = retrieve_mod._search_decisions("canary", limit=10)
+    for h in hits:
+        assert RESEARCH_CANARY not in h["text"], (
+            f"PRIVATE LEAK in /retrieve decisions row: {h['text']!r}"
+        )
+        assert "[private]" not in h["text"]
+
+
 def test_private_filter_pattern_anchoring() -> None:
     """Verify [private] filter uses word-boundary anchoring (not substring match)."""
     from core.cluster.context_bundle import filter_private_lines

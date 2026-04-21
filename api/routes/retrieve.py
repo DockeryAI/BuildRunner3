@@ -22,6 +22,9 @@ from typing import Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from core.cluster.lancedb_config import get_lancedb_uri, get_embedding_model
+from core.cluster.private_filter import filter_private_lines
+
 logger = logging.getLogger(__name__)
 
 # Feature gate
@@ -32,7 +35,7 @@ DECISIONS_LOG = os.environ.get(
     "DECISIONS_LOG",
     os.path.expanduser("~/.buildrunner/decisions.log"),
 )
-LANCE_DIR = os.environ.get("LANCE_DIR", os.path.expanduser("~/.lockwood/lancedb"))
+LANCE_DIR = get_lancedb_uri()
 
 retrieve_router = APIRouter()
 
@@ -61,6 +64,7 @@ class RetrieveResponse(BaseModel):
     stage1_count: int
     stage2_count: int
     flag_active: bool
+    warning: Optional[str] = None
 
 
 # --- Source implementations ---
@@ -74,19 +78,29 @@ def _search_research(query: str, limit: int = 20) -> list[dict]:
         if "research_library" not in db.table_names():
             return []
         table = db.open_table("research_library")
-        model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        # Empty-index guard — reported upstream as a warning.
+        try:
+            if len(table) == 0:
+                logger.info("research_library table is empty")
+                return []
+        except Exception:
+            pass
+        model = SentenceTransformer(get_embedding_model())
         vec = model.encode([query]).tolist()[0]
         results = table.search(vec).metric("cosine").limit(limit).to_pandas()
         hits = []
         for _, row in results.iterrows():
             dist = float(row.get("_distance", 1.0))
+            start = int(row.get("start_line", 0) or 0)
+            end = int(row.get("end_line", 0) or 0)
+            raw_text = str(row.get("text", ""))[:800]
             hits.append({
                 "source": "research",
                 "source_url": row.get("source_file", ""),
-                "start_line": 0,
-                "end_line": 0,
+                "start_line": start,
+                "end_line": end,
                 "score": round(max(0.0, 1.0 / (1.0 + dist)), 4),
-                "text": str(row.get("text", ""))[:800],
+                "text": filter_private_lines(raw_text),
             })
         return hits
     except Exception as e:
@@ -103,9 +117,7 @@ def _search_lockwood_code(query: str, limit: int = 20) -> list[dict]:
         if "codebase" not in db.table_names():
             return []
         table = db.open_table("codebase")
-        # Use nomic-embed or fallback to MiniLM
-        embed_model = os.environ.get("EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
-        model = SentenceTransformer(embed_model, trust_remote_code=True)
+        model = SentenceTransformer(get_embedding_model(), trust_remote_code=True)
         vec = model.encode([query]).tolist()[0]
         results = table.search(vec).metric("cosine").limit(limit).to_pandas()
         hits = []
@@ -119,7 +131,7 @@ def _search_lockwood_code(query: str, limit: int = 20) -> list[dict]:
                 "start_line": int(row.get("start_line", 0)),
                 "end_line": int(row.get("end_line", 0)),
                 "score": round(max(0.0, 1.0 / (1.0 + dist)), 4),
-                "text": str(row.get("text", ""))[:800],
+                "text": filter_private_lines(str(row.get("text", ""))[:800]),
             })
         return hits
     except Exception as e:
@@ -146,7 +158,7 @@ def _search_lockwood_memory(query: str, limit: int = 10) -> list[dict]:
                 "start_line": 0,
                 "end_line": 0,
                 "score": round(score, 4),
-                "text": f"Topic: {note.get('topic', '')}\n{content[:600]}",
+                "text": filter_private_lines(f"Topic: {note.get('topic', '')}\n{content[:600]}"),
             })
         return hits
     except Exception as e:
@@ -173,13 +185,17 @@ def _search_decisions(query: str, limit: int = 10) -> list[dict]:
             if match_count == 0:
                 continue
             score = min(1.0, match_count / max(len(tokens), 1) * 0.9)
+            scrubbed = filter_private_lines(line[:600])
+            if not scrubbed.strip():
+                # Entire line was a [private] entry — drop it.
+                continue
             hits.append({
                 "source": "decisions",
                 "source_url": f"decisions.log:L{len(lines) - i}",
                 "start_line": len(lines) - i,
                 "end_line": len(lines) - i,
                 "score": round(score, 4),
-                "text": line[:600],
+                "text": scrubbed,
             })
             if len(hits) >= limit:
                 break
@@ -290,6 +306,10 @@ async def retrieve(req: RetrieveRequest):
         for r in top_results
     ]
 
+    warning: Optional[str] = None
+    if "research" in sources and not _research_table_has_rows():
+        warning = "index is empty"
+
     return RetrieveResponse(
         query=req.query,
         results=snippets,
@@ -297,7 +317,22 @@ async def retrieve(req: RetrieveRequest):
         stage1_count=stage1_count,
         stage2_count=len(snippets),
         flag_active=True,
+        warning=warning,
     )
+
+
+def _research_table_has_rows() -> bool:
+    """Return True iff the research_library table exists and has ≥1 row."""
+    try:
+        import lancedb
+        db = lancedb.connect(LANCE_DIR)
+        if "research_library" not in db.table_names():
+            return False
+        table = db.open_table("research_library")
+        return len(table) > 0
+    except Exception:
+        # Fail-open for the warning: don't claim empty if we can't tell.
+        return True
 
 
 @retrieve_router.get("/rerank/health")

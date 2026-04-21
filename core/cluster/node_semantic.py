@@ -37,7 +37,7 @@ from api.routes.retrieve import retrieve_router
 app.include_router(retrieve_router)
 
 # --- Include context routes (Phase 1: /context/{model} on :4500) ---
-# context_router serves per-model context bundles (BR3_MULTI_MODEL_CONTEXT flag-gated).
+# context_router serves per-model context bundles (BR3_AUTO_CONTEXT flag-gated).
 # The router is defined in api/routes/context.py (APIRouter only, no app there).
 # Standalone entrypoint: api/services/context_api_standalone.py
 from api.routes.context import router as context_router
@@ -57,9 +57,11 @@ _indexing = False
 _last_index_time = 0.0
 _index_stats = {"total_files": 0, "total_chunks": 0, "last_duration": 0.0}
 
-LANCE_DIR = os.environ.get("LANCE_DIR", os.path.expanduser("~/.lockwood/lancedb"))
+from core.cluster.lancedb_config import get_lancedb_uri, get_embedding_model
+
+LANCE_DIR = get_lancedb_uri()
 RESEARCH_DIR = os.environ.get("RESEARCH_DIR", os.path.expanduser("~/repos/research-library"))
-RESEARCH_EMBED_MODEL = os.environ.get("RESEARCH_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+RESEARCH_EMBED_MODEL = os.environ.get("RESEARCH_EMBED_MODEL", get_embedding_model())
 RESEARCH_INDEX_INTERVAL = int(os.environ.get("RESEARCH_INDEX_INTERVAL", "300"))
 
 

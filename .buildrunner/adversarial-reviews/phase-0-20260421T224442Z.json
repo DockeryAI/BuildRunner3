@@ -1,0 +1,271 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "review-20260421T224442Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-4-7-optimization.md",
+  "plan_file": ".buildrunner/plans/spec-draft-4-7-optimization.md",
+  "plan_file_abs": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/spec-draft-4-7-optimization.md",
+  "plan_path_sha": "53bc34f89f606ae6",
+  "mode": "plan",
+  "status": "blocked",
+  "pass": false,
+  "verdict": "BLOCKED",
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "arbiter_invoked": true,
+  "arbiter_ruling": {
+    "verdict": "BLOCKED",
+    "rationale": "Both disputed blocker findings are technically verifiable and concrete: the installed anthropic SDK v0.74.1 does not accept output_config (confirmed by the parameter list in the finding itself), and enabling adaptive thinking causes ThinkingBlock to precede TextBlock in response.content, which would break every content[0].text accessor. Codex produced no findings at all, leaving Claude's evidence-grounded analysis uncontested on the merits.",
+    "findings": [
+      {
+        "finding": "Phase 1: anthropic SDK v0.74.1 (installed) does not expose output_config as a top-level messages.create() parameter \u2014 signature is ['max_tokens','messages','model','metadata','service_tier','stop_sequences','stream','system','temperature','thinking','tool_choice','tools','top_k','top_p','extra_headers','extra_query','extra_body','timeout']. No SDK upgrade step exists in the plan.",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "UPHELD as blocker. The introspected SDK signature is definitive \u2014 output_config is absent. Passing it to messages.create() will raise TypeError (the SDK's Pydantic-backed params do not accept arbitrary kwargs). Plan must add an explicit SDK upgrade step (pin to a version that supports output_config) as a Phase 1 prerequisite, or route the parameter via extra_body as an interim workaround. Without one of these, Phase 1 cannot execute. Codex's silence does not rebut concrete SDK introspection evidence.",
+        "upheld": true
+      },
+      {
+        "finding": "Phase 1: all four methods in core/opus_client.py do message.content[0].text, but with thinking={\"type\":\"adaptive\"} enabled the first content block may be a ThinkingBlock (no .text attribute), causing AttributeError on every call.",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "UPHELD as blocker. Anthropic's documented response shape places ThinkingBlock items before TextBlock items in content[] when thinking is active. content[0].text will raise AttributeError whenever adaptive thinking fires (which is the intended state for xhigh paths). The plan must replace positional indexing with a type-filtered accessor (e.g. next(b.text for b in response.content if b.type == 'text')) at all four call sites. This is a deterministic runtime crash on the happy path, not a speculative edge case.",
+        "upheld": true
+      }
+    ],
+    "reviewer_accuracy": {
+      "claude": "High-quality review. Findings are anchored to concrete evidence (SDK introspection output, research-library citations, file frontmatter reads) and correctly separate blocker/warning/note tiers. Both disputed blockers are technically sound and would cause deterministic runtime failure.",
+      "codex": "Non-participating. Zero findings produced means Codex either did not review the artifact or failed to surface any defects \u2014 providing no counter-evidence to Claude's concrete SDK and response-shape claims. Cannot be credited with an opposing position; the dispute reduces to whether Claude's evidence stands on its own, and it does."
+    },
+    "model": "claude-opus-4-7",
+    "effort": "xhigh",
+    "duration_s": 30.4,
+    "artifact": ".buildrunner/plans/spec-draft-4-7-optimization.md",
+    "review_round": 1,
+    "timestamp": "2026-04-21T22:44:42.930591Z"
+  },
+  "merged_findings": [
+    {
+      "finding": "Phase 1: anthropic SDK v0.74.1 (installed) does not expose output_config as a top-level messages.create() parameter \u2014 signature is ['max_tokens','messages','model','metadata','service_tier','stop_sequences','stream','system','temperature','thinking','tool_choice','tools','top_k','top_p','extra_headers','extra_query','extra_body','timeout']. No SDK upgrade step exists in the plan.",
+      "severity": "blocker",
+      "location": "Phase 1 / core/opus_client.py",
+      "claim": "The plan adds output_config={\"effort\": ...} to all four messages.create() call sites, but the installed SDK version does not support that parameter, so the code will either raise a TypeError or silently be ignored unless the SDK is upgraded first \u2014 and the plan has no upgrade step.",
+      "evidence": "SDK introspection output: no 'output_config' in messages.create() parameters; research library confirms output_config is valid for 4.7 API, implying a newer SDK is required",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1: all four methods in core/opus_client.py do message.content[0].text, but with thinking={\"type\":\"adaptive\"} enabled the first content block may be a ThinkingBlock (no .text attribute), causing AttributeError on every call.",
+      "severity": "blocker",
+      "location": "core/opus_client.py \u2014 pre_fill_spec, analyze_requirements, generate_design_tokens, validate_spec",
+      "claim": "Adaptive thinking prepends a ThinkingBlock before the TextBlock in response.content; indexing content[0].text without type-checking the block kind will crash every method when thinking fires.",
+      "evidence": "Research library: 'Adaptive thinking is OFF by default \u2014 Reversed from 4.6. You must explicitly set thinking: {type: \"adaptive\"} to enable any thinking at all.' Plan adds thinking at all 4 sites but doesn't update the content accessor pattern.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1: Pydantic schemas for analyze_requirements, generate_design_tokens, and validate_spec structured-output conversion are not defined anywhere in the plan.",
+      "severity": "warning",
+      "location": "Phase 1 deliverables",
+      "claim": "The deliverable 'Switch to output_config.format structured outputs with Pydantic schemas; drop json.loads' cannot be executed without schema definitions, yet the plan provides none, leaving implementors to invent the contract.",
+      "evidence": "Phase 1 deliverable bullet: 'Switch analyze_requirements, generate_design_tokens, validate_spec to output_config.format structured outputs with Pydantic schemas; drop json.loads' \u2014 no schema section or appendix anywhere in the plan.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2/4 ownership conflict: research-audit.md is present in ~/.claude/commands/ but Phase 2 file list omits it while Phase 4 explicitly excludes it with '(research-audit.md is owned by Phase 2; skip here)'. Neither phase will apply the two-pass finding pattern to this file.",
+      "severity": "warning",
+      "location": "Phase 2 file list / Phase 4 exclusion note",
+      "claim": "The file falls through a gap \u2014 Phase 4 defers to Phase 2, but Phase 2 never lists it, so research-audit.md will exit the sweep without the required two-pass structure.",
+      "evidence": "Phase 2 Files section: learn.md, research.md, cluster-research.md, switch.md, research-search.sh, CLAUDE.md \u2014 research-audit.md absent. Phase 4: '(research-audit.md is owned by Phase 2; skip here)'",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 5: br3-frontend-design/ and br3-planning/ are directory paths with no named target file inside them.",
+      "severity": "warning",
+      "location": "Phase 5 file list",
+      "claim": "Directory paths without a specific file target are ambiguous deliverables \u2014 an implementor has no way to know which file(s) to edit, risking partial or no updates to these skill directories.",
+      "evidence": "Phase 5 Files: '~/.claude/skills/br3-frontend-design/ (MODIFY)', '~/.claude/skills/br3-planning/ (MODIFY)' \u2014 no filename given for either directory.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 8: skill-end.sh relies on a 'skill-end' Claude Code hook event that does not exist in the hook system. Existing hooks fire on PreToolUse, PostToolUse, UserPromptSubmit, and SessionStart \u2014 there is no skill-end event.",
+      "severity": "warning",
+      "location": "Phase 8 / ~/.buildrunner/hooks/skill-end.sh",
+      "claim": "If skill-end is not a valid hook trigger event in Claude Code, the hook will never fire and no Lockwood rows will be logged, making Phase 8's measurement loop a no-op.",
+      "evidence": "Hooks directory contains: auto-context.sh, bash-guard.sh, enforce-build-gates.sh, regrounding-check.sh, stop-test-runner.sh, etc. \u2014 no skill-end hook and no documentation of a skill-end event type in the hook system.",
+      "confidence": "high",
+      "fix_type": "structural",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 7: SessionStart hook is tasked with detecting task class (planning/execution/debug/audit) and emitting the corresponding effort tier, but no detection mechanism is defined.",
+      "severity": "warning",
+      "location": "Phase 7 / ~/.buildrunner/hooks/session-start.sh",
+      "claim": "A session-start hook has no access to what the user intends to do in the session; without an explicit detection mechanism (e.g. reading a state file, parsing a --class flag, or prompting), the task-class detection deliverable cannot be satisfied.",
+      "evidence": "Phase 7 deliverable: 'Extend SessionStart hook to detect task class (planning / execution / debug / audit) and declare effort tier' \u2014 no implementation approach provided.",
+      "confidence": "high",
+      "fix_type": "structural",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 3 success criterion 'No section exceeds 12 lines' is impossible to meet without deleting existing CLAUDE.md content, which the plan does not authorize.",
+      "severity": "warning",
+      "location": "Phase 3 success criteria",
+      "claim": "The existing global CLAUDE.md contains multi-hundred-line sections (BR3 Universal Observability alone is >100 lines); a 12-line cap on new additions conflicts with existing content unless the plan explicitly permits deleting or condensing legacy sections.",
+      "evidence": "Phase 3 success criteria: 'No section exceeds 12 lines.' Global CLAUDE.md context in this session shows sections spanning well over 12 lines each.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 8: outcome_quality field in the Lockwood schema has no automated collection path \u2014 quality is subjective and the plan provides no mechanism to populate it per invocation.",
+      "severity": "warning",
+      "location": "Phase 8 / log-skill-run.sh schema definition",
+      "claim": "Logging outcome_quality without an automated assessment mechanism (e.g. user rating, LLM-graded rubric, or a proxy metric) means the field will either always be null or require manual entry, breaking the automated measurement loop.",
+      "evidence": "Phase 8 deliverable: 'Define Lockwood schema fields: skill_name, effort_tier, outcome_quality, token_count, duration_ms, timestamp' \u2014 no collection method for outcome_quality specified.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 4/5 audit-site.md already has effort: xhigh, model: claude-opus-4-7, thinking: {type: adaptive, display: summarized} in frontmatter \u2014 Phase 4/5 will apply changes to a file already partially updated without a diff-first check.",
+      "severity": "note",
+      "location": "Phase 4 / ~/.claude/commands/audit-site.md",
+      "claim": "Without a pre-edit state check, Phase 4 may double-apply changes, produce conflicts, or miss the delta between the plan's intended state and the file's current state.",
+      "evidence": "audit-site.md frontmatter confirmed: 'model: claude-opus-4-7, effort: xhigh, thinking: {type: adaptive, display: summarized}, max_tokens: 64000'. Phase 4 deliverable: 'Same in /audit-site'.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 2 deliverable says 'Add frontmatter model: claude-opus-4-6 to /learn' but learn.md already has model: opus and research.md already has model: opus \u2014 the correct action is a change, not an add.",
+      "severity": "note",
+      "location": "Phase 2 deliverables / ~/.claude/commands/learn.md, research.md",
+      "claim": "If the existing 'opus' alias resolves to 4.7, the deliverable is correct in intent but wrong in verb \u2014 'add' will fail or duplicate; the step should read 'change model: opus to model: claude-opus-4-6'.",
+      "evidence": "learn.md frontmatter: 'model: opus'; research.md frontmatter: 'model: opus'. Phase 2 deliverable: 'Add frontmatter model: claude-opus-4-6 to /learn'.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 sets max_tokens=64000 on xhigh paths for pre_fill_spec and validate_spec \u2014 a PROJECT_SPEC.md is typically 2\u20135k tokens; 64k ceiling at xhigh effort with the new 1.35x tokenizer multiplier risks unexpectedly high API cost per call.",
+      "severity": "note",
+      "location": "Phase 1 / core/opus_client.py pre_fill_spec, validate_spec",
+      "claim": "Setting max_tokens well above realistic output size for these tasks does not improve output quality but does increase cost exposure, especially given the 1.35x tokenizer inflation noted in the plan's own scope context.",
+      "evidence": "Phase 1 deliverable: 'Bump max_tokens to 64000 on xhigh paths'; research library: 'New tokenizer consumes 1.0\u20131.35x more tokens for the same text'.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Parallelization matrix marks Phase 4 as parallelizable with Phases 1, 2, 3, 5, 8 but the written execution order serializes it as '1 \u2192 2 \u2192 3 \u2192 4 \u2192 {5,6,7}', forcing unnecessary sequencing after Phase 3.",
+      "severity": "note",
+      "location": "Parallelization matrix vs. Execution order section",
+      "claim": "Phase 4 has no file overlap with Phases 2 and 3, yet the written order runs it after both complete, adding unneeded wall-clock time to the sweep.",
+      "evidence": "Matrix: Phase 4 'Can Parallel With: 1, 2, 3, 5, 8'. Execution order: '1 \u2192 2 \u2192 3 \u2192 4 \u2192 {5, 6, 7 batch}'.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1 assigns validate_spec effort tier xhigh, but validation is a checking/classification task \u2014 the research library recommends medium for classification tasks.",
+      "severity": "note",
+      "location": "Phase 1 deliverables / core/opus_client.py validate_spec",
+      "claim": "Assigning xhigh to a spec completeness check contradicts the effort guidance in the plan's own CLAUDE.md source ('medium for lint-grade'), adding unnecessary token cost to every validation call.",
+      "evidence": "Phase 1 deliverable: 'validate_spec \u2192 xhigh'; CLAUDE.md Phase 3 deliverable: 'medium for lint-grade' effort.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1: anthropic SDK v0.74.1 (installed) does not expose output_config as a top-level messages.create() parameter \u2014 signature is ['max_tokens','messages','model','metadata','service_tier','stop_sequences','stream','system','temperature','thinking','tool_choice','tools','top_k','top_p','extra_headers','extra_query','extra_body','timeout']. No SDK upgrade step exists in the plan.",
+      "severity": "blocker",
+      "location": "Phase 1 / core/opus_client.py",
+      "claim": "The plan adds output_config={\"effort\": ...} to all four messages.create() call sites, but the installed SDK version does not support that parameter, so the code will either raise a TypeError or silently be ignored unless the SDK is upgraded first \u2014 and the plan has no upgrade step.",
+      "evidence": "SDK introspection output: no 'output_config' in messages.create() parameters; research library confirms output_config is valid for 4.7 API, implying a newer SDK is required",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Phase 1: all four methods in core/opus_client.py do message.content[0].text, but with thinking={\"type\":\"adaptive\"} enabled the first content block may be a ThinkingBlock (no .text attribute), causing AttributeError on every call.",
+      "severity": "blocker",
+      "location": "core/opus_client.py \u2014 pre_fill_spec, analyze_requirements, generate_design_tokens, validate_spec",
+      "claim": "Adaptive thinking prepends a ThinkingBlock before the TextBlock in response.content; indexing content[0].text without type-checking the block kind will crash every method when thinking fires.",
+      "evidence": "Research library: 'Adaptive thinking is OFF by default \u2014 Reversed from 4.6. You must explicitly set thinking: {type: \"adaptive\"} to enable any thinking at all.' Plan adds thinking at all 4 sites but doesn't update the content accessor pattern.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-21T22:44:42.975465Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 4,
+  "escalated": false,
+  "phase_number": 0
+}

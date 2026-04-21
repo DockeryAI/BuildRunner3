@@ -56,12 +56,12 @@ def test_context_codex_returns_200():
             status = resp.status
             body = resp.read()
     except urllib.error.HTTPError as e:
-        # If BR3_MULTI_MODEL_CONTEXT is OFF, we get 503 — still means the endpoint is mounted
+        # If BR3_AUTO_CONTEXT is OFF, we get 503 — still means the endpoint is mounted
         if e.code == 503:
             pytest.skip(
-                f"Jimmy returned 503 — BR3_MULTI_MODEL_CONTEXT flag is OFF. "
+                f"Jimmy returned 503 — BR3_AUTO_CONTEXT flag is OFF. "
                 "Endpoint is mounted correctly (Phase 1 success). "
-                "Enable flag with BR3_MULTI_MODEL_CONTEXT=on to get 200."
+                "Enable flag with BR3_AUTO_CONTEXT=on to get 200."
             )
         pytest.fail(f"Jimmy returned HTTP {e.code}: {e.reason}")
     except Exception as exc:

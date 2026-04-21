@@ -78,11 +78,9 @@ _EXCLUSION_PATTERNS = [
     "token-refresh*.log",
 ]
 
-# [private] filter — case-sensitive, anchored to reject [privately] but match [private].
-# \b before '[' fails ([ is non-word char), so use negative lookahead/lookbehind instead:
-# (?<![a-zA-Z0-9_]) ensures [private] is not preceded by a word char (e.g. not "foo[private]")
-# (?![a-zA-Z0-9_-]) ensures [private] is not followed by a word char or dash (e.g. not [private-note])
-_PRIVATE_PATTERN = re.compile(r"(?<![a-zA-Z0-9_])\[private\](?![a-zA-Z0-9_-])")
+# [private] filter lives in core.cluster.private_filter — shared across all egress paths.
+# Re-exported below for back-compat with existing imports.
+from core.cluster.private_filter import filter_private_lines, _PRIVATE_PATTERN  # noqa: E402, F401
 
 # Max log lines per file for bundle candidates
 _MAX_LOG_LINES = 200
@@ -148,22 +146,6 @@ class ContextBundle:
                 parts.append(sec.content.strip())
         parts.append("</cluster-context>")
         return "\n\n".join(parts)
-
-
-# ---------------------------------------------------------------------------
-# Private-filter (defense-in-depth layer 2 — layer 1 is sync-cluster-context.sh)
-# ---------------------------------------------------------------------------
-
-
-def filter_private_lines(text: str) -> str:
-    """Drop any line containing a word-boundary [private] token.
-
-    Case-sensitive. Pattern: r'\\b\\[private\\]\\b'.
-    This is the SECOND layer of private filtering (defense-in-depth).
-    The first layer runs in sync-cluster-context.sh at the mirror.
-    """
-    lines = text.splitlines(keepends=True)
-    return "".join(line for line in lines if not _PRIVATE_PATTERN.search(line))
 
 
 # ---------------------------------------------------------------------------
@@ -376,37 +358,52 @@ def _extract_intel() -> BundleSection:
         return BundleSection(source_type="intel", content="", item_count=0)
 
 
-def _extract_research(max_docs: int = _MAX_RESEARCH_DOCS, ttl_days: int = 30) -> BundleSection:
-    """Read recent research library docs. Skips docs older than ttl_days."""
+def _extract_research(
+    max_docs: int = _MAX_RESEARCH_DOCS,
+    ttl_days: int = 30,
+    query: str = "",
+) -> BundleSection:
+    """Select research library docs for the bundle.
+
+    Phase 7: prefer reranker-driven relevance over mtime recency when a
+    ``query`` is provided. Falls back to mtime ordering when no query is
+    available or the reranker is unreachable — never blocks assembly.
+    """
     for research_root in (_RESEARCH_LIBRARY, _JIMMY_RESEARCH):
         if research_root.exists():
             break
     else:
         return BundleSection(source_type="research", content="", item_count=0)
 
-    cutoff = datetime.now(tz=timezone.utc) - timedelta(days=ttl_days)
-    docs: list[tuple[datetime, Path]] = []
-
+    # Gather the full candidate pool — no mtime cutoff when reranker is in play.
+    candidates: list[tuple[datetime, Path]] = []
     for ext in ("*.md", "*.txt", "*.json"):
         for doc in research_root.rglob(ext):
-            # Skip exclusion-matched paths
             if _is_excluded(doc):
                 continue
             try:
                 mtime = datetime.fromtimestamp(doc.stat().st_mtime, tz=timezone.utc)
-                if mtime >= cutoff:
-                    docs.append((mtime, doc))
+                candidates.append((mtime, doc))
             except OSError:
                 continue
 
-    # Sort newest-first, take top N
-    docs.sort(key=lambda t: t[0], reverse=True)
-    docs = docs[:max_docs]
+    docs: list[tuple[datetime, Path]] = []
+    if query:
+        docs = _rerank_research_candidates(query, candidates, max_docs)
+
+    if not docs:
+        # Fallback: mtime-recency within TTL, same behavior as pre-Phase-7.
+        cutoff = datetime.now(tz=timezone.utc) - timedelta(days=ttl_days)
+        docs = [(mt, p) for mt, p in candidates if mt >= cutoff]
+        docs.sort(key=lambda t: t[0], reverse=True)
+        docs = docs[:max_docs]
 
     parts: list[str] = []
     for _mtime, doc in docs:
         try:
             text = doc.read_text(encoding="utf-8", errors="replace")
+            # Defense-in-depth: scrub [private] lines before bundle append.
+            text = filter_private_lines(text)
             # Truncate long docs
             if len(text) > 2000:
                 text = text[:2000] + "\n...[truncated]"
@@ -431,6 +428,57 @@ def _is_excluded(path: Path) -> bool:
         if fnmatch.fnmatch(name, pattern):
             return True
     return False
+
+
+def _rerank_research_candidates(
+    query: str,
+    candidates: list[tuple[datetime, Path]],
+    top_k: int,
+) -> list[tuple[datetime, Path]]:
+    """Rerank research docs by relevance to ``query`` using the bge cross-encoder.
+
+    Reads a small preview from each doc (first 1200 chars) to keep the
+    rerank payload bounded, then asks the Phase-10 reranker for the best
+    ``top_k``. On any failure, returns [] so callers fall back to mtime.
+    """
+    if not candidates or top_k <= 0:
+        return []
+    try:
+        from core.cluster.reranker import rerank, ScoredResult
+    except Exception as exc:
+        logger.debug("_rerank_research_candidates: reranker unavailable: %s", exc)
+        return []
+
+    # Bound the pool before reranking — reading every file is wasteful.
+    pool = sorted(candidates, key=lambda t: t[0], reverse=True)[: max(top_k * 4, 20)]
+    scored: list[ScoredResult] = []
+    index: dict[str, tuple[datetime, Path]] = {}
+    for mtime, path in pool:
+        try:
+            preview = path.read_text(encoding="utf-8", errors="replace")[:1200]
+        except OSError:
+            continue
+        key = str(path)
+        index[key] = (mtime, path)
+        scored.append(ScoredResult(
+            text=preview,
+            score=0.0,
+            source="research",
+            source_url=key,
+        ))
+    if not scored:
+        return []
+    try:
+        reranked = rerank(query, scored, top_k=top_k)
+    except Exception as exc:
+        logger.debug("_rerank_research_candidates: rerank failed: %s", exc)
+        return []
+    out: list[tuple[datetime, Path]] = []
+    for r in reranked:
+        entry = index.get(r.source_url)
+        if entry:
+            out.append(entry)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -489,13 +537,15 @@ class ContextBundleAssembler:
         # Determine tokenizer name for budget field
         tokenizer_name = "cl100k_base" if model in ("claude", "codex") else "qwen2.5"
 
-        # Extract all five source types
+        # Extract all five source types. Query is forwarded to the
+        # research extractor so Phase-7 reranking replaces the legacy
+        # 30-day mtime glob when a query is provided.
         sections_raw = [
             _extract_logs(),
             _extract_decisions(),
             _extract_memory(),
             _extract_intel(),
-            _extract_research(),
+            _extract_research(query=query),
         ]
 
         # Count tokens per section; trim to budget
