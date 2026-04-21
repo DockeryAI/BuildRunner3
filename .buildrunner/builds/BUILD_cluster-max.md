@@ -935,7 +935,7 @@ All 7 nodes registered as build workers, hardcoded IPs updated, dispatch works t
 
 ### Phase 5: Below Skill Integration
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave4-skills`
@@ -1210,7 +1210,7 @@ Replace hard-truncation with cache-friendly 3-breakpoint prompts and an 8B summa
 
 ### Phase 9: 3-Way Adversarial Review + Opus 4.7 Arbiter
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Codex model:** gpt-5.4
 **Codex effort:** high
 **Worktree:** `worktrees/wave4-adversarial`
@@ -1288,7 +1288,7 @@ Adversarial loop: Sonnet 4.6 + Codex GPT-5.4 + Below deepseek-r1:70b in parallel
 
 ### Phase 10: Auto-Context Hook (PromptSubmit + PhaseStart)
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave4-context`
