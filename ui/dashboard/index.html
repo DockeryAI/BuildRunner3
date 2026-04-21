@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cluster Max Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="dash-header">
+      <h1>Cluster Max</h1>
+      <div class="dash-status">
+        <span id="ws-state" class="ws-state ws-disconnected">disconnected</span>
+        <span id="ws-latency" class="ws-latency">—</span>
+      </div>
+    </header>
+
+    <main class="dash-grid">
+      <section class="panel" data-panel="node-health">
+        <header>Node Health</header>
+        <div class="panel-body" id="p-node-health"></div>
+      </section>
+      <section class="panel" data-panel="overflow-reserve">
+        <header>Overflow Reserve</header>
+        <div class="panel-body" id="p-overflow-reserve"></div>
+      </section>
+      <section class="panel" data-panel="storage-health">
+        <header>Storage Health</header>
+        <div class="panel-body" id="p-storage-health"></div>
+      </section>
+      <section class="panel" data-panel="routing">
+        <header>Routing Ledger</header>
+        <div class="panel-body" id="p-routing"></div>
+      </section>
+      <section class="panel" data-panel="cost">
+        <header>Cost &amp; Cache</header>
+        <div class="panel-body" id="p-cost"></div>
+      </section>
+      <section class="panel" data-panel="consensus">
+        <header>Consensus Viewer</header>
+        <div class="panel-body" id="p-consensus"></div>
+      </section>
+    </main>
+
+    <script src="panels/node-health.js"></script>
+    <script src="panels/overflow-reserve.js"></script>
+    <script src="panels/storage-health.js"></script>
+    <script src="panels/routing-ledger.js"></script>
+    <script src="panels/cost-cache.js"></script>
+    <script src="panels/consensus-viewer.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

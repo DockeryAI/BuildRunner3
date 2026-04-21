@@ -9,8 +9,25 @@
 ## File layout
 
 - `index.html` — single entry. Loads `app.js` as a classic script (no ESM imports from node_modules).
+- `app.js` — WebSocket client. Reconnect, heartbeat, dispatches `{type, data}` messages to panel `render(mount, data)` by event type.
 - `panels/<name>.js` — one panel per file. Each panel exports `render(container, data)` and `wire(container, ws)` via window globals, NOT ES modules.
 - `styles.css` — single stylesheet. No preprocessors.
+
+## Registered panels (Phase 11)
+
+| Event type         | Panel global                  | Mount id             | Collector                                                  |
+| ------------------ | ----------------------------- | -------------------- | ---------------------------------------------------------- |
+| `node-health`      | `window.NodeHealthPanel`      | `p-node-health`      | 7 tiles incl. Jimmy (CPU/RAM/LanceDB/reranker/context-API) |
+| `overflow-reserve` | `window.OverflowReservePanel` | `p-overflow-reserve` | Lockwood + Lomax idle/warming/active/draining + wake log   |
+| `storage-health`   | `window.StorageHealthPanel`   | `p-storage-health`   | `/srv/jimmy/` subdir usage + last-backup ts                |
+| `routing`          | `window.RoutingLedgerPanel`   | `p-routing`          | Recent skill routing decisions + model mix                 |
+| `cost`             | `window.CostCachePanel`       | `p-cost`             | 24h/7d cost totals + cache hit ratio + 3-breakpoint util   |
+| `consensus`        | `window.ConsensusViewerPanel` | `p-consensus`        | Recent 3-way adversarial reviews + arbiter rulings         |
+
+## WebSocket endpoint
+
+- URL: `ws://10.0.1.106:4400/ws` (served by `api/routes/dashboard_stream.py` on Jimmy).
+- Port 4400 = dashboard. Port 4500 is reserved for the gateway — NEVER bind the dashboard there.
 
 ## WebSocket reconnect contract
 

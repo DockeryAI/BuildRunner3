@@ -1,0 +1,19 @@
+{
+  "phase": 11,
+  "name": "Cluster Max Dashboard @ Port 4400",
+  "step": 1,
+  "step_name": "setup",
+  "step_label": "Setup & file creation",
+  "status": "in_progress",
+  "tasks_total": 9,
+  "tasks_done": 0,
+  "current_task": {"name": "creating panel files"},
+  "tests_written": 0,
+  "tests_passing": 0,
+  "commits": 0,
+  "errors": [],
+  "warnings": [],
+  "started_at": "2026-04-20T22:15:00Z",
+  "updated_at": "2026-04-20T22:15:00Z",
+  "history": [{"step": 1, "name": "setup", "label": "Setup & file creation", "at": "2026-04-20T22:15:00Z", "status": "in_progress"}]
+}
