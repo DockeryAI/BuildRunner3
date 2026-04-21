@@ -1,5 +1,13 @@
 # core/cluster — AGENTS.md
 
+## Canonical Host
+
+- **Muddy** (`10.0.1.100`) is the canonical authoring + source-of-truth node.
+- **Jimmy** (`10.0.1.106`) is the read-only mirror + `/retrieve` / LanceDB service host.
+- Sync direction is one-way: **Muddy → Jimmy**. Any reverse-direction script is a bug.
+- Decision record: `.buildrunner/cluster-max/CANONICALIZATION_DECISION.md`.
+- Enforcement: `~/.buildrunner/scripts/verify-retrieve-host.sh` (Phase 7) asserts `/retrieve` resolves to Jimmy.
+
 ## Quality firewall
 
 - Below (Windows + dual RTX 3090) NEVER drafts final diagnoses, final code, frontend/UX, or architecture decisions.
@@ -111,6 +119,33 @@ Flag: `BR3_ADVERSARIAL_3WAY` (OFF until Phase 13).
 - Ledger: `~/.buildrunner/auto-context-ledger.jsonl` — `{ts, event, prompt_excerpt, sources_injected, tokens_used, top_score}`.
 - `/retrieve`: `POST http://10.0.1.106:8100/retrieve {query, top_k}`.
 - Auto-context hook injects context before prompt.
+
+## Phase 5 (cluster-activation): Node Activation — Lomax Blocking Change
+
+**Lomax build check is now BLOCKING (was: non-blocking warn).**
+
+- `/begin` Step 7 queries Lomax `/api/projects/$PROJECT/build/status` before marking a phase complete.
+- If `BUILD_STATUS` is anything other than `passing` or `success`, `/begin` **exits 2** (hard stop).
+- Override: `BR3_SKIP_LOMAX_GATE=1` — logs the override and continues. Use only when Lomax is known offline and the build is verified passing by other means.
+- This change is intentional: a red Lomax means staging validation failed. Do not proceed to the next phase with a broken staging build.
+
+**Walter sentinel LaunchDaemon:**
+
+- `~/Library/LaunchDaemons/com.br3.walter-sentinel.plist` manages the Walter sentinel process at system scope.
+- Requires `sudo launchctl load /Library/LaunchDaemons/com.br3.walter-sentinel.plist` after initial deploy.
+- `cluster-check.sh walter-sentinel` returns the Walter URL when the LaunchDaemon is loaded AND Walter's port is healthy.
+
+**Overflow shard watcher:**
+
+- `scripts/overflow-shard-watcher.sh` — 30s poll, 60s cooldown after dispatch, 3 shards/hour cap.
+- Cap is persisted to `~/.buildrunner/overflow-shard-cap.json` with timestamps. Survives daemon restart.
+- LaunchAgent: `~/Library/LaunchAgents/com.br3.overflow-shard-watcher.plist` (user scope, RunAtLoad + KeepAlive).
+
+**cluster-daemon auto-dispatch:**
+
+- `~/.buildrunner/cluster-daemon-config.json` now has `auto_dispatch: true`.
+- LaunchAgent: `~/Library/LaunchAgents/com.br3.cluster-daemon.plist` (user scope, RunAtLoad + KeepAlive).
+- Node assignment is dynamic: resolved via `~/.buildrunner/scripts/node-matrix.mjs` — not hardcoded.
 
 ## Phase 12: Multi-Model Context Parity
 
