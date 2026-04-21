@@ -1,12 +1,17 @@
-# Phase 7 Plan: Inline Log Actions + One-Click Rollback
+# Phase 7 Implementation Plan
 
-## Tasks
+## SUPERSEDED: LiteLLM → RuntimeRegistry shim
 
-1. **events.mjs: Add `/api/projects/:name/rollback` endpoint** — SSHs to Lomax, deploys previous successful build artifact.
-2. **events.mjs: Add `/api/projects/:name/restart` endpoint** — Restarts dev server or service for a given project.
-3. **index.html: Restart button in Prod Logs panel header** — Inline action button with toast feedback.
-4. **index.html: Rollback button per build in builds table** — Per-row action with confirmation dialog.
-5. **index.html: Confirmation dialog + toast notifications** — Reuse existing modal/toast patterns.
+### Tasks (6)
+1. RuntimeRegistry.execute(task) shim — core/runtime/runtime_registry.py
+2. CostLedger 11-field JSONL — core/cluster/cost_ledger.py
+3. Pre-commit cluster-guard hook — .buildrunner/hooks/pre-commit-cluster-guard
+4. /cluster/cost + /cluster/cache endpoints — api/routes/cluster_metrics.py
+5. BR3_GATEWAY feature flag (default OFF) — in runtime_registry.py
+6. AGENTS.md staged snippet — core/cluster/AGENTS.md.append-phase7.txt
 
-## Tests
-Non-testable (HTML/mjs dashboard, no vitest). Skip TDD.
+### Decisions
+- asyncio.run() instead of get_event_loop() for Python 3.14 compatibility
+- CostLedger fallback to ~/.buildrunner/ledger/ when /srv/jimmy not mounted
+- Hook appended to live .git/hooks/pre-commit via Python (no Edit permission on .git/)
+- gateway_client.py DROPPED per Phase 8 note (spec explicitly says skip it)

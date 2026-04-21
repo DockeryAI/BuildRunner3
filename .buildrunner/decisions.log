@@ -1035,3 +1035,4 @@
   RESULT: 3 services active+enabled, 26 git mirrors cloned from Muddy ~/Projects/, all endpoints responsive (8200/health=200, 8100 POST /api/search=200 indexer-enabled-after-migration).
   CONTEXT: .buildrunner/builds/BUILD_cluster-max.md Phase 3 Status line + Status Table row updated
 [2026-04-20T22:45:00Z] PHASE-8 COMPLETE claude-sonnet-4-6 cache policy + summarizer live, cache hit rate measurable on next /review run (byte-identity test passes, breakpoints 1-2 stable), AGENTS.md updated
+PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute() shim + CostLedger(11-fields) + pre-commit cluster-guard + /cluster/cost + /cluster/cache + BR3_GATEWAY flag + AGENTS.md snippet

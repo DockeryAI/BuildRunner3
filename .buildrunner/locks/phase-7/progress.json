@@ -1,0 +1,17 @@
+{
+  "phase": 7,
+  "name": "RuntimeRegistry shim + cost ledger",
+  "step": 0.5,
+  "step_name": "rescue",
+  "step_label": "Recover uncommitted work",
+  "status": "skipped",
+  "tasks_total": 6,
+  "tasks_done": 0,
+  "current_task": null,
+  "tests_written": 0,
+  "tests_passing": 0,
+  "commits": 0,
+  "errors": [],
+  "warnings": [],
+  "history": [{"step": 0.5, "name": "rescue", "label": "Recover uncommitted work", "status": "skipped"}]
+}

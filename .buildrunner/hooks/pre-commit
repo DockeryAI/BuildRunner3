@@ -158,3 +158,11 @@ else
     echo "📚 Documentation: .buildrunner/governance/governance.yaml"
     exit 1
 fi
+
+# ---- BR3 Cluster Guard (Phase 7) ----------------------------------------
+# Rejects direct ollama/requests/curl calls to cluster node IPs.
+# Use RuntimeRegistry.execute(task) — the ONLY authorised dispatch path.
+CLUSTER_GUARD="$(git rev-parse --show-toplevel)/.buildrunner/hooks/pre-commit-cluster-guard"
+if [ -x "$CLUSTER_GUARD" ]; then
+  bash "$CLUSTER_GUARD" || exit 1
+fi
