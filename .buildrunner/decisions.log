@@ -1036,3 +1036,4 @@
   CONTEXT: .buildrunner/builds/BUILD_cluster-max.md Phase 3 Status line + Status Table row updated
 [2026-04-20T22:45:00Z] PHASE-8 COMPLETE claude-sonnet-4-6 cache policy + summarizer live, cache hit rate measurable on next /review run (byte-identity test passes, breakpoints 1-2 stable), AGENTS.md updated
 PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute() shim + CostLedger(11-fields) + pre-commit cluster-guard + /cluster/cost + /cluster/cache + BR3_GATEWAY flag + AGENTS.md snippet
+2026-04-21T00:17:08Z Phase 4: 7-worker cluster live — Jimmy (10.0.1.106) added as primary semantic-search/intel node, Lockwood+Lomax retained as overflow workers, AGENTS.md snippet staged, is_overflow_worker() helper added

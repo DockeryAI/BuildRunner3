@@ -16,7 +16,7 @@ claude -p 'You are the BR3 nightly intel collector. Search for REAL, current tec
 Categories to search: Claude/Anthropic (models, API, SDK, Claude Code), Supabase (edge functions, auth, realtime, CLI), Tailwind CSS (v4.x), Vite, Playwright, React, TypeScript, security advisories (npm/PyPI), hardware deals (NVIDIA 3090, Mac Mini M4, NVMe 4TB, PSUs 1000W+).
 
 For each verified finding, run:
-curl -s -X POST http://10.0.1.101:8100/api/intel/items -H "Content-Type: application/json" -d "{\"title\":\"...\",\"source\":\"...\",\"url\":\"REAL_URL\",\"summary\":\"1-2 sentences\",\"source_type\":\"official\",\"category\":\"ecosystem-news\",\"priority\":\"medium\"}"
+curl -s -X POST http://10.0.1.106:8101/api/intel/items -H "Content-Type: application/json" -d "{\"title\":\"...\",\"source\":\"...\",\"url\":\"REAL_URL\",\"summary\":\"1-2 sentences\",\"source_type\":\"official\",\"category\":\"ecosystem-news\",\"priority\":\"medium\"}"
 
 category values: model-release, api-change, community-tool, ecosystem-news, security, general-news
 priority values: critical (security/breaking), high (new releases), medium (updates), low (blog)
@@ -40,7 +40,7 @@ Search targets:
 - Infrastructure tools — new Supabase features, Vite plugins, Playwright capabilities, Tailwind v4 utilities
 
 For each verified finding, POST to Lockwood:
-curl -s -X POST http://10.0.1.101:8100/api/intel/items -H "Content-Type: application/json" -d "{\"title\":\"...\",\"source\":\"...\",\"url\":\"REAL_URL\",\"summary\":\"1-2 sentences\",\"source_type\":\"community\",\"category\":\"community-tool\",\"priority\":\"medium\"}"
+curl -s -X POST http://10.0.1.106:8101/api/intel/items -H "Content-Type: application/json" -d "{\"title\":\"...\",\"source\":\"...\",\"url\":\"REAL_URL\",\"summary\":\"1-2 sentences\",\"source_type\":\"community\",\"category\":\"community-tool\",\"priority\":\"medium\"}"
 
 RULES: Every item MUST have a real, verifiable URL. Do NOT fabricate. Only report things BR3 could actually adopt. After posting, output a count summary.' \
   --max-turns 30 >> "$LOG_FILE" 2>&1
@@ -55,17 +55,17 @@ claude -p 'Review all unreviewed intel items on Lockwood. Write BR3-specific ana
 BR3 context: 6-node Mac Mini cluster (Muddy=dev, Lockwood=memory/vector, Walter=testing, Otis=parallel builder, Lomax=staging, Below=Windows inference planning dual 3090 NVLink). Stack: React + Vite + Tailwind v4 + Supabase + Playwright + Claude Code CLI. Deploys to Netlify. BRLogger for observability.
 
 Step 1: Get unreviewed items:
-curl -s "http://10.0.1.101:8100/api/intel/items" | python3 -c "import sys,json; items=json.load(sys.stdin)[\"items\"]; [print(f\"{i[\"id\"]}: {i[\"title\"]}\") for i in items if not i.get(\"opus_reviewed\")]"
+curl -s "http://10.0.1.106:8101/api/intel/items" | python3 -c "import sys,json; items=json.load(sys.stdin)[\"items\"]; [print(f\"{i[\"id\"]}: {i[\"title\"]}\") for i in items if not i.get(\"opus_reviewed\")]"
 
 Step 2: For EACH unreviewed item, write a 2-4 sentence plain-English explanation of what it means and how it specifically affects BR3 (name nodes, tools, workflows). Then POST:
-curl -s -X POST http://10.0.1.101:8100/api/intel/items/{ID}/opus-review -H "Content-Type: application/json" -d "{\"opus_synthesis\": \"...\", \"br3_improvement\": true_or_false}"
+curl -s -X POST http://10.0.1.106:8101/api/intel/items/{ID}/opus-review -H "Content-Type: application/json" -d "{\"opus_synthesis\": \"...\", \"br3_improvement\": true_or_false}"
 
 Step 3: For items where br3_improvement is true, classify the improvement type and create it:
 Types: fix (security patches, CVEs, breaking changes), upgrade (better version of something we use), new_capability (something BR3 cant do today but could), new_skill (a new slash command or automation), research (worth investigating, no clear action yet)
 
 For discovery items (new_capability, new_skill, research), write an innovation-style synthesis: what it enables, why it matters for BR3, concrete next steps.
 
-curl -s -X POST http://10.0.1.101:8100/api/intel/improvements -H "Content-Type: application/json" -d "{\"title\": \"...\", \"rationale\": \"...\", \"complexity\": \"simple|medium|complex\", \"setlist_prompt\": \"what to build/change\", \"source_intel_id\": ID, \"type\": \"fix|upgrade|new_capability|new_skill|research\"}"
+curl -s -X POST http://10.0.1.106:8101/api/intel/improvements -H "Content-Type: application/json" -d "{\"title\": \"...\", \"rationale\": \"...\", \"complexity\": \"simple|medium|complex\", \"setlist_prompt\": \"what to build/change\", \"source_intel_id\": ID, \"type\": \"fix|upgrade|new_capability|new_skill|research\"}"
 
 Only create improvements for clearly actionable items. Write like explaining to a senior dev who knows the system but hasnt read the news.' \
   --max-turns 30 >> "$LOG_FILE" 2>&1
@@ -78,7 +78,7 @@ echo "[$(date)] Phase 4: Auto-act on Tier 1 fixes..." >> "$LOG_FILE"
 claude -p 'You are the BR3 auto-act agent. Execute ONLY Tier 1 fixes — simple security patches and deadline-critical items.
 
 Step 1: Get pending improvements that are Tier 1 candidates (type=fix, complexity=simple):
-curl -s "http://10.0.1.101:8100/api/intel/improvements?status=pending" | python3 -c "
+curl -s "http://10.0.1.106:8101/api/intel/improvements?status=pending" | python3 -c "
 import sys, json
 imps = json.load(sys.stdin)[\"improvements\"]
 for i in imps:
@@ -102,7 +102,7 @@ SAFETY GUARDRAILS:
 - Log every action taken
 
 Step 4: After each fix (or skip), log the result:
-curl -s -X POST http://10.0.1.101:8100/api/intel/improvements/{ID}/auto-act -H "Content-Type: application/json" -d "{\"log\": \"Audit: [what was checked]. Result: [what was done or why skipped].\"}"
+curl -s -X POST http://10.0.1.106:8101/api/intel/improvements/{ID}/auto-act -H "Content-Type: application/json" -d "{\"log\": \"Audit: [what was checked]. Result: [what was done or why skipped].\"}"
 
 If no Tier 1 items found, output "No Tier 1 auto-act candidates" and exit.' \
   --max-turns 15 >> "$LOG_FILE" 2>&1

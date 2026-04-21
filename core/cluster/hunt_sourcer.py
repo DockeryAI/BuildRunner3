@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 # --- Config ---
 CONFIG_PATH = Path(__file__).parent / "hunt_sourcer_config.json"
-LOCKWOOD_URL = os.environ.get("LOCKWOOD_URL", "http://10.0.1.101:8100")
+JIMMY_URL = os.environ.get("JIMMY_URL", os.environ.get("JIMMY_URL", "http://10.0.1.106:8100"))  # Phase 4: Jimmy is primary semantic-search/memory node
 BELOW_OLLAMA_URL = os.environ.get("BELOW_OLLAMA_URL", "http://10.0.1.105:11434")
 BELOW_MODEL = os.environ.get("BELOW_MODEL", "qwen3:8b")
 BELOW_EMBED_MODEL = os.environ.get("BELOW_EMBED_MODEL", "nomic-embed-text")
@@ -65,7 +65,7 @@ async def _get_active_hunts() -> list[dict]:
     if httpx:
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                resp = await client.get(f"{LOCKWOOD_URL}/api/deals/hunts")
+                resp = await client.get(f"{JIMMY_URL}/api/deals/hunts")
                 resp.raise_for_status()
                 hunts = resp.json().get("hunts", [])
                 if hunts:
@@ -94,7 +94,7 @@ async def _get_existing_deal_urls(hunt_id: int) -> set[str]:
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.get(
-                f"{LOCKWOOD_URL}/api/deals/items",
+                f"{JIMMY_URL}/api/deals/items",
                 params={"hunt_id": hunt_id, "limit": 500},
             )
             resp.raise_for_status()
@@ -112,7 +112,7 @@ async def _post_deal_item(item: dict) -> Optional[int]:
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.post(
-                f"{LOCKWOOD_URL}/api/deals/items",
+                f"{JIMMY_URL}/api/deals/items",
                 json=item,
             )
             if resp.status_code in (200, 201):
@@ -588,7 +588,7 @@ async def check_hunts_once():
 async def run_forever():
     """Main loop: check hunts on interval."""
     logger.info(f"Hunt sourcer starting — checking every {CHECK_HUNTS_INTERVAL}s")
-    logger.info(f"Lockwood: {LOCKWOOD_URL}")
+    logger.info(f"Lockwood: {JIMMY_URL}")
 
     while True:
         try:

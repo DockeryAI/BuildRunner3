@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 # --- Config ---
 CONFIG_PATH = Path(__file__).parent / "hunt_sourcer_config.json"
-LOCKWOOD_URL = os.environ.get("LOCKWOOD_URL", "http://10.0.1.101:8100")
+JIMMY_URL = os.environ.get("JIMMY_URL", os.environ.get("JIMMY_URL", "http://10.0.1.106:8100"))  # Phase 4: Jimmy is primary semantic-search/memory node
 TRACK17_API_KEY = os.environ.get("TRACK17_API_KEY", "")
 TRACK17_BASE_URL = "https://api.17track.net/track/v2.2"
 MAX_BATCH_SIZE = 40  # 17track limit per request
@@ -90,7 +90,7 @@ async def _get_trackable_items() -> list[dict]:
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(
-                f"{LOCKWOOD_URL}/api/deals/items",
+                f"{JIMMY_URL}/api/deals/items",
                 params={"ready_only": "false", "limit": 500},
             )
             resp.raise_for_status()
@@ -126,7 +126,7 @@ async def _update_item_status(item_id: int, delivery_status: str,
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.patch(
-                f"{LOCKWOOD_URL}/api/deals/items/{item_id}",
+                f"{JIMMY_URL}/api/deals/items/{item_id}",
                 json=fields,
             )
             if resp.status_code == 200:
@@ -371,7 +371,7 @@ async def run_forever():
     interval_secs = interval_hours * 3600
 
     logger.info(f"Delivery tracker starting — checking every {interval_hours}h")
-    logger.info(f"Lockwood: {LOCKWOOD_URL}")
+    logger.info(f"Lockwood: {JIMMY_URL}")
     logger.info(f"Daily API limit: {MAX_API_CALLS_PER_DAY}")
 
     while True:

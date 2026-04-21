@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "name": "Cluster Reconfiguration — 7 Workers",
+  "step": 0.5,
+  "step_name": "rescue",
+  "step_label": "Recover uncommitted work",
+  "status": "active",
+  "tasks_total": 9,
+  "tasks_done": 0,
+  "current_task": null,
+  "tests_written": 0,
+  "tests_passing": 0,
+  "commits": 0,
+  "errors": [],
+  "warnings": [],
+  "started_at": "PLACEHOLDER",
+  "updated_at": "PLACEHOLDER",
+  "history": []
+}

@@ -29,7 +29,7 @@ from core.cluster.base_service import create_app
 REPOS_DIR = os.environ.get("REPOS_DIR", os.path.expanduser("~/repos"))
 DB_PATH = os.environ.get("TEST_DB", os.path.expanduser("~/.walter/test_results.db"))
 POLL_INTERVAL = int(os.environ.get("POLL_INTERVAL", "60"))
-LOCKWOOD_URL = os.environ.get("LOCKWOOD_URL", "http://10.0.1.101:8100")
+JIMMY_URL = os.environ.get("JIMMY_URL", os.environ.get("LOCKWOOD_URL", "http://10.0.1.106:8100"))  # Phase 4: Jimmy is primary semantic-search/memory node
 SERVICE_VERSION = "0.2.0"
 
 # --- App ---
@@ -802,7 +802,7 @@ def _push_to_lockwood(results: dict, trigger: str = "watch"):
         "trigger": trigger,
     }).encode("utf-8")
 
-    url = f"{LOCKWOOD_URL}/api/memory/tests"
+    url = f"{JIMMY_URL}/api/memory/tests"
     req = urllib.request.Request(url, data=payload, method="POST",
                                 headers={"Content-Type": "application/json"})
 

@@ -25,12 +25,12 @@ You are an intelligence collector for the BR3 development cluster. Your job is t
 2. Use WebFetch to read changelogs/release pages for specifics
 3. For each real finding, POST it to the Lockwood API
 
-## API Endpoints (Lockwood at http://10.0.1.101:8100)
+## API Endpoints (Jimmy at http://10.0.1.106:8101)
 
 ### Intel Items
 
 ```
-POST http://10.0.1.101:8100/api/intel/items
+POST http://10.0.1.106:8101/api/intel/items
 Content-Type: application/json
 
 # Note: Use the create_intel_item function via the /api/intel/webhook/manual endpoint
@@ -42,7 +42,7 @@ Since there's no direct POST endpoint for intel items, use the webhook format:
 ### Manual Intel Submission
 
 ```bash
-curl -X POST http://10.0.1.101:8100/api/intel/webhook/manual \
+curl -X POST http://10.0.1.106:8101/api/intel/webhook/manual \
   -H "Content-Type: application/json" \
   -d '{
     "title": "...",
@@ -59,7 +59,7 @@ curl -X POST http://10.0.1.101:8100/api/intel/webhook/manual \
 Deals require an active hunt. Check existing hunts first:
 
 ```bash
-curl http://10.0.1.101:8100/api/deals/hunts
+curl http://10.0.1.106:8101/api/deals/hunts
 ```
 
 ## Rules
