@@ -1782,3 +1782,129 @@ Spec + decisions: this file (MODIFY), `.buildrunner/decisions.log` (APPEND).
 ## Session Log
 
 [Will be updated by /begin]
+
+
+## Role Matrix (inline YAML — appended by migrate-role-matrix.py Phase 1)
+
+```yaml
+role_matrix:
+  spec: BUILD_cluster-max
+  default_architect: opus-4-7
+  default_reviewers: [sonnet-4-6, codex-gpt-5.4]
+  default_arbiter: opus-4-7
+  phases:
+    phase_0:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: medium
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, core/runtime]
+    phase_1:
+      builder: human
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: []
+    phase_2:
+      builder: codex
+      codex_model: gpt-5.3-codex
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: otis
+      context: [core/cluster, core/runtime]
+    phase_3:
+      builder: codex
+      codex_model: gpt-5.3-codex
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: otis
+      context: [core/cluster, core/runtime]
+    phase_4:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: high
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, core/runtime]
+    phase_5:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: high
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, core/runtime]
+    phase_6:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: high
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, core/runtime]
+    phase_7:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: high
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, core/runtime, api/routes]
+    phase_8:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: high
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, core/runtime]
+    phase_9:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: xhigh
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, core/review]
+    phase_10:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: high
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, api/routes]
+    phase_11:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: high
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, ui/dashboard, api/routes]
+    phase_12:
+      builder: codex
+      codex_model: gpt-5.4
+      codex_effort: high
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [core/cluster, api/routes, core/runtime]
+    phase_13:
+      builder: codex
+      codex_model: gpt-5.3-codex
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: otis
+      context: [core/cluster, core/runtime]
+    phase_14:
+      builder: codex
+      codex_model: gpt-5.3-codex
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: otis
+      context: [core/cluster]
+```

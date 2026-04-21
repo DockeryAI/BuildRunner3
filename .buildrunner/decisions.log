@@ -672,3 +672,4 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
   - scripts/runtime-dispatch.sh is project-local (distinct from ~/.buildrunner/scripts/runtime-dispatch.sh infra-level)
   - CLI entry uses argparse; dry-run mode via BR3_DISPATCH_DRY_RUN=1 for test isolation
   - auto-triage (api/summarize) removed as out-of-scope; Lockwood write-back preserved
+[2026-04-21T22:27:06Z] Phase 1 decisions: context.py already had no module-level app (clean state). node_semantic.py is core/cluster/node_semantic.py (not api/). BUILD_cluster-max.md migrated with 15 phases. All 15 tests pass. Jimmy reachable, smoke test HTTP 200.

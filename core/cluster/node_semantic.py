@@ -36,6 +36,13 @@ app.include_router(intel_router)
 from api.routes.retrieve import retrieve_router
 app.include_router(retrieve_router)
 
+# --- Include context routes (Phase 1: /context/{model} on :4500) ---
+# context_router serves per-model context bundles (BR3_MULTI_MODEL_CONTEXT flag-gated).
+# The router is defined in api/routes/context.py (APIRouter only, no app there).
+# Standalone entrypoint: api/services/context_api_standalone.py
+from api.routes.context import router as context_router
+app.include_router(context_router)
+
 @app.on_event("startup")
 async def _intel_startup():
     await intel_startup()

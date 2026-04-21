@@ -1,0 +1,108 @@
+# role-matrix.schema.yaml
+# JSON Schema (YAML format) for BR3 cluster role_matrix definitions.
+# Consumed by: scripts/load-role-matrix.sh (Phase 3), scripts/migrate-role-matrix.py (Phase 1)
+# Validated by: tests/cluster/test_role_matrix_schema.py
+
+type: object
+description: >
+  Role matrix for a BR3 BUILD spec. Maps each phase to its assigned builder,
+  reviewers, context paths, and cluster node. Used by /begin and /autopilot
+  to dispatch phases to the correct LLM/node automatically.
+
+required:
+  - role_matrix
+
+properties:
+  role_matrix:
+    type: object
+    required:
+      - spec
+      - default_architect
+      - default_reviewers
+      - default_arbiter
+      - phases
+    properties:
+      spec:
+        type: string
+        description: BUILD spec name (e.g. BUILD_cluster-activation)
+      default_architect:
+        type: string
+        description: Default architect model (e.g. opus-4-7)
+      default_reviewers:
+        type: array
+        items:
+          type: string
+        minItems: 1
+        description: Default reviewer models (run in parallel)
+      default_arbiter:
+        type: string
+        description: Arbiter model invoked on reviewer disagreement
+      phases:
+        type: object
+        description: >
+          Map of phase keys (e.g. phase_1, phase_2) to phase entries.
+        additionalProperties:
+          $ref: '#/$defs/phase_entry'
+
+$defs:
+  phase_entry:
+    type: object
+    description: Per-phase role assignment for a BR3 BUILD spec.
+    required:
+      - builder
+      - reviewers
+      - assigned_node
+      - context
+    properties:
+      builder:
+        type: string
+        description: >
+          Builder role: 'claude', 'codex', 'below', 'human', or a model ID.
+          When 'codex', /begin and /autopilot dispatch to codex-bridge.sh.
+        enum:
+          - claude
+          - codex
+          - below
+          - human
+      codex_model:
+        type: string
+        description: Specific Codex model to use (e.g. gpt-5.4, gpt-5.3-codex).
+      codex_effort:
+        type: string
+        description: Codex effort level.
+        enum:
+          - low
+          - medium
+          - high
+          - xhigh
+      reviewers:
+        type: array
+        items:
+          type: string
+        minItems: 1
+        description: Reviewer models (run in parallel). e.g. [sonnet-4-6, codex-gpt-5.4]
+      arbiter:
+        type: string
+        description: >
+          Arbiter model invoked when reviewers disagree after one rebuttal round.
+      assigned_node:
+        type: string
+        description: >
+          Cluster node that runs this phase.
+          Must match a node in ~/.buildrunner/cluster.json.
+        enum:
+          - muddy
+          - lockwood
+          - walter
+          - otis
+          - lomax
+          - below
+          - jimmy
+      context:
+        type: array
+        items:
+          type: string
+        description: >
+          Source paths injected as context for this phase's builder.
+          Relative to project root. Used by codex-bridge.sh for pre-dispatch context.
+          Empty array allowed for human-only phases (builder: human).
