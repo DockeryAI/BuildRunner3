@@ -1037,3 +1037,80 @@
 [2026-04-20T22:45:00Z] PHASE-8 COMPLETE claude-sonnet-4-6 cache policy + summarizer live, cache hit rate measurable on next /review run (byte-identity test passes, breakpoints 1-2 stable), AGENTS.md updated
 PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute() shim + CostLedger(11-fields) + pre-commit cluster-guard + /cluster/cost + /cluster/cache + BR3_GATEWAY flag + AGENTS.md snippet
 2026-04-21T00:17:08Z Phase 4: 7-worker cluster live — Jimmy (10.0.1.106) added as primary semantic-search/intel node, Lockwood+Lomax retained as overflow workers, AGENTS.md snippet staged, is_overflow_worker() helper added
+[2026-04-21T00:37:33.855054Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T00:37:33.855404Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T00:37:33.856103Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.856397Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T00:37:33.857134Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.857363Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T00:37:33.857410Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T00:37:33.859102Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.859264Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T00:37:33.859944Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.860120Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T00:37:33.860767Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.860918Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T00:37:33.861464Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.861599Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T00:37:33.862127Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.862288Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T00:37:33.862916Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.863180Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T00:37:33.863265Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T00:37:33.864840Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.865147Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T00:37:33.865765Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:37:33.866083Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T00:38:04.602058Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T00:38:04.602458Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T00:38:04.603107Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.603268Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T00:38:04.603797Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.603923Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T00:38:04.603972Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T00:38:04.605446Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.605596Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T00:38:04.606239Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.606369Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T00:38:04.607350Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.607490Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T00:38:04.608035Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.608298Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T00:38:04.609012Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.609243Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T00:38:04.609898Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.610042Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T00:38:04.610087Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T00:38:04.610696Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.610885Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T00:38:04.611411Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.611576Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T00:38:04.612071Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:38:04.612196Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T00:41:24.705587Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T00:41:24.706147Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T00:41:24.706877Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.707113Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T00:41:24.707825Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.708055Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T00:41:24.708115Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T00:41:24.709938Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.710105Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T00:41:24.710854Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.711062Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T00:41:24.711828Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.712025Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T00:41:24.712547Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.712874Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T00:41:24.713537Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.713814Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T00:41:24.714554Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.714754Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T00:41:24.714856Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T00:41:24.715633Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.715801Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T00:41:24.716394Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.716626Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T00:41:24.717177Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T00:41:24.717461Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T00:41:30Z] Phase 9: 3-way adversarial live — Sonnet+Codex+R1, Opus arbiter, convergence policy enforced, AGENTS.md updated
