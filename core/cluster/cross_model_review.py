@@ -550,13 +550,17 @@ def extract_codex_message_and_usage(events):
 _DIFF_SIZE_THRESHOLD = 12 * 1024  # 12 KB — summarize-before-escalate threshold
 
 
-def build_review_prompt(diff_text: str, spec_text: str) -> str:
+def build_review_prompt(diff_text: str, spec_text: str, system_prompt: str | None = None) -> str:
     """Build the review prompt using cache_policy breakpoints.
 
     Breakpoint layout (per AGENTS.md 3-breakpoint contract):
-      1. system + tools       — REVIEW_PROMPT (stable, cached)
+      1. system + tools       — system_prompt or REVIEW_PROMPT (stable, cached)
       2. project/skill context — spec text (stable within a session, cached)
       3. task payload          — diff text (per-request, not cached)
+
+    Callers that require the fix_type schema (three-way adversarial review)
+    must pass ``system_prompt=THREE_WAY_REVIEW_PROMPT``; the default
+    REVIEW_PROMPT omits that schema.
 
     If diff_text exceeds 12KB (summarize-before-escalate threshold), it is
     compressed via summarizer.summarize_diff() before being placed into
@@ -579,7 +583,7 @@ def build_review_prompt(diff_text: str, spec_text: str) -> str:
             )
 
     blocks = build_cached_prompt(
-        system_text=REVIEW_PROMPT,
+        system_text=system_prompt or REVIEW_PROMPT,
         skill_context=f"## Build Spec Context:\n{spec_text}",
         task_payload=f"## Diff to Review:\n{diff_payload}",
     )
@@ -763,45 +767,13 @@ async def run_review_spike_async(
     runtimes=None,
     config=None,
 ):
-    """
-    Explicit Phase 1 scaffold path.
-
-    Runs runtime adapters in parallel shadow mode without modifying the live review flow.
-    """
+    """Run runtime adapters in parallel without modifying the live review flow."""
     from core.runtime.context_compiler import compile_review_task
     from core.runtime.runtime_registry import create_phase1_runtime_registry
-    from core.runtime.shadow_runner import run_shadow_command_async
 
     config = config or load_config()
     runtime_names = runtimes or ["claude", "codex"]
-    if runtime_names == ["claude", "codex"] or runtime_names == ["codex", "claude"]:
-        shadow_run = await run_shadow_command_async(
-            diff_text=diff_text,
-            spec_text=spec_text,
-            commit_sha=commit_sha,
-            project_root=project_root,
-            command_name="review",
-            config=config,
-        )
-        registry = create_phase1_runtime_registry(config)
-        selected_runtimes = registry.create_many(["claude", "codex"])
-        results = [shadow_run.primary_result.to_dict()]
-        if shadow_run.shadow_result is not None:
-            results.append(shadow_run.shadow_result.to_dict())
-        return {
-            "task_id": shadow_run.task_id,
-            "mode": "parallel_shadow",
-            "dispatch_mode": "parallel_shadow",
-            "live_routing_changed": False,
-            "selected_runtimes": [registration.describe() for registration in selected_runtimes],
-            "task_metadata": {
-                "dispatch_mode": "parallel_shadow",
-                "command_name": "review",
-                "shadow_status": shadow_run.shadow_status,
-                "shadow_metrics": shadow_run.metrics,
-            },
-            "results": results,
-        }
+
     task, context_summary = compile_review_task(
         diff_text=diff_text,
         spec_text=spec_text,
@@ -814,7 +786,7 @@ async def run_review_spike_async(
     results = await asyncio.gather(*(registration.adapter.run_review(task) for registration in selected_runtimes))
     return {
         "task_id": task.task_id,
-        "mode": "parallel_shadow",
+        "mode": "parallel",
         "dispatch_mode": context_summary.dispatch_mode,
         "live_routing_changed": False,
         "selected_runtimes": [registration.describe() for registration in selected_runtimes],
@@ -1266,7 +1238,7 @@ def run_three_way_review(
     artifact = plan_file or diff_text[:80]
     max_rounds = int(os.environ.get("BR3_MAX_REVIEW_ROUNDS", "1"))
 
-    full_prompt = build_review_prompt(diff_text, spec_text)
+    full_prompt = build_review_prompt(diff_text, spec_text, system_prompt=THREE_WAY_REVIEW_PROMPT)
 
     # --- Round 1: Parallel reviews ---
     _log_three_way_decision(

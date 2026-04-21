@@ -1168,3 +1168,436 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-21T01:07:50.367863Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
 [2026-04-21T01:07:50.367996Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
 2026-04-21T01:09:50Z Phase 12: multi-model context parity live — Codex+Below see logs+memory+research, two-layer private filter, AGENTS.md updated on 3 scopes
+[2026-04-21T08:44:00Z] [DECISION] Validated and corrected both cluster-max planning documents (gap-analysis.md, pre-cutover-test-plan.md) against live codebase before Phase 13
+  WHY: Both documents had errors that would gate a broken cutover as green; validation via subagents (Explore 3×) caught 15+ issues across command correctness, coverage gaps, and factual accuracy
+  CONTEXT: .buildrunner/cluster-max-gap-analysis.md, .buildrunner/cluster-max-pre-cutover-test-plan.md, BUILD_cluster-max.md, core/ runtime/ cluster subpackages
+
+[2026-04-21T08:44:00Z] [REJECTED] Using gap-analysis and test-plan documents as-is for Phase 13 gate
+  WHY: Gap analysis incorrectly marked cluster-daemon.mjs as missing (it exists), missed BR3_MULTI_MODEL_CONTEXT non-canonical flag, and scoped B4 too narrowly; test plan had 6 broken verify commands, 11 coverage gaps, 2 invented test files, dangling BUILD spec line references
+  CONTEXT: validation subprocess output
+
+[2026-04-21T08:44:00Z] [ARCHITECTURE] Corrected B1 (Phase 4): cluster-daemon.mjs exists on disk; focus shifted from file creation to wave-merge and .buildrunner/locks/ skeleton in main repo
+  WHY: Codebase verification showed daemon was implemented 2026-04-05 (7107 bytes); the hard blocker is the staged AGENTS.md.append-phase4.txt not merged + locks directory needed for non-worktree heartbeat paths
+  CONTEXT: ~/.buildrunner/scripts/cluster-daemon.mjs, core/cluster/AGENTS.md.append-phase4.txt, .buildrunner/locks/ (missing)
+
+[2026-04-21T08:44:00Z] [DECISION] Added B3b blocker: BR3_MULTI_MODEL_CONTEXT is a 6th non-canonical flag gating Phase 12 end-to-end
+  WHY: BUILD_cluster-max.md lines 1419, 1457, 1474, 1489, 1504 all gate Phase 12 context parity on BR3_MULTI_MODEL_CONTEXT; Phase 13 only flips the canonical 4 (BR3_RUNTIME_OLLAMA, BR3_CACHE_BREAKPOINTS, BR3_ADVERSARIAL_3WAY, BR3_AUTO_CONTEXT); same fix pattern as B3 (BR3_LOCAL_ROUTING)
+  CONTEXT: context_injector.py, codex-bridge.sh, below-route.sh, Phase 12 staged AGENTS.md snippet
+
+[2026-04-21T08:44:00Z] [DECISION] Widened B4 to include port-4500 label drift across multiple files
+  WHY: Root AGENTS.md:30 has deleted BR3_GATEWAY_LITELLM flag, but the label "gateway" persists in BUILD_cluster-max.md (lines 547, 817, 1084, 1468), pre-cutover test plan itself lists BR3_GATEWAY_LITELLM as active blocker, and Phase 3 bootstrap still calls it "gateway"; Phase 13 Claude Review will flag inconsistency
+  CONTEXT: AGENTS.md:30, BUILD_cluster-max.md Phase 0/3/12 labels, ui/dashboard/AGENTS.md, api/routes/context.py:3, .buildrunner/cluster-max-pre-cutover-test-plan.md
+
+[2026-04-21T08:44:00Z] [DECISION] Added B10 blocker: BUILD_cluster-max.md needs editorial cleanup for non-canonical flags and stale labels before Phase 13
+  WHY: B3, B3b, and B4 fixes all require changes to BUILD spec content itself; having those scattered across phases creates risk of re-introduction or missed rename on re-run; single cleanup pass addresses all three in one commit
+  CONTEXT: BUILD_cluster-max.md Phase 0, 3, 5, 12, 13, 14 sections
+
+[2026-04-21T08:44:00Z] [TRADE-OFF] Fixed test-plan Phase 6 `OllamaRuntime().capabilities` command by changing to `.get_capabilities()` method
+  WHY: Runtime verification showed method is `.get_capabilities()` not `.capabilities` property; class not exported from `__init__.py` so must import from `core.runtime.ollama_runtime` directly; trade-off is more verbose but correct
+  CONTEXT: tests/runtime/test_ollama_runtime.py, core/runtime/ollama_runtime.py:94
+
+[2026-04-21T08:44:00Z] [REJECTED] Keeping Phase 6 test-plan reference to non-existent `tests/runtime/test_runtime_registry.py`
+  WHY: File does not exist; actual registry unit tests live in `tests/cluster/test_runtime_registry_shim.py` with 9 passing tests; Phase 6 verify command now points to the correct file
+  CONTEXT: tests/cluster/test_runtime_registry_shim.py, tests/runtime/test_runtime_registry.py (absent)
+
+[2026-04-21T08:44:00Z] [DECISION] Narrowed Phase 8 hard-truncation grep to exclude legitimate small slices
+  WHY: Original regex `\[:.*\]` matched 3 legitimate log/display slices (diff_text[:80], finding[:120], list(persistent)[:2]); swapped to `\[:\d{4,}\]` to catch only large-content truncations; captures intent without false positives
+  CONTEXT: core/cluster/cross_model_review.py:1234/1277/1300, tests/integration/test_summarize_before_escalate.py
+
+[2026-04-21T08:44:00Z] [REJECTED] Inventing a separate `tests/runtime/test_cache_policy_routing.py` file as Phase 8 deliverable
+  WHY: `test_cache_policy_routing.py` does not exist and is not named in BUILD spec Phase 8; cache-policy breakpoint routing is already verified by `tests/cluster/test_runtime_registry_shim.py::test_execute_passes_cache_control_verbatim`; removed fictional reference
+  CONTEXT: .buildrunner/cluster-max-pre-cutover-test-plan.md Phase 8 verify
+
+[2026-04-21T08:44:00Z] [DECISION] Fixed Phase 9 test node IDs to match actual pytest test names
+  WHY: Test plan listed `test_round_cap`, `test_fix_type`, `test_persistent_blocker`; actual tests are `test_round_cap_enforced`, `test_fix_type_required_claude`, `test_fix_type_required_codex`, `test_persistent_blocker_detected`; pytest discovery would CollectError on wrong names
+  CONTEXT: tests/cluster/test_three_way_review.py (28 tests, verified via grep)
+
+[2026-04-21T08:44:00Z] [DECISION] Removed non-existent `--dry-run` flag from Phase 10 auto-context.sh verify command
+  WHY: `~/.buildrunner/hooks/auto-context.sh` exists but has no `--dry-run` flag; gate is env var `BR3_AUTO_CONTEXT=on`, input via stdin; command rewritten to use env var + echo + bash pipe
+  CONTEXT: ~/.buildrunner/hooks/auto-context.sh (7110 bytes), Phase 10 verify
+
+[2026-04-21T08:44:00Z] [DECISION] Removed dangling BUILD spec line references in Phase 14; replaced with inlined commands
+  WHY: "Full command in BUILD spec line 1667 / 1650" is brittle; actual lines differ by 8+ and change on every spec edit; inlined recovery + disk-guard commands directly in test plan for durability
+  CONTEXT: .buildrunner/cluster-max-pre-cutover-test-plan.md Phase 14
+
+[2026-04-21T08:44:00Z] [CONSTRAINT] Identified 9 coverage gaps in test plan: files/tests that BUILD spec names but don't exist on disk
+  WHY: Phase 4 (audit_overflow_refs.py, dispatcher_overflow_fixture.sh), Phase 5 (no shellcheck rule), Phase 6 (command_capabilities.json key-count), Phase 10 (count-tokens.sh integration), Phase 12 (context_bundle.py, context_router.py, context_injector.py unit tests, filter-private-decisions.sh), Phase 14 (test_self_health.py, test_auto_rebalance.py, test_archive_prune.py, test_lancedb_compact.py, shellcheck suite)
+  CONTEXT: test plan marked each as [GAP] with file path; prioritized for Phase 4/5/12/14 delivery
+
+[2026-04-21T08:44:00Z] [PATTERN] All verify commands in cluster-max test plan now follow: exact path (no bare filenames), quoted/escaped shell syntax, expected output assertions, human-readable failure diagnostics
+  WHY: Previous version had bare `node cluster-daemon.mjs` (would fail without cwd context), incorrect method names, missing escaped pipes; standardized to reduce false passes/failures
+  CONTEXT: .buildrunner/cluster-max-pre-cutover-test-plan.md all phases
+
+[2026-04-21T08:44:00Z] [GOAL] Pre-Phase-13 validation now gates on both documents being correct, not just complete
+  WHY: Validation revealed 20+ errors across factual accuracy, command syntax, coverage, and internal consistency; accepting broken gates risks authorizing a failed cutover; next session must verify corrections before proceeding
+  CONTEXT: .buildrunner/cluster-max-gap-analysis.md, .buildrunner/cluster-max-pre-cutover-test-plan.md (both revised 2026-04-21)
+
+[2026-04-21T08:44:00Z] [WHY] Chose sub-agents (Explore 3×) over linear reading for validation
+  WHY: Documents are large (2-3KB gap-analysis, 7-10KB test plan, 70KB BUILD spec); Explore agent is optimized for pattern matching across codebases; 3 parallel queries (gap-analysis facts, test-plan commands, BUILD deliverables) returned in 1 batch vs serial 30min read
+  CONTEXT: Agent tool with subagent_type=Explore × 3 (parallel execution)
+
+[2026-04-21T08:44:00Z] [DECISION] Marked BR3_LOCAL_ROUTING and BR3_MULTI_MODEL_CONTEXT as "non-canonical" flags that must be aliased away before Phase 13
+  WHY: Both are documented as "default OFF until Phase 13" but Phase 13 only flips 4 flags; creating 6-flag state is drift; alias fix ensures all runtime flags converge to canonical 4 by cutover
+  CONTEXT: below-route.sh, codex-bridge.sh, context_injector.py, 2 staged AGENTS.md snippets (phases 5, 12)
+[2026-04-21T09:15:00Z] [DECISION] Codex adversarial review round 1: 7 findings returned, all 7 accepted by Claude adjudicator
+  WHY: Codex had live filesystem + BUILD spec access and caught 7 remaining errors my revision missed; verified each by reading BUILD spec + below-route.sh lines Codex cited; no manufactured issues, no taste-only findings
+  CONTEXT: .buildrunner/cluster-max-gap-analysis.md, .buildrunner/cluster-max-pre-cutover-test-plan.md
+
+[2026-04-21T09:15:00Z] [ARCHITECTURE] Rewrote gap-analysis B1: Phase 4 is the hardcoded-IP rewrite + Jimmy node add + overflow classifier, NOT cluster-daemon.mjs
+  WHY: cluster-daemon.mjs file header identifies itself as "Phase 19: Cluster Build Orchestration" — unrelated to Phase 4 overflow routing; BUILD spec lines 899-917 define Phase 4 as cluster.json edit, node-matrix.mjs ranking, dispatch-to-node.sh/_dispatch-core.sh linux branch, is_overflow_worker helper, and audit_overflow_refs.py; my prior revision conflated daemon existence with phase completion
+  CONTEXT: .buildrunner/cluster-max-gap-analysis.md B1, .buildrunner/cluster-max-pre-cutover-test-plan.md Phase 4 section
+
+[2026-04-21T09:15:00Z] [DECISION] Rewrote test-plan Phase 4 verify block against real deliverables
+  WHY: Prior block tested cluster-daemon.mjs --priority-dump / --simulate flags that don't exist on that file; new block verifies cluster.json jimmy entry, node-matrix.mjs --dry-run (returns 7), dispatch-to-node.sh --dry-run --node jimmy, is_overflow_worker classifier, audit_overflow_refs.py (flagged as still-missing BLOCKER), AGENTS.md.append-phase4.txt byte cap + 7-node mention, cluster-check.sh all
+  CONTEXT: BUILD_cluster-max.md:899-917
+
+[2026-04-21T09:15:00Z] [DECISION] Promoted N5 (cluster.json missing context-parity entry) to blocker B11
+  WHY: Test plan system-wide invariant asserts Jimmy exposes semantic-search(8100) + intel(8101) + context-parity(4500); without the JSON entry the invariant fails before any phase runs; gap-analysis and test-plan were internally inconsistent about gating severity
+  CONTEXT: ~/.buildrunner/cluster.json jimmy.services, test plan line 274 invariant
+
+[2026-04-21T09:15:00Z] [DECISION] Expanded B10 to include BUILD Phase 0 5→4 flag count + PromptSubmit→UserPromptSubmit + port-4500 labels
+  WHY: BUILD line 541-542 requires grep -c "BR3_" ≥5 and line 564 Claude Review demands "all 5 feature flags" — enforcing a count that only passes if a non-canonical flag is reintroduced; BUILD Phase 10 uses "PromptSubmit" which is not a Claude hook schema name (actual name is UserPromptSubmit); single editorial pass needed to align BUILD with canonical 4-flag model
+  CONTEXT: BUILD_cluster-max.md:541, 542, 547, 564, 817, 1084, 1271, 1273, 1319, 1468
+
+[2026-04-21T09:15:00Z] [DECISION] Fixed Phase 5 grep -- sentinel and fallback exit-code assertion
+  WHY: grep -cE "--mode\s+..." parsed --mode as an option without -- sentinel; below-route.sh:146 shows it exits 2 on Below offline (NOT exit 0 with [fallback=claude]); fallback assertion belongs at caller layer (dispatch-to-node.sh), not at below-route.sh itself
+  CONTEXT: ~/.buildrunner/scripts/below-route.sh:17, 146; test plan Phase 5 verify block
+
+[2026-04-21T09:15:00Z] [DECISION] Fixed Phase 10 env-var scope: printf | BR3_AUTO_CONTEXT=on bash ...sh (not BR3_AUTO_CONTEXT=on echo | bash ...sh)
+  WHY: BR3_AUTO_CONTEXT=on echo "..." sets the env var only for the echo process; bash on the other side of the pipe receives no flag; correct form scopes the env var to the bash invocation
+  CONTEXT: test plan Phase 10 three verify commands (non-trivial prompt, trivial skip, count-tokens)
+
+[2026-04-21T09:15:00Z] [DECISION] Replaced reranker probe placeholder [...] with concrete JSON candidate list + real latency check
+  WHY: curl -d '{"candidates":[...]}' was a literal placeholder that would send invalid JSON; replaced with 5 real candidate strings and switched latency assertion from "p95 over 50 runs" (unmeasurable inline) to median of curl -w '%{time_total}\n' single-run <0.5s
+  CONTEXT: test plan Phase 10 reranker verify
+
+[2026-04-21T09:15:00Z] [DECISION] Added markdown + BUILD-spec + adversarial-review + log exclusions to system-wide invariant greps
+  WHY: Invariant description said "0 outside historical-note markdown" but actual grep had no exclusions; would always hit BUILD spec tombstones + AGENTS.md + adversarial-review archives; added :(exclude)*.md and :(exclude).buildrunner/builds/* :(exclude).buildrunner/adversarial-reviews/* :(exclude).buildrunner/*.log
+  CONTEXT: test plan system-wide invariants lines 267-270
+
+[2026-04-21T09:15:00Z] [DECISION] Added subprocess.*curl.*10.0.1.* branch to dispatch-envelope invariant regex
+  WHY: Top-of-doc invariant promised to catch three patterns (subprocess ollama, requests http://10.0.1, subprocess curl 10.0.1), but actual grep had only two; missing branch would silently allow direct curl subprocess calls to cluster IPs
+  CONTEXT: test plan line 268 dispatch envelope regex
+
+[2026-04-21T09:15:00Z] [DECISION] Moved :4500 context-parity health check from Phase 3 to Phase 12
+  WHY: Phase 3 BUILD deliverables are 8100 (semantic) + 8101 (intel) + 8200 (staging); port 4500 is a Phase 12 surface (/context/{model}); gating Phase 3 completion on Phase 12 surface created circular dependency and would pass a Phase-12-incomplete state as Phase-3 green
+  CONTEXT: test plan Phase 3 + Phase 12 verify blocks
+
+[2026-04-21T09:15:00Z] [PATTERN] Adversarial review round adjudication: verify each Codex finding against live source before accept/reject; never accept on authority alone
+  WHY: Codex had access to filesystem + BUILD spec this session; all 7 findings were verifiable; spot-checked 5 (below-route.sh:17/146, BUILD Phase 4 deliverables at line 899+, Phase 0 flag count at line 541, Phase 10 hook name at line 1271, cluster-daemon header); no findings rejected — all cited lines matched Codex's claims
+  CONTEXT: cross_model_review pattern — Claude adjudicator is last line of defense, must verify not rubber-stamp
+[2026-04-21T14:28:36.039869Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T14:28:36.040405Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T14:28:36.040962Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.041243Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T14:28:36.041756Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.041925Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T14:28:36.041969Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T14:28:36.043422Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.043565Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T14:28:36.044252Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.044392Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T14:28:36.045015Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.045184Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T14:28:36.045767Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.045899Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T14:28:36.046423Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.046573Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T14:28:36.047235Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.047363Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T14:28:36.047416Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T14:28:36.047971Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.048156Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T14:28:36.048708Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.048898Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T14:28:36.049378Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T14:28:36.049517Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T15:05:31.834567Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T15:05:31.835219Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T15:05:31.835869Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.836014Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T15:05:31.836558Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.836709Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T15:05:31.836770Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T15:05:31.838357Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.838505Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T15:05:31.839141Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.839288Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T15:05:31.839994Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.840291Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T15:05:31.840865Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.840984Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T15:05:31.841566Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.841701Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T15:05:31.842220Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.842345Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T15:05:31.842397Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T15:05:31.842934Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.843117Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T15:05:31.844066Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.844226Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T15:05:31.844721Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:05:31.844847Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T15:56:49.471358Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T15:56:49.472104Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T15:56:49.472759Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.472925Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T15:56:49.473529Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.473725Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T15:56:49.473767Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T15:56:49.475364Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.475515Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T15:56:49.476168Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.476308Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T15:56:49.477102Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.477223Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T15:56:49.477755Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.477904Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T15:56:49.478412Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.478522Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T15:56:49.479032Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.479202Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T15:56:49.479244Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T15:56:49.479784Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.479895Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T15:56:49.480611Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.480731Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T15:56:49.481235Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T15:56:49.481370Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+2026-04-21T15:57:47Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T15:57:47Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T15:57:47Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T15:57:47Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T15:57:47Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T15:57:47Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T15:57:47Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T15:57:47Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+[2026-04-21T16:00:37.369779Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T16:00:37.370050Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T16:00:37.370675Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.370817Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T16:00:37.371443Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.371611Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T16:00:37.371669Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T16:00:37.373102Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.373218Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T16:00:37.373856Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.373995Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T16:00:37.374595Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.374754Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T16:00:37.375318Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.375498Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T16:00:37.376093Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.376295Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T16:00:37.376875Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.377083Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T16:00:37.377118Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T16:00:37.377654Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.377787Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:00:37.378358Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.378484Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:00:37.378986Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:00:37.379114Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+2026-04-21T16:00:37Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:00:37Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:00:37Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:00:37Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:00:37Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:00:37Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:00:38Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:00:38Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+[2026-04-21T16:01:11.502203Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T16:01:11.502453Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T16:01:11.503207Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.503488Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T16:01:11.504161Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.504287Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T16:01:11.504337Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T16:01:11.505715Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.505883Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T16:01:11.506511Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.506646Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T16:01:11.507284Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.507495Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T16:01:11.508014Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.508277Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T16:01:11.508887Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.509035Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T16:01:11.509858Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.509989Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T16:01:11.510042Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T16:01:11.510669Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.510913Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:01:11.511526Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.511666Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:01:11.512201Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:01:11.512425Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T16:02:03.268266Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T16:02:03.268681Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T16:02:03.269288Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.269471Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T16:02:03.270081Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.270210Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T16:02:03.270245Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T16:02:03.271577Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.271699Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T16:02:03.272308Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.272441Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T16:02:03.273095Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.273313Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T16:02:03.273905Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.274155Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T16:02:03.274726Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.274871Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T16:02:03.275461Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.275595Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T16:02:03.275631Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T16:02:03.276150Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.276285Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:02:03.276869Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.277054Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:02:03.277618Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:02:03.277758Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+2026-04-21T16:02:03Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:02:03Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:02:04Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:02:04Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:02:04Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:02:04Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:02:04Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:02:04Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:20:37Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:20:37Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:20:37Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:20:37Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:20:38Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:20:38Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:20:38Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:20:38Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+[2026-04-21T16:21:57.735388Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T16:21:57.735723Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T16:21:57.736295Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.736414Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T16:21:57.736914Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.737057Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T16:21:57.737115Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T16:21:57.738522Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.738701Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T16:21:57.739463Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.739700Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T16:21:57.740255Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.740408Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T16:21:57.740938Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.741065Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T16:21:57.741677Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.741808Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T16:21:57.742330Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.742460Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T16:21:57.742506Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T16:21:57.743008Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.743140Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:21:57.743612Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.743794Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:21:57.744393Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:21:57.744511Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T16:47:35.753489Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T16:47:35.753757Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T16:47:35.754507Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.754651Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T16:47:35.755260Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.755403Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T16:47:35.755443Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T16:47:35.756713Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.756832Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T16:47:35.757485Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.757632Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T16:47:35.758240Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.758365Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T16:47:35.759031Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.759158Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T16:47:35.759694Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.759820Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T16:47:35.760445Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.760579Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T16:47:35.760611Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T16:47:35.761103Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.761238Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:47:35.761750Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.761896Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:47:35.762361Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:47:35.762463Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T16:48:07.465405Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T16:48:07.465632Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T16:48:07.466220Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.466498Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T16:48:07.467404Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.467555Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T16:48:07.467600Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T16:48:07.468827Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.469002Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T16:48:07.469654Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.469838Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T16:48:07.470463Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.470580Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T16:48:07.471062Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.471163Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T16:48:07.471656Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.471778Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T16:48:07.472351Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.472497Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T16:48:07.472544Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T16:48:07.473091Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.473211Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:48:07.473725Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.473877Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:48:07.474353Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:48:07.474473Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+2026-04-21T16:57:26Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:57:26Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:57:26Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:57:26Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:57:26Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:57:26Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+2026-04-21T16:57:26Z routing: skill=unknown model=llama3.3:70b node=below status=dispatched
+2026-04-21T16:57:26Z routing: skill=unknown model=llama3.3:70b node=below status=malformed_response
+[2026-04-21T16:58:35.270773Z] THREE_WAY_REVIEW round_start round=1 artifact='some diff' commit=abc123
+[2026-04-21T16:58:35.271200Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T16:58:35.271836Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.271996Z] THREE_WAY_REVIEW consensus_after_rebuttal round=1 rebuttal_ok=True
+[2026-04-21T16:58:35.272589Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.272767Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T16:58:35.272817Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T16:58:35.274124Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.274248Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T16:58:35.274956Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.275105Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['cap bug']
+[2026-04-21T16:58:35.275705Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.275857Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='circular dependency — phase 3 imports phase 5' round=1
+[2026-04-21T16:58:35.276398Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.276530Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='schema incompatibility' round=1
+[2026-04-21T16:58:35.277044Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.277225Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T16:58:35.277726Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.277863Z] THREE_WAY_REVIEW arbiter_invoked round=2 disagreements=1
+[2026-04-21T16:58:35.277894Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=2
+[2026-04-21T16:58:35.278398Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.278537Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:58:35.279054Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.279206Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:58:35.279718Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:35.279873Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T16:58:56.325416Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:58:56.325790Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['persistent bug']
+[2026-04-21T16:58:56.326484Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:56.326645Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'claude' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:58:56.327388Z] THREE_WAY_REVIEW round_start round=1 artifact='diff' commit=abc123
+[2026-04-21T16:58:56.327526Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T16:58:56.328123Z] THREE_WAY_REVIEW round_start round=2 artifact='diff' commit=abc123
+[2026-04-21T16:58:56.328249Z] THREE_WAY_REVIEW persistent_escalation persistent_blockers count=1 round=2 examples=['connection pool exhausted under load']
+[2026-04-21T17:38:49.443970Z] THREE_WAY_REVIEW round_start round=1 artifact="diff --git a/x b/x\n+print('hi')\n" commit=0000000000000000000000000000000000000000
+[2026-04-21T17:39:07.935080Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T17:39:08.938944Z] THREE_WAY_REVIEW round_start round=1 artifact="diff --git a/x b/x\n+print('hi')\n" commit=0000000000000000000000000000000000000000
+[2026-04-21T17:39:26.172999Z] THREE_WAY_REVIEW fix_type_rejected Reviewer 'codex' output rejected: findings at indices [0, 1] are missing required 'fix_type' field.
+[2026-04-21T17:42:06.377730Z] THREE_WAY_REVIEW round_start round=1 artifact="diff --git a/x b/x\n+print('hi')\n" commit=0000000000000000000000000000000000000000
+[2026-04-21T17:42:58.002365Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Diff only adds a greeting print instead of smoke-check behavior.' round=1
+[2026-04-21T17:45:00Z] PHASE_13 cutover complete — 4 canonical flags flipped OFF→ON in ~/.buildrunner/config/feature-flags.yaml + exported in ~/.zshenv: BR3_RUNTIME_OLLAMA, BR3_CACHE_BREAKPOINTS, BR3_ADVERSARIAL_3WAY, BR3_AUTO_CONTEXT. Jimmy services restarted with HF_HUB_OFFLINE=1 + TRANSFORMERS_OFFLINE=1 (bge-reranker model cached offline). post_cutover_smoke.py: 5/5 PASS. 48h soak window opens now.
