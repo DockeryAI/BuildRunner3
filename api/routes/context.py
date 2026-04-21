@@ -16,6 +16,10 @@ Response shape:
 
 IMPORTANT: Read-only surface. No mutation of any source through this route.
 IMPORTANT: context_router.py is the single source of truth for bundles.
+IMPORTANT (Phase 1): This module exposes ONLY an APIRouter named 'router'.
+  No module-level FastAPI app here. Standalone bootstrap lives in:
+  api/services/context_api_standalone.py
+  Mounting into node_semantic.py: core/cluster/node_semantic.py
 """
 
 from __future__ import annotations
