@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-12
 **Last Revised:** 2026-04-20 (Phases 11+12 complete: dashboard @ :4400 + multi-model context parity)
-**Status:** Phases 1-12 Complete — Phase 13 Blocked (requires ≥7-day shadow window)
+**Status:** Phases 1-12 Complete — Phase 2 In Progress
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
