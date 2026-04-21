@@ -1,0 +1,30 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "phase-15-unified-review",
+  "artifact_path": ".buildrunner/plans/phase-15-plan.md",
+  "plan_file": ".buildrunner/plans/phase-15-plan.md",
+  "mode": "plan",
+  "status": "pass",
+  "pass": true,
+  "verdict": "APPROVED",
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "arbiter_invoked": false,
+  "arbiter_ruling": null,
+  "merged_findings": [],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [],
+  "generated_at": "2026-04-21T19:07:50.591822Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 1,
+  "escalated": false,
+  "phase_number": 0
+}

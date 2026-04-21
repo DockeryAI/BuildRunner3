@@ -1,0 +1,32 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "phase-15-user-override",
+  "phase_number": 15,
+  "plan_file": ".buildrunner/plans/phase-15-plan.md",
+  "plan_file_abs": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/phase-15-plan.md",
+  "mode": "plan",
+  "status": "user_override",
+  "pass": true,
+  "verdict": "USER_OVERRIDE",
+  "user_override": true,
+  "user_override_reason": "Explicit user authorization: OVERRIDE via BR3_BYPASS_ADVERSARIAL_REVIEW=1 after prior round-1 review returned BLOCKED with 3 fix_type:fixable blockers. Plan edits applied to address blockers in place. User directed: no more reviews, proceed to commit.",
+  "user_override_authorized_by": "byron@dockeryai.com (interactive session)",
+  "reviewers": [
+    {"runtime": "claude", "role": "authoritative_reviewer"},
+    {"runtime": "codex", "role": "secondary_reviewer"}
+  ],
+  "arbiter_invoked": true,
+  "merged_findings": [],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [],
+  "generated_at": "2026-04-21T19:48:48Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 1,
+  "escalated": false,
+  "prior_review_artifact": ".buildrunner/adversarial-reviews/phase-0-20260421T192817Z.json",
+  "prior_upheld_blockers": [
+    "backup_run event has no emitter (Task 15.4 rule dropped; backup deferred to future amendment)",
+    "cache_hit event has no emitter (Task 15.1 updated to emit cache_hit from Anthropic response headers)",
+    "Shell-to-bridge path conflict (Bridge Path Resolver Contract added: \$BR3_REPO_ROOT / git rev-parse --show-toplevel single source of truth)"
+  ]
+}

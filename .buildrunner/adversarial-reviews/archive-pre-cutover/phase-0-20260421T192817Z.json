@@ -1,0 +1,315 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "phase-15-unified-review",
+  "artifact_path": ".buildrunner/plans/phase-15-plan.md",
+  "plan_file": ".buildrunner/plans/phase-15-plan.md",
+  "mode": "plan",
+  "status": "blocked",
+  "pass": false,
+  "verdict": "BLOCKED",
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "arbiter_invoked": true,
+  "arbiter_ruling": {
+    "verdict": "BLOCKED",
+    "rationale": "Three independent specification gaps each render a Phase 15 Done-When criterion unsatisfiable: two invariant rules (backup_run, cache_hit) reference event types that no task in the plan emits, and the shell-to-bridge path specification conflates user-global (~/.buildrunner) and repo-relative (.buildrunner) filesystem locations. Each is a concrete, evidence-cited defect that would cause the plan to ship without the telemetry coverage the Done-When line explicitly promises.",
+    "findings": [
+      {
+        "finding": "backup_run event type has no emit point in any Phase 15 task \u2014 Task 15.1 emits runtime_dispatched/cache_prompt_built/runtime_context_injected/cluster_guard_scan, Task 15.2 emits adversarial_review_ran/arbiter_ruled/summarizer_invoked/context_bundle_served/router_decision/private_filter_applied/retrieve_served, Task 15.3 is the bridge itself, Tasks 15.4\u201315.6 add no new emitters \u2014 yet Task 15.4 defines an invariant rule requiring backup_run events and Done-When requires 16 rules covering 'backup'",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "Upheld. The plan's Done-When explicitly requires an invariant rule covering 'backup', and Task 15.4 names backup_run as the event type that rule consumes. Without a corresponding emit site in the backup code path, the rule operates on an empty event set in perpetuity and the Done-When cannot be met. Claude's evidence traces every emit list in Tasks 15.1\u201315.6 and finds no backup_run emitter \u2014 this is a concrete, verifiable gap, not a stylistic concern. Fix is mechanical: designate a backup module (or Task 15.1 addendum) to emit backup_run on each backup run with explicit metadata fields.",
+        "upheld": true
+      },
+      {
+        "finding": "cache_hit event type has no emit point in any Phase 15 task \u2014 Task 15.4 specifies a rolling-24h cache hit rate invariant rule derived from cache_hit events 'recorded from Anthropic response headers inside RuntimeRegistry', but Task 15.1 only adds a runtime_dispatched emit to RuntimeRegistry.execute() \u2014 no cache_hit emit is specified",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "Upheld. Task 15.4 names a dedicated cache_hit event type (distinct from cache_prompt_built) sourced from Anthropic response cache-control headers, but Task 15.1's constraints for RuntimeRegistry.execute() do not add a cache_hit emit alongside runtime_dispatched. The rolling-24h rule therefore has no input. Same defect class as the backup_run gap. Fix: add cache_hit to Task 15.1's RuntimeRegistry emit list, specify the header fields parsed (cache_creation_input_tokens, cache_read_input_tokens), and add cache_hit to event_schemas.py's enum.",
+        "upheld": true
+      },
+      {
+        "finding": "Shell-to-bridge path conflict: auto-context.sh (~/.buildrunner/hooks/) and sync-cluster-context.sh (~/.buildrunner/scripts/) are user-global and would write to ~/.buildrunner/events-bridge.jsonl, but the bridge tailer in dashboard_stream.py tails the repo-relative .buildrunner/events-bridge.jsonl \u2014 these are different filesystem paths unless ~/.buildrunner IS .buildrunner, which contradicts the repo-relative path used by pre-commit-cluster-guard",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "Upheld. The plan juxtaposes two incompatible path conventions: user-global (~/.buildrunner/hooks/, ~/.buildrunner/scripts/) for the shell writers and repo-relative (.buildrunner/hooks/pre-commit-cluster-guard) for the dashboard bridge tailer. Shell hooks invoked from outside the repo's working directory will resolve .buildrunner/events-bridge.jsonl to the caller's CWD, not the repo root \u2014 and sync-cluster-context.sh explicitly runs on its own schedule, not from inside the repo. The result is that shell-originated events land in a file the bridge never reads, so every shell-sourced invariant is dead-on-arrival. Fix: specify an absolute, resolved path (e.g., $BR3_REPO_ROOT/.buildrunner/events-bridge.jsonl with a resolver contract, or commit to ~/.buildrunner as the single source of truth and relocate the bridge tailer).",
+        "upheld": true
+      }
+    ],
+    "reviewer_accuracy": {
+      "claude": "High-quality review. Each finding cites specific plan text, traces the defect to a concrete runtime consequence, and classifies severity correctly. The three upheld blockers are all Done-When-breaking gaps with verifiable evidence, not speculative concerns. Distinguishing note/warning/blocker severity is well-calibrated (e.g., correctly noting osascript GUI-session as a note rather than a blocker).",
+      "codex": "No findings returned on a plan with three independently-verifiable Done-When-breaking gaps plus several additional warnings. This is a significant miss \u2014 the defects are specification-level and visible from plain reading of the task emit lists vs. the Task 15.4 invariant rules. Codex either failed to cross-reference the emit lists against the invariant rules or applied an overly lenient threshold."
+    },
+    "model": "claude-opus-4-7",
+    "effort": "xhigh",
+    "duration_s": 55.6,
+    "artifact": ".buildrunner/plans/phase-15-plan.md",
+    "review_round": 1,
+    "timestamp": "2026-04-21T19:28:17.197847Z"
+  },
+  "merged_findings": [
+    {
+      "finding": "backup_run event type has no emit point in any Phase 15 task \u2014 Task 15.1 emits runtime_dispatched/cache_prompt_built/runtime_context_injected/cluster_guard_scan, Task 15.2 emits adversarial_review_ran/arbiter_ruled/summarizer_invoked/context_bundle_served/router_decision/private_filter_applied/retrieve_served, Task 15.3 is the bridge itself, Tasks 15.4\u201315.6 add no new emitters \u2014 yet Task 15.4 defines an invariant rule requiring backup_run events and Done-When requires 16 rules covering 'backup'",
+      "severity": "blocker",
+      "location": "Task 15.4 invariant rules / Done-When line: '16 invariant rules cover every flag-gated feature + context-parity component + backup + cluster-guard'",
+      "claim": "No Phase 15 task adds a backup_run emit point, so the backup invariant rule will always evaluate against an empty event set and the Done-When condition cannot be met.",
+      "evidence": "Task 15.1 event types: runtime_dispatched, cache_prompt_built, runtime_context_injected, cluster_guard_scan. Task 15.2 event types: adversarial_review_ran, arbiter_ruled, summarizer_invoked, context_bundle_served, router_decision, private_filter_applied, retrieve_served. No task lists backup_run as an emit event.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "cache_hit event type has no emit point in any Phase 15 task \u2014 Task 15.4 specifies a rolling-24h cache hit rate invariant rule derived from cache_hit events 'recorded from Anthropic response headers inside RuntimeRegistry', but Task 15.1 only adds a runtime_dispatched emit to RuntimeRegistry.execute() \u2014 no cache_hit emit is specified",
+      "severity": "blocker",
+      "location": "Task 15.4 invariant rules, cache hit rate rule",
+      "claim": "The cache hit rate invariant rule references a cache_hit event type that no Phase 15 task defines or emits, making the rule permanently unevaluable.",
+      "evidence": "Task 15.4: 'Rolling 24 h cache hit rate (derived from cache_hit events recorded from Anthropic response headers inside RuntimeRegistry)' \u2014 Task 15.1 Done-When and constraints list no cache_hit emit; build_cached_prompt() gets cache_prompt_built only.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Shell-to-bridge path conflict: auto-context.sh (~/.buildrunner/hooks/) and sync-cluster-context.sh (~/.buildrunner/scripts/) are user-global and would write to ~/.buildrunner/events-bridge.jsonl, but the bridge tailer in dashboard_stream.py tails the repo-relative .buildrunner/events-bridge.jsonl \u2014 these are different filesystem paths unless ~/.buildrunner IS .buildrunner, which contradicts the repo-relative path used by pre-commit-cluster-guard",
+      "severity": "blocker",
+      "location": "Task 15.3 / Shell hook emits section: auto-context.sh, sync-cluster-context.sh",
+      "claim": "User-global shell hooks writing to ~/.buildrunner/events-bridge.jsonl and the bridge tailing the repo-relative .buildrunner/events-bridge.jsonl are two different files; shell events will never reach telemetry.db.",
+      "evidence": "Plan: '~/.buildrunner/hooks/auto-context.sh (MODIFY \u2014 append one JSONL line to .buildrunner/events-bridge.jsonl)' and '~/.buildrunner/scripts/sync-cluster-context.sh (MODIFY \u2014 append one JSONL line)' \u2014 yet pre-commit-cluster-guard is 'repo-relative; confirmed at .buildrunner/hooks/pre-commit-cluster-guard', implying the bridge tails the repo-relative path while the user-global hooks write to a different absolute path.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "EventCollector access pattern at Python emit sites is unspecified \u2014 modules like runtime_registry.py, cache_policy.py, context_bundle.py, cross_model_review.py have no existing EventCollector instance and no injection mechanism; the plan says 'wrap in try: collector.collect_simple(...)' but never defines how collector is obtained at each call site",
+      "severity": "warning",
+      "location": "Task 15.1 / Task 15.2 emit sites \u2014 runtime_registry.py, cache_policy.py, context_bundle.py, arbiter.py, summarizer.py, context_router.py",
+      "claim": "Without a specified singleton, module-level instance, or dependency-injection pattern, each emit site will either fail to compile (undefined collector) or construct a new EventCollector per call, defeating buffer dedup and producing stale writes to separate DB connections.",
+      "evidence": "Task 15.1 Constraints: 'try: collector.collect_simple(...) except Exception: _emit_warn_once(logger)' \u2014 no collector instantiation strategy is given; RuntimeRegistry.__init__ takes no collector argument; EventCollector.__init__ has mandatory path parameters.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "_emit_warn_once(logger) is referenced at every Python emit site as the exception handler but is never defined in the plan \u2014 it is not in any cited file excerpt and no task names it as a new utility function",
+      "severity": "warning",
+      "location": "Task 15.1 / Task 15.2 Constraints: 'except Exception: _emit_warn_once(logger)'",
+      "claim": "_emit_warn_once is a fabricated API call; every Python emit site will raise NameError when the emit path fails, which itself violates the non-blocking emit contract.",
+      "evidence": "Cited excerpts include event_collector.py, event_schemas.py, runtime_registry.py \u2014 none define _emit_warn_once; no task in the Files whitelist creates a utility module containing it.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "JSONL bridge rotation TOCTOU: plan specifies 'drain to EOF, write position, then atomically rename' \u2014 but between drain and rename, shell writers can append new lines; those lines end up inside the renamed .done file, not the fresh events-bridge.jsonl; the plan's claim that 'event_id UNIQUE protects against bugs' addresses duplicates, not this loss of appended-then-renamed lines",
+      "severity": "warning",
+      "location": "Task 15.3 bridge rotation protocol",
+      "claim": "Lines written to events-bridge.jsonl between the EOF-drain and the rename are moved into the .done archive; the bridge processes them from position 0 on next tick but the position file for that .done path is never initialized, leading to missed rows.",
+      "evidence": "Task 15.3: 'bridge first drains the file to EOF, writes the final position to the position file, then atomically renames events-bridge.jsonl \u2192 events-bridge.jsonl.<ts>.done. Shell writers opening the file after the rename create a fresh events-bridge.jsonl. The renamed file is picked up next tick with a fresh position of 0' \u2014 the plan doesn't specify how the bridge tracks position separately for a .done file vs the live file.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Invariant checker SQLite reads are not specified to use asyncio.to_thread \u2014 Task 15.4 says checker 'polls new rows in telemetry.db' but only Task 15.3 explicitly mentions asyncio.to_thread for sqlite writes; synchronous sqlite reads in a coroutine on the dashboard WS event loop will block all WebSocket sends during each checker tick",
+      "severity": "warning",
+      "location": "Task 15.4 \u2014 invariant_checker.py coroutine on dashboard_stream.py event loop",
+      "claim": "If the invariant checker issues synchronous SQLite SELECT queries inside an asyncio coroutine, it blocks the event loop and delays WS message delivery to all dashboard clients for the duration of each DB poll.",
+      "evidence": "Task 15.4: 'Runs as a coroutine on the dashboard service event loop (same loop as Task 15.3's bridge)' \u2014 no asyncio.to_thread specified for reads, unlike Task 15.3 which explicitly states 'sqlite writes go through asyncio.to_thread'.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "invariants.yaml rule conditions use 'jq-style JSONPath + comparison' but Python has no stdlib jq implementation \u2014 no third-party library is named in the plan and the file tree contains no jq dependency in requirements-api.txt or pyproject.toml",
+      "severity": "warning",
+      "location": "Task 15.4 invariants.yaml constraint: 'condition: jq-style JSONPath + comparison'",
+      "claim": "The invariant checker requires a jq/JSONPath evaluator not currently present in the project's dependency manifest; either a new dependency must be added or a bespoke evaluator implemented, neither of which is planned.",
+      "evidence": "Task 15.4 Constraints: 'Rule authoring is declarative YAML (severity: P0|P1|P2, condition: jq-style JSONPath + comparison, ...)' \u2014 pyproject.toml and requirements-api.txt are in the file tree but no jq-python, jsonpath-ng, or similar library appears in any cited excerpt.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "arbiter_ruled invariant rule requires matching adversarial_review_ran in same correlation with claude_ok XOR codex_ok post-rebuttal, but _invoke_arbiter in cross_model_review.py receives pre-constructed findings lists and has no path to emit or receive a correlation_id that links back to the run_three_way_review emit \u2014 the call chain doesn't thread correlation",
+      "severity": "warning",
+      "location": "Task 15.2 invariant: arbiter_ruled rule / cross_model_review.py:1142 _invoke_arbiter",
+      "claim": "Without explicit correlation_id threading from run_three_way_review through _invoke_arbiter into log_ruling, the arbiter_ruled event will carry a different correlation than the parent adversarial_review_ran event, making the XOR ordering invariant permanently unenforceable.",
+      "evidence": "Cited excerpt core/cluster/arbiter.py: log_ruling() signature is (ruling, artifact, review_round, model, effort, duration) \u2014 no correlation_id parameter; Task 15.2 does not specify adding correlation threading to _invoke_arbiter's call chain.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "two-layer private-filter P0 invariant 'any context_bundle_served MUST have had both layer=mirror AND layer=extract events before it' is structurally unenforceable: sync-cluster-context.sh (layer=mirror) runs on its own schedule; its events carry shell-only correlations (shell-* prefix); the plan explicitly states cross-event invariants are skipped for shell-only correlations; therefore the P0 two-layer rule can never fire",
+      "severity": "warning",
+      "location": "Task 15.4 invariant rule: private_filter_applied two-layer rule (Phase 12, BUILD line ~1459)",
+      "claim": "The spec exempts shell-only correlations from Python-side ordering assertions, but the mirror-layer event is always shell-sourced, making the P0 rule that requires both layers to precede context_bundle_served permanently suppressed.",
+      "evidence": "Task 15.4: 'any context_bundle_served MUST have had both layer = mirror AND layer = extract events recorded before it (Phase 12 two-layer rule, BUILD line ~1459). P0.' AND Session/correlation model: 'Shell-only correlations are recorded but not asserted against Python-side ordering rules'.",
+      "confidence": "high",
+      "fix_type": "structural",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Plan says '16 new EventType enum values' but only 14\u201315 named event types are traceable across all tasks: runtime_dispatched, cache_prompt_built, runtime_context_injected, cluster_guard_scan (4), adversarial_review_ran, arbiter_ruled, summarizer_invoked, context_bundle_served, router_decision, private_filter_applied, retrieve_served (7), anomaly (1), backup_run (1), cache_hit (1) = 14 named, not 16",
+      "severity": "note",
+      "location": "Task 15.1 / 15.2 / 15.4 / event_schemas.py MODIFY",
+      "claim": "The spec claims 16 new EventType enum values but the plan text names only 14; implementers will fabricate 2 names, risking invariants.yaml rule mismatches.",
+      "evidence": "Task 15.2: 'Event types: adversarial_review_ran, arbiter_ruled, summarizer_invoked, context_bundle_served, router_decision, private_filter_applied, retrieve_served' (7); Task 15.1: 'Event types: runtime_dispatched, cache_prompt_built, runtime_context_injected, cluster_guard_scan' (4); anomaly/backup_run/cache_hit inferred from rules = 3 more = 14 total.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "tests/telemetry/ directory does not exist in the file tree and no __init__.py creation is planned \u2014 pytest will fail to collect test_invariant_checker.py and test_emit_contract.py without it",
+      "severity": "note",
+      "location": "Tests section: tests/telemetry/test_invariant_checker.py (NEW), tests/telemetry/test_emit_contract.py (NEW)",
+      "claim": "Missing tests/telemetry/__init__.py means pytest cannot discover the new test files without extra configuration not specified in the plan.",
+      "evidence": "File tree shows tests/__init__.py, tests/cluster/__init__.py, tests/e2e/__init__.py, tests/integration/__init__.py, tests/runtime/__init__.py, tests/skills/__init__.py \u2014 no tests/telemetry/ directory exists; plan Files whitelist omits tests/telemetry/__init__.py.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "osascript P0 notification will silently fail when dashboard_stream.py runs as a background process or headless launchd agent without a GUI session on macOS",
+      "severity": "note",
+      "location": "Task 15.4 constraints: 'macOS notification via osascript fires only on P0'",
+      "claim": "osascript requires an active GUI session; the dashboard service on Muddy likely runs as a background agent, making P0 notifications inoperative without additional configuration.",
+      "evidence": "Task 15.4 constraints mention osascript with no qualification about GUI session availability; cluster table shows Muddy as a dev machine, but no guarantee of foreground session when service runs.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "router_decision event will be emitted twice per context endpoint call: once from context_router.route() (Task 15.2) and once from api/routes/context.py (Task 15.2) \u2014 both are in the emit list with no dedup specified",
+      "severity": "note",
+      "location": "Task 15.2 \u2014 context_router.route() emit AND api/routes/context.py emit",
+      "claim": "Every /context/{model} HTTP call triggers context_router.route() internally, so both the router and the API layer will emit router_decision, inflating invariant checker counts and potentially triggering false P1 anomalies on budget rules.",
+      "evidence": "Task 15.2: emitters list includes both 'context_router.route() (context_router.py:145)' and '/context/{model} endpoint' with no note that one should be conditional on the other.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "dashboard service not running = all shell bridge events are never ingested \u2014 the plan relies on dashboard_stream.py being the sole ingestion path for events-bridge.jsonl, but no task ensures the dashboard service is always running on Muddy or recovers the backlog on restart",
+      "severity": "note",
+      "location": "Task 15.3 constraint: 'bridge tailer runs inside the existing dashboard service process'",
+      "claim": "If the dashboard service is stopped (deploy, crash, maintenance), JSONL lines accumulate indefinitely with no guaranteed drain, and the 50 MB rotation trigger may fire without the bridge running to drain first.",
+      "evidence": "Task 15.3: 'The bridge runs as an asyncio task on the existing dashboard service event loop (api/routes/dashboard_stream.py)' \u2014 no separate drain-on-startup pass is specified; watermark position from before the outage will resume correctly but events accumulated during downtime only process after manual restart.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "summarizer_invoked event metadata fields are not specified anywhere in the plan \u2014 unlike runtime_dispatched and cache_prompt_built which are constrained by invariants.yaml schema, summarizer_invoked has no named metadata fields, creating a risk that the PII regex scanner in test_emit_contract.py is tested against undefined fields",
+      "severity": "note",
+      "location": "Task 15.2 constraints: event type summarizer_invoked",
+      "claim": "Without explicit metadata field definitions for summarizer_invoked, implementers may include content hashes of the wrong fields or inadvertently include truncated diff excerpts, which the PII scanner should catch but has no spec to compare against.",
+      "evidence": "Task 15.2 constraints list metadata fields for adversarial_review_ran: 'claude_ok, codex_ok, review_round, fix_type_missing_count, structural_blocker, persistent_blocker, findings_count' \u2014 but summarizer_invoked has no equivalent field list.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "backup_run event type has no emit point in any Phase 15 task \u2014 Task 15.1 emits runtime_dispatched/cache_prompt_built/runtime_context_injected/cluster_guard_scan, Task 15.2 emits adversarial_review_ran/arbiter_ruled/summarizer_invoked/context_bundle_served/router_decision/private_filter_applied/retrieve_served, Task 15.3 is the bridge itself, Tasks 15.4\u201315.6 add no new emitters \u2014 yet Task 15.4 defines an invariant rule requiring backup_run events and Done-When requires 16 rules covering 'backup'",
+      "severity": "blocker",
+      "location": "Task 15.4 invariant rules / Done-When line: '16 invariant rules cover every flag-gated feature + context-parity component + backup + cluster-guard'",
+      "claim": "No Phase 15 task adds a backup_run emit point, so the backup invariant rule will always evaluate against an empty event set and the Done-When condition cannot be met.",
+      "evidence": "Task 15.1 event types: runtime_dispatched, cache_prompt_built, runtime_context_injected, cluster_guard_scan. Task 15.2 event types: adversarial_review_ran, arbiter_ruled, summarizer_invoked, context_bundle_served, router_decision, private_filter_applied, retrieve_served. No task lists backup_run as an emit event.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "cache_hit event type has no emit point in any Phase 15 task \u2014 Task 15.4 specifies a rolling-24h cache hit rate invariant rule derived from cache_hit events 'recorded from Anthropic response headers inside RuntimeRegistry', but Task 15.1 only adds a runtime_dispatched emit to RuntimeRegistry.execute() \u2014 no cache_hit emit is specified",
+      "severity": "blocker",
+      "location": "Task 15.4 invariant rules, cache hit rate rule",
+      "claim": "The cache hit rate invariant rule references a cache_hit event type that no Phase 15 task defines or emits, making the rule permanently unevaluable.",
+      "evidence": "Task 15.4: 'Rolling 24 h cache hit rate (derived from cache_hit events recorded from Anthropic response headers inside RuntimeRegistry)' \u2014 Task 15.1 Done-When and constraints list no cache_hit emit; build_cached_prompt() gets cache_prompt_built only.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Shell-to-bridge path conflict: auto-context.sh (~/.buildrunner/hooks/) and sync-cluster-context.sh (~/.buildrunner/scripts/) are user-global and would write to ~/.buildrunner/events-bridge.jsonl, but the bridge tailer in dashboard_stream.py tails the repo-relative .buildrunner/events-bridge.jsonl \u2014 these are different filesystem paths unless ~/.buildrunner IS .buildrunner, which contradicts the repo-relative path used by pre-commit-cluster-guard",
+      "severity": "blocker",
+      "location": "Task 15.3 / Shell hook emits section: auto-context.sh, sync-cluster-context.sh",
+      "claim": "User-global shell hooks writing to ~/.buildrunner/events-bridge.jsonl and the bridge tailing the repo-relative .buildrunner/events-bridge.jsonl are two different files; shell events will never reach telemetry.db.",
+      "evidence": "Plan: '~/.buildrunner/hooks/auto-context.sh (MODIFY \u2014 append one JSONL line to .buildrunner/events-bridge.jsonl)' and '~/.buildrunner/scripts/sync-cluster-context.sh (MODIFY \u2014 append one JSONL line)' \u2014 yet pre-commit-cluster-guard is 'repo-relative; confirmed at .buildrunner/hooks/pre-commit-cluster-guard', implying the bridge tails the repo-relative path while the user-global hooks write to a different absolute path.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-21T19:28:17.263959Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 3,
+  "escalated": false,
+  "phase_number": 0
+}

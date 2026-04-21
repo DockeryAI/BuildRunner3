@@ -512,9 +512,9 @@ def parse_findings(text):
                     item["severity"] = "note"
             return arr
         except (json.JSONDecodeError, ValueError):
-            return [{"finding": "Cross-model review returned malformed output", "severity": "warning"}]
+            return [{"finding": "Cross-model review returned malformed output", "severity": "warning", "fix_type": "fixable"}]
     # No JSON array found — wrap raw text (no hard truncation; callers may summarize upstream)
-    return [{"finding": text.strip(), "severity": "note"}]
+    return [{"finding": text.strip(), "severity": "note", "fix_type": "fixable"}]
 
 
 def parse_codex_event_stream(stdout):
@@ -615,9 +615,9 @@ def review_via_codex(prompt, config, project_root=None, commit_sha=None):
                     "--skip-git-repo-check",
                     "--sandbox",
                     "workspace-write",
-                    "--",
-                    prompt,
+                    "-",
                 ],
+                input=prompt,
                 capture_output=True,
                 text=True,
                 timeout=timeout,
@@ -1029,7 +1029,7 @@ def review_via_claude_inline(prompt, config, timeout=120):
         raise RuntimeError("claude CLI not found in PATH")
 
 
-def _run_parallel_reviews(prompt, config):
+def _run_parallel_reviews(prompt, config, reviewer_timeout=None):
     """
     Gather reviews from Claude Sonnet and Codex in parallel (Round 1).
     Returns dict: {claude: findings, codex: findings, errors: [...],
@@ -1037,8 +1037,16 @@ def _run_parallel_reviews(prompt, config):
 
     fix_type_errors holds ValueError messages from _reject_missing_fix_type.
     Callers must check fix_type_errors and treat them as hard rejections.
+
+    Timeout tuning: plan-mode prompts hit ~180KB (file tree + excerpts + plan).
+    Measured Sonnet 4.6 cold latency on 179KB prompt: ~234s. Default 360s gives
+    headroom. Override via BR3_REVIEWER_TIMEOUT env var.
     """
     import threading as _threading
+
+    reviewer_timeout = int(
+        os.environ.get("BR3_REVIEWER_TIMEOUT", reviewer_timeout or 360)
+    )
 
     results = {"claude": None, "codex": None, "errors": [], "fix_type_errors": []}
     errors = []
@@ -1046,7 +1054,7 @@ def _run_parallel_reviews(prompt, config):
 
     def run_claude():
         try:
-            findings, model = review_via_claude_inline(prompt, config)
+            findings, model = review_via_claude_inline(prompt, config, timeout=reviewer_timeout)
             try:
                 _reject_missing_fix_type(findings, "claude")
             except ValueError as ve:
@@ -1058,6 +1066,9 @@ def _run_parallel_reviews(prompt, config):
 
     def run_codex():
         try:
+            # review_via_codex reads timeout from config.backends.codex.timeout_seconds
+            codex_cfg = config.setdefault("backends", {}).setdefault("codex", {})
+            codex_cfg["timeout_seconds"] = max(int(codex_cfg.get("timeout_seconds", 60)), reviewer_timeout)
             findings, model, _ = review_via_codex(prompt, config)
             try:
                 _reject_missing_fix_type(findings, "codex")
@@ -1072,8 +1083,8 @@ def _run_parallel_reviews(prompt, config):
     t_codex = _threading.Thread(target=run_codex, daemon=True)
     t_claude.start()
     t_codex.start()
-    t_claude.join(timeout=180)
-    t_codex.join(timeout=180)
+    t_claude.join(timeout=reviewer_timeout + 30)
+    t_codex.join(timeout=reviewer_timeout + 30)
 
     results["errors"] = errors
     results["fix_type_errors"] = fix_type_errors
@@ -1208,6 +1219,285 @@ def _log_three_way_decision(event, details=""):
         f.write(line + "\n")
 
 
+# --- Plan-context builder (canonical replacement for adversarial-review.sh file-tree + excerpts) ---
+#
+# Full repo visibility locally — no rsync, no Otis truncation. The reviewers see
+# every source file the plan references plus a budgeted tree of src/ + supabase/
+# + top-level config files. This eliminates "file missing" false-positive
+# blockers that plagued the Otis-dispatched path.
+
+_PLAN_EXCERPT_BUDGET_BYTES = 180_000
+_PLAN_EXCERPT_PER_FILE_LINES = 180
+_PLAN_TREE_FILES_PER_CATEGORY = {"src": 1200, "supabase": 400, "top": 200}
+_PLAN_PATH_REGEX = re.compile(
+    r"(src|supabase|public|scripts|tests|core|api|ui|\.buildrunner)/[A-Za-z0-9_./-]+"
+    r"|(?:package\.json|tsconfig\.json|vite\.config\.(?:ts|js)|playwright\.config\.(?:ts|js))"
+)
+_PLAN_CITED_REGEX = re.compile(
+    r"(src|supabase|scripts|tests|core|api|ui)/[A-Za-z0-9_./-]+\.(?:ts|tsx|js|jsx|py|sql)"
+    r"|vite\.config\.(?:ts|js)|playwright\.config\.(?:ts|js)"
+)
+_PLAN_EXCLUDE_PATH_FRAGMENTS = (
+    "/node_modules/", "/.git/", "/dist/", "/.next/",
+    "/.buildrunner/build-reports/", "/.buildrunner/telemetry",
+    "/.runner", "/coverage/", "/.vercel/", "/.netlify/", "/.turbo/",
+)
+_PLAN_EXCLUDE_SUFFIXES = (".lock", ".log", ".map", ".tsbuildinfo", ".db")
+
+
+def _walk_project_files(project_root):
+    """Yield relative file paths under project_root matching filter rules."""
+    root = Path(project_root)
+    for dirpath, dirnames, filenames in os.walk(root):
+        rel_dir = Path(dirpath).relative_to(root).as_posix()
+        rel_dir_check = "/" + rel_dir + "/" if rel_dir != "." else "/"
+        if any(frag in rel_dir_check for frag in _PLAN_EXCLUDE_PATH_FRAGMENTS):
+            dirnames[:] = []
+            continue
+        for name in filenames:
+            if name.endswith(_PLAN_EXCLUDE_SUFFIXES):
+                continue
+            rel = Path(dirpath, name).relative_to(root).as_posix()
+            yield rel
+
+
+def build_project_file_tree(plan_text, project_root):
+    """Produce a budgeted file tree so reviewers can verify file existence."""
+    try:
+        all_rel = sorted(_walk_project_files(project_root))
+    except OSError:
+        return "no-project-files"
+
+    referenced = sorted({m.group(0) for m in _PLAN_PATH_REGEX.finditer(plan_text or "")})
+    always_include = [r for r in referenced if (Path(project_root) / r).exists()]
+
+    src_files = [r for r in all_rel if r.startswith("src/")][:_PLAN_TREE_FILES_PER_CATEGORY["src"]]
+    supabase_files = [r for r in all_rel if r.startswith("supabase/")][:_PLAN_TREE_FILES_PER_CATEGORY["supabase"]]
+    top_files = [r for r in all_rel if "/" not in r][:_PLAN_TREE_FILES_PER_CATEGORY["top"]]
+    core_files = [r for r in all_rel if r.startswith("core/")][:1200]
+    api_files = [r for r in all_rel if r.startswith("api/")][:400]
+    ui_files = [r for r in all_rel if r.startswith("ui/")][:400]
+    tests_files = [r for r in all_rel if r.startswith("tests/")][:400]
+
+    combined = set(always_include) | set(top_files) | set(src_files) | set(supabase_files)
+    combined |= set(core_files) | set(api_files) | set(ui_files) | set(tests_files)
+    return "\n".join(sorted(combined))
+
+
+def _extract_signatures(text):
+    """Pull export/interface/function/CREATE lines from a file body."""
+    lines = text.splitlines()
+    out = []
+    for i, line in enumerate(lines, 1):
+        stripped = line.lstrip()
+        if (stripped.startswith(("export ", "interface ", "type ", "class ",
+                                 "async function ", "function ", "def ", "class "))
+                or stripped.upper().startswith(("CREATE TABLE", "ALTER ", "CREATE INDEX", "CREATE POLICY"))):
+            out.append(f"{i}:{line}")
+        if len(out) >= 120:
+            break
+    return "\n".join(out)
+
+
+def build_cited_file_excerpts(plan_text, project_root):
+    """Emit file excerpts for every source path cited in plan_text."""
+    if not plan_text:
+        return ""
+    cited = sorted({m.group(0) for m in _PLAN_CITED_REGEX.finditer(plan_text)})
+    if not cited:
+        return ""
+
+    sized = []
+    for rel in cited:
+        abs_path = Path(project_root) / rel
+        if not abs_path.is_file():
+            continue
+        try:
+            sized.append((abs_path.stat().st_size, rel, abs_path))
+        except OSError:
+            continue
+    sized.sort()  # smallest first
+
+    parts = ["## Cited File Excerpts (generated locally — ground truth for API/schema verification)", ""]
+    total = 0
+    for size, rel, abs_path in sized:
+        try:
+            content = abs_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if total >= _PLAN_EXCERPT_BUDGET_BYTES:
+            parts.append(f"### {rel} (exports only — {size} bytes total, over excerpt budget)")
+            parts.append("```")
+            parts.append(_extract_signatures(content))
+            parts.append("```\n")
+            continue
+        parts.append(f"### {rel}")
+        parts.append("```")
+        if size > 25_000:
+            head = "\n".join(content.splitlines()[:_PLAN_EXCERPT_PER_FILE_LINES])
+            parts.append(head)
+            parts.append(f"\n... [truncated, {size} bytes total — full exports/signatures below] ...\n")
+            parts.append(_extract_signatures(content))
+        else:
+            parts.append(content)
+        parts.append("```\n")
+        total += size
+    return "\n".join(parts)
+
+
+PLAN_ADVERSARIAL_PROMPT = """You are an adversarial reviewer. Your job is to find defects in a build plan BEFORE code is written. You are deliberately looking for problems — not being helpful, not being encouraging. Find what will break.
+
+Review the plan below against these measured failure modes (ranked by frequency in LLM-generated plans):
+
+1. **Requirement Conflicts (43.53%)** — Tasks that contradict each other, or conflict with the existing codebase.
+2. **Fabricated APIs (20.41%)** — References to functions/imports/endpoints that DO NOT EXIST. The prompt includes a "Cited File Excerpts" section below with actual source contents — treat those excerpts as ground truth. Do NOT flag an API as fabricated when it appears in an excerpt. Only flag when absent from BOTH the file tree AND excerpts.
+3. **Broken Execution Order** — Tasks listed in an order that will fail.
+4. **Missing Edge Cases** — Error handling gaps, null states, race conditions, auth failures.
+5. **Nonexistent Files** — Plan references files not on disk. Check against BOTH the tree AND excerpts.
+
+## Required Output Schema
+
+Every finding MUST include ALL of these fields:
+- finding: <string>
+- severity: blocker | warning | note
+- location: <file path, function name, or "global">
+- claim: <one sentence stating what is wrong>
+- evidence: <specific line/code excerpt or "inferred from context">
+- confidence: high | medium | low
+- fix_type: fixable | structural
+
+fix_type rules:
+- **fixable**: Can be resolved by editing the plan text (wrong path, missing step, typo, reordered tasks). A targeted edit resolves it.
+- **structural**: Requires redesigning the phase — changing boundaries, swapping tech, altering phase-level order. Plan-text edits will NOT resolve it.
+
+Be strict: if two successive rounds of plan edits would not resolve the issue without reorganizing phases, it is structural. When in doubt, mark as structural.
+
+Output ONLY a JSON array. No prose outside the JSON. Findings missing any field will be REJECTED.
+"""
+
+
+def build_plan_review_prompt(plan_text, project_root):
+    """Assemble the full plan-review prompt with tree + excerpts + plan."""
+    file_tree = build_project_file_tree(plan_text, project_root)
+    excerpts = build_cited_file_excerpts(plan_text, project_root)
+    return (
+        f"{PLAN_ADVERSARIAL_PROMPT}\n\n"
+        f"---\n\n"
+        f"## Project File Tree (generated locally):\n{file_tree}\n\n"
+        f"---\n\n"
+        f"{excerpts}\n\n"
+        f"---\n\n"
+        f"## Plan to Review:\n{plan_text}\n"
+    )
+
+
+# --- Tracking artifact writer (canonical location for all review modes) ---
+#
+# Writes to <project_root>/.buildrunner/adversarial-reviews/phase-N-<ts>.json
+# with the schema the commit hook (require-adversarial-review.sh) expects.
+# For diff/commit modes, writes to .buildrunner/adversarial-reviews/commit-<sha>-<ts>.json.
+
+_ARTIFACT_SCHEMA_VERSION = "br3.adversarial_review.v1"
+
+
+def _extract_phase_numbers(plan_text):
+    """Find '### Phase N:' headers in the plan."""
+    return sorted({int(m.group(1)) for m in re.finditer(r"^### Phase (\d+):", plan_text or "", re.MULTILINE)})
+
+
+def _classify_findings_for_artifact(merged_findings):
+    """Split merged findings into consensus_blockers, unresolved, status."""
+    consensus_blockers = [x for x in merged_findings
+                          if x.get("severity") == "blocker" and x.get("consensus")]
+    unresolved = [x for x in merged_findings
+                  if x.get("severity") == "blocker" and not x.get("consensus")]
+    warnings = [x for x in merged_findings
+                if x.get("severity") not in ("blocker",)]
+    if consensus_blockers or unresolved:
+        status = "blocked"
+    elif warnings:
+        status = "warning"
+    else:
+        status = "pass"
+    return consensus_blockers, unresolved, status
+
+
+def write_tracking_artifact(project_root, plan_file, task_id, result, mode="plan"):
+    """Write a canonical tracking artifact for the review result.
+
+    Schema matches require-adversarial-review.sh hook expectations:
+      pass, review_round, max_rebuttal_rounds, merged_findings,
+      consensus_blockers, unresolved_disagreements, reviewers.
+
+    In plan mode, writes one phase-N-<ts>.json per phase the plan declares.
+    In diff/commit mode, writes a single commit-<sha>-<ts>.json file.
+    Returns list of written paths.
+    """
+    reviews_dir = Path(project_root) / ".buildrunner" / "adversarial-reviews"
+    reviews_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    max_rounds = int(os.environ.get("BR3_MAX_REVIEW_ROUNDS", "1"))
+
+    merged_findings = result.get("findings", []) or []
+    consensus_blockers, unresolved, status = _classify_findings_for_artifact(merged_findings)
+    verdict = result.get("verdict", "UNKNOWN")
+    pass_flag = (verdict == "APPROVED") and not consensus_blockers and not unresolved
+
+    import hashlib as _hashlib
+    plan_file_abs = str(Path(plan_file).resolve()) if plan_file else None
+    plan_path_sha = (
+        _hashlib.sha256(plan_file_abs.encode("utf-8")).hexdigest()[:16]
+        if plan_file_abs
+        else None
+    )
+    base_record = {
+        "schema_version": _ARTIFACT_SCHEMA_VERSION,
+        "task_id": task_id or f"review-{timestamp}",
+        "artifact_path": str(plan_file) if plan_file else None,
+        "plan_file": str(plan_file) if plan_file else None,
+        "plan_file_abs": plan_file_abs,
+        "plan_path_sha": plan_path_sha,
+        "mode": mode,
+        "status": status,
+        "pass": bool(pass_flag),
+        "verdict": verdict,
+        "reviewers": [
+            {"runtime": "claude", "role": "authoritative_reviewer"},
+            {"runtime": "codex", "role": "secondary_reviewer"},
+        ],
+        "arbiter_invoked": bool(result.get("arbiter_invoked")),
+        "arbiter_ruling": result.get("arbiter_ruling"),
+        "merged_findings": merged_findings,
+        "consensus_blockers": consensus_blockers,
+        "unresolved_disagreements": unresolved,
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "max_rebuttal_rounds": max_rounds,
+        "review_round": int(result.get("review_round", 1) or 1),
+        "escalated": bool(result.get("escalated")),
+    }
+
+    written = []
+    if mode == "plan" and plan_file and Path(plan_file).exists():
+        plan_text = Path(plan_file).read_text(encoding="utf-8", errors="replace")
+        phases = _extract_phase_numbers(plan_text) or [0]
+        for phase_number in phases:
+            record = dict(base_record)
+            record["phase_number"] = phase_number
+            # Round counter: count existing tracking files for this phase
+            existing = list(reviews_dir.glob(f"phase-{phase_number}-*.json"))
+            record["review_round"] = max(base_record["review_round"], len(existing) + 1)
+            out_path = reviews_dir / f"phase-{phase_number}-{timestamp}.json"
+            out_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+            written.append(str(out_path))
+    else:
+        commit_sha = result.get("commit_sha") or "unknown"
+        out_path = reviews_dir / f"commit-{commit_sha}-{timestamp}.json"
+        out_path.write_text(json.dumps(base_record, indent=2) + "\n", encoding="utf-8")
+        written.append(str(out_path))
+
+    return written
+
+
 def run_three_way_review(
     diff_text,
     spec_text,
@@ -1247,13 +1537,33 @@ def run_three_way_review(
     )
 
     parallel_results = _run_parallel_reviews(full_prompt, config)
-    claude_findings = (parallel_results.get("claude") or {}).get("findings", [])
-    codex_findings = (parallel_results.get("codex") or {}).get("findings", [])
+    claude_result = parallel_results.get("claude")
+    codex_result = parallel_results.get("codex")
+    claude_findings = (claude_result or {}).get("findings", [])
+    codex_findings = (codex_result or {}).get("findings", [])
     errors = parallel_results.get("errors", [])
 
     if errors:
         for err in errors:
             print(f"[three-way] reviewer error: {err}", file=sys.stderr)
+
+    # Reviewer-error guard: if BOTH reviewers errored out, we cannot approve.
+    # Silent APPROVED on empty findings is only valid when at least one
+    # reviewer actually ran. Otherwise, return REVIEWER_ERROR for caller retry.
+    if claude_result is None and codex_result is None:
+        err_detail = "; ".join(errors) if errors else "both reviewers returned no result"
+        _log_three_way_decision("reviewer_error_both", err_detail)
+        return {
+            "verdict": "REVIEWER_ERROR",
+            "findings": [],
+            "consensus": False,
+            "arbiter_invoked": False,
+            "arbiter_ruling": None,
+            "review_round": review_round,
+            "escalated": True,
+            "exit_code": 1,
+            "error": err_detail,
+        }
 
     # Check for fix_type validation errors from either reviewer
     fix_type_errors = parallel_results.get("fix_type_errors", [])
@@ -1413,22 +1723,231 @@ def run_three_way_review(
     }
 
 
+def _resolve_default_spec_file(project_root):
+    """Find the authoritative BUILD spec under <project_root>/.buildrunner/builds/."""
+    builds_dir = Path(project_root) / ".buildrunner" / "builds"
+    if not builds_dir.is_dir():
+        return None
+    candidates = sorted(builds_dir.glob("BUILD_*.md"), key=lambda p: p.stat().st_mtime, reverse=True)
+    return str(candidates[0]) if candidates else None
+
+
+def _plan_guard_check(plan_file: str, project_root: str, task_id: str | None) -> None:
+    """Mechanical 1-round enforcement.
+
+    If the most-recent tracking artifact for this plan (keyed by absolute plan
+    path, or task_id when provided) returned a BLOCKED verdict within the last
+    24 hours, refuse a second invocation unless BR3_REVIEW_ALLOW_RERUN=1 is set.
+
+    Exit 3 on refusal — distinct from normal BLOCKED (exit 1) so callers can
+    detect the guard vs. a legitimate blocker verdict.
+    """
+    import hashlib
+
+    if os.environ.get("BR3_REVIEW_ALLOW_RERUN", "0") == "1":
+        return
+
+    plan_abs = str(Path(plan_file).resolve())
+    plan_sha = hashlib.sha256(plan_abs.encode("utf-8")).hexdigest()[:16]
+    adv_dir = Path(project_root) / ".buildrunner" / "adversarial-reviews"
+    if not adv_dir.is_dir():
+        return
+
+    now = time.time()
+    window = 24 * 3600  # 24 h
+    candidates = sorted(adv_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+
+    for candidate in candidates:
+        if now - candidate.stat().st_mtime > window:
+            break
+        try:
+            payload = json.loads(candidate.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        prior_plan = payload.get("plan_file_abs") or ""
+        prior_task = payload.get("task_id") or ""
+        prior_sha = payload.get("plan_path_sha") or ""
+        same_plan = (
+            (task_id and prior_task and task_id == prior_task)
+            or (prior_sha and prior_sha == plan_sha)
+            or (prior_plan and prior_plan == plan_abs)
+        )
+        if not same_plan:
+            continue
+        prior_verdict = (payload.get("verdict") or "").upper()
+        prior_pass = bool(payload.get("pass"))
+        if prior_pass or prior_verdict in {"APPROVED", "PASS"}:
+            return  # prior PASS — free to re-run (idempotent)
+        # Prior run on this same plan did NOT pass — refuse.
+        sys.stderr.write(
+            "================================================================\n"
+            "ADVERSARIAL REVIEW GUARD: auto-retry refused (1-round cap)\n"
+            "================================================================\n"
+            f"Prior review on this plan returned verdict={prior_verdict or 'BLOCKED'} "
+            f"at {candidate.name}.\n"
+            "The unified pipeline runs one review per plan per authorization.\n"
+            "Re-running the review after hand-edits is NOT autonomous behavior —\n"
+            "the human operator must explicitly authorize a fresh review.\n"
+            "\n"
+            "To authorize a fresh review, set BR3_REVIEW_ALLOW_RERUN=1 in the\n"
+            "environment of the review command. Do not set it from inside a\n"
+            "skill or automated flow.\n"
+            "\n"
+            "Prior tracking artifact: "
+            f"{candidate}\n"
+            "================================================================\n"
+        )
+        sys.exit(3)
+
+
+def _mode_plan(args, parser):
+    """Run canonical plan review: 2-way parallel + 1 rebuttal + Opus arbiter."""
+    if not args.plan or not args.project_root:
+        parser.error("--mode plan requires --plan <plan_file> and --project-root <root>")
+    if not Path(args.plan).is_file():
+        parser.error(f"plan file not found: {args.plan}")
+    if not Path(args.project_root).is_dir():
+        parser.error(f"project root not found: {args.project_root}")
+
+    _plan_guard_check(args.plan, args.project_root, args.task_id)
+
+    os.environ.setdefault("BR3_MAX_REVIEW_ROUNDS", "1")
+    plan_text = Path(args.plan).read_text(encoding="utf-8", errors="replace")
+    augmented_prompt = build_plan_review_prompt(plan_text, args.project_root)
+    commit_sha = args.commit_sha or f"plan-{int(time.time())}"
+
+    config = load_config()
+    result = run_three_way_review(
+        diff_text=augmented_prompt,
+        spec_text="",
+        commit_sha=commit_sha,
+        project_root=args.project_root,
+        plan_file=args.plan,
+        config=config,
+    )
+
+    written = write_tracking_artifact(
+        project_root=args.project_root,
+        plan_file=args.plan,
+        task_id=args.task_id,
+        result=result,
+        mode="plan",
+    )
+    result["tracking_artifacts"] = written
+
+    print(json.dumps(result, indent=2))
+    sys.exit(result.get("exit_code", 0))
+
+
+def _mode_diff(args, parser):
+    """Run canonical diff review: 2-way parallel + 1 rebuttal + Opus arbiter."""
+    if not args.diff_file or not args.project_root:
+        parser.error("--mode diff requires --diff-file and --project-root")
+    if not Path(args.diff_file).is_file():
+        parser.error(f"diff file not found: {args.diff_file}")
+
+    os.environ.setdefault("BR3_MAX_REVIEW_ROUNDS", "1")
+    spec_file = args.spec_file or _resolve_default_spec_file(args.project_root)
+    diff_text = Path(args.diff_file).read_text(encoding="utf-8", errors="replace")
+    spec_text = Path(spec_file).read_text(encoding="utf-8", errors="replace") if spec_file else ""
+    commit_sha = args.commit_sha or f"diff-{int(time.time())}"
+
+    config = load_config()
+    result = run_three_way_review(
+        diff_text=diff_text,
+        spec_text=spec_text,
+        commit_sha=commit_sha,
+        project_root=args.project_root,
+        plan_file=None,
+        config=config,
+    )
+    result["commit_sha"] = commit_sha
+
+    written = write_tracking_artifact(
+        project_root=args.project_root,
+        plan_file=None,
+        task_id=args.task_id,
+        result=result,
+        mode="diff",
+    )
+    result["tracking_artifacts"] = written
+
+    print(json.dumps(result, indent=2))
+    sys.exit(result.get("exit_code", 0))
+
+
+def _mode_commit(args, parser):
+    """Run canonical commit review: derive diff from git HEAD~1..HEAD, 2-way + arbiter."""
+    if not args.project_root:
+        parser.error("--mode commit requires --project-root")
+
+    os.environ.setdefault("BR3_MAX_REVIEW_ROUNDS", "1")
+    project_root = args.project_root
+    head_rev = args.commit_sha or "HEAD"
+    diff_proc = subprocess.run(
+        ["git", "diff", f"{head_rev}~1", head_rev],
+        cwd=project_root, capture_output=True, text=True,
+    )
+    diff_text = diff_proc.stdout or "# No diff available"
+
+    sha_proc = subprocess.run(
+        ["git", "rev-parse", "--short", head_rev],
+        cwd=project_root, capture_output=True, text=True,
+    )
+    commit_sha = (sha_proc.stdout or "").strip() or f"commit-{int(time.time())}"
+
+    spec_file = args.spec_file or _resolve_default_spec_file(project_root)
+    spec_text = Path(spec_file).read_text(encoding="utf-8", errors="replace") if spec_file else ""
+
+    config = load_config()
+    result = run_three_way_review(
+        diff_text=diff_text,
+        spec_text=spec_text,
+        commit_sha=commit_sha,
+        project_root=project_root,
+        plan_file=None,
+        config=config,
+    )
+    result["commit_sha"] = commit_sha
+
+    written = write_tracking_artifact(
+        project_root=project_root,
+        plan_file=None,
+        task_id=args.task_id,
+        result=result,
+        mode="commit",
+    )
+    result["tracking_artifacts"] = written
+
+    print(json.dumps(result, indent=2))
+    sys.exit(result.get("exit_code", 0))
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Cross-model code review")
+    parser = argparse.ArgumentParser(description="Cross-model code review — canonical entry point")
     parser.add_argument("--check-auth", action="store_true", help="Just verify Codex auth and exit")
     parser.add_argument("--runtime-preflight", choices=["claude", "codex"], help="Run runtime preflight and exit")
-    parser.add_argument("--mode", choices=["direct", "shadow"], default="direct", help="Dispatch mode for runtime preflight")
+    parser.add_argument(
+        "--mode",
+        choices=["plan", "diff", "commit", "direct", "shadow"],
+        default=None,
+        help=(
+            "Review mode: plan | diff | commit. "
+            "Legacy values 'direct'/'shadow' are only valid with --runtime-preflight."
+        ),
+    )
     parser.add_argument("--json-output", action="store_true", help="Emit machine-readable JSON for runtime preflight")
     parser.add_argument("--no-probe", action="store_true", help="Skip runtime probe command for runtime preflight")
     parser.add_argument("--command", help="Override runtime CLI command for runtime preflight")
     parser.add_argument("--node-name", help="Override node name in runtime preflight output")
     parser.add_argument("--auth-file", help="Override Codex auth file path for runtime preflight")
     parser.add_argument("--diff-file", help="Path to diff text file")
-    parser.add_argument("--spec-file", help="Path to build spec file")
-    parser.add_argument("--commit-sha", help="Commit SHA for caching")
+    parser.add_argument("--spec-file", help="Path to build spec file (auto-detected from .buildrunner/builds/ if omitted)")
+    parser.add_argument("--commit-sha", help="Commit SHA for caching and artifacts")
     parser.add_argument("--project-root", help="Project root path")
-    parser.add_argument("--three-way", action="store_true", help="Run 3-party adversarial review (Sonnet + Codex + Opus arbiter)")
-    parser.add_argument("--plan", help="Path to plan file for three-way review")
+    parser.add_argument("--three-way", action="store_true", help="[legacy] Alias for --mode plan when --plan is set, else --mode diff")
+    parser.add_argument("--plan", help="Path to plan file (plan mode input)")
+    parser.add_argument("--task-id", help="Task identifier recorded in tracking artifact")
     parser.add_argument("--escalation-prompt-only", action="store_true", help="Print escalation prompt and exit 0")
     args = parser.parse_args()
 
@@ -1448,9 +1967,10 @@ def main():
             sys.exit(1)
 
     if args.runtime_preflight:
+        preflight_mode = args.mode if args.mode in ("direct", "shadow") else "direct"
         preflight = build_runtime_preflight(
             runtime=args.runtime_preflight,
-            mode=args.mode,
+            mode=preflight_mode,
             command=args.command,
             project_root=args.project_root,
             probe=not args.no_probe,
@@ -1463,37 +1983,19 @@ def main():
             print(format_runtime_preflight(preflight))
         sys.exit(0 if preflight["dispatch_ok"] else 1)
 
-    # Three-way review mode
-    if args.three_way:
-        if not all([args.diff_file, args.spec_file, args.commit_sha, args.project_root]):
-            if args.plan and args.project_root:
-                # Plan-file mode: read plan as diff, empty spec
-                with open(args.plan, encoding="utf-8", errors="replace") as f:
-                    diff_text = f.read()
-                spec_text = ""
-                commit_sha = args.commit_sha or f"plan-{int(time.time())}"
-            else:
-                parser.error("--three-way requires --diff-file + --spec-file + --commit-sha + --project-root, or --plan + --project-root")
-        else:
-            with open(args.diff_file, encoding="utf-8", errors="replace") as f:
-                diff_text = f.read()
-            with open(args.spec_file, encoding="utf-8", errors="replace") as f:
-                spec_text = f.read()
-            commit_sha = args.commit_sha
+    # Resolve effective mode: explicit --mode wins; else --three-way + --plan → plan; --three-way → diff
+    effective_mode = args.mode if args.mode in ("plan", "diff", "commit") else None
+    if effective_mode is None and args.three_way:
+        effective_mode = "plan" if args.plan else "diff"
 
-        config = load_config()
-        result = run_three_way_review(
-            diff_text=diff_text,
-            spec_text=spec_text,
-            commit_sha=commit_sha,
-            project_root=args.project_root,
-            plan_file=args.plan,
-            config=config,
-        )
-        print(json.dumps(result, indent=2))
-        sys.exit(result.get("exit_code", 0))
+    if effective_mode == "plan":
+        _mode_plan(args, parser)
+    if effective_mode == "diff":
+        _mode_diff(args, parser)
+    if effective_mode == "commit":
+        _mode_commit(args, parser)
 
-    # Normal review mode — require all args
+    # Legacy raw-review path — diff-file + spec-file + commit-sha, no rebuttal/arbiter
     if not all([args.diff_file, args.spec_file, args.commit_sha, args.project_root]):
         parser.error("--diff-file, --spec-file, --commit-sha, and --project-root are required for review")
 

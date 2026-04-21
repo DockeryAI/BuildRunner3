@@ -1601,3 +1601,145 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-21T17:42:06.377730Z] THREE_WAY_REVIEW round_start round=1 artifact="diff --git a/x b/x\n+print('hi')\n" commit=0000000000000000000000000000000000000000
 [2026-04-21T17:42:58.002365Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Diff only adds a greeting print instead of smoke-check behavior.' round=1
 [2026-04-21T17:45:00Z] PHASE_13 cutover complete — 4 canonical flags flipped OFF→ON in ~/.buildrunner/config/feature-flags.yaml + exported in ~/.zshenv: BR3_RUNTIME_OLLAMA, BR3_CACHE_BREAKPOINTS, BR3_ADVERSARIAL_3WAY, BR3_AUTO_CONTEXT. Jimmy services restarted with HF_HUB_OFFLINE=1 + TRANSFORMERS_OFFLINE=1 (bge-reranker model cached offline). post_cutover_smoke.py: 5/5 PASS. 48h soak window opens now.
+[2026-04-21T19:01:39.347778Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:01:57.106285Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:02:13.493546Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:03:19.436328Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:03:39.358913Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:03:57.118911Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:04:13.505841Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:04:24.673009Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:05:19.449424Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:05:39.220951Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:05:40.919129Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:05:42.539743Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:05:47.341948Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:05:48.781068Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:05:50.573728Z] THREE_WAY_REVIEW round_start round=1 artifact='.buildrunner/plans/phase-15-plan.md' commit=plan-1776798350
+[2026-04-21T19:05:53.418259Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:05:59.897806Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:01.743324Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:03.432675Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:17.422765Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:18.691586Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:24.686266Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:06:30.899012Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:43.973891Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:48.136287Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:53.118458Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:06:53.584017Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:07:26.016904Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:07:39.239981Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:07:40.900964Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:07:40.936282Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:07:42.552961Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:07:47.359335Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:07:48.794600Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:07:50.591571Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:07:53.121310Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:07:53.241372Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:07:56.965180Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:07:59.911762Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:00.727815Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/phase-31-round1.json b/.buildrunne' commit=572f38f
+[2026-04-21T19:08:01.758238Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:03.446257Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:12.334958Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex e945f51..' commit=56bc48f
+[2026-04-21T19:08:17.435043Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:18.705289Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:19.782538Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex e945f51..' commit=56bc48f
+[2026-04-21T19:08:21.582121Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex e945f51..' commit=56bc48f
+[2026-04-21T19:08:29.253426Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex e945f51..' commit=56bc48f
+[2026-04-21T19:08:30.911731Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:37.119315Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex e945f51..' commit=56bc48f
+[2026-04-21T19:08:40.148919Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex e945f51..' commit=56bc48f
+[2026-04-21T19:08:40.228134Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:40.410385Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:48.150774Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:53.598612Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:54.807220Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:08:56.587881Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:08:59.222694Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:09:08.440999Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:09:26.031787Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:09:33.271597Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:09:36.585265Z] THREE_WAY_REVIEW round_start round=1 artifact='.buildrunner/plans/phase-15-plan.md' commit=plan-1776798576
+[2026-04-21T19:09:40.917670Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:09:54.124840Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review failed (exit 1): 
+[2026-04-21T19:09:54.706501Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review failed (exit 1): 
+[2026-04-21T19:09:55.577012Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:09:55.700031Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review failed (exit 1): 
+[2026-04-21T19:09:57.827904Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:10:05.019666Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:10:19.794909Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:10:22.263896Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:10:40.649756Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:10:57.570216Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:11:42.328862Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:11:46.183843Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:12:22.510329Z] THREE_WAY_REVIEW reviewer_error_both codex: Codex probe timed out after 15s; claude: Reviewer 'claude/claude-sonnet-4-6' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T19:12:39.224723Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:12:41.487990Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Reviewer 'claude/claude-sonnet-4-6' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T19:12:41.659631Z] THREE_WAY_REVIEW consensus_pass round=1 findings=0 consensus_blockers=0
+[2026-04-21T19:13:04.946601Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Reviewer 'claude/claude-sonnet-4-6' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T19:13:38.082692Z] THREE_WAY_REVIEW reviewer_error_both claude: Claude review timed out after 240s; codex: Codex timed out after 240s
+[2026-04-21T19:14:48.023023Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:14:57.777869Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:15:07.873791Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:15:15.963573Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:15:36.374340Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:15:42.182153Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:15:46.223555Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review timed out after 240s
+[2026-04-21T19:15:49.161184Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:15:50.804256Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:15:57.269309Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:17:21.610117Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' commit=78af7b5
+[2026-04-21T19:17:38.197190Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Reviewer 'claude/claude-sonnet-4-6' output rejected: findings at indices [0] are missing required 'fix_type' field.
+[2026-04-21T19:18:48.058897Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review timed out after 240s
+[2026-04-21T19:18:57.810633Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review timed out after 240s
+[2026-04-21T19:19:07.937343Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review timed out after 240s
+[2026-04-21T19:19:15.995330Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review timed out after 240s
+[2026-04-21T19:19:41.846528Z] THREE_WAY_REVIEW consensus_pass round=1 findings=11 consensus_blockers=0
+[2026-04-21T19:19:49.224845Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review timed out after 240s
+[2026-04-21T19:19:50.842521Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review timed out after 240s
+[2026-04-21T19:19:53.332607Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-21T19:20:09.687894Z] ARBITER_RULING artifact='diff --git a/.buildrunner/adversarial-reviews/commit-572f38f-20260421T190339Z.js' round=1 verdict=BLOCKED findings=1 upheld=1 model=claude-opus-4-7 effort=xhigh duration_s=15.8 rationale="The duplicate 'ResearchTrack' type declaration is a verifiable TypeScript compile error (TS2300: Duplicate identifier) that would prevent the edge function from building and deploying. The evidence is"
+[2026-04-21T19:20:09.745719Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T19:20:25.793615Z] THREE_WAY_REVIEW round_start round=1 artifact='.buildrunner/plans/phase-15-plan.md' commit=plan-1776799225
+[2026-04-21T19:21:21.659300Z] THREE_WAY_REVIEW reviewer_error_both codex: [Errno 7] Argument list too long: 'codex'; claude: Claude review timed out after 240s
+[2026-04-21T19:27:21.076323Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=3
+[2026-04-21T19:27:36.386331Z] THREE_WAY_REVIEW round_start round=1 artifact='/tmp/tiny.diff' commit=plan-1776799656
+[2026-04-21T19:28:17.198077Z] ARBITER_RULING artifact='.buildrunner/plans/phase-15-plan.md' round=1 verdict=BLOCKED findings=3 upheld=3 model=claude-opus-4-7 effort=xhigh duration_s=55.6 rationale='Three independent specification gaps each render a Phase 15 Done-When criterion unsatisfiable: two invariant rules (backup_run, cache_hit) reference event types that no task in the plan emits, and the'
+[2026-04-21T19:28:17.263782Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T19:29:01.551759Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The submitted artifact is a code diff rather than a build plan with ordered tasks, dependencies, and validation steps.' round=1
+[2026-04-21T19:30:07Z] [CONSTRAINT] /spec and /amend do NOT auto-route to /spec-codex and /amend-codex variants
+  WHY: The -codex variants are parallel standalone skills; no detection/dispatch wrapper exists in /spec, /amend, /autopilot, or /begin. User expectation of "every build should orchestrate codex optimization" is not implemented at the skill layer.
+  CONTEXT: ~/.claude/commands/{spec,amend,spec-codex,amend-codex,autopilot,begin}.md
+[2026-04-21T19:30:07Z] [ARCHITECTURE] Cluster-max codex orchestration is NOT via -codex skills — it is via 3 layers: AGENTS.md (Phase 0), RuntimeRegistry+RoleMatrix dispatch (Phase 7), /context/codex + codex-bridge.sh injection (Phase 12), gated by 4 feature flags (Phase 13)
+  WHY: Per BUILD_cluster-max.md lines 28-46, 337-370, 1439-1494. Codex is supposed to be optimized invisibly every loop via auto-read AGENTS.md + auto-injected context bundle — not via user invoking a separate skill.
+  CONTEXT: BUILD_cluster-max.md Role Matrix, AGENTS.md Maintenance Rule, Phase 12 deliverables
+[2026-04-21T19:30:07Z] [DECISION] Fixed codex subprocess ARG_MAX overflow by piping prompt via stdin using "-" positional
+  WHY: Large diffs (phase-15-plan.md, commit diffs) exceeded shell ARG_MAX (~256KB on macOS); every large review crashed with "[Errno 7] Argument list too long: 'codex'". codex exec supports stdin via "-" arg per codex CLI help.
+  CONTEXT: core/cluster/cross_model_review.py:609-625 review_via_codex()
+[2026-04-21T19:30:07Z] [DECISION] parse_findings fallback stubs now populate fix_type="fixable" default
+  WHY: Two fallback paths (malformed JSON, no-JSON-found wrap) returned findings without fix_type, which _reject_missing_fix_type then rejected, breaking the pipeline on any malformed reviewer output. Our internal stubs should comply with the schema we enforce.
+  CONTEXT: core/cluster/cross_model_review.py:515,517 parse_findings()
+[2026-04-21T19:30:07Z] [REJECTED] Considered softening _reject_missing_fix_type to auto-coerce missing fix_type to "fixable" with a warning
+  WHY: BUILD_cluster-max.md line 893 explicitly states "Findings missing fix_type will be REJECTED". Softening silently violates the plan. Kept validator strict on actual reviewer output; only patched our internal fallback stubs.
+  CONTEXT: core/cluster/cross_model_review.py:908 _reject_missing_fix_type()
+[2026-04-21T19:30:07Z] [WHY] Opus 4.7 literal-instruction-following behavior drove the rejection above
+  WHY: Per CLAUDE.md 4.7 notes, the model follows rules as written. Plan says REJECT; we reject. If Claude reviewer keeps dropping fix_type, that is a prompt engineering problem to fix upstream, not a validator to weaken.
+  CONTEXT: CLAUDE.md Claude 4.7 Operating Notes
+[2026-04-21T19:30:07Z] [DECISION] Verified fixes end-to-end via real adversarial-review.sh run
+  WHY: Before: "reviewer_error_both codex: Argument list too long" at 19:21:21. After: "arbiter_invoked round=1 disagreements=3" + "ARBITER_RULING verdict=BLOCKED findings=3 upheld=3" at 19:28:17 on phase-15-plan.md. Pipeline restored to functional state.
+  CONTEXT: .buildrunner/decisions.log 19:21-19:29Z window, /tmp/tiny.diff smoke test
+[2026-04-21T19:30:07Z] [CONSTRAINT] Jimmy /context/codex endpoint returns empty bundle — Phase 12 data plane is not sync'd
+  WHY: curl to http://10.0.1.106:4500/context/codex returns correct JSON shape but every section has content="", item_count=0, tokens=0 across logs/decisions/memory/intel/research. Endpoint works; sync job into /home/byronhudson/.buildrunner/decisions.public.log and /srv/jimmy/research-library on Jimmy is not populating.
+  CONTEXT: Phase 12 deliverables, ~/.buildrunner/scripts/sync-cluster-context.sh, ~/.buildrunner/scripts/filter-private-decisions.sh
+[2026-04-21T19:30:07Z] [CONSTRAINT] THREE_WAY_REVIEW round_start log shows repeat invocations, not cap violations
+  WHY: Log had 10+ round_start events in 3 minutes for the same commit — this is the commit hook firing multiple times per git operation, not a cap-bypass inside cross_model_review. BR3_MAX_REVIEW_ROUNDS=1 is honored correctly inside the pipeline.
+  CONTEXT: ~/.buildrunner/hooks/require-adversarial-review.sh, pre-commit activations
+[2026-04-21T19:30:07Z] [GOAL] Priority: wire up Jimmy sync so /context/codex actually carries logs/decisions/memory/research
+  WHY: Code fixes restored review pipeline but the "codex gets optimized context every dispatch" promise of Phase 12 is still broken as long as the bundle is empty. Next session should investigate the cluster-side cron/sync that populates Jimmy's mirror.
+  CONTEXT: Jimmy node 10.0.1.106:4500, ~/.buildrunner/scripts/sync-cluster-context.sh
+[2026-04-21T19:34:26.779238Z] THREE_WAY_REVIEW round_start round=1 artifact='.buildrunner/plans/phase-15-plan.md' commit=plan-1776800066
+[2026-04-21T19:50:45Z] [AMENDMENT] Phase 15 added to BUILD_cluster-max — feature observability (passive real-usage telemetry, 15 invariant rules, JSONL bridge, dashboard panel). Review path: user OVERRIDE per BR3_BYPASS_ADVERSARIAL_REVIEW=1 after prior round-1 BLOCKED verdict; 3 upheld blockers addressed via targeted plan edits (drop backup_run, add cache_hit emit spec, unify bridge path to repo-relative via BR3_REPO_ROOT/git rev-parse resolver contract). Artifact: .buildrunner/adversarial-reviews/phase-15-*-user-override.json. Enforcement hardening: skill prose (1-round cap, no CONTINUE loophole), Python guard (_plan_guard_check refuses auto-retry without BR3_REVIEW_ALLOW_RERUN=1), Bash PreToolUse hook (require-review-rerun-auth.sh).

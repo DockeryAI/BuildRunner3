@@ -1,0 +1,86 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "review-20260421T192901Z",
+  "artifact_path": "/tmp/tiny.diff",
+  "plan_file": "/tmp/tiny.diff",
+  "mode": "plan",
+  "status": "blocked",
+  "pass": false,
+  "verdict": "ESCALATED",
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "arbiter_invoked": false,
+  "arbiter_ruling": null,
+  "merged_findings": [
+    {
+      "finding": "The plan targets `x.py`, which does not exist anywhere in the provided repository tree or excerpts.",
+      "severity": "blocker",
+      "location": "x.py",
+      "claim": "The implementation plan references a file that is not on disk, so it cannot be applied against the stated codebase as written.",
+      "evidence": "Project file tree contains no `x.py`; the plan begins with `diff --git a/x.py b/x.py`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "The submitted artifact is a code diff rather than a build plan with ordered tasks, dependencies, and validation steps.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "This fails the required deliverable because there is no executable plan to review for sequencing, scope, or acceptance criteria.",
+      "evidence": "`Plan to Review` contains only `diff --git a/x.py b/x.py` and `+def add(a,b): return a+b`, with no phases, tasks, or success criteria.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "The proposed `add` implementation omits null and incompatible-type handling.",
+      "severity": "warning",
+      "location": "x.py:add",
+      "claim": "The function blindly evaluates `a+b`, which will raise `TypeError` for inputs such as `None` or unsupported mixed types and can also produce unintended string concatenation.",
+      "evidence": "Added code is exactly `def add(a,b): return a+b`.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "The plan includes no test or validation step for the new behavior.",
+      "severity": "note",
+      "location": "global",
+      "claim": "Without any verification task, the change is unvalidated despite the repository already containing an extensive `tests/` suite.",
+      "evidence": "The plan contains only one added code line and no accompanying test file or validation step; the file tree shows many existing `tests/` files.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "The plan targets `x.py`, which does not exist anywhere in the provided repository tree or excerpts.",
+      "severity": "blocker",
+      "location": "x.py",
+      "claim": "The implementation plan references a file that is not on disk, so it cannot be applied against the stated codebase as written.",
+      "evidence": "Project file tree contains no `x.py`; the plan begins with `diff --git a/x.py b/x.py`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "The submitted artifact is a code diff rather than a build plan with ordered tasks, dependencies, and validation steps.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "This fails the required deliverable because there is no executable plan to review for sequencing, scope, or acceptance criteria.",
+      "evidence": "`Plan to Review` contains only `diff --git a/x.py b/x.py` and `+def add(a,b): return a+b`, with no phases, tasks, or success criteria.",
+      "confidence": "high",
+      "fix_type": "structural"
+    }
+  ],
+  "generated_at": "2026-04-21T19:29:01.551919Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 4,
+  "escalated": true,
+  "phase_number": 0
+}
