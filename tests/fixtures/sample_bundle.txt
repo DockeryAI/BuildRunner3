@@ -1,0 +1,20 @@
+BR3 Cluster Phase 10 — Auto-Context System
+==========================================
+
+This bundle covers the auto-context hook pipeline for the BR3 cluster.
+
+Key components:
+- auto-context.sh: reads prompt from stdin, calls /retrieve, injects <auto-context> block
+- count-tokens.sh: tokenizer-true token counting via tiktoken (cl100k_base)
+- reranker.py: BAAI/bge-reranker-v2-m3 cross-encoder on CPU
+- retrieve.py: two-stage retrieval (vector search + rerank)
+- auto-context.yaml: configuration (token budget, source weights, skip patterns)
+
+Feature gate: BR3_AUTO_CONTEXT=on (default OFF until Phase 13)
+
+Token budget: 4096 tokens (tokenizer-true, not byte count)
+Sources: research, lockwood-code, lockwood-memory, decisions
+Trivial skip: <40 chars, slash commands, single-word, y/n
+Ledger: ~/.buildrunner/auto-context-ledger.jsonl
+
+This file is used as a test fixture for count-tokens.sh --model ollama.

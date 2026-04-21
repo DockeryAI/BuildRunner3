@@ -32,6 +32,10 @@ app = create_app(role="semantic-search", version="0.1.0")
 from core.cluster.node_intelligence import router as intel_router, intel_startup
 app.include_router(intel_router)
 
+# --- Include retrieve routes (Phase 10: auto-context, flag-gated) ---
+from api.routes.retrieve import retrieve_router
+app.include_router(retrieve_router)
+
 @app.on_event("startup")
 async def _intel_startup():
     await intel_startup()

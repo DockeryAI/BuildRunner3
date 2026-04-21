@@ -1,0 +1,1 @@
+Implement the runtime fallback logic for when Jimmy semantic search is unavailable. The dispatcher should route to Lockwood as backup and log the fallback event to decisions.log with a timestamp and reason code.

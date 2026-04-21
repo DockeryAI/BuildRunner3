@@ -1,0 +1,11 @@
+## Auto-Context Hook (Phase 10)
+
+Flag: `BR3_AUTO_CONTEXT=on` (OFF until Phase 13). Off=no change.
+Sources: research, lockwood-code, lockwood-memory, decisions
+Budget: 4K via count-tokens.sh. Exit 2=fail closed.
+Skip: <40 chars, slash cmds, single-word, y/n.
+Ledger: ~/.buildrunner/auto-context-ledger.jsonl
+{ts,event,prompt_excerpt,sources_injected,tokens_used,top_score}
+
+retrieve POST http://10.0.1.106:8100/retrieve {query,top_k}
+auto-context hook injects context before prompt.
