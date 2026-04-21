@@ -3,13 +3,25 @@
 RuntimeRegistry.execute(task) is the SINGLE dispatch path for all local-model calls.
 Direct ollama / requests.post / curl calls to cluster nodes are FORBIDDEN — the
 pre-commit hook in .git/hooks/pre-commit enforces this at commit time.
+
+CLI entry (Phase 2 — unified dispatcher):
+    python -m core.runtime.runtime_registry execute <builder> <spec_path>
+
+Exit codes:
+    0 — success
+    2 — unknown builder (not registered)
+    3 — malformed spec (file not found or empty)
 """
 
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import os
+import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 from core.runtime.base import BaseRuntime
 from core.runtime.claude_runtime import ClaudeRuntime
@@ -152,3 +164,130 @@ def create_runtime_registry(config: dict | None = None) -> RuntimeRegistry:
 def create_phase1_runtime_registry(config: dict | None = None) -> RuntimeRegistry:
     """Backward-compatible alias for the Phase 1 shadow registry."""
     return create_runtime_registry(config)
+
+
+# ---------------------------------------------------------------------------
+# CLI entry — python -m core.runtime.runtime_registry execute <builder> <spec_path>
+# ---------------------------------------------------------------------------
+
+_CLI_USAGE = """\
+Usage: python -m core.runtime.runtime_registry <command> [args]
+
+Commands:
+  execute <builder> <spec_path>
+      Dispatch a spec file to the named builder runtime.
+      builder: one of claude, codex, ollama
+      spec_path: path to a non-empty Markdown spec file
+
+Exit codes:
+  0 — success
+  2 — unknown builder
+  3 — malformed spec (file not found or empty)
+"""
+
+
+def _cli_execute(builder: str, spec_path_str: str) -> None:
+    """Core logic for the `execute` sub-command.  Exits directly."""
+    import argparse  # noqa: F401 (stdlib — already imported at top of stdlib chain)
+
+    # ── Validate spec ─────────────────────────────────────────────────────
+    spec_path = Path(spec_path_str)
+    if not spec_path.exists():
+        print(
+            f"ERROR: spec file not found: {spec_path_str}",
+            file=sys.stderr,
+        )
+        sys.exit(3)
+
+    spec_text = spec_path.read_text(encoding="utf-8").strip()
+    if not spec_text:
+        print(
+            f"ERROR: spec file is empty (malformed): {spec_path_str}",
+            file=sys.stderr,
+        )
+        sys.exit(3)
+
+    # ── Validate builder ──────────────────────────────────────────────────
+    if builder not in SUPPORTED_RUNTIME_NAMES:
+        print(
+            f"ERROR: unknown builder {builder!r}. "
+            f"Supported: {', '.join(SUPPORTED_RUNTIME_NAMES)}",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+    # ── Dry-run mode (tests/CI) ───────────────────────────────────────────
+    if os.environ.get("BR3_DISPATCH_DRY_RUN") == "1":
+        result = {
+            "status": "dry_run",
+            "builder": builder,
+            "spec_path": spec_path_str,
+            "spec_len": len(spec_text),
+        }
+        print(json.dumps(result))
+        sys.exit(0)
+
+    # ── Real dispatch ─────────────────────────────────────────────────────
+    registry = create_runtime_registry()
+
+    task = RuntimeTask(
+        task_id=f"cli-{builder}-{spec_path.stem}",
+        task_type="execution",
+        diff_text="",
+        spec_text=spec_text,
+        project_root=str(Path.cwd()),
+        commit_sha="",
+        authoritative_runtime=builder,
+    )
+
+    result_obj: RuntimeResult = registry.execute(task)
+    output = {
+        "status": result_obj.status,
+        "builder": builder,
+        "spec_path": spec_path_str,
+        "runtime": result_obj.runtime,
+        "backend": result_obj.backend,
+    }
+    if result_obj.error_message:
+        output["error"] = result_obj.error_message
+    print(json.dumps(output))
+    sys.exit(0 if result_obj.status == "success" else 1)
+
+
+def _cli_main(argv: list[str] | None = None) -> None:
+    """Entry point for `python -m core.runtime.runtime_registry`."""
+    import argparse
+
+    args = argv if argv is not None else sys.argv[1:]
+
+    parser = argparse.ArgumentParser(
+        prog="python -m core.runtime.runtime_registry",
+        description="BR3 runtime dispatcher CLI",
+        add_help=True,
+    )
+    subparsers = parser.add_subparsers(dest="command")
+
+    exec_parser = subparsers.add_parser(
+        "execute",
+        help="Dispatch a spec to a builder runtime",
+    )
+    exec_parser.add_argument(
+        "builder",
+        help=f"Runtime builder name. One of: {', '.join(SUPPORTED_RUNTIME_NAMES)}",
+    )
+    exec_parser.add_argument(
+        "spec_path",
+        help="Path to a non-empty Markdown spec file",
+    )
+
+    parsed = parser.parse_args(args)
+
+    if parsed.command == "execute":
+        _cli_execute(parsed.builder, parsed.spec_path)
+    else:
+        print(_CLI_USAGE, file=sys.stderr)
+        sys.exit(2)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    _cli_main()
