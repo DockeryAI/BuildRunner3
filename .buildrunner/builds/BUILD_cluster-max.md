@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-12
 **Last Revised:** 2026-04-20T22:10Z (Phase 8 complete: cache_policy + summarizer + cross_model_review refactor, 31/31 tests pass)
-**Status:** Phases 1-5 Complete — Phase 2 In Progress
+**Status:** Phases 1-7 Complete — Phase 2 In Progress
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
@@ -864,7 +864,7 @@ Jimmy running all Lockwood + Lomax services on systemd, data migrated, all endpo
 
 ### Phase 4: Cluster Reconfiguration — 7 Workers
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE (2026-04-20) — 7 workers live: Jimmy (10.0.1.106) added as primary semantic-search/intel/staging; Below spec updated to dual 3090 NVLink 48GB; Lockwood+Lomax retained as overflow workers; node-matrix.mjs returns 7 ranked (otis>below>jimmy>lockwood>lomax>muddy>walter); is_overflow_worker() + is_linux_node() helpers in \_dispatch-core.sh; 34 remaining 10.0.1.101 refs overflow-classified; AGENTS.md.append-phase4.txt staged (379 bytes).
 **Codex model:** gpt-5.4
 **Codex effort:** low
 **Worktree:** `worktrees/wave3-cluster`
@@ -1079,7 +1079,7 @@ Extend the existing `core/runtime/` abstraction so Below/Ollama is a first-class
 
 > **SUPERSEDED by Final Decisions Override (see top of file):** LiteLLM is DROPPED. Replace this phase with implementation of the `RuntimeRegistry.execute()` shim (`core/runtime/runtime_registry.py`) as the ONLY local-model dispatch path, enforced by the pre-commit hook that rejects direct `ollama`, `requests.post("http://10.0.1.*")`, and raw `curl` calls to cluster nodes. Cost/cache observability (token counts, cache-hit rate, per-model spend) is implemented inside the shim and written to `/srv/jimmy/ledger/cost.jsonl`. The Codex proxy, budget guards, and dashboard wiring below remain relevant — retarget them at the RuntimeRegistry shim instead of LiteLLM. Autopilot: skip the LiteLLM install/config steps, implement the shim + pre-commit enforcement, preserve the observability deliverables. Original content retained below for historical context only.
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE (2026-04-20) — SUPERSEDED path shipped: RuntimeRegistry.execute() + execute_async() is sole dispatch path, cache_control passed verbatim, BR3_GATEWAY-gated cost ledger emit (best-effort, never raises); CostLedger with exact 11-field JSONL schema writing to /srv/jimmy/ledger/ with weekly rotation + local fallback; /cluster/cost (24h+7d) and /cluster/cache (hit-rate/runtime) endpoints; pre-commit cluster-guard hook rejects direct ollama/requests/curl calls to cluster IPs; BR3_GATEWAY flag default OFF (flipped Phase 13); AGENTS.md.append-phase7.txt 597 bytes with "11 fields" literal; 24 new tests pass (8 ledger + 16 shim) + 66 existing runtime tests green; LiteLLM NOT installed; gateway_client.py deliverable dropped per Phase 8 note.
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave3-gateway`
