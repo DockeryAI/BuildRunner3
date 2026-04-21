@@ -21,9 +21,45 @@ Minimum SDK version required: 0.73.0 (ThinkingBlock, extra_body support).
 import os
 import json
 import asyncio
+import subprocess
+import time
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from anthropic import Anthropic, AsyncAnthropic
 from anthropic.types import Message
+
+_METRICS_SCRIPT = Path.home() / ".buildrunner" / "scripts" / "lockwood-metrics.sh"
+
+
+def _emit_metric(model: str, effort: str, method: str, message: Optional[Message],
+                 latency_ms: int, success: bool) -> None:
+    """
+    Fire-and-forget metric emission. Never raises — metric loss must not break
+    production calls. Shells out to lockwood-metrics.sh so operators can run
+    rollup/drift queries independently.
+    """
+    if not _METRICS_SCRIPT.exists():
+        return
+    try:
+        usage = getattr(message, "usage", None) if message is not None else None
+        in_tok = getattr(usage, "input_tokens", 0) or 0
+        out_tok = getattr(usage, "output_tokens", 0) or 0
+        think_tok = 0
+        if message is not None:
+            for block in message.content:
+                if getattr(block, "type", None) == "thinking":
+                    think_tok += len(getattr(block, "thinking", "") or "") // 4
+        subprocess.Popen(
+            [
+                str(_METRICS_SCRIPT), "emit",
+                model, effort, method,
+                str(in_tok), str(out_tok), str(think_tok),
+                str(latency_ms), "1" if success else "0",
+            ],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -172,6 +208,7 @@ class OpusClient:
         """
         prompt = self._build_spec_prompt(industry, use_case, user_input)
 
+        start = time.perf_counter()
         try:
             message = await self.async_client.messages.create(
                 **self._make_create_kwargs(
@@ -179,8 +216,12 @@ class OpusClient:
                     [{"role": "user", "content": prompt}],
                 )
             )
+            _emit_metric(self.model, _EFFORT_TIERS["pre_fill_spec"], "pre_fill_spec",
+                         message, int((time.perf_counter() - start) * 1000), True)
             return _extract_text(message)
         except Exception as e:
+            _emit_metric(self.model, _EFFORT_TIERS["pre_fill_spec"], "pre_fill_spec",
+                         None, int((time.perf_counter() - start) * 1000), False)
             raise OpusAPIError(f"Opus API error during spec pre-fill: {e}")
 
     @with_retry(max_retries=3)
@@ -221,6 +262,7 @@ Respond in JSON format with the following structure:
   "tech_stack": ["Technology 1", "Technology 2"]
 }}"""
 
+        start = time.perf_counter()
         try:
             message = await self.async_client.messages.create(
                 **self._make_create_kwargs(
@@ -229,10 +271,17 @@ Respond in JSON format with the following structure:
                 )
             )
             response_text = _extract_text(message)
-            return json.loads(response_text)
+            result = json.loads(response_text)
+            _emit_metric(self.model, _EFFORT_TIERS["analyze_requirements"], "analyze_requirements",
+                         message, int((time.perf_counter() - start) * 1000), True)
+            return result
         except json.JSONDecodeError as e:
+            _emit_metric(self.model, _EFFORT_TIERS["analyze_requirements"], "analyze_requirements",
+                         None, int((time.perf_counter() - start) * 1000), False)
             raise OpusAPIError(f"Failed to parse JSON response: {e}")
         except Exception as e:
+            _emit_metric(self.model, _EFFORT_TIERS["analyze_requirements"], "analyze_requirements",
+                         None, int((time.perf_counter() - start) * 1000), False)
             raise OpusAPIError(f"Requirements analysis failed: {e}")
 
     @with_retry(max_retries=3)
@@ -286,6 +335,7 @@ Example structure:
   "screens": {{"sm": "640px", "md": "768px", "lg": "1024px"}}
 }}"""
 
+        start = time.perf_counter()
         try:
             message = await self.async_client.messages.create(
                 **self._make_create_kwargs(
@@ -294,10 +344,17 @@ Example structure:
                 )
             )
             response_text = _extract_text(message)
-            return json.loads(response_text)
+            result = json.loads(response_text)
+            _emit_metric(self.model, _EFFORT_TIERS["generate_design_tokens"], "generate_design_tokens",
+                         message, int((time.perf_counter() - start) * 1000), True)
+            return result
         except json.JSONDecodeError as e:
+            _emit_metric(self.model, _EFFORT_TIERS["generate_design_tokens"], "generate_design_tokens",
+                         None, int((time.perf_counter() - start) * 1000), False)
             raise OpusAPIError(f"Failed to parse design tokens JSON: {e}")
         except Exception as e:
+            _emit_metric(self.model, _EFFORT_TIERS["generate_design_tokens"], "generate_design_tokens",
+                         None, int((time.perf_counter() - start) * 1000), False)
             raise OpusAPIError(f"Design token generation failed: {e}")
 
     @with_retry(max_retries=3)
@@ -337,6 +394,7 @@ Respond in JSON format with:
   "score": 0-100
 }}"""
 
+        start = time.perf_counter()
         try:
             message = await self.async_client.messages.create(
                 **self._make_create_kwargs(
@@ -345,10 +403,17 @@ Respond in JSON format with:
                 )
             )
             response_text = _extract_text(message)
-            return json.loads(response_text)
+            result = json.loads(response_text)
+            _emit_metric(self.model, _EFFORT_TIERS["validate_spec"], "validate_spec",
+                         message, int((time.perf_counter() - start) * 1000), True)
+            return result
         except json.JSONDecodeError as e:
+            _emit_metric(self.model, _EFFORT_TIERS["validate_spec"], "validate_spec",
+                         None, int((time.perf_counter() - start) * 1000), False)
             raise OpusAPIError(f"Failed to parse validation JSON: {e}")
         except Exception as e:
+            _emit_metric(self.model, _EFFORT_TIERS["validate_spec"], "validate_spec",
+                         None, int((time.perf_counter() - start) * 1000), False)
             raise OpusAPIError(f"Spec validation failed: {e}")
 
     def _build_spec_prompt(self, industry: str, use_case: str, user_input: Dict[str, str]) -> str:

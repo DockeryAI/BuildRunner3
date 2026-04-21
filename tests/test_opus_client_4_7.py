@@ -526,3 +526,61 @@ class TestHandoffPackage:
 
         assert data["effort_tier"] == "xhigh"
         assert data["model_hint"] == "claude-opus-4-7"
+
+
+# ---------------------------------------------------------------------------
+# Phase 8: Lockwood metrics emission
+# ---------------------------------------------------------------------------
+
+
+class TestMetricsEmission:
+    """Phase 8 — each messages.create() call fires _emit_metric with model/effort/method."""
+
+    def test_emit_metric_helper_exists(self):
+        from core import opus_client
+
+        assert hasattr(opus_client, "_emit_metric"), \
+            "opus_client must expose _emit_metric for Lockwood measurement loop"
+
+    def test_metrics_script_path_is_lockwood_metrics_sh(self):
+        from core import opus_client
+
+        assert opus_client._METRICS_SCRIPT.name == "lockwood-metrics.sh"
+        assert ".buildrunner/scripts" in str(opus_client._METRICS_SCRIPT)
+
+    def test_emit_metric_is_fire_and_forget_on_missing_script(self, monkeypatch, tmp_path):
+        """If the metrics script is missing, _emit_metric must silently no-op
+        (metric loss must never break production API calls)."""
+        from core import opus_client
+
+        monkeypatch.setattr(opus_client, "_METRICS_SCRIPT", tmp_path / "does-not-exist.sh")
+        msg = _make_text_message("ok")
+        opus_client._emit_metric("claude-opus-4-7", "xhigh", "pre_fill_spec", msg, 1234, True)
+
+    def test_pre_fill_spec_emits_metric(self, monkeypatch):
+        """Successful pre_fill_spec call fires _emit_metric once with success=True."""
+        import asyncio
+        from core import opus_client
+
+        calls = []
+
+        def fake_emit(model, effort, method, message, latency_ms, success):
+            calls.append({
+                "model": model, "effort": effort, "method": method,
+                "latency_ms": latency_ms, "success": success,
+            })
+
+        monkeypatch.setattr(opus_client, "_emit_metric", fake_emit)
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+
+        client = opus_client.OpusClient(model="claude-opus-4-7")
+        client.async_client.messages.create = AsyncMock(return_value=_make_text_message("generated spec"))
+
+        asyncio.run(client.pre_fill_spec("Healthcare", "Dashboard", {"project_name": "t"}))
+
+        assert len(calls) == 1
+        assert calls[0]["model"] == "claude-opus-4-7"
+        assert calls[0]["effort"] == "xhigh"
+        assert calls[0]["method"] == "pre_fill_spec"
+        assert calls[0]["success"] is True
+        assert calls[0]["latency_ms"] >= 0
