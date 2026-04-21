@@ -63,12 +63,36 @@ def test_phase_entry_required_fields():
         )
 
 
+def _find_build_spec() -> str:
+    """Find BUILD_cluster-activation.md — checks worktree first, then main repo."""
+    candidate = os.path.join(REPO_ROOT, ".buildrunner", "builds", "BUILD_cluster-activation.md")
+    if os.path.exists(candidate):
+        return candidate
+    # In a git worktree, the .buildrunner/builds/ may only exist in the main repo
+    # Resolve by traversing git commondir
+    try:
+        import subprocess
+        git_dir = subprocess.check_output(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=REPO_ROOT,
+            text=True,
+        ).strip()
+        # git_dir could be absolute or relative
+        if not os.path.isabs(git_dir):
+            git_dir = os.path.join(REPO_ROOT, git_dir)
+        main_root = os.path.dirname(git_dir)
+        main_candidate = os.path.join(main_root, ".buildrunner", "builds", "BUILD_cluster-activation.md")
+        if os.path.exists(main_candidate):
+            return main_candidate
+    except Exception:
+        pass
+    return candidate  # Return original path so test fails with a clear FileNotFoundError
+
+
 class TestClusterActivationRoleMatrix:
     """Test role_matrix in BUILD_cluster-activation.md can be parsed."""
 
-    BUILD_PATH = os.path.join(
-        REPO_ROOT, ".buildrunner", "builds", "BUILD_cluster-activation.md"
-    )
+    BUILD_PATH = _find_build_spec()
 
     def _extract_role_matrix_yaml(self) -> dict:
         """Extract the role_matrix YAML block from the BUILD spec."""
