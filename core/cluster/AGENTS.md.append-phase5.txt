@@ -1,0 +1,14 @@
+## Phase 5 Skill Routing (BR3_LOCAL_ROUTING=on)
+
+| Skill | Route | Model |
+|-------|-------|-------|
+| /begin /autopilot backend plan | below-route | llama3.3:70b |
+| /review Pass 1 pre-summary | below-route | llama3.3:70b |
+| /guard governance scan | below-route | llama3.3:70b |
+| /diag /root /dbg /sdb log summary | below-route | qwen3:8b |
+| All final output | Claude Opus 4.7 | -- |
+
+BR3_LOCAL_ROUTING=on required; OFF until Phase 13.
+below-route.sh exits 2 offline; skills fall back silently.
+Below never drafts diagnosis, code, or architecture.
+Each call appends routing: to decisions.log.
