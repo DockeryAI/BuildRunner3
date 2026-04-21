@@ -227,7 +227,7 @@ role_matrix:
 
 ### Phase 4: Flag enforcement at skill entry
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Codex model:** gpt-5.4
 **Codex effort:** low
 **Architect:** Opus 4.7
@@ -248,13 +248,13 @@ role_matrix:
 
 **Deliverables:**
 
-- [ ] Add `BR3_ADVERSARIAL_3WAY` branch to `cross_model_review.py`; flag on → `run_three_way_review()`
-- [ ] Add `BR3_CACHE_BREAKPOINTS` gate to `cache_policy.py`; flag on → emit breakpoints
-- [ ] Call `load-cluster-flags.sh` at top of `/begin` phase loop
-- [ ] Call `load-cluster-flags.sh` at top of `/autopilot` phase loop
-- [ ] Unit test: `BR3_ADVERSARIAL_3WAY=on` runs 3-way with Claude+Codex+Below
-- [ ] Unit test: `BR3_CACHE_BREAKPOINTS=off` emits zero breakpoints
-- [ ] Smoke test: flag toggle actually changes review round composition
+- [x] Add `BR3_ADVERSARIAL_3WAY` branch to `cross_model_review.py`; flag on → `run_three_way_review()`
+- [x] Add `BR3_CACHE_BREAKPOINTS` gate to `cache_policy.py`; flag on → emit breakpoints
+- [x] Call `load-cluster-flags.sh` at top of `/begin` phase loop
+- [x] Call `load-cluster-flags.sh` at top of `/autopilot` phase loop
+- [x] Unit test: `BR3_ADVERSARIAL_3WAY=on` runs 3-way with Claude+Codex+Below
+- [x] Unit test: `BR3_CACHE_BREAKPOINTS=off` emits zero breakpoints
+- [x] Smoke test: flag toggle actually changes review round composition
 
 **Success Criteria:** Flipping `BR3_ADVERSARIAL_3WAY` in `feature-flags.yaml` measurably changes review behavior. Same for `BR3_CACHE_BREAKPOINTS`.
 

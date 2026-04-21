@@ -39,6 +39,19 @@ CACHE_DIR = HOME / ".buildrunner" / "cache" / "cross-reviews"
 SPEND_LOG = HOME / ".buildrunner" / "logs" / "cross-review-spend.json"
 RUNTIME_CAPABILITY_LOG = HOME / ".buildrunner" / "logs" / "runtime-capability.log"
 
+# ---------------------------------------------------------------------------
+# Phase 4: Feature-flag gate — BR3_ADVERSARIAL_3WAY
+#
+# Read ONCE at module import time and cached in this module-level variable.
+# Never re-read per call — callers must restart the process to observe a flag
+# change, which is the correct contract for long-running review sessions.
+#
+# "on"  → route to run_three_way_review() which uses Claude + Codex + Below
+# "off" → legacy 2-way behavior (Codex primary, OpenRouter fallback); no change
+#          from pre-Phase-4.
+# ---------------------------------------------------------------------------
+_ADVERSARIAL_3WAY_ENABLED: bool = os.environ.get("BR3_ADVERSARIAL_3WAY", "off").lower() == "on"
+
 SUPPORTED_CODEX_VERSION_MIN = (0, 48, 0)
 SUPPORTED_CODEX_VERSION_MAX = (0, 49, 0)
 DEFAULT_CODEX_PROBE_TIMEOUT_SECONDS = 15
@@ -1091,6 +1104,131 @@ def _run_parallel_reviews(prompt, config, reviewer_timeout=None):
     return results
 
 
+def review_via_below(prompt, config, timeout=120):
+    """Run review through Below (local Ollama inference at 10.0.1.105).
+
+    Calls the Below node's /api/generate endpoint with the review prompt.
+    Returns (findings, model_id).  On any connection failure, raises RuntimeError
+    so the caller can treat Below as optional and continue with claude+codex.
+    """
+    import urllib.request as _urlrequest
+    import urllib.error as _urlerror
+
+    below_cfg = config.get("backends", {}).get("below", {})
+    below_url = below_cfg.get("url", "http://10.0.1.105:11434")
+    model = below_cfg.get("model", "qwen2.5-coder:32b")
+    actual_timeout = below_cfg.get("timeout_seconds", timeout)
+
+    payload = json.dumps({
+        "model": model,
+        "prompt": prompt,
+        "stream": False,
+    }).encode("utf-8")
+    req = _urlrequest.Request(
+        f"{below_url}/api/generate",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    start = time.time()
+    try:
+        with _urlrequest.urlopen(req, timeout=actual_timeout) as resp:
+            data = json.loads(resp.read())
+            content = (data.get("response") or "").strip()
+            findings = parse_findings(content)
+            log_runtime_capability({
+                "backend": "below",
+                "status": "completed",
+                "duration_ms": int((time.time() - start) * 1000),
+                "model": model,
+            })
+            return findings, f"below/{model}"
+    except (_urlerror.URLError, OSError) as exc:
+        raise RuntimeError(f"Below unreachable: {exc}")
+    except Exception as exc:
+        raise RuntimeError(f"Below review failed: {exc}")
+
+
+def _run_parallel_reviews_3way(prompt, config, reviewer_timeout=None):
+    """Gather reviews from Claude, Codex, and Below in parallel (3-way Round 1).
+
+    Used when BR3_ADVERSARIAL_3WAY=on.  Below is treated as optional — if it
+    errors out, the review continues with claude+codex.  This matches the
+    cluster-max Phase 9 contract where Below is a supplementary reviewer.
+
+    Returns dict: {claude, codex, below, errors, fix_type_errors}
+    """
+    import threading as _threading
+
+    reviewer_timeout = int(
+        os.environ.get("BR3_REVIEWER_TIMEOUT", reviewer_timeout or 360)
+    )
+
+    results = {
+        "claude": None,
+        "codex": None,
+        "below": None,
+        "errors": [],
+        "fix_type_errors": [],
+    }
+    errors: list = []
+    fix_type_errors: list = []
+
+    def run_claude():
+        try:
+            findings, model = review_via_claude_inline(prompt, config, timeout=reviewer_timeout)
+            try:
+                _reject_missing_fix_type(findings, "claude")
+            except ValueError as ve:
+                fix_type_errors.append(str(ve))
+                return
+            results["claude"] = {"findings": findings, "model": model}
+        except Exception as exc:
+            errors.append(f"claude: {exc}")
+
+    def run_codex():
+        try:
+            codex_cfg = config.setdefault("backends", {}).setdefault("codex", {})
+            codex_cfg["timeout_seconds"] = max(int(codex_cfg.get("timeout_seconds", 60)), reviewer_timeout)
+            findings, model, _ = review_via_codex(prompt, config)
+            try:
+                _reject_missing_fix_type(findings, "codex")
+            except ValueError as ve:
+                fix_type_errors.append(str(ve))
+                return
+            results["codex"] = {"findings": findings, "model": model}
+        except Exception as exc:
+            errors.append(f"codex: {exc}")
+
+    def run_below():
+        try:
+            below_timeout = int(config.get("backends", {}).get("below", {}).get("timeout_seconds", reviewer_timeout))
+            findings, model = review_via_below(prompt, config, timeout=below_timeout)
+            # Below findings are supplementary — fix_type not strictly required,
+            # but we attempt validation and downgrade to warnings on missing fields.
+            for item in findings:
+                if isinstance(item, dict) and "fix_type" not in item:
+                    item["fix_type"] = "fixable"
+            results["below"] = {"findings": findings, "model": model}
+        except Exception as exc:
+            # Below is optional — log but do not block the review.
+            errors.append(f"below (optional): {exc}")
+
+    threads = [
+        _threading.Thread(target=run_claude, daemon=True),
+        _threading.Thread(target=run_codex, daemon=True),
+        _threading.Thread(target=run_below, daemon=True),
+    ]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=reviewer_timeout + 30)
+
+    results["errors"] = errors
+    results["fix_type_errors"] = fix_type_errors
+    return results
+
+
 def _run_rebuttal(merged_findings, artifact, config):
     """
     Mandatory rebuttal round: Claude sees merged findings and holds or concedes.
@@ -1531,12 +1669,18 @@ def run_three_way_review(
     full_prompt = build_review_prompt(diff_text, spec_text, system_prompt=THREE_WAY_REVIEW_PROMPT)
 
     # --- Round 1: Parallel reviews ---
+    # When BR3_ADVERSARIAL_3WAY=on, dispatch Claude + Codex + Below in parallel.
+    # When off, this function should not be reached (main() routes to run_review()).
     _log_three_way_decision(
         "round_start",
-        f"round={review_round} artifact={artifact!r} commit={commit_sha}",
+        f"round={review_round} artifact={artifact!r} commit={commit_sha} "
+        f"three_way={_ADVERSARIAL_3WAY_ENABLED}",
     )
 
-    parallel_results = _run_parallel_reviews(full_prompt, config)
+    if _ADVERSARIAL_3WAY_ENABLED:
+        parallel_results = _run_parallel_reviews_3way(full_prompt, config)
+    else:
+        parallel_results = _run_parallel_reviews(full_prompt, config)
     claude_result = parallel_results.get("claude")
     codex_result = parallel_results.get("codex")
     claude_findings = (claude_result or {}).get("findings", [])
@@ -1983,17 +2127,23 @@ def main():
             print(format_runtime_preflight(preflight))
         sys.exit(0 if preflight["dispatch_ok"] else 1)
 
+    # Phase 4: flag gate — read once (cached at module import in _ADVERSARIAL_3WAY_ENABLED).
+    # When off: all review modes fall through to the legacy run_review() path below.
+    # When on:  plan/diff/commit modes route to run_three_way_review() via _mode_* helpers.
+    three_way_active = _ADVERSARIAL_3WAY_ENABLED
+
     # Resolve effective mode: explicit --mode wins; else --three-way + --plan → plan; --three-way → diff
     effective_mode = args.mode if args.mode in ("plan", "diff", "commit") else None
     if effective_mode is None and args.three_way:
         effective_mode = "plan" if args.plan else "diff"
 
-    if effective_mode == "plan":
-        _mode_plan(args, parser)
-    if effective_mode == "diff":
-        _mode_diff(args, parser)
-    if effective_mode == "commit":
-        _mode_commit(args, parser)
+    if three_way_active:
+        if effective_mode == "plan":
+            _mode_plan(args, parser)
+        if effective_mode == "diff":
+            _mode_diff(args, parser)
+        if effective_mode == "commit":
+            _mode_commit(args, parser)
 
     # Legacy raw-review path — diff-file + spec-file + commit-sha, no rebuttal/arbiter
     if not all([args.diff_file, args.spec_file, args.commit_sha, args.project_root]):

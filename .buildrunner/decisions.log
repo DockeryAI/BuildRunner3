@@ -678,3 +678,38 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-21T22:44:42.975229Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
 [2026-04-21T17:47:06] [DECISION] Spec review blocked; fixed 2 blockers + 4 notes inline in .buildrunner/plans/spec-draft-4-7-optimization.md; bypass authorized under 1-review rule
 2026-04-21T22:56:04Z phase-3-complete: orchestrator wiring shipped — load-role-matrix.sh + load-cluster-flags.sh + begin.md/autopilot.md role-matrix dispatch branch + codex-bridge.sh injection in runtime-dispatch.sh + builder-mismatch assertion + tests/e2e/orchestrator-dispatch.spec.ts
+[2026-04-21T18:00:59] [DECISION] Created build spec: claude-4-7-optimization with 8 phases; review BYPASSED (inline fix, 1-review rule); assigned to otis
+[2026-04-21T23:03:46.341901Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-21T23:03:46.342220Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T23:03:46.343178Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=x three_way=False
+[2026-04-21T23:03:46.343266Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T23:03:46.344476Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=True
+[2026-04-21T23:03:46.344533Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T23:03:46.347192Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=abc three_way=True
+[2026-04-21T23:03:46.347312Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-21T23:03:46.347401Z] THREE_WAY_REVIEW arbiter_ruling verdict=APPROVED round=1
+[2026-04-21T23:03:46.348482Z] THREE_WAY_REVIEW round_start round=2 artifact='d' commit=abc three_way=True
+[2026-04-21T23:03:46.348557Z] THREE_WAY_REVIEW round_cap_escalation round=2 max_rounds=1
+[2026-04-21T23:04:18.416099Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-21T23:04:18.416857Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T23:04:18.417910Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=x three_way=False
+[2026-04-21T23:04:18.417990Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T23:04:18.419501Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=True
+[2026-04-21T23:04:18.419619Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T23:04:18.422127Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=abc three_way=True
+[2026-04-21T23:04:18.422209Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-21T23:04:18.422251Z] THREE_WAY_REVIEW arbiter_ruling verdict=APPROVED round=1
+[2026-04-21T23:04:18.422924Z] THREE_WAY_REVIEW round_start round=2 artifact='d' commit=abc three_way=True
+[2026-04-21T23:04:18.422987Z] THREE_WAY_REVIEW round_cap_escalation round=2 max_rounds=1
+[2026-04-21T23:04:49.088564Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-21T23:04:49.089024Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T23:04:49.090440Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=x three_way=False
+[2026-04-21T23:04:49.090594Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-21T23:04:49.092071Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=True
+[2026-04-21T23:04:49.092182Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-21T23:04:49.097084Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=abc three_way=True
+[2026-04-21T23:04:49.097338Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-21T23:04:49.097541Z] THREE_WAY_REVIEW arbiter_ruling verdict=APPROVED round=1
+[2026-04-21T23:04:49.098770Z] THREE_WAY_REVIEW round_start round=2 artifact='d' commit=abc three_way=True
+[2026-04-21T23:04:49.098888Z] THREE_WAY_REVIEW round_cap_escalation round=2 max_rounds=1
+[2026-04-21T23:05:22Z] Phase 4 decisions: BR3_ADVERSARIAL_3WAY cached at module import in _ADVERSARIAL_3WAY_ENABLED; flag-on routes run_three_way_review() to _run_parallel_reviews_3way() (claude+codex+below); Below treated as optional reviewer (offline=continue). BR3_CACHE_BREAKPOINTS cached in _CACHE_BREAKPOINTS_ENABLED; flag-off emits zero breakpoints, get_breakpoint_count()=0, cached_block_indices()=[]. begin.md+autopilot.md load-cluster-flags.sh verified from Phase 3 — marked [x] without re-edit.
