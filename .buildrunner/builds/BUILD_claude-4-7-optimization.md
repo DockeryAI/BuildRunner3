@@ -138,7 +138,7 @@ Align every CLAUDE.md, skill, and Claude-calling Python module in BR3 with Claud
 
 ### Phase 6: Claude Code native levers + autopilot wiring
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - ~/.buildrunner/scripts/autopilot\*.sh (MODIFY)
