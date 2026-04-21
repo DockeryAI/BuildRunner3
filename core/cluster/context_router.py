@@ -3,7 +3,7 @@
 Routes context bundle assembly to the right model-specific configuration.
 Skills MUST NOT bypass this module when fetching model context.
 
-Feature-gated: BR3_MULTI_MODEL_CONTEXT=on. Default OFF until Phase 13.
+Feature-gated: BR3_AUTO_CONTEXT=on. Default OFF until Phase 13.
 
 Per-model token budgets (tokenizer-true via count-tokens.sh):
   claude  → 32K tokens  (cl100k_base)
@@ -24,7 +24,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # Feature gate
-_MULTI_MODEL_CONTEXT_ENV = "BR3_MULTI_MODEL_CONTEXT"
+_MULTI_MODEL_CONTEXT_ENV = "BR3_AUTO_CONTEXT"
 
 
 def _multi_model_context_enabled() -> bool:
@@ -151,7 +151,7 @@ class ContextRouter:
     ):
         """Assemble a context bundle for model using the authoritative per-model config.
 
-        If BR3_MULTI_MODEL_CONTEXT is OFF, returns an empty ContextBundle.
+        If BR3_AUTO_CONTEXT is OFF, returns an empty ContextBundle.
         If the tokenizer is unavailable (count-tokens.sh exit 2), raises RuntimeError
         (fail-closed — never falls back to byte counting).
 

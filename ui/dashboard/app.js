@@ -15,8 +15,6 @@
     'node-health': { global: 'NodeHealthPanel', mount: 'p-node-health' },
     'overflow-reserve': { global: 'OverflowReservePanel', mount: 'p-overflow-reserve' },
     'storage-health': { global: 'StorageHealthPanel', mount: 'p-storage-health' },
-    routing: { global: 'RoutingLedgerPanel', mount: 'p-routing' },
-    cost: { global: 'CostCachePanel', mount: 'p-cost' },
     consensus: { global: 'ConsensusViewerPanel', mount: 'p-consensus' },
   };
 

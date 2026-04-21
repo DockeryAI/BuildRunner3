@@ -1,18 +1,13 @@
-"""dashboard_stream.py — WebSocket broadcaster for Cluster Max Dashboard (Phase 11).
+"""dashboard_stream.py — WebSocket broadcaster for Cluster Max Dashboard.
 
-Runs as part of the existing dashboard service on port 4400.
+Runs as part of the dashboard service on port 4400.
 WS path: /ws
 
 Emits event types:
-  node-health       — 7-node CPU/RAM/task metrics + Jimmy-specific + Below VRAM
+  node-health       — per-node CPU/RAM/task metrics + Jimmy-specific + Below VRAM
   overflow-reserve  — Lockwood / Lomax idle/warming/active/draining + event log
   storage-health    — /srv/jimmy/ directory usage + backup timestamps + offsite sync
-  routing           — recent skill routing decisions from cost ledger
-  cost              — 24h/7d cost totals + cache hit rates
   consensus         — recent adversarial review results
-
-IMPORTANT: This module ONLY binds to port 4400.
-Port 4500 is reserved for br3-gateway (LiteLLM). Never import or bind to 4500 here.
 """
 
 from __future__ import annotations
@@ -22,7 +17,7 @@ import json
 import logging
 import os
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -66,11 +61,10 @@ class _ConnectionManager:
 _manager = _ConnectionManager()
 
 # ---------------------------------------------------------------------------
-# Data collectors — read from Jimmy filesystem / cost ledger
+# Data collectors — read from Jimmy filesystem
 # ---------------------------------------------------------------------------
 
 _JIMMY_SRV = Path(os.environ.get("JIMMY_SRV_ROOT", "/srv/jimmy"))
-_LEDGER_DAYS = 7
 
 
 def _safe_read_json(path: Path) -> dict[str, Any]:
@@ -115,7 +109,6 @@ def _collect_storage_health() -> dict[str, Any]:
     if storage_file.exists():
         return _safe_read_json(storage_file)
 
-    # Fallback: read disk-guard.json if present
     dg_file = status_dir / "disk-guard.json"
     dg = _safe_read_json(dg_file) if dg_file.exists() else None
     return {
@@ -128,78 +121,6 @@ def _collect_storage_health() -> dict[str, Any]:
         "cron_timestamps": {},
         "backups_paused": (status_dir / "backups-paused").exists(),
     }
-
-
-def _collect_routing() -> dict[str, Any]:
-    """Read last 50 routing decisions from cost ledger."""
-    try:
-        from core.cluster.cost_ledger import CostLedger  # type: ignore[import]
-        ledger = CostLedger()
-        records = ledger.read_window(days=_LEDGER_DAYS)
-        decisions = []
-        for rec in records[-50:]:
-            decisions.append({
-                "ts":         rec.get("ts"),
-                "skill":      rec.get("skill"),
-                "phase":      rec.get("phase"),
-                "model":      rec.get("runtime"),
-                "runtime_ms": rec.get("runtime_ms"),
-                "reason":     rec.get("reason"),
-            })
-        decisions.reverse()  # newest first
-        return {"decisions": decisions}
-    except Exception as exc:  # noqa: BLE001
-        logger.debug("dashboard_stream: routing collect failed: %s", exc)
-        return {"decisions": []}
-
-
-def _collect_cost() -> dict[str, Any]:
-    """Read 24h/7d cost totals + cache hit rates."""
-    try:
-        from api.routes.cluster_metrics import (  # type: ignore[import]
-            _get_ledger_records,
-            _filter_by_hours,
-            _summarise_window,
-        )
-        records_7d = _get_ledger_records(days=7)
-        records_24h = _filter_by_hours(records_7d, hours=24)
-        w24 = _summarise_window(records_24h, "24h")
-        w7d = _summarise_window(records_7d, "7d")
-
-        # Cache hit rate per runtime
-        per_rt: dict[str, dict[str, int]] = {}
-        for rec in records_7d:
-            rt = rec.get("runtime", "unknown")
-            if rt not in per_rt:
-                per_rt[rt] = {"total_calls": 0, "total_input_tokens": 0, "total_cache_read_tokens": 0}
-            per_rt[rt]["total_calls"] += 1
-            per_rt[rt]["total_input_tokens"] += int(rec.get("input_tokens", 0))
-            per_rt[rt]["total_cache_read_tokens"] += int(rec.get("cache_read_tokens", 0))
-
-        cache_runtimes = []
-        for rt_name, stats in per_rt.items():
-            in_tok = max(stats["total_input_tokens"], 1)
-            cache_runtimes.append({
-                "runtime":              rt_name,
-                "cache_hit_rate":       round(stats["total_cache_read_tokens"] / in_tok, 4),
-                "total_calls":          stats["total_calls"],
-                "total_input_tokens":   stats["total_input_tokens"],
-                "total_cache_read_tokens": stats["total_cache_read_tokens"],
-            })
-
-        all_in = sum(r["total_input_tokens"] for r in cache_runtimes)
-        all_cr = sum(r["total_cache_read_tokens"] for r in cache_runtimes)
-        overall = round(all_cr / max(all_in, 1), 4)
-
-        return {
-            "last_24h":        w24.model_dump(),
-            "last_7d":         w7d.model_dump(),
-            "cache_runtimes":  cache_runtimes,
-            "overall_hit_rate": overall,
-        }
-    except Exception as exc:  # noqa: BLE001
-        logger.debug("dashboard_stream: cost collect failed: %s", exc)
-        return {"last_24h": None, "last_7d": None, "cache_runtimes": [], "overall_hit_rate": None}
 
 
 def _collect_consensus() -> dict[str, Any]:
@@ -228,8 +149,6 @@ _INTERVALS: dict[str, float] = {
     "node-health":      5.0,
     "overflow-reserve": 10.0,
     "storage-health":   60.0,
-    "routing":          10.0,
-    "cost":             30.0,
     "consensus":        20.0,
 }
 
@@ -237,8 +156,6 @@ _COLLECTORS = {
     "node-health":      _collect_node_health,
     "overflow-reserve": _collect_overflow_reserve,
     "storage-health":   _collect_storage_health,
-    "routing":          _collect_routing,
-    "cost":             _collect_cost,
     "consensus":        _collect_consensus,
 }
 
@@ -290,7 +207,6 @@ async def dashboard_ws(ws: WebSocket) -> None:
     Heartbeat pings: client sends {"type": "ping"}, server replies {"type": "pong"}.
     """
     await _manager.connect(ws)
-    # Send full resync on connect
     for event_type, data in _cache.items():
         try:
             await ws.send_text(json.dumps({"type": event_type, "data": data}))
@@ -301,7 +217,6 @@ async def dashboard_ws(ws: WebSocket) -> None:
             try:
                 raw = await asyncio.wait_for(ws.receive_text(), timeout=35.0)
             except asyncio.TimeoutError:
-                # No message in 35s — client missed heartbeat window, close
                 logger.debug("dashboard_stream: client heartbeat timeout, closing")
                 break
             try:
@@ -320,3 +235,26 @@ async def dashboard_ws(ws: WebSocket) -> None:
         logger.debug("dashboard_stream: ws error: %s", exc)
     finally:
         _manager.disconnect(ws)
+
+
+# ---------------------------------------------------------------------------
+# Standalone entry — uvicorn api.routes.dashboard_stream:app --port 4400
+# ---------------------------------------------------------------------------
+
+from fastapi.staticfiles import StaticFiles
+
+from core.cluster.base_service import create_app
+
+app = create_app(role="dashboard")
+app.include_router(router)
+
+
+@app.on_event("startup")
+async def _startup() -> None:
+    start_broadcast_loop()
+
+
+_UI_DIR = Path(__file__).resolve().parents[2] / "ui" / "dashboard"
+if _UI_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(_UI_DIR), html=True), name="dashboard-ui")
+

@@ -24,10 +24,10 @@
  DIAG_LOG="$HOME/.buildrunner/adversarial-diag.log"
  
 +# --- Phase 5: --local flag routes first pass through Below 70B ---------------
-+# Gated behind BR3_LOCAL_ROUTING=on (default OFF until Phase 13).
++# Gated behind BR3_RUNTIME_OLLAMA=on (default OFF until Phase 13).
 +# Fallback: Otis if Below offline.
 +BELOW_CONTEXT=""
-+if [ "$LOCAL_MODE" = "true" ] && [ "${BR3_LOCAL_ROUTING:-off}" = "on" ]; then
++if [ "$LOCAL_MODE" = "true" ] && [ "${BR3_RUNTIME_OLLAMA:-off}" = "on" ]; then
 +  BELOW_SCRIPT="$HOME/.buildrunner/scripts/below-route.sh"
 +  if [ -x "$BELOW_SCRIPT" ]; then
 +    PLAN_EXCERPT=$(head -c 3000 "$PLAN_FILE" 2>/dev/null || echo "")

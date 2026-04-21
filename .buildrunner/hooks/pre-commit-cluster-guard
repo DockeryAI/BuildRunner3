@@ -53,7 +53,6 @@ while IFS= read -r pyfile; do
   case "$pyfile" in
     core/runtime/ollama_runtime.py) continue ;;
     tests/*) continue ;;
-    core/cluster/cost_ledger.py) continue ;;
   esac
   hits=$(git show ":$pyfile" 2>/dev/null | \
     grep -nE 'requests\.(post|get|put|delete|patch)\s*\(\s*['"'"'"]http://10\.0\.1\.' || true)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import subprocess
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -52,6 +53,10 @@ class SpecWorkflowResult:
 
 def _run_subprocess(args: list[str], *, cwd: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=cwd, capture_output=True, text=True, check=False)
+
+
+def _run_subprocess_env(args: list[str], *, cwd: str, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(args, cwd=cwd, capture_output=True, text=True, check=False, env=env)
 
 
 def _parse_findings(raw: str) -> list[dict[str, Any]]:
@@ -132,25 +137,39 @@ async def run_spec_workflow(
             return result
 
     if request.run_adversarial_review:
+        # Canonical review pipeline: 2-way parallel Sonnet + Codex, 1 rebuttal cap,
+        # Opus 4.7 arbiter on split. Calls cross_model_review.py --mode plan
+        # directly so we never silently degrade to single-reviewer mode.
+        review_env = {**os.environ, "BR3_MAX_REVIEW_ROUNDS": "1"}
+        review_py = str(Path(__file__).resolve().parents[2] / "cluster" / "cross_model_review.py")
         review = await asyncio.to_thread(
-            subprocess_runner,
+            _run_subprocess_env,
             [
-                str(Path.home() / ".buildrunner/scripts/adversarial-review.sh"),
-                "--consensus",
-                "--task-id",
-                task.task_id,
-                str(draft_path),
-                request.project_root,
+                "python3", review_py,
+                "--mode", "plan",
+                "--plan", str(draft_path),
+                "--project-root", request.project_root,
+                "--task-id", task.task_id,
             ],
             cwd=request.project_root,
+            env=review_env,
         )
-        result.adversarial_findings = _parse_findings(review.stdout)
+        # Canonical output is a JSON object with {findings, verdict, exit_code, ...}
+        try:
+            canonical = json.loads(review.stdout or "{}")
+            if isinstance(canonical, dict) and "findings" in canonical:
+                result.adversarial_findings = canonical.get("findings") or []
+            else:
+                result.adversarial_findings = _parse_findings(review.stdout)
+        except json.JSONDecodeError:
+            result.adversarial_findings = _parse_findings(review.stdout)
+
         blocker_count = sum(1 for item in result.adversarial_findings if item.get("severity") == "blocker")
-        if review.returncode != 0:
+        if review.returncode not in (0, 1):
             result.status = "review_failed"
             result.notes.append((review.stderr or "Adversarial review failed").strip())
             return result
-        if blocker_count:
+        if blocker_count or review.returncode == 1:
             result.status = "review_blocked"
             result.notes.append(f"Adversarial review returned {blocker_count} blocker findings.")
             return result

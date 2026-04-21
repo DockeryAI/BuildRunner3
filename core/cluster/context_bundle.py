@@ -3,7 +3,7 @@
 Assembles {logs, memory, intel, decisions, research} from Jimmy sources, Lockwood DBs,
 and the research library into a sized bundle ready for injection.
 
-Feature-gated: BR3_MULTI_MODEL_CONTEXT=on must be set. Default OFF until Phase 13.
+Feature-gated: BR3_AUTO_CONTEXT=on must be set. Default OFF until Phase 13.
 
 IMPORTANT: Read-only surface. No mutation of any source through this module.
 IMPORTANT: Two-layer [private] filter — filter runs here as defense-in-depth AFTER
@@ -33,11 +33,11 @@ logger = logging.getLogger(__name__)
 HOME = Path.home()
 
 # Feature gate — default OFF until Phase 13
-_MULTI_MODEL_CONTEXT_ENV = "BR3_MULTI_MODEL_CONTEXT"
+_MULTI_MODEL_CONTEXT_ENV = "BR3_AUTO_CONTEXT"
 
 
 def _multi_model_context_enabled() -> bool:
-    """Return True when BR3_MULTI_MODEL_CONTEXT=on (case-insensitive)."""
+    """Return True when BR3_AUTO_CONTEXT=on (case-insensitive)."""
     return os.environ.get(_MULTI_MODEL_CONTEXT_ENV, "").strip().lower() == "on"
 
 

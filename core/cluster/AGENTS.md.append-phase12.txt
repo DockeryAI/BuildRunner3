@@ -1,8 +1,0 @@
-## Phase 12: Multi-Model Context Parity
-
-- `context_router.py` is the ONLY path to model bundles. Skills MUST NOT bypass it.
-- Budgets via `count-tokens.sh` (NOT bytes): claude=32K, codex=48K, ollama=16K.
-- Two-layer `[private]` filter: `filter-private-decisions.sh` strips before rsync; `context_bundle.py` re-filters at extraction.
-- `/context/{model}` on Jimmy :4500. Gate: `BR3_MULTI_MODEL_CONTEXT=on` (default OFF until Phase 13).
-- `/srv/br3-context/` chmod 444. NEVER write to it.
-- `count-tokens.sh` exit 2 = fail-closed. No byte fallback.

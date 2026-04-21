@@ -203,7 +203,7 @@ def test_bundle_no_private_leak(canary_sources) -> None:
     from core.cluster.context_bundle import ContextBundleAssembler
 
     with mock.patch("core.cluster.context_bundle.count_tokens", return_value=100):
-        with mock.patch.dict(os.environ, {"BR3_MULTI_MODEL_CONTEXT": "on"}):
+        with mock.patch.dict(os.environ, {"BR3_AUTO_CONTEXT": "on"}):
             assembler = ContextBundleAssembler()
 
             for model, budget in [("claude", 32_000), ("codex", 48_000), ("ollama", 16_000)]:

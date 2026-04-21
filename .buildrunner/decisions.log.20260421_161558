@@ -1,0 +1,283 @@
+[Sun Jan 18 12:07:56 CST 2026] [DECISION] Created build spec: begin-optimization with 5 phases - fixes /begin post-impl persistence issue
+[2026-01-20T14:27:08Z] [AMENDMENT] Phase 5 expanded: Added 8 deliverables to restore missing implementation (@ refs, 9-step workflow, code health check, pre-plan persistence). Analysis revealed Phases 1-4 marked complete but implementation incomplete.
+[2026-02-26T23:38:46Z] [DECISION] Created build spec: SupaLog with 3 phases - Supabase operation logger for Claude-accessible debugging
+[2026-02-26T23:53:53Z] [ARCHITECTURE] Phase 1: Chose Vite dev server middleware (POST /__supabase_log) for browser-to-filesystem logging. Custom fetch wrapper instruments all Supabase HTTP calls. Dev-only via import.meta.env.DEV gate.
+[Mon Mar 23 21:12:29 CDT 2026] [DECISION] Phase 7: Created /brainstorm skill — Socratic design exploration with hard gate, incremental doc writing, /spec integration
+[2026-03-24T02:31:44Z] [ARCHITECTURE] Phase 3: Split auto-review into two-stage (spec compliance + code quality) with separate subagent scopes for better signal
+[2026-03-24T19:36:14Z] [AMENDMENT] Added Phase 8 (Terminal Dashboard /dash skill) to BUILD_dev-discipline-gates. Ink-based terminal dashboard reading .buildrunner/ state files via chokidar. Standalone package, no backend. Launched via /dash skill in VS Code terminal tab.
+[2026-03-24T19:51:19Z] [ARCHITECTURE] Phase 8: Global Ink terminal dashboard at ~/.claude/dashboard/. File-native read layer over .buildrunner/ state. 8 parsers, chokidar watcher, zustand store, 6 Ink components. /dash skill launches it.
+[2026-03-28T21:38:38Z] [AMENDMENT] Added 3 phases (10-12) to BUILD_dais.md: /design skill with 3-mockup flow, content structure + copy intelligence in DAIS EFs, integration rewire for appdesign/begin/autopilot. Reason: User wants mockup-first design with real rendered options, proper text presentation rules, and Synapse copy intelligence flowing into design direction.
+[2026-03-29T02:26:30Z] [DECISION] Created build spec: design-skill-rebuild with 8 phases — 10-axis direction system, brand-derived colors, discovery Q&A, CSS enforcement, direction reports, content structure redesign, reflection checkpoints
+[2026-03-29T04:03:43Z] [AMENDMENT] Added Phase 9 (10 tasks): Discovery upgrade from 5→13 questions with XML tags, multishot example, softened Aaker scoring, personality slider anchors, convergence guards for all 36 archetypes, Tailwind mandate for all mockups. Reason: post-build audit + premium agency discovery research revealed gaps in discovery depth, /opus alignment, and mockup component quality.
+[2026-03-29T04:38:09Z] [AMENDMENT] Added Phase 10: External Website Redesign Mode (7 deliverables). Reason: extend /design to accept URLs, crawl live sites, and produce redesign mockups with exact content. Removed '/design working outside BR3 projects' from out-of-scope.
+[2026-03-29T16:50:22Z] [AMENDMENT] Added Phases 11-14: Interactive Discovery Wizard (11), Research Dashboard (12), Brand Profile Generator (13), /design for Dockery Brand (14). Reason: replace text-based /design with interactive visual wizard featuring live-morphing slider previews, clickable color wheel, draggable axis grid, brand profile document output. Designed with /design for Dockery's brand.
+[2026-03-29T16:52:43Z] [AMENDMENT] Added mockup gallery page to Phase 12: 4 extra-large thumbnail cards, click to view full mockup, persistent nav bar, pick button writes selection.json. Replaces opening 4 separate browser tabs.
+[Sun Mar 29 11:59:41 CDT 2026] [AMENDMENT] Added Phase 10.5 (7 tasks) + 1 task to Phase 12. Reason: /design CultureCook run analysis revealed validation logged PASS without reading files, logo missing from 3/4 mockups, duplicate colors, scrambled fonts/nav/personas, identical content. Phase 10.5 fixes design.md enforcement before UI phases build on top. Phase 12 gains validation badge in gallery.
+[2026-03-29T17:57:16Z] [AMENDMENT] Added Phases 15-16: Cloud pipeline (Supabase + Realtime listener + Netlify deploy) and domain setup. Reason: customer-facing wizard at design.dockeryai.com with URL redesign mode, local mode preserved.
+[Mon Mar 30 07:44:42 CDT 2026] [AMENDMENT] Added Phase 14 (Bifurcate Discovery — 8 tasks). Renumbered old Phase 14 → Phase 14.5. Reason: /design forces redesign users through same 13-question wizard as new designs. Redesigns need audit-first flow (3 questions), new designs need gut-test flow (8 screens). Phase 14.5 (theming) paused until new screens exist.
+[Mon Mar 30 09:46:21 CDT 2026] [DECISION] Created build spec: Playwright Full Integration with 6 phases (Phases 1-4,6 parallelizable, Phase 5 blocked by 4)
+[2026-03-30T15:01:11Z] [AMENDMENT] Added Phase 14.6: Live-Morphing Slider Previews. 6 tasks. Reason: Phase 11 deliverable (slider morphing) was marked complete but never implemented. 4 personality sliders need art-directed preview panels that morph as user drags.
+[Mon Mar 30 10:09:27 CDT 2026] [AMENDMENT] Added Phase 14.8 (Archetype Selection Algorithm) — 5 tasks. Reason: /design always picks same 3 archetypes (Full-bleed, Bento, Editorial) due to missing selection algorithm between 10-axis vectors and archetype table. LLM primacy bias + semantic name-matching causes deterministic convergence despite 170k theoretical combinations.
+[2026-03-31T00:00:38Z] [AMENDMENT] Added Phase 14.9 (Axis Alignment + Variety Enforcement) with 8 tasks. Reason: Gap/drift analysis found Narrative axis wrong concept in spec (content-strategy vs brand-personality), Layout/Hierarchy/Interaction axes missing positions, no project-type archetype pools, missing 5th Aaker slider, no validation enforcement gate, no empty states in Gallery/Research views. UI labels are correct per research; spec drifted.
+[Fri Apr  3 19:04:20 CDT 2026] [DECISION] Created build spec: cluster-infrastructure with 7 phases (0-6). Sequential build of 6-machine local cluster for BR3. Phase 0 is foundation (software only), Phases 1-5 add one hardware node each, Phase 6 integrates all nodes.
+[2026-04-05T04:37:15Z] [DECISION] Otis auth uses Claude Max OAuth, not ANTHROPIC_API_KEY
+[2026-04-05T04:37:15Z] [DECISION] Both Muddy and Otis log into same Claude account initially
+[2026-04-05T04:37:15Z] [GOAL] Build automatic dual-account switching after Phase 4 tested
+[2026-04-05T04:37:15Z] [CONSTRAINT] Claude Max session limits are per-account, not per-machine
+[2026-04-05T04:37:15Z] [REJECTED] Per-machine account split (Muddy=A, Otis=B)
+[2026-04-05T04:37:15Z] [DECISION] OAuth token auto-refreshes; no proactive auth health check needed yet
+[2026-04-05T05:12:36Z] [ARCHITECTURE] Added 3-tier context system for cluster memory
+[2026-04-05T05:12:36Z] [DECISION] Session narrative packed into working_on field as pipe-delimited string
+[2026-04-05T05:12:36Z] [DECISION] Recall hook matches on basename only, not parent dir
+[2026-04-05T05:12:36Z] [DECISION] Recall hook fires on Edit|Write|NotebookEdit, not Read
+[2026-04-05T05:12:36Z] [REJECTED] Separate /recall skill for Tier 3 deep memory queries
+[2026-04-05T05:12:36Z] [CONSTRAINT] developer-brief.sh had pre-existing orphan 'fi' syntax error on line 135
+[2026-04-05T05:17:11Z] [DECISION] Otis keychain unlocked via SSH password on each dispatch
+[2026-04-05T05:17:11Z] [ARCHITECTURE] Added SSH fallback to cluster-check.sh for HTTP-less nodes
+[2026-04-05T05:17:11Z] [PATTERN] Dispatch pattern: SSH (key auth) → unlock keychain → PATH setup → claude -p
+[2026-04-05T05:17:11Z] [DECISION] Phase 4 COMPLETE — all spec items verified
+[2026-04-05T05:26:25Z] [ARCHITECTURE] Dual-account auto-swap: keychain-backed storage + reactive swap on rate limit
+[2026-04-05T05:26:25Z] [DECISION] Store both tokens in macOS keychain as -backup-A / -backup-B, swap active entry
+[2026-04-05T05:26:25Z] [DECISION] Otis swap is fully automatic; Muddy swap is manual via br-swap alias
+[2026-04-05T05:26:25Z] [DECISION] 5-minute cooldown prevents swap ping-pong when both accounts are spent
+[2026-04-05T05:26:25Z] [PATTERN] Fail-loud on Otis desync: rollback Muddy if Otis swap fails
+[2026-04-05T14:40:45Z] [ARCHITECTURE] Lomax staging server: wake-on-demand Vite dev servers + build validation API
+[2026-04-05T14:40:45Z] [PATTERN] Port assignments: stable per project, 5173-5183
+[2026-04-05T14:40:45Z] [DECISION] rsync with narrow includes for .buildrunner/components/ only
+[2026-04-05T14:40:45Z] [CONSTRAINT] Apple Silicon clamshell requires 'pmset -a disablesleep 1' to stay awake without external display
+[2026-04-05T14:40:45Z] [DECISION] Phase 5 COMPLETE — Lomax staging online with all 11 projects
+[2026-04-05T15:55:37Z] [ARCHITECTURE] Phase 7 orchestration: dispatch-phase-to-otis.sh as branch-based workflow
+[2026-04-05T15:55:37Z] [DECISION] Otis dispatch is OPT-IN, not automatic
+[2026-04-05T15:55:37Z] [CONSTRAINT] OAuth tokens rotate during active Claude sessions → stale tokens on Otis
+[2026-04-05T15:55:37Z] [PATTERN] Cluster health check: HTTP /health → SSH fallback (Layer 4)
+[2026-04-05T15:55:37Z] [DECISION] Phase 7 + Phase 8 COMPLETE (except Below inference + cross-regression hook)
+[2026-04-05T21:14:00Z] [DECISION] Autopilot /go flag must execute hands-off with zero manual approvals
+[2026-04-05T21:14:15Z] [CONSTRAINT] Settings changes require session restart to take effect
+[2026-04-05T21:14:30Z] [DECISION] Added explicit path permissions to settings.local.json for /autopilot go
+[2026-04-05T21:15:00Z] [ARCHITECTURE] Phase 2 wiring: Below intelligence in skills for instant classification/drafting
+[2026-04-05T21:15:30Z] [GOAL] Block 1 (Phases 1-6): Daily workflow automation complete by end of session
+[2026-04-05T21:15:45Z] [PATTERN] Lockwood write-back pattern: skills save findings at end via curl POST to /api/memory/note
+[Mon Apr  6 15:44:21 CDT 2026] [DECISION] Created build spec: dashboard-command-center with 7 phases. Adversarial review: 4 blockers resolved (proxy endpoints, workspace container pattern, file path consistency, reconnect backoff). Architecture validation: all paths verified external.
+[Mon Apr  6 16:20:20 CDT 2026] [DECISION] Created build spec: hunt-system with 5 phases — /hunt skill, automated sourcing (eBay/Reddit/CL/PCPP), dashboard CRUD, changedetection auto-watch, intelligence layer
+[2026-04-06T22:30:00Z] [ARCHITECTURE] Autopilot --cluster must dispatch ALL ready builds before inline work
+[2026-04-06T22:30:01Z] [DECISION] Cloudflare Tunnel for remote dashboard access at band.taskwatcher.ai
+[2026-04-06T22:30:02Z] [ARCHITECTURE] Dashboard Command Center — 4 workspaces via sidebar nav
+[2026-04-06T22:30:03Z] [ARCHITECTURE] Lockwood proxy endpoints required for remote access
+[2026-04-06T22:30:04Z] [DECISION] All dashboard files are external — no worktree isolation for autopilot
+[2026-04-06T22:30:05Z] [ARCHITECTURE] Deterministic step enforcement via hooks + scripts
+[2026-04-06T22:30:06Z] [ARCHITECTURE] Setlist pipeline wired into /spec, /amend, /begin
+[2026-04-06T22:30:07Z] [DECISION] BUILD spec header update is a script, not an instruction
+[2026-04-06T22:30:08Z] [REJECTED] React components for Intel/Deals dashboard tabs
+[2026-04-06T22:30:09Z] [CONSTRAINT] dispatch-to-node.sh only syncs project directory
+[2026-04-06T22:30:10Z] [CONSTRAINT] Walter and Lomax don't have Claude CLI installed
+[2026-04-06T22:30:11Z] [DECISION] Autopilot go uses dangerouslyDisableSandbox for external writes
+[2026-04-06T22:30:12Z] [ARCHITECTURE] 22 phases built across 3 builds in one session (BUILD_setlist 8, BUILD_intel-deals 6, BUILD_dashboard-intel 8)
+[2026-04-06T22:30:13Z] [GOAL] Dashboard Command Center build — 7 phases remaining (P1 complete)
+[2026-04-06T22:30:14Z] [DECISION] Node health alerting added to Phase 2
+[2026-04-06T22:30:15Z] [TRADE-OFF] Dashboard phases are sequential despite --cluster
+[Mon Apr  6 20:33:25 CDT 2026] [DECISION] Created build spec: self-qa-enforcement with 5 phases — enforcement hooks, explore-qa command, /begin self-QA step, visual regression baselines, VRT on Lomax
+[2026-04-07T01:33:44Z] [AMENDMENT] Added 4 phases (35-38) to BUILD_cluster-build-orchestration: dispatch reliability + node expansion, intel pipeline activation, Walter commit-triggered testing, dashboard polish + spec hygiene. Reason: session revealed dispatch unreliability, Below/Lomax underutilization, mock data in intel workspace, no commit-triggered testing.
+[Mon Apr  6 21:30:18 CDT 2026] [DECISION] Created build spec: intel-innovation-engine with 4 phases — tiered auto-action system, innovation discovery, categorized dashboard
+[Tue Apr  7 09:31:53 CDT 2026] [AMENDMENT] Added 18 tasks across 2 new phases (Phase 4: Hunt Requirements + Session Fixes, Phase 5: Below Prompt Alignment). Reason: Feed showed OOS/irrelevant/over-budget items. Requirements system enforces per-hunt rules mechanically. Prompts need /opus + /llm alignment (temp, format:schema, few-shot, num_ctx). All session debugging fixes included.
+[Tue Apr  7 11:09:44 CDT 2026] [AMENDMENT] Added 26 tasks across 3 new phases (Phase 6: Market Price Collection, Phase 7: Market Stats + Purchase Tracking, Phase 8: Deals Page Redesign). Adversarial review: 13 blockers found and resolved. Hook enforcement built and tested.
+[Tue Apr  7 13:14:42 CDT 2026] [DECISION] Created build spec: dashboard-liveness with 2 phases. Reason: dashboard lies about build status — scanner trusts BUILD spec without checking process liveness
+[Tue Apr  7 13:38:08 CDT 2026] [AMENDMENT] Added Phase 3: Auto-Redispatch Watchdog. Reason: cluster nodes die from context limits and nobody restarts them
+[Tue Apr  7 14:02:08 CDT 2026] [DECISION] Created build spec: research-vectorization with 4 phases — vectorize research library on Lockwood for ambient context injection
+[2026-04-07T16:47:00Z] [GOAL] Shift research injection from pull (manual /learn, /opus, /chet) to push (ambient context)
+[2026-04-07T16:47:01Z] [ARCHITECTURE] Three-point ambient research injection: brief (session start), recall hook (on edit), /begin (on phase start)
+[2026-04-07T16:47:02Z] [DECISION] Embedding model: nomic-embed-text-v1.5 (not all-MiniLM or bge-base)
+[2026-04-07T16:47:03Z] [ARCHITECTURE] Separate LanceDB tables: codebase (CodeRankEmbed) and research_library (nomic-embed-text)
+[2026-04-07T16:47:04Z] [DECISION] Research library path: ~/repos/research-library/ on Lockwood (not ~/Projects/)
+[2026-04-07T16:47:05Z] [ARCHITECTURE] GET /api/research/search?query=X&limit=N (not POST with JSON body)
+[2026-04-07T16:47:06Z] [DECISION] Directory mtime check before batch indexing, skip entirely when unchanged
+[2026-04-07T16:47:07Z] [REJECTED] Running semantic search on code table (CodeRankEmbed) for research queries
+[2026-04-07T16:47:08Z] [CONSTRAINT] Lockwood M2 8GB memory budget for two embedding models + LanceDB + FastAPI
+[2026-04-07T16:47:09Z] [TRADE-OFF] Hook implementation complexity vs context injection quality
+[2026-04-07T16:47:10Z] [ARCHITECTURE] Session-scoped deduplication via temp file ($TMPDIR/br3-research-seen-$$.txt)
+[2026-04-07T16:47:11Z] [DECISION] Markdown-aware chunking: split on H2/H3 headers, prepend frontmatter (domain, subjects, priority)
+[2026-04-07T16:47:12Z] [DECISION] Relevance score threshold 0.3 (not 0.5) for Phase 1 success criteria
+[2026-04-07T16:47:13Z] [ARCHITECTURE] Standard "Lockwood Research Query" block for all research-loading skills
+[2026-04-07T16:47:14Z] [DECISION] /learn semantic guidance (lines 39-122) kept as fallback, not structured lookup table
+[2026-04-07T16:47:15Z] [DECISION] Four phases (not two or three) to maximize parallelization
+[2026-04-07T16:47:16Z] [REJECTED] Deduping by content hash or embedding similarity
+[2026-04-07T16:47:17Z] [CONSTRAINT] Research library already synced to Lockwood (~/repos/research-library/)
+[2026-04-07T16:47:18Z] [DECISION] Dashboard workspace path: ~/.buildrunner/dashboard/public/js/ws-research.js
+[2026-04-07T16:47:19Z] [GOAL] New research immediately discoverable after creation
+[2026-04-07T16:47:20Z] [DECISION] Gates 3.7 (adversarial review) + 3.8 (architecture validation) both passed before BUILD spec written
+[2026-04-07T16:47:21Z] [ARCHITECTURE] Recall hook query construction: file basename + project name + active BUILD phase description
+[Tue Apr  7 14:17:18 CDT 2026] [AMENDMENT] Added 6 phases (4-9) to dashboard-liveness BUILD. Sidecar PID tracking, scanner rewrite, dispatch integration, resume logic, frontend fixes, integration test.
+[2026-04-07 16:37:04] [DECISION] Created build spec: walter-sentinel-hardening with 8 phases. Assigned to muddy. Fixes Walter testing pipeline, 22 race conditions, adds cluster monitoring agents.
+[Wed Apr  8 14:35:44 CDT 2026] [DECISION] Created build spec: walter-auto-provision with 3 phases — server-side auto-provision, client error surfacing, bulk seed
+[2026-04-08T23:50:00Z] [ARCHITECTURE] Walter sentinel test dispatch uses case-insensitive project matching
+[2026-04-08T23:50:01Z] [WHY] Root cause: auto-save-session.sh line 11 forces lowercase via tr '[:upper:]' '[:lower:]'
+[2026-04-08T23:50:02Z] [DECISION] Fix applied on Walter's /api/run endpoint, not the dispatcher
+[2026-04-08T23:50:03Z] [CONSTRAINT] Walter only had 6 test runs despite days of uptime
+[2026-04-08T23:50:04Z] [PATTERN] API endpoints accepting project names must use case-insensitive matching
+[Thu Apr  9 13:55:01 CDT 2026] [DECISION] Created build spec: universal-test-plan with 6 phases — mandatory browser verification, dashboard test workspace, bidirectional sync, Walter integration, governance enforcement
+[Sun Apr 12 09:16:32 CDT 2026] [DECISION] Created build spec: rock-solid-build-tracking with 4 phases — SQLite single writer, heartbeat redesign, exit status outbox, dashboard resilience
+[2026-04-12T14:24:37Z] [AMENDMENT] Added Phase 5 (Adversarial Dispatch Hardening) with 7 tasks. Modified Phase 2 setsid deliverable to reference shared utility. Reason: Root cause analysis found adversarial-review.sh failing 100% on Otis due to broken timeout architecture (perl alarm orphans claude --print), missing --bare flag, no NODE_OPTIONS heap cap, and insufficient timeout duration.
+[2026-04-12T14:37:32Z] [AMENDMENT] Added 7 tasks from /dead analysis: lock file fix (CRITICAL), dead import removal, migration script archive, NODE_MATRIX extraction, readRegistry consolidation, stale file deletion, getNodeHealth extraction. Reason: dead code analysis found race condition, duplicates, and unused code.
+[Sun Apr 12 09:44:27 CDT 2026] [DECISION] Created build spec: hunt-lifecycle with 3 phases (schema+API, dashboard UI, 17track delivery)
+[2026-04-12T12:05:00Z] [ARCHITECTURE] Added eBay Browse API verification path to intel_verifier.py
+[2026-04-12T12:05:01Z] [DECISION] Use Browse API getItem endpoint for single-item verification
+[2026-04-12T12:05:02Z] [PATTERN] Reuse existing OAuth2 infrastructure from ebay_browse.py
+[2026-04-12T12:05:03Z] [WHY] Legacy item ID format v1|{item_id}|0 used for getItem calls
+[2026-04-12T12:05:04Z] [TRADE-OFF] API rate limits (5000/day) accepted for reliability
+[2026-04-12T12:05:05Z] [DECISION] Route only eBay URLs to API path; other URLs keep existing HTTP scrape path
+[2026-04-12T12:05:06Z] [WHY] Extract availability from estimatedAvailabilities[0].availabilityStatus
+[2026-04-12T12:10:00Z] [ARCHITECTURE] Added consecutive failure tracking for node health checks
+[2026-04-12T12:10:01Z] [DECISION] Set unreachable threshold at 2 consecutive failures
+[2026-04-12T12:10:02Z] [WHY] Grace period needed because dashboard polls every 10s from frontend, backend SSH timeout is 10s
+[2026-04-12T12:10:03Z] [PATTERN] Transient failure tolerance: track consecutive failures, only report after threshold exceeded
+[2026-04-12T21:30:00Z] [DECISION] Extracted _url_hash() to shared core/cluster/utils.py
+[2026-04-12T21:31:00Z] [DECISION] Extracted cosine_similarity() to shared core/cluster/utils.py
+[2026-04-12T21:32:00Z] [DECISION] Extracted tech indicator filtering to filter_hallucinations() in utils.py
+[2026-04-12T21:33:00Z] [ARCHITECTURE] Added threading.Lock protection to _last_checked dict in hunt_sourcer.py
+[2026-04-12T21:34:00Z] [ARCHITECTURE] Added threading.Lock protection to rate limit counters in delivery_tracker.py
+[2026-04-12T21:35:00Z] [DECISION] Deleted ebay_scrape.py (hunt_sources/)
+[2026-04-12T21:36:00Z] [DECISION] Made url_hash, cosine_similarity, filter_hallucinations public (no underscore prefix) in utils.py
+[2026-04-12T21:37:00Z] [DECISION] Removed unused imports: sys (hunt_sourcer.py), datetime (hunt_sourcer.py), math (intel_scoring.py), hashlib (multiple files)
+[2026-04-12T21:38:00Z] [PATTERN] Centralized module-level utilities in core/cluster/utils.py
+[2026-04-12T21:39:00Z] [CONSTRAINT] Python asyncio + threading mix in cluster services
+[2026-04-12 18:51] [DECISION] Created build spec: cluster-max with 7 phases — Below dual 3090 NVLink upgrade, MS-A2 Memory+Staging node, 7-worker cluster reconfiguration, Below 70B skill integration, vLLM batch pipeline, overnight automation
+[2026-04-12T23:58:00Z] [ARCHITECTURE] Root cause of Otis adversarial review failures: expired OAuth tokens, not script architecture
+[2026-04-12T23:58:01Z] [WHY] Previous 5 fix attempts (Apr 5-12) never worked
+[2026-04-12T23:58:02Z] [CONSTRAINT] `claude auth status` does not validate token expiry
+[2026-04-12T23:58:03Z] [REJECTED] Cross-node credential sync architecture (MacBook syncs to cluster nodes)
+[2026-04-12T23:58:04Z] [ARCHITECTURE] New approach: per-node self-sufficient authentication
+[2026-04-12T23:58:05Z] [DECISION] Fixed Otis immediately by copying fresh credentials + reloading daemon
+[2026-04-12T23:58:06Z] [CONSTRAINT] Walter and Lomax do not have Claude installed
+[2026-04-12T23:58:07Z] [GOAL] Long-term cluster auth architecture: per-node OAuth with cluster-level monitoring
+[2026-04-12T23:58:08Z] [PATTERN] Token expiry validation: parse expires_at from .credentials, compare to current time
+[2026-04-12T23:58:09Z] [TRADE-OFF] Per-node auth requires interactive login on each node vs automatic sync
+[2026-04-13T12:05:00Z] [ARCHITECTURE] Removed --bare flag from adversarial-review.sh remote claude invocation
+[2026-04-13T12:05:01Z] [WHY] Phase 5 --bare flag broke Otis despite being a "performance optimization"
+[2026-04-13T12:05:02Z] [CONSTRAINT] Cannot use --bare flag on OAuth-authenticated nodes
+[2026-04-13T12:05:03Z] [TRADE-OFF] Accepting slower startup on remote reviews to preserve OAuth auth
+[2026-04-13T12:05:04Z] [DECISION] Removed stale ~/.claude/.credentials.json from Otis
+[2026-04-13T12:05:05Z] [PATTERN] Add warning comment when removing dangerous flags
+[2026-04-13T12:05:06Z] [WHY] Preflight check passed but actual review failed (different flags)
+[2026-04-13T12:25:00Z] [ARCHITECTURE] Added keychain unlock to adversarial-review.sh before preflight check
+[2026-04-13T12:25:01Z] [ARCHITECTURE] Added keychain unlock to br-token-refresh-local.sh
+[2026-04-13T12:25:02Z] [CONSTRAINT] Headless macOS nodes auto-lock keychain
+[2026-04-13T12:25:03Z] [DECISION] Store CLUSTER_SSH_PASS in ~/.buildrunner/.env on each node
+[2026-04-13T12:25:04Z] [WHY] Three separate root causes for Otis failures, found over two sessions
+[2026-04-13T12:25:05Z] [PATTERN] Always unlock keychain before any keychain read on cluster nodes
+[2026-04-13T07:15:00Z] [ROOT-CAUSE] Otis SSH instability is keychain/auth ACL mismatch, not network/SSH
+[2026-04-13T07:15:00Z] [ARCHITECTURE] Per-node self-sufficient Claude authentication (adopted Apr 12)
+[2026-04-13T07:15:00Z] [CONSTRAINT] M2 8GB memory pressure destabilizes dispatch
+[2026-04-13T07:15:00Z] [REJECTED] Using --bare flag on Otis dispatch (was attempted in Phase 5)
+[2026-04-13T07:15:00Z] [PATTERN] Preflight auth check + actual execution must use identical flags
+[2026-04-13T07:15:00Z] [WHY] Token refresh daemon complexity required per-node architecture
+[2026-04-13T07:15:00Z] [GOAL] Shift from "script architecture fixes" to "auth stack verification"
+[2026-04-13T07:15:00Z] [DECISION] Immediate fix: recreate Otis keychain entry with correct ACLs
+[2026-04-13T12:36:32Z] [DECISION] Created build spec: cross-model-review with 4 phases — Cursor IDE setup + auto-focus, cross-model review engine (Codex CLI primary, OpenRouter fallback), dispatch chain integration + unified review gate, dashboard panel + review convergence. Adversarial review: 3 blockers found and fixed (cursor --diff syntax, OpenRouter model ID, dispatch target clarification).
+[2026-04-13T12:46:04Z] [AMENDMENT] Phase 2 expanded: Added Codex CLI backend for adversarial-review.sh (--backend codex flag). True cross-model review — GPT-4o reviews Claude's plans instead of Claude reviewing Claude. Runs locally on Muddy, no SSH/auth issues. Otis remains default, Codex is opt-in or auto-fallback when Otis unreachable.
+[2026-04-13T13:45:00Z] [ARCHITECTURE] Fixed SPEC_AMENDED event handler to process before state transition validation
+[2026-04-13T13:46:00Z] [BUG FIX] Fixed reaper heartbeat age calculation: SQLite datetime format parsing
+[2026-04-13T13:47:00Z] [DECISION] Added /api/scanner/trigger endpoint for E2E test control
+[2026-04-13T13:48:00Z] [PATTERN] Playwright E2E tests use serial mode with afterEach cleanup
+[2026-04-13T13:49:00Z] [CONSTRAINT] E2E test spec file must not be in git history
+[2026-04-13T13:50:00Z] [TRADE-OFF] E2E tests use simulator approach for completion detection (FIX 2)
+[2026-04-13T13:51:00Z] [DECISION] Dashboard scanner keeps failed heartbeat timestamp parsing fix subtle
+[2026-04-13T13:52:00Z] [GOAL] Verify all 5 dispatch lifecycle fixes with 100% pass Playwright E2E tests
+[2026-04-13T13:53:00Z] [REJECTED] Approach: Waiting for scanner interval (30s) in tests
+[2026-04-13T13:54:00Z] [REJECTED] Approach: Using network-idle for dashboard page load
+[2026-04-13T13:55:00Z] [WHY] Scanner emits SPEC_AMENDED before applyStateChange in state machine
+[Mon Apr 13 11:58:00 CDT 2026] [AMENDMENT] Added Phase 5 (Codex Power Features): 5 tasks — /2nd skill, plan critique gate in /begin, auto-trigger on high-risk diffs, /codex-do terminal delegation, /2nd --adversarial mode. Reason: extract research-backed second-opinion value beyond automated review.
+[Mon Apr 13 13:46:54 CDT 2026] [DECISION] Created BUILD_dashboard-db-hardening with 5 phases. Reason: events.db corrupted today by multi-writer race; need recovery + permanent fix. Adversarial review on Otis surfaced 10 findings (output truncated at 2). Two verified blockers fixed in plan: --register-all does not exist (removed from Phase 1, replaced with explicit per-build registration of cross-model-review/cluster-max/geo-v2); observability.mjs is readonly not a writer (root cause corrected to 2 writers).
+[2026-04-13T22:15:00Z] [ARCHITECTURE] Token refresh daemon now uses real API calls instead of --print-system-prompt
+[2026-04-13T22:15:01Z] [DECISION] Token refresh interval changed from 4h to 90min (14400s → 5400s)
+[2026-04-13T22:15:02Z] [WHY] Script now fails loudly on expired tokens instead of silently "succeeding"
+[2026-04-13T22:15:03Z] [CONSTRAINT] Cannot refresh already-expired OAuth tokens programmatically
+[2026-04-13T22:15:04Z] [DECISION] Prune session cache to 50 sessions per project
+[2026-04-13T22:15:05Z] [WHY] Telemetry directory cleared (390MB)
+[2026-04-13T22:15:06Z] [REJECTED] Considered keeping all sessions for history
+[2026-04-13T22:15:07Z] [PATTERN] Root cause of Otis failures: check token expiry FIRST, then SSH, then script logic
+[2026-04-13T22:15:08Z] [TRADE-OFF] Real API call for refresh costs ~1 API request per 90min per node
+[2026-04-13T22:30:00Z] [ARCHITECTURE] Replaced keychain-based OAuth with one-year setup tokens across cluster
+[2026-04-13T22:30:01Z] [DECISION] Generated 3 separate one-year tokens (one per account) instead of one shared token
+[2026-04-13T22:30:02Z] [ARCHITECTURE] Created br-swap-tokens.sh to replace keychain-based br-swap-accounts.sh
+[2026-04-13T22:30:03Z] [WHY] Set CLAUDE_CODE_OAUTH_TOKEN in env file instead of keychain
+[2026-04-13T22:30:04Z] [PATTERN] Token rotation now uses simple round-robin (1→2→3→1) instead of usage tracking
+[2026-04-13T22:30:05Z] [GOAL] Eliminate 100% of token refresh failures on cluster
+[2026-04-13T22:30:06Z] [TRADE-OFF] Tokens are tied to specific accounts and cannot be dynamically rotated without manual setup-token run
+[2026-04-13T22:30:07Z] [REJECTED] Considered using API keys from Claude Console instead of setup-token
+[2026-04-13T22:30:08Z] [CONSTRAINT] Tokens must be regenerated annually (one-year expiry)
+[2026-04-13T22:30:09Z] [DECISION] Pruned session cache: 9.1GB → 3.8GB (reclaimed 5.3GB)
+[2026-04-13T22:30:10Z] [WHY] Only kept 50 session directories per project instead of all
+[2026-04-13T22:30:11Z] [DECISION] Deployed tokens to Mac nodes only (skipped Below Windows)
+[2026-04-13T22:30:12Z] [PATTERN] Token files stored in ~/.buildrunner/.tokens/ alongside accounts.json mapping
+[2026-04-15T18:20:00Z] [DECISION] Wrapped ComponentNode in React.forwardRef to resolve ReactFlow ref attachment
+[2026-04-15T18:20:00Z] [ARCHITECTURE] ComponentNode now properly forwards refs to root DOM element
+[2026-04-15T18:20:00Z] [WHY] Exhaustive root cause analysis ruled out all other ref-related issues
+[2026-04-15T18:20:00Z] [CONSTRAINT] All 18 Radix UI packages currently installed but unused - future integration will require forwardRef review
+[2026-04-15T21:55:00Z] [ARCHITECTURE] Added process group management for subprocess execution in Walter
+[2026-04-15T21:55:01Z] [DECISION] Use start_new_session=True + os.killpg() for subprocess timeout handling
+[2026-04-15T21:55:02Z] [ARCHITECTURE] Added request deduplication to /api/run endpoint via _inflight_projects set
+[2026-04-15T21:55:03Z] [REJECTED] Scanning _run_status dict for existing queued/running tests
+[2026-04-15T21:55:04Z] [PATTERN] Use dedicated tracking set (_inflight_projects) for deduplication, not status dict
+[2026-04-15T21:55:05Z] [ARCHITECTURE] Added _cleanup_stale_port() to Walter startup
+[2026-04-15T21:55:06Z] [CONSTRAINT] macOS 14 Sonoma: launchctl load crashes (SIGABRT) when run over SSH
+[2026-04-15T21:55:07Z] [REJECTED] Making /api/run async→sync to fix threading.Lock race
+[2026-04-15T21:55:08Z] [TRADE-OFF] Accept orphaned Walter process (PPID=1) instead of LaunchAgent management
+[2026-04-15T21:55:09Z] [WHY] Clear _inflight_projects in queue consumer finally block, not after queue.put()
+[2026-04-15T21:55:10Z] [CONSTRAINT] Walter M2 has only 8GB RAM - zombie vitest processes exhaust memory quickly
+[2026-04-15T21:55:11Z] [WHY] Kill process group with SIGTERM then SIGKILL after 0.5s grace period
+[2026-04-15T23:14:57Z] [AMENDMENT] Added Phase 4 to BUILD_walter-auto-provision: /commit hard Walter gate + direct push. Reason: Walter must always be available — no graceful degradation. 4 deliverables: hard block on offline, push to walter remote, remove backgrounding from auto-save, configure repos for push.
+[2026-04-16T08:29:00Z] [ROOT CAUSE] Adversarial review with --backend codex was running locally, not on Otis
+[2026-04-16T08:29:15Z] [DECISION] Install Codex on Otis to enable distributed adversarial reviews
+[2026-04-16T08:30:00Z] [ARCHITECTURE] Rewrote adversarial-review.sh --backend codex path to dispatch to Otis first, fallback local
+[2026-04-16T08:31:00Z] [CONSTRAINT] Codex requires --skip-git-repo-check flag when running in non-git directories
+[2026-04-16T08:31:30Z] [DECISION] Sync Codex auth.json and config.toml from Muddy to Otis
+[2026-04-16T08:31:45Z] [GOAL] Ensure adversarial reviews never run in wrong place by default
+[2026-04-16T08:32:00Z] [PATTERN] Remote dispatch with graceful fallback for cluster-aware scripts
+[2026-04-16T08:32:15Z] [TRADE-OFF] Codex on Otis adds complexity vs. purity of "Claude only" reviewers
+[Thu Apr 16 18:54:07 CDT 2026] [DECISION] Created build spec: model-benchmark-harness with 10 phases
+[2026-04-19T13:52:57Z] [MILESTONE] Phase 1 Below slice — BIOS 2101, dual 3090 NVLink 4x14GB/s confirmed, RM1200x installed, power limit 400W applied
+[2026-04-19T18:10:00Z] [MILESTONE] Phase 2 Below activated — llama3.3:70b @ 18.01 tok/s dual-GPU, deepseek-r1:70b registered, NVLink 4×14.062 GB/s confirmed, AGENTS.md snippet staged
+[2026-04-20T21:13:09Z] [ARCHITECTURE] Root cause of 2026-04-20 fork-exhaustion confirmed: zsh snapshot fanout + SSH pipe-stage subshells
+[2026-04-20T21:13:09Z] [REJECTED] LaunchAgent crash-loop hypothesis (original prime suspect in incident report)
+[2026-04-20T21:13:09Z] [REJECTED] Auto-redispatch runaway loop hypothesis
+[2026-04-20T21:13:09Z] [REJECTED] Sudo password prompt hang hypothesis
+[2026-04-20T21:13:09Z] [DECISION] Interactive-only guard in ~/.zshrc
+[2026-04-20T21:13:09Z] [DECISION] Add Jimmy (10.0.1.106) to ~/.ssh/config shared cluster block
+[2026-04-20T21:13:09Z] [DECISION] bash-guard.sh PreToolUse hook rewritten with three safety rules
+[2026-04-20T21:13:09Z] [TRADE-OFF] Circuit breaker threshold 3500 (below macOS soft cap 5333)
+[2026-04-20T21:13:09Z] [PATTERN] SSH output capture: redirect to file then read — do not pipe to filters
+[2026-04-20T21:13:09Z] [CONSTRAINT] macOS per-user maxproc hard cap = 8000, soft = 5333 on Muddy
+[2026-04-20T21:13:09Z] [GOAL] Long-term: migrate cluster orchestration from inline ssh-loop to Ansible pipelining + Mitogen
+[2026-04-20T21:13:09Z] [WHY] pkill -u byronhudson -P 1 zsh failed during incident
+[2026-04-20T21:59:00Z] [PHASE-3 RE-COMPLETION] Phase 3 Jimmy Activation fully finished (was prematurely marked COMPLETE)
+[2026-04-21T08:44:00Z] [DECISION] Validated and corrected both cluster-max planning documents (gap-analysis.md, pre-cutover-test-plan.md) against live codebase before Phase 13
+[2026-04-21T08:44:00Z] [REJECTED] Using gap-analysis and test-plan documents as-is for Phase 13 gate
+[2026-04-21T08:44:00Z] [ARCHITECTURE] Corrected B1 (Phase 4): cluster-daemon.mjs exists on disk; focus shifted from file creation to wave-merge and .buildrunner/locks/ skeleton in main repo
+[2026-04-21T08:44:00Z] [DECISION] Added B3b blocker: BR3_MULTI_MODEL_CONTEXT is a 6th non-canonical flag gating Phase 12 end-to-end
+[2026-04-21T08:44:00Z] [DECISION] Widened B4 to include port-4500 label drift across multiple files
+[2026-04-21T08:44:00Z] [DECISION] Added B10 blocker: BUILD_cluster-max.md needs editorial cleanup for non-canonical flags and stale labels before Phase 13
+[2026-04-21T08:44:00Z] [TRADE-OFF] Fixed test-plan Phase 6 `OllamaRuntime().capabilities` command by changing to `.get_capabilities()` method
+[2026-04-21T08:44:00Z] [REJECTED] Keeping Phase 6 test-plan reference to non-existent `tests/runtime/test_runtime_registry.py`
+[2026-04-21T08:44:00Z] [DECISION] Narrowed Phase 8 hard-truncation grep to exclude legitimate small slices
+[2026-04-21T08:44:00Z] [REJECTED] Inventing a separate `tests/runtime/test_cache_policy_routing.py` file as Phase 8 deliverable
+[2026-04-21T08:44:00Z] [DECISION] Fixed Phase 9 test node IDs to match actual pytest test names
+[2026-04-21T08:44:00Z] [DECISION] Removed non-existent `--dry-run` flag from Phase 10 auto-context.sh verify command
+[2026-04-21T08:44:00Z] [DECISION] Removed dangling BUILD spec line references in Phase 14; replaced with inlined commands
+[2026-04-21T08:44:00Z] [CONSTRAINT] Identified 9 coverage gaps in test plan: files/tests that BUILD spec names but don't exist on disk
+[2026-04-21T08:44:00Z] [PATTERN] All verify commands in cluster-max test plan now follow: exact path (no bare filenames), quoted/escaped shell syntax, expected output assertions, human-readable failure diagnostics
+[2026-04-21T08:44:00Z] [GOAL] Pre-Phase-13 validation now gates on both documents being correct, not just complete
+[2026-04-21T08:44:00Z] [WHY] Chose sub-agents (Explore 3×) over linear reading for validation
+[2026-04-21T08:44:00Z] [DECISION] Marked BR3_LOCAL_ROUTING and BR3_MULTI_MODEL_CONTEXT as "non-canonical" flags that must be aliased away before Phase 13
+[2026-04-21T09:15:00Z] [DECISION] Codex adversarial review round 1: 7 findings returned, all 7 accepted by Claude adjudicator
+[2026-04-21T09:15:00Z] [ARCHITECTURE] Rewrote gap-analysis B1: Phase 4 is the hardcoded-IP rewrite + Jimmy node add + overflow classifier, NOT cluster-daemon.mjs
+[2026-04-21T09:15:00Z] [DECISION] Rewrote test-plan Phase 4 verify block against real deliverables
+[2026-04-21T09:15:00Z] [DECISION] Promoted N5 (cluster.json missing context-parity entry) to blocker B11
+[2026-04-21T09:15:00Z] [DECISION] Expanded B10 to include BUILD Phase 0 5→4 flag count + PromptSubmit→UserPromptSubmit + port-4500 labels
+[2026-04-21T09:15:00Z] [DECISION] Fixed Phase 5 grep -- sentinel and fallback exit-code assertion
+[2026-04-21T09:15:00Z] [DECISION] Fixed Phase 10 env-var scope: printf | BR3_AUTO_CONTEXT=on bash ...sh (not BR3_AUTO_CONTEXT=on echo | bash ...sh)
+[2026-04-21T09:15:00Z] [DECISION] Replaced reranker probe placeholder [...] with concrete JSON candidate list + real latency check
+[2026-04-21T09:15:00Z] [DECISION] Added markdown + BUILD-spec + adversarial-review + log exclusions to system-wide invariant greps
+[2026-04-21T09:15:00Z] [DECISION] Added subprocess.*curl.*10.0.1.* branch to dispatch-envelope invariant regex
+[2026-04-21T09:15:00Z] [DECISION] Moved :4500 context-parity health check from Phase 3 to Phase 12
+[2026-04-21T09:15:00Z] [PATTERN] Adversarial review round adjudication: verify each Codex finding against live source before accept/reject; never accept on authority alone
+[2026-04-21T19:30:07Z] [CONSTRAINT] /spec and /amend do NOT auto-route to /spec-codex and /amend-codex variants
+[2026-04-21T19:30:07Z] [ARCHITECTURE] Cluster-max codex orchestration is NOT via -codex skills — it is via 3 layers: AGENTS.md (Phase 0), RuntimeRegistry+RoleMatrix dispatch (Phase 7), /context/codex + codex-bridge.sh injection (Phase 12), gated by 4 feature flags (Phase 13)

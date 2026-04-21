@@ -1,0 +1,31 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "cluster-activation-R3-user-override",
+  "artifact_path": ".buildrunner/builds/BUILD_cluster-activation.md",
+  "plan_file": ".buildrunner/plans/cluster-activation-plan.md",
+  "mode": "user_override",
+  "status": "bypassed",
+  "verdict": "USER_OVERRIDE",
+  "authorization": {
+    "env_var": "BR3_BYPASS_ADVERSARIAL_REVIEW=1",
+    "user": "byron@dockeryai.com",
+    "timestamp": "2026-04-21T22:00:00Z"
+  },
+  "context": [
+    "R2 of this BUILD spec cited adversarial reviews (phase-0-20260421T204226Z.json and phase-0-20260421T204539Z.json) which have artifact_path .buildrunner/plans/spec-draft-plan.md — the research-library remediation plan, not this BUILD.",
+    "Those reviews were valid for spec-draft-plan; they were never valid attestations for cluster-activation. The R2 citation was a cross-wiring error.",
+    "R3 corrects authoring-contract drift only: adds per-phase Codex model / Codex effort / builder / reviewers / arbiter lines, inline role_matrix YAML block, Codex Model column in the Parallelization Matrix, and a mandatory Claude Review trigger per phase. No deliverables, files, or phase boundaries changed.",
+    "User authorized bypass because the R3 diff is format-only against an already-scoped BUILD and introduces no new risk surface. A full 3-way review of a format-only change is disproportionate."
+  ],
+  "invariants_preserved": [
+    "All 6 phase titles unchanged",
+    "Phase file whitelists unchanged",
+    "Deliverables + success criteria unchanged",
+    "Out-of-scope list unchanged",
+    "Parallelization matrix semantics unchanged (new Codex Model column is additive)"
+  ],
+  "conditions": [
+    "A proper /review pass MUST run before Phase 6 is marked complete per the per-phase Claude Review blocks added by R3.",
+    "If any phase deliverable changes between now and phase execution, that phase MUST trigger its own /review gate — the override covers the R3 format delta only."
+  ]
+}

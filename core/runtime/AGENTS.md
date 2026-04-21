@@ -37,11 +37,6 @@ Every Claude request builds a cacheable prompt with exactly 3 breakpoints:
 
 IMPORTANT: NEVER inline changing timestamps, random IDs, or user input into breakpoints 1–2. Cache hit rate target ≥70%.
 
-## Shadow / Cutover
-
-- `shadow_runner.py` runs OllamaRuntime in parallel with Claude, discards the Ollama result, logs divergence. Enabled via `BR3_SHADOW=1`.
-- Cutover is gated on Phase 13 shadow-metrics. Do not flip `BR3_RUNTIME_OLLAMA=1` in main until Phase 13 validation passes.
-
 ## Per-file validation
 
 - `pytest tests/runtime/test_<file>.py -x`

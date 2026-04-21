@@ -27,10 +27,9 @@
 ## Feature flags (all default OFF until Phase 13)
 
 - `BR3_RUNTIME_OLLAMA` — enables OllamaRuntime selection
-- `BR3_GATEWAY_LITELLM` — routes through Jimmy LiteLLM :4500
 - `BR3_CACHE_BREAKPOINTS` — enables 3-breakpoint prompt cache contract
-- `BR3_ADVERSARIAL_3WAY` — enables Opus/Codex/Below 3-way review
-- `BR3_AUTO_CONTEXT` — PromptSubmit + PhaseStart hook injection
+- `BR3_ADVERSARIAL_3WAY` — enables Sonnet+gpt-5.4 parallel review with Opus arbiter on disagreement
+- `BR3_AUTO_CONTEXT` — UserPromptSubmit hook injection (context-bundle at :4500)
 
 ## Deploy field
 

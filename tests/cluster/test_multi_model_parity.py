@@ -8,7 +8,7 @@ the five source types declared in context-sources.yaml:
   (d) intel      — ~/.lockwood/intel.db intel-scored items
   (e) research   — ~/Projects/research-library/ docs
 
-Test strategy: with BR3_MULTI_MODEL_CONTEXT=on, assemble bundles for all 3 models
+Test strategy: with BR3_AUTO_CONTEXT=on, assemble bundles for all 3 models
 using synthetic fixture data (no real DBs required). Assert each bundle's sections
 include all 5 source types with non-empty content.
 """
@@ -127,7 +127,7 @@ def test_all_five_sources(mock_sources, model: str, budget: int) -> None:
 
     # Patch count_tokens to return a safe integer (tokenizer may not be installed in CI)
     with mock.patch("core.cluster.context_bundle.count_tokens", return_value=100):
-        with mock.patch.dict(os.environ, {"BR3_MULTI_MODEL_CONTEXT": "on"}):
+        with mock.patch.dict(os.environ, {"BR3_AUTO_CONTEXT": "on"}):
             assembler = ContextBundleAssembler()
             bundle = assembler.assemble(model=model, token_budget=budget)
 
@@ -150,7 +150,7 @@ def test_all_three_models_pass(mock_sources) -> None:
     required = {"logs", "decisions", "memory", "intel", "research"}
 
     with mock.patch("core.cluster.context_bundle.count_tokens", return_value=100):
-        with mock.patch.dict(os.environ, {"BR3_MULTI_MODEL_CONTEXT": "on"}):
+        with mock.patch.dict(os.environ, {"BR3_AUTO_CONTEXT": "on"}):
             assembler = ContextBundleAssembler()
             for model, budget in [("claude", 32_000), ("codex", 48_000), ("ollama", 16_000)]:
                 bundle = assembler.assemble(model=model, token_budget=budget)
@@ -164,10 +164,10 @@ def test_all_three_models_pass(mock_sources) -> None:
 
 
 def test_flag_off_returns_empty_bundle() -> None:
-    """When BR3_MULTI_MODEL_CONTEXT is OFF, bundle is empty (zero behavior change)."""
+    """When BR3_AUTO_CONTEXT is OFF, bundle is empty (zero behavior change)."""
     from core.cluster.context_bundle import ContextBundleAssembler
 
-    with mock.patch.dict(os.environ, {"BR3_MULTI_MODEL_CONTEXT": "off"}):
+    with mock.patch.dict(os.environ, {"BR3_AUTO_CONTEXT": "off"}):
         assembler = ContextBundleAssembler()
         bundle = assembler.assemble(model="codex", token_budget=48_000)
 
@@ -211,7 +211,7 @@ def test_prompt_block_format(mock_sources) -> None:
     from core.cluster.context_bundle import ContextBundleAssembler
 
     with mock.patch("core.cluster.context_bundle.count_tokens", return_value=100):
-        with mock.patch.dict(os.environ, {"BR3_MULTI_MODEL_CONTEXT": "on"}):
+        with mock.patch.dict(os.environ, {"BR3_AUTO_CONTEXT": "on"}):
             assembler = ContextBundleAssembler()
             bundle = assembler.assemble(model="codex", token_budget=48_000)
 

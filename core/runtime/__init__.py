@@ -59,15 +59,6 @@ from core.runtime.runtime_registry import (
     create_runtime_registry,
     create_phase1_runtime_registry,
 )
-from core.runtime.shadow_runner import (
-    SHADOW_LOG_PATH,
-    SUPPORTED_SHADOW_COMMANDS,
-    ShadowRun,
-    compute_shadow_metrics,
-    run_shadow_command,
-    run_shadow_command_async,
-    update_shadow_metrics_doc,
-)
 from core.runtime.types import RuntimeFinding, RuntimeResult, RuntimeTask
 from core.runtime.workflows import SpecWorkflowRequest, SpecWorkflowResult, run_spec_workflow
 
@@ -122,13 +113,6 @@ __all__ = [
     "RuntimeRegistry",
     "create_runtime_registry",
     "create_phase1_runtime_registry",
-    "SHADOW_LOG_PATH",
-    "SUPPORTED_SHADOW_COMMANDS",
-    "ShadowRun",
-    "compute_shadow_metrics",
-    "run_shadow_command",
-    "run_shadow_command_async",
-    "update_shadow_metrics_doc",
     "RuntimeFinding",
     "RuntimeResult",
     "RuntimeTask",

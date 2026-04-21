@@ -1,0 +1,304 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "review-20260421T204539Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file_abs": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/spec-draft-plan.md",
+  "plan_path_sha": "6e40edff405681e3",
+  "mode": "plan",
+  "status": "blocked",
+  "pass": false,
+  "verdict": "ESCALATED",
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "arbiter_invoked": false,
+  "arbiter_ruling": null,
+  "merged_findings": [
+    {
+      "finding": "Phase 6 reindexes `research_library` to 768-dim `nomic-embed-text` vectors but leaves `/retrieve` generating 384-dim MiniLM query embeddings.",
+      "severity": "blocker",
+      "location": "api/routes/retrieve.py",
+      "claim": "The plan would break research retrieval because `_search_research` still encodes queries with `sentence-transformers/all-MiniLM-L6-v2` while Phase 6 explicitly replaces the index with 768-dim `nomic-embed-text` embeddings.",
+      "evidence": "`_search_research` uses `SentenceTransformer(\"sentence-transformers/all-MiniLM-L6-v2\")`, and Phase 6 says \"replace the current `all-MiniLM-L6-v2` (384-dim) embeddings\" with `nomic-embed-text`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 6 assigns remote embedding work to `research_chunker.py`, but that module only chunks documents and does not own embedding generation.",
+      "severity": "blocker",
+      "location": "core/cluster/research_chunker.py",
+      "claim": "The phase boundary is wrong because `research_chunker.py` is a markdown splitter that returns chunk dicts, while embedding/model selection lives in `node_semantic.py`.",
+      "evidence": "The excerpt describes `research_chunker.py` as \"Markdown-aware chunking\" and its public functions are `parse_frontmatter`, `chunk_research_doc`, `_make_chunk`, and `discover_research_docs` with no embedding API.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 3 expects `/context` and parity tests to expose research `source_url` and `score`, but the current context schema has no such fields and the plan does not include schema changes.",
+      "severity": "blocker",
+      "location": "api/routes/context.py",
+      "claim": "The stated success criteria cannot pass because `/context` currently returns only `bundle` and `budget`, and bundle sections serialize only `source_type`, `content`, `source_path`, `item_count`, and `tokens`.",
+      "evidence": "The `/context` response shape is documented as `{ \"bundle\": { ... }, \"budget\": { ... } }`, and `ContextBundle.to_dict()` emits section fields without `score` or `source_url`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 3 filters `[private]` only when appending research to the bundle, leaving the retrieval index and `/retrieve` route able to return private research text directly.",
+      "severity": "blocker",
+      "location": "core/cluster/context_bundle.py",
+      "claim": "This does not meet the stated private-filter goal because sensitive research lines remain stored in LanceDB and still leak through `POST /retrieve` outside the bundle path.",
+      "evidence": "The plan says \"Apply `filter_private_lines` to research chunk text before appending to bundle\", while `api/routes/retrieve.py` returns `row.get(\"text\", \"\")` from `research_library` and `research_chunker.py` contains no private-line filtering.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 4 puts `X-BR3-Index-Status` generation in `_search_research` and sibling helpers even though those helpers cannot set HTTP headers.",
+      "severity": "blocker",
+      "location": "api/routes/retrieve.py",
+      "claim": "The plan cannot deliver the header as written because the helper functions return `list[dict]` and only the FastAPI route layer can attach response headers.",
+      "evidence": "`_search_research`, `_search_lockwood_code`, `_search_lockwood_memory`, and `_search_decisions` all return `list[dict]`, while `retrieve()` builds and returns a `RetrieveResponse`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 4 manual verification uses `curl -I` on `/retrieve`, but only `POST /retrieve` exists.",
+      "severity": "blocker",
+      "location": "api/routes/retrieve.py",
+      "claim": "The proposed verification will not exercise the header because the route has no GET/HEAD handler and a HEAD request will not hit the planned response path.",
+      "evidence": "The excerpt defines `@retrieve_router.post(\"/retrieve\", response_model=RetrieveResponse)` and no `get` or `head` route for `/retrieve`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 4 expects an invalid source name to yield `X-BR3-Index-Status: missing`, but the current route silently drops invalid sources and falls back to all valid sources.",
+      "severity": "blocker",
+      "location": "api/routes/retrieve.py",
+      "claim": "The success criterion cannot pass unless source-validation semantics are changed because unknown source names are not surfaced as an error or `missing` state today.",
+      "evidence": "The route does `sources = [s for s in requested_sources if s in VALID_SOURCES]` and then `if not sources: sources = list(VALID_SOURCES)`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "A single `X-BR3-Index-Status: empty|missing|ok` header cannot represent mixed states for multi-source `/retrieve` requests.",
+      "severity": "warning",
+      "location": "api/routes/retrieve.py",
+      "claim": "The proposed contract is under-specified because `/retrieve` accepts a list of sources and different sources can be `ok`, `empty`, and `missing` in the same request.",
+      "evidence": "`RetrieveRequest` has `sources: Optional[list[str]]`, and `VALID_SOURCES` contains four separate backends.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 4 describes 'missing LanceDB table vs zero-results' for all four branches even though two of the branches are not LanceDB-backed.",
+      "severity": "note",
+      "location": "api/routes/retrieve.py",
+      "claim": "The status model does not map cleanly to `lockwood-memory` and `decisions`, which use SQLite notes and a plaintext log rather than LanceDB tables.",
+      "evidence": "`_search_lockwood_memory` calls `search_notes(...)`, and `_search_decisions` reads `DECISIONS_LOG` from disk.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 5 depends on a `/api/research/ingest` endpoint that is not present in the provided codebase.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "The worker cannot complete its ingest step because the referenced endpoint is ungrounded in both the route tree and the cited source excerpts.",
+      "evidence": "The tree shows route files `agents.py`, `analytics.py`, `build.py`, `context.py`, `dashboard_stream.py`, `execute.py`, `orchestrator.py`, `prd_builder.py`, `prd_sync.py`, `retrieve.py`, and `telemetry.py`; there is no `research.py` or excerpted `/api/research/ingest` route.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "The Phase 5 queue producer and consumer are on different machines with no shared queue path defined.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "The design cannot work as written because jobs are defined under repo-local `.buildrunner/research-queue/pending/*.json` while the worker is described as a daemon on Below, and no replication/shared filesystem step is specified for the queue itself.",
+      "evidence": "The plan defines the queue under `.buildrunner/research-queue/pending/*.json` and separately says `below-research-worker.sh` is a \"daemon consuming queue on Below via ssh\".",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 5 defines the pending queue as 'one JSON per line under `.buildrunner/research-queue/pending/*.json`', which mixes JSONL and per-file JSON semantics.",
+      "severity": "warning",
+      "location": ".buildrunner/research-queue/README.md",
+      "claim": "The queue format is ambiguous enough to produce incompatible producer and consumer implementations.",
+      "evidence": "The deliverable says `one JSON per line under .buildrunner/research-queue/pending/*.json` with `{doc_path, source_urls, template}`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 5 requires a `systemd` unit on Below while the risk register says Below is a Windows host.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "The deployment approach contradicts the documented platform and will not work on the stated host without changing the service model.",
+      "evidence": "The deliverable says `Register below-research-worker.sh as a Below systemd unit`, while the risk register states `Below is Windows. Use WSL2 or Windows service wrapper`.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 2 is built around modifying and verifying external `~/.buildrunner` files that are not present in the provided tree or excerpts.",
+      "severity": "blocker",
+      "location": "~/.buildrunner/scripts/nightly-projects-backup.sh",
+      "claim": "This phase is ungrounded in the review target because the plan asks to modify operational files that do not exist in the supplied codebase context.",
+      "evidence": "The files list includes `~/.buildrunner/scripts/nightly-projects-backup.sh`, `~/.buildrunner/config/backup-excludes.list`, and `~/.buildrunner/config/cluster.json`, and none appear in the file tree or cited excerpts.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 5 likewise relies on external `~/.claude` files that are not present in the provided tree or excerpts.",
+      "severity": "blocker",
+      "location": "~/.claude/skills/research.md",
+      "claim": "Key hook and skill changes are ungrounded because the referenced Claude configuration files are outside the reviewed codebase and absent from the supplied evidence.",
+      "evidence": "The plan references `~/.claude/skills/research.md` and registration in `~/.claude/settings.json`, and neither path appears in the tree or cited excerpts.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 2 uses two different paths for the same cluster config file.",
+      "severity": "note",
+      "location": "global",
+      "claim": "The plan is internally inconsistent about which cluster config should be edited and verified.",
+      "evidence": "The files list names `~/.buildrunner/config/cluster.json`, but the deliverables later say `Verify ~/.buildrunner/cluster.json jimmy entry lists context-parity service on port 4500`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "The plan claims full parallelization with no serial dependencies even though Phase 6's own mitigation depends on Phase 3 being done first.",
+      "severity": "warning",
+      "location": "global",
+      "claim": "Running Phase 6 before Phase 3 removes the only listed mitigation for live empty research slices during reindex, so the 'fully parallelizable' claim is false.",
+      "evidence": "The matrix says `Serial dependencies: None strict`, but the risk register says reindex downtime is acceptable because `Phase 3's filesystem-glob fallback still serves research during the window`.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 6 uses `tests/cluster/test_context_bundle.py` and `tests/cluster/test_multi_model_parity.py` as proof that `/retrieve` still works after reindex even though those tests do not validate real retrieve/index compatibility.",
+      "severity": "warning",
+      "location": "tests/cluster/test_context_bundle.py",
+      "claim": "The proposed verification is insufficient because the cited tests exercise `ContextBundleAssembler` with synthetic fixtures and mocked token counting, not live `/retrieve` queries against the rebuilt research index.",
+      "evidence": "The excerpts show both tests importing `ContextBundleAssembler`, patching `core.cluster.context_bundle.count_tokens`, and asserting bundle/source-type behavior without calling `api.routes.retrieve.retrieve`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6 reindexes `research_library` to 768-dim `nomic-embed-text` vectors but leaves `/retrieve` generating 384-dim MiniLM query embeddings.",
+      "severity": "blocker",
+      "location": "api/routes/retrieve.py",
+      "claim": "The plan would break research retrieval because `_search_research` still encodes queries with `sentence-transformers/all-MiniLM-L6-v2` while Phase 6 explicitly replaces the index with 768-dim `nomic-embed-text` embeddings.",
+      "evidence": "`_search_research` uses `SentenceTransformer(\"sentence-transformers/all-MiniLM-L6-v2\")`, and Phase 6 says \"replace the current `all-MiniLM-L6-v2` (384-dim) embeddings\" with `nomic-embed-text`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 6 assigns remote embedding work to `research_chunker.py`, but that module only chunks documents and does not own embedding generation.",
+      "severity": "blocker",
+      "location": "core/cluster/research_chunker.py",
+      "claim": "The phase boundary is wrong because `research_chunker.py` is a markdown splitter that returns chunk dicts, while embedding/model selection lives in `node_semantic.py`.",
+      "evidence": "The excerpt describes `research_chunker.py` as \"Markdown-aware chunking\" and its public functions are `parse_frontmatter`, `chunk_research_doc`, `_make_chunk`, and `discover_research_docs` with no embedding API.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 3 expects `/context` and parity tests to expose research `source_url` and `score`, but the current context schema has no such fields and the plan does not include schema changes.",
+      "severity": "blocker",
+      "location": "api/routes/context.py",
+      "claim": "The stated success criteria cannot pass because `/context` currently returns only `bundle` and `budget`, and bundle sections serialize only `source_type`, `content`, `source_path`, `item_count`, and `tokens`.",
+      "evidence": "The `/context` response shape is documented as `{ \"bundle\": { ... }, \"budget\": { ... } }`, and `ContextBundle.to_dict()` emits section fields without `score` or `source_url`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 3 filters `[private]` only when appending research to the bundle, leaving the retrieval index and `/retrieve` route able to return private research text directly.",
+      "severity": "blocker",
+      "location": "core/cluster/context_bundle.py",
+      "claim": "This does not meet the stated private-filter goal because sensitive research lines remain stored in LanceDB and still leak through `POST /retrieve` outside the bundle path.",
+      "evidence": "The plan says \"Apply `filter_private_lines` to research chunk text before appending to bundle\", while `api/routes/retrieve.py` returns `row.get(\"text\", \"\")` from `research_library` and `research_chunker.py` contains no private-line filtering.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 4 puts `X-BR3-Index-Status` generation in `_search_research` and sibling helpers even though those helpers cannot set HTTP headers.",
+      "severity": "blocker",
+      "location": "api/routes/retrieve.py",
+      "claim": "The plan cannot deliver the header as written because the helper functions return `list[dict]` and only the FastAPI route layer can attach response headers.",
+      "evidence": "`_search_research`, `_search_lockwood_code`, `_search_lockwood_memory`, and `_search_decisions` all return `list[dict]`, while `retrieve()` builds and returns a `RetrieveResponse`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 4 manual verification uses `curl -I` on `/retrieve`, but only `POST /retrieve` exists.",
+      "severity": "blocker",
+      "location": "api/routes/retrieve.py",
+      "claim": "The proposed verification will not exercise the header because the route has no GET/HEAD handler and a HEAD request will not hit the planned response path.",
+      "evidence": "The excerpt defines `@retrieve_router.post(\"/retrieve\", response_model=RetrieveResponse)` and no `get` or `head` route for `/retrieve`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 4 expects an invalid source name to yield `X-BR3-Index-Status: missing`, but the current route silently drops invalid sources and falls back to all valid sources.",
+      "severity": "blocker",
+      "location": "api/routes/retrieve.py",
+      "claim": "The success criterion cannot pass unless source-validation semantics are changed because unknown source names are not surfaced as an error or `missing` state today.",
+      "evidence": "The route does `sources = [s for s in requested_sources if s in VALID_SOURCES]` and then `if not sources: sources = list(VALID_SOURCES)`.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 5 depends on a `/api/research/ingest` endpoint that is not present in the provided codebase.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "The worker cannot complete its ingest step because the referenced endpoint is ungrounded in both the route tree and the cited source excerpts.",
+      "evidence": "The tree shows route files `agents.py`, `analytics.py`, `build.py`, `context.py`, `dashboard_stream.py`, `execute.py`, `orchestrator.py`, `prd_builder.py`, `prd_sync.py`, `retrieve.py`, and `telemetry.py`; there is no `research.py` or excerpted `/api/research/ingest` route.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "The Phase 5 queue producer and consumer are on different machines with no shared queue path defined.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "The design cannot work as written because jobs are defined under repo-local `.buildrunner/research-queue/pending/*.json` while the worker is described as a daemon on Below, and no replication/shared filesystem step is specified for the queue itself.",
+      "evidence": "The plan defines the queue under `.buildrunner/research-queue/pending/*.json` and separately says `below-research-worker.sh` is a \"daemon consuming queue on Below via ssh\".",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 5 requires a `systemd` unit on Below while the risk register says Below is a Windows host.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "The deployment approach contradicts the documented platform and will not work on the stated host without changing the service model.",
+      "evidence": "The deliverable says `Register below-research-worker.sh as a Below systemd unit`, while the risk register states `Below is Windows. Use WSL2 or Windows service wrapper`.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 2 is built around modifying and verifying external `~/.buildrunner` files that are not present in the provided tree or excerpts.",
+      "severity": "blocker",
+      "location": "~/.buildrunner/scripts/nightly-projects-backup.sh",
+      "claim": "This phase is ungrounded in the review target because the plan asks to modify operational files that do not exist in the supplied codebase context.",
+      "evidence": "The files list includes `~/.buildrunner/scripts/nightly-projects-backup.sh`, `~/.buildrunner/config/backup-excludes.list`, and `~/.buildrunner/config/cluster.json`, and none appear in the file tree or cited excerpts.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 5 likewise relies on external `~/.claude` files that are not present in the provided tree or excerpts.",
+      "severity": "blocker",
+      "location": "~/.claude/skills/research.md",
+      "claim": "Key hook and skill changes are ungrounded because the referenced Claude configuration files are outside the reviewed codebase and absent from the supplied evidence.",
+      "evidence": "The plan references `~/.claude/skills/research.md` and registration in `~/.claude/settings.json`, and neither path appears in the tree or cited excerpts.",
+      "confidence": "high",
+      "fix_type": "structural"
+    }
+  ],
+  "generated_at": "2026-04-21T20:45:39.243980Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 3,
+  "escalated": true,
+  "phase_number": 0
+}

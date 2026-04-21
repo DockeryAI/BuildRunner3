@@ -3,7 +3,7 @@
 Serves per-model context bundles on Jimmy (port 4500, behind gateway).
 Accepts query + phase + skill params; returns sized bundle with budget field.
 
-Feature-gated: BR3_MULTI_MODEL_CONTEXT=on. Returns 503 if flag is OFF.
+Feature-gated: BR3_AUTO_CONTEXT=on. Returns 503 if flag is OFF.
 
 Endpoint: GET /context/{model}?query=<q>&phase=<p>&skill=<s>
   model: claude | codex | ollama (also accepts 'below' as alias for ollama)
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/context", tags=["context"])
 
-_MULTI_MODEL_CONTEXT_ENV = "BR3_MULTI_MODEL_CONTEXT"
+_MULTI_MODEL_CONTEXT_ENV = "BR3_AUTO_CONTEXT"
 
 _SUPPORTED_MODELS = {"claude", "codex", "ollama", "below"}
 
@@ -48,7 +48,7 @@ async def get_context(
 ) -> JSONResponse:
     """Return a per-model context bundle.
 
-    If BR3_MULTI_MODEL_CONTEXT is OFF, returns 503.
+    If BR3_AUTO_CONTEXT is OFF, returns 503.
     If model is unknown, returns 400.
     If tokenizer is unavailable (count-tokens.sh exit 2), returns 503.
     If Jimmy sources are unreachable, gracefully returns partial bundle.
@@ -68,8 +68,8 @@ async def get_context(
         raise HTTPException(
             status_code=503,
             detail=(
-                "BR3_MULTI_MODEL_CONTEXT is OFF. "
-                "Enable with BR3_MULTI_MODEL_CONTEXT=on (Phase 13 cutover)."
+                "BR3_AUTO_CONTEXT is OFF. "
+                "Enable with BR3_AUTO_CONTEXT=on (Phase 13 cutover)."
             ),
         )
 
@@ -107,3 +107,9 @@ async def get_context(
             "budget": bundle_dict.get("budget", {}),
         }
     )
+
+
+from core.cluster.base_service import create_app
+
+app = create_app(role="context-api")
+app.include_router(router)

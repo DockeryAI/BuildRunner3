@@ -1,0 +1,241 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "review-20260421T204226Z",
+  "artifact_path": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-draft-plan.md",
+  "plan_file_abs": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/spec-draft-plan.md",
+  "plan_path_sha": "6e40edff405681e3",
+  "mode": "plan",
+  "status": "blocked",
+  "pass": false,
+  "verdict": "ESCALATED",
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "arbiter_invoked": false,
+  "arbiter_ruling": null,
+  "merged_findings": [
+    {
+      "finding": "Phase 1 targets `api/node_semantic.py` for mounting the context router, but this file does not exist in the project tree. The real file is `core/cluster/node_semantic.py`.",
+      "severity": "blocker",
+      "location": "Phase 1 deliverables / api/node_semantic.py",
+      "claim": "Phase 1 will fail immediately \u2014 there is no `api/node_semantic.py` to modify.",
+      "evidence": "File tree contains `core/cluster/node_semantic.py` and `core/cluster/__pycache__/node_semantic.cpython-314.pyc`; no `api/node_semantic.py` entry exists anywhere in the tree.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phases 4 and 6 target `core/cache/cache_policy.py`, a path that does not exist. The actual file is `core/runtime/cache_policy.py` (confirmed by `core/runtime/__pycache__/cache_policy.cpython-314.pyc` and `tests/runtime/test_cache_policy.py` in the tree).",
+      "severity": "blocker",
+      "location": "Phase 4 / Phase 6 / core/cache/cache_policy.py",
+      "claim": "Both phases will modify the wrong (nonexistent) file, leaving the real `core/runtime/cache_policy.py` unchanged.",
+      "evidence": "File tree has no `core/cache/` directory. `core/runtime/__pycache__/cache_policy.cpython-314.pyc` and `tests/runtime/test_cache_policy.py` confirm the real path.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phases 4 and 6 target `core/review/cross_model_review.py`, a path that does not exist. The actual file is `core/cluster/cross_model_review.py`.",
+      "severity": "blocker",
+      "location": "Phase 4 / Phase 6 / core/review/cross_model_review.py",
+      "claim": "Both phases will target a nonexistent path, leaving `core/cluster/cross_model_review.py` unmodified and `BR3_ADVERSARIAL_3WAY` still dead code.",
+      "evidence": "File tree contains `core/cluster/cross_model_review.py` and `core/cluster/__pycache__/cross_model_review.cpython-314.pyc`; no `core/review/` directory exists.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "`api/routes/context.py` contains module-level `app = create_app(role='context-api')` and `app.include_router(router)`. Importing the router from this module into `api/node_semantic.py` will execute these statements as import side-effects, instantiating a second orphaned FastAPI app and triggering any startup events registered on it.",
+      "severity": "blocker",
+      "location": "Phase 1 / api/routes/context.py bottom of file",
+      "claim": "Mounting `context_router` by importing from `context.py` will double-initialize a FastAPI app, potentially causing duplicate startup hooks, port conflicts, or router state corruption.",
+      "evidence": "Cited excerpt lines: `from core.cluster.base_service import create_app` / `app = create_app(role='context-api')` / `app.include_router(router)` \u2014 all at module scope, not guarded by `if __name__ == '__main__'`.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 3 E2E smoke test asserts Codex ran by checking `dispatch.log`, which is a Phase 6 deliverable. The plan acknowledges this with 'use temporary print for this phase' \u2014 meaning the test is intentionally broken between Phase 3 completion and Phase 6.",
+      "severity": "warning",
+      "location": "Phase 3 deliverables / E2E smoke test",
+      "claim": "The Phase 3 test passes on a workaround that will silently break once Phase 6 ships `dispatch.log` unless the temporary print is explicitly cleaned up.",
+      "evidence": "Plan text: 'use temporary print for this phase' with no corresponding Phase 6 cleanup task listed.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 3 dispatches to the `assigned_node` from the role_matrix, but the `assigned_node` field is not added to the schema until Phase 5. Phase 3 node-dispatch runs on a schema that is missing the field it depends on.",
+      "severity": "warning",
+      "location": "Phase 3 / Phase 5 / role-matrix.schema.yaml",
+      "claim": "Node dispatch in Phase 3 will either silently skip the assigned_node or throw a KeyError when parsing the incomplete schema.",
+      "evidence": "Phase 3 deliverable: 'Dispatch branch: if builder != claude, call runtime-dispatch.sh $builder $spec'. Phase 5 deliverable: 'Add assigned_node field to role_matrix YAML schema'. These are two phases apart with no bridging shim defined.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "`feature-flags.yaml` is described as a 'Phase 13 deliverable' and is not found in the project tree. Phase 3's `load-cluster-flags.sh` sources it to export all cluster flags. If the file doesn't exist, every invocation of `load-cluster-flags.sh` silently exports nothing.",
+      "severity": "warning",
+      "location": "Phase 3 / scripts/load-cluster-flags.sh",
+      "claim": "If `feature-flags.yaml` is absent, all four cluster flags will be unset, causing flag-gated features to silently behave as if all flags are OFF without any error.",
+      "evidence": "Phase 3 plan: 'Ship load-cluster-flags.sh \u2014 sources feature-flags.yaml, exports all cluster flags'. Dependencies section: 'feature-flags.yaml (Phase 13 deliverable)'. No existence check or error-exit specified in the script design.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "`RuntimeRegistry.execute()` uses `asyncio.run()`, which raises `RuntimeError: This event loop is already running` when called from within a FastAPI request handler. Phase 2 adds a CLI entry that calls `execute()` from a subprocess (safe), but does not address the in-process async caller case.",
+      "severity": "warning",
+      "location": "Phase 2 / core/runtime/runtime_registry.py execute()",
+      "claim": "Any FastAPI route that calls `registry.execute()` directly will crash at runtime; Phase 2 does not fix this existing bug and the plan has no task to add `execute_async()` call-sites in the API layer.",
+      "evidence": "Cited `runtime_registry.py`: `return asyncio.run(self._dispatch_to_adapter(...))` in `execute()`. `execute_async()` exists but the plan never mentions wiring it into the API routes.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "`scripts/runtime-dispatch.sh` shells out to Python and forwards stdout, but no timeout is specified. If the Python runtime blocks (e.g., waiting for Codex), the shell wrapper hangs indefinitely.",
+      "severity": "warning",
+      "location": "Phase 2 / scripts/runtime-dispatch.sh",
+      "claim": "A hung Codex or Ollama call will hang the entire `/begin` or `/autopilot` session with no recovery path.",
+      "evidence": "Phase 2 deliverable: 'Ship scripts/runtime-dispatch.sh that shells into the CLI entry and forwards stdout'. No timeout, `--timeout`, or `kill`-after specified anywhere in the phase.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 6 adds a `feature-health` WS topic to `dashboard_stream.py` that aggregates events from `telemetry.db` (SQLite), but the current `dashboard_stream.py` reads exclusively from `/srv/jimmy/` filesystem JSON files. No SQLite dependency, query layer, or connection pool is described in Phase 6.",
+      "severity": "warning",
+      "location": "Phase 6 / api/routes/dashboard_stream.py",
+      "claim": "Phase 6 as written cannot be implemented without a new SQLite read path in `dashboard_stream.py` that the plan omits entirely.",
+      "evidence": "Cited `dashboard_stream.py` uses only `_safe_read_json()` and `Path` filesystem reads. Phase 6 deliverable: 'add feature-health WS topic to dashboard_stream.py \u2014 aggregates last N events per feature'. No mention of how the service queries `telemetry.db`.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "`br-emit-event.sh` (Phase 6) and Python telemetry code both write to `telemetry.db` concurrently during parallel dispatch, with no WAL mode, locking strategy, or retry logic specified.",
+      "severity": "warning",
+      "location": "Phase 6 / scripts/br-emit-event.sh / telemetry.db",
+      "claim": "Concurrent writes from shell and Python processes to SQLite without WAL mode will produce `database is locked` errors under parallel phase dispatch.",
+      "evidence": "Phase 6 plan dispatches emit calls from: `runtime_registry.py`, `cache_policy.py`, `cross_model_review.py`, and `codex-bridge.sh` \u2014 potentially concurrent. Out-of-scope section says 'keep event_collector.py:105 approach' but does not confirm WAL is enabled.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "`cluster-daemon.mjs` and `node-matrix.mjs` are not present in the project file tree. Phase 5 depends on them ('Flip cluster-daemon-config.json', 'Make /autopilot consult node-matrix.mjs'). Their actual paths are unverified.",
+      "severity": "warning",
+      "location": "Phase 5 / cluster-daemon.mjs / node-matrix.mjs",
+      "claim": "Phase 5 will fail if these files don't exist at the expected paths; the plan never states their canonical location.",
+      "evidence": "Neither file appears in the provided project file tree. Plan references them as existing but only says 'cluster-daemon.mjs is fully implemented' without giving a path.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 5 Walter LaunchDaemon deliverable reads 'Deploy com.br3.walter-sentinel.plist LaunchDaemon (or verify if already running)'. The 'or verify' clause means the deliverable can be silently satisfied without deploying anything.",
+      "severity": "warning",
+      "location": "Phase 5 / com.br3.walter-sentinel.plist",
+      "claim": "A deliverable with an implicit skip condition is not a deliverable \u2014 this phase can complete without actually ensuring Walter is deployed, defeating the goal.",
+      "evidence": "Phase 5 deliverable text: '(or verify if already running)'. Success criteria only says 'Walter offline blocks with the same message as /begin', which passes trivially if Walter happens to be up for unrelated reasons.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 1 and Phase 2 parallelization is internally contradictory. The parallelization matrix says Phase 1 'Can Parallel With: 2', but Phase 2's header says 'After: Phase 1 (logical sequence)'.",
+      "severity": "note",
+      "location": "Phase 2 header / Parallelization Matrix",
+      "claim": "Conflicting guidance on whether Phase 1 and 2 can run in parallel will confuse the executor; the matrix says yes, the phase description says no.",
+      "evidence": "Parallelization Matrix row Phase 1: 'Can Parallel With: 2'. Phase 2 header: 'After: Phase 1 (logical sequence \u2014 dispatcher consumes schema from Phase 1, but file-independent so CAN parallelize)'. The inline comment contradicts the header.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "`tests/review/` directory does not exist in the project tree. Phase 4 creates `tests/review/test_adversarial_3way_flag.py` without acknowledging this is a new directory.",
+      "severity": "note",
+      "location": "Phase 4 / tests/review/test_adversarial_3way_flag.py",
+      "claim": "Minor: the plan silently creates a new test directory that doesn't match the existing test layout (tests/cluster/, tests/runtime/, tests/integration/).",
+      "evidence": "File tree has no `tests/review/` directory. All analogous flag tests live in `tests/cluster/` (e.g., `tests/cluster/test_cache_breakpoints_flag.py` is also listed in Phase 4).",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 6 feature-health panel references '15 tiles' defined by a 'Phase 15 spec' that is not cited or included anywhere in this plan. The implementer has no tile specification to build against.",
+      "severity": "note",
+      "location": "Phase 6 / ui/dashboard/panels/feature-health.js",
+      "claim": "Without the referenced Phase 15 tile spec, the 15-tile layout is implementation-defined by whoever builds it, likely diverging from intent.",
+      "evidence": "Phase 6: 'Ship ui/dashboard/panels/feature-health.js \u2014 15-tile panel'. Out-of-scope: 'the Phase 15 spec defines exactly 15 tiles; do not expand'. The Phase 15 spec is not attached or summarized.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "`overflow-shard-watcher.sh` polling interval is unspecified in Phase 5. The script 'polls WALTER_URL/api/queue' but no interval, jitter, or back-off is defined.",
+      "severity": "note",
+      "location": "Phase 5 / scripts/overflow-shard-watcher.sh",
+      "claim": "Without a specified poll interval, the implementer may choose an interval that hammers Walter's API or reacts too slowly to the queue depth trigger.",
+      "evidence": "Phase 5 deliverable: 'polls WALTER_URL/api/queue, when depth >2 shells into Lomax and runs vitest shard 3/3'. No sleep interval or rate limit mentioned.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 2 defers the `$BELOW_URL/api/summarize` delete-vs-implement decision to the implementer ('Delete the dead ... call in autopilot.md:755 (or implement the endpoint \u2014 pick delete)'). A spec should not defer architectural decisions to the coder.",
+      "severity": "note",
+      "location": "Phase 2 / autopilot.md:755",
+      "claim": "Leaving this decision open means it may be resolved inconsistently across sessions or left unresolved entirely.",
+      "evidence": "Phase 2 deliverable text: 'Delete the dead $BELOW_URL/api/summarize call in autopilot.md:755 (or implement the endpoint \u2014 pick delete)'.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 5 adds a Walter `/api/coverage` gate to `/autopilot` that blocks if Walter is offline, but does not specify what happens to phases already dispatched when Walter goes offline mid-run.",
+      "severity": "note",
+      "location": "Phase 5 / autopilot.md Walter gate",
+      "claim": "A mid-run Walter outage could leave partially dispatched builds in an undefined state with no documented recovery path.",
+      "evidence": "Phase 5 success criteria: '/autopilot run with Walter offline blocks with the same message as /begin'. No mention of checkpoint-resume or in-flight phase handling.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 1 targets `api/node_semantic.py` for mounting the context router, but this file does not exist in the project tree. The real file is `core/cluster/node_semantic.py`.",
+      "severity": "blocker",
+      "location": "Phase 1 deliverables / api/node_semantic.py",
+      "claim": "Phase 1 will fail immediately \u2014 there is no `api/node_semantic.py` to modify.",
+      "evidence": "File tree contains `core/cluster/node_semantic.py` and `core/cluster/__pycache__/node_semantic.cpython-314.pyc`; no `api/node_semantic.py` entry exists anywhere in the tree.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phases 4 and 6 target `core/cache/cache_policy.py`, a path that does not exist. The actual file is `core/runtime/cache_policy.py` (confirmed by `core/runtime/__pycache__/cache_policy.cpython-314.pyc` and `tests/runtime/test_cache_policy.py` in the tree).",
+      "severity": "blocker",
+      "location": "Phase 4 / Phase 6 / core/cache/cache_policy.py",
+      "claim": "Both phases will modify the wrong (nonexistent) file, leaving the real `core/runtime/cache_policy.py` unchanged.",
+      "evidence": "File tree has no `core/cache/` directory. `core/runtime/__pycache__/cache_policy.cpython-314.pyc` and `tests/runtime/test_cache_policy.py` confirm the real path.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phases 4 and 6 target `core/review/cross_model_review.py`, a path that does not exist. The actual file is `core/cluster/cross_model_review.py`.",
+      "severity": "blocker",
+      "location": "Phase 4 / Phase 6 / core/review/cross_model_review.py",
+      "claim": "Both phases will target a nonexistent path, leaving `core/cluster/cross_model_review.py` unmodified and `BR3_ADVERSARIAL_3WAY` still dead code.",
+      "evidence": "File tree contains `core/cluster/cross_model_review.py` and `core/cluster/__pycache__/cross_model_review.cpython-314.pyc`; no `core/review/` directory exists.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "`api/routes/context.py` contains module-level `app = create_app(role='context-api')` and `app.include_router(router)`. Importing the router from this module into `api/node_semantic.py` will execute these statements as import side-effects, instantiating a second orphaned FastAPI app and triggering any startup events registered on it.",
+      "severity": "blocker",
+      "location": "Phase 1 / api/routes/context.py bottom of file",
+      "claim": "Mounting `context_router` by importing from `context.py` will double-initialize a FastAPI app, potentially causing duplicate startup hooks, port conflicts, or router state corruption.",
+      "evidence": "Cited excerpt lines: `from core.cluster.base_service import create_app` / `app = create_app(role='context-api')` / `app.include_router(router)` \u2014 all at module scope, not guarded by `if __name__ == '__main__'`.",
+      "confidence": "high",
+      "fix_type": "structural"
+    }
+  ],
+  "generated_at": "2026-04-21T20:42:26.313768Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 2,
+  "escalated": true,
+  "phase_number": 0
+}

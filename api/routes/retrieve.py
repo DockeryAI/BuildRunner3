@@ -305,3 +305,38 @@ async def rerank_health():
     """Health check for the reranker subsystem."""
     from core.cluster.reranker import reranker_health
     return reranker_health()
+
+
+class RerankRequest(BaseModel):
+    query: str
+    candidates: list[str]
+    limit: int = 5
+
+
+class RerankHit(BaseModel):
+    text: str
+    score: float
+
+
+class RerankResponse(BaseModel):
+    query: str
+    results: list[RerankHit]
+    flag_active: bool
+
+
+@retrieve_router.post("/rerank", response_model=RerankResponse)
+async def rerank_endpoint(req: RerankRequest):
+    """Cross-encoder rerank a list of candidate strings.
+
+    Flag-independent: the route is always available. When BR3_AUTO_CONTEXT is OFF
+    the ranker short-circuits to passthrough order (no model load, <1ms overhead).
+    When ON, uses bge-reranker-v2-m3 on CPU.
+    """
+    from core.cluster.reranker import rerank as rerank_fn, ScoredResult
+    scored_input = [ScoredResult(text=c, score=0.0) for c in req.candidates]
+    reranked = rerank_fn(req.query, scored_input, top_k=req.limit)
+    return RerankResponse(
+        query=req.query,
+        results=[RerankHit(text=r.text, score=r.score) for r in reranked],
+        flag_active=AUTO_CONTEXT_ENABLED,
+    )

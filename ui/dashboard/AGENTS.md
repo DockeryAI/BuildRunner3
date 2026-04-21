@@ -13,15 +13,13 @@
 - `panels/<name>.js` — one panel per file. Each panel exports `render(container, data)` and `wire(container, ws)` via window globals, NOT ES modules.
 - `styles.css` — single stylesheet. No preprocessors.
 
-## Registered panels (Phase 11)
+## Registered panels
 
 | Event type         | Panel global                  | Mount id             | Collector                                                  |
 | ------------------ | ----------------------------- | -------------------- | ---------------------------------------------------------- |
 | `node-health`      | `window.NodeHealthPanel`      | `p-node-health`      | 7 tiles incl. Jimmy (CPU/RAM/LanceDB/reranker/context-API) |
 | `overflow-reserve` | `window.OverflowReservePanel` | `p-overflow-reserve` | Lockwood + Lomax idle/warming/active/draining + wake log   |
 | `storage-health`   | `window.StorageHealthPanel`   | `p-storage-health`   | `/srv/jimmy/` subdir usage + last-backup ts                |
-| `routing`          | `window.RoutingLedgerPanel`   | `p-routing`          | Recent skill routing decisions + model mix                 |
-| `cost`             | `window.CostCachePanel`       | `p-cost`             | 24h/7d cost totals + cache hit ratio + 3-breakpoint util   |
 | `consensus`        | `window.ConsensusViewerPanel` | `p-consensus`        | Recent 3-way adversarial reviews + arbiter rulings         |
 
 ## WebSocket endpoint

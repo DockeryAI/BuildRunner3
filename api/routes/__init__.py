@@ -1,12 +1,6 @@
+"""API Routes for BuildRunner Web UI.
+
+Submodules are imported on demand (lazy) to avoid pulling heavy deps
+(anthropic, openai) into microservice entry points like
+api.routes.context:app that only need a single router.
 """
-API Routes for BuildRunner Web UI
-
-Contains routers for:
-- Orchestrator (task status, progress, batch info)
-- Telemetry (events, timeline, metrics)
-- Agents (pool, active agents, metrics)
-"""
-
-from . import orchestrator, telemetry, agents
-
-__all__ = ["orchestrator", "telemetry", "agents"]

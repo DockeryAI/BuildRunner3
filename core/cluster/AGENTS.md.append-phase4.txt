@@ -1,7 +1,0 @@
-## 7-node priority order (Phase 4)
-
-otis > below > jimmy > lockwood > lomax > muddy > walter
-
-Overflow workers (lockwood, lomax): retained in worker-pool and heartbeat contexts.
-Only PRIMARY-role refs (semantic-search, intel, staging) for lockwood rewritten to jimmy (10.0.1.106).
-is_overflow_worker() in _dispatch-core.sh is the single classifier for IP substitution decisions.

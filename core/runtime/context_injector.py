@@ -1,7 +1,7 @@
 """context_injector.py — Registry-side context injection wrapper (Phase 12).
 
 Wraps RuntimeRegistry.execute(task) calls to prepend a per-model context bundle
-when BR3_MULTI_MODEL_CONTEXT=on.
+when BR3_AUTO_CONTEXT=on.
 
 Feature-gated: default OFF until Phase 13.
 IMPORTANT: context_router.py is the ONLY path to model-specific bundles.
@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_MULTI_MODEL_CONTEXT_ENV = "BR3_MULTI_MODEL_CONTEXT"
+_MULTI_MODEL_CONTEXT_ENV = "BR3_AUTO_CONTEXT"
 
 
 def _multi_model_context_enabled() -> bool:
-    """Return True when BR3_MULTI_MODEL_CONTEXT=on (case-insensitive). Default OFF."""
+    """Return True when BR3_AUTO_CONTEXT=on (case-insensitive). Default OFF."""
     return os.environ.get(_MULTI_MODEL_CONTEXT_ENV, "").strip().lower() == "on"
 
 
@@ -38,7 +38,7 @@ _RUNTIME_TO_MODEL: dict[str, str] = {
 class ContextInjector:
     """Injects per-model context bundles into RuntimeTask prompts.
 
-    Used by RuntimeRegistry.execute() when BR3_MULTI_MODEL_CONTEXT=on.
+    Used by RuntimeRegistry.execute() when BR3_AUTO_CONTEXT=on.
     When the flag is OFF, inject() is a no-op — zero behavior change.
 
     Usage::
