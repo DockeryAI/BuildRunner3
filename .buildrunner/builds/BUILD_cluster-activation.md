@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-21
 **Last Revised:** 2026-04-21 (Revision 3 — cluster-max authoring-contract conformance)
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
+**Status:** Phases 1-4 Complete — Phase 5 In Progress
 **Deploy:** local — BR3 framework internals; no user-facing deploy target.
 **Supersedes:** closes the 10 post-cutover gaps in `BUILD_cluster-max`. Consumes the infrastructure cluster-max shipped (RuntimeRegistry, codex-bridge, feature flags, dashboard) and makes `/begin` + `/autopilot` actually use it.
 **Source Plan File:** .buildrunner/plans/cluster-activation-plan.md
@@ -268,7 +268,7 @@ role_matrix:
 
 ### Phase 5: Cluster node activation — Otis + Walter + Lomax
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Codex model:** gpt-5.3-codex
 **Codex effort:** high
 **Architect:** Opus 4.7
@@ -292,17 +292,17 @@ role_matrix:
 
 **Deliverables:**
 
-- [ ] Flip `cluster-daemon-config.json` → `auto_dispatch: true`
-- [ ] Ship LaunchAgent plist for `cluster-daemon.mjs`; `launchctl load`; verify runs at boot
-- [ ] Add `assigned_node` field to role_matrix YAML schema
-- [ ] Make `/autopilot` consult `node-matrix.mjs` (remove inline hardcode at autopilot.md:126)
-- [ ] Add Walter `/api/coverage` gate to `/autopilot`. Gate blocks at phase start only. Mid-phase outages continue with stale coverage. Checkpoint-resume out of scope.
-- [ ] Unconditionally deploy `com.br3.walter-sentinel.plist` LaunchDaemon via `launchctl load`. Separately verify with `launchctl list | grep walter-sentinel`.
-- [ ] Add `walter-sentinel` health check to `cluster-check.sh`
-- [ ] Ship `overflow-shard-watcher.sh`: 30s poll, 60s cooldown after dispatch, 3 shards/hour cap
-- [ ] Resolve Lomax build-status ambiguity at `/begin:454-465`: change non-blocking warn to blocking error
-- [ ] E2E test: daemon auto-dispatches ready build to Otis
-- [ ] E2E test: Walter queue depth >2 triggers Lomax shard within 60s; cooldown prevents re-dispatch for 60s
+- [x] Flip `cluster-daemon-config.json` → `auto_dispatch: true`
+- [x] Ship LaunchAgent plist for `cluster-daemon.mjs`; `launchctl load`; verify runs at boot
+- [x] Add `assigned_node` field to role_matrix YAML schema
+- [x] Make `/autopilot` consult `node-matrix.mjs` (remove inline hardcode at autopilot.md:126)
+- [x] Add Walter `/api/coverage` gate to `/autopilot`. Gate blocks at phase start only. Mid-phase outages continue with stale coverage. Checkpoint-resume out of scope.
+- [x] Unconditionally deploy `com.br3.walter-sentinel.plist` LaunchDaemon via `launchctl load`. Separately verify with `launchctl list | grep walter-sentinel`.
+- [x] Add `walter-sentinel` health check to `cluster-check.sh`
+- [x] Ship `overflow-shard-watcher.sh`: 30s poll, 60s cooldown after dispatch, 3 shards/hour cap
+- [x] Resolve Lomax build-status ambiguity at `/begin:454-465`: change non-blocking warn to blocking error
+- [x] E2E test: daemon auto-dispatches ready build to Otis
+- [x] E2E test: Walter queue depth >2 triggers Lomax shard within 60s; cooldown prevents re-dispatch for 60s
 
 **Success Criteria:** Boot Mac. `cluster-daemon` starts, polls, dispatches next ready build to Otis. `launchctl list | grep walter-sentinel` returns loaded. `/autopilot` run with Walter offline blocks with same message as `/begin`. 30s/60s/3-per-hour enforced by test harness.
 
