@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-12
 **Last Revised:** 2026-04-20T22:10Z (Phase 8 complete: cache_policy + summarizer + cross_model_review refactor, 31/31 tests pass)
-**Status:** Phases 1-7 Complete — Phase 2 In Progress
+**Status:** Phases 1-10 Complete — Phase 2 In Progress
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
@@ -935,7 +935,7 @@ All 7 nodes registered as build workers, hardcoded IPs updated, dispatch works t
 
 ### Phase 5: Below Skill Integration
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE (2026-04-20) — below-route.sh live (llama3.3:70b default, qwen3:8b for summarization), BR3_LOCAL_ROUTING gate on every entry point; 8 skills routed (begin/autopilot/review/guard/diag/root/dbg/sdb) with Below firewall (never drafts final output); adversarial-review.sh.patch-phase5 staged (--local flag); AGENTS.md.append-phase5.txt 597 bytes with 5-row routing table.
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave4-skills`
@@ -1210,7 +1210,7 @@ Replace hard-truncation with cache-friendly 3-breakpoint prompts and an 8B summa
 
 ### Phase 9: 3-Way Adversarial Review + Opus 4.7 Arbiter
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE (2026-04-20) — cross_model_review_config.json flipped (below.enabled=true, deepseek-r1:70b, reviewers claude-sonnet-4-6, arbiter claude-opus-4-7); cross_model_review.py refactored — parallel gather, fix_type validation, structural short-circuit, persistent-blocker detection, mandatory rebuttal, BR3_MAX_REVIEW_ROUNDS cap, CONTINUE/OVERRIDE/SIMPLIFY escalation prompt (exit 2, byte-identical to require-adversarial-review.sh); arbiter.py with Opus 4.7 effort=xhigh (budget_tokens:32000 replaced per Final Decisions Override), terminal ruling logged to decisions.log; adversarial-review.sh.patch-phase9 staged (--three-way flag); AGENTS.md.append-phase9.txt 787 bytes; 28/28 tests pass.
 **Codex model:** gpt-5.4
 **Codex effort:** high
 **Worktree:** `worktrees/wave4-adversarial`
@@ -1288,7 +1288,7 @@ Adversarial loop: Sonnet 4.6 + Codex GPT-5.4 + Below deepseek-r1:70b in parallel
 
 ### Phase 10: Auto-Context Hook (PromptSubmit + PhaseStart)
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE (2026-04-20) — reranker.py (BAAI/bge-reranker-v2-m3 CPU) + /retrieve endpoint registered on Jimmy port 8100 (two-stage vector→rerank, 4 sources); count-tokens.sh (tiktoken cl100k_base + transformers, exit-2 fail-closed, no byte fallback); auto-context.sh hook (4K tokenizer-true budget, trivial-skip <40 chars/slash commands, JSONL ledger, exclusions block secrets/logs); auto-context.yaml with token budgets + source weights; AGENTS.md.append-phase10.txt 482 bytes; jimmy.md +164 bytes; 33 tests pass + 8 skipped (Jimmy not yet synced). MANUAL: UserPromptSubmit hook registration in ~/.claude/settings.json deferred (protect-files hook; needs update-config skill or manual edit); Jimmy rsync of retrieve.py/reranker.py deferred to Phase 12/13 deploy window.
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave4-context`

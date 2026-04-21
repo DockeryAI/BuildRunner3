@@ -1,10 +1,10 @@
 # Runtime Shadow Metrics
 
-- Total runs: 2305
-- Shadow completed: 914
+- Total runs: 2422
+- Shadow completed: 917
 - Shadow skipped: 5
-- Median primary latency (ms): 58160
-- Median shadow latency (ms): 61773
+- Median primary latency (ms): 60313.5
+- Median shadow latency (ms): 61801.5
 - Median blocker agreement: 0.0
 - Median false blocker rate: 0.0
 - Promotion readiness: not_ready
