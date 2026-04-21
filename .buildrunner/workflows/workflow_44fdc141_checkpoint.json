@@ -1,0 +1,15 @@
+{
+  "checkpoint_id": "4faf0e3b",
+  "workflow_id": "44fdc141",
+  "phase": "explore",
+  "completed_items": [
+    "21e71ebe"
+  ],
+  "timestamp": "2026-04-20T20:06:19.964668",
+  "state_data": {
+    "status": "running",
+    "total_items": 1,
+    "completed_count": 1,
+    "failed_count": 0
+  }
+}

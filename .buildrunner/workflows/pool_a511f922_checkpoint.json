@@ -1,0 +1,29 @@
+{
+  "pool_id": "a511f922",
+  "timestamp": "2026-04-20T20:06:19.845195",
+  "stats": {
+    "total_items": 2,
+    "completed_items": 2,
+    "failed_items": 0,
+    "total_duration_ms": 0.129,
+    "avg_item_duration_ms": 0.011
+  },
+  "results": {
+    "959cfca6": {
+      "item_id": "959cfca6",
+      "agent_type": "explore",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.011,
+      "error_message": null
+    },
+    "9435c75d": {
+      "item_id": "9435c75d",
+      "agent_type": "implement",
+      "task_id": "test-task-1",
+      "status": "completed",
+      "duration_ms": 0.011,
+      "error_message": null
+    }
+  }
+}

@@ -1,8 +1,8 @@
 # Build: cluster-max
 
 **Created:** 2026-04-12
-**Last Revised:** 2026-04-20T22:10Z (Phase 8 complete: cache_policy + summarizer + cross_model_review refactor, 31/31 tests pass)
-**Status:** Phases 1-10 Complete — Phase 2 In Progress
+**Last Revised:** 2026-04-20 (Phases 11+12 complete: dashboard @ :4400 + multi-model context parity)
+**Status:** Phases 1-12 Complete — Phase 13 Blocked (requires ≥7-day shadow window)
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 
 ---
@@ -1365,7 +1365,7 @@ One hook injects relevant context into every Claude prompt. Pulls from research 
 
 ### Phase 11: Cluster Max Dashboard @ Port 4400
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE (2026-04-20) — 6 vanilla-JS panels (node-health 7-tile grid INCL Jimmy, overflow-reserve, storage-health, routing-ledger, cost-cache, consensus-viewer); app.js WebSocket client (500ms→30s exp backoff, 15s heartbeat, resync on reconnect); api/routes/dashboard_stream.py FastAPI WS @ ws://10.0.1.106:4400/ws with 6 collectors; ui/dashboard/AGENTS.md updated (registered panels table + endpoint contract); all panels + app.js pass `node --check`.
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave5-dashboard`
@@ -1440,7 +1440,7 @@ Upgrade the existing port-4400 dashboard with 5 new panels — including a first
 
 ### Phase 12: Multi-Model Context Parity (Logs, Memory, Research)
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE (2026-04-20) — context_bundle.py (5 source types, two-layer [private] filter, tokenizer-true exit-2 fail-closed no byte fallback), context_router.py (claude=32K/codex=48K/ollama=16K budgets), context_injector.py (RuntimeRegistry wrapper, BR3_MULTI_MODEL_CONTEXT flag-gated default OFF), api/routes/context.py (GET /context/{model} with budget.tokenizer field, 503 on flag-off/tokenizer-unavailable); ~/.buildrunner/ scripts filter-private-decisions.sh + sync-cluster-context.sh (rsync + chmod 444) + codex-bridge.sh + below-route.sh MODIFIED; context-sources.yaml (14 exclusion globs); deploy/jimmy/systemd/br3-context-sync.{service,timer} staged; otis.md AGENTS appended; AGENTS.md.append-phase12.txt 548 bytes (5 required keywords); 17 Phase 12 tests + 135 total cluster+runtime tests pass; canary test verifies [private] lines never leak. MANUAL DEFERRED to Phase 13 deploy window: scp otis.md to Otis, systemctl enable br3-context-sync.timer on Jimmy, live /context/{model} smoke test.
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave5-parity`
