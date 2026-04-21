@@ -667,3 +667,8 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [Tue Apr 21 16:35:35 CDT 2026] [DECISION] Created build spec: cluster-activation with 6 phases (supersedes cluster-max gap closure)
 [2026-04-21T16:55:56] [DECISION] Spec review blocked; fixed #4 inline; bypassed #11+#12 (out-of-repo files); 1-review rule per Cluster-Max Final Decisions Override
 [2026-04-21T17:12:05] [DECISION] Created build spec: cluster-max-research-library with 7 phases, 55 deliverables
+[2026-04-21T22:27:01Z] Phase 2 decisions:
+  - BR3_LOCAL_ROUTING chosen as canonical flag; BR3_RUNTIME_OLLAMA aliased via shim, one-release deprecation
+  - scripts/runtime-dispatch.sh is project-local (distinct from ~/.buildrunner/scripts/runtime-dispatch.sh infra-level)
+  - CLI entry uses argparse; dry-run mode via BR3_DISPATCH_DRY_RUN=1 for test isolation
+  - auto-triage (api/summarize) removed as out-of-scope; Lockwood write-back preserved
