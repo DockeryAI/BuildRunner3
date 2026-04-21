@@ -29,6 +29,51 @@ from core.runtime.codex_runtime import CodexRuntime
 from core.runtime.ollama_runtime import OllamaRuntime
 from core.runtime.types import RuntimeResult, RuntimeTask
 
+# ---------------------------------------------------------------------------
+# Telemetry helper — non-blocking emit for runtime_dispatched events
+# ---------------------------------------------------------------------------
+
+def _emit_runtime_dispatched(runtime_name: str, task: "RuntimeTask") -> None:
+    """Emit a runtime_dispatched event to telemetry. Swallows all errors."""
+    try:
+        from pathlib import Path as _Path
+        from core.telemetry.event_schemas import Event, EventType
+        from core.persistence.database import Database
+
+        db_path = _Path.cwd() / ".buildrunner" / "telemetry.db"
+        if not db_path.exists():
+            return
+
+        import sqlite3 as _sqlite3
+        import json as _json
+        import uuid as _uuid
+        from datetime import datetime as _dt
+
+        metadata = {
+            "runtime": runtime_name[:64],
+            "task_type": (task.task_type or "")[:64],
+            "task_id": (task.task_id or "")[:64],
+            "project_root": (str(task.project_root) or "")[:128],
+        }
+        row = {
+            "event_id": str(_uuid.uuid4()),
+            "event_type": EventType.RUNTIME_DISPATCHED.value,
+            "timestamp": _dt.utcnow().isoformat(),
+            "session_id": None,
+            "metadata": _json.dumps(metadata),
+            "success": 1,
+        }
+        conn = _sqlite3.connect(str(db_path))
+        try:
+            cols = ", ".join(row.keys())
+            placeholders = ", ".join("?" * len(row))
+            conn.execute(f"INSERT INTO events ({cols}) VALUES ({placeholders})", list(row.values()))
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as _exc:  # noqa: BLE001
+        logger.warning("_emit_runtime_dispatched: swallowed error: %s", _exc)
+
 logger = logging.getLogger(__name__)
 
 SUPPORTED_RUNTIME_NAMES = ("claude", "codex", "ollama")
@@ -102,6 +147,7 @@ class RuntimeRegistry:
             runtime_name = "claude"
 
         registration = self._registrations[runtime_name]
+        _emit_runtime_dispatched(runtime_name, task)
         return asyncio.run(self._dispatch_to_adapter(registration.adapter, task))
 
     async def execute_async(self, task: RuntimeTask) -> RuntimeResult:
@@ -115,6 +161,7 @@ class RuntimeRegistry:
             runtime_name = "claude"
 
         registration = self._registrations[runtime_name]
+        _emit_runtime_dispatched(runtime_name, task)
         return await self._dispatch_to_adapter(registration.adapter, task)
 
     @staticmethod

@@ -99,6 +99,50 @@ def load_config():
     return {"backends": {"codex": {"enabled": True, "timeout_seconds": 60}}, "budget": {"monthly_cap_usd": 50}}
 
 
+# ---------------------------------------------------------------------------
+# Phase 6: Non-blocking telemetry emit for adversarial_review_ran
+# ---------------------------------------------------------------------------
+
+def _emit_adversarial_review_ran(mode: str, verdict: str, findings_count: int, commit_sha: str = "") -> None:
+    """Emit adversarial_review_ran event to telemetry.db. Swallows all errors."""
+    try:
+        import sqlite3 as _sqlite3
+        import uuid as _uuid
+        from datetime import datetime as _dt
+
+        db_candidates = [
+            Path.cwd() / ".buildrunner" / "telemetry.db",
+            Path.home() / "Projects" / "BuildRunner3" / ".buildrunner" / "telemetry.db",
+        ]
+        db_path = next((p for p in db_candidates if p.exists()), None)
+        if db_path is None:
+            return
+
+        metadata = {
+            "mode": mode[:32],
+            "verdict": verdict[:32],
+            "findings_count": findings_count,
+            "commit_sha": (commit_sha or "")[:40],
+        }
+        conn = _sqlite3.connect(str(db_path))
+        try:
+            conn.execute(
+                "INSERT INTO events (event_id, event_type, timestamp, metadata, success) VALUES (?, ?, ?, ?, ?)",
+                (
+                    str(_uuid.uuid4()),
+                    "adversarial_review_ran",
+                    _dt.utcnow().isoformat(),
+                    json.dumps(metadata),
+                    1 if verdict in ("APPROVED", "REVIEWER_ERROR") else 0,
+                ),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:  # noqa: BLE001
+        pass  # Non-blocking — swallow all emit errors
+
+
 def utc_now_iso():
     """Return a timezone-aware ISO8601 UTC timestamp."""
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -1781,6 +1825,12 @@ def run_three_way_review(
             "consensus_pass",
             f"round={review_round} findings={len(merged)} consensus_blockers=0",
         )
+        _emit_adversarial_review_ran(
+            mode="3-way" if _ADVERSARIAL_3WAY_ENABLED else "2-way",
+            verdict="APPROVED",
+            findings_count=len(merged),
+            commit_sha=commit_sha,
+        )
         return {
             "verdict": "APPROVED",
             "findings": merged,
@@ -1800,6 +1850,12 @@ def run_three_way_review(
         _log_three_way_decision(
             "consensus_after_rebuttal",
             f"round={review_round} rebuttal_ok={rebuttal_ok}",
+        )
+        _emit_adversarial_review_ran(
+            mode="3-way" if _ADVERSARIAL_3WAY_ENABLED else "2-way",
+            verdict="APPROVED",
+            findings_count=len(merged),
+            commit_sha=commit_sha,
         )
         return {
             "verdict": "APPROVED",
@@ -1855,7 +1911,7 @@ def run_three_way_review(
     verdict = arbiter_ruling.get("verdict", "ERROR")
     exit_code = 0 if verdict == "APPROVED" else 1
 
-    return {
+    result = {
         "verdict": verdict,
         "findings": merged,
         "consensus": False,
@@ -1865,6 +1921,13 @@ def run_three_way_review(
         "escalated": False,
         "exit_code": exit_code,
     }
+    _emit_adversarial_review_ran(
+        mode="3-way" if _ADVERSARIAL_3WAY_ENABLED else "2-way",
+        verdict=verdict,
+        findings_count=len(merged),
+        commit_sha=commit_sha,
+    )
+    return result
 
 
 def _resolve_default_spec_file(project_root):

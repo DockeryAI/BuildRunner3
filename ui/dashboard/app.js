@@ -16,6 +16,7 @@
     'overflow-reserve': { global: 'OverflowReservePanel', mount: 'p-overflow-reserve' },
     'storage-health': { global: 'StorageHealthPanel', mount: 'p-storage-health' },
     consensus: { global: 'ConsensusViewerPanel', mount: 'p-consensus' },
+    'feature-health': { global: 'FeatureHealthPanel', mount: 'p-feature-health' },
   };
 
   var BACKOFF_SCHEDULE = [500, 1000, 2000, 4000, 8000, 16000, 30000];

@@ -52,6 +52,12 @@ class EventType(str, Enum):
     SYSTEM_STOPPED = "system_stopped"
     HEALTH_CHECK = "health_check"
 
+    # Cluster dispatch events (Phase 6 — cluster-activation)
+    RUNTIME_DISPATCHED = "runtime_dispatched"
+    CACHE_HIT = "cache_hit"
+    CONTEXT_BUNDLE_SERVED = "context_bundle_served"
+    ADVERSARIAL_REVIEW_RAN = "adversarial_review_ran"
+
 
 @dataclass
 class Event:

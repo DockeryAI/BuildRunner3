@@ -17,8 +17,52 @@ Phase 4: BR3_CACHE_BREAKPOINTS gate
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import Any
+
+logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Phase 6: Non-blocking cache_hit telemetry emit
+# ---------------------------------------------------------------------------
+
+def _emit_cache_hit(breakpoint_index: int) -> None:
+    """Emit a cache_hit event to telemetry.db. Swallows all errors."""
+    try:
+        import json as _json
+        import sqlite3 as _sqlite3
+        import uuid as _uuid
+        from datetime import datetime as _dt
+        from pathlib import Path as _Path
+
+        db_candidates = [
+            _Path.cwd() / ".buildrunner" / "telemetry.db",
+            _Path.home() / "Projects" / "BuildRunner3" / ".buildrunner" / "telemetry.db",
+        ]
+        db_path = next((p for p in db_candidates if p.exists()), None)
+        if db_path is None:
+            return
+
+        metadata = {"breakpoint": breakpoint_index}
+        conn = _sqlite3.connect(str(db_path))
+        try:
+            conn.execute(
+                "INSERT INTO events (event_id, event_type, timestamp, metadata, success) VALUES (?, ?, ?, ?, ?)",
+                (
+                    str(_uuid.uuid4()),
+                    "cache_hit",
+                    _dt.utcnow().isoformat(),
+                    _json.dumps(metadata),
+                    1,
+                ),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as _exc:  # noqa: BLE001
+        logger.warning("_emit_cache_hit: swallowed error: %s", _exc)
 
 # ---------------------------------------------------------------------------
 # Phase 4: Feature-flag gate — BR3_CACHE_BREAKPOINTS
@@ -80,6 +124,8 @@ def build_cached_prompt(
         A list of content-block dicts ready for the Anthropic messages API.
     """
     if _CACHE_BREAKPOINTS_ENABLED:
+        _emit_cache_hit(0)  # breakpoint 1 fired
+        _emit_cache_hit(1)  # breakpoint 2 fired
         return [
             _make_text_block(system_text, cached=True),     # breakpoint 1
             _make_text_block(skill_context, cached=True),   # breakpoint 2
