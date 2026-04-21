@@ -673,3 +673,8 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
   - CLI entry uses argparse; dry-run mode via BR3_DISPATCH_DRY_RUN=1 for test isolation
   - auto-triage (api/summarize) removed as out-of-scope; Lockwood write-back preserved
 [2026-04-21T22:27:06Z] Phase 1 decisions: context.py already had no module-level app (clean state). node_semantic.py is core/cluster/node_semantic.py (not api/). BUILD_cluster-max.md migrated with 15 phases. All 15 tests pass. Jimmy reachable, smoke test HTTP 200.
+[2026-04-21T22:44:12.080816Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-21T22:44:42.930777Z] ARBITER_RULING artifact='.buildrunner/plans/spec-draft-4-7-optimization.md' round=1 verdict=BLOCKED findings=2 upheld=2 model=claude-opus-4-7 effort=xhigh duration_s=30.4 rationale='Both disputed blocker findings are technically verifiable and concrete: the installed anthropic SDK v0.74.1 does not accept output_config (confirmed by the parameter list in the finding itself), and e'
+[2026-04-21T22:44:42.975229Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-21T17:47:06] [DECISION] Spec review blocked; fixed 2 blockers + 4 notes inline in .buildrunner/plans/spec-draft-4-7-optimization.md; bypass authorized under 1-review rule
+2026-04-21T22:56:04Z phase-3-complete: orchestrator wiring shipped — load-role-matrix.sh + load-cluster-flags.sh + begin.md/autopilot.md role-matrix dispatch branch + codex-bridge.sh injection in runtime-dispatch.sh + builder-mismatch assertion + tests/e2e/orchestrator-dispatch.spec.ts

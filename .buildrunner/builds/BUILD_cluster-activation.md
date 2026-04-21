@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-21
 **Last Revised:** 2026-04-21 (Revision 3 — cluster-max authoring-contract conformance)
-**Status:** Phases 1-2 Complete — Phase 3 In Progress
+**Status:** Phases 1-3 Complete — Phase 4 In Progress
 **Deploy:** local — BR3 framework internals; no user-facing deploy target.
 **Supersedes:** closes the 10 post-cutover gaps in `BUILD_cluster-max`. Consumes the infrastructure cluster-max shipped (RuntimeRegistry, codex-bridge, feature flags, dashboard) and makes `/begin` + `/autopilot` actually use it.
 **Source Plan File:** .buildrunner/plans/cluster-activation-plan.md
@@ -185,7 +185,7 @@ role_matrix:
 
 ### Phase 3: Orchestrator wiring — /begin + /autopilot dispatch per phase
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Codex model:** gpt-5.3-codex
 **Codex effort:** medium
 **Architect:** Opus 4.7
@@ -206,14 +206,14 @@ role_matrix:
 
 **Deliverables:**
 
-- [ ] Ship `load-role-matrix.sh` — args: `<spec_path> <phase_num>` → prints `builder=codex` etc.
-- [ ] Ship `load-cluster-flags.sh` — sources `feature-flags.yaml`, exports all cluster flags
-- [ ] Add role_matrix lookup to `/begin` at start of each phase loop
-- [ ] Add role_matrix lookup to `/autopilot` at start of each phase loop
-- [ ] Dispatch branch: if `builder != claude`, call `runtime-dispatch.sh $builder $spec`
-- [ ] Wire `codex-bridge.sh` invocation inside `runtime-dispatch.sh` when builder==codex
-- [ ] Phase-complete assertion: `builder_in_matrix == builder_that_ran`; fail phase if mismatch
-- [ ] E2E smoke test: `/begin` on throwaway spec with `phase_2.builder: codex`, assert Codex ran
+- [x] Ship `load-role-matrix.sh` — args: `<spec_path> <phase_num>` → prints `builder=codex` etc.
+- [x] Ship `load-cluster-flags.sh` — sources `feature-flags.yaml`, exports all cluster flags
+- [x] Add role_matrix lookup to `/begin` at start of each phase loop
+- [x] Add role_matrix lookup to `/autopilot` at start of each phase loop
+- [x] Dispatch branch: if `builder != claude`, call `runtime-dispatch.sh $builder $spec`
+- [x] Wire `codex-bridge.sh` invocation inside `runtime-dispatch.sh` when builder==codex
+- [x] Phase-complete assertion: `builder_in_matrix == builder_that_ran`; fail phase if mismatch
+- [x] E2E smoke test: `/begin` on throwaway spec with `phase_2.builder: codex`, assert Codex ran
 
 **Success Criteria:** `/begin BUILD_cluster-max` and `/autopilot BUILD_cluster-max` dispatch Phase 2 to Codex automatically. No manual `/codex-do`.
 
