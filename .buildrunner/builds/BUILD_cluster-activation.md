@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-21
 **Last Revised:** 2026-04-21 (Revision 3 — cluster-max authoring-contract conformance)
-**Status:** Phases 1-4 Complete — Phase 5 In Progress
+**Status:** BUILD COMPLETE — All 6 Phases Done
 **Deploy:** local — BR3 framework internals; no user-facing deploy target.
 **Supersedes:** closes the 10 post-cutover gaps in `BUILD_cluster-max`. Consumes the infrastructure cluster-max shipped (RuntimeRegistry, codex-bridge, feature flags, dashboard) and makes `/begin` + `/autopilot` actually use it.
 **Source Plan File:** .buildrunner/plans/cluster-activation-plan.md
@@ -316,7 +316,7 @@ role_matrix:
 
 ### Phase 6: Dispatch telemetry + feature-health dashboard
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Codex model:** gpt-5.4
 **Codex effort:** high
 **Architect:** Opus 4.7
@@ -362,16 +362,16 @@ role_matrix:
 
 **Deliverables:**
 
-- [ ] Add event types: `runtime_dispatched`, `cache_hit`, `context_bundle_served`, `adversarial_review_ran` (reuse metadata JSON column)
-- [ ] Emit `runtime_dispatched` from `runtime_registry.py` on every `execute()`
-- [ ] Ship `br-emit-event.sh` CLI wrapper
-- [ ] Emit `context_bundle_served` from `codex-bridge.sh`
-- [ ] Emit `adversarial_review_ran` from `cross_model_review.py`
-- [ ] Emit `cache_hit` from `cache_policy.py`
-- [ ] Add `feature-health` WS topic to `dashboard_stream.py`
-- [ ] Ship `ui/dashboard/panels/feature-health.js` with 15 tiles
-- [ ] Delete `.buildrunner/runtime-shadow-metrics.md`
-- [ ] E2E: run phase, verify `runtime_dispatched` lands in panel within 5s
+- [x] Add event types: `runtime_dispatched`, `cache_hit`, `context_bundle_served`, `adversarial_review_ran` (reuse metadata JSON column)
+- [x] Emit `runtime_dispatched` from `runtime_registry.py` on every `execute()`
+- [x] Ship `br-emit-event.sh` CLI wrapper
+- [x] Emit `context_bundle_served` from `codex-bridge.sh`
+- [x] Emit `adversarial_review_ran` from `cross_model_review.py`
+- [x] Emit `cache_hit` from `cache_policy.py`
+- [x] Add `feature-health` WS topic to `dashboard_stream.py`
+- [x] Ship `ui/dashboard/panels/feature-health.js` with 15 tiles
+- [x] Delete `.buildrunner/runtime-shadow-metrics.md`
+- [x] E2E: run phase, verify `runtime_dispatched` lands in panel within 5s
 
 **Success Criteria:** Open dashboard at :4400, run `/autopilot BUILD_cluster-max`. Within seconds, panel shows Phase 2 dispatched to Codex (tile 1 green), context_bundle_served (tile 5 green), adversarial_review_ran (tile 3 green, mode=3-way, pass). All 15 tiles resolve to green/yellow/red — no "unknown".
 
