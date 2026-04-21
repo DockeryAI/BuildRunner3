@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "name": "Foundation — Role Matrix schema + context router extraction + :4500 mount",
+  "step": 1,
+  "step_name": "setup",
+  "step_label": "Setup & sync",
+  "status": "active",
+  "tasks_total": 9,
+  "tasks_done": 0,
+  "current_task": null,
+  "tests_written": 0,
+  "tests_passing": 0,
+  "commits": 0,
+  "errors": [],
+  "warnings": ["rescue stash had conflicts, starting fresh"],
+  "started_at": "2026-04-21T22:19:43Z",
+  "updated_at": "2026-04-21T22:19:43Z",
+  "history": [
+    {"step": 0.5, "name": "rescue", "label": "Recover uncommitted work", "at": "2026-04-21T22:19:43Z", "status": "done"},
+    {"step": 0.9, "name": "verify", "label": "Codebase verification", "at": "2026-04-21T22:19:43Z", "status": "done"}
+  ]
+}
