@@ -80,7 +80,7 @@ role_matrix:
 
 | Phase | Key Files                                                                                                                                            | Can Parallel With | Blocked By                 | Codex Model   |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | -------------------------- | ------------- |
-| 1     | schemas/role-matrix.schema.yaml, api/routes/context.py, api/services/context_api_standalone.py, api/node_semantic.py, scripts/migrate-role-matrix.py | 2                 | —                          | gpt-5.4       |
+| 1     | schemas/role-matrix.schema.yaml, api/routes/context.py, api/services/context_api_standalone.py, core/cluster/node_semantic.py, scripts/migrate-role-matrix.py | 2                 | —                          | gpt-5.4       |
 | 2     | scripts/runtime-dispatch.sh, below-route.sh, runtime_registry.py, autopilot.md (api/summarize delete only)                                           | 1                 | —                          | gpt-5.3-codex |
 | 3     | begin.md, autopilot.md, load-role-matrix.sh, load-cluster-flags.sh                                                                                   | —                 | 1, 2                       | gpt-5.3-codex |
 | 4     | cross_model_review.py, cache_policy.py, begin.md, autopilot.md                                                                                       | —                 | 3 (same skill files)       | gpt-5.4       |
@@ -112,7 +112,7 @@ role_matrix:
 - `scripts/migrate-role-matrix.py` (NEW)
 - `api/routes/context.py` (MODIFY — remove module-level `app = create_app(...)`. Keep ONLY APIRouter.)
 - `api/services/context_api_standalone.py` (NEW — standalone entrypoint)
-- `api/node_semantic.py` (MODIFY — mount `context_router`)
+- `core/cluster/node_semantic.py` (MODIFY — mount `context_router`)
 - `tests/cluster/test_role_matrix_schema.py` (NEW)
 - `tests/cluster/test_context_router_no_side_effects.py` (NEW)
 - `tests/integration/test_context_codex_live.py` (NEW)
@@ -126,7 +126,7 @@ role_matrix:
 - [x] Append `role_matrix` YAML block to `BUILD_cluster-max.md`
 - [x] Extract APIRouter: remove module-level `app = create_app(role='context-api')` from `api/routes/context.py`
 - [x] Move standalone app bootstrap to `api/services/context_api_standalone.py` with `if __name__ == "__main__"` guard
-- [x] Import and mount `context_router` in `api/node_semantic.py`
+- [x] Import and mount `context_router` in `core/cluster/node_semantic.py`
 - [x] Unit test asserts `import api.routes.context` does not instantiate FastAPI app
 - [x] Smoke test: `curl http://10.0.1.106:4500/context/codex?phase=2` returns HTTP 200
 - [x] Document role_matrix schema in `core/cluster/AGENTS.md`
@@ -136,7 +136,7 @@ role_matrix:
 **Claude Review (mandatory before Phase 1 marked complete):**
 
 - Reviewer: `claude-opus-4-7` (Muddy) + `codex-gpt-5.4` (secondary)
-- Trigger: `/review --phase 1 --target ".buildrunner/schemas/role-matrix.schema.yaml,scripts/migrate-role-matrix.py,api/routes/context.py,api/services/context_api_standalone.py,api/node_semantic.py,core/cluster/AGENTS.md"`
+- Trigger: `/review --phase 1 --target ".buildrunner/schemas/role-matrix.schema.yaml,scripts/migrate-role-matrix.py,api/routes/context.py,api/services/context_api_standalone.py,core/cluster/node_semantic.py,core/cluster/AGENTS.md"`
 - Required findings: (1) `import api.routes.context` has zero side effects; (2) YAML schema validates against all cluster-max phases 0–15; (3) standalone bootstrap behaves byte-identically to prior module-level app; (4) no duplicate FastAPI app registered on `:4500`; (5) AGENTS.md documents the schema within 500-byte staged-append budget.
 
 ---
@@ -237,8 +237,8 @@ role_matrix:
 **Assigned node:** Muddy
 **Files:**
 
-- `core/review/cross_model_review.py` (MODIFY — read `BR3_ADVERSARIAL_3WAY`)
-- `core/cache/cache_policy.py` (MODIFY — gate on `BR3_CACHE_BREAKPOINTS`)
+- `core/cluster/cross_model_review.py` (MODIFY — read `BR3_ADVERSARIAL_3WAY`)
+- `core/runtime/cache_policy.py` (MODIFY — gate on `BR3_CACHE_BREAKPOINTS`)
 - `~/.claude/commands/begin.md` (MODIFY — source `load-cluster-flags.sh` at top of phase loop)
 - `~/.claude/commands/autopilot.md` (MODIFY — same)
 - `tests/cluster/test_adversarial_3way_flag.py` (NEW)
@@ -261,7 +261,7 @@ role_matrix:
 **Claude Review (mandatory before Phase 4 marked complete):**
 
 - Reviewer: `claude-opus-4-7` (Muddy) + `codex-gpt-5.4` (secondary)
-- Trigger: `/review --phase 4 --target "core/review/cross_model_review.py,core/cache/cache_policy.py,~/.claude/commands/begin.md,~/.claude/commands/autopilot.md"`
+- Trigger: `/review --phase 4 --target "core/cluster/cross_model_review.py,core/runtime/cache_policy.py,~/.claude/commands/begin.md,~/.claude/commands/autopilot.md"`
 - Required findings: (1) flag read occurs exactly once per entry point; (2) flag off = zero behavior change from pre-Phase-4; (3) 3-way branch respects `BR3_MAX_REVIEW_ROUNDS=1` cap; (4) cache_policy.py breakpoint emission honors 3-breakpoint contract from cluster-max Phase 8; (5) flag names match `feature-flags.yaml` canonical keys exactly.
 
 ---
@@ -328,8 +328,8 @@ role_matrix:
 
 - `core/telemetry/event_schemas.py` (MODIFY — add 4 new event types)
 - `core/runtime/runtime_registry.py` (MODIFY — emit `runtime_dispatched`)
-- `core/cache/cache_policy.py` (MODIFY — emit `cache_hit`)
-- `core/review/cross_model_review.py` (MODIFY — emit `adversarial_review_ran`)
+- `core/runtime/cache_policy.py` (MODIFY — emit `cache_hit`)
+- `core/cluster/cross_model_review.py` (MODIFY — emit `adversarial_review_ran`)
 - `scripts/br-emit-event.sh` (NEW)
 - `~/.buildrunner/scripts/codex-bridge.sh` (MODIFY — emit `context_bundle_served`)
 - `api/routes/dashboard_stream.py` (MODIFY — add `feature-health` WS topic)
@@ -378,7 +378,7 @@ role_matrix:
 **Claude Review (mandatory before Phase 6 marked complete):**
 
 - Reviewer: `claude-opus-4-7` (Muddy) + `codex-gpt-5.4` (secondary)
-- Trigger: `/review --phase 6 --target "core/telemetry/event_schemas.py,core/runtime/runtime_registry.py,core/cache/cache_policy.py,core/review/cross_model_review.py,scripts/br-emit-event.sh,~/.buildrunner/scripts/codex-bridge.sh,api/routes/dashboard_stream.py,ui/dashboard/panels/feature-health.js,ui/dashboard/index.html,ui/dashboard/app.js"`
+- Trigger: `/review --phase 6 --target "core/telemetry/event_schemas.py,core/runtime/runtime_registry.py,core/runtime/cache_policy.py,core/cluster/cross_model_review.py,scripts/br-emit-event.sh,~/.buildrunner/scripts/codex-bridge.sh,api/routes/dashboard_stream.py,ui/dashboard/panels/feature-health.js,ui/dashboard/index.html,ui/dashboard/app.js"`
 - Required findings: (1) emit wrappers never block host code path; (2) zero PII / full-prompt / full-diff leakage in metadata (string-literal scan <256 chars); (3) `telemetry.db` schema backward-compatible (no new columns, metadata JSON only); (4) all 15 tiles resolve to green/yellow/red — no "unknown" state; (5) WS topic respects existing `dashboard_stream.py` subscription contract; (6) `runtime-shadow-metrics.md` deletion does not break any documented workflow; (7) overlap with Phase 15 (cluster-max) observability is additive only — no duplicate emit sites.
 
 ---
@@ -435,11 +435,11 @@ This build does not create a new orchestration layer — it wires `/begin` and `
 
 **Modified (additive, no breaking changes):**
 
-- `core/review/cross_model_review.py` — gated on `BR3_ADVERSARIAL_3WAY` (Phase 4), emits event (Phase 6)
-- `core/cache/cache_policy.py` — gated on `BR3_CACHE_BREAKPOINTS` (Phase 4), emits event (Phase 6)
+- `core/cluster/cross_model_review.py` — gated on `BR3_ADVERSARIAL_3WAY` (Phase 4), emits event (Phase 6)
+- `core/runtime/cache_policy.py` — gated on `BR3_CACHE_BREAKPOINTS` (Phase 4), emits event (Phase 6)
 - `core/telemetry/event_schemas.py` — 4 new event types appended (Phase 6)
 - `api/routes/context.py` — APIRouter extraction, standalone bootstrap moved out (Phase 1)
-- `api/node_semantic.py` — mounts `context_router` (Phase 1)
+- `core/cluster/node_semantic.py` — mounts `context_router` (Phase 1)
 
 **Cluster services required online:**
 
