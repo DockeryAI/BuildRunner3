@@ -104,7 +104,7 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 ### Phase 4: Bridge into `/autopilot` and `/begin` (no-flag default)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/populate-agent-registry.sh` (NEW)
@@ -115,13 +115,13 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 **Deliverables:**
 
-- [ ] `populate-agent-registry.sh <build-spec>` iterates every pending phase, calls `resolve-dispatch-node.sh`, writes `{ phase: N, assigned_node: X, bucket: Y, reason: Z }` into `.buildrunner/agents.json` under a new `routing:` key. Idempotent — replaces prior `routing:` block on each invocation. Does NOT touch the existing `agents:` key used by `/dash`.
-- [ ] **Ordering (explicit):** helper runs AFTER `load-role-matrix.sh` populates `.resolved-role-matrix.json`, never before. Both skills updated to enforce this order.
-- [ ] **Concurrency safety:** writes to `.buildrunner/agents.json` are guarded by `flock -x -w 5` on `.buildrunner/locks/agents.json.lock`. Read-modify-write the entire file under the lock, then atomic `mv` from same-directory temp file. Lockfile path added to `.gitignore`. Prevents corruption when `/autopilot` and `/begin` (or two autopilots) run concurrently against the same project.
-- [ ] `/autopilot` Step 1 reordered to: BUILD/plan binding check (Step 1.0a) → `load-role-matrix.sh "$BUILD_FILE"` → `populate-agent-registry.sh "$BUILD_FILE"` → existing Step 1.5 dispatch check. Step 1.5 semantics unchanged — reads `assigned_node` from `agents.json.routing.phases[phase_N]`, falls through to local when absent (back-compat).
-- [ ] `/begin` reordered: BUILD spec located → existing `load-role-matrix.sh` call at begin.md:142 → NEW `populate-agent-registry.sh` call inserted immediately after → existing dispatch check.
-- [ ] Both skills gain a documented precedence table in-line: pin > path-locality > spec-preference > load > tier-fallback.
-- [ ] `--cluster` behavior unchanged. Skill docs updated to state explicitly: per-phase routing is no longer gated on `--cluster`; the flag keeps its multi-build-parallelism meaning only.
+- [x] `populate-agent-registry.sh <build-spec>` iterates every pending phase, calls `resolve-dispatch-node.sh`, writes `{ phase: N, assigned_node: X, bucket: Y, reason: Z }` into `.buildrunner/agents.json` under a new `routing:` key. Idempotent — replaces prior `routing:` block on each invocation. Does NOT touch the existing `agents:` key used by `/dash`.
+- [x] **Ordering (explicit):** helper runs AFTER `load-role-matrix.sh` populates `.resolved-role-matrix.json`, never before. Both skills updated to enforce this order.
+- [x] **Concurrency safety:** writes to `.buildrunner/agents.json` are guarded by `flock -x -w 5` on `.buildrunner/locks/agents.json.lock`. Read-modify-write the entire file under the lock, then atomic `mv` from same-directory temp file. Lockfile path added to `.gitignore`. Prevents corruption when `/autopilot` and `/begin` (or two autopilots) run concurrently against the same project.
+- [x] `/autopilot` Step 1 reordered to: BUILD/plan binding check (Step 1.0a) → `load-role-matrix.sh "$BUILD_FILE"` → `populate-agent-registry.sh "$BUILD_FILE"` → existing Step 1.5 dispatch check. Step 1.5 semantics unchanged — reads `assigned_node` from `agents.json.routing.phases[phase_N]`, falls through to local when absent (back-compat).
+- [x] `/begin` reordered: BUILD spec located → existing `load-role-matrix.sh` call at begin.md:142 → NEW `populate-agent-registry.sh` call inserted immediately after → existing dispatch check.
+- [x] Both skills gain a documented precedence table in-line: pin > path-locality > spec-preference > load > tier-fallback.
+- [x] `--cluster` behavior unchanged. Skill docs updated to state explicitly: per-phase routing is no longer gated on `--cluster`; the flag keeps its multi-build-parallelism meaning only.
 
 ### Phase 5: Path-sync in `dispatch-to-node.sh`
 
