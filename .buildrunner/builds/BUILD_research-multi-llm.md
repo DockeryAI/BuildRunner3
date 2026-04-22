@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-5 Complete — Phase 6 In Progress
+**Status:** BUILD COMPLETE — All 7 Phases Done
 **Deploy:** web — `npm run build` (no runtime deploy needed; skill + scripts ship via git push to operator's home)
 **Source Plan File:** .buildrunner/plans/spec-draft-plan.md
 **Source Plan SHA:** 66fdd7763ffba294e8825c82a0a162aad34d3a3873ca331a31cda2be37f7a8af
@@ -152,7 +152,7 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 ### Phase 6: Tests + verification
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `tests/research/test_llm_clients.py` (NEW — pytest, mocks HTTPS at httpx/urllib boundary)
@@ -174,7 +174,7 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 ### Phase 7: Documentation + skill polish
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/docs/research-multi-llm.md` (NEW)
@@ -185,12 +185,12 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 **Deliverables:**
 
-- [ ] `mkdir -p ~/.buildrunner/docs/` first (directory not present in current tree).
-- [ ] `research-multi-llm.md` documents: env-key setup, default budget, mode matrix, provider routing, cost expectations, fallback semantics, `BR3_RESEARCH_DISABLE=grok,gemini` opt-out, `BR3_RESEARCH_CODEX_MODEL` override.
-- [ ] `/research` skill `<purpose>` updated to describe the multi-model pipeline accurately (current text incorrectly says "Claude's reasoning ends at synthesis").
-- [ ] "What This Command Does" / "What This Command Does NOT Do" updated.
-- [ ] CLAUDE.md gets a 3-line pointer (not full inline copy).
-- [ ] `br decision log "Multi-LLM /research enhancement shipped — Perplexity+Gemini+Grok+Codex added; adversarial review mandatory"`.
+- [x] `mkdir -p ~/.buildrunner/docs/` first (directory not present in current tree).
+- [x] `research-multi-llm.md` documents: env-key setup, default budget, mode matrix, provider routing, cost expectations, fallback semantics, `BR3_RESEARCH_DISABLE=grok,gemini` opt-out, `BR3_RESEARCH_CODEX_MODEL` override.
+- [x] `/research` skill `<purpose>` updated to describe the multi-model pipeline accurately (current text incorrectly says "Claude's reasoning ends at synthesis").
+- [x] "What This Command Does" / "What This Command Does NOT Do" updated.
+- [x] CLAUDE.md gets a 3-line pointer (not full inline copy).
+- [x] `br decision log "Multi-LLM /research enhancement shipped — Perplexity+Gemini+Grok+Codex added; adversarial review mandatory"`.
 
 ## Out of Scope (V1)
 
