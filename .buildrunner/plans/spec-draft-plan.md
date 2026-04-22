@@ -318,8 +318,9 @@ User can override any of these at "go" time before the BUILD spec is written.
 
 **Deliverables:**
 
+- [ ] **`tests_writable: true` declared in this phase's header** so the Phase 1 lockdown permits deleting `tests/test_ai_code_review.py`. Without this, Phase 1 mechanically blocks the deletion.
 - [ ] Delete core/ai_code_review.py and any references (search tree; remove imports; adjust pre-commit hook if still wired).
-- [ ] Delete tests/test_ai_code_review.py (record in PR).
+- [ ] Delete tests/test_ai_code_review.py (record in PR) — under the Phase 9 test-writable exemption.
 - [ ] scope_drift_judge() receives: diff, phase "Success Criteria" text from BUILD spec, phase "Files:" list. Returns `{ verdict: pass|drift, out_of_scope_files: [...], out_of_scope_changes: [...] }`.
 - [ ] Judge runs as 4th pass after arbiter verdict. If `mode: warn` → log and annotate review artifact; if `mode: block` → verdict flipped to BLOCKED.
 - [ ] Config default: `scope_drift_enabled: true, scope_drift_mode: warn` (per decision 3 above).
@@ -344,19 +345,24 @@ User can override any of these at "go" time before the BUILD spec is written.
 
 ## Parallelization Matrix
 
-| Phase | Key Files                                                                                                                                       | Can Parallel With      | Blocked By                                                   |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------------------------------------------------------------ |
-| 1     | core/runtime/preflight.py (MODIFY); tests/runtime/test_preflight_test_lockdown.py (NEW)                                                         | 2, 3, 4, 5, 6, 9       | None                                                         |
-| 2     | core/dashboard_views.py (MODIFY); core/runtime/regression_gate.py (NEW); autopilot-dispatch-prefix.sh (MODIFY)                                  | 1, 3, 5, 6, 9          | None (Phase 4 updates reader in same PR)                     |
-| 3     | core/routing/cost_tracker.py (MODIFY); core/opus_client.py (MODIFY); runtime-dispatch.sh (MODIFY); telemetry.db schema (MIGRATE)                | 1, 2, 4, 5, 6, 9       | None                                                         |
-| 4     | core/cluster/node_tests.py (MODIFY); .buildrunner/flaky-quarantine.json (NEW); jimmy_flaky_sync.py (NEW); autopilot-dispatch-prefix.sh (MODIFY) | 1, 3, 5, 6, 9          | After Phase 2 preferred (updates compare_baseline exclusion) |
-| 5     | .claude/hooks/protect-files.sh (MODIFY); .claude/hooks/syntax-check.py (NEW)                                                                    | 1, 2, 3, 4, 6, 9       | None                                                         |
-| 6     | /srv/jimmy/eval-corpus/\*\* (NEW, Jimmy-side); core/eval/corpus_loader.py (NEW); scripts/seed-eval-corpus.py (NEW)                              | 1, 2, 3, 4, 5, 9       | None                                                         |
-| 7     | core/eval/runner.py (NEW); core/eval/below_executor.py (NEW); telemetry.db schema (MIGRATE eval_runs)                                           | 1, 2, 3, 4, 5, 8, 9    | 6 (needs corpus)                                             |
-| 8     | core/eval/compare.py (NEW); core/eval/holdout_guard.py (NEW); core/dashboard_views.py (MODIFY)                                                  | 1, 2, 3, 4, 5, 9       | 7 (needs eval runs)                                          |
-| 9     | core/ai_code_review.py (DELETE); core/cluster/cross_model_review.py (MODIFY); BUILD_cluster-max.md (MODIFY)                                     | 1, 2, 3, 4, 5, 6, 7, 8 | None                                                         |
+| Phase | Key Files                                                                                                                                                                      | Can Parallel With   | Blocked By                                      |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------------------------- |
+| 1     | core/runtime/preflight.py (MODIFY); tests/runtime/test_preflight_test_lockdown.py (NEW)                                                                                        | 2, 3, 4, 5, 6, 9    | None                                            |
+| 2     | core/dashboard_views.py (MODIFY); core/runtime/regression_gate.py (NEW); ~/.buildrunner/scripts/autopilot-dispatch-prefix.sh (MODIFY)                                          | 1, 3, 5, 6, 9       | None                                            |
+| 3     | core/routing/cost_tracker.py (MODIFY); core/opus_client.py (MODIFY); ~/.buildrunner/scripts/runtime-dispatch.sh (MODIFY); `.buildrunner/data.db` (MIGRATE)                     | 1, 2, 4, 5, 6, 9    | None                                            |
+| 4     | core/cluster/node_tests.py (MODIFY); core/cluster/flaky_registry_client.py (NEW); core/cluster/jimmy_flaky_sync.py (NEW); autopilot-dispatch-prefix.sh (MODIFY)                | 1, 3, 5, 6, 9       | Phase 2 (compare_baseline takes quarantine set) |
+| 5     | .claude/hooks/protect-files.sh (MODIFY); .claude/hooks/syntax-check.py (NEW)                                                                                                   | 1, 2, 3, 4, 6, 9    | None                                            |
+| 6     | /srv/jimmy/eval-corpus/\*\* (NEW, Jimmy-side); Jimmy FastAPI `GET /api/eval/corpus`; api/routes/eval.py (NEW, Muddy); api/server.py (MODIFY); core/eval/corpus_loader.py (NEW) | 1, 2, 3, 4, 5, 9    | None                                            |
+| 7     | core/eval/runner.py (NEW); core/eval/below_executor.py (NEW); `.buildrunner/data.db` (MIGRATE `eval_runs`)                                                                     | 1, 2, 4, 5, 9       | 3 (shares data.db migration infra), 6 (corpus)  |
+| 8     | core/eval/compare.py (NEW); core/eval/holdout_guard.py (NEW); api/routes/eval.py (MODIFY)                                                                                      | 1, 2, 3, 4, 5, 6, 9 | 7 (needs eval_runs data)                        |
+| 9     | core/ai_code_review.py (DELETE); core/cluster/cross_model_review.py (MODIFY); BUILD_cluster-max.md (MODIFY); `tests_writable: true` header                                     | 1, 2, 3, 4, 5, 6, 8 | None                                            |
 
-**Shared-file watch:** Phases 2 and 4 both touch autopilot-dispatch-prefix.sh. Sequence 2 → 4 OR merge their edits in a single PR. Phases 3 and 7 both MIGRATE telemetry.db; run migrations in order (3 first since it adds a column to an existing table).
+**Shared-file watch:**
+
+- Phases 2 and 4 both touch `~/.buildrunner/scripts/autopilot-dispatch-prefix.sh`. Sequence 2 → 4 OR merge their edits in a single PR (Phase 4's additions extend Phase 2's scaffold).
+- Phases 3 and 7 both migrate `.buildrunner/data.db` (Phase 3 adds `phase_budgets` table, Phase 7 adds `eval_runs` table — independent schemas but serialized to avoid SQLite lock contention during CI).
+- Phases 6 and 8 both touch `api/routes/eval.py` (Phase 6 creates it with the corpus route; Phase 8 extends it with the compare route). Phase 8 is already blocked by 7, so ordering is naturally 6 → 7 → 8 for this file.
+- Phase 9 blocks before 7: Phase 9 can run in parallel with 7 but must NOT delete core/ai_code_review.py before the regression baseline in Phase 2/7 is established (otherwise no baseline for the deletion review).
 
 ---
 
@@ -366,7 +372,7 @@ User can override any of these at "go" time before the BUILD spec is written.
 | ----- | -------------- | ------------- | --------------------------------------------------------------------------------------------------- |
 | 1     | backend-build  | muddy         | preflight.py is Muddy-side; tests live here                                                         |
 | 2     | backend-build  | muddy         | dashboard_views.py + autopilot dispatch prefix live on Muddy                                        |
-| 3     | backend-build  | muddy         | cost_tracker + opus_client + telemetry.db on Muddy                                                  |
+| 3     | backend-build  | muddy         | cost_tracker + opus_client + `.buildrunner/data.db` all live on Muddy                               |
 | 4     | backend-build  | walter        | Walter owns test_results.db and /api/flaky; writes registry from here, Jimmy push is a network call |
 | 5     | terminal-build | muddy         | .claude/hooks/ shell + small Python parser dispatch                                                 |
 | 6     | backend-build  | jimmy         | corpus is /srv/jimmy/eval-corpus/, loader/seed scripts run from Jimmy                               |

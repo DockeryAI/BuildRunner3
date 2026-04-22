@@ -68,6 +68,7 @@ Thumbs.db
 .buildrunner/current-phase.json
 .buildrunner/orchestration.json
 .buildrunner/agents.json
+.buildrunner/telemetry.db
 
 # Claude Code runtime lockfiles (not source)
 .claude/scheduled_tasks.lock
