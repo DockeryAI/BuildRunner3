@@ -1,1 +1,22 @@
-{"agents": {}}
+{
+  "agents": {
+    "a865390b8af60faea": {
+      "phase": 6,
+      "name": "Tests + verification",
+      "sessionId": "9128fef2-2ac5-40d8-b201-360cb4190664",
+      "startedAt": "2026-04-22T21:14:08Z",
+      "status": "running",
+      "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/9128fef2-2ac5-40d8-b201-360cb4190664/tasks/a865390b8af60faea.output",
+      "worktreePath": null
+    },
+    "ae99f44af4a9413c8": {
+      "phase": 2,
+      "name": "Multi-model parallel sub-agent dispatch (research.md Step 3.5)",
+      "sessionId": "9128fef2-2ac5-40d8-b201-360cb4190664",
+      "startedAt": "2026-04-22T21:14:08Z",
+      "status": "running",
+      "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/9128fef2-2ac5-40d8-b201-360cb4190664/tasks/ae99f44af4a9413c8.output",
+      "worktreePath": null
+    }
+  }
+}

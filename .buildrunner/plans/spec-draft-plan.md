@@ -1,395 +1,310 @@
-# Plan: Cluster Hardening v1
+# Spec Draft Plan: Multi-LLM Research Enhancement (`/research`)
 
-**Purpose:** Wire the seven solid-tier Claude-Code safety items onto BR3's existing cluster infrastructure. Items 1–4 are wire-ups on code that already exists (preflight patterns, Walter baseline, cost_tracker budgets, Walter flaky detection). Item 5 fills an empty PreToolUse hook. Item 6 is net-new eval corpus on Jimmy. Item 7 reframed: architect/builder/verifier already exists in cross_model_review.py — delete the superseded single-model reviewer and add a scope-drift judge pass.
-
-**Target users:** Single operator (Byron) running BR3 against the 7-node Blues Cluster.
-
-**Tech stack:** Python 3.11, FastAPI (api/routes/\*, core/cluster/base_service.py), SQLite (`.buildrunner/data.db` for CostTracker cost_entries + Walter's ~/.walter/test_results.db for test baselines; `.buildrunner/telemetry.db` only for runtime event telemetry), LanceDB (Jimmy), bash hooks (~/.claude/settings.json PreToolUse chain). Syntax validation tools per language: Python → `py_compile`, shell → `bash -n`, JS/MJS → `node --check`. **TypeScript/TSX excluded** from Phase 5 — BR3 core is Python-dominant and BR3 lacks a root tsconfig.json; bare `tsc` on single .tsx files rejects valid JSX. Project-level TSX validation is owned by each project's own vite/tsc pipeline, not by this hook.
-
-**Paths outside the repo tree that this spec modifies:**
-
-- `~/.buildrunner/scripts/autopilot-dispatch-prefix.sh` — emitted at every autopilot dispatch; owned by the operator's home-dir BuildRunner install. Not in the project git tree.
-- `~/.buildrunner/scripts/runtime-dispatch.sh` — paid-call dispatcher; same location.
-- `.claude/hooks/protect-files.sh` and `.claude/hooks/bash-guard.sh` — present in the project-level `.claude/hooks/` directory (verified — currently passthrough stubs).
-- `~/.claude/settings.json` — 12-entry PreToolUse chain registration; only appended to, never rewritten.
-- `/srv/jimmy/eval-corpus/**` on Jimmy (10.0.1.106); not in the Muddy repo tree.
-- `~/.walter/test_results.db` on Walter; read-only from Muddy; Walter owns writes.
-
-Reviewers that only see the Muddy repo tree will mis-flag these as missing; the files exist in the home dir or on other nodes.
-
-**Deploy target:** web (local cluster only). No app artifact — all changes ship as Python module edits, hook scripts, BUILD spec header keys, and Jimmy-side corpus storage.
-
-**Source context:**
-
-- Audit completed by 5 parallel Explore agents (prior turn): test-protection, regression-gating, cost-enforcement, flaky/ACI, eval/gen-verifier, role matrix.
-- Items 1–4 are one-line-to-one-file wire-ups. Items 5–6 are net-new but small. Item 7 is mostly delete.
-- core/runtime/preflight.py:25-33 — PROTECTED_PATH_PATTERNS (5 lines to add tests/\*).
-- core/dashboard_views.py:465-487 — get_test_baseline_data() already reads Walter's pass/fail snapshot.
-- core/routing/cost_tracker.py:297-310 — \_check_budgets() currently warns; flip to raise.
-- core/cluster/node_tests.py:659-715, :1172-1199 — Walter flaky detection + /api/flaky endpoint already live.
-- core/cluster/cross_model_review.py (1621 lines) + arbiter.py + config — architect/builder/verifier already built.
-- core/ai_code_review.py — superseded single-model reviewer, no longer wired into pre-commit hook. DELETE candidate.
-- 495+ artifacts in .buildrunner/adversarial-reviews/ — corpus seed material.
-
-**Related builds:**
-
-- BUILD_cluster-max.md — will receive a small doc amendment under Phase 9 (role matrix gains architect/builder/verifier pattern).
-- BUILD_cluster-prometheus-integration.md — independent; no overlap.
-- BUILD_cluster-activation.md — independent; no overlap.
+**Created:** 2026-04-22
+**Author:** Byron + Claude (4.7) via `/spec`
 
 ---
 
-## Decisions to Confirm
+## Purpose
 
-Surfaced before writing the BUILD spec so the user can override defaults:
+Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a true multi-model research pipeline using Claude + Codex (existing access) plus Perplexity Sonar Pro + Google Gemini 3.1 Pro + xAI Grok 4 (new API integrations). Library evidence: multi-model review catches **3–5× more bugs** (Zylos Research, Feb 2026), models miss **64.5%** of their own errors, and Perplexity ships _Model Council_ as a product because of this exact effect.
 
-1. **Default cost ceiling per phase:** $4.00 USD. Override via `cost_ceiling_usd: N` key in BUILD phase header.
-2. **`tests_writable` header key default:** `false` (safer). Phases that author or modify tests must opt-in explicitly (e.g. eval-harness phase, test-refactor phase).
-3. **Scope-drift veto posture:** warn-only in Phase 9 (logs veto intent, does not block). Flip to hard-block after 2 weeks of clean telemetry.
-4. **Eval harness trigger scope:** opt-in per-change initially (`make eval` after prompt/skill/hook edits). Gate later once corpus stabilizes.
-5. **Flaky registry 3-of-3 gate:** require 3 consecutive passes across 3 distinct Walter runs before a fresh test is promoted from `quarantine:new` → `trusted`.
+## Target user
 
-User can override any of these at "go" time before the BUILD spec is written.
+Single operator (Byron) running `/research` against the BR3 cluster + research library on Jimmy.
+
+## Tech stack
+
+- **Skill surface:** `~/.claude/commands/research.md` (Markdown skill, pinned `model: claude-sonnet-4-6`).
+- **API client layer:** Python 3.14 thin wrappers under `~/.buildrunner/scripts/llm-clients/`, dispatched by a single shell entrypoint `~/.buildrunner/scripts/llm-dispatch.sh`. (Codebase runs Python 3.14 — verified via `__pycache__/*.cpython-314.pyc`.)
+- **Codex:** existing `codex exec` CLI (no new auth — relies on the user's Codex plan).
+- **Persistence:** `.buildrunner/data.db` (existing SQLite) — new table `research_llm_calls` for per-call cost telemetry.
+- **Secrets:** `~/.buildrunner/.env` (already exists, chmod 600). New keys: `PERPLEXITY_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`. No 1Password CLI is installed; do not depend on `op`.
+- **Tests:** pytest under `tests/research/` (new), Walter sentinel for nightly smoke.
+
+## Paths outside the BR3 repo tree this spec touches
+
+- `~/.claude/commands/research.md` — skill body (Phases 2–5 modify; Phase 7 polish).
+- `~/.buildrunner/scripts/llm-clients/` (NEW dir) — per-provider client wrappers.
+- `~/.buildrunner/scripts/llm-dispatch.sh` (NEW) — single dispatch entrypoint.
+- `~/.buildrunner/scripts/research-budget-guard.sh` (NEW) — per-invocation budget enforcement.
+- `~/.buildrunner/.env` (MODIFY) — add three new key entries.
+- `~/.buildrunner/.env.template` (NEW or MODIFY if exists) — checked-in template documenting required keys.
+- `~/.buildrunner/docs/research-multi-llm.md` (NEW) — operator docs, cost defaults, fallback semantics.
 
 ---
 
-## Phase 1 — Test file lockdown
+## Decisions (confirmed at "go" time)
 
-**Goal:** Claude Code cannot edit, delete, or weaken tests during a phase unless the phase explicitly declares `tests_writable: true`. Reward-hacking the test suite is mechanically prevented.
+The user surfaced four open questions in the `/spec` invocation. Defaults below; flip during review if undesired.
+
+1. **API key storage:** `~/.buildrunner/.env` (already chmod 600). No 1Password CLI on this machine — do not introduce that dependency. Each client wrapper sources the env file and refuses to dispatch if its required key is missing.
+2. **Cost ceiling per `/research` invocation:** **$2.00 USD default**, overridable via env `BR3_RESEARCH_BUDGET_USD`. Standard mode targets ~$0.50–1.00; `ultrathink` mode is allowed up to the ceiling. Hard stop when ceiling is hit — finish in-flight sub-agents, skip the rest, surface the cap event in the final report.
+3. **Codex dispatch:** **Reuse the existing `codex exec` CLI** (the same plumbing `/codex-do` uses), not a new OpenAI API integration. Reasons: (a) the user already has a Codex plan, no new billing; (b) `codex exec` already produces structured stdout the dispatcher can capture; (c) avoids a duplicate auth path.
+4. **Adversarial review scope:** **Mandatory in standard mode** (one cross-family review pass — typically Claude synthesis → GPT-5.4 critique via `codex exec`). `ultrathink` mode runs **two** adversarial reviewers (GPT-5 + Gemini 3.1 Pro) in parallel and reconciles. Reasoning: the documented 64.5% self-blindness rate makes a single-model `/research` output unreliable enough that the review step should not be opt-in.
+
+---
+
+## Phase Plan
+
+Seven phases. Phases 2/3/4 all modify `~/.claude/commands/research.md` so they cannot parallelize with each other; everything else can run alongside Phase 1 once the API surface is stable.
+
+---
+
+### Phase 1: API client layer + secret management + cost telemetry
+
+**Goal:** A single dispatcher (`~/.buildrunner/scripts/llm-dispatch.sh <provider> --prompt-file <path> [--max-tokens N]`) that returns a JSON envelope `{ok, provider, model, content, tokens_in, tokens_out, cost_usd, latency_ms, error?}`. Each provider wrapper handles its own auth, request shaping, and cost calculation.
 
 **Files:**
 
-- core/runtime/preflight.py (MODIFY — extend PROTECTED_PATH_PATTERNS + exemption logic)
-- core/runtime/**init**.py (MODIFY if helper re-export needed)
-- tests/runtime/test_preflight_test_lockdown.py (NEW)
+- `~/.buildrunner/scripts/llm-dispatch.sh` (NEW)
+- `~/.buildrunner/scripts/llm-clients/perplexity.py` (NEW)
+- `~/.buildrunner/scripts/llm-clients/gemini.py` (NEW)
+- `~/.buildrunner/scripts/llm-clients/grok.py` (NEW)
+- `~/.buildrunner/scripts/llm-clients/codex_research.py` (NEW — wraps `codex exec` for non-interactive research returns)
+- `~/.buildrunner/scripts/llm-clients/_shared.py` (NEW — env loader, cost record writer, circuit breaker)
+- `~/.buildrunner/.env.template` (NEW or MODIFY — document `PERPLEXITY_API_KEY`, `GEMINI_API_KEY`, `XAI_API_KEY`)
+- `.buildrunner/data.db` (MODIFY — `research_llm_calls` table created via idempotent `CREATE TABLE IF NOT EXISTS` on first dispatch)
 
-**Blocked by:** None
+**Blocked by:** None.
 
 **Deliverables:**
 
-- [ ] `PROTECTED_PATH_PATTERNS` is string-matched via `fnmatch`, which does NOT support `**` as recursive glob. Implement a new helper `is_test_path(normalized_path: str) -> bool` that returns True when the normalized path contains a `tests/` segment (`"/tests/" in normalized_path or normalized_path.startswith("tests/")`) OR matches project-local naming (`*_test.py`, `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`). Do NOT add `**` globs to PROTECTED_PATH_PATTERNS — they will silently not match.
-- [ ] `is_protected_file()` (preflight.py:177) delegates to `is_test_path()` in addition to the fnmatch check on secret patterns.
-- [ ] Read active-phase `tests_writable` flag from the BUILD spec header. `autopilot-dispatch-prefix.sh` already has the phase header in scope at dispatch; export `BR3_TESTS_WRITABLE=1` when the phase declares it. Default unset = blocked.
-- [ ] Exemption: when `BR3_TESTS_WRITABLE=1`, `is_test_path()` returns False (test edits allowed). Secret patterns always block regardless of the flag.
-- [ ] Log every test-edit attempt (block + pass) to `.buildrunner/logs/test-lockdown.log` with `{timestamp, path, decision, reason, phase_id}` for audit.
-- [ ] Unit tests: blocked edit on tests/foo.py, blocked edit on pkg/tests/sub/bar_test.py, allowed edit under exemption, secrets still blocked under exemption, basename `*_test.py` blocked without exemption.
+- [ ] `_shared.py` reads `~/.buildrunner/.env`, loads `PERPLEXITY_API_KEY` / `GEMINI_API_KEY` / `XAI_API_KEY`, refuses to dispatch when the required key is missing (exit 2, JSON `{ok:false, error:"missing_key:<provider>"}`).
+- [ ] `perplexity.py` calls `https://api.perplexity.ai/chat/completions` with `sonar-pro`, returns content + citations + token counts; cost computed from published rates ($3 / $15 per MTok input / output).
+- [ ] `gemini.py` calls Gemini 3.1 Pro via `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro:generateContent` with grounding (Google Search) enabled; cost computed from published rates.
+- [ ] `grok.py` calls `https://api.x.ai/v1/chat/completions` with `grok-4` and live-search tool; cost computed from published rates.
+- [ ] `codex_research.py` shells out to `codex exec --model "$BR3_RESEARCH_CODEX_MODEL" --effort medium --prompt-file "$PROMPT_PATH"` (default model `gpt-5.4`, override via env). Reads the prompt from the same temp-file path the dispatcher passes — never inlines the prompt into the shell command (avoids quoting/injection issues). Captures stdout/stderr, parses returned token usage from the trailer Codex CLI prints; cost computed from GPT-5.4 published rates.
+- [ ] **Codex pre-flight check**: before any Codex dispatch, `codex_research.py` runs `codex models list 2>/dev/null` (or `codex --version` as a minimum probe) and verifies `$BR3_RESEARCH_CODEX_MODEL` appears in the supported list. If the auth is stale or the model is unsupported, fail fast with `{ok:false, error:"codex_preflight_failed:<reason>"}` BEFORE any other sub-agent dispatch incurs cost. Cache the pre-flight result for the lifetime of the dispatcher invocation.
+- [ ] `_shared.py` writes one row per call to `data.db.research_llm_calls` (`id, ts, provider, model, tokens_in, tokens_out, cost_usd, latency_ms, ok, error, request_id`).
+- [ ] Circuit breaker in `_shared.py`: after 3 consecutive failures for a provider within 5 minutes, dispatcher returns `{ok:false, error:"circuit_open:<provider>"}` for 10 minutes without making the network call.
+- [ ] `llm-dispatch.sh` validates provider name against the allowlist `{perplexity, gemini, grok, codex}`, locates the corresponding `.py` under `llm-clients/`, executes with the prompt file path, and prints the JSON envelope verbatim to stdout.
 
-**Success criteria:** Edit/Write attempts on any path under `tests/` or matching test-naming patterns return a structured rejection to Claude when exemption is absent; the existing secrets-protection path is unchanged; all preflight unit tests pass.
+**Success Criteria:** `~/.buildrunner/scripts/llm-dispatch.sh perplexity --prompt-file /tmp/q.txt` returns a valid JSON envelope with `ok:true` when the key is set, `ok:false` with a structured error when the key is missing or the API is unreachable. A row appears in `research_llm_calls` for every dispatch attempt (success or failure).
 
-**Parallelizable:** Yes — only touches preflight.py + a new test file.
+**Parallelizable with:** Phase 6 (tests can stub the HTTP layer once the JSON envelope contract is fixed).
 
 ---
 
-## Phase 2 — Regression gate on every iteration
+### Phase 2: Multi-model parallel sub-agent dispatch in `/research` Step 3.5
 
-**Goal:** The inner-loop pass rule becomes "failing test now passes AND no previously-passing test now fails." Iterations that introduce a green→red regression are rejected and retried.
+**Goal:** Replace the current "all sub-agents are Claude" pattern with a mixed pool. Standard mode: **3 sub-agents** (1 Claude + 1 Perplexity + 1 Gemini). `ultrathink` mode: **6 sub-agents** (2 Claude + 1 Perplexity + 1 Gemini + 1 Codex/GPT-5 + 1 Grok if recency-flagged, else 1 extra Claude).
 
 **Files:**
 
-- core/dashboard_views.py (MODIFY — add compare_baseline())
-- core/runtime/regression_gate.py (NEW — pure helper)
-- ~/.buildrunner/scripts/autopilot-dispatch-prefix.sh (MODIFY — emit per-iteration gate hook)
-- tests/runtime/test_regression_gate.py (NEW)
+- `~/.claude/commands/research.md` (MODIFY — Step 3.5 only)
 
-**Blocked by:** None (different files than Phase 1)
+**Blocked by:** Phase 1 (needs the dispatcher).
 
 **Deliverables:**
 
-- [ ] `compare_baseline(prev_snapshot, new_snapshot) -> RegressionReport` reading Walter's ~/.walter/test_results.db via existing get_test_baseline_data().
-- [ ] Report shape: `{ new_pass: [...], new_fail: [...], regressed: [...], cleared: [...] }`.
-- [ ] Autopilot inner loop invokes compare_baseline after each iteration. `regressed != []` → iteration rejected, retry instructed.
-- [ ] Structured rejection message to Claude: names regressed tests + suggests revert-or-fix.
-- [ ] Unit tests: regression detected, no-change no-op, flaky-quarantined tests excluded from the regressed set.
+- [ ] Step 3.5 detects mode (standard / ultrathink) and recency flag (does the SCQA frame mention "news", "trending", "last 7 days", "recent"? — keyword match) and assembles the dispatch list.
+- [ ] Claude sub-agents continue to use the existing `Agent` tool (no change to their dispatch path).
+- [ ] Non-Claude sub-agents are dispatched by writing the per-agent prompt (built from the existing `<sub_agent_prompt_template>` with one hypotheses + findings + sources block) to a temp file and calling `~/.buildrunner/scripts/llm-dispatch.sh <provider> --prompt-file <tmp>`.
+- [ ] Each non-Claude response is parsed into the same Markdown structure the Claude sub-agents return (`## Hypotheses` / `## Key Findings` / `## All Sources`) so Step 4 synthesis treats them uniformly.
+- [ ] Failed dispatches (circuit open, missing key, HTTP error) are logged inline in the run summary and silently dropped from the synthesis pool — the run continues with the surviving sub-agents.
+- [ ] The skill's pinned `model: claude-sonnet-4-6` does NOT change; only the _sub-agent_ pool diversifies.
 
-**Success criteria:** A fabricated diff that breaks a previously-green test is rejected; a diff that only makes a red test green passes; regressed tests already on the flaky quarantine list are excluded from the gate.
+**Success Criteria:** A standard-mode `/research` invocation dispatches exactly 3 sub-agents (1 Claude + 1 Perplexity + 1 Gemini) when all keys are present, and gracefully degrades to surviving sub-agents when any provider is unreachable. The synthesis at Step 4 receives uniformly-shaped Markdown from all surviving agents.
 
-**Parallelizable:** Yes with Phases 1, 3, 4, 5.
+**Parallelizable with:** None (modifies the same file as Phases 3 and 4).
 
 ---
 
-## Phase 3 — Hard cost ceiling per phase
+### Phase 3: Confidence tagging in Step 4 synthesis
 
-**Goal:** Each phase carries a USD ceiling. CostTracker's warn becomes a raised exception. Paid calls are preflighted against the ceiling; bust → phase halts and escalates, no matter the iteration count.
-
-**Database note:** CostTracker persists to `.buildrunner/data.db` (table `cost_entries`) per core/routing/cost_tracker.py:93. `telemetry.db` holds unrelated event telemetry. All schema changes in this phase apply to `data.db`, not `telemetry.db`.
+**Goal:** Every finding in the synthesized body carries a confidence label derived from how many _distinct model families_ surfaced it. This is the documented mechanism by which multi-model recall improves quality — making it visible to the reader is the whole point of the upgrade.
 
 **Files:**
 
-- core/routing/cost_tracker.py (MODIFY — convert warn to BudgetCeilingExceeded raise; add ceiling-lookup helper; add a new `phase_budgets` table migration in data.db)
-- core/opus_client.py (MODIFY — preflight check before paid call)
-- ~/.buildrunner/scripts/runtime-dispatch.sh (MODIFY — read ceiling, enforce)
-- scripts/migrate-data-db-add-phase-budgets.py (NEW — idempotent migration runs inline via CostTracker's existing run_migration path)
-- tests/routing/test_cost_ceiling.py (NEW)
+- `~/.claude/commands/research.md` (MODIFY — Step 4 synthesis protocol + raw body output template)
 
-**Blocked by:** None
+**Blocked by:** Phase 2.
 
 **Deliverables:**
 
-- [ ] Add `BudgetCeilingExceeded` exception class in `core/routing/cost_tracker.py`.
-- [ ] Add table `phase_budgets { phase_id TEXT PRIMARY KEY, ceiling_usd REAL NOT NULL, set_at TIMESTAMP }` to `.buildrunner/data.db` via the existing `run_migration` path (same mechanism cost_entries uses at cost_tracker.py:286-294). Writes are upserts per phase_id at dispatch time.
-- [ ] `_check_budgets()` (cost_tracker.py:297) now joins per-phase spend (SUM of cost_entries.cost_usd WHERE build_phase = current_phase) against `phase_budgets.ceiling_usd`. Raises `BudgetCeilingExceeded` when `spent_usd >= ceiling_usd`.
-- [ ] Ceiling resolution: phase-header `cost_ceiling_usd: N` → `phase_budgets` row → env `BR3_COST_CEILING_USD` → default `4.00`. First non-null wins.
-- [ ] `opus_client.py` preflights each call by calling CostTracker.would_exceed(phase_id, projected_usd) where projected = model_pricing \* max_output_tokens. Refuses the call on True.
-- [ ] `runtime-dispatch.sh` writes ceiling to process env and upserts `phase_budgets` row before dispatch.
-- [ ] Unit tests: bust triggers raise, warn threshold still logs but does not raise, missing `phase_budgets` row falls back to default, concurrent upsert safe.
+- [ ] Step 4 synthesis protocol is updated to track `families_found_in: [claude, perplexity, gemini, codex, grok]` for every finding.
+- [ ] Confidence tags emitted in the raw body: `HIGH` (≥2 families), `MEDIUM` (1 family + ≥1 corroborating cited source), `LOW` (single family + no corroboration). Tag appears inline next to each finding heading.
+- [ ] Contradictions found across _different_ model families are auto-promoted to the `## Debated Topics` section (existing convention in the skill — this just makes the cross-family signal explicit).
+- [ ] Sources section adds a `Found by` column listing which model families surfaced each URL.
+- [ ] Existing single-Claude behavior remains valid: if only Claude sub-agents survive (all APIs down), every finding is tagged `LOW` and a top-of-doc note explains the degraded mode.
 
-**Success criteria:** A phase configured with ceiling=$0.01 halts before a second paid call; `phase_budgets` table exists after first run; cost_entries path is unchanged for existing reads.
+**Success Criteria:** A synthesized body produced from 3 surviving sub-agents shows confidence tags on every finding, with `HIGH` tags only on findings that ≥2 families surfaced. Sources table includes the `Found by` column.
 
-**Parallelizable:** Yes with Phases 1, 2, 4, 5.
+**Parallelizable with:** None (same file as Phases 2 and 4).
 
 ---
 
-## Phase 4 — Flaky-test quarantine registry
+### Phase 4: Adversarial cross-family review (Step 4.5 NEW)
 
-**Goal:** Promote Walter's implicit flaky-detection to an explicit registry. Claude is told to skip (not "fix") quarantined tests. Fresh tests must pass 3-of-3 consecutive runs before they count as trusted.
+**Goal:** Insert a new step between Step 4 (synthesis) and Step 8.5 (queue) that sends the synthesized body to a _different model family_ for a structured critique. Standard mode runs one reviewer; `ultrathink` runs two reviewers in parallel and reconciles their critiques.
 
 **Files:**
 
-- core/cluster/node_tests.py (MODIFY — add registry writer + `GET /api/flaky/registry` route + 3-of-3 promotion filter to the existing LAG() query in /api/flaky)
-- core/cluster/flaky_registry_client.py (NEW — Muddy-side HTTP pull + snapshot writer with 60s TTL cache)
-- .buildrunner/flaky-quarantine.json (NEW — Muddy-side snapshot file, written by the pull client)
-- core/cluster/jimmy_flaky_sync.py (NEW — Walter-side Jimmy LanceDB push with outbox retry)
-- ~/.buildrunner/scripts/autopilot-dispatch-prefix.sh (MODIFY — call flaky_registry_client, inject quarantine list into dispatched prompt context)
-- tests/cluster/test_flaky_registry.py (NEW)
+- `~/.claude/commands/research.md` (MODIFY — insert new Step 4.5 between existing Step 4 and Step 8.5)
 
-**Blocked by:** Phase 2 preferred (compare_baseline reader takes the quarantine list as input — acceptable to ship Phase 4 first and update Phase 2 reader in the same PR).
+**Blocked by:** Phase 3.
 
 **Deliverables:**
 
-- [ ] Registry writer on Walter: after each Walter run, upsert `{ test_id, flaky_score, first_seen, last_flip, status: trusted|quarantined|new }` into Walter's local `~/.walter/flaky-quarantine.json`.
-- [ ] **Walter → Muddy sync:** Walter exposes the registry via a new FastAPI route `GET /api/flaky/registry` on its existing node_tests.py service. Muddy-side helper `core/cluster/flaky_registry_client.py` (NEW) pulls it at autopilot-dispatch time, writes a snapshot to `.buildrunner/flaky-quarantine.json` in the active repo, and caches with a 60s TTL. No shared mount, no scp, no git sync — pure HTTP pull over the cluster network.
-- [ ] 3-of-3 filter added to LAG() query: `status: new` tests require 3 consecutive green runs (across distinct walter_run_id) before flipping to `trusted`.
-- [ ] Jimmy push: after the registry is updated on Walter, Walter POSTs delta entries to Jimmy (`POST http://10.0.1.106:8100/api/flaky/upsert`) for LanceDB table `flaky_registry` cross-session persistence. On Jimmy-unreachable, Walter buffers to a local outbox and retries on next run.
-- [ ] Autopilot prompt prefix reads the cached `.buildrunner/flaky-quarantine.json` and includes the current quarantine list under a "do-not-fix, log-and-move-on" heading.
-- [ ] Phase 2's `compare_baseline()` reader takes `quarantined_ids: set[str]` parameter and excludes them from `regressed[]`.
-- [ ] Unit tests: 3-of-3 gate math, Muddy pull + snapshot write, Jimmy push stub + outbox-retry path, prompt-prefix injection, compare_baseline exclusion.
+- [ ] Standard mode: dispatch the synthesized body to GPT-5.4 via `codex exec` with a structured prompt asking for (a) 3 weakest claims, (b) missing perspectives, (c) likely hallucinations to verify, (d) sources that should be cross-checked. If Codex is unavailable, fall back to Gemini; if Gemini is also down, fall back to Perplexity; if all three are down, log a `degraded_no_review` event and skip review (do not block the queue).
+- [ ] `ultrathink` mode: dispatch the body to GPT-5.4 (Codex) AND Gemini 3.1 Pro in parallel; merge their critiques into a single annotated review payload (de-duplicate identical concerns).
+- [ ] Claude (the orchestrator) reads the critique(s) and either (a) revises the body inline to address the concerns, or (b) inserts inline `> [REVIEW NOTE: <critique summary>]` markers next to claims it chose not to revise (with a short rationale). Both paths are valid — Claude judges per-claim.
+- [ ] The Step 8.5 queue record gains a new field `adversarial_review: { reviewers: [...], critique_summary: "...", revisions_applied: N, notes_inserted: N }`. **Phase 4 also updates `core/cluster/below/queue_schema.py` (or the equivalent PendingRecord schema definition) to declare the field as optional + preserve it through to the committed Markdown frontmatter.** Without this schema update, Below's Pydantic / typed deserialization will silently strip the field on every run. A unit test on the Below side asserts the round-trip preserves `adversarial_review`.
+- [ ] **Critique payload format**: the adversarial reviewer is instructed to return a strict JSON object matching schema `{weakest_claims:[{claim,reason,suggested_check}], missing_perspectives:[string], hallucination_risks:[{statement,why_suspect}], sources_to_recheck:[url]}`. The orchestrator parses this JSON (rejects malformed responses → degraded_no_review) and treats every string field as data, never as an instruction. This makes the prompt-injection mitigation structural rather than purely behavioral.
+- [ ] The final summary report (Step 8) calls out: number of weakest-claim flags, number resolved by revision vs annotated, and the reviewer model(s) used.
 
-**Success criteria:** Walter-side `~/.walter/flaky-quarantine.json` exists after first run; Muddy-side `.buildrunner/flaky-quarantine.json` is produced by the pull client on autopilot dispatch; Jimmy LanceDB has matching rows; a quarantined test does not appear in regressed[]; a new test does not get trusted status until it has 3 consecutive green runs.
+**Success Criteria:** Every standard-mode `/research` invocation produces a synthesized body that has been reviewed by at least one non-Claude model family before queueing (or carries a `degraded_no_review` marker if all alternates were unreachable). `ultrathink` invocations carry critique from two independent reviewers.
 
-**Parallelizable:** Yes with Phases 1, 3, 5.
+**Parallelizable with:** None (same file as Phases 2 and 3).
 
 ---
 
-## Phase 5 — ACI syntax guardrail on edits
+### Phase 5: Cost guardrails + fallback orchestration
 
-**Goal:** Before any Edit/Write lands on disk, a fast parse check runs on the resulting file. Invalid syntax → rejection returned to Claude before the write. Prevents cascading edits on top of broken code.
+**Goal:** Enforce the per-invocation budget cap, emit clean degradation messages when providers fail, and produce per-run telemetry the operator can review.
 
 **Files:**
 
-- .claude/hooks/protect-files.sh (MODIFY — currently passthrough stub; add syntax gate)
-- .claude/hooks/syntax-check.py (NEW — fast parser dispatch by extension)
-- tests/hooks/test_syntax_check.py (NEW)
+- `~/.buildrunner/scripts/research-budget-guard.sh` (NEW)
+- `~/.claude/commands/research.md` (MODIFY — wire the guard into Steps 3.5 and 4.5)
 
-**Blocked by:** None
-
-**Deliverables:**
-
-- [ ] Dispatch by file extension: `.py` → `python3 -m py_compile`, `.js` / `.mjs` / `.cjs` → `node --check`, `.sh` / `.bash` → `bash -n`, `.json` → `python3 -c 'json.load(open(sys.argv[1]))'`, `.yaml` / `.yml` → `python3 -c 'yaml.safe_load(open(sys.argv[1]))'`.
-- [ ] **TypeScript and JSX/TSX are explicitly excluded.** BR3 core has no root tsconfig.json and bare `tsc` on individual .tsx files rejects valid React. Project-level TSX is validated by each project's own pipeline (vite/tsc) on build — not by this hook. If a future BR3 project lands with a root tsconfig.json, add an extension-branch that shells out to `npx tsc --noEmit -p <nearest-tsconfig> <file>` with the project's config.
-- [ ] Parse only — no lint, no type-check on the broader project. Time budget: 1.5s per file; timeout → pass-through (fail-open).
-- [ ] Unknown extensions (including .ts/.tsx) → pass-through silently.
-- [ ] Rejection format: `SYNTAX_REJECTED: <file> (<parser>): <first error line>`; Claude sees this string and re-plans.
-- [ ] Write to `.buildrunner/logs/aci-guardrail.log` every pass/reject with duration.
-- [ ] Unit tests: valid py/js/sh/json/yaml pass; invalid each rejected; .ts and .tsx pass-through without running any parser; unknown extension passes through; timeout passes through.
-
-**Success criteria:** Writing a syntactically invalid .py file is rejected with a one-line error and Claude re-plans; writing a valid .py file lands in <1.5s overhead; .tsx files are not blocked by this hook; unknown file types are not blocked.
-
-**Parallelizable:** Yes with Phases 1–4.
-
----
-
-## Phase 6 — Eval corpus: storage + seeding on Jimmy
-
-**Goal:** Establish the project-local eval corpus layout and seed it from existing adversarial-review artifacts + bug-fix commits. 30% holdout enforced at creation time.
-
-**Files:** (Jimmy-side at /srv/jimmy + Muddy-side API route + loader)
-
-- /srv/jimmy/eval-corpus/manifest.jsonl (NEW — one row per bug, on Jimmy)
-- /srv/jimmy/eval-corpus/bugs/<id>/ (NEW — per-bug directory: `task.md`, `failing_test.patch`, `fix.patch`, `labels.json`)
-- /srv/jimmy/eval-corpus/README.md (NEW — schema + contribution flow)
-- Jimmy FastAPI route (new, appended to Jimmy's existing service): `GET /api/eval/corpus?split=train|holdout|all` returns JSONL of manifest rows filtered by split.
-- core/eval/\_\_init\_\_.py (NEW, Muddy-side)
-- core/eval/corpus_loader.py (NEW, Muddy-side — HTTP client that hits Jimmy's new endpoint)
-- api/routes/eval.py (NEW, Muddy-side — local Muddy route that proxies to Jimmy and is what the dashboard/CLI call)
-- api/server.py (MODIFY — register `eval.router` alongside the existing route registrations)
-- scripts/seed-eval-corpus.py (NEW — runs on Jimmy over SSH; mines .buildrunner/adversarial-reviews/ from Muddy + git log; writes manifest.jsonl)
-- tests/eval/test_corpus_loader.py (NEW)
-- tests/api/test_eval_routes.py (NEW)
-
-**Blocked by:** None
+**Blocked by:** Phase 4.
 
 **Deliverables:**
 
-- [ ] Corpus schema: `{ id, title, task, failing_test_path, failing_test_content, fix_diff, category, labels[], split: "train"|"holdout", seeded_from }`.
-- [ ] Seed script mines 495+ adversarial-review JSONs; each `blocker`-verdict artifact becomes a candidate bug.
-- [ ] Seed script also mines git log for commits with "fix:" prefix + test change; extracts failing→passing test as task.
-- [ ] 30% holdout: deterministic hash(id) % 10 < 3 → split="holdout"; tagged at creation, never rewritten.
-- [ ] **Jimmy route (new):** append `GET /api/eval/corpus?split=...` to Jimmy's existing FastAPI service; returns JSONL stream of manifest rows filtered by split; 200 OK on empty.
-- [ ] **Muddy route (new):** `api/routes/eval.py` with `GET /api/eval/corpus` that proxies to Jimmy (and caches for 60s). Registered in `api/server.py`.
-- [ ] corpus_loader.py exposes `iter_bugs(split: str) -> Iterator[Bug]` reading over the Muddy proxy route.
-- [ ] LanceDB index `eval_corpus_embeddings` (256-dim, same embedder as research-library) for analog-bug retrieval; built by seed script after manifest write.
-- [ ] Unit tests: schema round-trip, 30% holdout count tolerance ±3, loader returns only requested split, Jimmy route returns filtered JSONL, Muddy proxy route echoes Jimmy with cache.
-- [ ] Target ≥ 40 bugs seeded before Phase 7 begins.
+- [ ] `research-budget-guard.sh` exposes three commands: `init <invocation_id> <budget_usd>` (writes a budget record), `consume <invocation_id> <cost_usd>` (atomic check-and-add against the budget; returns exit 0 if under cap, 1 if over), `report <invocation_id>` (prints summary).
+- [ ] Step 3.5 calls `init` with `BR3_RESEARCH_BUDGET_USD` (default `2.00`) before dispatching sub-agents, and `consume` after each `llm-dispatch.sh` call.
+- [ ] Step 4.5 calls `consume` after each adversarial-review dispatch.
+- [ ] If `consume` returns exit 1, the skill stops dispatching new sub-agents/reviewers, lets in-flight work complete, and emits a `## Budget Cap Hit` block in the final report listing what was skipped.
+- [ ] Per-invocation cost log written to `.buildrunner/logs/research-cost.log` (one JSON line per invocation: `{invocation_id, ts, mode, sub_agents, reviewers, total_cost_usd, cap_hit, providers_failed}`).
+- [ ] Final summary report (Step 8) shows total cost, per-provider cost breakdown, and any provider failures.
 
-**Success criteria:** manifest.jsonl has ≥40 rows; holdout count is 28–36% of total; corpus_loader.py returns correct row counts per split; LanceDB index reachable from Muddy.
+**Success Criteria:** Setting `BR3_RESEARCH_BUDGET_USD=0.10` and invoking `/research` causes the run to hit the cap mid-dispatch, finish in-flight sub-agents only, and report `cap_hit:true` in both the user-visible report and the cost log. An invocation with all providers reachable shows actual per-provider spend in the report.
 
-**Parallelizable:** Yes with Phases 1–5, 9.
+**Parallelizable with:** Phase 6.
 
 ---
 
-## Phase 7 — Eval execution harness
+### Phase 6: Tests + verification
 
-**Goal:** Given a corpus + a config (prompt/skill/hook/model), run every bug and record pass rate, regression rate, cost, tool-call count. Below executes inference; Muddy orchestrates.
-
-**Database note:** eval results live in `.buildrunner/data.db` (same DB as cost_entries) table `eval_runs`. `telemetry.db` is not used. Cost per bug is joined from `cost_entries` by `build_phase = '<run_id>/<bug_id>'` — each bug dispatch sets that phase scope so CostTracker attributes spend correctly.
+**Goal:** Mock-API tests for the client layer, an end-to-end smoke test for the multi-model pipeline, and a Walter sentinel that runs the smoke nightly.
 
 **Files:**
 
-- core/eval/runner.py (NEW — orchestrator, sets build_phase scope per bug)
-- core/eval/below_executor.py (NEW — dispatches inference to Below via existing `/api/gpu` health + `/api/inference` endpoints in node_inference.py)
-- core/eval/metrics.py (NEW — joins eval_runs + cost_entries, computes per-run aggregates)
-- scripts/run-eval.sh (NEW — CLI wrapper)
-- scripts/migrate-data-db-add-eval-runs.py (NEW — adds `eval_runs` table to `.buildrunner/data.db`)
-- tests/eval/test_runner.py (NEW)
+- `tests/research/test_llm_clients.py` (NEW — pytest, mocks HTTPS at `urllib.request` / `httpx` boundary)
+- `tests/research/test_dispatcher.py` (NEW — exercises `llm-dispatch.sh` against mocked clients)
+- `tests/research/test_budget_guard.sh` (NEW — bats or shellcheck-compatible)
+- `tests/research/e2e_research_smoke.py` (NEW — runs `/research "test topic"` against live APIs, asserts ≥2 model families in the synthesis, and a non-empty critique)
+- `~/.walter/jobs/research-smoke.cron` (NEW on Walter — nightly run of `e2e_research_smoke.py`)
 
-**Blocked by:** Phase 6 (needs corpus) AND Phase 3 (Phase 3 owns the data.db migration infra this phase reuses; serialize 3 → 7)
+**Blocked by:** Phase 5.
 
 **Deliverables:**
 
-- [ ] `eval_runs` table in `.buildrunner/data.db` via CostTracker-style run_migration: columns `run_id TEXT, config_hash TEXT, split TEXT, bug_id TEXT, passed INTEGER, regressed INTEGER, tool_calls INTEGER, duration_ms INTEGER, started_at TIMESTAMP, PRIMARY KEY (run_id, bug_id)`.
-- [ ] `runner.run_config(config, split) -> EvalRun` iterates corpus, dispatches each bug to a fresh Claude Code session. Sets `BR3_BUILD_PHASE="<run_id>/<bug_id>"` so cost_entries rows pin to the bug. Writes one eval_runs row per bug. Cost_usd is joined on demand from cost_entries, not stored redundantly.
-- [ ] below_executor VRAM preflight uses `GET http://<below_host>:<port>/api/gpu` (exists at node_inference.py:289). Response is `{gpu_count, vram_total_mb, dual_gpu_ready, mode, ...}`. Abort if gpu_count == 0 OR vram_total_mb < 2048; fallback to Muddy orchestrator with a log line.
-- [ ] Per-bug metrics: passed (target test flipped red→green per Walter snapshot diff), regressed (≥1 previously-green test flipped red per the Phase 2 compare_baseline), tool_calls (from Claude session transcript), duration_ms.
-- [ ] CLI: `scripts/run-eval.sh --config <hash> --split train|holdout|all [--workers 2]`.
-- [ ] Concurrency: 2 concurrent bugs by default; each runs in its own transient git worktree so parallel bugs can't collide on edits.
-- [ ] Unit tests: mock corpus, mock session, runner tallies correctly; `/api/gpu` abort path; cost join returns correct sums; worktree cleanup on error.
+- [ ] `test_llm_clients.py`: per-provider tests for happy path, missing key, HTTP 5xx, malformed response, circuit-breaker open/close transition.
+- [ ] `test_dispatcher.py`: dispatcher routes correctly to each provider stub, validates provider allowlist, writes a `research_llm_calls` row even on failure.
+- [ ] `test_budget_guard.sh`: init / consume / report cycle, atomic concurrent consumes, over-cap exit code.
+- [ ] `e2e_research_smoke.py`: dry-run topic, asserts (a) ≥2 families present in the queued `PendingRecord.adversarial_review.reviewers`, (b) ≥1 `HIGH`-tagged finding, (c) total cost < $0.50 for the smoke topic.
+- [ ] Walter nightly cron — first verify the actual sentinel layout via `ssh byronhudson@10.0.1.102 'ls ~/.walter/jobs/ ~/.walter/lib/ 2>/dev/null'`. If `~/.walter/jobs/` exists and a `notify` helper is present, reuse them. Otherwise fall back to a plain crontab entry that writes to `~/.walter/logs/research-smoke.log` and rsyncs results back to Muddy. Do not assume undocumented Walter conventions.
+- [ ] Test results land in `~/.walter/test_results.db` if the SQLite file already exists; otherwise the cron writes a JSONL fallback at `~/.walter/logs/research-smoke.jsonl` and the spec follow-up is to migrate to the SQLite store once Walter conventions are documented.
 
-**Success criteria:** `run-eval.sh --split train` produces an eval_runs row per train bug; `SELECT COUNT(*) FROM eval_runs WHERE run_id=?` equals corpus train count; Below `/api/gpu` is queried at dispatch; Muddy fallback path is logged when Below VRAM is insufficient.
+**Success Criteria:** `pytest tests/research/` passes locally with all providers mocked. `e2e_research_smoke.py` passes against live APIs with budget < $0.50. Walter records nightly results in `test_results.db`.
 
-**Parallelizable:** No with Phase 6; yes with Phases 1–5, 8, 9.
+**Parallelizable with:** Phase 5 once Phase 4 lands.
 
 ---
 
-## Phase 8 — Eval comparison + holdout enforcement
+### Phase 7: Documentation + skill polish
 
-**Goal:** Turn eval runs into a comparison report. Given two config hashes, produce a diff of pass-rate / regression-rate / cost / tool-calls. Holdout split is never used for tuning — only for sanity-check reports.
-
-**Files:**
-
-- core/eval/compare.py (NEW — diff two runs)
-- core/eval/holdout_guard.py (NEW — enforces holdout isolation)
-- scripts/eval-compare.sh (NEW — CLI wrapper)
-- api/routes/eval.py (MODIFY — extend the route file created in Phase 6; add `GET /api/eval/compare`)
-- tests/eval/test_compare.py (NEW)
-- tests/eval/test_holdout_guard.py (NEW)
-- tests/api/test_eval_compare_route.py (NEW)
-
-**Blocked by:** Phase 7
-
-**Deliverables:**
-
-- [ ] `compare.diff(run_a, run_b) -> ComparisonReport`: pass_rate delta, regression_rate delta, cost delta (via cost_entries join), tool-call delta, per-bug flip list.
-- [ ] `holdout_guard.assert_clean(config_hash: str, commit_sha: str, changed_files: list[str]) -> GuardReport`. Changed_files is the source of truth (tool caller extracts via `git diff --name-only <commit>^!`); commit_sha is for logging; config_hash is what the eval used. Rejects if any changed_file matches a path listed in holdout bug metadata (failing_test_path, files-under-fix-diff). Soft-gate (warning only in report) by default; `BR3_HOLDOUT_GUARD_MODE=block` flips to hard reject.
-- [ ] CLI: `scripts/eval-compare.sh <baseline-hash> <candidate-hash>` — wraps compare.diff; prints table; invokes holdout_guard with `git diff --name-only <baseline-hash>..<candidate-hash>` for changed_files.
-- [ ] Route `GET /api/eval/compare?baseline=...&candidate=...` returns the JSON ComparisonReport. Lives in api/routes/eval.py (the same module Phase 6 adds).
-- [ ] Unit tests: diff math, holdout_guard.assert_clean with clean / contaminated / empty changes, report renders on empty runs, route returns 400 on unknown hash.
-
-**Success criteria:** `eval-compare.sh A B` emits a readable diff table; the same comparison is reachable via `GET /api/eval/compare`; holdout_guard flags a contrived commit that touches a holdout failing_test_path.
-
-**Parallelizable:** No with Phase 7; yes with Phase 9.
-
----
-
-## Phase 9 — Architect/builder/verifier cleanup + scope-drift judge
-
-**Goal:** Delete the superseded single-model reviewer (core/ai_code_review.py). Add a scope-drift judge as a 4th pass inside cross_model_review.py. Document the architect/builder/verifier pattern in BUILD_cluster-max.md so future phases know the split already exists.
+**Goal:** Operator docs, CLAUDE.md notes, and final review of the modified `/research` skill body.
 
 **Files:**
 
-- core/ai_code_review.py (DELETE)
-- tests/test_ai_code_review.py (DELETE — finalize; partial state in working tree per git status)
-- core/cluster/cross_model_review.py (MODIFY — add scope_drift_judge() pass after the three existing passes)
-- core/cluster/cross_model_review_config.json (MODIFY — config knob `scope_drift_enabled: bool`, `scope_drift_mode: warn|block`)
-- .buildrunner/builds/BUILD_cluster-max.md (MODIFY — add architect/builder/verifier section to role matrix narrative)
-- tests/cluster/test_scope_drift_judge.py (NEW)
-- grep the repo for other `ai_code_review` imports and remove them.
+- `~/.buildrunner/docs/research-multi-llm.md` (NEW)
+- `~/.claude/commands/research.md` (MODIFY — top-of-file `<purpose>` block + `## What This Command Does` section)
+- `~/.claude/CLAUDE.md` (MODIFY — short note under "Research Library — Jimmy Only" pointing at the multi-LLM doc)
 
-**Blocked by:** None (no file conflicts with Phases 1–8; independent)
+**Blocked by:** Phase 6.
 
 **Deliverables:**
 
-- [ ] **`tests_writable: true` declared in this phase's header** so the Phase 1 lockdown permits deleting `tests/test_ai_code_review.py`. Without this, Phase 1 mechanically blocks the deletion.
-- [ ] Delete core/ai_code_review.py and any references (search tree; remove imports; adjust pre-commit hook if still wired).
-- [ ] Delete tests/test_ai_code_review.py (record in PR) — under the Phase 9 test-writable exemption.
-- [ ] scope_drift_judge() receives: diff, phase "Success Criteria" text from BUILD spec, phase "Files:" list. Returns `{ verdict: pass|drift, out_of_scope_files: [...], out_of_scope_changes: [...] }`.
-- [ ] Judge runs as 4th pass after arbiter verdict. If `mode: warn` → log and annotate review artifact; if `mode: block` → verdict flipped to BLOCKED.
-- [ ] Config default: `scope_drift_enabled: true, scope_drift_mode: warn` (per decision 3 above).
-- [ ] BUILD_cluster-max.md: add "Architect / builder / verifier pattern" subsection under the role matrix narrative; cross-link to cross_model_review.py.
-- [ ] Unit tests: in-scope diff passes, out-of-scope-file rejected, warn-mode doesn't flip verdict, block-mode flips it.
+- [ ] **Pre-create the docs directory**: `mkdir -p ~/.buildrunner/docs/` as the first step of Phase 7 (the directory is not present in the current tree).
+- [ ] `research-multi-llm.md` documents: env-key setup, default budget, mode matrix (standard vs ultrathink), provider routing matrix (which model handles which lens), cost expectations, fallback semantics, how to disable a provider (`BR3_RESEARCH_DISABLE=grok,gemini`), and how to override the Codex model via `BR3_RESEARCH_CODEX_MODEL`.
+- [ ] `/research` skill `<purpose>` updated to describe the multi-model pipeline accurately (current text says "Claude's reasoning ends at synthesis").
+- [ ] `## What This Command Does` and `## What This Command Does NOT Do` sections updated to reflect the new behavior.
+- [ ] CLAUDE.md gets a 3-line pointer to `research-multi-llm.md` (not a full inline copy — keep CLAUDE.md tight).
+- [ ] `br decision log "Multi-LLM /research enhancement shipped — Perplexity+Gemini+Grok+Codex added; adversarial review mandatory"` recorded.
 
-**Success criteria:** ai_code_review.py removed + tree builds green; scope_drift_judge produces a verdict on at least 3 real review artifacts from .buildrunner/adversarial-reviews/; BUILD_cluster-max.md has the new subsection; judge warnings visible in review artifact JSON.
+**Success Criteria:** A new operator can read `research-multi-llm.md` and successfully configure the three API keys + run `/research` with the multi-model pipeline working. The `/research` skill's documentation matches its actual behavior.
 
-**Parallelizable:** Yes with Phases 1–8.
+**Parallelizable with:** None (depends on Phase 6 verification).
 
 ---
 
 ## Out of Scope (Future)
 
-- **Replacing `/predict` skill stub with real phase-difficulty predictor.** Flagged in audit as a dead stub but is independent work. Deferred to a future spec (predictor needs eval-harness data from Phase 7 as training signal, so sequencing it after Phase 8 is rational).
-- **Deleting project-level .claude/hooks/bash-guard.sh** (passthrough stub). Leave in place — harmless, and a separate security-hook spec may fill it.
-- **Generator/verifier split for "plain" phases.** The split exists for review; wiring it into every phase's builder path is a larger architectural change, not a hardening item. Separate spec if wanted.
-- **Dashboard UI for eval-harness results.** Phase 8 adds the JSON endpoint; a full dashboard panel is follow-up UI work.
-- **Cross-project corpus sharing** (corpus read by non-BR3 projects). Corpus lives under /srv/jimmy/eval-corpus/ which is BR3-scoped; cross-project reads need an auth layer we don't want to design yet.
+- **Per-provider model selection knobs** (e.g. swap Sonar Pro for Sonar Reasoning) — V1 picks one model per provider.
+- **Streaming responses** — V1 buffers full responses; streaming is unnecessary for research synthesis.
+- **Provider-specific advanced features** (Perplexity Spaces, Gemini grounding sources panel) — V1 uses each provider's basic completion endpoint.
+- **A general "multi-model dispatch" skill for other commands** (`/audit`, `/review`, etc.) — explicitly out of scope; the dispatcher is a building block but the rollout is `/research`-only in V1.
+- **Model-Council-style consensus voting** (force N models to agree before publishing a finding) — V1 surfaces disagreement to the reader; voting is a future enhancement.
+- **API key rotation / vault integration** — `~/.buildrunner/.env` chmod 600 is the V1 baseline; no `op` CLI dependency.
+- **Codex _plan_ dispatch** (Plan Mode in `codex exec`) — V1 uses `codex exec` in non-interactive single-turn mode only.
 
 ---
 
 ## Parallelization Matrix
 
-| Phase | Key Files                                                                                                                                                                      | Can Parallel With   | Blocked By                                      |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------------------------- |
-| 1     | core/runtime/preflight.py (MODIFY); tests/runtime/test_preflight_test_lockdown.py (NEW)                                                                                        | 2, 3, 4, 5, 6, 9    | None                                            |
-| 2     | core/dashboard_views.py (MODIFY); core/runtime/regression_gate.py (NEW); ~/.buildrunner/scripts/autopilot-dispatch-prefix.sh (MODIFY)                                          | 1, 3, 5, 6, 9       | None                                            |
-| 3     | core/routing/cost_tracker.py (MODIFY); core/opus_client.py (MODIFY); ~/.buildrunner/scripts/runtime-dispatch.sh (MODIFY); `.buildrunner/data.db` (MIGRATE)                     | 1, 2, 4, 5, 6, 9    | None                                            |
-| 4     | core/cluster/node_tests.py (MODIFY); core/cluster/flaky_registry_client.py (NEW); core/cluster/jimmy_flaky_sync.py (NEW); autopilot-dispatch-prefix.sh (MODIFY)                | 1, 3, 5, 6, 9       | Phase 2 (compare_baseline takes quarantine set) |
-| 5     | .claude/hooks/protect-files.sh (MODIFY); .claude/hooks/syntax-check.py (NEW)                                                                                                   | 1, 2, 3, 4, 6, 9    | None                                            |
-| 6     | /srv/jimmy/eval-corpus/\*\* (NEW, Jimmy-side); Jimmy FastAPI `GET /api/eval/corpus`; api/routes/eval.py (NEW, Muddy); api/server.py (MODIFY); core/eval/corpus_loader.py (NEW) | 1, 2, 3, 4, 5, 9    | None                                            |
-| 7     | core/eval/runner.py (NEW); core/eval/below_executor.py (NEW); `.buildrunner/data.db` (MIGRATE `eval_runs`)                                                                     | 1, 2, 4, 5, 9       | 3 (shares data.db migration infra), 6 (corpus)  |
-| 8     | core/eval/compare.py (NEW); core/eval/holdout_guard.py (NEW); api/routes/eval.py (MODIFY)                                                                                      | 1, 2, 3, 4, 5, 6, 9 | 7 (needs eval_runs data)                        |
-| 9     | core/ai_code_review.py (DELETE); core/cluster/cross_model_review.py (MODIFY); BUILD_cluster-max.md (MODIFY); `tests_writable: true` header                                     | 1, 2, 3, 4, 5, 6, 8 | None                                            |
+| Phase | Key Files                                                 | Can Parallel With    | Blocked By    |
+| ----- | --------------------------------------------------------- | -------------------- | ------------- |
+| 1     | `~/.buildrunner/scripts/llm-clients/*`, `llm-dispatch.sh` | 6 (test scaffolding) | -             |
+| 2     | `~/.claude/commands/research.md` (Step 3.5)               | -                    | 1             |
+| 3     | `~/.claude/commands/research.md` (Step 4)                 | -                    | 2 (same file) |
+| 4     | `~/.claude/commands/research.md` (Step 4.5 NEW)           | -                    | 3 (same file) |
+| 5     | `research-budget-guard.sh`, `research.md` wiring          | 6                    | 4             |
+| 6     | `tests/research/*`                                        | 1, 5                 | -             |
+| 7     | `research-multi-llm.md`, `research.md` polish, CLAUDE.md  | -                    | 6             |
 
-**Shared-file watch:**
-
-- Phases 2 and 4 both touch `~/.buildrunner/scripts/autopilot-dispatch-prefix.sh`. Sequence 2 → 4 OR merge their edits in a single PR (Phase 4's additions extend Phase 2's scaffold).
-- Phases 3 and 7 both migrate `.buildrunner/data.db` (Phase 3 adds `phase_budgets` table, Phase 7 adds `eval_runs` table — independent schemas but serialized to avoid SQLite lock contention during CI).
-- Phases 6 and 8 both touch `api/routes/eval.py` (Phase 6 creates it with the corpus route; Phase 8 extends it with the compare route). Phase 8 is already blocked by 7, so ordering is naturally 6 → 7 → 8 for this file.
-- Phase 9 blocks before 7: Phase 9 can run in parallel with 7 but must NOT delete core/ai_code_review.py before the regression baseline in Phase 2/7 is established (otherwise no baseline for the deletion review).
+**Effective serial chain:** 1 → 2 → 3 → 4 → 5 → 7. Phase 6 (tests) develops alongside 1, gates final delivery before 7.
 
 ---
 
-## Role Matrix (draft — finalized in Step 4.5 before BUILD write)
+## Cluster routing (preview — formalized in Step 4.5 of /spec)
 
-| Phase | bucket         | assigned_node | rationale                                                                                           |
-| ----- | -------------- | ------------- | --------------------------------------------------------------------------------------------------- |
-| 1     | backend-build  | muddy         | preflight.py is Muddy-side; tests live here                                                         |
-| 2     | backend-build  | muddy         | dashboard_views.py + autopilot dispatch prefix live on Muddy                                        |
-| 3     | backend-build  | muddy         | cost_tracker + opus_client + `.buildrunner/data.db` all live on Muddy                               |
-| 4     | backend-build  | walter        | Walter owns test_results.db and /api/flaky; writes registry from here, Jimmy push is a network call |
-| 5     | terminal-build | muddy         | .claude/hooks/ shell + small Python parser dispatch                                                 |
-| 6     | backend-build  | jimmy         | corpus is /srv/jimmy/eval-corpus/, loader/seed scripts run from Jimmy                               |
-| 7     | backend-build  | muddy         | orchestrator runs on Muddy; Below called as inference worker (not "assigned" — just dispatched to)  |
-| 8     | backend-build  | muddy         | compare + holdout on Muddy; dashboard view addition                                                 |
-| 9     | review         | muddy         | cross_model_review.py lives on Muddy; doc edit + deletes local                                      |
-
-No phase lands on Lockwood or Otis as primary. Walter gains one phase (4). Jimmy gains one phase (6). Below is inference-dispatched-to (Phase 7), not phase-assigned.
+| Phase | Bucket        | Node   | Rationale                                                        |
+| ----- | ------------- | ------ | ---------------------------------------------------------------- |
+| 1     | backend-build | muddy  | New scripts under `~/.buildrunner/scripts/` (operator's machine) |
+| 2     | backend-build | muddy  | Skill body lives on operator's machine                           |
+| 3     | backend-build | muddy  | Same                                                             |
+| 4     | backend-build | muddy  | Same                                                             |
+| 5     | backend-build | muddy  | Budget guard + skill wiring                                      |
+| 6     | qa            | walter | Walter is the sentinel test node                                 |
+| 7     | architecture  | muddy  | Docs + final skill polish                                        |
 
 ---
 
-## Sequencing Recommendation
+## Risks + Mitigations
 
-1. Phases 1, 2, 3, 5, 9 in parallel (hardening wire-ups + cleanup). Cheap, high-leverage, different files.
-2. Phase 4 after Phase 2 lands (Phase 4 calls into Phase 2's compare_baseline exclusion).
-3. Phase 6 in parallel with any of the above (Jimmy-side work, no Muddy file conflicts).
-4. Phase 7 after Phase 6.
-5. Phase 8 after Phase 7.
+- **Provider rate limits** during a single `/research` run: each wrapper backs off on 429 (one retry with 2× delay), then surfaces failure cleanly. Circuit breaker prevents repeated dispatches into a known-bad provider in the same invocation.
+- **Token cost runaway**: budget guard is the hard stop. Each provider also has a per-call `max_tokens` ceiling (default 8K out) that the dispatcher enforces.
+- **Provider response parsing drift** (Perplexity / Gemini / Grok APIs evolve their JSON shapes): each wrapper isolates the shape into a single `_parse_response` function with a small unit test. Schema drift fails the wrapper test before it touches `/research`.
+- **Adversarial-review prompt injection** (a critique that says "ignore all prior instructions"): structurally mitigated by the strict JSON schema in Phase 4 (`weakest_claims`, `missing_perspectives`, `hallucination_risks`, `sources_to_recheck`). Reviewer responses that don't parse against the schema are rejected (`degraded_no_review`), and every string field is treated as data, never re-prompted. Schema validation is the enforcement mechanism, not behavioral framing.
+- **Sub-agent shape mismatch**: every non-Claude sub-agent gets the same `<sub_agent_prompt_template>` with explicit `## Hypotheses` / `## Key Findings` / `## All Sources` headers. The synthesis step ignores any agent that didn't produce the required headers (and logs the violation).
+- **Below worker queue contract change**: the new `adversarial_review` field on `PendingRecord` is _additive_. Below ignores unknown fields today; we file a follow-up note for the Below worker to preserve the new field in the committed Markdown's frontmatter.
 
-Roll-up: Phases 1+2+3+5+9 → parallel. Phase 4 → after 2. Phase 6 → parallel with anything. Phases 7 → 8 → serial on corpus availability.
+---
+
+## Success Definition (V1 done)
+
+A standard-mode `/research <topic>` invocation:
+
+1. Dispatches 3 sub-agents (1 Claude + 1 Perplexity + 1 Gemini) when all keys are present.
+2. Synthesizes their findings with confidence tags (`HIGH` / `MEDIUM` / `LOW`).
+3. Sends the synthesized body to GPT-5.4 (via `codex exec`) for an adversarial critique.
+4. Revises or annotates the body based on the critique.
+5. Queues the body to Below with the new `adversarial_review` audit field populated.
+6. Reports total cost, per-provider breakdown, reviewer used, and any cap/failure events.
+7. Stays under the $2.00 default budget on a typical topic, and under $0.50 on a smoke topic.
+
+If any provider is down, the run completes with the surviving providers and surfaces the degradation cleanly. If _all_ alternates are down, the run produces a Claude-only result tagged `degraded_no_review` and queues normally.

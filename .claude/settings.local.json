@@ -13,7 +13,9 @@
       "Bash(git commit -m ':*)",
       "Bash(mkdir -p .buildrunner/codex-sessions/universal-role-routing/backups)",
       "Bash(cp ~/.claude/settings.json .buildrunner/codex-sessions/universal-role-routing/backups/settings.json.pre-phase4)",
-      "Read(//Users/byronhudson/.claude/**)"
+      "Read(//Users/byronhudson/.claude/**)",
+      "Bash(mkdir -p ~/.claude/skills/fixit)",
+      "Bash(mkdir -p ~/Projects/BuildRunner3/.buildrunner/fixit-briefs)"
     ]
   }
 }

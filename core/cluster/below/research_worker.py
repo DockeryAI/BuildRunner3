@@ -148,9 +148,38 @@ def _http_json(
         raise OllamaError(f"Ollama connection failed: {exc.reason}") from exc
 
 
+def _strip_wrapping_code_fence(markdown: str) -> str:
+    stripped = markdown.lstrip()
+    if not stripped.startswith("```"):
+        return markdown
+    first_newline = stripped.find("\n")
+    if first_newline == -1:
+        return markdown
+    closing = stripped.rfind("```")
+    if closing <= first_newline:
+        return markdown
+    return stripped[first_newline + 1 : closing].rstrip()
+
+
+def _trim_preamble_to_frontmatter(markdown: str) -> str:
+    markdown = markdown.lstrip("﻿").lstrip()
+    if markdown.startswith("---\n") or markdown.startswith("---\r\n"):
+        return markdown
+    marker = "\n---\n"
+    index = markdown.find(marker)
+    if index == -1:
+        marker = "\n---\r\n"
+        index = markdown.find(marker)
+    if index == -1:
+        return markdown
+    return markdown[index + 1 :]
+
+
 def _load_frontmatter_from_markdown(markdown: str) -> dict[str, Any]:
+    markdown = _strip_wrapping_code_fence(markdown)
+    markdown = _trim_preamble_to_frontmatter(markdown)
     markdown = _normalize_frontmatter(markdown)
-    if not markdown.startswith("---\n"):
+    if not markdown.startswith("---\n") and not markdown.startswith("---\r\n"):
         raise OllamaError("Ollama output missing YAML frontmatter")
 
     end_index = markdown.find("\n---", 4)
@@ -232,8 +261,14 @@ def _ollama_generate(
         },
     }
     if model == "llama3.3:70b":
-        payload["options"]["num_ctx"] = 2048
+        payload["options"]["num_ctx"] = int(os.environ.get("BR3_BELOW_LLAMA_NUM_CTX", "4096"))
         payload["options"]["num_gpu"] = 99
+        payload["options"]["temperature"] = 0.0
+    elif model.startswith("qwen3"):
+        payload["options"]["num_ctx"] = int(os.environ.get("BR3_BELOW_QWEN_NUM_CTX", "4096"))
+        payload["options"]["temperature"] = 0.2
+        payload["options"]["presence_penalty"] = 1.5
+        payload["think"] = False
     if format_json:
         payload["format"] = "json"
 
@@ -247,14 +282,47 @@ def _ollama_generate(
 def generate_reformatted_markdown(record: PendingRecord) -> str:
     """Call Below-local Ollama to generate a schema-conformant document."""
     prompt = _build_prompt(REFORMAT_PROMPT_PATH, record)
-    markdown = _normalize_frontmatter(
-        _ollama_generate(model="llama3.3:70b", prompt=prompt, num_predict=8192)
-    )
+    raw = _ollama_generate(model="llama3.3:70b", prompt=prompt, num_predict=8192)
+    cleaned = _trim_preamble_to_frontmatter(_strip_wrapping_code_fence(raw))
+    markdown = _normalize_frontmatter(cleaned)
     missing = _missing_frontmatter_keys(markdown)
     if missing:
         missing_str = ", ".join(missing)
         raise OllamaError(f"Ollama output missing frontmatter keys: {missing_str}")
     return markdown
+
+
+def _synthesize_frontmatter_fallback(record: PendingRecord) -> str:
+    """Build a schema-valid document from the record without Ollama.
+
+    Used as a last-resort fallback when llama3.3:70b consistently fails to
+    emit YAML frontmatter. Produces a minimal but valid document so the
+    record can be committed rather than blocking the queue indefinitely.
+    """
+    today = datetime.now(UTC).date().isoformat()
+    created = (record.created_at or "").split("T", 1)[0] or today
+    title = record.title or "Untitled Research Document"
+    title_yaml = title.replace('"', '\\"')
+    frontmatter_lines = [
+        "---",
+        f'title: "{title_yaml}"',
+        "domain: uncategorized",
+        "techniques: []",
+        "concepts: []",
+        "subjects: []",
+        "priority: medium",
+        "source_project: BuildRunner3",
+        f"created: {created}",
+        f"last_updated: {today}",
+        "---",
+        "",
+    ]
+    body = (record.draft_markdown or "").lstrip()
+    if body.startswith("---"):
+        end = body.find("\n---", 3)
+        if end != -1:
+            body = body[end + 4 :].lstrip()
+    return "\n".join(frontmatter_lines) + body
 
 
 def generate_metadata(record: PendingRecord) -> dict[str, Any]:
@@ -343,9 +411,14 @@ def _commit_local_repo(record: PendingRecord, reformatted_md: str, metadata: dic
     if commit_result.returncode != 0:
         raise CommitError(_normalize_git_failure(commit_result, "commit"))
 
-    push_result = _run_command(["git", "-C", str(repo_root), "push", "muddy", "HEAD:main"])
-    if push_result.returncode != 0:
-        raise CommitError(_normalize_git_failure(push_result, "push"))
+    remotes_result = _run_command(["git", "-C", str(repo_root), "remote"])
+    configured_remotes = (
+        set(remotes_result.stdout.split()) if remotes_result.returncode == 0 else set()
+    )
+    if "muddy" in configured_remotes:
+        push_result = _run_command(["git", "-C", str(repo_root), "push", "muddy", "HEAD:main"])
+        if push_result.returncode != 0:
+            raise CommitError(_normalize_git_failure(push_result, "push"))
 
     sha_result = _run_command(["git", "-C", str(repo_root), "rev-parse", "HEAD"])
     if sha_result.returncode != 0:
@@ -403,8 +476,13 @@ steps = [
             f"research: add {commit_title} [auto]",
         ],
     ),
-    ("push", ["git", "-C", str(repo_root), "push", "muddy", "HEAD:main"]),
 ]
+remotes_result = run(["git", "-C", str(repo_root), "remote"])
+configured_remotes = (
+    set(remotes_result.stdout.split()) if remotes_result.returncode == 0 else set()
+)
+if "muddy" in configured_remotes:
+    steps.append(("push", ["git", "-C", str(repo_root), "push", "muddy", "HEAD:main"]))
 for name, command in steps:
     result = run(command)
     if result.returncode != 0:
@@ -667,19 +745,48 @@ class ResearchWorker:
         error = None
 
         try:
-            reformatted_md = self._retry_ollama(
-                "reformat",
-                lambda: self.generate_reformatted_markdown(record),
-            )
-            metadata = self._retry_ollama(
-                "metadata",
-                lambda: self.generate_metadata(record),
-            )
+            try:
+                reformatted_md = self._retry_ollama(
+                    "reformat",
+                    lambda: self.generate_reformatted_markdown(record),
+                )
+            except OllamaError as reformat_exc:
+                logger.warning(
+                    "reformat exhausted retries for %s; using deterministic fallback: %s",
+                    record.id,
+                    reformat_exc,
+                )
+                reformatted_md = _synthesize_frontmatter_fallback(record)
+                reindex_warning = (
+                    "reformat fallback used: "
+                    f"{reformat_exc}. Document committed with deterministic frontmatter; "
+                    "consider manual enrichment."
+                )
+            try:
+                metadata = self._retry_ollama(
+                    "metadata",
+                    lambda: self.generate_metadata(record),
+                )
+            except OllamaError as metadata_exc:
+                logger.warning(
+                    "metadata exhausted retries for %s; proceeding with empty metadata: %s",
+                    record.id,
+                    metadata_exc,
+                )
+                metadata = {}
+                existing = reindex_warning or ""
+                reindex_warning = (existing + " " if existing else "") + (
+                    f"metadata fallback: {metadata_exc}"
+                )
             committed_sha = self.commit_to_jimmy(record, reformatted_md, metadata)
-            chunk_count, reindex_warning = self.wait_for_reindex(
+            chunk_count, reindex_followup = self.wait_for_reindex(
                 pre_stats,
                 commit_time_epoch=time.time(),
             )
+            if reindex_followup:
+                reindex_warning = (
+                    f"{reindex_warning}; {reindex_followup}" if reindex_warning else reindex_followup
+                )
         except Exception as exc:  # noqa: BLE001
             status = "error"
             error = str(exc)

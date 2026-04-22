@@ -8,6 +8,9 @@ import pytest
 from core.cluster.below.queue_schema import PendingRecord
 from core.cluster.below.research_worker import (
     REQUIRED_FRONTMATTER_KEYS,
+    _load_frontmatter_from_markdown,
+    _strip_wrapping_code_fence,
+    _trim_preamble_to_frontmatter,
     generate_reformatted_markdown,
 )
 from core.cluster.cluster_config import get_below_ollama_url
@@ -61,3 +64,48 @@ def test_reformat_response_contains_required_frontmatter_keys() -> None:
 
     assert markdown.startswith("---\n")
     assert set(REQUIRED_FRONTMATTER_KEYS).issubset(keys)
+
+
+VALID_FM = (
+    "---\n"
+    "title: Example\n"
+    "domain: example\n"
+    "techniques:\n  - a\n"
+    "concepts:\n  - b\n"
+    "subjects:\n  - c\n"
+    "priority: medium\n"
+    "source_project: BuildRunner3\n"
+    "created: 2026-04-22\n"
+    "last_updated: 2026-04-22\n"
+    "---\n\n"
+    "# Example\n"
+)
+
+
+def test_parser_tolerates_wrapping_code_fence() -> None:
+    wrapped = f"```markdown\n{VALID_FM}```\n"
+    fm = _load_frontmatter_from_markdown(_strip_wrapping_code_fence(wrapped))
+    assert set(REQUIRED_FRONTMATTER_KEYS).issubset(fm.keys())
+
+
+def test_parser_tolerates_bare_backtick_fence() -> None:
+    wrapped = f"```\n{VALID_FM}```"
+    fm = _load_frontmatter_from_markdown(_strip_wrapping_code_fence(wrapped))
+    assert set(REQUIRED_FRONTMATTER_KEYS).issubset(fm.keys())
+
+
+def test_parser_tolerates_preamble_before_frontmatter() -> None:
+    preambled = f"Here is the document:\n\n{VALID_FM}"
+    fm = _load_frontmatter_from_markdown(_trim_preamble_to_frontmatter(preambled))
+    assert set(REQUIRED_FRONTMATTER_KEYS).issubset(fm.keys())
+
+
+def test_parser_tolerates_leading_whitespace_and_bom() -> None:
+    noisy = f"﻿\n  \n{VALID_FM}"
+    fm = _load_frontmatter_from_markdown(_trim_preamble_to_frontmatter(noisy))
+    assert set(REQUIRED_FRONTMATTER_KEYS).issubset(fm.keys())
+
+
+def test_parser_rejects_no_frontmatter_at_all() -> None:
+    with pytest.raises(Exception, match="missing YAML frontmatter"):
+        _load_frontmatter_from_markdown("# Just a heading\n\nbody only, no fm\n")

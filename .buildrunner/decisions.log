@@ -879,3 +879,40 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
   - test isolation: patched _cb_sync_from_db to no-op in autouse fixture to prevent real DB leaking CB state into unit tests
   - budget guard test: placeholder with skip reason=waiting-on-phase-5 (research-budget-guard.sh ships in Phase 5)
   - Walter cron: used plain crontab (no ~/.walter/jobs/ layout existed); test_results.db present on Walter, writes there
+[2026-04-22T16:31:06] [DECISION] Multi-LLM /research enhancement shipped — Perplexity+Gemini+Grok+Codex added; adversarial review mandatory
+[2026-04-22T21:44:00Z] [ARCHITECTURE] Added /ralph skill + ralph-loop.sh for open-ended iteration loops
+  WHY: gnhf-style overnight loop for narrow mechanical objectives (drift cleanup, lint-to-zero, mechanical refactors) that don't warrant a phased BUILD spec; each iteration makes one committed step with automatic rollback on failure
+  CONTEXT: ~/.claude/commands/ralph.md, ~/.buildrunner/scripts/ralph-loop.sh
+[2026-04-22T21:44:01Z] [DECISION] Ralph mode is ADDITIVE to /spec+/autopilot, not a replacement
+  WHY: /spec flow gives adversarial review, /predict, /ship gated pipeline, scope-guarded self-healing — ralph has none of those. Ralph is opt-in for narrow bounded work; /spec is for real feature builds.
+  CONTEXT: /ralph skill docs "When to use ralph" section
+[2026-04-22T21:44:02Z] [ARCHITECTURE] Added --stop-when flag to /ship and /autopilot
+  WHY: Natural-language termination condition for open-ended runs (e.g. "tests pass and lint clean"); evaluated at gate/phase boundaries where context already exists
+  CONTEXT: ~/.claude/commands/ship.md, ~/.claude/commands/autopilot.md, ~/.buildrunner/scripts/ship/ship-runner.sh (_check_stop_when), ~/.buildrunner/scripts/stop-when.sh
+[2026-04-22T21:44:03Z] [ARCHITECTURE] Added cross-platform sleep-prevention wrapper
+  WHY: Long local runs (ralph, autopilot) must keep machine awake; OS-native mechanisms (caffeinate macOS, systemd-inhibit Linux, SetThreadExecutionState Windows) avoid brittle custom solutions
+  CONTEXT: ~/.buildrunner/scripts/prevent-sleep.sh
+[2026-04-22T21:44:04Z] [PATTERN] stop-when evaluator pinned to Haiku 4.5 @ medium effort
+  WHY: Classification work (MET/NOT_MET/INCONCLUSIVE) per the matrix — "medium for classification/filter passes only". Opus overspend would turn a cheap checkpoint into a budget bust.
+  CONTEXT: ~/.buildrunner/scripts/stop-when.sh
+[2026-04-22T21:44:05Z] [PATTERN] Ralph reuses autopilot-dispatch-prefix.sh for 4.7 posture
+  WHY: Single source of truth for model/effort/thinking config — never hand-roll a new prompt prefix, or drift between ralph and autopilot will appear silently
+  CONTEXT: ~/.buildrunner/scripts/ralph-loop.sh _build_prompt
+[2026-04-22T21:44:06Z] [CONSTRAINT] Ralph refuses --agent codex for workflow-gated objectives
+  WHY: Matrix rule — codex is workflow-gated (business, sales, test only). A ralph loop that dispatched codex for "begin a new feature" would violate the pin.
+  CONTEXT: ~/.buildrunner/scripts/ralph-loop.sh objective-regex guard
+[2026-04-22T21:44:07Z] [CONSTRAINT] Ralph never pushes directly; user ships through /ship
+  WHY: Preserve BR3's gated pre-push pipeline. Ralph creates commits on ralph/* branch; final publish routes through normal gates + self-healing.
+  CONTEXT: ~/.buildrunner/scripts/ralph-loop.sh (no push), /ralph skill docs
+[2026-04-22T21:44:08Z] [CONSTRAINT] Ralph requires clean working tree at start
+  WHY: Same contract as gnhf — prevent mixing ralph iterations with uncommitted user work; keeps rollback-on-failure atomic
+  CONTEXT: ~/.buildrunner/scripts/ralph-loop.sh startup check
+[2026-04-22T21:44:09Z] [REJECTED] Did not adopt gnhf as a tool
+  WHY: BR3's /autopilot + /ship + self-healing (scope-guard, diff-cap, revert-heal) already beats gnhf on every structural axis — gated pipelines, adversarial review, parallel builder nodes, cluster dispatch. Wholesale adoption would regress Phase 1–3 of BUILD_ship-self-healing-prepush.
+  CONTEXT: evaluation of https://github.com/kunchenguid/gnhf
+[2026-04-22T21:44:10Z] [PATTERN] stop-when evaluator returns MET | NOT_MET | INCONCLUSIVE; INCONCLUSIVE continues the loop
+  WHY: Stop-when must never be the thing that breaks a long run. On classifier failure, timeout, or ambiguous context → continue iterating, not halt.
+  CONTEXT: ~/.buildrunner/scripts/stop-when.sh fallback paths
+[2026-04-22T21:44:11Z] [TRADE-OFF] Ralph sleep-guard uses re-exec instead of in-process shell-function injection
+  WHY: Initial implementation used declare-f to carry loop body through bash -c — fragile across shells and prone to quoting bugs. Re-exec with BR3_RALPH_IN_SLEEP_GUARD sentinel is less clever but survives real use.
+  CONTEXT: ~/.buildrunner/scripts/ralph-loop.sh sleep-guard wrapper

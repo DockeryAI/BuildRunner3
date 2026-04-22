@@ -109,7 +109,9 @@ Synthetic integration test document.
         cleanup_script = (
             f"if [ -n '{committed_sha}' ]; then "
             f"git -C {get_jimmy_research_root()} reset --hard HEAD~1 && "
-            f"git -C {get_jimmy_research_root()} push muddy HEAD:main --force-with-lease; "
+            f"if git -C {get_jimmy_research_root()} remote | grep -q '^muddy$'; then "
+            f"  git -C {get_jimmy_research_root()} push muddy HEAD:main --force-with-lease; "
+            "fi; "
             "else "
             f"rm -f {get_jimmy_research_root()}/{intended_path}; "
             "fi"

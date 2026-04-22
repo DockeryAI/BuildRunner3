@@ -30,10 +30,14 @@ def _record() -> PendingRecord:
     )
 
 
-def test_ollama_unreachable_records_error_after_retries(tmp_path: Path) -> None:
+def test_ollama_unreachable_triggers_deterministic_fallback(tmp_path: Path) -> None:
+    """Reformat exhaustion must fall back to synthesized frontmatter so the
+    queue never blocks on a model hiccup. Record completes as `ok` with a
+    reindex_warning describing the fallback."""
     worker = ResearchWorker(tmp_path, poll_seconds=0)
     delays: list[int] = []
     attempts = {"count": 0}
+    commit_payloads: list[str] = []
     worker.sleep = delays.append
 
     def fail_reformat(record: PendingRecord) -> str:
@@ -41,7 +45,16 @@ def test_ollama_unreachable_records_error_after_retries(tmp_path: Path) -> None:
         attempts["count"] += 1
         raise OllamaError("Ollama connection failed: connection refused")
 
+    def capture_commit(record: PendingRecord, reformatted_md: str, metadata: dict) -> str:
+        del record, metadata
+        commit_payloads.append(reformatted_md)
+        return "deadbeef"
+
     worker.generate_reformatted_markdown = fail_reformat
+    worker.generate_metadata = lambda _record: {}
+    worker.commit_to_jimmy = capture_commit
+    worker.wait_for_reindex = lambda _pre, commit_time_epoch: (42, None)
+    worker.get_research_stats = lambda: {"total_chunks": 0}
     _write_pending(tmp_path, _record())
 
     assert worker.process_next_record() is True
@@ -49,11 +62,15 @@ def test_ollama_unreachable_records_error_after_retries(tmp_path: Path) -> None:
 
     assert attempts["count"] == 4
     assert delays == [1, 2, 4]
-    assert completed.status == "error"
-    assert "Ollama" in (completed.error or "")
+    assert completed.status == "ok"
+    assert completed.committed_sha == "deadbeef"
+    assert "fallback" in (completed.reindex_warning or "").lower()
+    assert len(commit_payloads) == 1
+    assert commit_payloads[0].startswith("---\n")
 
 
-def test_ollama_oom_records_error_after_retries(tmp_path: Path) -> None:
+def test_ollama_oom_triggers_deterministic_fallback(tmp_path: Path) -> None:
+    """OOM on reformat must also fall through to the deterministic fallback."""
     worker = ResearchWorker(tmp_path, poll_seconds=0)
     delays: list[int] = []
     attempts = {"count": 0}
@@ -65,6 +82,10 @@ def test_ollama_oom_records_error_after_retries(tmp_path: Path) -> None:
         raise OllamaError("Ollama error: out of memory")
 
     worker.generate_reformatted_markdown = fail_reformat
+    worker.generate_metadata = lambda _record: {}
+    worker.commit_to_jimmy = lambda _r, _m, _meta: "cafef00d"
+    worker.wait_for_reindex = lambda _pre, commit_time_epoch: (42, None)
+    worker.get_research_stats = lambda: {"total_chunks": 0}
     _write_pending(tmp_path, _record())
 
     assert worker.process_next_record() is True
@@ -72,8 +93,8 @@ def test_ollama_oom_records_error_after_retries(tmp_path: Path) -> None:
 
     assert attempts["count"] == 4
     assert delays == [1, 2, 4]
-    assert completed.status == "error"
-    assert "out of memory" in (completed.error or "")
+    assert completed.status == "ok"
+    assert "out of memory" in (completed.reindex_warning or "")
 
 
 def test_git_push_rejected_records_error_without_retry(tmp_path: Path) -> None:
