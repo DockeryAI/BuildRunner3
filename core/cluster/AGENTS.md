@@ -36,7 +36,7 @@
 
 All four flags are named verbatim:
 
-- `BR3_RUNTIME_OLLAMA`
+- `BR3_LOCAL_ROUTING` (canonical; `BR3_RUNTIME_OLLAMA` is a deprecated one-release alias shim)
 - `BR3_CACHE_BREAKPOINTS`
 - `BR3_ADVERSARIAL_3WAY`
 - `BR3_AUTO_CONTEXT`
@@ -78,7 +78,7 @@ Overflow workers (lockwood, lomax): retained in worker-pool and heartbeat contex
 Only PRIMARY-role refs (semantic-search, intel, staging) for lockwood rewritten to jimmy (10.0.1.106).
 `is_overflow_worker()` in `_dispatch-core.sh` is the single classifier for IP substitution decisions.
 
-## Phase 5 Skill Routing (BR3_RUNTIME_OLLAMA=on)
+## Phase 5 Skill Routing (BR3_LOCAL_ROUTING=on)
 
 | Skill                             | Route           | Model        |
 | --------------------------------- | --------------- | ------------ |
@@ -88,7 +88,8 @@ Only PRIMARY-role refs (semantic-search, intel, staging) for lockwood rewritten 
 | /diag /root /dbg /sdb log summary | below-route     | qwen3:8b     |
 | All final output                  | Claude Opus 4.7 | --           |
 
-- `BR3_RUNTIME_OLLAMA=on` required; OFF until Phase 13.
+- `BR3_LOCAL_ROUTING=on` required; OFF until Phase 13.
+- `BR3_RUNTIME_OLLAMA=on` is deprecated and supported only as a one-release alias shim.
 - `below-route.sh` exits 2 offline; skills fall back silently.
 - Below never drafts diagnosis, code, or architecture.
 - Each call appends `routing:` to `decisions.log`.

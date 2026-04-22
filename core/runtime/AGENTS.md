@@ -12,7 +12,7 @@ Declared in `runtime_registry.py`. Ordering is semantic (selection priority):
 
 1. `claude` — always available, default floor.
 2. `codex` — workflow-gated commands only (see `command_capabilities.json`).
-3. `ollama` — local inference via Jimmy/Below when `BR3_RUNTIME_OLLAMA=1`.
+3. `ollama` — local inference via Jimmy/Below when `BR3_LOCAL_ROUTING=1`.
 
 NEVER reorder this list without a cross-model review entry.
 
@@ -53,7 +53,8 @@ IMPORTANT: NEVER inline changing timestamps, random IDs, or user input into brea
 - `OllamaRuntime` host from cluster.json role=inference (default 10.0.1.105:11434).
 - Model: `llama3.3:70b`. Health: `cluster-check.sh inference`.
 - Silent-fallback: 503/timeout/fail → `ClaudeRuntime`, no user error, WARNING log only.
-- `local_ready`: plan-draft, structural-review, governance-lint, intel-scoring, summarize. Enabled by `BR3_RUNTIME_OLLAMA=1`.
+- `local_ready`: plan-draft, structural-review, governance-lint, intel-scoring, summarize. Enabled by `BR3_LOCAL_ROUTING=1`.
+- `BR3_RUNTIME_OLLAMA=1` remains as a deprecated one-release alias shim. Do not use it in new code or docs.
 
 ## Cache + Summarizer Contract (Phase 8)
 

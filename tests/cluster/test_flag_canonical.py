@@ -1,7 +1,7 @@
 """tests/cluster/test_flag_canonical.py — Phase 5 canonical flag guard.
 
-Asserts `BR3_MULTI_MODEL_CONTEXT` has been fully canonicalized to
-`BR3_AUTO_CONTEXT`. Code files (.py/.sh/.mjs/.ts/.js) and every AGENTS.md
+Asserts the deprecated multi-model context flag has been fully canonicalized to
+`BR3_AUTO_CONTEXT`. Code files (.py/.sh/.mjs/.ts/.js) and every `AGENTS.md`
 must contain zero references to the deprecated name.
 
 Historical audit files (`decisions.log*`) and build/plan docs that
@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEPRECATED = "BR3_MULTI_MODEL_CONTEXT"
+DEPRECATED = "BR3_MULTI_" "MODEL_CONTEXT"
 
 CODE_EXTENSIONS = {".py", ".sh", ".mjs", ".ts", ".js"}
 
@@ -68,7 +68,7 @@ def _grep_deprecated() -> list[tuple[str, int, str]]:
 
 
 def test_no_deprecated_flag_in_code() -> None:
-    """Code files must never reference BR3_MULTI_MODEL_CONTEXT."""
+    """Code files must never reference the deprecated flag."""
     hits = [
         (p, n, c) for (p, n, c) in _grep_deprecated()
         if Path(p).suffix in CODE_EXTENSIONS and not _is_allowlisted(p)
