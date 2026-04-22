@@ -4,7 +4,18 @@
 
 **Target users:** Single operator (Byron) running BR3 against the 7-node Blues Cluster.
 
-**Tech stack:** Python 3.11, FastAPI (core/cluster/base_service.py), SQLite (telemetry.db + Walter's ~/.walter/test_results.db), LanceDB (Jimmy), bash hooks (~/.claude/settings.json PreToolUse chain), ruff/py_compile/tsc/node --check for syntax validation.
+**Tech stack:** Python 3.11, FastAPI (api/routes/\*, core/cluster/base_service.py), SQLite (`.buildrunner/data.db` for CostTracker cost_entries + Walter's ~/.walter/test_results.db for test baselines; `.buildrunner/telemetry.db` only for runtime event telemetry), LanceDB (Jimmy), bash hooks (~/.claude/settings.json PreToolUse chain). Syntax validation tools per language: Python → `py_compile`, shell → `bash -n`, JS/MJS → `node --check`. **TypeScript/TSX excluded** from Phase 5 — BR3 core is Python-dominant and BR3 lacks a root tsconfig.json; bare `tsc` on single .tsx files rejects valid JSX. Project-level TSX validation is owned by each project's own vite/tsc pipeline, not by this hook.
+
+**Paths outside the repo tree that this spec modifies:**
+
+- `~/.buildrunner/scripts/autopilot-dispatch-prefix.sh` — emitted at every autopilot dispatch; owned by the operator's home-dir BuildRunner install. Not in the project git tree.
+- `~/.buildrunner/scripts/runtime-dispatch.sh` — paid-call dispatcher; same location.
+- `.claude/hooks/protect-files.sh` and `.claude/hooks/bash-guard.sh` — present in the project-level `.claude/hooks/` directory (verified — currently passthrough stubs).
+- `~/.claude/settings.json` — 12-entry PreToolUse chain registration; only appended to, never rewritten.
+- `/srv/jimmy/eval-corpus/**` on Jimmy (10.0.1.106); not in the Muddy repo tree.
+- `~/.walter/test_results.db` on Walter; read-only from Muddy; Walter owns writes.
+
+Reviewers that only see the Muddy repo tree will mis-flag these as missing; the files exist in the home dir or on other nodes.
 
 **Deploy target:** web (local cluster only). No app artifact — all changes ship as Python module edits, hook scripts, BUILD spec header keys, and Jimmy-side corpus storage.
 
@@ -56,13 +67,14 @@ User can override any of these at "go" time before the BUILD spec is written.
 
 **Deliverables:**
 
-- [ ] Add `"tests/*"`, `"tests/**"`, `"**/tests/*"`, `"**/tests/**"` to PROTECTED_PATH_PATTERNS.
-- [ ] Read active-phase `tests_writable` flag from the BUILD spec header (Muddy already loads phase context via autopilot-dispatch-prefix.sh; expose flag via env `BR3_TESTS_WRITABLE=1`).
-- [ ] Exemption: when `BR3_TESTS_WRITABLE=1`, test patterns pass through normally. Secret patterns always block.
-- [ ] Log every test-edit attempt (block + pass) to `.buildrunner/logs/test-lockdown.log` for audit.
-- [ ] Unit tests: blocked edit on tests/foo.py, allowed edit under exemption, secrets still blocked under exemption.
+- [ ] `PROTECTED_PATH_PATTERNS` is string-matched via `fnmatch`, which does NOT support `**` as recursive glob. Implement a new helper `is_test_path(normalized_path: str) -> bool` that returns True when the normalized path contains a `tests/` segment (`"/tests/" in normalized_path or normalized_path.startswith("tests/")`) OR matches project-local naming (`*_test.py`, `*.test.ts`, `*.test.tsx`, `*.spec.ts`, `*.spec.tsx`). Do NOT add `**` globs to PROTECTED_PATH_PATTERNS — they will silently not match.
+- [ ] `is_protected_file()` (preflight.py:177) delegates to `is_test_path()` in addition to the fnmatch check on secret patterns.
+- [ ] Read active-phase `tests_writable` flag from the BUILD spec header. `autopilot-dispatch-prefix.sh` already has the phase header in scope at dispatch; export `BR3_TESTS_WRITABLE=1` when the phase declares it. Default unset = blocked.
+- [ ] Exemption: when `BR3_TESTS_WRITABLE=1`, `is_test_path()` returns False (test edits allowed). Secret patterns always block regardless of the flag.
+- [ ] Log every test-edit attempt (block + pass) to `.buildrunner/logs/test-lockdown.log` with `{timestamp, path, decision, reason, phase_id}` for audit.
+- [ ] Unit tests: blocked edit on tests/foo.py, blocked edit on pkg/tests/sub/bar_test.py, allowed edit under exemption, secrets still blocked under exemption, basename `*_test.py` blocked without exemption.
 
-**Success criteria:** Edit/Write attempts on `tests/**` return a structured rejection to Claude when exemption is absent; the existing secrets-protection path is unchanged; all preflight unit tests pass.
+**Success criteria:** Edit/Write attempts on any path under `tests/` or matching test-naming patterns return a structured rejection to Claude when exemption is absent; the existing secrets-protection path is unchanged; all preflight unit tests pass.
 
 **Parallelizable:** Yes — only touches preflight.py + a new test file.
 
@@ -97,30 +109,31 @@ User can override any of these at "go" time before the BUILD spec is written.
 
 ## Phase 3 — Hard cost ceiling per phase
 
-**Goal:** Each phase carries a USD ceiling. cost_tracker's warn becomes a raised exception. Paid calls are preflighted against the ceiling; bust → phase halts and escalates, no matter the iteration count.
+**Goal:** Each phase carries a USD ceiling. CostTracker's warn becomes a raised exception. Paid calls are preflighted against the ceiling; bust → phase halts and escalates, no matter the iteration count.
+
+**Database note:** CostTracker persists to `.buildrunner/data.db` (table `cost_entries`) per core/routing/cost_tracker.py:93. `telemetry.db` holds unrelated event telemetry. All schema changes in this phase apply to `data.db`, not `telemetry.db`.
 
 **Files:**
 
-- core/routing/cost_tracker.py (MODIFY — convert warn to BudgetCeilingExceeded raise)
+- core/routing/cost_tracker.py (MODIFY — convert warn to BudgetCeilingExceeded raise; add ceiling-lookup helper; add a new `phase_budgets` table migration in data.db)
 - core/opus_client.py (MODIFY — preflight check before paid call)
 - ~/.buildrunner/scripts/runtime-dispatch.sh (MODIFY — read ceiling, enforce)
-- .buildrunner/telemetry.db schema (MIGRATE — add `phase_cost_ceiling_usd REAL` column)
-- scripts/migrate-telemetry-add-ceiling.sh (NEW)
+- scripts/migrate-data-db-add-phase-budgets.py (NEW — idempotent migration runs inline via CostTracker's existing run_migration path)
 - tests/routing/test_cost_ceiling.py (NEW)
 
 **Blocked by:** None
 
 **Deliverables:**
 
-- [ ] Add `BudgetCeilingExceeded` exception class.
-- [ ] `_check_budgets()` raises instead of warns when `spent_usd >= ceiling_usd`.
-- [ ] Read ceiling from BUILD phase header key `cost_ceiling_usd` (default 4.00).
-- [ ] opus_client.py preflights before each call; sums already-spent + worst-case next call (model pricing table + max_output_tokens).
-- [ ] runtime-dispatch.sh writes ceiling to process env before dispatch.
-- [ ] telemetry.db migration: add column; backfill existing rows with NULL (treated as default).
-- [ ] Unit tests: bust triggers raise, warn threshold still logs but does not raise, missing column treated as default.
+- [ ] Add `BudgetCeilingExceeded` exception class in `core/routing/cost_tracker.py`.
+- [ ] Add table `phase_budgets { phase_id TEXT PRIMARY KEY, ceiling_usd REAL NOT NULL, set_at TIMESTAMP }` to `.buildrunner/data.db` via the existing `run_migration` path (same mechanism cost_entries uses at cost_tracker.py:286-294). Writes are upserts per phase_id at dispatch time.
+- [ ] `_check_budgets()` (cost_tracker.py:297) now joins per-phase spend (SUM of cost_entries.cost_usd WHERE build_phase = current_phase) against `phase_budgets.ceiling_usd`. Raises `BudgetCeilingExceeded` when `spent_usd >= ceiling_usd`.
+- [ ] Ceiling resolution: phase-header `cost_ceiling_usd: N` → `phase_budgets` row → env `BR3_COST_CEILING_USD` → default `4.00`. First non-null wins.
+- [ ] `opus_client.py` preflights each call by calling CostTracker.would_exceed(phase_id, projected_usd) where projected = model_pricing \* max_output_tokens. Refuses the call on True.
+- [ ] `runtime-dispatch.sh` writes ceiling to process env and upserts `phase_budgets` row before dispatch.
+- [ ] Unit tests: bust triggers raise, warn threshold still logs but does not raise, missing `phase_budgets` row falls back to default, concurrent upsert safe.
 
-**Success criteria:** A phase configured with ceiling=$0.01 halts before a second paid call; telemetry.db column exists on fresh installs; existing reads unchanged.
+**Success criteria:** A phase configured with ceiling=$0.01 halts before a second paid call; `phase_budgets` table exists after first run; cost_entries path is unchanged for existing reads.
 
 **Parallelizable:** Yes with Phases 1, 2, 4, 5.
 
@@ -132,24 +145,26 @@ User can override any of these at "go" time before the BUILD spec is written.
 
 **Files:**
 
-- core/cluster/node_tests.py (MODIFY — add registry writer + 3-of-3 promotion filter to the existing LAG() query in /api/flaky)
-- .buildrunner/flaky-quarantine.json (NEW — registry file, Muddy-readable)
-- core/cluster/jimmy_flaky_sync.py (NEW — Jimmy LanceDB push)
-- ~/.buildrunner/scripts/autopilot-dispatch-prefix.sh (MODIFY — inject quarantine list into dispatched prompt context)
+- core/cluster/node_tests.py (MODIFY — add registry writer + `GET /api/flaky/registry` route + 3-of-3 promotion filter to the existing LAG() query in /api/flaky)
+- core/cluster/flaky_registry_client.py (NEW — Muddy-side HTTP pull + snapshot writer with 60s TTL cache)
+- .buildrunner/flaky-quarantine.json (NEW — Muddy-side snapshot file, written by the pull client)
+- core/cluster/jimmy_flaky_sync.py (NEW — Walter-side Jimmy LanceDB push with outbox retry)
+- ~/.buildrunner/scripts/autopilot-dispatch-prefix.sh (MODIFY — call flaky_registry_client, inject quarantine list into dispatched prompt context)
 - tests/cluster/test_flaky_registry.py (NEW)
 
 **Blocked by:** Phase 2 preferred (compare_baseline reader takes the quarantine list as input — acceptable to ship Phase 4 first and update Phase 2 reader in the same PR).
 
 **Deliverables:**
 
-- [ ] Registry writer: after each Walter run, upsert `{ test_id, flaky_score, first_seen, last_flip, status: trusted|quarantined|new }` into .buildrunner/flaky-quarantine.json.
+- [ ] Registry writer on Walter: after each Walter run, upsert `{ test_id, flaky_score, first_seen, last_flip, status: trusted|quarantined|new }` into Walter's local `~/.walter/flaky-quarantine.json`.
+- [ ] **Walter → Muddy sync:** Walter exposes the registry via a new FastAPI route `GET /api/flaky/registry` on its existing node_tests.py service. Muddy-side helper `core/cluster/flaky_registry_client.py` (NEW) pulls it at autopilot-dispatch time, writes a snapshot to `.buildrunner/flaky-quarantine.json` in the active repo, and caches with a 60s TTL. No shared mount, no scp, no git sync — pure HTTP pull over the cluster network.
 - [ ] 3-of-3 filter added to LAG() query: `status: new` tests require 3 consecutive green runs (across distinct walter_run_id) before flipping to `trusted`.
-- [ ] Jimmy push: new entries replicated to LanceDB table `flaky_registry` for cross-session persistence.
-- [ ] Autopilot prompt prefix includes current quarantine list under a "do-not-fix, log-and-move-on" heading.
-- [ ] Phase 2's compare_baseline excludes quarantined tests from regressed[].
-- [ ] Unit tests: 3-of-3 gate math, Jimmy push stub, prompt-prefix injection.
+- [ ] Jimmy push: after the registry is updated on Walter, Walter POSTs delta entries to Jimmy (`POST http://10.0.1.106:8100/api/flaky/upsert`) for LanceDB table `flaky_registry` cross-session persistence. On Jimmy-unreachable, Walter buffers to a local outbox and retries on next run.
+- [ ] Autopilot prompt prefix reads the cached `.buildrunner/flaky-quarantine.json` and includes the current quarantine list under a "do-not-fix, log-and-move-on" heading.
+- [ ] Phase 2's `compare_baseline()` reader takes `quarantined_ids: set[str]` parameter and excludes them from `regressed[]`.
+- [ ] Unit tests: 3-of-3 gate math, Muddy pull + snapshot write, Jimmy push stub + outbox-retry path, prompt-prefix injection, compare_baseline exclusion.
 
-**Success criteria:** flaky-quarantine.json exists after first Walter run; Jimmy LanceDB has a matching row; a test marked quarantined does not appear in regressed[]; a new test does not get trusted status until it has 3 consecutive green runs.
+**Success criteria:** Walter-side `~/.walter/flaky-quarantine.json` exists after first run; Muddy-side `.buildrunner/flaky-quarantine.json` is produced by the pull client on autopilot dispatch; Jimmy LanceDB has matching rows; a quarantined test does not appear in regressed[]; a new test does not get trusted status until it has 3 consecutive green runs.
 
 **Parallelizable:** Yes with Phases 1, 3, 5.
 
@@ -169,14 +184,15 @@ User can override any of these at "go" time before the BUILD spec is written.
 
 **Deliverables:**
 
-- [ ] Dispatch by file extension: `.py` → `python3 -m py_compile`, `.ts/.tsx` → `npx tsc --noEmit --skipLibCheck --allowJs --target es2020 <file>`, `.js/.mjs/.jsx` → `node --check`, `.sh` → `bash -n`.
+- [ ] Dispatch by file extension: `.py` → `python3 -m py_compile`, `.js` / `.mjs` / `.cjs` → `node --check`, `.sh` / `.bash` → `bash -n`, `.json` → `python3 -c 'json.load(open(sys.argv[1]))'`, `.yaml` / `.yml` → `python3 -c 'yaml.safe_load(open(sys.argv[1]))'`.
+- [ ] **TypeScript and JSX/TSX are explicitly excluded.** BR3 core has no root tsconfig.json and bare `tsc` on individual .tsx files rejects valid React. Project-level TSX is validated by each project's own pipeline (vite/tsc) on build — not by this hook. If a future BR3 project lands with a root tsconfig.json, add an extension-branch that shells out to `npx tsc --noEmit -p <nearest-tsconfig> <file>` with the project's config.
 - [ ] Parse only — no lint, no type-check on the broader project. Time budget: 1.5s per file; timeout → pass-through (fail-open).
-- [ ] Unknown extensions → pass-through.
+- [ ] Unknown extensions (including .ts/.tsx) → pass-through silently.
 - [ ] Rejection format: `SYNTAX_REJECTED: <file> (<parser>): <first error line>`; Claude sees this string and re-plans.
 - [ ] Write to `.buildrunner/logs/aci-guardrail.log` every pass/reject with duration.
-- [ ] Unit tests: valid py/ts/js/sh pass; invalid each rejected; unknown extension passes through; timeout passes through.
+- [ ] Unit tests: valid py/js/sh/json/yaml pass; invalid each rejected; .ts and .tsx pass-through without running any parser; unknown extension passes through; timeout passes through.
 
-**Success criteria:** Writing a syntactically invalid .py file is rejected with a one-line error and Claude re-plans; writing a valid .py file lands in <1.5s overhead; unknown file types are not blocked.
+**Success criteria:** Writing a syntactically invalid .py file is rejected with a one-line error and Claude re-plans; writing a valid .py file lands in <1.5s overhead; .tsx files are not blocked by this hook; unknown file types are not blocked.
 
 **Parallelizable:** Yes with Phases 1–4.
 
@@ -186,15 +202,19 @@ User can override any of these at "go" time before the BUILD spec is written.
 
 **Goal:** Establish the project-local eval corpus layout and seed it from existing adversarial-review artifacts + bug-fix commits. 30% holdout enforced at creation time.
 
-**Files:** (Jimmy-side — SSH to 10.0.1.106, commit/push from Jimmy repo)
+**Files:** (Jimmy-side at /srv/jimmy + Muddy-side API route + loader)
 
-- /srv/jimmy/eval-corpus/manifest.jsonl (NEW — one row per bug)
+- /srv/jimmy/eval-corpus/manifest.jsonl (NEW — one row per bug, on Jimmy)
 - /srv/jimmy/eval-corpus/bugs/<id>/ (NEW — per-bug directory: `task.md`, `failing_test.patch`, `fix.patch`, `labels.json`)
 - /srv/jimmy/eval-corpus/README.md (NEW — schema + contribution flow)
-- core/eval/**init**.py (NEW)
-- core/eval/corpus_loader.py (NEW — reads corpus from Jimmy via existing FastAPI)
-- scripts/seed-eval-corpus.py (NEW — mines .buildrunner/adversarial-reviews/ + git log)
+- Jimmy FastAPI route (new, appended to Jimmy's existing service): `GET /api/eval/corpus?split=train|holdout|all` returns JSONL of manifest rows filtered by split.
+- core/eval/\_\_init\_\_.py (NEW, Muddy-side)
+- core/eval/corpus_loader.py (NEW, Muddy-side — HTTP client that hits Jimmy's new endpoint)
+- api/routes/eval.py (NEW, Muddy-side — local Muddy route that proxies to Jimmy and is what the dashboard/CLI call)
+- api/server.py (MODIFY — register `eval.router` alongside the existing route registrations)
+- scripts/seed-eval-corpus.py (NEW — runs on Jimmy over SSH; mines .buildrunner/adversarial-reviews/ from Muddy + git log; writes manifest.jsonl)
 - tests/eval/test_corpus_loader.py (NEW)
+- tests/api/test_eval_routes.py (NEW)
 
 **Blocked by:** None
 
@@ -204,9 +224,11 @@ User can override any of these at "go" time before the BUILD spec is written.
 - [ ] Seed script mines 495+ adversarial-review JSONs; each `blocker`-verdict artifact becomes a candidate bug.
 - [ ] Seed script also mines git log for commits with "fix:" prefix + test change; extracts failing→passing test as task.
 - [ ] 30% holdout: deterministic hash(id) % 10 < 3 → split="holdout"; tagged at creation, never rewritten.
-- [ ] corpus_loader.py exposes `iter_bugs(split: str) -> Iterator[Bug]` reading over FastAPI GET `/api/eval/corpus?split=train`.
-- [ ] LanceDB index `eval_corpus_embeddings` (256-dim, same embedder as research-library) for analog-bug retrieval.
-- [ ] Unit tests: schema round-trip, 30% holdout count tolerance ±3, loader returns only requested split.
+- [ ] **Jimmy route (new):** append `GET /api/eval/corpus?split=...` to Jimmy's existing FastAPI service; returns JSONL stream of manifest rows filtered by split; 200 OK on empty.
+- [ ] **Muddy route (new):** `api/routes/eval.py` with `GET /api/eval/corpus` that proxies to Jimmy (and caches for 60s). Registered in `api/server.py`.
+- [ ] corpus_loader.py exposes `iter_bugs(split: str) -> Iterator[Bug]` reading over the Muddy proxy route.
+- [ ] LanceDB index `eval_corpus_embeddings` (256-dim, same embedder as research-library) for analog-bug retrieval; built by seed script after manifest write.
+- [ ] Unit tests: schema round-trip, 30% holdout count tolerance ±3, loader returns only requested split, Jimmy route returns filtered JSONL, Muddy proxy route echoes Jimmy with cache.
 - [ ] Target ≥ 40 bugs seeded before Phase 7 begins.
 
 **Success criteria:** manifest.jsonl has ≥40 rows; holdout count is 28–36% of total; corpus_loader.py returns correct row counts per split; LanceDB index reachable from Muddy.
@@ -217,31 +239,32 @@ User can override any of these at "go" time before the BUILD spec is written.
 
 ## Phase 7 — Eval execution harness
 
-**Goal:** Given a corpus + a config (prompt/skill/hook/model), run every bug and record pass rate, regression rate, cost, tool-call count to telemetry.db. Below executes inference; Muddy orchestrates.
+**Goal:** Given a corpus + a config (prompt/skill/hook/model), run every bug and record pass rate, regression rate, cost, tool-call count. Below executes inference; Muddy orchestrates.
+
+**Database note:** eval results live in `.buildrunner/data.db` (same DB as cost_entries) table `eval_runs`. `telemetry.db` is not used. Cost per bug is joined from `cost_entries` by `build_phase = '<run_id>/<bug_id>'` — each bug dispatch sets that phase scope so CostTracker attributes spend correctly.
 
 **Files:**
 
-- core/eval/runner.py (NEW — orchestrator)
-- core/eval/below_executor.py (NEW — dispatches inference to Below, handles VRAM monitoring)
-- core/eval/metrics.py (NEW — computes pass/regression/cost/tool-calls per run)
+- core/eval/runner.py (NEW — orchestrator, sets build_phase scope per bug)
+- core/eval/below_executor.py (NEW — dispatches inference to Below via existing `/api/gpu` health + `/api/inference` endpoints in node_inference.py)
+- core/eval/metrics.py (NEW — joins eval_runs + cost_entries, computes per-run aggregates)
 - scripts/run-eval.sh (NEW — CLI wrapper)
-- telemetry.db schema (MIGRATE — new table `eval_runs`: `run_id, config_hash, split, bug_id, passed, regressed, cost_usd, tool_calls, duration_ms, started_at`)
-- scripts/migrate-telemetry-add-eval-runs.sh (NEW)
+- scripts/migrate-data-db-add-eval-runs.py (NEW — adds `eval_runs` table to `.buildrunner/data.db`)
 - tests/eval/test_runner.py (NEW)
 
-**Blocked by:** Phase 6 (needs corpus)
+**Blocked by:** Phase 6 (needs corpus) AND Phase 3 (Phase 3 owns the data.db migration infra this phase reuses; serialize 3 → 7)
 
 **Deliverables:**
 
-- [ ] `runner.run_config(config, split) -> EvalRun` iterates corpus, dispatches each bug to a fresh Claude Code session, records metrics.
-- [ ] below_executor respects VRAM headroom: pre-call check via `curl $BELOW/api/health`; abort if VRAM_free < 2GB; escalate to Muddy.
-- [ ] Per-bug metrics: passed (target test flipped red→green), regressed (≥1 other test flipped green→red), cost_usd (from cost_tracker), tool_calls (from session log), duration_ms.
-- [ ] eval_runs table + migration.
-- [ ] CLI: `scripts/run-eval.sh --config <hash> --split train|holdout|all`.
-- [ ] Concurrency: 2 concurrent bugs by default (tunable via `--workers`); corpus size / workers dictates runtime.
-- [ ] Unit tests: mock corpus, mock session, runner tallies correctly; VRAM-abort path exits clean.
+- [ ] `eval_runs` table in `.buildrunner/data.db` via CostTracker-style run_migration: columns `run_id TEXT, config_hash TEXT, split TEXT, bug_id TEXT, passed INTEGER, regressed INTEGER, tool_calls INTEGER, duration_ms INTEGER, started_at TIMESTAMP, PRIMARY KEY (run_id, bug_id)`.
+- [ ] `runner.run_config(config, split) -> EvalRun` iterates corpus, dispatches each bug to a fresh Claude Code session. Sets `BR3_BUILD_PHASE="<run_id>/<bug_id>"` so cost_entries rows pin to the bug. Writes one eval_runs row per bug. Cost_usd is joined on demand from cost_entries, not stored redundantly.
+- [ ] below_executor VRAM preflight uses `GET http://<below_host>:<port>/api/gpu` (exists at node_inference.py:289). Response is `{gpu_count, vram_total_mb, dual_gpu_ready, mode, ...}`. Abort if gpu_count == 0 OR vram_total_mb < 2048; fallback to Muddy orchestrator with a log line.
+- [ ] Per-bug metrics: passed (target test flipped red→green per Walter snapshot diff), regressed (≥1 previously-green test flipped red per the Phase 2 compare_baseline), tool_calls (from Claude session transcript), duration_ms.
+- [ ] CLI: `scripts/run-eval.sh --config <hash> --split train|holdout|all [--workers 2]`.
+- [ ] Concurrency: 2 concurrent bugs by default; each runs in its own transient git worktree so parallel bugs can't collide on edits.
+- [ ] Unit tests: mock corpus, mock session, runner tallies correctly; `/api/gpu` abort path; cost join returns correct sums; worktree cleanup on error.
 
-**Success criteria:** `run-eval.sh --split train` produces an eval_runs row per train bug; telemetry.db query `SELECT COUNT(*) FROM eval_runs WHERE run_id=?` equals corpus train count; Below VRAM never drops below 2GB during runs.
+**Success criteria:** `run-eval.sh --split train` produces an eval_runs row per train bug; `SELECT COUNT(*) FROM eval_runs WHERE run_id=?` equals corpus train count; Below `/api/gpu` is queried at dispatch; Muddy fallback path is logged when Below VRAM is insufficient.
 
 **Parallelizable:** No with Phase 6; yes with Phases 1–5, 8, 9.
 
@@ -256,21 +279,22 @@ User can override any of these at "go" time before the BUILD spec is written.
 - core/eval/compare.py (NEW — diff two runs)
 - core/eval/holdout_guard.py (NEW — enforces holdout isolation)
 - scripts/eval-compare.sh (NEW — CLI wrapper)
-- core/dashboard_views.py (MODIFY — add `/api/eval/compare` view for dashboard)
+- api/routes/eval.py (MODIFY — extend the route file created in Phase 6; add `GET /api/eval/compare`)
 - tests/eval/test_compare.py (NEW)
 - tests/eval/test_holdout_guard.py (NEW)
+- tests/api/test_eval_compare_route.py (NEW)
 
 **Blocked by:** Phase 7
 
 **Deliverables:**
 
-- [ ] `compare.diff(run_a, run_b) -> ComparisonReport`: pass_rate delta, regression_rate delta, cost delta, tool-call delta, per-bug flip list.
-- [ ] `holdout_guard.assert_not_tuned_on(config_hash)`: rejects if a tuning commit touches files mentioned in holdout bug metadata. Soft-gate (warning) by default; flippable to hard-gate via env var.
-- [ ] CLI: `scripts/eval-compare.sh <baseline-hash> <candidate-hash>`.
-- [ ] Dashboard view at /api/eval/compare returns JSON for UI consumption.
-- [ ] Unit tests: diff math, holdout guard flags tuning commit, report renders on empty runs.
+- [ ] `compare.diff(run_a, run_b) -> ComparisonReport`: pass_rate delta, regression_rate delta, cost delta (via cost_entries join), tool-call delta, per-bug flip list.
+- [ ] `holdout_guard.assert_clean(config_hash: str, commit_sha: str, changed_files: list[str]) -> GuardReport`. Changed_files is the source of truth (tool caller extracts via `git diff --name-only <commit>^!`); commit_sha is for logging; config_hash is what the eval used. Rejects if any changed_file matches a path listed in holdout bug metadata (failing_test_path, files-under-fix-diff). Soft-gate (warning only in report) by default; `BR3_HOLDOUT_GUARD_MODE=block` flips to hard reject.
+- [ ] CLI: `scripts/eval-compare.sh <baseline-hash> <candidate-hash>` — wraps compare.diff; prints table; invokes holdout_guard with `git diff --name-only <baseline-hash>..<candidate-hash>` for changed_files.
+- [ ] Route `GET /api/eval/compare?baseline=...&candidate=...` returns the JSON ComparisonReport. Lives in api/routes/eval.py (the same module Phase 6 adds).
+- [ ] Unit tests: diff math, holdout_guard.assert_clean with clean / contaminated / empty changes, report renders on empty runs, route returns 400 on unknown hash.
 
-**Success criteria:** `eval-compare.sh A B` emits a readable diff table; the same comparison is visible on the dashboard; holdout-guard flags a contrived "tuned on holdout" commit.
+**Success criteria:** `eval-compare.sh A B` emits a readable diff table; the same comparison is reachable via `GET /api/eval/compare`; holdout_guard flags a contrived commit that touches a holdout failing_test_path.
 
 **Parallelizable:** No with Phase 7; yes with Phase 9.
 

@@ -10,14 +10,14 @@
 
 ## Overview
 
-Close the 8 library-integration gaps found by the 2026-04-21 parallel-subagent audit so the cluster-max cutover flags are safe to flip. Jimmy storage tree currently does not exist, nightly backups crash every night, LanceDB still lives on Lockwood, the spec's flag name is not what code reads, and ~30% of the advertised /research pipeline is fictional. Decisions: Muddy-primary/Jimmy-mirror; canonical flag `BR3_AUTO_CONTEXT`; keep `all-MiniLM-L6-v2` 384d; cut fictional /research pipeline steps.
+Close the 8 library-integration gaps found by the 2026-04-21 parallel-subagent audit so the cluster-max cutover flags are safe to flip. Jimmy storage tree currently does not exist, nightly backups crash every night, LanceDB still lives on Lockwood, the spec's flag name is not what code reads, and ~30% of the advertised /research pipeline is fictional. Decisions: Jimmy-primary/GitHub-DR/no Muddy copy; canonical flag `BR3_AUTO_CONTEXT`; keep `all-MiniLM-L6-v2` 384d; cut fictional /research pipeline steps.
 
 ## Parallelization Matrix
 
 | Phase | Key Files                                                                                | Can Parallel With | Blocked By |
 | ----- | ---------------------------------------------------------------------------------------- | ----------------- | ---------- |
 | 1     | CANONICALIZATION_DECISION.md, jimmy-sudo-bootstrap.sh, core/cluster/AGENTS.md            | —                 | —          |
-| 2     | jimmy-storage-init.sh, jimmy-verify.sh, sync-muddy-to-jimmy.sh, cluster.json             | 3, 5              | 1          |
+| 2     | jimmy-storage-init.sh, jimmy-verify.sh, cluster.json                                     | 3, 5              | 1          |
 | 3     | nightly-projects-backup.sh, nightly-backup-health.sh                                     | 2, 5              | 1          |
 | 4     | migrate-lockwood-data.sh, lancedb_config.py, retrieve.py, core/semantic/\*               | 5                 | 2          |
 | 5     | AGENTS.md files, staged specs, test_flag_canonical.py                                    | 2, 3, 4           | —          |
@@ -41,7 +41,7 @@ Close the 8 library-integration gaps found by the 2026-04-21 parallel-subagent a
 
 **Deliverables:**
 
-- [x] Decide canonical host: Muddy-primary, Jimmy-mirror. Document alternative considered + rejected.
+- [x] Decide canonical host: Jimmy-primary, GitHub DR, no Muddy copy. Document alternative considered + rejected.
 - [x] Write `CANONICALIZATION_DECISION.md` with chosen direction, rationale, affected scripts, rollback procedure.
 - [x] Ship `jimmy-sudo-bootstrap.sh` (one-time `ssh -t byron@jimmy sudo tee`, `visudo -c` validation, passwordless test).
 - [x] Verify `ssh byronhudson@jimmy sudo -n whoami` returns `root` without prompting.
@@ -50,15 +50,13 @@ Close the 8 library-integration gaps found by the 2026-04-21 parallel-subagent a
 
 **Success Criteria:** Single file in repo names canonical host. `ssh byron@jimmy sudo -n true` exits 0. No other deliverable begun before this passes.
 
-### Phase 2: Jimmy storage tree + sync direction alignment
+### Phase 2: Jimmy storage tree + direction alignment
 
 **Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/jimmy-storage-init.sh` (MODIFY)
 - `~/.buildrunner/scripts/jimmy-verify.sh` (MODIFY)
-- `~/.buildrunner/scripts/sync-muddy-to-jimmy.sh` (NEW or MODIFY)
-- `~/.buildrunner/scripts/sync-jimmy-to-muddy.sh` (DELETE if present)
 - `~/.buildrunner/cluster.json` (MODIFY)
 
 **Blocked by:** Phase 1
@@ -68,12 +66,12 @@ Close the 8 library-integration gaps found by the 2026-04-21 parallel-subagent a
 - [x] Refactor `jimmy-storage-init.sh` to use `ssh byronhudson@jimmy sudo -n`; idempotent.
 - [x] Create `/srv/jimmy/research-library`, `/srv/jimmy/lancedb`, `/srv/jimmy/backups` with `chown byronhudson:byronhudson` and `chmod 755`.
 - [x] Run `jimmy-verify.sh`; require existence + ownership + writability (touch+rm) check.
-- [x] Ship `sync-muddy-to-jimmy.sh` with top-of-file canonical-direction comment; first run `--dry-run`.
-- [x] Delete any wrong-direction sync script; log to decisions.log.
+- [x] Align direction language to Jimmy-primary with GitHub as disaster recovery; no Muddy mirror is maintained.
+- [x] Defer any Jimmy → GitHub push implementation to Phase 5; Phase 2 documents direction only and does not add a sync script deliverable.
 - [x] Add `storage_root: /srv/jimmy` to Jimmy's entry in `~/.buildrunner/cluster.json`.
 - [x] Smoke: `ssh byronhudson@jimmy "ls -la /srv/jimmy"` shows all three dirs with correct ownership.
 
-**Success Criteria:** `jimmy-verify.sh` exits 0. One `--dry-run` of `sync-muddy-to-jimmy.sh` logs expected file counts. No wrong-direction script remains.
+**Success Criteria:** `jimmy-verify.sh` exits 0. Direction language is Jimmy-primary with GitHub DR. No Muddy copy or wrong-direction sync deliverable remains.
 
 ### Phase 3: Nightly backup reliability (BSD rsync fix)
 
@@ -92,7 +90,7 @@ Close the 8 library-integration gaps found by the 2026-04-21 parallel-subagent a
 - [x] OS-branch rsync: drop `-A`/`-X` on Darwin; keep on Linux. Single `RSYNC_FLAGS` array at top.
 - [x] Run manually end-to-end; require exit 0 and non-empty `~/.buildrunner/logs/nightly-backup.log`.
 - [x] Trigger via `launchctl kickstart -k gui/$(id -u)/com.buildrunner.nightly-backup`; verify log shows fresh run exit 0.
-- [x] Verify target per Phase-1 canonical direction (Muddy → `/srv/jimmy/backups/`).
+- [x] Verify backup target remains Muddy → `/srv/jimmy/backups/` for disaster recovery only; this does not change Jimmy-primary authority for the research library.
 - [x] Add `--smoke` flag to script (10-file sync + exit) for E2E use.
 - [x] Write `nightly-backup-health.sh` stub — greps last 24h for `rsync error`; non-zero if found. (BSD-awk compatible; substr extraction.)
 
@@ -131,7 +129,8 @@ Close the 8 library-integration gaps found by the 2026-04-21 parallel-subagent a
 - `AGENTS.md` (MODIFY)
 - `core/cluster/AGENTS.md` (MODIFY)
 - `core/runtime/AGENTS.md` (MODIFY)
-- `ui/dashboard/AGENTS.md` (MODIFY)
+- `archive/ui-dashboard-fastapi-experiment/AGENTS.md` (MODIFY — FastAPI dashboard experiment archived in Phase 16)
+
 - `.buildrunner/plans/*.md` (MODIFY — any BR3_MULTI_MODEL_CONTEXT ref)
 - `.buildrunner/builds/BUILD_cluster-max.md` (MODIFY)
 - `core/cluster/context_bundle.py` (VERIFY)
