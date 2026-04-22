@@ -1,0 +1,82 @@
+# ship-rules.yaml — project-local /ship governance rules
+# Loaded by core/governance.py alongside governance.yaml
+# Schema: ship section — mirrors ~/.buildrunner/scripts/ship/ship-config.yaml
+# with project-local overrides.
+
+ship:
+  enabled: true
+
+  # Gate sequence override (leave empty to use ship-config.yaml default)
+  gates_override: []
+
+  # Branch policies (project-local)
+  branch_policies:
+    main:
+      auto_heal_requires_confirmation: true
+      gates_required:
+        - preflight
+        - rebase
+        - review
+        - test
+        - docs
+        - log-scan
+        - ship-commit
+        - publish
+    'release/*':
+      auto_heal_requires_confirmation: true
+      gates_required:
+        - preflight
+        - rebase
+        - review
+        - test
+        - docs
+        - log-scan
+        - ship-commit
+        - publish
+    '*':
+      auto_heal_requires_confirmation: false
+      gates_required:
+        - preflight
+        - rebase
+        - test
+        - log-scan
+        - ship-commit
+        - publish
+
+  # Scope locks — project-local additions to the global deny list
+  scope_locks_additional:
+    - 'core/governance.py'
+    - '.buildrunner/governance/**'
+
+  # Diff cap override (set to 0 to use global default)
+  diff_cap_lines: 0
+
+  # CI heal budget (per PR)
+  ci_heal_budget: 3
+
+  # Pre-push hook enforcement
+  pre_push_gate:
+    enabled: true
+    fragment: '.git/hooks/pre-push.d/50-ship-gate.sh'
+    bypass_var: 'BR3_SHIP_BYPASS_PREPUSH'
+
+  # Audit log
+  audit_log: '.buildrunner/ship/autoheal-overrides.log'
+  override_rollup_warn_threshold: 5
+
+  # Push-surface routing table (informational — enforcement via pre-push hook)
+  push_surfaces:
+    - surface: 'raw git push'
+      routing: 'pre-push hook 50-ship-gate.sh'
+    - surface: 'gh pr create'
+      routing: 'pre-push hook'
+    - surface: 'IDE push buttons'
+      routing: 'pre-push hook'
+    - surface: '/commit'
+      routing: '~/.claude/commands/commit.md Step 7 /ship gate'
+    - surface: '/begin final phase'
+      routing: 'begin.md Step 7.6 post-completion hook'
+    - surface: 'autopilot final phase'
+      routing: 'autopilot-phase-hook.sh'
+    - surface: 'future skill with git push'
+      routing: 'must invoke ship-runner.sh; pre-push hook catches otherwise'

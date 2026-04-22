@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-5 Complete — Phase 6 In Progress
+**Status:** BUILD COMPLETE — All 6 Phases Done
 **Deploy:** web — `npm run build` (framework-level skill; deploy target is N/A for the BR3 framework itself)
 **Source Plan File:** .buildrunner/plans/spec-ship-self-healing-prepush-plan.md
 **Source Plan SHA:** 9e725f1a38361e5dab7e42e1fab2fd40bbbb67ce3dd65277094e78e94c9cc118
@@ -186,7 +186,7 @@ role-matrix:
 
 ### Phase 6: Integration — Autopilot, /commit (global), /begin, Governance, Docs, Smoke Test
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/autopilot-phase-hook.sh` (NEW) — real flow-control, invoked from autopilot post-phase callback
@@ -205,16 +205,16 @@ role-matrix:
 
 **Deliverables:**
 
-- [ ] Autopilot phase hook: runs `/ship --fast` after final phase unless `BR3_AUTOPILOT_SHIP=off`; if autopilot lacks a callback surface, deliverable includes adding a minimal hook point
-- [ ] Global `/commit` modified to invoke `/ship` whenever a push would occur (since `/commit` stages + commits + pushes). Preserves existing `/commit` behavior when `--no-push` is passed or no remote exists. Applies to **all** projects, not just BR3 — `/commit` is a push surface and must route through gates universally
-- [ ] `/begin` post-completion hook: on final-phase success, invokes `/ship --fast` unless `BR3_BEGIN_SHIP=off`; mirrors the autopilot opt-out pattern
-- [ ] `/amend` audited and confirmed to NOT push (as of spec authoring). Deliverable includes a doc note in `ship.md` flagging that any future skill which adds `git push` must route through `/ship`
-- [ ] Push-surface integration table maintained in `~/.claude/CLAUDE.md` listing every command/skill that can push and how each routes to `/ship`. Pre-push hook (`50-ship-gate.sh`) documented as the universal enforcement point — any `git push` from any source (raw git, `gh`, IDE buttons, future skills) is gated
-- [ ] `ship-rules.yaml` at project-local path; loaded by existing `core/governance.py` without loader changes
-- [ ] Global CLAUDE.md — `/ship` section with flags, exit codes, env vars, push-surface routing table
-- [ ] Project CLAUDE.md — `/ship` in skill triggers table
-- [ ] `.buildrunner/docs/ship.md` — flags, exit codes, config schema, troubleshooting, push-surface routing table, "adding a new push path" checklist
-- [ ] Smoke test extended: (a) modifies throwaway file, (b) runs `/ship --dry-run` asserting gate sequence, (c) runs `/ship` on scratch branch asserting PR opens + sentinel written + telemetry emitted + cleanup, (d) runs `/commit` on scratch branch asserting it routes through `/ship` (not a plain push), (e) runs `/begin` no-op phase asserting post-completion `/ship` fires with `BR3_BEGIN_SHIP=off` honored, (f) deletes test PR
+- [x] Autopilot phase hook: runs `/ship --fast` after final phase unless `BR3_AUTOPILOT_SHIP=off`; if autopilot lacks a callback surface, deliverable includes adding a minimal hook point
+- [x] Global `/commit` modified to invoke `/ship` whenever a push would occur (since `/commit` stages + commits + pushes). Preserves existing `/commit` behavior when `--no-push` is passed or no remote exists. Applies to **all** projects, not just BR3 — `/commit` is a push surface and must route through gates universally
+- [x] `/begin` post-completion hook: on final-phase success, invokes `/ship --fast` unless `BR3_BEGIN_SHIP=off`; mirrors the autopilot opt-out pattern
+- [x] `/amend` audited and confirmed to NOT push (as of spec authoring). Deliverable includes a doc note in `ship.md` flagging that any future skill which adds `git push` must route through `/ship`
+- [x] Push-surface integration table maintained in `~/.claude/CLAUDE.md` listing every command/skill that can push and how each routes to `/ship`. Pre-push hook (`50-ship-gate.sh`) documented as the universal enforcement point — any `git push` from any source (raw git, `gh`, IDE buttons, future skills) is gated
+- [x] `ship-rules.yaml` at project-local path; loaded by existing `core/governance.py` without loader changes
+- [x] Global CLAUDE.md — `/ship` section with flags, exit codes, env vars, push-surface routing table
+- [x] Project CLAUDE.md — `/ship` in skill triggers table
+- [x] `.buildrunner/docs/ship.md` — flags, exit codes, config schema, troubleshooting, push-surface routing table, "adding a new push path" checklist
+- [x] Smoke test extended: (a) modifies throwaway file, (b) runs `/ship --dry-run` asserting gate sequence, (c) runs `/ship` on scratch branch asserting PR opens + sentinel written + telemetry emitted + cleanup, (d) runs `/commit` on scratch branch asserting it routes through `/ship` (not a plain push), (e) runs `/begin` no-op phase asserting post-completion `/ship` fires with `BR3_BEGIN_SHIP=off` honored, (f) deletes test PR
 
 **Success Criteria:** Autopilot final phase auto-ships respecting opt-out. `/commit` routes through `/ship` in every project (not just BR3). `/begin` auto-ships on completion unless opted out. Raw `git push` from any source (CLI, `gh`, IDE) blocked by pre-push hook unless gates passed. Governance loads through existing loader. Fresh operator uses `/ship` from docs alone. Smoke test passes all 6 assertions.
 

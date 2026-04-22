@@ -6,26 +6,26 @@ project:
 workflow:
   rules:
     allowed_states:
-    - planned
-    - in_progress
-    - testing
-    - complete
-    - blocked
+      - planned
+      - in_progress
+      - testing
+      - complete
+      - blocked
     transitions:
       planned:
-      - in_progress
-      - blocked
+        - in_progress
+        - blocked
       in_progress:
-      - testing
-      - blocked
-      - planned
+        - testing
+        - blocked
+        - planned
       testing:
-      - complete
-      - in_progress
-      - blocked
+        - complete
+        - in_progress
+        - blocked
       blocked:
-      - planned
-      - in_progress
+        - planned
+        - in_progress
       complete: []
     branch_patterns:
       feature: build/week{week_number}-{feature_name}
@@ -34,71 +34,71 @@ workflow:
     commit_rules:
       require_semantic_versioning: true
       allowed_types:
-      - feat
-      - fix
-      - refactor
-      - test
-      - docs
-      - chore
-      - style
+        - feat
+        - fix
+        - refactor
+        - test
+        - docs
+        - chore
+        - style
       require_feature_id: false
 dependencies:
   git-governance: []
   python-cli:
-  - feature-registry
-  - git-governance
+    - feature-registry
+    - git-governance
   fastapi-backend:
-  - feature-registry
-  - git-governance
+    - feature-registry
+    - git-governance
   git-hooks-mcp:
-  - git-governance
-  - python-cli
-  - fastapi-backend
+    - git-governance
+    - python-cli
+    - fastapi-backend
   migration-tools: []
   multi-repo-dashboard:
-  - python-cli
+    - python-cli
   optional-integrations:
-  - fastapi-backend
+    - fastapi-backend
   documentation:
-  - feature-registry
-  - git-governance
-  - python-cli
-  - fastapi-backend
-  - git-hooks-mcp
+    - feature-registry
+    - git-governance
+    - python-cli
+    - fastapi-backend
+    - git-hooks-mcp
   packaging:
-  - documentation
+    - documentation
   release:
-  - feature-registry
-  - git-governance
-  - python-cli
-  - fastapi-backend
-  - git-hooks-mcp
-  - optional-integrations
-  - migration-tools
-  - multi-repo-dashboard
-  - documentation
-  - packaging
+    - feature-registry
+    - git-governance
+    - python-cli
+    - fastapi-backend
+    - git-hooks-mcp
+    - optional-integrations
+    - migration-tools
+    - multi-repo-dashboard
+    - documentation
+    - packaging
 validation:
   required_checks:
-  - tests_pass
-  - coverage_threshold
-  - lint_pass
-  - no_merge_conflicts
+    - tests_pass
+    - coverage_threshold
+    - lint_pass
+    - no_merge_conflicts
   coverage_threshold: 90
   pre_commit:
-  - validate_features_json
-  - check_governance_checksum
-  - run_lint
-  - check_no_debug_statements
+    - validate_features_json
+    - check_governance_checksum
+    - run_lint
+    - check_no_debug_statements
   pre_push:
-  - run_tests
-  - check_coverage
-  - validate_governance_rules
+    - run_tests
+    - check_coverage
+    - validate_governance_rules
   pre_merge:
-  - all_tests_pass
-  - coverage_above_threshold
-  - no_unresolved_comments
-  - approved_by_reviewer
+    - all_tests_pass
+    - coverage_above_threshold
+    - no_unresolved_comments
+    - approved_by_reviewer
 enforcement:
   policy: strict
   on_violation:
@@ -117,31 +117,31 @@ enforcement:
 
       '
     pre_commit_requirements:
-    - Hooks MUST be installed using install-hooks.sh
-    - Tests run automatically on every commit
-    - Commits blocked if tests fail
-    - --no-verify bypass is PROHIBITED
+      - Hooks MUST be installed using install-hooks.sh
+      - Tests run automatically on every commit
+      - Commits blocked if tests fail
+      - --no-verify bypass is PROHIBITED
     pre_push_requirements:
-    - Full test suite runs automatically before push
-    - Coverage thresholds must be met
-    - All services must be running (if required)
-    - Push blocked if any test fails
+      - Full test suite runs automatically before push
+      - Coverage thresholds must be met
+      - All services must be running (if required)
+      - Push blocked if any test fails
     hook_installation:
       location: .buildrunner/hooks/
       install_command: bash .buildrunner/hooks/install-hooks.sh
       applies_to: ALL BR3 projects (new and existing)
     debugging_workflow:
-    - Code changes trigger automatic tests (pre-commit)
-    - If tests fail, commit is blocked
-    - Developer must fix issues before proceeding
-    - Comprehensive tests run before push (pre-push)
-    - Push blocked until all tests pass
+      - Code changes trigger automatic tests (pre-commit)
+      - If tests fail, commit is blocked
+      - Developer must fix issues before proceeding
+      - Comprehensive tests run before push (pre-push)
+      - Push blocked until all tests pass
 hooks:
   enabled: true
   active_hooks:
-  - pre-commit
-  - post-commit
-  - pre-push
+    - pre-commit
+    - post-commit
+    - pre-push
   pre_commit:
     validate_schema: true
     check_checksums: true
@@ -158,16 +158,16 @@ reporting:
   track_violations: true
   violation_log: .buildrunner/governance/violations.log
   metrics:
-  - features_completed
-  - tests_run
-  - coverage_percentage
-  - violations_count
-  - build_time
+    - features_completed
+    - tests_run
+    - coverage_percentage
+    - violations_count
+    - build_time
 security:
   require_checksum: true
   authorized_editors:
-  - project_owner
-  - tech_lead
+    - project_owner
+    - tech_lead
   alert_on_governance_change: true
 quality:
   enabled: true
@@ -183,3 +183,15 @@ quality:
     block_push: true
     note: 'Threshold temporarily lowered to 50 while incrementally improving. Target:
       70+'
+
+ship:
+  enabled: true
+  rules_file: .buildrunner/governance/ship-rules.yaml
+  pre_push_fragment: .buildrunner/hooks/pre-push.d/50-ship-gate.sh
+  sentinel_path: .buildrunner/ship/last-ship.json
+  runner: ~/.buildrunner/scripts/ship/ship-runner.sh
+  enforcement:
+    block_push_without_sentinel: true
+    block_push_if_stale: true
+    bypass_var: BR3_SHIP_BYPASS_PREPUSH
+    bypass_logged: true

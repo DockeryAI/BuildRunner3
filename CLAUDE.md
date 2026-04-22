@@ -36,12 +36,13 @@ Choose an approach and commit to it. Do not over-explore or research extensively
 
 ## Skills (auto-triggered)
 
-| Skill                  | Triggers                       |
-| ---------------------- | ------------------------------ |
-| `/roy-personality`     | roy, roddy, killroy            |
-| `/br3-planning`        | plan, init, prd, spec          |
-| `/security-rules`      | rls, security, model, database |
-| `/br3-frontend-design` | frontend work, UI components   |
+| Skill                  | Triggers                                    |
+| ---------------------- | ------------------------------------------- |
+| `/roy-personality`     | roy, roddy, killroy                         |
+| `/br3-planning`        | plan, init, prd, spec                       |
+| `/security-rules`      | rls, security, model, database              |
+| `/br3-frontend-design` | frontend work, UI components                |
+| `/ship`                | ship, push, deploy, gate, publish, pre-push |
 
 ---
 
