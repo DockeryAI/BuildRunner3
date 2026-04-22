@@ -872,3 +872,63 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-22T20:43:58.398991Z] THREE_WAY_REVIEW review_start plan_hash=f285ed7d7fbc6018 artifact='diff --git a/scripts/validate-enrichment.test.ts b/scripts/validate-enrichment.t' commit=04c9f68
 [2026-04-22T20:47:27.750666Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=301d5b4a3a918cc9 reviewers=2
 2026-04-22T20:48:08Z routing: skill=autopilot phase=5 model=opus node=muddy status=complete note="Phase 14 hardware-metric writers superseded by Prometheus on Lockwood; Phase 14 scope reduced; see BUILD_cluster-prometheus-integration"
+[2026-04-22T20:48:37.835324Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f285ed7d7fbc6018 reviewers=2
+[2026-04-22T15:50:18] [DECISION] Spec multi-LLM research: review BLOCK was arbiter circuit_open; 0 blockers, 1 warn + 6 notes fixed inline; bypass authorized (1-review rule)
+[2026-04-22T20:51:18.386190Z] THREE_WAY_REVIEW review_start plan_hash=0bc824e83a6e6e2f artifact='.buildrunner/plans/spec-draft-plan.md' commit=plan-1776891078
+[2026-04-22T15:53:57] [DECISION] Created BUILD_research-multi-llm with 7 phases (multi-LLM /research enhancement)
+[2026-04-22T20:55:12.859094Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0bc824e83a6e6e2f reviewers=2
+
+# === Session 2026-04-22T21:02:11Z — /research pipeline hardening ===
+
+[2026-04-22T21:02:11Z] [ARCHITECTURE] Removed stale 'muddy' git remote from Jimmy research-library
+  WHY: Per global CLAUDE.md "Research Library — Jimmy Only" rule, the Muddy mirror path was consolidated away but Jimmy's clone still had 'muddy' as a push target, causing every worker commit to fail with "Could not read from remote repository"
+  CONTEXT: ssh byronhudson@10.0.1.106 /srv/jimmy/research-library/.git/config
+
+[2026-04-22T21:02:11Z] [ARCHITECTURE] Made 'git push muddy HEAD:main' conditional on the remote existing
+  WHY: Worker must not fail commits just because the Muddy mirror is gone; supports both Jimmy-only and mirrored deployments without code changes
+  CONTEXT: core/cluster/below/research_worker.py _commit_local_repo + _REMOTE_COMMIT_SCRIPT, test_commit.py cleanup_script
+
+[2026-04-22T21:02:11Z] [DECISION] Rewrote reformat_prompt.md with markdown-safe YAML example
+  WHY: Prior example had mis-indented list items and blank line after opening fence, caused llama3.3:70b to produce malformed YAML and fail the strict 'startswith ---\n' parser on every retry
+  CONTEXT: core/cluster/below/reformat_prompt.md
+
+[2026-04-22T21:02:11Z] [ARCHITECTURE] Added preamble-tolerant parser for llama output
+  WHY: Even with a perfect prompt, llama3.3:70b occasionally emits a wrapping code fence or preamble ("Here is the document:"); reject rate drops from ~100% to ~0% by stripping these before YAML lookup
+  CONTEXT: core/cluster/below/research_worker.py _strip_wrapping_code_fence, _trim_preamble_to_frontmatter
+
+[2026-04-22T21:02:11Z] [DECISION] llama3.3:70b temperature pinned to 0.0; qwen3 think:false with presence_penalty 1.5
+  WHY: /llm research says llama3.3 tolerates greedy decoding (only model in cluster that does) and qwen3 requires presence_penalty on quantised weights to prevent repetition loops; thinking+structured-output is a known break on qwen3
+  CONTEXT: core/cluster/below/research_worker.py _ollama_generate
+
+[2026-04-22T21:02:11Z] [TRADE-OFF] num_ctx capped at 4096 (not 16384) on llama3.3:70b
+  WHY: Below has only 2GB VRAM headroom (48GB total, 46GB baseline per cluster.json); num_ctx=16384 crashed llama runner with 'process has terminated'; 4096 doubles the broken 2048 default, still fits the budget. Env override BR3_BELOW_LLAMA_NUM_CTX exposed for future tuning
+  CONTEXT: core/cluster/below/research_worker.py
+
+[2026-04-22T21:02:11Z] [REJECTED] Probing http://10.0.1.105:8000 to check 'Below worker' health
+  WHY: Port 8000 on Below is not associated with the research worker. The worker is a launchd agent on Muddy (com.buildrunner.below-worker) that polls a local file. Misdiagnosis caused prior session to falsely conclude 'nothing was handed off'
+  CONTEXT: /research skill failure-mode section, research-queue-status.sh
+
+[2026-04-22T21:02:11Z] [ARCHITECTURE] New diagnostic helper research-queue-status.sh
+  WHY: Single command replaces ad-hoc port probing; checks launchd agent + pending depth + last 3 completed entries + Ollama + Jimmy + Jimmy remotes in one pass so future sessions don't re-make the port-8000 mistake
+  CONTEXT: ~/.buildrunner/scripts/research-queue-status.sh
+
+[2026-04-22T21:02:11Z] [DECISION] Expanded /research skill's 'Failure modes to surface exactly' section
+  WHY: Original text only covered 'Below offline' and 'queue stale >24h', so any commit/reindex failure got misattributed. Now distinguishes worker-down, commit-failed, reformat-fallback, and reindex-timeout with fix hints for each
+  CONTEXT: ~/.claude/commands/research.md Step 0 failure-modes block
+
+[2026-04-22T21:02:11Z] [PATTERN] Prompt examples must avoid bare '---' that markdown renderers treat as HR
+  WHY: reformat_prompt.md's YAML example got silently mangled when edited through a markdown-aware tool; new version uses explicit section markers ('## End of required shape') and negative-example block so intent survives future edits
+  CONTEXT: core/cluster/below/reformat_prompt.md
+
+[2026-04-22T21:02:11Z] [CONSTRAINT] Research worker has no HTTP endpoint; it is a Muddy launchd agent only
+  WHY: Architecturally the worker is a filesystem poller that calls Ollama (http) and SSHs to Jimmy; nothing listens on Below. Future diagnostics must not assume HTTP
+  CONTEXT: com.buildrunner.below-worker.plist, research_worker.py ResearchWorker.run
+
+[2026-04-22T21:02:11Z] [GOAL] /research must work flawlessly every time — verified end-to-end
+  WHY: User instruction; prior session demonstrated that silent-failure paths (bad prompt, stale remote, unclear skill docs) compound into "looks fine, nothing indexed"
+  CONTEXT: 13/13 below cluster tests pass, launchd worker bounced to PID 49730, Jimmy reindex done (6812 chunks)
+[2026-04-22T21:03:56.942143Z] THREE_WAY_REVIEW review_start plan_hash=7fa33538c5de09c2 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=0a0b4e2
+[2026-04-22T21:05:14.647246Z] THREE_WAY_REVIEW review_start plan_hash=18bb28aef67198ca artifact='diff --git a/prompts/claude-commands/enrich-content.md b/prompts/claude-commands' commit=fdd0d11
+[2026-04-22T21:09:59.147442Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7fa33538c5de09c2 reviewers=2
+[2026-04-22T21:10:10.520104Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=18bb28aef67198ca reviewers=2
+[2026-04-22T21:11:02Z] Phase 1 decisions: API client layer shipped. urllib.request (no new deps). Circuit breaker: 3 fails/5min → open 10min. DB schema idempotent via CREATE IF NOT EXISTS. Exit code 2 for missing keys. llm-dispatch.sh allowlist: perplexity|gemini|grok|codex. Codex preflight caches result per-process. Cost rates hardcoded per-provider.
