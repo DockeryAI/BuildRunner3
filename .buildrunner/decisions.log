@@ -959,3 +959,203 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-22T00:42:48Z] [FIX] Removed the deprecated BR3_MULTI_MODEL_CONTEXT literal from active repo code so the active repo grep is now zero without touching the frozen build spec.
 2026-04-22T00:47:17Z cluster-activation-fix: phase-5 cluster-daemon plist fixed (/usr/local/bin/node → /opt/homebrew/bin/node); state=running, active count=1
 2026-04-22T00:47:17Z cluster-activation-fix: phase-6 feature-health dashboard deploy BLOCKED by architectural gap — ui/dashboard/ (FastAPI) vs ~/.buildrunner/dashboard/ (Node); needs cutover decision (A/B/C in fixes-report)
+[2026-04-22T12:59:23.415556Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T12:59:24.936528Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T12:59:57.896521Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T12:59:57.898579Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:00:31.573622Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:00:51.757192Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:00:52.504984Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:03:14.944026Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:04:17.068180Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='useDesignProfile.ts — `research_kinds` column added to SELECT_COLUMNS but migration 019 (Phase 4) adds per-row columns (' round=1
+[2026-04-22T13:04:40.645008Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding="'differentiation' research kind returns null from edgeFnNameForKind and is pushed to skipped, but if it is included in t" round=1
+[2026-04-22T13:05:25.697700Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='`research_kinds` added to `SELECT_COLUMNS` in `useDesignProfile` before migration 019 exists' round=1
+[2026-04-22T13:05:32.234892Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='useDesignProfile models research_kinds as a JSONB blob column (Record<string, ResearchKindEntry>), but migration 019 spe' round=1
+[2026-04-22T13:05:57.914365Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Phase 4 research data is modeled as a `research_kinds` JSON map instead of the row-per-kind schema required by the spec.' round=1
+[2026-04-22T13:06:47.577625Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T13:07:12.931590Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=1 upheld=1 model=claude-opus-4-7 effort=xhigh duration_s=24.8 rationale='The disputed finding is a real, high-impact defect: SELECT_COLUMNS includes a column whose creating migration is explicitly gated to Phase 4, so any Phase 3 deployment issues a PostgREST query for a n'
+[2026-04-22T13:07:13.004984Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T13:07:21.552562Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=3
+[2026-04-22T13:07:51.826307Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=3 upheld=3 model=claude-opus-4-7 effort=xhigh duration_s=29.6 rationale='Two independent reviewers converged on the same critical schema defect: SELECT_COLUMNS references research_kinds before migration 019 has run, which will cause PostgREST 400 errors and silently null o'
+[2026-04-22T13:07:51.897734Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T13:09:14.962445Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research status model is wired to a `design_research.research_kinds` JSON blob, which conflicts with the spec’s ' round=1
+[2026-04-22T13:09:24.504805Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:09:28.093196Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:09:29.400151Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:12:24.822804Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:12:29.020079Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:15:17.082103Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=3
+[2026-04-22T13:16:00.035825Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T13:16:02.193148Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=3 upheld=3 model=claude-opus-4-7 effort=xhigh duration_s=44.6 rationale='Three independent blocker-class defects survive arbitration: a silent-no-op UPDATE path that causes data loss while advancing stage, a SELECT referencing an unshipped column that will fail every read '
+[2026-04-22T13:16:02.277142Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T13:16:25.090669Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The design-profile hook now queries a `research_kinds` column that is not added anywhere in this diff and does not match' round=1
+[2026-04-22T13:16:28.636306Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T13:16:35.991878Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=6 upheld=6 model=claude-opus-4-7 effort=xhigh duration_s=35.9 rationale="Codex's blocker finding is well-grounded: selecting a `research_kinds` column that has no accompanying migration in this diff will cause the Supabase select to error, and the hook's catch-and-return-n"
+[2026-04-22T13:16:36.007151Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T13:17:12.506842Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:17:28.395053Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=13 upheld=13 model=claude-opus-4-7 effort=xhigh duration_s=58.9 rationale='Reviewer A (Claude) identified a concrete blocker — adding `research_kinds` to the SELECT_COLUMNS constant before the migration that creates the column ships will cause PostgREST to return 400 on ever'
+[2026-04-22T13:17:28.449594Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T13:17:33.657308Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:17:34.991229Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:17:36.030565Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:19:05.143600Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T13:19:44.416761Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=8 upheld=8 model=claude-opus-4-7 effort=xhigh duration_s=39.2 rationale="The artifact under review is a BUILD spec diff, but Codex's findings reference concrete source-code behavior (SELECT_COLUMNS in useDesignProfile.ts, slider UI ranges, letterSpacing units, saveAakerSli"
+[2026-04-22T13:19:44.423084Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T13:20:08.874048Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:21:05.683680Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:21:11.638560Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Research status is modeled as a `research_kinds` JSON blob instead of the spec’s per-kind `kind/status/payload/updated_a' round=1
+[2026-04-22T13:21:22.346255Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research state model is implemented as a `research_kinds` blob, which conflicts with the spec’s additive `(proje' round=1
+[2026-04-22T13:21:35.385976Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:22:02.858395Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:22:34.752539Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:22:59.390081Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:22:59.399066Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T13:23:06.027675Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research-dispatch layer is built around a `research_kinds` JSON blob instead of the spec’s per-kind row model.' round=1
+[2026-04-22T13:23:36.651560Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=1 upheld=1 model=claude-opus-4-7 effort=xhigh duration_s=36.7 rationale='The disputed finding is upheld at blocker severity. PostgREST returns a hard error (PGRST204/42703) when a SELECT targets a nonexistent column, which would break every design_research read across the '
+[2026-04-22T13:23:36.704144Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T13:24:55.211182Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='research_kinds added to SELECT_COLUMNS before migration 019 has been applied' round=1
+[2026-04-22T13:25:59.541500Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='The spec for migration 019 describes adding row-per-kind columns (kind TEXT, status TEXT, payload JSONB, updated_at TIME' round=1
+[2026-04-22T13:26:15.257038Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='Migration 019 spec describes separate columns (kind TEXT, status TEXT, payload JSONB) with a unique index on (project_id' round=1
+[2026-04-22T13:26:51.348209Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='`useDesignProfile` now selects a `research_kinds` column that the current and planned schema does not define.' round=1
+[2026-04-22T13:27:26.602412Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding="SELECT_COLUMNS in useDesignProfile.ts includes 'research_kinds' but no migration in this diff or in the referenced migra" round=1
+[2026-04-22T13:27:46.188185Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:28:28.054699Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='useDesignProfile.ts adds research_kinds as a JSONB column in SELECT_COLUMNS, but the spec describes migration 019 as add' round=1
+[2026-04-22T13:30:22Z] [ARCHITECTURE] Added single-flight guard to dashboard getActiveSessions()
+  WHY: No in-flight coalescing + forceRefresh=true bypassing cache let concurrent callers each start a full 7-node lsof fan-out; poll cycles stacked faster than lsof completed, producing 23+ concurrent bash/lsof subprocesses
+  CONTEXT: ~/.buildrunner/dashboard/integrations/sessions.mjs (_inflight promise at module scope, getActiveSessions now returns shared in-flight promise)
+
+[2026-04-22T13:30:22Z] [WHY] Muddy load avg 34 had two concurrent causes, not one
+  WHY: Visible dashboard lsof swarm (sessions.mjs:149) was fed by the hidden fork storm — 1316 stale Claude Code shell-snapshot zshes orphaned from dead sessions, which inflated the proc table lsof had to walk, which made each lsof slow, which stacked poll cycles
+  CONTEXT: sessions.mjs:149, /Users/byronhudson/.claude/shell-snapshots/snapshot-zsh-*.sh, prior incident ~/.buildrunner/incidents/2026-04-20-fork-exhaustion.md
+
+[2026-04-22T13:30:22Z] [CONSTRAINT] Claude Code Bash-tool shell-snapshot pattern leaks zsh on parent death
+  WHY: Each Bash tool call runs 'zsh -c source snapshot-zsh-*.sh && eval <cmd>'; when the parent Claude process dies mid-call the child zsh is reparented to launchd and never reaped. Repeated SSH heartbeats to Jimmy (byron@10.0.1.106) over ~40h accumulated 1316 orphans
+  CONTEXT: /Users/byronhudson/.claude/shell-snapshots/, PID chain e.g. 42593 (1d16h old) → 42595 → 42597 → ... still alive
+
+[2026-04-22T13:30:22Z] [DECISION] Killed stale zshes by etime threshold rather than pkill -f pattern
+  WHY: pkill -f 'snapshot-zsh' would kill the active session's own Bash-tool shells; filtering by elapsed-time > 30min (parsing MM:SS / HH:MM:SS / D-HH:MM:SS forms) excludes live activity and only reaps abandoned orphans
+  CONTEXT: awk filter over ps -eo pid,etime,command → xargs kill -9; 1316 killed, 35 live retained, load 34 → 7
+
+[2026-04-22T13:30:22Z] [REJECTED] Did not patch .zshrc despite crash-reporter pointing at it
+  WHY: ReportCrash was burning CPU on a backlog of 119 zsh SIGSEGV reports, but the crashes themselves were not caused by .zshrc — they were shell-snapshot children recursively forking during command substitution. Interactive guard at .zshrc:115 already protected non-interactive shells. Fixing the snapshot accumulation removed the crash source
+  CONTEXT: ~/.zshrc:115 [[ $- == *i* ]] || return guard intact, /Library/Logs/DiagnosticReports/zsh-*.ips moved to Retired/
+
+[2026-04-22T13:30:22Z] [PATTERN] Drain macOS crash backlog by moving to DiagnosticReports/Retired/
+  WHY: ReportCrash re-scans the queue directory continuously; deletion requires root but _analyticsusers group has mv access to Retired subdir, stopping the scan without sudo
+  CONTEXT: /Library/Logs/DiagnosticReports/Retired/, perms drwxrwx--- root:_analyticsusers
+
+[2026-04-22T13:30:22Z] [CONSTRAINT] Dashboard lsof fan-out hits local node serially but globally multiplies
+  WHY: resolveProjectFromCwd uses serial for-await per node, but Promise.allSettled across 7 nodes parallelizes pollNode, and getActiveSessions has 4+ call sites in events.mjs (1471, 1751, 2269, 2901) plus a 15s setInterval; concurrent HTTP /api/sessions?refresh=1 + poll tick = 2+ full fan-outs in flight
+  CONTEXT: sessions.mjs:144-170 resolveProjectFromCwd, sessions.mjs:270 Promise.allSettled, events.mjs call sites
+
+[2026-04-22T13:30:22Z] [GOAL] Treat shell-snapshot zsh accumulation as an ongoing risk, not a one-shot fix
+  WHY: 2026-04-20 fork-exhaustion incident was declared resolved by interactive-guard, but root cause (orphans from dead Claude sessions) was not addressed; reappeared on 2026-04-22 and will reappear again unless Claude Code reaps children on session exit, or a janitor sweeps orphans periodically
+  CONTEXT: snapshot files persist in ~/.claude/shell-snapshots/, no reaper exists yet; consider LaunchAgent that kills ppid=1 snapshot-zsh older than 1h
+[2026-04-22T13:32:25.412375Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='Schema mismatch between code and spec for research_kinds: useDesignProfile assumes a JSONB map column research_kinds on ' round=1
+[2026-04-22T13:34:26.298733Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:35:19.650794Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:38:00.766374Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Loading the design profile now depends on a `research_kinds` column that is not part of the documented `design_research`' round=1
+[2026-04-22T13:38:03.390150Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:40:51.742597Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='research_kinds selected as a scalar column but migration 019 adds row-per-kind schema, not a JSONB map column' round=1
+[2026-04-22T13:42:04.584199Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:42:06.147616Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:42:07.594305Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:42:35.668830Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The Phase 4 research model is implemented against a nonexistent `research_kinds` JSON column instead of the row-per-kind' round=1
+[2026-04-22T13:43:07.889192Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:43:32.682961Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:44:54.489339Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:45:23.275661Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:45:46.223218Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:45:52.694536Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:46:21.851631Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='`research_kinds` added to SELECT_COLUMNS but migration 019 adds per-row `kind`/`status`/`payload` columns, not a JSONB m' round=1
+[2026-04-22T13:46:47.960527Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='research_kinds JSONB column queried in useDesignProfile does not match migration 019 row-per-kind schema' round=1
+[2026-04-22T13:46:48.504910Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:47:10.313733Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='useDesignProfile.ts selects a `research_kinds` column and types it as `Record<string, ResearchKindEntry>`, but migration' round=1
+[2026-04-22T13:47:25.535390Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='useDesignProfile.ts queries research_kinds JSONB column that migration 019 does not create' round=1
+[2026-04-22T13:47:44.414734Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The design profile hook now queries a `research_kinds` column that is not part of the documented `design_research` schem' round=1
+[2026-04-22T13:48:15.734756Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:49:00.335625Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:49:05.274144Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:49:20.403395Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:49:22.911482Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T13:49:37.474243Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Migration 019 implements research state as a single `research_kinds` JSONB column, which does not match the Phase 4 cont' round=1
+[2026-04-22T13:49:53.286457Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Research status storage assumes a `research_kinds` JSON column that does not match the Phase 4 schema' round=1
+[2026-04-22T13:50:28.150456Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='`useDesignProfile` and the new research helpers are coded against a `design_research.research_kinds` JSON column that th' round=1
+[2026-04-22T13:51:22.558791Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Migration 019 does not implement the schema required by the Phase 4 spec.' round=1
+[2026-04-22T13:51:42.220022Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Migration 019 does not implement the schema the spec relies on.' round=1
+[2026-04-22T13:53:14.344275Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Migration 019 replaces the required per-kind row model with a single JSONB blob, so the `(project_id, kind)` uniqueness ' round=1
+[2026-04-22T13:53:26.092274Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Migration 019 does not implement the schema the Phase 4 design depends on.' round=1
+[2026-04-22T13:53:35.546222Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Migration 019 implements the wrong storage model for research kinds.' round=1
+[2026-04-22T13:54:16.501128Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research edge functions allow cross-project mutation because they trust `project_id` from the request body while' round=1
+[2026-04-22T13:55:04.568160Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Migration 019 implements a `research_kinds` JSONB blob instead of the row-per-kind schema the build spec requires.' round=1
+[2026-04-22T13:58:45.909763Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=d49b82b three_way=True
+[2026-04-22T13:59:21.024697Z] THREE_WAY_REVIEW round_start round=1 artifact='/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/phase-16-plan.md' commit=plan-1776866360 three_way=True
+[2026-04-22T14:00:04.662700Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=d49b82b three_way=True
+[2026-04-22T14:00:44.070173Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=d49b82b three_way=True
+[2026-04-22T14:01:13.916157Z] THREE_WAY_REVIEW round_start round=1 artifact='.buildrunner/plans/spec-codex-draft-plan.md' commit=plan-1776866473 three_way=True
+[2026-04-22T14:03:09.255010Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding="`handleContinue()` only checks local React state before writing `current_stage='grayscale'`, so a stale or tampered clie" round=1
+[2026-04-22T14:03:20.243218Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:03:46.839594Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Phase 4 storage was implemented as a single JSONB blob instead of the spec-required per-kind columns and unique key.' round=1
+[2026-04-22T14:03:53.545593Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:04:14.156960Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:06:03.425872Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=10
+[2026-04-22T14:06:16.881442Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The refactor removes the only visible trigger for generating `profile.recommendation`, but Grayscale still depends on th' round=1
+[2026-04-22T14:07:15.863170Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='Phase 6 Task 6.1 removes _run_rebuttal but run_three_way_review (line 1683) calls it internally; removing the callee wit' round=1
+[2026-04-22T14:07:46.723055Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The grayscale transition is gated only by client state and does not perform the required server-side readiness check.' round=1
+[2026-04-22T14:08:23.948494Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='CLI skills for new edge functions are absent — research stage will never complete' round=1
+[2026-04-22T14:08:53.941956Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The `brand-dna` producer is not implemented for the new `research_kinds` pipeline.' round=1
+[2026-04-22T14:09:41.918524Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:09:51.503045Z] ARBITER_RULING artifact='/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/phase-16-plan.md' round=1 verdict=BLOCKED findings=10 upheld=7 model=claude-opus-4-7 effort=xhigh duration_s=227.5 rationale="Multiple independent blockers are verified against the actual codebase: the Task 16.6 jq pipeline cannot parse SSE-framed events whose inner tiles live in a stringified .data field; Task 16.3's mandat"
+[2026-04-22T14:09:51.562771Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T14:10:45.071333Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:10:45.679545Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:10:47.693297Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:10:48.944755Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:10:48.963182Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:10:49.755922Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:10:50.850017Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:05.786382Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:05.817136Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:06.448834Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:11.924711Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:12.342920Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:12.612606Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:27.721650Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:28.119525Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:48.923714Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:11:50.042614Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:12:25.764385Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:12:27.621458Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:13:44Z] [AMENDMENT] Amended BUILD_cluster-max.md: added Phase 16 (Dashboard Unification — backport cluster panels to :4400, retire ui/dashboard/ FastAPI experiment, add jimmy to NODE_NAMES, walk cluster-activation Phase 6 acceptance). 6 tasks, Codex four-element format. Plan: .buildrunner/plans/phase-16-plan.md (sha 5aadadb2075eb381). Adversarial review BLOCKED → 5 upheld blockers (task 16.1 grep pattern, VALID_TYPES gap, unknown→yellow, test path, task 16.6 jq pipeline) fixed inline in plan. Bypass authorized per /amend-codex one-review rule. Verdict file: .buildrunner/adversarial-reviews/phase-16-20260422T140951Z.json.
+[2026-04-22T14:14:07.157423Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new edge functions enqueue `/research-conventions`, `/research-competitors`, and `/research-proof-points`, but the d' round=1
+[2026-04-22T14:14:26.064579Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The `brand-dna` kind has no producer for the new `research_kinds` contract, so the new Brand DNA panel and ready gate ha' round=1
+[2026-04-22T14:14:47.184160Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The Continue-to-grayscale path is only UI-gated and does not enforce the required-kind readiness on the server side.' round=1
+[2026-04-22T14:15:05.548959Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding="useResearchKickoff's realtime subscription handler is a no-op — it subscribes to postgres_changes on design_research but" round=1
+[2026-04-22T14:15:08.989471Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' commit=d49b82b three_way=True
+[2026-04-22T14:15:11.870142Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new dispatcher never creates a `design_research` row, so status writes are a no-op for projects that do not already ' round=1
+[2026-04-22T14:15:15.491083Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research flow depends on CLI skills that are not added in this change.' round=1
+[2026-04-22T14:15:15.940961Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=4
+[2026-04-22T14:15:22.924966Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research edge functions allow unauthorized callers to enqueue jobs and mutate research state for arbitrary proje' round=1
+[2026-04-22T14:15:29.647136Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The reused `extract-brand-dna` function is not wired into the new `research_kinds` status/payload model.' round=1
+[2026-04-22T14:15:33.749185Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='researchKinds.ts markKindRunning() is a non-atomic read-modify-write on a JSONB column' round=1
+[2026-04-22T09:15:41] [DECISION] Spec-codex review bypassed for cluster-library-consolidation draft; prior ESCALATED artifact at path sha ed271176fecf9e66 was for a different plan (Universal Role Routing) under the same reused draft path — blockers do not apply
+[2026-04-22T14:15:55.346015Z] ARBITER_RULING artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' round=1 verdict=BLOCKED findings=4 upheld=4 model=claude-opus-4-7 effort=xhigh duration_s=38.7 rationale='All four disputed Codex findings describe concrete, verifiable defects with clear evidence trails: a missing required dispatch parameter, an unwritten readiness key the UI gates on, missing CLI skill '
+[2026-04-22T14:15:55.397706Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T14:16:30.819435Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding="The Continue path relies only on client-side state before writing `current_stage='grayscale'`, so stale UI state or a cr" round=1
+[2026-04-22T14:16:37.139226Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new per-kind dispatcher routes `brand-dna` to `extract-brand-dna`, but that function was not converted to the new `r' round=1
+[2026-04-22T14:16:39.899289Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The only visible recommendation-generation trigger was removed, but Grayscale still requires a recommendation.' round=1
+[2026-04-22T14:16:58.056290Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The Research→Grayscale transition is enforced only in the browser, not in server-side code.' round=1
+[2026-04-22T14:17:13.363957Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=5
+[2026-04-22T14:17:34.148922Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research edge functions perform service-role writes without authenticating or authorizing the caller, allowing a' round=1
+[2026-04-22T14:17:41.428123Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-22T14:17:52.256698Z] ARBITER_RULING artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' round=1 verdict=BLOCKED findings=5 upheld=5 model=claude-opus-4-7 effort=xhigh duration_s=38.3 rationale='Multiple high-confidence blockers are independently corroborated across both reviewers with concrete code-level evidence: the brand-dna dispatch throws on mount, the Differentiation panel can never re'
+[2026-04-22T14:17:52.319903Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T14:18:06.490523Z] ARBITER_RULING artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' round=1 verdict=BLOCKED findings=2 upheld=1 model=claude-opus-4-7 effort=xhigh duration_s=24.5 rationale='Both disputed findings are concrete, evidence-backed blockers that prevent the Research stage from ever reaching readiness in production. Reviewer A produced specific code-path and handoff-note eviden'
+[2026-04-22T14:18:06.548125Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T14:18:24.720187Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=3
+[2026-04-22T14:18:25.130646Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='Continue-to-grayscale is enforced only in the client, so stale or tampered local state can advance the project without v' round=1
+[2026-04-22T14:18:29.834457Z] THREE_WAY_REVIEW consensus_pass round=1 findings=17 consensus_blockers=0
+[2026-04-22T14:19:21.905634Z] ARBITER_RULING artifact='diff --git a/.buildrunner/adversarial-reviews/bypass-justification-2026-04-22-au' round=1 verdict=BLOCKED findings=13 upheld=13 model=claude-opus-4-7 effort=xhigh duration_s=56.7 rationale='Three high-confidence blockers from Reviewer A are technically well-grounded and supported by concrete code evidence; Reviewer B offered no findings and no rebuttal, providing no basis to overturn any'
+[2026-04-22T14:19:21.958364Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T14:20:07.784068Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research edge functions have an authorization bypass: they accept any caller-supplied `project_id` while using a' round=1
+[2026-04-22T09:20:27] [DECISION] Spec-codex review blocked; fixed inline; bypass authorized by skill (1-review rule)

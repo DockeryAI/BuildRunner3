@@ -4,6 +4,9 @@
 **Last Revised:** 2026-04-20 (Phases 11+12 complete: dashboard @ :4400 + multi-model context parity)
 **Status:** Phases 1-12 Complete — Phase 2 In Progress
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
+**Source Plan SHA:** 5aadadb2075eb38191a84f443bf6008fe924a4c4ed148bd897fce5dd15369f71
+**Source Plan File:** .buildrunner/plans/phase-16-plan.md
+**Adversarial Review Verdict:** BYPASSED:.buildrunner/adversarial-reviews/phase-16-20260422T140951Z.json
 
 ---
 
@@ -1689,7 +1692,7 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
 **Codex model:** gpt-5.4
 **Codex effort:** high
 **Worktree:** main repo (Phase 14 touches disjoint files — no conflict)
-**Blocked by:** Phase 13
+**Blocked by:** Phase 13, Phase 16 (dashboard unification — feature-health panel must live on :4400 before invariant UI overlay can render)
 **Can parallelize:** Phase 14
 **Added:** 2026-04-21 (amendment, R2 post-adversarial-review)
 **Plan:** `.buildrunner/plans/phase-15-plan.md`
@@ -1752,6 +1755,79 @@ Spec + decisions: this file (MODIFY), `.buildrunner/decisions.log` (APPEND).
 - [ ] AGENTS.md updated on 3 scopes (runtime staged, cluster staged, dashboard direct) and reviewed.
 - [ ] Claude review passed with zero P0/P1 findings.
 - [ ] `.buildrunner/decisions.log` entry: `Phase 15: feature observability live — 15 invariant rules, emit points across runtime/cluster/shell, invariant checker, feature-health panel, AGENTS.md updated on 3 scopes`.
+
+---
+
+### Phase 16: Dashboard Unification — Backport Cluster Panels to :4400
+
+**Status:** pending
+**Codex model:** gpt-5.4
+**Codex effort:** medium (no security/architecture deltas warrant xhigh)
+**Worktree:** main repo (touches `~/.buildrunner/dashboard/` + `api/routes/dashboard_stream.py` + two BUILD specs; disjoint from Phase 13/14 file sets)
+**Blocked by:** Phase 11 (panel source code must exist — already COMPLETE), Phase 6 of BUILD_cluster-activation.md (telemetry emit sites — already COMPLETE)
+**Blocks:** Phase 15 (invariant checker UI overlay requires feature-health panel on :4400)
+**Can parallelize:** No — tasks are strictly sequential (readers before panels before retirement before acceptance)
+**Added:** 2026-04-22 (amendment via /amend-codex; adversarial review BYPASSED per one-review rule, all 5 upheld blockers fixed inline in `.buildrunner/plans/phase-16-plan.md`)
+**Plan:** `.buildrunner/plans/phase-16-plan.md`
+
+#### Goal
+
+Unify the cluster observability surface on the real Node dashboard at `http://localhost:4400`. Retire the FastAPI experiment at `ui/dashboard/` (whose standalone `app = create_app(role="dashboard")` export enables any uvicorn invocation to bind :4400 — a live collision risk) and the orphan uvicorn process on :4401. Backport the five cluster panels (feature-health, node-health detail, overflow-reserve, storage-health, consensus-viewer) onto the Node dashboard's existing SSE transport. Add Jimmy to the dashboard's node list. Execute the cluster-activation Phase 6 acceptance criterion that was never actually run against :4400.
+
+#### Context
+
+BUILD_cluster-activation.md Phase 6 shipped a feature-health panel into `ui/dashboard/` (FastAPI) assuming that was the dashboard. The real operator dashboard is `~/.buildrunner/dashboard/` (Node, :4400, sidebar with builds/intel/terminal/research/monitor). Phase 6 was marked COMPLETE without anyone verifying :4400 rendered the panel — it didn't. Separately, BUILD_cluster-max.md Phase 11 shipped four additional panels to the same `ui/dashboard/` directory, inheriting the same drift. The emit side (`core/runtime/runtime_registry.py`, `core/runtime/cache_policy.py`, `core/cluster/cross_model_review.py`, `scripts/codex-bridge.sh`) writes correctly to `.buildrunner/telemetry.db` — verified live, 16+ `runtime_dispatched`, 24+ `cache_hit`, 22+ `adversarial_review_ran` events within the last hour. Only the read-and-render path is on the wrong surface. `NODE_NAMES` in `~/.buildrunner/dashboard/events.mjs:226` hardcodes 6 nodes (no Jimmy), blocking every panel that needs a 7-node baseline. `VALID_TYPES` in the same file gates every SSE broadcast; the five new topic names must be added or cluster events will be silently dropped.
+
+#### Tasks (Codex four-element format)
+
+See `.buildrunner/plans/phase-16-plan.md` for authoritative task bodies. Summary:
+
+- **Task 16.1:** Stop :4401 orphan. Remove module-level `app = create_app(role="dashboard")` export from `api/routes/dashboard_stream.py` and any uvicorn launch script targeting it. Keep `_collect_*` as importable library.
+- **Task 16.2:** Add `jimmy` to `NODE_NAMES` in `~/.buildrunner/dashboard/events.mjs`; verify the existing card renders 7 rows.
+- **Task 16.3:** Build three integration modules under `~/.buildrunner/dashboard/integrations/` — `telemetry-reader.mjs` (read-only SQLite on `.buildrunner/telemetry.db`), `jimmy-status.mjs` (reads `/srv/jimmy/status/*.json`), `cluster-health-local.mjs` (plist/script/mtime checks). On missing sources, return `status: "yellow"` with reason — never `unknown`.
+- **Task 16.4:** Add five periodic collectors to `events.mjs` broadcasting `feature-health`/`node-health`/`overflow-reserve`/`storage-health`/`consensus` SSE events at the FastAPI cadences (5s/10s/15s/20s/60s). Add all five names to `VALID_TYPES`. Port five panels from `ui/dashboard/panels/` to `~/.buildrunner/dashboard/public/js/ws-cluster-*.js` under a new Cluster sidebar entry. Tile rules ported verbatim from `_collect_feature_health` (`dashboard_stream.py:178–381`).
+- **Task 16.5:** Move `ui/dashboard/` to `archive/ui-dashboard-fastapi-experiment/` with README. Correct Phase 6 (cluster-activation), Phase 11, and Phase 15 path references.
+- **Task 16.6:** Walk cluster-activation Phase 6 acceptance against :4400. Ensure Jimmy publisher is running for tiles 6–10 to resolve green. Record verified 15-tile snapshot to `.buildrunner/adversarial-reviews/phase-16-acceptance.json`.
+
+#### Files (whitelist)
+
+- **Node dashboard (MODIFY):** `~/.buildrunner/dashboard/events.mjs`, `~/.buildrunner/dashboard/public/index.html`, `~/.buildrunner/dashboard/public/styles.css`
+- **Node dashboard (NEW):** `~/.buildrunner/dashboard/public/js/ws-cluster-feature-health.js`, `ws-cluster-node-health.js`, `ws-cluster-overflow-reserve.js`, `ws-cluster-storage-health.js`, `ws-cluster-consensus.js`; `~/.buildrunner/dashboard/integrations/telemetry-reader.mjs`, `jimmy-status.mjs`, `cluster-health-local.mjs`
+- **Python (MODIFY):** `api/routes/dashboard_stream.py` (remove dashboard-role `app` export; keep `_collect_*` as library)
+- **Archive (MOVE):** `ui/dashboard/` → `archive/ui-dashboard-fastapi-experiment/` (+ README.md)
+- **Spec (MODIFY):** `.buildrunner/builds/BUILD_cluster-activation.md` (Phase 6 panel paths), `.buildrunner/builds/BUILD_cluster-max.md` (Phase 11 + Phase 15 panel paths)
+- **Tests (NEW):** `~/.buildrunner/dashboard/tests/integrations-telemetry.spec.mjs`, `integrations-jimmy-status.spec.mjs`, `ws-cluster-feature-health.spec.mjs`
+- **Decisions (APPEND):** `.buildrunner/decisions.log`
+
+#### Constraints (canonical)
+
+- One dashboard, one port (:4400), one transport (SSE on `/api/events/stream`; terminal WS stays on `/ws/terminal/:node`). No new dashboard process on a new port.
+- Tile rules ported verbatim from `_collect_feature_health` — no threshold changes. Feature-health tile outputs are exactly `green`|`yellow`|`red`; `unknown` is forbidden.
+- Readers return `status: "yellow"` with a `reason` field on missing sources; dashboard renders even if `.buildrunner/telemetry.db` or `/srv/jimmy/status/` is absent.
+- `VALID_TYPES` in `events.mjs` must include the 5 new topic names or SSE broadcasts are silently dropped.
+- FastAPI `_collect_*` functions remain importable; only the dashboard-role `app` export and related uvicorn launch paths are removed.
+- Archive, do not delete. `ui/dashboard/` moves to `archive/ui-dashboard-fastapi-experiment/` with a README explaining the drift and retirement date.
+- Spec edits touch only path references and Phase 15's Blocked-by. Phase structure, success criteria, and numbering remain intact.
+- Max 6 tasks per phase respected.
+
+#### Claude Review (mandatory before Phase 16 marked complete)
+
+- Reviewer: `claude-opus-4-7` (Muddy)
+- Trigger: `/review --phase 16 --target "~/.buildrunner/dashboard/events.mjs,~/.buildrunner/dashboard/public/index.html,~/.buildrunner/dashboard/public/js/ws-cluster-*.js,~/.buildrunner/dashboard/integrations/telemetry-reader.mjs,~/.buildrunner/dashboard/integrations/jimmy-status.mjs,~/.buildrunner/dashboard/integrations/cluster-health-local.mjs,api/routes/dashboard_stream.py,archive/ui-dashboard-fastapi-experiment/README.md,.buildrunner/builds/BUILD_cluster-activation.md,.buildrunner/builds/BUILD_cluster-max.md"`
+- Required findings: (1) feature-health tile rules match `_collect_feature_health` semantically; (2) all five SSE topics emit at the FastAPI cadences AND appear in `VALID_TYPES`; (3) telemetry reader opens DB read-only; (4) error-swallowing returns `yellow`+reason, never `unknown`; (5) no new npm dependencies without package.json update; (6) `ui/dashboard/` archived, not deleted; (7) Phase 15 `Blocked by` updated; (8) no new ports bound; (9) LaunchAgent for FastAPI experiment removed if present; (10) Jimmy added to `NODE_NAMES`; (11) dashboard-role `app` export removed from `dashboard_stream.py`.
+
+#### Done When
+
+- [ ] All 6 task verification commands pass (see `.buildrunner/plans/phase-16-plan.md`).
+- [ ] `lsof -nP -iTCP:4401 -sTCP:LISTEN` returns empty (no orphan FastAPI process).
+- [ ] `curl -s http://localhost:4400/api/nodes | jq 'length'` returns 7 (Jimmy included).
+- [ ] All five cluster panels render on `http://localhost:4400` under a "Cluster" sidebar section.
+- [ ] Feature-health panel shows 15 tiles with zero `status` values outside `{green,yellow,red}`.
+- [ ] `ui/dashboard/` archived to `archive/ui-dashboard-fastapi-experiment/` with README.
+- [ ] BUILD_cluster-activation.md + BUILD_cluster-max.md spec path references corrected (no `ui/dashboard/` references remain in `.buildrunner/builds/`).
+- [ ] Phase 15 `Blocked by` updated to include Phase 16.
+- [ ] Claude review passed with zero P0/P1 findings.
+- [ ] `.buildrunner/decisions.log` entry: `Phase 16: dashboard unification live — 5 panels backported to :4400 Node dashboard, FastAPI experiment archived, Jimmy added to node list, cluster-activation Phase 6 acceptance walked with zero-unknown`.
 
 ---
 
