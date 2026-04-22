@@ -738,197 +738,144 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 ## 2026-04-21 to 2026-04-22 (archived 2026-04-22)
 - Types: DECISION(15), REJECTED(2), WHY(2), CONSTRAINT(4), GOAL(2), AMENDMENT(2), BUILD_CLUSTER_ACTIVATION_FIXES(3), FIX(7), ARCHITECTURE(2), PATTERN(1), ADVERSARIAL_REVIEW_BYPASS(1), PHASE-16(1) | Key: fixed inline in plan; fixed inline; bypass authorized by skill (1-review rule); Created Codex-optimized build spec: universal-role-routing w; Created Codex-optimized build spec: cluster-library-consolid; added to node list, cluster-activation Phase 6 acceptance wa
 - 42 entries → decisions.log.20260422_121942
-
 # Current Decisions
-[2026-04-22T20:30:02Z] [PATTERN] Phase→bucket heuristic uses ordered keyword match against the `### Phase N: <header>` line, most-specific buckets listed first, fallback to backend-build
-[2026-04-22T20:30:03Z] [DECISION] Mounted api.routes.metrics.router in api/server.py
-[2026-04-22T20:30:04Z] [DECISION] Changed _dispatch-core.sh metrics POST default target from http://10.0.1.101:8787 (Lockwood) to http://127.0.0.1:8080 (local FastAPI)
-[2026-04-22T20:30:05Z] [ARCHITECTURE] Restarted dashboard events.mjs (killed PID 34290 → PID 26288) so /routing route registered at line 2507 becomes live
-[2026-04-22T20:30:06Z] [DECISION] Classifier ambiguity fallback changed from "classification" to "backend-build"
-[2026-04-22T20:30:07Z] [REJECTED] Considered editing /begin.md and /autopilot.md directly to source the canonical loader
-[2026-04-22T20:30:08Z] [PATTERN] Canonical fallback exports add two new vars: BR3_PHASE_BUCKET and BR3_ROLE_MATRIX_SOURCE
-[2026-04-22T20:30:09Z] [CONSTRAINT] set -uo pipefail in old loader forces BASH_SOURCE[0] to be defined — the loader now requires a bash interpreter (not zsh) when sourced
-[2026-04-22T20:30:10Z] [DECISION] Updated tests/classifier/test_classify_prompt.bats to match new backend-build fallback (tests 12, 14, 15)
-[2026-04-22T12:19:42] [DECISION] Spec cluster-prometheus-integration: adversarial review blocked with arbiter circuit open; 4 blockers + 9 warnings fixed inline; bypass authorized by skill one-review rule. Architecture validator blocked on 2 files (jimmy-status.mjs, events.mjs) created by external BUILD_cluster-max Phase 16; bypass justification filed.
 2026-04-22T17:25:56Z | cluster-library-consolidation/phase-10 | consolidation-complete | Muddy library deleted; stray copies on Lockwood/Walter/Otis also deleted (all ancestors of canonical, superseded); GitHub anchor: github.com/DockeryAI/research-library; backup tag: backup/pre-consolidation-20260422; Jimmy HEAD: da27612dae9f7c6744913870d24aa3d0845c6509
-[2026-04-22T12:43:26] [DECISION] Created BUILD spec: cluster-prometheus-integration (6 phases; Prometheus on Lockwood, hybrid data source for dashboard panels, supersedes Phase 14 hardware writers)
-[2026-04-22T19:09:39.646728Z] THREE_WAY_REVIEW review_start plan_hash=ac60f3ad7dbe82ce artifact='.buildrunner/plans/spec-draft-plan.md' commit=plan-1776884979
-[2026-04-22T19:13:58.839196Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ac60f3ad7dbe82ce reviewers=2
-[2026-04-22T19:19:25Z] [ADVERSARIAL_REVIEW_BYPASS] justified findings=finding_id: prometheus-phase-2-launchd-tilde;finding_id: prometheus-phase-2-instance-label;finding_id: prometheus-phase-4-cpu-pct;finding_id: prometheus-phase-4-disk-regex;finding_id: prometheus-arch-validator-phase-16-dep;
-[2026-04-22T14:20:50] [DECISION] Spec review blocked (14); fixed all inline; bypass authorized by skill 1-review rule (BUILD_cluster-hardening-v1)
-[2026-04-22T19:35:24Z] [ARCHITECTURE] Jimmy-status publisher runs on Muddy into local mirror ~/.buildrunner/jimmy-mirror/ (not on Jimmy)
   WHY: Dashboard on Muddy reads /srv/jimmy/ via local filesystem; Jimmy's actual /srv/jimmy/ is on 10.0.1.106 and unreachable without a mount. Running the publisher on Muddy against a Muddy-local mirror eliminates the network round-trip and keeps the dashboard's existing fs-read path intact.
   CONTEXT: ~/.buildrunner/scripts/jimmy-status-publisher.sh (NEW), ~/.buildrunner/jimmy-mirror/ (NEW), ~/Library/LaunchAgents/com.buildrunner.jimmy-publisher.plist (NEW)
-
-[2026-04-22T19:35:24Z] [DECISION] Dashboard plist gains JIMMY_SRV_ROOT=/Users/byronhudson/.buildrunner/jimmy-mirror
   WHY: cluster-health-local.mjs:16 already honors process.env.JIMMY_SRV_ROOT as an override; setting it in the LaunchAgent avoids touching any dashboard source code and keeps the '/srv/jimmy' default for any future Jimmy-hosted run.
   CONTEXT: ~/Library/LaunchAgents/com.buildrunner.dashboard.plist EnvironmentVariables block
-
-[2026-04-22T19:35:24Z] [REJECTED] Option A — SSHFS-mount byronhudson@10.0.1.106:/srv/jimmy onto Muddy
   WHY: Creates a hard dependency on the SSH tunnel, dashboard blocks on any network hiccup, and /srv/ is not user-writable on macOS without casks + extfs. JIMMY_SRV_ROOT override achieves the same dashboard code path with no kernel ext.
   CONTEXT: same read path in jimmy-status.mjs collectors
-
-[2026-04-22T19:35:24Z] [REJECTED] Option C — rewrite jimmy-status.mjs collectors to fetch from a Jimmy HTTP endpoint
   WHY: Would require new endpoints on Jimmy's FastAPI servers AND a code change on the dashboard side. Correct long-term, but out of scope for an immediate fix — flagged as future work for the Phase 16 successor or a cluster-activation amendment.
   CONTEXT: ~/.buildrunner/dashboard/integrations/jimmy-status.mjs, Jimmy br3-semantic:8100 / br3-intel:8101
-
-[2026-04-22T19:35:24Z] [WHY] Phase 16 'COMPLETE' did not resolve the yellow log storm because acceptance was defined as tiles emitting yellow-with-reason when sources missing, not sources being present
   WHY: Phase 16 scope was dashboard backport + :4401 retirement + experiment archive. The Jimmy-side publisher was punted to cluster-activation Phase 5, which only landed the daemon plist — no publisher was ever shipped. Acceptance snapshot notes this explicitly: 'Jimmy publisher not running on this host; tiles 6-10 reflect honest yellow+reason state per plan.'
   CONTEXT: .buildrunner/adversarial-reviews/phase-16-acceptance.json, BUILD_cluster-max.md Phase 16, BUILD_cluster-activation.md Phase 5
-
-[2026-04-22T19:35:24Z] [CONSTRAINT] /srv/jimmy/status/ and /srv/jimmy/archive/adversarial-reviews/ were empty on Jimmy itself at time of fix
   WHY: jimmy-storage-init.sh provisioned the dir skeleton but no component on Jimmy writes these files. Only br3-semantic.service / br3-intel.service / br3-staging.service / br3-context-sync.timer / br3-git-mirrors.timer are live on Jimmy. Confirmed via ssh 'ls /srv/jimmy/status/nodes/'.
   CONTEXT: Jimmy 10.0.1.106 systemd units, /srv/jimmy/ layout from BUILD_cluster-max.md line 147
-
-[2026-04-22T19:35:24Z] [PATTERN] Publisher emits atomic writes via mktemp + mv -f
   WHY: Dashboard collectors run on 5/10/15/20/60s cadences and race against the writer; atomic rename prevents half-written JSON from surfacing as 'cannot parse' yellow.
   CONTEXT: write_atomic() in jimmy-status-publisher.sh
-
-[2026-04-22T19:35:24Z] [DECISION] Publisher runs every 60s via StartInterval, not launchd cron
   WHY: cluster-check.sh --health-json does an ssh probe per node; 60s keeps load low while giving tiles fresh enough data (dashboard internal cadences are 5-20s, but the mirror is eventually consistent and that's fine for ops).
   CONTEXT: com.buildrunner.jimmy-publisher.plist StartInterval=60
-
-[2026-04-22T19:35:24Z] [TRADE-OFF] Publisher derives overflow-reserve state from node heartbeats (running_builds>0 ⇒ active, online ⇒ idle, else offline) instead of a real reserve-activation signal
   WHY: No Muddy component currently writes a canonical overflow-reserve signal. Deriving from heartbeats gives the panel real data (idle/active/offline with timestamps) until a dedicated source exists.
   CONTEXT: jimmy-status-publisher.sh overflow-reserve block; long-term source should be the overflow shard watcher (com.br3.overflow-shard-watcher.plist)
-
-[2026-04-22T19:35:24Z] [DECISION] Adversarial-reviews mirror is a pure copy of Muddy's .buildrunner/adversarial-reviews/*.json — Jimmy is not in the loop
   WHY: The authoritative archive lives on Muddy (where the reviews run). Attempting to round-trip through Jimmy adds latency and a failure mode for no gain. Panel only needs the last 10 reviews by mtime.
   CONTEXT: rsync block in jimmy-status-publisher.sh; collectConsensus() in jimmy-status.mjs
-[2026-04-22T19:51:48.653502Z] THREE_WAY_REVIEW review_start plan_hash=fc4a5567c95c88f5 artifact='/Users/byronhudson/Projects/Website-Builder/.buildrunner/plans/spec-draft-plan.md' commit=plan-1776887508
-[2026-04-22T19:56:33.131067Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=fc4a5567c95c88f5 reviewers=2
 2026-04-22T20:00:48Z dispatch: phase=1 builder=codex node=muddy skill=autopilot
 2026-04-22T20:00:48Z dispatch: phase=2 builder=codex node=muddy skill=autopilot
-[2026-04-22T20:02:07.383191Z] THREE_WAY_REVIEW review_start plan_hash=bd7bbac89e457a79 artifact='.buildrunner/plans/spec-draft-plan.md' commit=plan-1776888127
-[2026-04-22T20:08:05.408808Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=bd7bbac89e457a79 reviewers=2
-[2026-04-22T15:11:42] [DECISION] Spec /ship v1 review blocked; v2 fixed inline (12 blockers, 16 warnings); bypass authorized per 1-review rule
-
-[2026-04-22T20:16:00Z] [ARCHITECTURE] Below research queue worker converted from on-demand daemon to persistent launchd agent (macOS) + systemd service (Linux)
   WHY: Queue was blocking indefinitely when worker wasn't running — records sat for hours (your /research record, 2.5h delay; claude-automation record from 17:22). Worker must always be draining.
   CONTEXT: core/cluster/below/research_worker.py, core/cluster/below/com.buildrunner.below-worker.plist (new), core/cluster/below/below_worker.service, .buildrunner/research-queue/
-
-[2026-04-22T20:16:30Z] [DECISION] The Mom Test (Rob Fitzpatrick) committed manually to Jimmy after worker reformat failures exhausted retries
   WHY: llama3.3:70b failed to emit YAML frontmatter over 3 retries on large drafts (77k char claude-automation record, then 11k char mom-test record). Manual commit unblocked queue immediately while hardening fix was implemented.
   CONTEXT: docs/domains/the-mom-test.md (sha 2c59272), .buildrunner/research-queue/completed.jsonl audit trail
-
-[2026-04-22T20:16:45Z] [ARCHITECTURE] Added deterministic frontmatter fallback to research_worker.py
   WHY: Single Ollama failure (OOM, connection timeout, format error) was blocking the entire queue forever. Fallback synthesizes valid frontmatter from PendingRecord (title, created_at, BuildRunner3 defaults) when llama3.3:70b fails, so record commits with reindex_warning rather than erroring.
   CONTEXT: core/cluster/below/research_worker.py — _synthesize_frontmatter_fallback(), process_record() exception handling
-
-[2026-04-22T20:16:55Z] [REJECTED] Retry-exhaust-then-error behavior (old test contract)
   WHY: Waiting for LLM to come back online or fixing the model itself delays everything downstream. Commit with a warning is preferable to queuing forever. Future enrichment/corrections can happen in a second pass.
   CONTEXT: core/cluster/below/test_failure_modes.py (updated 2 tests)
-
-[2026-04-22T20:17:10Z] [PATTERN] Research queue entries must persist locally (.buildrunner/research-queue/pending.jsonl, completed.jsonl) so queue survives node outages
   WHY: Decouples Claude's reasoning (sync, chatroom time) from Below's inference (async, slow, flaky). Local queue is the contract: write locally immediately, drain asynchronously, workers can fail and retry without losing work.
   CONTEXT: .buildrunner/research-queue/, git-ignored, populated by /research skill, drained by research_worker.py
-
-[2026-04-22T20:17:25Z] [CONSTRAINT] Research library must live only on Jimmy (/srv/jimmy/research-library)
   WHY: Single source of truth for git commits and LanceDB vector index. Concurrent writes from multiple nodes would corrupt the vector table and cause git conflicts.
   CONTEXT: Global CLAUDE.md rule, research_worker.py _commit_to_jimmy(), reindex-research.sh
-
-[2026-04-22T20:17:40Z] [WHY] Strengthened reformat_prompt.md with "FIRST THREE CHARS MUST BE ---" rule and concrete YAML example
   WHY: llama3.3:70b was hallucinating preamble text before the frontmatter fence ("Here is your document:" etc) or emitting incomplete YAML. Explicit structural constraint + exemplar pattern forces compliance.
   CONTEXT: core/cluster/below/reformat_prompt.md (lines 1-14 rewritten)
-
-[2026-04-22T20:17:55Z] [GOAL] Shift: Queue processing must happen within seconds of /research call, not hours later
   WHY: User expectations: run /research → local markdown file + queue entry written → "indexed at path X" within 5min, not a surprise queue discovery weeks later. Current experience: records sit indefinitely waiting for someone to manually run the worker.
   CONTEXT: Locks in requirement for persistent worker (launchd/systemd), fallback behavior, and 5s poll interval (was 10s)
-
-[2026-04-22T20:18:10Z] [DECISION] Book summary → 8 practical tools extracted from The Mom Test and logged as tooling ideas
   WHY: Book is prescriptive ("talk to customers the right way") but repo builds software. Extract the operationalizable tools (Mom Test Linter, Zombie Lead Detector, PRD Evidence Auditor, etc) so BR3 becomes a customer discovery platform, not just a notes archive.
   CONTEXT: /research output body, 8 tools listed under "Practical Tools / Scripts That Fall Out of the Book"
-
-[2026-04-22T20:18:25Z] [TRADE-OFF] Manual frontmatter composition for your record (vs waiting for llama3.3 fix)
   WHY: Deterministic fallback was not yet implemented when record hit 3 retries. Manually composing frontmatter (title, domain: customer-discovery, techniques: [interviewing, discovery, segmentation], subjects: [mom-test, fitzpatrick], priority: high, source: BuildRunner3) let the record commit immediately (sha 2c59272), unblock the queue, and test the fallback code before running worker again.
   CONTEXT: /tmp/mom-test-final.md, commit 2c59272
-
-[2026-04-22T20:25:45Z] [ROOT-CAUSE] Autopilot ignored BUILD role-matrix in Website-Builder — every phase dispatched to claude/muddy
   WHY: autopilot Step 4.1c (autopilot.md:493) probed only $PROJECT_ROOT/scripts/load-role-matrix.sh; when missing, silently set BR3_PHASE_BUILDER_FROM_MATRIX=claude with no error or log line
   CONTEXT: ~/.claude/commands/autopilot.md, Website-Builder/.buildrunner/builds/BUILD_enrichment-rules-engine.md
-[2026-04-22T20:25:45Z] [ARCHITECTURE] Role-matrix loaders promoted from project-local to global at ~/.buildrunner/scripts/
   WHY: cluster topology is global — roles/nodes do not vary per project, so requiring every project to install its own loader is duplication that silently fails when missing
   CONTEXT: ~/.buildrunner/scripts/load-role-matrix-phase.sh (new, env-exporter), ~/.buildrunner/scripts/load-cluster-flags.sh (new)
-[2026-04-22T20:25:45Z] [DECISION] Installed env-exporter at distinct global name load-role-matrix-phase.sh instead of renaming the existing resolver
   WHY: ~/.buildrunner/scripts/load-role-matrix.sh (YAML→JSON resolver) already has active callers in spec.md:360 and tests/config/test_role_matrix_load.bats — renaming would break them; distinct name avoids collision
   CONTEXT: env-exporter reads the resolver's JSON cache at ~/.buildrunner/config/.resolved-role-matrix.json and exports BR3_PHASE_* vars for dispatch
-[2026-04-22T20:25:45Z] [ARCHITECTURE] autopilot.md Step 4.1 and 4.1c now probe project-local first, global as default; loud warning + decisions.log entry when neither present
   WHY: silent fallback to claude/muddy hid the bug for an entire build — operators had no visible signal the matrix was ignored
   CONTEXT: ~/.claude/commands/autopilot.md lines 442-453 (load-cluster-flags) and 497-526 (load-role-matrix)
-[2026-04-22T20:25:45Z] [DECISION] Kept project-local scripts/load-role-matrix.sh path as optional override rather than removing entirely
   WHY: rare case where a project needs to override global cluster defaults; override costs nothing when absent, preserves escape hatch
   CONTEXT: autopilot.md probe order: $PROJECT_ROOT/scripts/load-role-matrix.sh → $HOME/.buildrunner/scripts/load-role-matrix-phase.sh
-[2026-04-22T20:25:45Z] [TRADE-OFF] Installed loaders into Website-Builder/scripts/ even though global fix supersedes them
   WHY: the currently-running autopilot session in Website-Builder loaded the OLD autopilot.md into its context and will probe only the project-local path on its next phase dispatch; installing the project-local copy ensures the in-flight build picks up the matrix without a restart
   CONTEXT: Website-Builder/scripts/load-role-matrix.sh, Website-Builder/scripts/load-cluster-flags.sh
-[2026-04-22T20:25:45Z] [WHY] Matrix resolution for Website-Builder phase 7 confirmed: builder=codex node=walter bucket=qa
   WHY: BUILD spec overrides.phases only sets bucket+assigned_node for each phase; builder inherits from default-role-matrix.yaml bucket defaults (qa bucket → codex/gpt-5.4)
   CONTEXT: ~/.buildrunner/config/default-role-matrix.yaml drives builder selection unless a BUILD spec explicitly overrides builder in its phase block
-[2026-04-22T20:25:45Z] [CONSTRAINT] Running autopilot sessions cannot pick up autopilot.md edits mid-run
   WHY: Claude Code loads the skill markdown once at session start; bash commands inside execute from cached instructions. Global fix applies to future /autopilot invocations; in-flight builds need a project-local loader as bridge
   CONTEXT: future skill design — if a skill needs hot-reload behavior, it must read from disk inside its bash blocks rather than rely on prose-level paths
-[2026-04-22T15:26:19] [DECISION] Created build spec: ship-self-healing-prepush with 6 phases
-[2026-04-22T20:41:24.009635Z] THREE_WAY_REVIEW review_start plan_hash=301d5b4a3a918cc9 artifact='.buildrunner/plans/spec-draft-plan.md' commit=plan-1776890483
-[2026-04-22T20:43:58.398991Z] THREE_WAY_REVIEW review_start plan_hash=f285ed7d7fbc6018 artifact='diff --git a/scripts/validate-enrichment.test.ts b/scripts/validate-enrichment.t' commit=04c9f68
-[2026-04-22T20:47:27.750666Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=301d5b4a3a918cc9 reviewers=2
 2026-04-22T20:48:08Z routing: skill=autopilot phase=5 model=opus node=muddy status=complete note="Phase 14 hardware-metric writers superseded by Prometheus on Lockwood; Phase 14 scope reduced; see BUILD_cluster-prometheus-integration"
-[2026-04-22T20:48:37.835324Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f285ed7d7fbc6018 reviewers=2
-[2026-04-22T15:50:18] [DECISION] Spec multi-LLM research: review BLOCK was arbiter circuit_open; 0 blockers, 1 warn + 6 notes fixed inline; bypass authorized (1-review rule)
-[2026-04-22T20:51:18.386190Z] THREE_WAY_REVIEW review_start plan_hash=0bc824e83a6e6e2f artifact='.buildrunner/plans/spec-draft-plan.md' commit=plan-1776891078
-[2026-04-22T15:53:57] [DECISION] Created BUILD_research-multi-llm with 7 phases (multi-LLM /research enhancement)
-[2026-04-22T20:55:12.859094Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0bc824e83a6e6e2f reviewers=2
-
 # === Session 2026-04-22T21:02:11Z — /research pipeline hardening ===
-
-[2026-04-22T21:02:11Z] [ARCHITECTURE] Removed stale 'muddy' git remote from Jimmy research-library
   WHY: Per global CLAUDE.md "Research Library — Jimmy Only" rule, the Muddy mirror path was consolidated away but Jimmy's clone still had 'muddy' as a push target, causing every worker commit to fail with "Could not read from remote repository"
   CONTEXT: ssh byronhudson@10.0.1.106 /srv/jimmy/research-library/.git/config
-
-[2026-04-22T21:02:11Z] [ARCHITECTURE] Made 'git push muddy HEAD:main' conditional on the remote existing
   WHY: Worker must not fail commits just because the Muddy mirror is gone; supports both Jimmy-only and mirrored deployments without code changes
   CONTEXT: core/cluster/below/research_worker.py _commit_local_repo + _REMOTE_COMMIT_SCRIPT, test_commit.py cleanup_script
-
-[2026-04-22T21:02:11Z] [DECISION] Rewrote reformat_prompt.md with markdown-safe YAML example
   WHY: Prior example had mis-indented list items and blank line after opening fence, caused llama3.3:70b to produce malformed YAML and fail the strict 'startswith ---\n' parser on every retry
   CONTEXT: core/cluster/below/reformat_prompt.md
-
-[2026-04-22T21:02:11Z] [ARCHITECTURE] Added preamble-tolerant parser for llama output
   WHY: Even with a perfect prompt, llama3.3:70b occasionally emits a wrapping code fence or preamble ("Here is the document:"); reject rate drops from ~100% to ~0% by stripping these before YAML lookup
   CONTEXT: core/cluster/below/research_worker.py _strip_wrapping_code_fence, _trim_preamble_to_frontmatter
-
-[2026-04-22T21:02:11Z] [DECISION] llama3.3:70b temperature pinned to 0.0; qwen3 think:false with presence_penalty 1.5
   WHY: /llm research says llama3.3 tolerates greedy decoding (only model in cluster that does) and qwen3 requires presence_penalty on quantised weights to prevent repetition loops; thinking+structured-output is a known break on qwen3
   CONTEXT: core/cluster/below/research_worker.py _ollama_generate
-
-[2026-04-22T21:02:11Z] [TRADE-OFF] num_ctx capped at 4096 (not 16384) on llama3.3:70b
   WHY: Below has only 2GB VRAM headroom (48GB total, 46GB baseline per cluster.json); num_ctx=16384 crashed llama runner with 'process has terminated'; 4096 doubles the broken 2048 default, still fits the budget. Env override BR3_BELOW_LLAMA_NUM_CTX exposed for future tuning
   CONTEXT: core/cluster/below/research_worker.py
-
-[2026-04-22T21:02:11Z] [REJECTED] Probing http://10.0.1.105:8000 to check 'Below worker' health
   WHY: Port 8000 on Below is not associated with the research worker. The worker is a launchd agent on Muddy (com.buildrunner.below-worker) that polls a local file. Misdiagnosis caused prior session to falsely conclude 'nothing was handed off'
   CONTEXT: /research skill failure-mode section, research-queue-status.sh
-
-[2026-04-22T21:02:11Z] [ARCHITECTURE] New diagnostic helper research-queue-status.sh
   WHY: Single command replaces ad-hoc port probing; checks launchd agent + pending depth + last 3 completed entries + Ollama + Jimmy + Jimmy remotes in one pass so future sessions don't re-make the port-8000 mistake
   CONTEXT: ~/.buildrunner/scripts/research-queue-status.sh
-
-[2026-04-22T21:02:11Z] [DECISION] Expanded /research skill's 'Failure modes to surface exactly' section
   WHY: Original text only covered 'Below offline' and 'queue stale >24h', so any commit/reindex failure got misattributed. Now distinguishes worker-down, commit-failed, reformat-fallback, and reindex-timeout with fix hints for each
   CONTEXT: ~/.claude/commands/research.md Step 0 failure-modes block
-
-[2026-04-22T21:02:11Z] [PATTERN] Prompt examples must avoid bare '---' that markdown renderers treat as HR
   WHY: reformat_prompt.md's YAML example got silently mangled when edited through a markdown-aware tool; new version uses explicit section markers ('## End of required shape') and negative-example block so intent survives future edits
   CONTEXT: core/cluster/below/reformat_prompt.md
-
-[2026-04-22T21:02:11Z] [CONSTRAINT] Research worker has no HTTP endpoint; it is a Muddy launchd agent only
   WHY: Architecturally the worker is a filesystem poller that calls Ollama (http) and SSHs to Jimmy; nothing listens on Below. Future diagnostics must not assume HTTP
   CONTEXT: com.buildrunner.below-worker.plist, research_worker.py ResearchWorker.run
-
-[2026-04-22T21:02:11Z] [GOAL] /research must work flawlessly every time — verified end-to-end
   WHY: User instruction; prior session demonstrated that silent-failure paths (bad prompt, stale remote, unclear skill docs) compound into "looks fine, nothing indexed"
   CONTEXT: 13/13 below cluster tests pass, launchd worker bounced to PID 49730, Jimmy reindex done (6812 chunks)
-[2026-04-22T21:03:56.942143Z] THREE_WAY_REVIEW review_start plan_hash=7fa33538c5de09c2 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=0a0b4e2
-[2026-04-22T21:05:14.647246Z] THREE_WAY_REVIEW review_start plan_hash=18bb28aef67198ca artifact='diff --git a/prompts/claude-commands/enrich-content.md b/prompts/claude-commands' commit=fdd0d11
-[2026-04-22T21:09:59.147442Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7fa33538c5de09c2 reviewers=2
-[2026-04-22T21:10:10.520104Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=18bb28aef67198ca reviewers=2
-[2026-04-22T21:11:02Z] Phase 1 decisions: API client layer shipped. urllib.request (no new deps). Circuit breaker: 3 fails/5min → open 10min. DB schema idempotent via CREATE IF NOT EXISTS. Exit code 2 for missing keys. llm-dispatch.sh allowlist: perplexity|gemini|grok|codex. Codex preflight caches result per-process. Cost rates hardcoded per-provider.
+  WHY: BR3 runtime posture routes by command name, not action type. /root is Claude-pinned; follow-on "fix this" inherits the skill's model. No rule says "all build work → Codex"
+  CONTEXT: ~/.buildrunner/ project_config, session-start brief, roy-concise profile
+  WHY: Developer brief is injected as context strings. Tool calls fire based on model judgment, not config. Only hooks are a hard enforcement layer in Claude Code.
+  CONTEXT: project_config resolved default, SessionStart hook
+  WHY: Edit/Write alone leaves Bash holes (sed -i, >, >>, rm, mv, git apply). Classifier distinguishes read-ish vs write-ish Bash. Marker file tells hook when Codex work is sanctioned.
+  CONTEXT: settings.json hooks, future wiring via /update-config
+  WHY: Canonical Anthropic multi-agent pattern (lead decomposes → worker executes → lead reviews) maps directly to role-matrix intent. Closes the drift with one named entry point.
+  CONTEXT: ~/.claude/skills/fixit/SKILL.md, .buildrunner/fixit-briefs/, .buildrunner/codex-allowed.flag
+  WHY: Reflexion research shows gains concentrate in the first reflection; 2+ rounds cause oscillation not improvement. Explicit cap prevents infinite-loop failure modes.
+  CONTEXT: /fixit Step 5 arbitration
+  WHY: Codex gets a self-contained brief, not the main conversation. Prevents context pollution and makes the audit trail explicit. Matches existing /2nd convention.
+  CONTEXT: Step 2 of /fixit, existing /2nd codex-briefs pattern
+  WHY: Main branch is never the workspace. Worktree gives clean diff for review and prevents Codex from corrupting base state on abort. Diff is the unit of arbitration.
+  CONTEXT: .worktrees/fixit-<ts>/, git worktree add in Step 3
+  WHY: Future enforcement hook trusts the marker to allow Edit/Write under /fixit. Clearing on every exit path (success/abort/error) is the invariant the hook depends on.
+  CONTEXT: Step 4 set, Step 7 clear, future PreToolUse hook
+  WHY: Out-of-scope requests get named alternatives (/spec, /codex-do, /root, /review) rather than stretching /fixit. Scope creep is the usual failure mode for delegated-fix skills.
+  CONTEXT: When-to-Use and Step 1 scope gate
+  WHY: Separation of concerns. If Claude writes code under /fixit, the role matrix is defeated. Any Edit/Write call on source code inside the skill is a bug.
+  CONTEXT: Rule 1 of /fixit
+  WHY: Subjective "looks good" review fails silently. Deterministic gate catches regressions that look fine in a diff.
+  CONTEXT: Step 6 verification
+  WHY: If Claude picks up where Codex failed, the role matrix is defeated by the first hard problem. Abort with worktree preserved for human inspection.
+  CONTEXT: Step 4 timeout, Step 7 abort
+  WHY: Reflexion research — diminishing returns, oscillation. Cap at one revision; second failure → human.
+  CONTEXT: Step 5 arbitration
+  WHY: /fixit is ad-hoc, single-scope. Parallelism belongs to /autopilot. Keeps /fixit's failure mode trivial to reason about.
+  CONTEXT: /fixit vs /autopilot boundary
+  WHY: Orchestrator-worker pattern requires separation. Codex executes, Claude judges. Self-grading collapses the check.
+  CONTEXT: Step 5 uses auto-review-diff.sh (Claude-side), not Codex self-report
+  WHY: Explicit invocation first, measure scope-gate reliability for ~1 week, then consider auto-invoke. Premature auto-invoke removes the human gate before trust is established.
+  CONTEXT: hook + /fixit integration, open question for next iteration
+  WHY: classify-prompt.sh (scope gate), codex-bridge.sh (optional cluster context), auto-review-diff.sh (JSON-output review pipeline), decisions.log (audit). Reuse preserves invariants across skills.
+  CONTEXT: ~/.buildrunner/scripts/, Steps 1/4/5/7 of /fixit
+  WHY: Current state lets "fix this" silently land on Claude. Goal is deterministic routing via named skill + hook backstop, not probabilistic self-policing.
+  CONTEXT: /fixit skill (shipped), enforcement hook (pending user go-ahead)
+## 2026-04-22 to 2026-04-22 (archived 2026-04-22)
+- Types: PATTERN(9), DECISION(22), ARCHITECTURE(12), REJECTED(5), CONSTRAINT(6), ADVERSARIAL_REVIEW_BYPASS(1), WHY(4), TRADE-OFF(4), GOAL(2), ROOT-CAUSE(1) | Key: Created /fixit skill at ~/
+- 66 entries → decisions.log.20260422_161646
+
+# Current Decisions
+[2026-04-22T20:10:45Z] [CONSTRAINT] Claude never writes code inside /fixit — only brief, diff read, arbitration
+[2026-04-22T20:10:50Z] [CONSTRAINT] Verification is command exit code, not Claude judgment. tsc --noEmit required for TS projects
+[2026-04-22T20:10:55Z] [CONSTRAINT] 300s Codex timeout; timeout/error → abort, no Claude salvage
+[2026-04-22T20:11:00Z] [REJECTED] Multi-round revision loops
+[2026-04-22T20:11:05Z] [REJECTED] Parallel Codex fan-out
+[2026-04-22T20:11:10Z] [REJECTED] Codex self-grading of its own diff
+[2026-04-22T20:11:15Z] [REJECTED] Auto-invoke /fixit when hook blocks Edit — deferred
+[2026-04-22T20:11:20Z] [DECISION] Reuse existing BR3 scripts instead of new infrastructure
+[2026-04-22T20:11:25Z] [GOAL] Close role-matrix drift: ad-hoc fixes consistently route through Codex via /fixit, with a future PreToolUse hook enforcing the boundary when users forget to invoke the skill
+[2026-04-22T16:16:46] [DECISION] workfloDock MVP BUILD spec written; 3.7 bypass authorized (1-review rule); plan SHA f4fc1f7; 7 phases
+[2026-04-22T21:20:15Z] Phase 6 decisions:
+  - test isolation: patched _cb_sync_from_db to no-op in autouse fixture to prevent real DB leaking CB state into unit tests
+  - budget guard test: placeholder with skip reason=waiting-on-phase-5 (research-budget-guard.sh ships in Phase 5)
+  - Walter cron: used plain crontab (no ~/.walter/jobs/ layout existed); test_results.db present on Walter, writes there
