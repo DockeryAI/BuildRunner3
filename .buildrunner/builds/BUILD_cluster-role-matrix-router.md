@@ -125,7 +125,7 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 ### Phase 5: Path-sync in `dispatch-to-node.sh`
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/dispatch-to-node.sh` (MODIFY)
@@ -135,12 +135,12 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 **Deliverables:**
 
-- [ ] Before dispatch, script reads the phase's resolved routing entry (from `agents.json.routing` or a `--phase <N>` arg). Any Files matching a `routing.sync_on_dispatch` prefix triggers a pre-dispatch rsync of the full prefix directory to the target node's equivalent path.
-- [ ] After execution, a post-dispatch rsync pulls changes back. SHA256 of each file pre/post is recorded in `.buildrunner/decisions.log` under `sync_result:` lines. Drift without an expected change → WARN.
-- [ ] **Sync failure handling (standalone):** on rsync failure (network drop, permissions, target path missing), `dispatch-to-node.sh` aborts with exit code 3 (`sync-failed`) WITHOUT executing the phase. The orchestrator (autopilot) detects exit 3 and invokes `resolve-dispatch-node.sh --exclude-node <failed-node> <build> <phase>` to re-resolve, then re-dispatches. `dispatch-to-node.sh` does NOT call the resolver itself — resolver stays a pure CLI.
-- [ ] Replace the current "LIMITATION" comment block at the top of `dispatch-to-node.sh` with accurate behavior documentation: files inside project_path sync via the existing flow; files under `routing.sync_on_dispatch` prefixes additionally sync in and out; other external paths still pin the phase via the router's path-locality step.
-- [ ] `_dispatch-core.sh` gains `sync_prefix_to_node(node, prefix)` and `sync_prefix_from_node(node, prefix)` helpers (using existing rsync/tar/scp selection logic based on target OS).
-- [ ] Feature flag `BR3_ROUTER_PREFIX_SYNC=on|off`. Default `off` through Phase 6 verification; flipped to `on` in Phase 6 last deliverable. Rollback is one env var.
+- [x] Before dispatch, script reads the phase's resolved routing entry (from `agents.json.routing` or a `--phase <N>` arg). Any Files matching a `routing.sync_on_dispatch` prefix triggers a pre-dispatch rsync of the full prefix directory to the target node's equivalent path.
+- [x] After execution, a post-dispatch rsync pulls changes back. SHA256 of each file pre/post is recorded in `.buildrunner/decisions.log` under `sync_result:` lines. Drift without an expected change → WARN.
+- [x] **Sync failure handling (standalone):** on rsync failure (network drop, permissions, target path missing), `dispatch-to-node.sh` aborts with exit code 3 (`sync-failed`) WITHOUT executing the phase. The orchestrator (autopilot) detects exit 3 and invokes `resolve-dispatch-node.sh --exclude-node <failed-node> <build> <phase>` to re-resolve, then re-dispatches. `dispatch-to-node.sh` does NOT call the resolver itself — resolver stays a pure CLI.
+- [x] Replace the current "LIMITATION" comment block at the top of `dispatch-to-node.sh` with accurate behavior documentation: files inside project_path sync via the existing flow; files under `routing.sync_on_dispatch` prefixes additionally sync in and out; other external paths still pin the phase via the router's path-locality step.
+- [x] `_dispatch-core.sh` gains `sync_prefix_to_node(node, prefix)` and `sync_prefix_from_node(node, prefix)` helpers (using existing rsync/tar/scp selection logic based on target OS).
+- [x] Feature flag `BR3_ROUTER_PREFIX_SYNC=on|off`. Default `off` through Phase 6 verification; flipped to `on` in Phase 6 last deliverable. Rollback is one env var.
 
 ### Phase 6: Live verification + rollout
 
