@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-4 Complete — Phase 5 In Progress
+**Status:** Phases 1-5 Complete — Phase 6 In Progress
 **Deploy:** web — `npm run build` (framework-level skill; deploy target is N/A for the BR3 framework itself)
 **Source Plan File:** .buildrunner/plans/spec-ship-self-healing-prepush-plan.md
 **Source Plan SHA:** 9e725f1a38361e5dab7e42e1fab2fd40bbbb67ce3dd65277094e78e94c9cc118
@@ -160,7 +160,7 @@ role-matrix:
 
 ### Phase 5: Observability + Telemetry
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/ship/telemetry/emit.sh` (NEW) — reuses existing `lockwood-metrics.sh` transport
@@ -174,11 +174,11 @@ role-matrix:
 
 **Deliverables:**
 
-- [ ] `emit.sh` calls `lockwood-metrics.sh emit ship.<gate>.<outcome>` with JSON `{duration_ms, heal_attempts, branch, mode, exit_code}`
-- [ ] Weekly rollup: top 3 failing gates, mean heal success rate, mean time-to-ship, total ships, override count
-- [ ] Drift detection: heal rate on any gate rising >20% WoW writes to `.buildrunner/ship/drift-alerts.json`
-- [ ] `ship stats` subcommand calls `rollup.sh --week-current`
-- [ ] Emit degrades to local JSONL fallback if Lockwood is offline — never fails a gate
+- [x] `emit.sh` calls `lockwood-metrics.sh emit ship.<gate>.<outcome>` with JSON `{duration_ms, heal_attempts, branch, mode, exit_code}`
+- [x] Weekly rollup: top 3 failing gates, mean heal success rate, mean time-to-ship, total ships, override count
+- [x] Drift detection: heal rate on any gate rising >20% WoW writes to `.buildrunner/ship/drift-alerts.json`
+- [x] `ship stats` subcommand calls `rollup.sh --week-current`
+- [x] Emit degrades to local JSONL fallback if Lockwood is offline — never fails a gate
 
 **Success Criteria:** `/ship` run emits metrics visible in `lockwood-metrics.sh rollup 1`. Simulated 40% failure rate → drift alert written. `/ship stats` prints useful summary.
 
