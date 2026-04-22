@@ -1825,12 +1825,13 @@ def run_three_way_review(
             "consensus_pass",
             f"round={review_round} findings={len(merged)} consensus_blockers=0",
         )
-        _emit_adversarial_review_ran(
-            mode="3-way" if _ADVERSARIAL_3WAY_ENABLED else "2-way",
-            verdict="APPROVED",
-            findings_count=len(merged),
-            commit_sha=commit_sha,
-        )
+        if _ADVERSARIAL_3WAY_ENABLED:
+            _emit_adversarial_review_ran(
+                mode="3-way",
+                verdict="APPROVED",
+                findings_count=len(merged),
+                commit_sha=commit_sha,
+            )
         return {
             "verdict": "APPROVED",
             "findings": merged,
@@ -1851,12 +1852,13 @@ def run_three_way_review(
             "consensus_after_rebuttal",
             f"round={review_round} rebuttal_ok={rebuttal_ok}",
         )
-        _emit_adversarial_review_ran(
-            mode="3-way" if _ADVERSARIAL_3WAY_ENABLED else "2-way",
-            verdict="APPROVED",
-            findings_count=len(merged),
-            commit_sha=commit_sha,
-        )
+        if _ADVERSARIAL_3WAY_ENABLED:
+            _emit_adversarial_review_ran(
+                mode="3-way",
+                verdict="APPROVED",
+                findings_count=len(merged),
+                commit_sha=commit_sha,
+            )
         return {
             "verdict": "APPROVED",
             "findings": merged,
@@ -1921,12 +1923,13 @@ def run_three_way_review(
         "escalated": False,
         "exit_code": exit_code,
     }
-    _emit_adversarial_review_ran(
-        mode="3-way" if _ADVERSARIAL_3WAY_ENABLED else "2-way",
-        verdict=verdict,
-        findings_count=len(merged),
-        commit_sha=commit_sha,
-    )
+    if _ADVERSARIAL_3WAY_ENABLED:
+        _emit_adversarial_review_ran(
+            mode="3-way",
+            verdict=verdict,
+            findings_count=len(merged),
+            commit_sha=commit_sha,
+        )
     return result
 
 

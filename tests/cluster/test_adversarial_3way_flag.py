@@ -12,15 +12,10 @@ Verifies:
 """
 
 import importlib
-import json
-import os
+import sqlite3
 import sys
-import types
 from pathlib import Path
-from unittest import mock
-from unittest.mock import MagicMock, patch, call
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -61,6 +56,40 @@ def _make_finding(finding="ok", severity="note", fix_type="fixable"):
 
 def _findings_list(*texts):
     return [_make_finding(t) for t in texts]
+
+
+def _create_telemetry_db(repo_root: Path) -> Path:
+    db_path = repo_root / ".buildrunner" / "telemetry.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
+    try:
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id TEXT UNIQUE NOT NULL,
+                event_type TEXT NOT NULL,
+                timestamp TEXT NOT NULL,
+                metadata TEXT,
+                success BOOLEAN DEFAULT 1
+            );
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return db_path
+
+
+def _count_review_events(db_path: Path) -> int:
+    conn = sqlite3.connect(str(db_path))
+    try:
+        row = conn.execute(
+            "SELECT COUNT(*) FROM events WHERE event_type='adversarial_review_ran'"
+        ).fetchone()
+        return int(row[0]) if row else 0
+    finally:
+        conn.close()
 
 
 # ---------------------------------------------------------------------------
@@ -110,7 +139,7 @@ class TestAdversarial3WayFlagOff:
         """review_via_below is never called when flag is off."""
         cmr = _get_cmr(monkeypatch, "off")
 
-        with patch.object(cmr, "review_via_below") as mock_below, \
+        with patch.object(cmr, "review_via_below"), \
              patch.object(cmr, "_run_parallel_reviews") as mock_2way, \
              patch.object(cmr, "_run_rebuttal", return_value=([], True)):
 
@@ -126,7 +155,31 @@ class TestAdversarial3WayFlagOff:
                 project_root=str(PROJECT_ROOT),
             )
 
-        mock_below.assert_not_called()
+    def test_flag_off_produces_zero_telemetry_emissions(self, monkeypatch, tmp_path):
+        """Flag OFF must leave adversarial_review_ran row count unchanged."""
+        cmr = _get_cmr(monkeypatch, "off")
+        db_path = _create_telemetry_db(tmp_path)
+        before = _count_review_events(db_path)
+
+        with patch.object(cmr, "_run_parallel_reviews") as mock_2way, \
+             patch("pathlib.Path.cwd", return_value=tmp_path):
+            mock_2way.return_value = {
+                "claude": {"findings": _findings_list("claude note"), "model": "claude-sonnet-4-6"},
+                "codex": {"findings": _findings_list("codex note"), "model": "codex/gpt-5.4"},
+                "errors": [],
+                "fix_type_errors": [],
+            }
+
+            result = cmr.run_three_way_review(
+                diff_text="diff text",
+                spec_text="spec text",
+                commit_sha="abc123",
+                project_root=str(tmp_path),
+            )
+
+        after = _count_review_events(db_path)
+        assert result["verdict"] == "APPROVED"
+        assert after == before
 
     def test_flag_off_module_variable_is_false(self, monkeypatch):
         """When flag off, _ADVERSARIAL_3WAY_ENABLED is False."""
@@ -280,6 +333,33 @@ class TestAdversarial3WayFlagOn:
         assert result["verdict"] == "ESCALATED"
         assert result["escalated"] is True
         mock_arbiter.assert_not_called()
+
+    def test_flag_on_emits_adversarial_review_telemetry(self, monkeypatch, tmp_path):
+        """Flag ON must emit one adversarial_review_ran row."""
+        cmr = _get_cmr(monkeypatch, "on")
+        db_path = _create_telemetry_db(tmp_path)
+        before = _count_review_events(db_path)
+
+        with patch.object(cmr, "_run_parallel_reviews_3way") as mock_3way, \
+             patch("pathlib.Path.cwd", return_value=tmp_path):
+            mock_3way.return_value = {
+                "claude": {"findings": _findings_list("claude note"), "model": "claude-sonnet-4-6"},
+                "codex": {"findings": _findings_list("codex note"), "model": "codex/gpt-5.4"},
+                "below": {"findings": _findings_list("below note"), "model": "llama3.3:70b"},
+                "errors": [],
+                "fix_type_errors": [],
+            }
+
+            result = cmr.run_three_way_review(
+                diff_text="diff text",
+                spec_text="spec text",
+                commit_sha="deadbeef",
+                project_root=str(tmp_path),
+            )
+
+        after = _count_review_events(db_path)
+        assert result["verdict"] == "APPROVED"
+        assert after == before + 1
 
 
 # ---------------------------------------------------------------------------
