@@ -856,3 +856,7 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-22T00:13:05.356879Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=APPROVED findings=1 upheld=1 model=claude-opus-4-7 effort=xhigh duration_s=52.7 rationale="The disputed letterSpacing finding describes a real defect, but Claude's blocker classification is overcalled. React treats numeric letterSpacing as px (not silently discarded), producing wrong-but-re"
 [2026-04-22T00:13:05.435732Z] THREE_WAY_REVIEW arbiter_ruling verdict=APPROVED round=1
 [2026-04-22T00:13:07.780861Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-22T00:13:39.113002Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=7
+[2026-04-22T00:13:45.280138Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new sliders persistence path can silently drop edits for projects that do not already have a `design_research` row.' round=1
+[2026-04-22T00:13:48.106080Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=2 upheld=2 model=claude-opus-4-7 effort=xhigh duration_s=39.8 rationale='The saveAakerSliders update-without-upsert defect is a confirmed silent data-loss path for any project lacking a pre-existing design_research row — both reviewers identified it and the rebuttal record'
+[2026-04-22T00:13:48.201103Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
