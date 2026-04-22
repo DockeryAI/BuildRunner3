@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-4 Complete — Phase 5 In Progress
+**Status:** Phases 1-5 Complete — Phase 6 In Progress
 **Deploy:** web — `npm run build` (no runtime deploy needed; skill + scripts ship via git push to operator's home)
 **Source Plan File:** .buildrunner/plans/spec-draft-plan.md
 **Source Plan SHA:** 66fdd7763ffba294e8825c82a0a162aad34d3a3873ca331a31cda2be37f7a8af
@@ -133,7 +133,7 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 ### Phase 5: Cost guardrails + fallback orchestration
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/research-budget-guard.sh` (NEW)
@@ -143,12 +143,12 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 **Deliverables:**
 
-- [ ] `research-budget-guard.sh` exposes `init <invocation_id> <budget_usd>` (writes budget record), `consume <invocation_id> <cost_usd>` (atomic check-and-add; exit 0 under cap, 1 over), `report <invocation_id>` (prints summary).
-- [ ] Step 3.5 calls `init` with `BR3_RESEARCH_BUDGET_USD` (default `2.00`) before dispatch, and `consume` after each `llm-dispatch.sh` call.
-- [ ] Step 4.5 calls `consume` after each adversarial-review dispatch.
-- [ ] On `consume` exit 1: stop dispatching, let in-flight finish, emit `## Budget Cap Hit` block in final report.
-- [ ] Per-invocation cost log: `.buildrunner/logs/research-cost.log` (one JSON line: `{invocation_id, ts, mode, sub_agents, reviewers, total_cost_usd, cap_hit, providers_failed}`).
-- [ ] Step 8 final report shows total cost, per-provider breakdown, provider failures.
+- [x] `research-budget-guard.sh` exposes `init <invocation_id> <budget_usd>` (writes budget record), `consume <invocation_id> <cost_usd>` (atomic check-and-add; exit 0 under cap, 1 over), `report <invocation_id>` (prints summary).
+- [x] Step 3.5 calls `init` with `BR3_RESEARCH_BUDGET_USD` (default `2.00`) before dispatch, and `consume` after each `llm-dispatch.sh` call.
+- [x] Step 4.5 calls `consume` after each adversarial-review dispatch.
+- [x] On `consume` exit 1: stop dispatching, let in-flight finish, emit `## Budget Cap Hit` block in final report.
+- [x] Per-invocation cost log: `.buildrunner/logs/research-cost.log` (one JSON line: `{invocation_id, ts, mode, sub_agents, reviewers, total_cost_usd, cap_hit, providers_failed}`).
+- [x] Step 8 final report shows total cost, per-provider breakdown, provider failures.
 
 ### Phase 6: Tests + verification
 
