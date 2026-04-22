@@ -267,7 +267,7 @@ role_matrix:
 
 ### Phase 5: Delete Superseded Writers + Amend BUILD_cluster-max Phase 14
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Bucket:** architecture
 **Primary effort:** xhigh
 **Architect:** Opus 4.7

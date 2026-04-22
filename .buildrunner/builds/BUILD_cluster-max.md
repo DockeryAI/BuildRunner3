@@ -380,13 +380,13 @@ Several files are touched by multiple phases inside a single wave (most notably 
 
 **Staging convention (per phase, per shared file):**
 
-| Shared file                                    | Staging path (per phase N)                                                   |
-| ---------------------------------------------- | ---------------------------------------------------------------------------- |
-| `core/cluster/AGENTS.md`                       | `core/cluster/AGENTS.md.append-phase<N>.txt`                                 |
-| `core/runtime/AGENTS.md`                       | `core/runtime/AGENTS.md.append-phase<N>.txt`                                 |
-| `archive/ui-dashboard-fastapi-experiment/AGENTS.md` | `archive/ui-dashboard-fastapi-experiment/AGENTS.md.append-phase<N>.txt` |
-| Root `AGENTS.md`                               | `AGENTS.md.append-phase<N>.txt`                                              |
-| `~/.buildrunner/scripts/adversarial-review.sh` | `~/.buildrunner/scripts/adversarial-review.sh.patch-phase<N>` (unified diff) |
+| Shared file                                         | Staging path (per phase N)                                                   |
+| --------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `core/cluster/AGENTS.md`                            | `core/cluster/AGENTS.md.append-phase<N>.txt`                                 |
+| `core/runtime/AGENTS.md`                            | `core/runtime/AGENTS.md.append-phase<N>.txt`                                 |
+| `archive/ui-dashboard-fastapi-experiment/AGENTS.md` | `archive/ui-dashboard-fastapi-experiment/AGENTS.md.append-phase<N>.txt`      |
+| Root `AGENTS.md`                                    | `AGENTS.md.append-phase<N>.txt`                                              |
+| `~/.buildrunner/scripts/adversarial-review.sh`      | `~/.buildrunner/scripts/adversarial-review.sh.patch-phase<N>` (unified diff) |
 
 **Wave-end merge step (`~/.buildrunner/scripts/wave-merge.sh <wave-N>`):**
 
@@ -1576,6 +1576,8 @@ Flip the four feature flags ON, run a post-cutover smoke test end-to-end (`/begi
 
 ### Phase 14: BR3 Self-Maintenance
 
+> **Scope note (2026-04-22):** Hardware metrics (per-node CPU/RAM/uptime, disk total/free, 30-day disk trend) are served by Prometheus on Lockwood and merged by the Node.js dashboard — see `BUILD_cluster-prometheus-integration`. Phase 14 scope is BR3-domain operations + backup/retention only. The `self_health.py` node-ping loop + `~/.buildrunner/health/latest.json` + `/srv/jimmy/status/nodes/*.json` + `/srv/jimmy/status/storage-health.json` write paths were superseded and removed from this phase.
+
 **Status:** not_started
 **Codex model:** gpt-5.3-codex
 **Codex effort:** medium
@@ -1590,7 +1592,6 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
 
 **Files (touch only these):**
 
-- `core/cluster/self_health.py` (NEW)
 - `core/cluster/auto_rebalance.py` (NEW)
 - `~/.buildrunner/scripts/model-update.sh` (NEW)
 - `~/.buildrunner/scripts/backup-prune.sh` (NEW — enforces 30 daily + 12 monthly + 3 yearly retention under `/srv/jimmy/backups/projects/`)
@@ -1599,7 +1600,6 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
 - `~/.buildrunner/scripts/archive-prune.sh` (NEW — unified retention enforcement across all non-projects Jimmy subtrees: brlogger 90d; supabase 14d+8w+12m; git-mirrors monthly `git gc --aggressive --prune=now`; adversarial-reviews 90d raw + monthly `.tar.zst` of older; memory session-summaries 180d)
 - `~/.buildrunner/scripts/lancedb-compact.sh` (NEW — quarterly LanceDB `compact_files()` + `cleanup_old_versions()` on `/srv/jimmy/lancedb/`, with pre-run row-count check that must match post-run)
 - `~/.buildrunner/scripts/disk-guard.sh` (NEW — 15-min timer, reads `df /srv/jimmy`: WARN at 80% → dashboard red banner + `decisions.log`; CRIT at 92% → emergency prune of oldest `backups/projects/` daily snapshots one at a time until ≤88%, never touching monthly/yearly; PAGE at 96% → stop accepting new backups + loud alert)
-- `/etc/systemd/system/br3-self-health.service|.timer` on Jimmy (NEW — `OnUnitActiveSec=5min`, `Persistent=true`)
 - `/etc/systemd/system/br3-model-update.service|.timer` on Jimmy (NEW — `OnCalendar=weekly`, `Persistent=true`)
 - `/etc/systemd/system/br3-backup-prune.service|.timer` on Jimmy (NEW — `OnCalendar=*-*-* 04:30:00`, fires 90 min after nightly backup finishes; `Persistent=true`)
 - `/etc/systemd/system/br3-offsite-sync.service|.timer` on Jimmy (NEW — `OnCalendar=Sun *-*-* 05:00:00`, weekly; `Persistent=true`)
@@ -1618,8 +1618,6 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
 
 #### Deliverables
 
-- [ ] `self_health.py` — every 5 min: ping all 7 nodes, confirm services responsive, confirm disk/RAM/VRAM thresholds, confirm Ollama models loaded. Write `~/.buildrunner/health/latest.json`. On persistent failure → `decisions.log` + dashboard alert.
-  - Verify: `pytest tests/cluster/test_self_health.py -x`; latest.json updated within 5 min of service start.
 - [ ] `auto_rebalance.py` — unhealthy node removed from pool; in-flight work reassigned. Returns after 2-min cool-down. No silent drops.
   - Verify: `pytest tests/cluster/test_auto_rebalance.py::test_no_silent_drop -x`.
 - [ ] `model-update.sh` — weekly cron pulls latest llama3.3, qwen3, deepseek-r1 tags. Quick benchmark. Promotes only if tok/s within 10% of prior.
@@ -1652,37 +1650,33 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
   - Verify: `ssh jimmy 'systemctl is-enabled br3-lancedb-compact.timer && systemctl list-timers --all | grep br3-lancedb-compact'` succeeds; `list-timers` next-fire is on a Jan/Apr/Jul/Oct 1st.
 - [ ] `br3-disk-guard.service` (oneshot) + `br3-disk-guard.timer` (`OnUnitActiveSec=15min`, `Persistent=true`). Enabled at boot. Runs BEFORE nightly-backup so the `backups-paused` flag can gate it.
   - Verify: `ssh jimmy 'systemctl is-enabled br3-disk-guard.timer && systemctl is-active br3-disk-guard.timer && systemctl list-timers br3-disk-guard.timer | grep "15min\|15 min"'` succeeds; `cat /srv/jimmy/status/disk-guard.json` exists and parses.
-- [ ] `br3-self-health.service` (oneshot) — runs `self_health.py` once per fire.
-  - Verify: `ssh jimmy 'systemctl cat br3-self-health.service | grep -E "Type=oneshot"'` succeeds.
-- [ ] `br3-self-health.timer` — `OnUnitActiveSec=5min`, `Persistent=true`, `Unit=br3-self-health.service`. Enabled at boot.
-  - Verify: `ssh jimmy 'systemctl is-enabled br3-self-health.timer && systemctl is-active br3-self-health.timer && systemctl list-timers --all | grep br3-self-health'` succeeds and shows next-fire ≤5min away.
 - [ ] `br3-model-update.service` (oneshot) + `br3-model-update.timer` (`OnCalendar=weekly`, `Persistent=true`). Enabled at boot.
   - Verify: `ssh jimmy 'systemctl is-enabled br3-model-update.timer && systemctl list-timers br3-model-update.timer | grep "1 week"'` succeeds.
-- [ ] **Persistent recovery test** — stop Jimmy's `systemd-timesyncd` for 6 minutes (simulates clock skew), restart it, confirm the next `br3-self-health` fire happens within 1 minute (Persistent semantics catch the missed window).
-  - Verify: `ssh jimmy 'sudo systemctl stop systemd-timesyncd; sleep 360; sudo systemctl start systemd-timesyncd; sleep 60; journalctl -u br3-self-health.service --since "2 minutes ago" | grep -c Started'` ≥1.
-- [ ] Dry-run validation — disconnect Otis 10 min: `auto_rebalance` shifts work; `self_health` flags Otis; recovery on return.
-  - Verify: structured log shows reassignment + flag + recovery.
+- [ ] **Persistent recovery test** — stop Jimmy's `systemd-timesyncd` for 6 minutes (simulates clock skew), restart it, confirm the next `br3-model-update` fire (or any Phase 14 `.timer`) catches the missed window via Persistent semantics.
+  - Verify: `ssh jimmy 'sudo systemctl stop systemd-timesyncd; sleep 360; sudo systemctl start systemd-timesyncd; sleep 60; systemctl list-timers --all | grep br3-'` shows pending future fires.
+- [ ] Dry-run validation — disconnect Otis 10 min: `auto_rebalance` shifts work; recovery on return (Otis offline detection now served by Prometheus `up` query from the Node.js dashboard).
+  - Verify: structured log shows reassignment + recovery.
 - [ ] **AGENTS.md update** — append to `core/cluster/AGENTS.md`: self-health 5-min cadence (via `.timer`); rebalance no-silent-drop rule; model-update 10% gate (weekly `.timer`); backup retention matrix (projects 30d+12m+3y / brlogger 90d / supabase 14d+8w+12m / git-mirrors monthly gc / adversarial 90d raw + monthly `.tar.zst` / memory summaries 180d); lancedb compact quarterly; disk-guard thresholds 80/92/96%; `backups-paused` flag is the single hard-stop for nightly-backup; cadences are `.timer`-driven, never internal sleep loops. ≤900 added bytes.
   - Verify: `grep -c "self_health\|rebalance\|.timer\|retention\|disk-guard\|backups-paused" core/cluster/AGENTS.md` ≥6.
 
 #### Claude Review (mandatory before Phase 14 marked complete)
 
 - Reviewer: `claude-opus-4-7` (Muddy)
-- Trigger: `/review --phase 14 --target "core/cluster/self_health.py,core/cluster/auto_rebalance.py,~/.buildrunner/scripts/model-update.sh,~/.buildrunner/scripts/{backup-prune,offsite-sync,backup-integrity-check,archive-prune,lancedb-compact,disk-guard}.sh,/etc/systemd/system/br3-{self-health,model-update,backup-prune,offsite-sync,backup-integrity,archive-prune,lancedb-compact,disk-guard}.{service,timer},core/cluster/AGENTS.md"`
-- Required findings: (1) zero silent work-drop; (2) model-update tok/s gate enforced; (3) dry-run validation log present for auto-rebalance; (4) **all 8 `.timer` units enabled, active, scheduling correctly with `Persistent=true`** (self-health 5min / model-update weekly / backup-prune 04:30 / offsite-sync Sun 05:00 / backup-integrity Sun 06:00 / archive-prune 04:45 / lancedb-compact quarterly / disk-guard 15min); (5) zero internal `time.sleep()` cadence loops in any Phase 14 service — all are oneshot scripts driven by timers; (6) archive-prune never deletes raw before its compressed bundle is written and fsync'd; (7) disk-guard emergency prune NEVER touches `monthly/`, `yearly/`, `archive/`, `lancedb/`, `memory/`, or the 7 most recent daily snapshots; (8) `backups-paused` flag gates nightly-backup AND is cleared only by manual intervention (never self-cleared); (9) lancedb-compact aborts on any pre/post row-count drop; (10) AGENTS.md updated and cites the full retention matrix + disk-guard thresholds, not sleep loops.
-- Block-on: silent drop, missing gate, threshold drift, missing dry-run, ANY of the 8 timers not enabled+active, ANY service running as a long-lived sleep loop instead of oneshot+timer, archive-prune deleting raw before compression verified, disk-guard touching protected subtrees, `backups-paused` self-clearing, lancedb row-count regression uncaught, AGENTS.md stale.
+- Trigger: `/review --phase 14 --target "core/cluster/auto_rebalance.py,~/.buildrunner/scripts/model-update.sh,~/.buildrunner/scripts/{backup-prune,offsite-sync,backup-integrity-check,archive-prune,lancedb-compact,disk-guard}.sh,/etc/systemd/system/br3-{model-update,backup-prune,offsite-sync,backup-integrity,archive-prune,lancedb-compact,disk-guard}.{service,timer},core/cluster/AGENTS.md"`
+- Required findings: (1) zero silent work-drop; (2) model-update tok/s gate enforced; (3) dry-run validation log present for auto-rebalance; (4) **all 7 `.timer` units enabled, active, scheduling correctly with `Persistent=true`** (model-update weekly / backup-prune 04:30 / offsite-sync Sun 05:00 / backup-integrity Sun 06:00 / archive-prune 04:45 / lancedb-compact quarterly / disk-guard 15min); (5) zero internal `time.sleep()` cadence loops in any Phase 14 service — all are oneshot scripts driven by timers; (6) archive-prune never deletes raw before its compressed bundle is written and fsync'd; (7) disk-guard emergency prune NEVER touches `monthly/`, `yearly/`, `archive/`, `lancedb/`, `memory/`, or the 7 most recent daily snapshots; (8) `backups-paused` flag gates nightly-backup AND is cleared only by manual intervention (never self-cleared); (9) lancedb-compact aborts on any pre/post row-count drop; (10) AGENTS.md updated and cites the full retention matrix + disk-guard thresholds, not sleep loops.
+- Block-on: silent drop, missing gate, threshold drift, missing dry-run, ANY of the 7 timers not enabled+active, ANY service running as a long-lived sleep loop instead of oneshot+timer, archive-prune deleting raw before compression verified, disk-guard touching protected subtrees, `backups-paused` self-clearing, lancedb row-count regression uncaught, AGENTS.md stale.
 
 #### Done When
 
-- [ ] Node taken offline detected within 5 min; work rerouted automatically.
+- [ ] Node taken offline detected within 5 min via Prometheus `up` (served by BUILD_cluster-prometheus-integration); `auto_rebalance.py` reroutes work automatically.
 - [ ] Model update runs and rolls back on regression.
-- [ ] All 8 `.timer` units show `is-active=active`, `is-enabled=enabled`, and a future `next-fire` in `systemctl list-timers`.
+- [ ] All 7 `.timer` units show `is-active=active`, `is-enabled=enabled`, and a future `next-fire` in `systemctl list-timers`.
 - [ ] Archive-prune dry-run matches expected plan across all 5 non-projects subtrees; wet-run leaves only expected survivors.
 - [ ] LanceDB compact dry-run reports rows-pre = rows-post and non-negative reclaim.
 - [ ] Disk-guard WARN/CRIT/PAGE all verified against fixtures; emergency prune never touches protected subtrees; `backups-paused` flag gates nightly-backup.
 - [ ] AGENTS.md updated and reviewed with full retention matrix + disk-guard thresholds.
 - [ ] Claude review passed with zero P0/P1 findings.
-- [ ] `decisions.log` entry: `Phase 14: BR3 self-maintenance live — 8 timers active, auto-rebalance + archive-prune + lancedb-compact + disk-guard, AGENTS.md updated with full retention matrix`.
+- [ ] `decisions.log` entry: `Phase 14: BR3 self-maintenance live — 7 timers active, auto-rebalance + archive-prune + lancedb-compact + disk-guard, AGENTS.md updated with full retention matrix; hardware metrics deferred to BUILD_cluster-prometheus-integration`.
 
 ---
 
@@ -1858,7 +1852,6 @@ See `.buildrunner/plans/phase-16-plan.md` for authoritative task bodies. Summary
 ## Session Log
 
 [Will be updated by /begin]
-
 
 ## Role Matrix (inline YAML — appended by migrate-role-matrix.py Phase 1)
 

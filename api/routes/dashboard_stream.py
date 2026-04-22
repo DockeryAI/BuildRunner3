@@ -4,11 +4,13 @@ Runs as part of the dashboard service on port 4400.
 WS path: /ws
 
 Emits event types:
-  node-health       — per-node CPU/RAM/task metrics + Jimmy-specific + Below VRAM
   overflow-reserve  — Lockwood / Lomax idle/warming/active/draining + event log
-  storage-health    — /srv/jimmy/ directory usage + backup timestamps + offsite sync
   consensus         — recent adversarial review results
   feature-health    — 15 feature-health tiles from telemetry.db (Phase 6)
+
+Hardware metrics (node-health, storage-health) are served by Prometheus on
+Lockwood and merged by the Node.js dashboard at ~/.buildrunner/dashboard —
+see BUILD_cluster-prometheus-integration.
 """
 
 from __future__ import annotations
@@ -66,6 +68,7 @@ _manager = _ConnectionManager()
 # ---------------------------------------------------------------------------
 
 _JIMMY_SRV = Path(os.environ.get("JIMMY_SRV_ROOT", "/srv/jimmy"))
+_PROMETHEUS_URL = os.environ.get("BR3_PROMETHEUS_URL", "http://10.0.1.101:9090")
 
 
 def _safe_read_json(path: Path) -> dict[str, Any]:
@@ -75,16 +78,20 @@ def _safe_read_json(path: Path) -> dict[str, Any]:
         return {}
 
 
-def _collect_node_health() -> dict[str, Any]:
-    """Read per-node metrics from Jimmy status files."""
-    status_dir = _JIMMY_SRV / "status" / "nodes"
-    nodes: dict[str, Any] = {}
-    node_ids = ["muddy", "lockwood", "walter", "otis", "lomax", "below", "jimmy"]
-    for nid in node_ids:
-        node_file = status_dir / f"{nid}.json"
-        data = _safe_read_json(node_file) if node_file.exists() else {}
-        nodes[nid] = data if data else {"online": False}
-    return {"nodes": nodes}
+def _prom_node_up(node: str, timeout_sec: float = 2.0) -> bool | None:
+    """Return True/False for node scrape-up via Prometheus, or None if unreachable."""
+    import urllib.parse
+    import urllib.request
+    try:
+        url = f"{_PROMETHEUS_URL}/api/v1/query?query=" + urllib.parse.quote(f'up{{node="{node}"}}')
+        with urllib.request.urlopen(url, timeout=timeout_sec) as r:
+            payload = json.loads(r.read().decode("utf-8"))
+        results = payload.get("data", {}).get("result", [])
+        if not results:
+            return None
+        return any(row.get("value", [None, "0"])[1] == "1" for row in results)
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def _collect_overflow_reserve() -> dict[str, Any]:
@@ -100,27 +107,6 @@ def _collect_overflow_reserve() -> dict[str, Any]:
         },
         "events": [],
         "freq": {},
-    }
-
-
-def _collect_storage_health() -> dict[str, Any]:
-    """Read /srv/jimmy/ directory sizes + backup timestamps."""
-    status_dir = _JIMMY_SRV / "status"
-    storage_file = status_dir / "storage-health.json"
-    if storage_file.exists():
-        return _safe_read_json(storage_file)
-
-    dg_file = status_dir / "disk-guard.json"
-    dg = _safe_read_json(dg_file) if dg_file.exists() else None
-    return {
-        "disk_guard": dg,
-        "disk_total_bytes": None,
-        "disk_free_bytes": None,
-        "dirs": {},
-        "backup_timestamps": {},
-        "offsite_sync": {},
-        "cron_timestamps": {},
-        "backups_paused": (status_dir / "backups-paused").exists(),
     }
 
 
@@ -258,20 +244,22 @@ def _collect_feature_health() -> dict[str, Any]:
         tiles.append(_tile(5, "Codex bridge", "red", f"only {bundles_24h} bundle(s) for {dispatches_24h} dispatch(es)"))
 
     # ── Tile 6: Auto-context Jimmy /retrieve ─────────────────────────────────
-    jimmy_status_file = _JIMMY_SRV / "status" / "nodes" / "jimmy.json"
-    jimmy_data = _safe_read_json(jimmy_status_file) if jimmy_status_file.exists() else {}
-    if jimmy_data.get("online"):
+    jimmy_up = _prom_node_up("jimmy")
+    if jimmy_up is True:
         tiles.append(_tile(6, "Auto-context Jimmy /retrieve", "green", "Jimmy online"))
+    elif jimmy_up is False:
+        tiles.append(_tile(6, "Auto-context Jimmy /retrieve", "red", "Jimmy exporter down per Prometheus"))
     else:
-        tiles.append(_tile(6, "Auto-context Jimmy /retrieve", "yellow", "Jimmy status unknown — check /srv/jimmy/status/nodes/jimmy.json"))
+        tiles.append(_tile(6, "Auto-context Jimmy /retrieve", "yellow", "Prometheus unreachable"))
 
     # ── Tile 7: Local routing Below ───────────────────────────────────────────
-    below_status_file = _JIMMY_SRV / "status" / "nodes" / "below.json"
-    below_data = _safe_read_json(below_status_file) if below_status_file.exists() else {}
-    if below_data.get("online"):
+    below_up = _prom_node_up("below")
+    if below_up is True:
         tiles.append(_tile(7, "Local routing Below", "green", "Below online"))
+    elif below_up is False:
+        tiles.append(_tile(7, "Local routing Below", "red", "Below exporter down per Prometheus"))
     else:
-        tiles.append(_tile(7, "Local routing Below", "yellow", "no Below dispatches in 24h — check node status"))
+        tiles.append(_tile(7, "Local routing Below", "yellow", "Prometheus unreachable"))
 
     # ── Tile 8: Otis dispatch ─────────────────────────────────────────────────
     otis_status_file = _JIMMY_SRV / "status" / "nodes" / "otis.json"
@@ -382,17 +370,13 @@ def _collect_feature_health() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 _INTERVALS: dict[str, float] = {
-    "node-health":      5.0,
     "overflow-reserve": 10.0,
-    "storage-health":   60.0,
     "consensus":        20.0,
     "feature-health":   15.0,
 }
 
 _COLLECTORS = {
-    "node-health":      _collect_node_health,
     "overflow-reserve": _collect_overflow_reserve,
-    "storage-health":   _collect_storage_health,
     "consensus":        _collect_consensus,
     "feature-health":   _collect_feature_health,
 }
