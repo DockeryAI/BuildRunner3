@@ -104,6 +104,7 @@ async def get_context(
         ) from exc
 
     bundle_dict = bundle.to_dict()
+    bundle_dict["phase"] = phase
 
     return JSONResponse(
         content={
