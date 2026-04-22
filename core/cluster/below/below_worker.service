@@ -1,0 +1,16 @@
+[Unit]
+Description=BR3 Below research queue worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/byronhudson/repos/BuildRunner3
+ExecStart=/usr/bin/env python -m core.cluster.below.research_worker --queue-dir .buildrunner/research-queue --poll-seconds 10
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/br3-below-worker.log
+StandardError=append:/var/log/br3-below-worker.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Research Document Frontmatter",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "title",
+    "domain",
+    "techniques",
+    "concepts",
+    "subjects",
+    "priority",
+    "source_project",
+    "created",
+    "last_updated"
+  ]
+}

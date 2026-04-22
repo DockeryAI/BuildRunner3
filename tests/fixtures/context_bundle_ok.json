@@ -1,0 +1,1 @@
+{"bundle":{"phase":"3","model":"claude","sections":[{"source":"logs","content":"recent routing activity"}]},"budget":{"limit":32000,"used":512,"tokenizer":"cl100k_base"}}

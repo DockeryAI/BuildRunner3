@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from core.runtime.cache_policy import (
     EPHEMERAL_CACHE_CONTROL,
@@ -10,6 +11,7 @@ from core.runtime.cache_policy import (
     cached_block_indices,
     get_breakpoint_count,
     has_cache_control,
+    shape_bundle,
 )
 
 
@@ -120,3 +122,77 @@ class TestNoInlineCacheControlInPrompts:
         blocks = build_cached_prompt("sys", "skill", "task")
         uncached = [b for b in blocks if not has_cache_control(b)]
         assert len(uncached) == 1, "exactly 1 block must be uncached (task payload)"
+
+
+class TestShapeBundle:
+    def test_happy_path_returns_four_segments_and_three_breakpoints(self):
+        shaped = shape_bundle("claude-opus-4-7", "sys", "tools", "window", "tail")
+        assert shaped["cache_breakpoints"] == [0, 1, 2]
+        assert len(shaped["segments"]) == 4
+        assert [segment["role"] for segment in shaped["segments"]] == [
+            "static_system",
+            "static_tools",
+            "sliding_window",
+            "dynamic_tail",
+        ]
+
+    def test_all_empty_strings_are_legal(self):
+        shaped = shape_bundle("", "", "", "", "")
+        assert shaped["cache_breakpoints"] == [0, 1, 2]
+        assert [segment["content"] for segment in shaped["segments"]] == ["", "", "", ""]
+
+    @pytest.mark.parametrize(
+        ("field_name", "bad_value"),
+        [
+            ("model", 123),
+            ("model", None),
+            ("static_system", 123),
+            ("static_system", None),
+            ("static_tools", 123),
+            ("static_tools", None),
+            ("sliding_window", 123),
+            ("sliding_window", None),
+            ("dynamic_tail", 123),
+            ("dynamic_tail", None),
+        ],
+    )
+    def test_type_violations_raise_validation_error(self, field_name, bad_value):
+        kwargs = {
+            "model": "claude-opus-4-7",
+            "static_system": "sys",
+            "static_tools": "tools",
+            "sliding_window": "window",
+            "dynamic_tail": "tail",
+        }
+        kwargs[field_name] = bad_value
+
+        with pytest.raises(ValidationError):
+            shape_bundle(**kwargs)
+
+    def test_unicode_content_is_preserved(self):
+        sliding_window = "履歴\nΔοκιμή\nemoji 🚀"
+        dynamic_tail = "следующий шаг"
+        shaped = shape_bundle("claude-opus-4-7", "sys", "tools", sliding_window, dynamic_tail)
+        assert shaped["segments"][2]["content"] == sliding_window
+        assert shaped["segments"][3]["content"] == dynamic_tail
+
+    def test_very_long_sliding_window_is_not_truncated(self):
+        sliding_window = "context-line\n" * 50_000
+        shaped = shape_bundle("claude-opus-4-7", "sys", "tools", sliding_window, "tail")
+        assert shaped["segments"][2]["content"] == sliding_window
+
+    def test_segments_length_matches_breakpoint_plus_one_invariant(self):
+        shaped = shape_bundle("claude-opus-4-7", "sys", "tools", "window", "tail")
+        assert len(shaped["segments"]) == len(shaped["cache_breakpoints"]) + 1
+
+    def test_breakpoints_are_strictly_ascending(self):
+        shaped = shape_bundle("claude-opus-4-7", "sys", "tools", "window", "tail")
+        breakpoints = shaped["cache_breakpoints"]
+        assert breakpoints[0] < breakpoints[1] < breakpoints[2]
+
+    def test_only_first_three_segments_are_cache_marked(self):
+        shaped = shape_bundle("claude-opus-4-7", "sys", "tools", "window", "tail")
+        assert shaped["segments"][0]["cache_control"] == EPHEMERAL_CACHE_CONTROL
+        assert shaped["segments"][1]["cache_control"] == EPHEMERAL_CACHE_CONTROL
+        assert shaped["segments"][2]["cache_control"] == EPHEMERAL_CACHE_CONTROL
+        assert shaped["segments"][3]["cache_control"] is None

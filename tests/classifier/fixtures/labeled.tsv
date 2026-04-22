@@ -1,0 +1,40 @@
+plan the next sprint	planning
+draft a project roadmap	planning
+design the rollout plan	planning
+write a technical spec for auth	planning
+refactor the dispatch layer	architecture
+restructure the service boundaries	architecture
+re-architect the cache pipeline	architecture
+modularize the runtime registry	architecture
+add a supabase edge function	backend-build
+build a new REST API endpoint	backend-build
+create a Postgres migration for users	backend-build
+implement the webhook handler in Python	backend-build
+write a bash cron job	terminal-build
+build a CLI for log rotation	terminal-build
+create a shell script to back up logs	terminal-build
+automate this with zsh	terminal-build
+build a react component for login	ui-build
+create a TSX settings page	ui-build
+add a dashboard panel for metrics	ui-build
+style the signup form in JSX and CSS	ui-build
+review this diff	review
+audit the auth flow	review
+check this PR for bugs	review
+inspect the patch for regressions	review
+tag these prompts	classification
+classify the incoming tickets	classification
+route this request to a bucket	classification
+label each message by intent	classification
+do the thing	classification
+make it better	classification
+handle this somehow	classification
+stuff is broken	classification
+find the user service	retrieval
+search for the metrics collector	retrieval
+lookup the runtime registry	retrieval
+locate where auth tokens are stored	retrieval
+write playwright tests	qa
+add bats coverage for classifier	qa
+create an integration test for login	qa
+write unit tests for the parser	qa

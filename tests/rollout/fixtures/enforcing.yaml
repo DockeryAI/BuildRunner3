@@ -1,0 +1,5 @@
+mode: enforcing
+started_at: 2026-04-14T00:00:00Z
+flipped_at: 2026-04-22T00:00:00Z
+miss_rate_24h: 0.05
+authorized_by: operator

@@ -97,6 +97,11 @@ _EFFORT_TIERS = {
 # constraint on "type" field. SDK v0.74.1 allows this at runtime.
 _ADAPTIVE_THINKING = {"type": "adaptive", "display": "summarized"}
 
+# Per-task token accounting beta — unlocks the 20k-token floor guidance for
+# long-running autopilot dispatches. Wired at the SDK layer so every call
+# inherits it.
+_BETA_HEADERS = {"anthropic-beta": "task-budgets-2026-03-13"}
+
 
 def _extract_text(message: Message) -> str:
     """
@@ -183,6 +188,7 @@ class OpusClient:
             "max_tokens": _MAX_TOKENS[method_name],
             "messages": messages,
             "thinking": _ADAPTIVE_THINKING,
+            "extra_headers": _BETA_HEADERS,
             "extra_body": {
                 "output_config": {
                     "effort": _EFFORT_TIERS[method_name],

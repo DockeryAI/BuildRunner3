@@ -17,9 +17,17 @@ Phase 4: BR3_CACHE_BREAKPOINTS gate
 
 from __future__ import annotations
 
+import json as _json
 import logging
 import os
-from typing import Any
+import sqlite3 as _sqlite3
+import uuid as _uuid
+from datetime import datetime as _dt
+from datetime import timezone as _timezone
+from pathlib import Path as _Path
+from typing import Any, Optional, TypedDict
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +39,6 @@ logger = logging.getLogger(__name__)
 def _emit_cache_hit(breakpoint_index: int) -> None:
     """Emit a cache_hit event to telemetry.db. Swallows all errors."""
     try:
-        import json as _json
-        import sqlite3 as _sqlite3
-        import uuid as _uuid
-        from datetime import datetime as _dt
-        from pathlib import Path as _Path
-
         db_candidates = [
             _Path.cwd() / ".buildrunner" / "telemetry.db",
             _Path.home() / "Projects" / "BuildRunner3" / ".buildrunner" / "telemetry.db",
@@ -53,7 +55,7 @@ def _emit_cache_hit(breakpoint_index: int) -> None:
                 (
                     str(_uuid.uuid4()),
                     "cache_hit",
-                    _dt.now(__import__('datetime').timezone.utc).isoformat(),
+                    _dt.now(_timezone.utc).isoformat(),  # noqa: UP017
                     _json.dumps(metadata),
                     1,
                 ),
@@ -83,6 +85,68 @@ _CACHE_BREAKPOINTS_ENABLED: bool = (
 EPHEMERAL_CACHE_CONTROL: dict[str, str] = {"type": "ephemeral"}
 
 
+class CacheSegment(TypedDict):
+    role: str
+    content: str
+    cache_control: Optional[dict[str, str]]  # noqa: UP045
+
+
+class ShapedBundle(TypedDict):
+    cache_breakpoints: list[int]
+    segments: list[CacheSegment]
+
+
+class _ShapeBundleInput(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    model: str
+    static_system: str
+    static_tools: str
+    sliding_window: str
+    dynamic_tail: str
+
+    @field_validator(
+        "model",
+        "static_system",
+        "static_tools",
+        "sliding_window",
+        "dynamic_tail",
+    )
+    @classmethod
+    def _validate_string_fields(cls, value: str) -> str:
+        return value
+
+
+class _CacheSegmentModel(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    role: str
+    content: str
+    cache_control: Optional[dict[str, str]] = None  # noqa: UP045
+
+
+class _ShapedBundleModel(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    cache_breakpoints: list[int] = Field(min_length=3, max_length=3)
+    segments: list[_CacheSegmentModel] = Field(min_length=4, max_length=4)
+
+    @field_validator("cache_breakpoints")
+    @classmethod
+    def _validate_breakpoints(cls, value: list[int]) -> list[int]:
+        if value != sorted(value):
+            raise ValueError("cache_breakpoints must be strictly ascending")
+        if len(set(value)) != len(value):
+            raise ValueError("cache_breakpoints must be strictly ascending")
+        return value
+
+    @model_validator(mode="after")
+    def _validate_segment_alignment(self) -> _ShapedBundleModel:
+        if len(self.segments) != len(self.cache_breakpoints) + 1:
+            raise ValueError("segments must equal len(cache_breakpoints) + 1")
+        return self
+
+
 def _make_text_block(text: str, *, cached: bool) -> dict[str, Any]:
     """Return an Anthropic-style content block dict.
 
@@ -94,6 +158,70 @@ def _make_text_block(text: str, *, cached: bool) -> dict[str, Any]:
     if cached:
         block["cache_control"] = EPHEMERAL_CACHE_CONTROL
     return block
+
+
+def shape_bundle(
+    model: str,
+    static_system: str,
+    static_tools: str,
+    sliding_window: str,
+    dynamic_tail: str,
+) -> ShapedBundle:
+    """Return the canonical 4-segment cache bundle shape.
+
+    The bundle always contains four segments and exactly three cache breakpoints.
+    Breakpoints are expressed as 0-based segment indices into ``segments`` and
+    mark the end of the static-system, static-tools, and sliding-window segments.
+
+    Args:
+        model: Target runtime model identifier.
+        static_system: Stable system text.
+        static_tools: Stable tool-description text.
+        sliding_window: Stable rolling context window.
+        dynamic_tail: Per-request tail content.
+
+    Returns:
+        A dict with ``cache_breakpoints`` and ``segments`` keys.
+
+    Raises:
+        ValidationError: If any input is not a string.
+    """
+    validated = _ShapeBundleInput(
+        model=model,
+        static_system=static_system,
+        static_tools=static_tools,
+        sliding_window=sliding_window,
+        dynamic_tail=dynamic_tail,
+    )
+
+    segments = [
+        _CacheSegmentModel(
+            role="static_system",
+            content=validated.static_system,
+            cache_control=dict(EPHEMERAL_CACHE_CONTROL),
+        ),
+        _CacheSegmentModel(
+            role="static_tools",
+            content=validated.static_tools,
+            cache_control=dict(EPHEMERAL_CACHE_CONTROL),
+        ),
+        _CacheSegmentModel(
+            role="sliding_window",
+            content=validated.sliding_window,
+            cache_control=dict(EPHEMERAL_CACHE_CONTROL),
+        ),
+        _CacheSegmentModel(
+            role="dynamic_tail",
+            content=validated.dynamic_tail,
+            cache_control=None,
+        ),
+    ]
+
+    shaped = _ShapedBundleModel(
+        cache_breakpoints=[0, 1, 2],
+        segments=segments,
+    )
+    return shaped.model_dump()
 
 
 def build_cached_prompt(
