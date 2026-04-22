@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# research-smoke.cron — Nightly smoke job for BR3 multi-LLM research pipeline
+#
+# Installed on Walter (10.0.1.102) via crontab.
+# Run time: 02:30 daily.
+#
+# Dependencies on Walter:
+#   - ~/.buildrunner/.env (API keys — must be synced to Walter)
+#   - ~/.buildrunner/scripts/llm-dispatch.sh
+#   - ~/.buildrunner/scripts/llm-clients/
+#   - Python 3.9+
+#
+# Results:
+#   - ~/.walter/test_results.db (SQLite, already exists on Walter)
+#   - ~/.walter/logs/research-smoke.log (stdout/stderr log)
+#   Rsync back to Muddy: byronhudson@10.0.1.100:~/.walter/test_results_walter.db
+#
+# Crontab entry (installed on Walter):
+#   30 2 * * * /bin/bash ~/.walter/jobs/research-smoke.cron >> ~/.walter/logs/research-smoke.log 2>&1
+
+set -euo pipefail
+
+LOG="$HOME/.walter/logs/research-smoke.log"
+DB="$HOME/.walter/test_results.db"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SMOKE_SCRIPT="$HOME/.walter/jobs/e2e_research_smoke.py"
+MUDDY="byronhudson@10.0.1.100"
+TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+echo "[$TS] research-smoke.cron starting" | tee -a "$LOG"
+
+# ---------------------------------------------------------------------------
+# 1. Environment setup
+# ---------------------------------------------------------------------------
+ENV_FILE="$HOME/.buildrunner/.env"
+if [[ -f "$ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  set -a; source "$ENV_FILE" 2>/dev/null || true; set +a
+fi
+
+PYTHON="${PYTHON3:-python3}"
+DISPATCH="$HOME/.buildrunner/scripts/llm-dispatch.sh"
+
+# ---------------------------------------------------------------------------
+# 2. Check prerequisites
+# ---------------------------------------------------------------------------
+if [[ ! -f "$DISPATCH" ]]; then
+  echo "[$TS] ERROR: llm-dispatch.sh not found — skipping smoke run" | tee -a "$LOG"
+  # Write a SKIP record to the DB
+  "$PYTHON" - << 'PYEOF'
+import sqlite3, os, time, uuid
+db = sqlite3.connect(os.path.expanduser("~/.walter/test_results.db"))
+db.execute("""CREATE TABLE IF NOT EXISTS research_smoke_results (
+    id TEXT PRIMARY KEY, ts REAL, status TEXT, providers TEXT,
+    total_cost_usd REAL, error TEXT, result_json TEXT
+)""")
+db.execute("INSERT INTO research_smoke_results VALUES (?,?,?,?,?,?,?)",
+    (str(uuid.uuid4()), time.time(), "skip", "", 0.0, "dispatch_not_found", "{}"))
+db.commit(); db.close()
+PYEOF
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
+# 3. Run smoke test
+# ---------------------------------------------------------------------------
+RESULT_JSON=$("$PYTHON" "$SMOKE_SCRIPT" --json 2>>"$LOG") || RESULT_JSON='{"ok":false,"error":"smoke_script_failed"}'
+
+# ---------------------------------------------------------------------------
+# 4. Write to test_results.db
+# ---------------------------------------------------------------------------
+"$PYTHON" - << PYEOF
+import sqlite3, json, os, time, uuid
+
+db_path = os.path.expanduser("~/.walter/test_results.db")
+db = sqlite3.connect(db_path)
+db.execute("""CREATE TABLE IF NOT EXISTS research_smoke_results (
+    id TEXT PRIMARY KEY, ts REAL, status TEXT, providers TEXT,
+    total_cost_usd REAL, error TEXT, result_json TEXT
+)""")
+
+result_str = '''$RESULT_JSON'''
+try:
+    data = json.loads(result_str)
+except Exception:
+    data = {"ok": False, "error": "json_parse_failed"}
+
+status = "pass" if data.get("ok") else "fail"
+providers = json.dumps(data.get("providers_ok", []))
+cost = float(data.get("total_cost_usd", 0.0))
+error = data.get("error") or ""
+
+db.execute("INSERT INTO research_smoke_results VALUES (?,?,?,?,?,?,?)",
+    (str(uuid.uuid4()), time.time(), status, providers, cost, error, result_str))
+db.commit()
+db.close()
+print("DB row written: status=%s cost=\$%.4f" % (status, cost))
+PYEOF
+
+# ---------------------------------------------------------------------------
+# 5. Rsync results back to Muddy
+# ---------------------------------------------------------------------------
+if rsync -az --timeout=30 "$DB" "${MUDDY}:~/.walter/test_results_walter.db" 2>>"$LOG"; then
+  echo "[$TS] rsync to Muddy: OK" | tee -a "$LOG"
+else
+  echo "[$TS] rsync to Muddy: FAILED (non-fatal)" | tee -a "$LOG"
+fi
+
+echo "[$TS] research-smoke.cron complete" | tee -a "$LOG"
