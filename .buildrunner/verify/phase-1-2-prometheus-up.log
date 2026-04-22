@@ -1,0 +1,36 @@
+Phase 1 + Phase 2 verification — 2026-04-22T20:29:05Z
+
+=== node_exporter/windows_exporter endpoints (external from Muddy) ===
+  muddy 10.0.1.100:9100 -> HTTP 200
+  lockwood 10.0.1.101:9100 -> HTTP 200
+  walter 10.0.1.102:9100 -> HTTP 200
+  otis 10.0.1.103:9100 -> HTTP 200
+  lomax 10.0.1.104:9100 -> HTTP 200
+  below 10.0.1.105:9182 -> HTTP 200
+  jimmy 10.0.1.106:9100 -> HTTP 200
+
+=== Prometheus ===
+  server http://10.0.1.101:9090 -> HTTP 200
+
+=== up{job="br3-cluster"} ===
+  node=jimmy instance=10.0.1.106:9100 value=1
+  node=otis instance=10.0.1.103:9100 value=1
+  node=muddy instance=10.0.1.100:9100 value=1
+  node=lomax instance=10.0.1.104:9100 value=1
+  node=below instance=10.0.1.105:9182 value=1
+  node=walter instance=10.0.1.102:9100 value=1
+  node=lockwood instance=10.0.1.101:9100 value=1
+
+=== Install mechanisms per node ===
+  muddy     LaunchAgent user-scope gui/uid (active GUI session)
+  lockwood  LaunchDaemon system-scope (Prometheus also)
+  walter    LaunchDaemon system-scope (headless, no GUI session)
+  otis      LaunchAgent user-scope (install script default)
+  lomax     LaunchAgent user-scope (install script default)
+  below     windows_exporter Windows service (MSI, auto-start)
+  jimmy     systemd system unit (br3-node-exporter.service)
+
+=== Firewall rules ===
+  macOS nodes: ApplicationFirewall + pf anchor, LAN only (10.0.1.0/24)
+  jimmy      : ufw allow from 10.0.1.0/24 to any port 9100
+  below      : netsh advfirewall rule TCP 9182 remoteip=10.0.1.0/24
