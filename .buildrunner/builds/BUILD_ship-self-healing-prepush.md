@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-2 Complete — Phase 3 In Progress
+**Status:** Phases 1-3 Complete — Phase 4 In Progress
 **Deploy:** web — `npm run build` (framework-level skill; deploy target is N/A for the BR3 framework itself)
 **Source Plan File:** .buildrunner/plans/spec-ship-self-healing-prepush-plan.md
 **Source Plan SHA:** 9e725f1a38361e5dab7e42e1fab2fd40bbbb67ce3dd65277094e78e94c9cc118
@@ -100,7 +100,7 @@ role-matrix:
 
 ### Phase 3: Self-Healing Fix Loops
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/ship/healing/fix-orchestrator.sh` (NEW)
@@ -116,14 +116,14 @@ role-matrix:
 
 **Deliverables:**
 
-- [ ] Orchestrator: max 2 attempts per gate; fixed 2-second gap between attempts
-- [ ] Scope guard deny-list: `*.sql`, `governance.yaml`, `supabase/migrations/**`, `api/auth.py`, `src/**/auth/**`, top-level `CLAUDE.md` on main/release, `.env`, `.env.*`, `**/.env`, `**/.env.*`, linguist-generated files
-- [ ] Diff-size cap: 200 lines default, computed over non-excluded files; exclude `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `dist/**`, `build/**`, generated code
-- [ ] Parallel mode: each attempt runs in `.buildrunner/ship/worktrees/attempt-N/` via `dispatch-to-node.sh`; first green wins; losing attempts killed and worktrees deleted
-- [ ] Branch policy: on main / `release/*`, auto-fix requires confirmation or `BR3_SHIP_AUTOHEAL=force`; overrides appended to `.buildrunner/ship/autoheal-overrides.log`; daily rollup flags >5/day
-- [ ] Heal log records `{gate, attempt_n, branch, diff_lines, files_touched[], outcome, duration_ms, scope_violation?}`
-- [ ] Revert: heal commit tied to downstream CI failure via diff-intersection gets auto-reverted, original gate re-triggered with attempts reset
-- [ ] Resume guard: scope-guard re-validates diff before any gate re-run
+- [x] Orchestrator: max 2 attempts per gate; fixed 2-second gap between attempts
+- [x] Scope guard deny-list: `*.sql`, `governance.yaml`, `supabase/migrations/**`, `api/auth.py`, `src/**/auth/**`, top-level `CLAUDE.md` on main/release, `.env`, `.env.*`, `**/.env`, `**/.env.*`, linguist-generated files
+- [x] Diff-size cap: 200 lines default, computed over non-excluded files; exclude `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `dist/**`, `build/**`, generated code
+- [x] Parallel mode: each attempt runs in `.buildrunner/ship/worktrees/attempt-N/` via `dispatch-to-node.sh`; first green wins; losing attempts killed and worktrees deleted
+- [x] Branch policy: on main / `release/*`, auto-fix requires confirmation or `BR3_SHIP_AUTOHEAL=force`; overrides appended to `.buildrunner/ship/autoheal-overrides.log`; daily rollup flags >5/day
+- [x] Heal log records `{gate, attempt_n, branch, diff_lines, files_touched[], outcome, duration_ms, scope_violation?}`
+- [x] Revert: heal commit tied to downstream CI failure via diff-intersection gets auto-reverted, original gate re-triggered with attempts reset
+- [x] Resume guard: scope-guard re-validates diff before any gate re-run
 
 **Success Criteria:** Lint auto-fixes on attempt 1. Test flake retries once per Tier 1 rule. Main-branch heal requires confirmation; `force` override audit-logged. Scope violation declined cleanly. Parallel mode applies winner without double-edits. Bad heal auto-reverts within one CI cycle.
 
