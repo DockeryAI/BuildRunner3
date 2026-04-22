@@ -1,11 +1,13 @@
 """
-AI Code Review System using Claude API
+AI Code Review System using Claude Opus 4.7
 
 Provides automated code review capabilities including:
 - Git diff analysis
 - Architecture compliance checking
 - Code quality assessment
 - Best practices validation
+
+Uses Claude Opus 4.7 with xhigh effort + adaptive thinking per BR3 standards.
 """
 
 import os
@@ -16,6 +18,25 @@ from anthropic import AsyncAnthropic
 import subprocess
 
 
+# Adaptive thinking + per-task token accounting beta header, per BR3 4.7 standards.
+_ADAPTIVE_THINKING = {"type": "adaptive", "display": "summarized"}
+_BETA_HEADERS = {"anthropic-beta": "task-budgets-2026-03-13"}
+_OUTPUT_CONFIG_XHIGH = {"output_config": {"effort": "xhigh"}}
+
+
+def _extract_text(message: Any) -> str:
+    """
+    Safe text extractor. Adaptive thinking puts ThinkingBlock first in
+    content[] — positional indexing (message.content[0].text) crashes.
+    Returns the first block whose `.text` is a string, or empty string.
+    """
+    for block in getattr(message, "content", None) or []:
+        text = getattr(block, "text", None)
+        if isinstance(text, str):
+            return text
+    return ""
+
+
 class CodeReviewError(Exception):
     """Base exception for code review errors"""
 
@@ -24,7 +45,7 @@ class CodeReviewError(Exception):
 
 class CodeReviewer:
     """
-    AI-powered code reviewer using Claude Sonnet API
+    AI-powered code reviewer using Claude Opus 4.7.
 
     Features:
     - Review git diffs with AI analysis
@@ -49,7 +70,7 @@ class CodeReviewer:
             raise CodeReviewError("ANTHROPIC_API_KEY not found in environment")
 
         self.client = AsyncAnthropic(api_key=self.api_key)
-        self.model = "claude-sonnet-4-20250514"  # Latest Sonnet
+        self.model = os.getenv("ANTHROPIC_MODEL", "claude-opus-4-7")
         self.max_tokens = 4096
         self.project_root = Path(project_root) if project_root else Path.cwd()
 
@@ -89,10 +110,12 @@ class CodeReviewer:
                 model=self.model,
                 max_tokens=self.max_tokens,
                 messages=[{"role": "user", "content": prompt}],
+                thinking=_ADAPTIVE_THINKING,
+                extra_headers=_BETA_HEADERS,
+                extra_body=_OUTPUT_CONFIG_XHIGH,
             )
 
-            # Parse Claude's response
-            response_text = message.content[0].text
+            response_text = _extract_text(message)
             return self._parse_review_response(response_text)
 
         except Exception as e:
@@ -127,9 +150,12 @@ class CodeReviewer:
                 model=self.model,
                 max_tokens=self.max_tokens,
                 messages=[{"role": "user", "content": prompt}],
+                thinking=_ADAPTIVE_THINKING,
+                extra_headers=_BETA_HEADERS,
+                extra_body=_OUTPUT_CONFIG_XHIGH,
             )
 
-            response_text = message.content[0].text
+            response_text = _extract_text(message)
             return self._parse_architecture_response(response_text)
 
         except Exception as e:

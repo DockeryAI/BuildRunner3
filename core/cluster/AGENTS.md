@@ -34,14 +34,15 @@
 
 ## Feature flags (default OFF until Phase 13)
 
-All four flags are named verbatim:
+Flags are named verbatim:
 
 - `BR3_LOCAL_ROUTING` (canonical; `BR3_RUNTIME_OLLAMA` is a deprecated one-release alias shim)
 - `BR3_CACHE_BREAKPOINTS`
-- `BR3_ADVERSARIAL_3WAY`
 - `BR3_AUTO_CONTEXT`
 
 NEVER default any flag to ON before Phase 13 cutover validation completes.
+
+Adversarial review (Sonnet `claude` CLI + GPT-5.4 `codex` CLI in parallel, Opus arbiter on disagreement) has no flag — it is always active. The previous `BR3_ADVERSARIAL_3WAY` gate and the Codex + OpenRouter legacy path have been removed.
 
 ## Node registry source of truth
 
@@ -109,7 +110,7 @@ Review Convergence Policy (rules 1–8):
 7. Ruling logged to `decisions.log`.
 8. User escalation on arbiter contest.
 
-Flag: `BR3_ADVERSARIAL_3WAY` (OFF until Phase 13).
+Always active — no feature flag. Uses `claude` CLI (Sonnet) + `codex` CLI (GPT-5.4), no HTTP APIs.
 
 ## Auto-Context Hook (Phase 10)
 

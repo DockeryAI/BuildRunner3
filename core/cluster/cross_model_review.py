@@ -2,21 +2,22 @@
 """
 cross_model_review.py — Cross-model code review engine
 
-Accepts diff text + spec context, calls Codex CLI (primary) or OpenRouter API
-(fallback), returns JSON array of {finding, severity} matching adversarial-review.sh format.
+Accepts diff text + spec context, runs Sonnet (via `claude` CLI) and GPT-5.4
+(via `codex` CLI) in parallel, and returns a JSON array of
+{finding, severity} matching the adversarial-review.sh format. No paid APIs
+are called — both reviewers run through their authenticated CLI plans.
 
 Usage:
     python3 cross_model_review.py \
-        --diff-file <path> \
-        --spec-file <path> \
-        --commit-sha <sha> \
-        --project-root <path>
+        --mode plan --plan <plan_file> --project-root <root>
 
 Output (stdout): JSON array of findings [{finding, severity}]
 """
 
 import argparse
 import asyncio
+import atexit
+import hashlib
 import json
 import os
 import re
@@ -26,31 +27,16 @@ import subprocess
 import sys
 import tempfile
 import time
-import urllib.request
-import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
-from core.runtime.cache_policy import build_cached_prompt
+from core.cluster.arbiter import arbitrate
+from core.cluster.review_verdict import Verdict
 
 HOME = Path.home()
 CONFIG_PATH = Path(__file__).parent / "cross_model_review_config.json"
 CACHE_DIR = HOME / ".buildrunner" / "cache" / "cross-reviews"
-SPEND_LOG = HOME / ".buildrunner" / "logs" / "cross-review-spend.json"
 RUNTIME_CAPABILITY_LOG = HOME / ".buildrunner" / "logs" / "runtime-capability.log"
-
-# ---------------------------------------------------------------------------
-# Phase 4: Feature-flag gate — BR3_ADVERSARIAL_3WAY
-#
-# Read ONCE at module import time and cached in this module-level variable.
-# Never re-read per call — callers must restart the process to observe a flag
-# change, which is the correct contract for long-running review sessions.
-#
-# "on"  → route to run_three_way_review() which uses Claude + Codex + Below
-# "off" → legacy 2-way behavior (Codex primary, OpenRouter fallback); no change
-#          from pre-Phase-4.
-# ---------------------------------------------------------------------------
-_ADVERSARIAL_3WAY_ENABLED: bool = os.environ.get("BR3_ADVERSARIAL_3WAY", "off").lower() == "on"
 
 SUPPORTED_CODEX_VERSION_MIN = (0, 48, 0)
 SUPPORTED_CODEX_VERSION_MAX = (0, 49, 0)
@@ -96,7 +82,7 @@ def load_config():
     if CONFIG_PATH.exists():
         with open(CONFIG_PATH) as f:
             return json.load(f)
-    return {"backends": {"codex": {"enabled": True, "timeout_seconds": 60}}, "budget": {"monthly_cap_usd": 50}}
+    return {"backends": {"codex": {"enabled": True, "timeout_seconds": 360}}}
 
 
 # ---------------------------------------------------------------------------
@@ -240,40 +226,8 @@ def write_cache(commit_sha, findings, model_used, duration):
         json.dump(entry, f, indent=2)
 
 
-def load_spend():
-    if SPEND_LOG.exists():
-        with open(SPEND_LOG) as f:
-            return json.load(f)
-    return {"month": datetime.now(timezone.utc).strftime("%Y-%m"), "total_usd": 0.0, "requests": []}
-
-
-def record_spend(cost_usd, model):
-    SPEND_LOG.parent.mkdir(parents=True, exist_ok=True)
-    data = load_spend()
-    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
-    if data.get("month") != current_month:
-        data = {"month": current_month, "total_usd": 0.0, "requests": []}
-    data["total_usd"] += cost_usd
-    data["requests"].append({
-        "timestamp": utc_now_iso(),
-        "model": model,
-        "cost_usd": cost_usd,
-    })
-    with open(SPEND_LOG, "w") as f:
-        json.dump(data, f, indent=2)
-
-
-def check_budget(config):
-    cap = config.get("budget", {}).get("monthly_cap_usd", 50)
-    data = load_spend()
-    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
-    if data.get("month") != current_month:
-        return True  # New month, budget reset
-    return data.get("total_usd", 0) < cap
-
-
 class CodexAuthError(Exception):
-    """Raised when Codex CLI auth is missing or expired — should NOT fallback to OpenRouter."""
+    """Raised when Codex CLI auth is missing or expired."""
     pass
 
 
@@ -626,6 +580,7 @@ def build_review_prompt(diff_text: str, spec_text: str, system_prompt: str | Non
     NEVER inline timestamps, UUIDs, or other dynamic values into breakpoints 1–2.
     """
     from core.cluster.summarizer import summarize_diff
+    from core.runtime.cache_policy import build_cached_prompt
 
     diff_payload = diff_text
     if len(diff_text.encode("utf-8")) > _DIFF_SIZE_THRESHOLD:
@@ -644,15 +599,14 @@ def build_review_prompt(diff_text: str, spec_text: str, system_prompt: str | Non
         skill_context=f"## Build Spec Context:\n{spec_text}",
         task_payload=f"## Diff to Review:\n{diff_payload}",
     )
-    # Flatten to a plain string for the existing Codex/OpenRouter backends
-    # which accept a single string prompt.  The structured block list is the
-    # authoritative form for Anthropic SDK callers.
+    # Flatten to a plain string for the CLI reviewers, which pipe the prompt
+    # to the `claude` and `codex` CLIs via stdin.
     return "\n\n---\n\n".join(block["text"] for block in blocks)
 
 
 def review_via_codex(prompt, config, project_root=None, commit_sha=None):
-    """Run review through Codex CLI (GPT-4o, free with ChatGPT Plus)."""
-    timeout = config.get("backends", {}).get("codex", {}).get("timeout_seconds", 60)
+    """Run review through Codex CLI (GPT-5.4, authenticated via ChatGPT plan)."""
+    timeout = config.get("backends", {}).get("codex", {}).get("timeout_seconds", 360)
     start = time.time()
     version_info = {"raw": None}
     try:
@@ -736,86 +690,6 @@ def review_via_codex(prompt, config, project_root=None, commit_sha=None):
         raise
 
 
-def review_via_openrouter(prompt, config):
-    """Fallback: call OpenRouter API for GPT-4o review."""
-    api_key = os.environ.get("OPENROUTER_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("OPENROUTER_API_KEY not set")
-
-    if not check_budget(config):
-        raise RuntimeError("Monthly OpenRouter budget exceeded")
-
-    or_config = config.get("backends", {}).get("openrouter", {})
-    model = or_config.get("model", "openai/gpt-4o")
-    api_url = or_config.get("api_url", "https://openrouter.ai/api/v1/chat/completions")
-    timeout = or_config.get("timeout_seconds", 60)
-
-    payload = json.dumps({
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.2,
-    }).encode()
-
-    req = urllib.request.Request(
-        api_url,
-        data=payload,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://buildrunner.dev",
-            "X-Title": "BR3 Cross-Model Review",
-        },
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = json.loads(resp.read())
-            content = data["choices"][0]["message"]["content"]
-            # Estimate cost (GPT-4o: ~$2.50/M input, $10/M output)
-            usage = data.get("usage", {})
-            cost = (usage.get("prompt_tokens", 0) * 2.5 + usage.get("completion_tokens", 0) * 10) / 1_000_000
-            record_spend(cost, model)
-            return parse_findings(content), model, cost
-    except urllib.error.HTTPError as e:
-        raise RuntimeError(f"OpenRouter HTTP {e.code}: {e.reason}")
-    except urllib.error.URLError as e:
-        raise RuntimeError(f"OpenRouter connection failed: {e.reason}")
-
-
-def run_review(diff_text, spec_text, commit_sha, config):
-    """Run review through backends in priority order."""
-    full_prompt = build_review_prompt(diff_text, spec_text)
-
-    backends = config.get("backends", {})
-    errors = []
-
-    # Sort by priority
-    ordered = sorted(
-        [(name, cfg) for name, cfg in backends.items() if cfg.get("enabled", False)],
-        key=lambda x: x[1].get("priority", 99),
-    )
-
-    for name, _ in ordered:
-        try:
-            if name == "codex":
-                return review_via_codex(full_prompt, config, commit_sha=commit_sha)
-            elif name == "openrouter":
-                return review_via_openrouter(full_prompt, config)
-            # below/future backends would go here
-        except CodexAuthError as e:
-            # Auth errors should NOT fallback — fail immediately with clear message
-            print(f"\n⚠️  CODEX AUTH REQUIRED: {e}", file=sys.stderr)
-            print("   To authenticate, run: codex", file=sys.stderr)
-            print("   (This ensures reviews use your ChatGPT Plus, not paid OpenRouter)\n", file=sys.stderr)
-            return [{"finding": f"Codex auth required: {e}", "severity": "blocker"}], "auth_required", 0.0
-        except RuntimeError as e:
-            errors.append(f"{name}: {e}")
-            continue
-
-    # All backends failed
-    return [{"finding": f"All review backends failed: {'; '.join(errors)}", "severity": "warning"}], "none", 0.0
-
-
 async def run_review_spike_async(
     diff_text,
     spec_text,
@@ -884,55 +758,13 @@ def format_runtime_preflight(preflight):
 
 
 # ---------------------------------------------------------------------------
-# Phase 9: Three-Way Adversarial Review Pipeline
+# One-round cross-model review pipeline
 # ---------------------------------------------------------------------------
-# Review Convergence Policy (Final Decisions Override):
-#   - Round cap: BR3_MAX_REVIEW_ROUNDS (default 1 rebuttal round, then arbiter)
-#   - fix_type required on every finding: reject reviewer output lacking it
-#   - Structural-blocker short-circuit: first structural blocker → escalate, no
-#     further rounds
-#   - Persistent-blocker detection: same normalized finding across 2+ rounds →
-#     escalate
-#   - Mandatory rebuttal before arbiter invocation
-#   - Arbiter ruling is TERMINAL — no auto re-run path
-#
-# "Three-way" refers to the three parties: Sonnet reviewer, Codex reviewer,
-# and Opus arbiter (on disagreement only). Per Final Decisions Override, the
-# parallel review stage is 2-way (Sonnet + Codex); Below/r1 is disabled for
-# review per the Final Decisions Override table.
+# Two reviewers run in parallel exactly once. Disagreement or abstention routes
+# to the Opus arbiter, which always commits a final verdict.
 # ---------------------------------------------------------------------------
-
-ESCALATION_PROMPT = (
-    "================================================================\n"
-    "ADVERSARIAL REVIEW: Convergence cap hit \u2014 user decision required\n"
-    "================================================================\n"
-    "Review rounds exhausted or structural blocker detected.\n"
-    "Choose one of:\n"
-    "\n"
-    "  CONTINUE \u2014 edit the plan and re-run: adversarial-review.sh --three-way <plan> <root>\n"
-    "  OVERRIDE \u2014 bypass this review: BR3_BYPASS_ADVERSARIAL_REVIEW=1 git commit ...\n"
-    "  SIMPLIFY \u2014 reduce phase scope to eliminate the structural conflict, then re-run\n"
-    "\n"
-    "================================================================"
-)
 
 _THREE_WAY_DECISIONS_LOG = HOME / "Projects" / "BuildRunner3" / ".buildrunner" / "decisions.log"
-
-REBUTTAL_PROMPT_TEMPLATE = """You are performing a bounded adversarial rebuttal pass.
-Both reviewers have submitted findings for the same artifact. Your task: for each
-finding below, decide whether to CONCEDE (finding is not real or already addressed)
-or HOLD (finding stands — provide a one-sentence rationale).
-
-Return ONLY a JSON array. Each item must include:
-  finding, severity, fix_type, rebuttal (concede|hold), rationale
-
-Artifact: {artifact}
-
-Merged findings from both reviewers:
-{merged_findings}
-
-Output ONLY the JSON array. No prose outside the JSON.
-"""
 
 THREE_WAY_REVIEW_PROMPT = REVIEW_PROMPT + """
 
@@ -1086,308 +918,64 @@ def review_via_claude_inline(prompt, config, timeout=120):
         raise RuntimeError("claude CLI not found in PATH")
 
 
-def _run_parallel_reviews(prompt, config, reviewer_timeout=None):
-    """
-    Gather reviews from Claude Sonnet and Codex in parallel (Round 1).
-    Returns dict: {claude: findings, codex: findings, errors: [...],
-                   fix_type_errors: [...]}
-
-    fix_type_errors holds ValueError messages from _reject_missing_fix_type.
-    Callers must check fix_type_errors and treat them as hard rejections.
-
-    Timeout tuning: plan-mode prompts hit ~180KB (file tree + excerpts + plan).
-    Measured Sonnet 4.6 cold latency on 179KB prompt: ~234s. Default 360s gives
-    headroom. Override via BR3_REVIEWER_TIMEOUT env var.
-    """
-    import threading as _threading
-
-    reviewer_timeout = int(
-        os.environ.get("BR3_REVIEWER_TIMEOUT", reviewer_timeout or 360)
+async def _review_with_sonnet(prompt, config, timeout_seconds):
+    """Sonnet 4.6 via the `claude` CLI on the authenticated Claude plan."""
+    findings, _model = await asyncio.to_thread(
+        review_via_claude_inline, prompt, config, timeout_seconds
     )
-
-    results = {"claude": None, "codex": None, "errors": [], "fix_type_errors": []}
-    errors = []
-    fix_type_errors = []
-
-    def run_claude():
-        try:
-            findings, model = review_via_claude_inline(prompt, config, timeout=reviewer_timeout)
-            try:
-                _reject_missing_fix_type(findings, "claude")
-            except ValueError as ve:
-                fix_type_errors.append(str(ve))
-                return
-            results["claude"] = {"findings": findings, "model": model}
-        except Exception as exc:
-            errors.append(f"claude: {exc}")
-
-    def run_codex():
-        try:
-            # review_via_codex reads timeout from config.backends.codex.timeout_seconds
-            codex_cfg = config.setdefault("backends", {}).setdefault("codex", {})
-            codex_cfg["timeout_seconds"] = max(int(codex_cfg.get("timeout_seconds", 60)), reviewer_timeout)
-            findings, model, _ = review_via_codex(prompt, config)
-            try:
-                _reject_missing_fix_type(findings, "codex")
-            except ValueError as ve:
-                fix_type_errors.append(str(ve))
-                return
-            results["codex"] = {"findings": findings, "model": model}
-        except Exception as exc:
-            errors.append(f"codex: {exc}")
-
-    t_claude = _threading.Thread(target=run_claude, daemon=True)
-    t_codex = _threading.Thread(target=run_codex, daemon=True)
-    t_claude.start()
-    t_codex.start()
-    t_claude.join(timeout=reviewer_timeout + 30)
-    t_codex.join(timeout=reviewer_timeout + 30)
-
-    results["errors"] = errors
-    results["fix_type_errors"] = fix_type_errors
-    return results
+    return findings
 
 
-def review_via_below(prompt, config, timeout=120):
-    """Run review through Below (local Ollama inference at 10.0.1.105).
+async def _review_with_gpt(prompt, config, timeout_seconds):
+    """GPT-5.4 via the `codex` CLI on the authenticated ChatGPT plan."""
 
-    Calls the Below node's /api/generate endpoint with the review prompt.
-    Returns (findings, model_id).  On any connection failure, raises RuntimeError
-    so the caller can treat Below as optional and continue with claude+codex.
-    """
-    import urllib.request as _urlrequest
-    import urllib.error as _urlerror
+    def _blocking():
+        codex_cfg = config.setdefault("backends", {}).setdefault("codex", {})
+        codex_cfg["timeout_seconds"] = max(
+            int(codex_cfg.get("timeout_seconds", 360)), int(timeout_seconds)
+        )
+        findings, _model, _cost = review_via_codex(prompt, config)
+        return findings
 
-    below_cfg = config.get("backends", {}).get("below", {})
-    below_url = below_cfg.get("url", "http://10.0.1.105:11434")
-    model = below_cfg.get("model", "qwen2.5-coder:32b")
-    actual_timeout = below_cfg.get("timeout_seconds", timeout)
+    return await asyncio.to_thread(_blocking)
 
-    payload = json.dumps({
-        "model": model,
-        "prompt": prompt,
-        "stream": False,
-    }).encode("utf-8")
-    req = _urlrequest.Request(
-        f"{below_url}/api/generate",
-        data=payload,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    start = time.time()
+
+async def _run_reviewer(name, reviewer_coro, prompt, config, timeout_seconds):
+    """Execute a single reviewer with a hard timeout."""
+    start = time.perf_counter()
     try:
-        with _urlrequest.urlopen(req, timeout=actual_timeout) as resp:
-            data = json.loads(resp.read())
-            content = (data.get("response") or "").strip()
-            findings = parse_findings(content)
-            log_runtime_capability({
-                "backend": "below",
-                "status": "completed",
-                "duration_ms": int((time.time() - start) * 1000),
-                "model": model,
-            })
-            return findings, f"below/{model}"
-    except (_urlerror.URLError, OSError) as exc:
-        raise RuntimeError(f"Below unreachable: {exc}")
+        findings = await asyncio.wait_for(
+            reviewer_coro(prompt, config, timeout_seconds), timeout=timeout_seconds
+        )
+        return {
+            "name": name,
+            "findings": findings,
+            "duration_ms": int((time.perf_counter() - start) * 1000),
+            "status": "ok",
+        }
+    except asyncio.TimeoutError:
+        return {
+            "name": name,
+            "findings": [],
+            "duration_ms": int((time.perf_counter() - start) * 1000),
+            "status": "timeout",
+        }
     except Exception as exc:
-        raise RuntimeError(f"Below review failed: {exc}")
+        print(f"[three-way] reviewer error: {name}: {exc}", file=sys.stderr)
+        return {
+            "name": name,
+            "findings": [],
+            "duration_ms": int((time.perf_counter() - start) * 1000),
+            "status": "error",
+        }
 
 
-def _run_parallel_reviews_3way(prompt, config, reviewer_timeout=None):
-    """Gather reviews from Claude, Codex, and Below in parallel (3-way Round 1).
-
-    Used when BR3_ADVERSARIAL_3WAY=on.  Below is treated as optional — if it
-    errors out, the review continues with claude+codex.  This matches the
-    cluster-max Phase 9 contract where Below is a supplementary reviewer.
-
-    Returns dict: {claude, codex, below, errors, fix_type_errors}
-    """
-    import threading as _threading
-
-    reviewer_timeout = int(
-        os.environ.get("BR3_REVIEWER_TIMEOUT", reviewer_timeout or 360)
+async def _run_parallel_reviewers_one_round(prompt, config, timeout_seconds=360):
+    """Run Sonnet 4.6 (claude CLI) and GPT-5.4 (codex CLI) in parallel."""
+    return await asyncio.gather(
+        _run_reviewer("sonnet-4-6", _review_with_sonnet, prompt, config, timeout_seconds),
+        _run_reviewer("gpt-5.4", _review_with_gpt, prompt, config, timeout_seconds),
     )
-
-    results = {
-        "claude": None,
-        "codex": None,
-        "below": None,
-        "errors": [],
-        "fix_type_errors": [],
-    }
-    errors: list = []
-    fix_type_errors: list = []
-
-    def run_claude():
-        try:
-            findings, model = review_via_claude_inline(prompt, config, timeout=reviewer_timeout)
-            try:
-                _reject_missing_fix_type(findings, "claude")
-            except ValueError as ve:
-                fix_type_errors.append(str(ve))
-                return
-            results["claude"] = {"findings": findings, "model": model}
-        except Exception as exc:
-            errors.append(f"claude: {exc}")
-
-    def run_codex():
-        try:
-            codex_cfg = config.setdefault("backends", {}).setdefault("codex", {})
-            codex_cfg["timeout_seconds"] = max(int(codex_cfg.get("timeout_seconds", 60)), reviewer_timeout)
-            findings, model, _ = review_via_codex(prompt, config)
-            try:
-                _reject_missing_fix_type(findings, "codex")
-            except ValueError as ve:
-                fix_type_errors.append(str(ve))
-                return
-            results["codex"] = {"findings": findings, "model": model}
-        except Exception as exc:
-            errors.append(f"codex: {exc}")
-
-    def run_below():
-        try:
-            below_timeout = int(config.get("backends", {}).get("below", {}).get("timeout_seconds", reviewer_timeout))
-            findings, model = review_via_below(prompt, config, timeout=below_timeout)
-            # Below findings are supplementary — fix_type not strictly required,
-            # but we attempt validation and downgrade to warnings on missing fields.
-            for item in findings:
-                if isinstance(item, dict) and "fix_type" not in item:
-                    item["fix_type"] = "fixable"
-            results["below"] = {"findings": findings, "model": model}
-        except Exception as exc:
-            # Below is optional — log but do not block the review.
-            errors.append(f"below (optional): {exc}")
-
-    threads = [
-        _threading.Thread(target=run_claude, daemon=True),
-        _threading.Thread(target=run_codex, daemon=True),
-        _threading.Thread(target=run_below, daemon=True),
-    ]
-    for t in threads:
-        t.start()
-    for t in threads:
-        t.join(timeout=reviewer_timeout + 30)
-
-    results["errors"] = errors
-    results["fix_type_errors"] = fix_type_errors
-    return results
-
-
-def _run_rebuttal(merged_findings, artifact, config):
-    """
-    Mandatory rebuttal round: Claude sees merged findings and holds or concedes.
-    Returns updated merged_findings with rebuttal annotations.
-    """
-    formatted = "\n".join(
-        f"- [{f.get('severity')}/{f.get('fix_type')}] {f.get('finding')}"
-        for f in merged_findings
-    )
-    prompt = REBUTTAL_PROMPT_TEMPLATE.format(
-        artifact=artifact,
-        merged_findings=formatted,
-    )
-    try:
-        reviewer_cfg = config.get("reviewers", {})
-        model = reviewer_cfg.get("claude_model", "claude-sonnet-4-6")
-        with tempfile.TemporaryDirectory(prefix="br3-rebuttal-") as tmpdir:
-            result = subprocess.run(
-                ["claude", "--print", "--model", model, "--dangerously-skip-permissions"],
-                input=prompt,
-                capture_output=True,
-                text=True,
-                timeout=90,
-                cwd=tmpdir,
-            )
-            raw = (result.stdout or "").strip()
-            rebuttal_findings = parse_findings(raw)
-
-        # Apply rebuttal: conceded blockers downgrade to warnings
-        conceded_norms = set()
-        for item in rebuttal_findings:
-            if isinstance(item, dict) and item.get("rebuttal") == "concede":
-                conceded_norms.add(_normalize_finding(item.get("finding", "")))
-
-        for item in merged_findings:
-            if (
-                item.get("severity") == "blocker"
-                and _normalize_finding(item.get("finding", "")) in conceded_norms
-            ):
-                item["severity"] = "warning"
-                item["rebuttal_conceded"] = True
-
-        return merged_findings, True
-    except Exception as exc:
-        print(f"[three-way] rebuttal failed: {exc}", file=sys.stderr)
-        return merged_findings, False
-
-
-def _invoke_arbiter(claude_findings, codex_findings, rebuttal_findings, disagreements, artifact, review_round, config):
-    """
-    Invoke the Opus 4.7 arbiter on unresolved disagreement post-rebuttal.
-    Returns arbiter ruling dict.
-    """
-    import json as _json
-    import tempfile as _tempfile
-    import os as _os
-
-    arbiter_cfg = config.get("arbiter", {})
-    model = arbiter_cfg.get("model", "claude-opus-4-7")
-    effort = arbiter_cfg.get("effort", "xhigh")
-
-    with _tempfile.TemporaryDirectory(prefix="br3-arbiter-invoke-") as tmpdir:
-        cf = _os.path.join(tmpdir, "claude.json")
-        xf = _os.path.join(tmpdir, "codex.json")
-        rf = _os.path.join(tmpdir, "rebuttal.json")
-        df = _os.path.join(tmpdir, "disagreement.json")
-
-        with open(cf, "w") as f:
-            _json.dump(claude_findings, f)
-        with open(xf, "w") as f:
-            _json.dump(codex_findings, f)
-        with open(rf, "w") as f:
-            _json.dump(rebuttal_findings, f)
-        with open(df, "w") as f:
-            _json.dump({"disagreements": disagreements}, f)
-
-        try:
-            result = subprocess.run(
-                [
-                    sys.executable, "-m", "core.cluster.arbiter",
-                    "--claude-findings", cf,
-                    "--codex-findings", xf,
-                    "--rebuttal-findings", rf,
-                    "--disagreement", df,
-                    "--artifact", artifact,
-                    "--round", str(review_round),
-                ],
-                capture_output=True,
-                text=True,
-                timeout=300,
-                cwd=str(HOME / "Projects" / "BuildRunner3"),
-            )
-            stdout = (result.stdout or "").strip()
-            if result.returncode == 0 and stdout:
-                return _json.loads(stdout)
-            return {
-                "verdict": "ERROR",
-                "rationale": f"Arbiter exited {result.returncode}: {result.stderr}",
-                "findings": [],
-                "error": True,
-            }
-        except subprocess.TimeoutExpired:
-            return {
-                "verdict": "ERROR",
-                "rationale": "Arbiter timed out after 300s",
-                "findings": [],
-                "error": True,
-            }
-        except Exception as exc:
-            return {
-                "verdict": "ERROR",
-                "rationale": str(exc),
-                "findings": [],
-                "error": True,
-            }
 
 
 def _log_three_way_decision(event, details=""):
@@ -1607,10 +1195,6 @@ def _classify_findings_for_artifact(merged_findings):
 def write_tracking_artifact(project_root, plan_file, task_id, result, mode="plan"):
     """Write a canonical tracking artifact for the review result.
 
-    Schema matches require-adversarial-review.sh hook expectations:
-      pass, review_round, max_rebuttal_rounds, merged_findings,
-      consensus_blockers, unresolved_disagreements, reviewers.
-
     In plan mode, writes one phase-N-<ts>.json per phase the plan declares.
     In diff/commit mode, writes a single commit-<sha>-<ts>.json file.
     Returns list of written paths.
@@ -1618,12 +1202,11 @@ def write_tracking_artifact(project_root, plan_file, task_id, result, mode="plan
     reviews_dir = Path(project_root) / ".buildrunner" / "adversarial-reviews"
     reviews_dir.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    max_rounds = int(os.environ.get("BR3_MAX_REVIEW_ROUNDS", "1"))
 
-    merged_findings = result.get("findings", []) or []
+    merged_findings = result.get("findings") or []
     consensus_blockers, unresolved, status = _classify_findings_for_artifact(merged_findings)
     verdict = result.get("verdict", "UNKNOWN")
-    pass_flag = (verdict == "APPROVED") and not consensus_blockers and not unresolved
+    pass_flag = bool(result.get("pass"))
 
     import hashlib as _hashlib
     plan_file_abs = str(Path(plan_file).resolve()) if plan_file else None
@@ -1643,18 +1226,22 @@ def write_tracking_artifact(project_root, plan_file, task_id, result, mode="plan
         "status": status,
         "pass": bool(pass_flag),
         "verdict": verdict,
-        "reviewers": [
-            {"runtime": "claude", "role": "authoritative_reviewer"},
-            {"runtime": "codex", "role": "secondary_reviewer"},
-        ],
+        "reviewers": result.get("reviewers", []),
+        "arbiter": result.get("arbiter", {}),
         "arbiter_invoked": bool(result.get("arbiter_invoked")),
-        "arbiter_ruling": result.get("arbiter_ruling"),
+        "arbiter_ruling": result.get("arbiter"),
         "merged_findings": merged_findings,
         "consensus_blockers": consensus_blockers,
         "unresolved_disagreements": unresolved,
+        "blockers": result.get("blockers", consensus_blockers + unresolved),
+        "arbiter_reasoning": result.get("arbiter_reasoning") or ((result.get("arbiter") or {}).get("reasoning", "")),
+        "circuit_state": result.get("circuit_state", "closed"),
+        "plan_hash": result.get("plan_hash"),
+        "reason": result.get("reason"),
+        "fallback_logic": result.get("fallback_logic"),
+        "last_opus_payload": result.get("last_opus_payload"),
         "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "max_rebuttal_rounds": max_rounds,
-        "review_round": int(result.get("review_round", 1) or 1),
+        "review_round": 1,
         "escalated": bool(result.get("escalated")),
     }
 
@@ -1665,9 +1252,6 @@ def write_tracking_artifact(project_root, plan_file, task_id, result, mode="plan
         for phase_number in phases:
             record = dict(base_record)
             record["phase_number"] = phase_number
-            # Round counter: count existing tracking files for this phase
-            existing = list(reviews_dir.glob(f"phase-{phase_number}-*.json"))
-            record["review_round"] = max(base_record["review_round"], len(existing) + 1)
             out_path = reviews_dir / f"phase-{phase_number}-{timestamp}.json"
             out_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
             written.append(str(out_path))
@@ -1680,6 +1264,106 @@ def write_tracking_artifact(project_root, plan_file, task_id, result, mode="plan
     return written
 
 
+_ACTIVE_REVIEW_LOCKS = set()
+_REVIEW_LOCK_CLEANUP_REGISTERED = False
+
+
+def _review_lock_path(plan_hash):
+    return Path(os.path.expanduser("~")) / ".buildrunner" / "locks" / f"review-{plan_hash}.lock"
+
+
+def _release_review_locks():
+    for lock_path in list(_ACTIVE_REVIEW_LOCKS):
+        try:
+            Path(lock_path).unlink(missing_ok=True)
+        except OSError:
+            pass
+        finally:
+            _ACTIVE_REVIEW_LOCKS.discard(lock_path)
+
+
+def _register_review_lock_cleanup():
+    global _REVIEW_LOCK_CLEANUP_REGISTERED
+    if _REVIEW_LOCK_CLEANUP_REGISTERED:
+        return
+    atexit.register(_release_review_locks)
+    _REVIEW_LOCK_CLEANUP_REGISTERED = True
+
+
+def _compute_plan_hash(diff_text, plan_file=None):
+    if plan_file and Path(plan_file).exists():
+        source = Path(plan_file).read_text(encoding="utf-8", errors="replace")
+    else:
+        source = diff_text or ""
+    return hashlib.sha256(source.encode("utf-8")).hexdigest()[:16]
+
+
+def _enforce_one_review_per_plan(plan_hash):
+    if os.environ.get("BR3_REVIEW_ALLOW_RERUN") == "1":
+        return
+    lock_path = _review_lock_path(plan_hash)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    if lock_path.exists():
+        sys.stderr.write("ONE-REVIEW-PER-PLAN: rerun not permitted\n")
+        raise SystemExit(3)
+    lock_path.write_text(
+        json.dumps({"pid": os.getpid(), "plan_hash": plan_hash, "created_at": utc_now_iso()}, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    _ACTIVE_REVIEW_LOCKS.add(str(lock_path))
+    _register_review_lock_cleanup()
+
+
+def _reviewer_index(findings):
+    indexed = {}
+    for item in findings:
+        if not isinstance(item, dict):
+            continue
+        key = _normalize_finding(item.get("finding", ""))
+        if not key:
+            continue
+        indexed[key] = {
+            "severity": item.get("severity", "note"),
+            "fix_type": item.get("fix_type", "fixable"),
+        }
+    return indexed
+
+
+def _reviewers_disagree(reviewers):
+    ok_reviewers = [item for item in reviewers if item.get("status") == "ok"]
+    if len(ok_reviewers) < 2:
+        return True
+    left = _reviewer_index(ok_reviewers[0].get("findings", []))
+    right = _reviewer_index(ok_reviewers[1].get("findings", []))
+    return left != right
+
+
+def _build_consensus_verdict(reviewers, merged_findings, plan_hash):
+    blockers = [item for item in merged_findings if item.get("severity") == "blocker"]
+    verdict = "BLOCK" if blockers else "PASS"
+    reasoning = (
+        "Reviewers agreed on blocking findings."
+        if blockers
+        else "Reviewers agreed the plan passes one-round review."
+    )
+    result = Verdict(
+        pass_=verdict == "PASS",
+        verdict=verdict,
+        reviewers=reviewers,
+        arbiter={"reasoning": reasoning, "duration_ms": 0, "status": "not-needed"},
+        circuit_state="closed",
+        plan_hash=plan_hash,
+        review_round=1,
+        escalated=False,
+        blockers=blockers,
+        arbiter_reasoning=reasoning,
+        reason="consensus-blockers" if blockers else "consensus-pass",
+    ).as_dict()
+    result["arbiter_invoked"] = False
+    result["consensus"] = True
+    return result
+
+
 def run_three_way_review(
     diff_text,
     spec_text,
@@ -1690,246 +1374,49 @@ def run_three_way_review(
     review_round=1,
     prior_findings=None,
 ):
-    """
-    Run the 3-party adversarial review pipeline:
-      Round 1: Sonnet + Codex in parallel (phase-9 schema with fix_type)
-      Round 2: Mandatory rebuttal — concede or hold + rationale
-      Consensus → done. Disagreement → Opus 4.7 arbiter (TERMINAL).
-
-    Convergence policy (per Final Decisions Override):
-      - Round cap via BR3_MAX_REVIEW_ROUNDS (default 1 rebuttal round)
-      - Structural-blocker short-circuit on round 1
-      - Persistent-blocker detection on round 2+
-      - Escalation: print CONTINUE/OVERRIDE/SIMPLIFY prompt to stderr, exit 2
-
-    Returns dict:
-      {verdict, findings, consensus, arbiter_invoked, arbiter_ruling,
-       review_round, escalated, exit_code}
-    """
+    """Run one parallel review round and commit a final verdict."""
     config = config or load_config()
     artifact = plan_file or diff_text[:80]
-    max_rounds = int(os.environ.get("BR3_MAX_REVIEW_ROUNDS", "1"))
-
+    plan_hash = _compute_plan_hash(diff_text, plan_file=plan_file)
+    _enforce_one_review_per_plan(plan_hash)
     full_prompt = build_review_prompt(diff_text, spec_text, system_prompt=THREE_WAY_REVIEW_PROMPT)
-
-    # --- Round 1: Parallel reviews ---
-    # When BR3_ADVERSARIAL_3WAY=on, dispatch Claude + Codex + Below in parallel.
-    # When off, this function should not be reached (main() routes to run_review()).
     _log_three_way_decision(
-        "round_start",
-        f"round={review_round} artifact={artifact!r} commit={commit_sha} "
-        f"three_way={_ADVERSARIAL_3WAY_ENABLED}",
+        "review_start",
+        f"plan_hash={plan_hash} artifact={artifact!r} commit={commit_sha}",
+    )
+    reviewer_timeout = int(os.environ.get("BR3_REVIEWER_TIMEOUT", "360"))
+    reviewers = asyncio.run(
+        _run_parallel_reviewers_one_round(full_prompt, config, timeout_seconds=reviewer_timeout)
+    )
+    merged = _merge_two_way_findings(
+        reviewers[0].get("findings", []),
+        reviewers[1].get("findings", []),
     )
 
-    if _ADVERSARIAL_3WAY_ENABLED:
-        parallel_results = _run_parallel_reviews_3way(full_prompt, config)
+    if _reviewers_disagree(reviewers):
+        _log_three_way_decision("arbiter_invoked", f"plan_hash={plan_hash} reviewers=2")
+        result = arbitrate(
+            plan=Path(plan_file).read_text(encoding="utf-8", errors="replace") if plan_file and Path(plan_file).exists() else diff_text,
+            reviewer_findings=reviewers,
+            config={**config, "plan_hash": plan_hash},
+        )
+        result["arbiter_invoked"] = True
+        result["consensus"] = False
     else:
-        parallel_results = _run_parallel_reviews(full_prompt, config)
-    claude_result = parallel_results.get("claude")
-    codex_result = parallel_results.get("codex")
-    claude_findings = (claude_result or {}).get("findings", [])
-    codex_findings = (codex_result or {}).get("findings", [])
-    errors = parallel_results.get("errors", [])
+        result = _build_consensus_verdict(reviewers, merged, plan_hash)
 
-    if errors:
-        for err in errors:
-            print(f"[three-way] reviewer error: {err}", file=sys.stderr)
-
-    # Reviewer-error guard: if BOTH reviewers errored out, we cannot approve.
-    # Silent APPROVED on empty findings is only valid when at least one
-    # reviewer actually ran. Otherwise, return REVIEWER_ERROR for caller retry.
-    if claude_result is None and codex_result is None:
-        err_detail = "; ".join(errors) if errors else "both reviewers returned no result"
-        _log_three_way_decision("reviewer_error_both", err_detail)
-        return {
-            "verdict": "REVIEWER_ERROR",
-            "findings": [],
-            "consensus": False,
-            "arbiter_invoked": False,
-            "arbiter_ruling": None,
-            "review_round": review_round,
-            "escalated": True,
-            "exit_code": 1,
-            "error": err_detail,
-        }
-
-    # Check for fix_type validation errors from either reviewer
-    fix_type_errors = parallel_results.get("fix_type_errors", [])
-    if fix_type_errors:
-        err_msg = "; ".join(fix_type_errors)
-        _log_three_way_decision("fix_type_rejected", err_msg)
-        return {
-            "verdict": "REJECTED",
-            "findings": [],
-            "consensus": False,
-            "arbiter_invoked": False,
-            "arbiter_ruling": None,
-            "review_round": review_round,
-            "escalated": False,
-            "exit_code": 1,
-            "error": err_msg,
-        }
-
-    # Structural-blocker short-circuit (round 1 only)
-    for name, findings in (("claude", claude_findings), ("codex", codex_findings)):
-        structural = _detect_structural_blocker(findings)
-        if structural:
-            detail = (
-                f"structural_blocker reviewer={name} "
-                f"finding={structural.get('finding', '')[:120]!r} "
-                f"round={review_round}"
-            )
-            _log_three_way_decision("structural_escalation", detail)
-            print(ESCALATION_PROMPT, file=sys.stderr)
-            return {
-                "verdict": "ESCALATED",
-                "findings": findings,
-                "consensus": False,
-                "arbiter_invoked": False,
-                "arbiter_ruling": None,
-                "review_round": review_round,
-                "escalated": True,
-                "exit_code": 2,
-                "structural_blocker": structural,
-            }
-
-    # Persistent-blocker detection (round 2+)
-    if prior_findings is not None and review_round >= 2:
-        persistent = _detect_persistent_blockers(prior_findings, claude_findings + codex_findings)
-        if persistent:
-            detail = (
-                f"persistent_blockers count={len(persistent)} "
-                f"round={review_round} examples={list(persistent)[:2]!r}"
-            )
-            _log_three_way_decision("persistent_escalation", detail)
-            print(ESCALATION_PROMPT, file=sys.stderr)
-            return {
-                "verdict": "ESCALATED",
-                "findings": claude_findings + codex_findings,
-                "consensus": False,
-                "arbiter_invoked": False,
-                "arbiter_ruling": None,
-                "review_round": review_round,
-                "escalated": True,
-                "exit_code": 2,
-                "persistent_blockers": list(persistent),
-            }
-
-    # Merge findings
-    merged = _merge_two_way_findings(claude_findings, codex_findings)
-    has_consensus, consensus_blockers, solo_blockers = _check_consensus(merged)
-
-    # If clean consensus (no blockers at all), done
-    if has_consensus and not consensus_blockers:
-        _log_three_way_decision(
-            "consensus_pass",
-            f"round={review_round} findings={len(merged)} consensus_blockers=0",
-        )
-        if _ADVERSARIAL_3WAY_ENABLED:
-            _emit_adversarial_review_ran(
-                mode="3-way",
-                verdict="APPROVED",
-                findings_count=len(merged),
-                commit_sha=commit_sha,
-            )
-        return {
-            "verdict": "APPROVED",
-            "findings": merged,
-            "consensus": True,
-            "arbiter_invoked": False,
-            "arbiter_ruling": None,
-            "review_round": review_round,
-            "escalated": False,
-            "exit_code": 0,
-        }
-
-    # Round 2: Mandatory rebuttal before arbiter
-    merged, rebuttal_ok = _run_rebuttal(merged, artifact, config)
-    has_consensus, consensus_blockers, solo_blockers = _check_consensus(merged)
-
-    if has_consensus and not consensus_blockers:
-        _log_three_way_decision(
-            "consensus_after_rebuttal",
-            f"round={review_round} rebuttal_ok={rebuttal_ok}",
-        )
-        if _ADVERSARIAL_3WAY_ENABLED:
-            _emit_adversarial_review_ran(
-                mode="3-way",
-                verdict="APPROVED",
-                findings_count=len(merged),
-                commit_sha=commit_sha,
-            )
-        return {
-            "verdict": "APPROVED",
-            "findings": merged,
-            "consensus": True,
-            "arbiter_invoked": False,
-            "arbiter_ruling": None,
-            "review_round": review_round,
-            "escalated": False,
-            "exit_code": 0,
-        }
-
-    # Check round cap AFTER rebuttal
-    if review_round >= max_rounds + 1:
-        _log_three_way_decision(
-            "round_cap_escalation",
-            f"round={review_round} max_rounds={max_rounds}",
-        )
-        print(ESCALATION_PROMPT, file=sys.stderr)
-        return {
-            "verdict": "ESCALATED",
-            "findings": merged,
-            "consensus": False,
-            "arbiter_invoked": False,
-            "arbiter_ruling": None,
-            "review_round": review_round,
-            "escalated": True,
-            "exit_code": 2,
-        }
-
-    # Disagreement after rebuttal → invoke arbiter (TERMINAL)
-    disagreements = consensus_blockers + solo_blockers
-    _log_three_way_decision(
-        "arbiter_invoked",
-        f"round={review_round} disagreements={len(disagreements)}",
+    result["findings"] = merged
+    result["arbiter_ruling"] = result.get("arbiter")
+    result["review_round"] = 1
+    result["escalated"] = False
+    result["commit_sha"] = commit_sha
+    result["exit_code"] = 0 if result.get("pass") else 1
+    _emit_adversarial_review_ran(
+        mode="3-way",
+        verdict=result.get("verdict", "BLOCK"),
+        findings_count=len(merged),
+        commit_sha=commit_sha,
     )
-
-    arbiter_ruling = _invoke_arbiter(
-        claude_findings=claude_findings,
-        codex_findings=codex_findings,
-        rebuttal_findings=merged,
-        disagreements=disagreements,
-        artifact=artifact,
-        review_round=review_round,
-        config=config,
-    )
-
-    _log_three_way_decision(
-        "arbiter_ruling",
-        f"verdict={arbiter_ruling.get('verdict')} round={review_round}",
-    )
-
-    verdict = arbiter_ruling.get("verdict", "ERROR")
-    exit_code = 0 if verdict == "APPROVED" else 1
-
-    result = {
-        "verdict": verdict,
-        "findings": merged,
-        "consensus": False,
-        "arbiter_invoked": True,
-        "arbiter_ruling": arbiter_ruling,
-        "review_round": review_round,
-        "escalated": False,
-        "exit_code": exit_code,
-    }
-    if _ADVERSARIAL_3WAY_ENABLED:
-        _emit_adversarial_review_ran(
-            mode="3-way",
-            verdict=verdict,
-            findings_count=len(merged),
-            commit_sha=commit_sha,
-        )
     return result
 
 
@@ -1942,76 +1429,8 @@ def _resolve_default_spec_file(project_root):
     return str(candidates[0]) if candidates else None
 
 
-def _plan_guard_check(plan_file: str, project_root: str, task_id: str | None) -> None:
-    """Mechanical 1-round enforcement.
-
-    If the most-recent tracking artifact for this plan (keyed by absolute plan
-    path, or task_id when provided) returned a BLOCKED verdict within the last
-    24 hours, refuse a second invocation unless BR3_REVIEW_ALLOW_RERUN=1 is set.
-
-    Exit 3 on refusal — distinct from normal BLOCKED (exit 1) so callers can
-    detect the guard vs. a legitimate blocker verdict.
-    """
-    import hashlib
-
-    if os.environ.get("BR3_REVIEW_ALLOW_RERUN", "0") == "1":
-        return
-
-    plan_abs = str(Path(plan_file).resolve())
-    plan_sha = hashlib.sha256(plan_abs.encode("utf-8")).hexdigest()[:16]
-    adv_dir = Path(project_root) / ".buildrunner" / "adversarial-reviews"
-    if not adv_dir.is_dir():
-        return
-
-    now = time.time()
-    window = 24 * 3600  # 24 h
-    candidates = sorted(adv_dir.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-
-    for candidate in candidates:
-        if now - candidate.stat().st_mtime > window:
-            break
-        try:
-            payload = json.loads(candidate.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        prior_plan = payload.get("plan_file_abs") or ""
-        prior_task = payload.get("task_id") or ""
-        prior_sha = payload.get("plan_path_sha") or ""
-        same_plan = (
-            (task_id and prior_task and task_id == prior_task)
-            or (prior_sha and prior_sha == plan_sha)
-            or (prior_plan and prior_plan == plan_abs)
-        )
-        if not same_plan:
-            continue
-        prior_verdict = (payload.get("verdict") or "").upper()
-        prior_pass = bool(payload.get("pass"))
-        if prior_pass or prior_verdict in {"APPROVED", "PASS"}:
-            return  # prior PASS — free to re-run (idempotent)
-        # Prior run on this same plan did NOT pass — refuse.
-        sys.stderr.write(
-            "================================================================\n"
-            "ADVERSARIAL REVIEW GUARD: auto-retry refused (1-round cap)\n"
-            "================================================================\n"
-            f"Prior review on this plan returned verdict={prior_verdict or 'BLOCKED'} "
-            f"at {candidate.name}.\n"
-            "The unified pipeline runs one review per plan per authorization.\n"
-            "Re-running the review after hand-edits is NOT autonomous behavior —\n"
-            "the human operator must explicitly authorize a fresh review.\n"
-            "\n"
-            "To authorize a fresh review, set BR3_REVIEW_ALLOW_RERUN=1 in the\n"
-            "environment of the review command. Do not set it from inside a\n"
-            "skill or automated flow.\n"
-            "\n"
-            "Prior tracking artifact: "
-            f"{candidate}\n"
-            "================================================================\n"
-        )
-        sys.exit(3)
-
-
 def _mode_plan(args, parser):
-    """Run canonical plan review: 2-way parallel + 1 rebuttal + Opus arbiter."""
+    """Run canonical plan review: one parallel round plus arbiter if needed."""
     if not args.plan or not args.project_root:
         parser.error("--mode plan requires --plan <plan_file> and --project-root <root>")
     if not Path(args.plan).is_file():
@@ -2019,9 +1438,6 @@ def _mode_plan(args, parser):
     if not Path(args.project_root).is_dir():
         parser.error(f"project root not found: {args.project_root}")
 
-    _plan_guard_check(args.plan, args.project_root, args.task_id)
-
-    os.environ.setdefault("BR3_MAX_REVIEW_ROUNDS", "1")
     plan_text = Path(args.plan).read_text(encoding="utf-8", errors="replace")
     augmented_prompt = build_plan_review_prompt(plan_text, args.project_root)
     commit_sha = args.commit_sha or f"plan-{int(time.time())}"
@@ -2050,13 +1466,12 @@ def _mode_plan(args, parser):
 
 
 def _mode_diff(args, parser):
-    """Run canonical diff review: 2-way parallel + 1 rebuttal + Opus arbiter."""
+    """Run canonical diff review: one parallel round plus arbiter if needed."""
     if not args.diff_file or not args.project_root:
         parser.error("--mode diff requires --diff-file and --project-root")
     if not Path(args.diff_file).is_file():
         parser.error(f"diff file not found: {args.diff_file}")
 
-    os.environ.setdefault("BR3_MAX_REVIEW_ROUNDS", "1")
     spec_file = args.spec_file or _resolve_default_spec_file(args.project_root)
     diff_text = Path(args.diff_file).read_text(encoding="utf-8", errors="replace")
     spec_text = Path(spec_file).read_text(encoding="utf-8", errors="replace") if spec_file else ""
@@ -2091,7 +1506,6 @@ def _mode_commit(args, parser):
     if not args.project_root:
         parser.error("--mode commit requires --project-root")
 
-    os.environ.setdefault("BR3_MAX_REVIEW_ROUNDS", "1")
     project_root = args.project_root
     head_rev = args.commit_sha or "HEAD"
     diff_proc = subprocess.run(
@@ -2158,13 +1572,7 @@ def main():
     parser.add_argument("--three-way", action="store_true", help="[legacy] Alias for --mode plan when --plan is set, else --mode diff")
     parser.add_argument("--plan", help="Path to plan file (plan mode input)")
     parser.add_argument("--task-id", help="Task identifier recorded in tracking artifact")
-    parser.add_argument("--escalation-prompt-only", action="store_true", help="Print escalation prompt and exit 0")
     args = parser.parse_args()
-
-    # Escalation prompt only mode — print prompt and exit 0
-    if args.escalation_prompt_only:
-        print(ESCALATION_PROMPT)
-        sys.exit(0)
 
     # Auth check mode — verify and exit
     if args.check_auth:
@@ -2193,55 +1601,19 @@ def main():
             print(format_runtime_preflight(preflight))
         sys.exit(0 if preflight["dispatch_ok"] else 1)
 
-    # Phase 4: flag gate — read once (cached at module import in _ADVERSARIAL_3WAY_ENABLED).
-    # When off: all review modes fall through to the legacy run_review() path below.
-    # When on:  plan/diff/commit modes route to run_three_way_review() via _mode_* helpers.
-    three_way_active = _ADVERSARIAL_3WAY_ENABLED
-
     # Resolve effective mode: explicit --mode wins; else --three-way + --plan → plan; --three-way → diff
     effective_mode = args.mode if args.mode in ("plan", "diff", "commit") else None
     if effective_mode is None and args.three_way:
         effective_mode = "plan" if args.plan else "diff"
 
-    if three_way_active:
-        if effective_mode == "plan":
-            _mode_plan(args, parser)
-        if effective_mode == "diff":
-            _mode_diff(args, parser)
-        if effective_mode == "commit":
-            _mode_commit(args, parser)
+    if effective_mode == "plan":
+        _mode_plan(args, parser)
+    if effective_mode == "diff":
+        _mode_diff(args, parser)
+    if effective_mode == "commit":
+        _mode_commit(args, parser)
 
-    # Legacy raw-review path — diff-file + spec-file + commit-sha, no rebuttal/arbiter
-    if not all([args.diff_file, args.spec_file, args.commit_sha, args.project_root]):
-        parser.error("--diff-file, --spec-file, --commit-sha, and --project-root are required for review")
-
-    # Read inputs (handle binary/non-UTF-8 diffs gracefully)
-    with open(args.diff_file, encoding="utf-8", errors="replace") as f:
-        diff_text = f.read()
-    with open(args.spec_file, encoding="utf-8", errors="replace") as f:
-        spec_text = f.read()
-
-    config = load_config()
-
-    # Ensure cache dir exists
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-
-    # Check cache
-    cached = check_cache(args.commit_sha)
-    if cached:
-        print(json.dumps(cached["findings"], indent=2))
-        return
-
-    # Run review
-    start = time.time()
-    findings, model_used, cost = run_review(diff_text, spec_text, args.commit_sha, config)
-    duration = time.time() - start
-
-    # Cache result
-    write_cache(args.commit_sha, findings, model_used, duration)
-
-    # Output JSON findings to stdout
-    print(json.dumps(findings, indent=2))
+    parser.error("one of --mode {plan,diff,commit} or --three-way is required")
 
 
 if __name__ == "__main__":

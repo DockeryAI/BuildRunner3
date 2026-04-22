@@ -60,7 +60,7 @@ _index_stats = {"total_files": 0, "total_chunks": 0, "last_duration": 0.0}
 from core.cluster.lancedb_config import get_lancedb_uri, get_embedding_model
 
 LANCE_DIR = get_lancedb_uri()
-RESEARCH_DIR = os.environ.get("RESEARCH_DIR", os.path.expanduser("~/repos/research-library"))
+RESEARCH_DIR = os.environ.get("RESEARCH_DIR", "/srv/jimmy/research-library")
 RESEARCH_EMBED_MODEL = os.environ.get("RESEARCH_EMBED_MODEL", get_embedding_model())
 RESEARCH_INDEX_INTERVAL = int(os.environ.get("RESEARCH_INDEX_INTERVAL", "300"))
 

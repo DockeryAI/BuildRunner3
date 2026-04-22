@@ -4,23 +4,9 @@
       "enabled": true,
       "command": "codex",
       "args": ["exec", "--"],
-      "timeout_seconds": 60,
+      "timeout_seconds": 360,
       "priority": 1
-    },
-    "openrouter": {
-      "enabled": true,
-      "model": "openai/gpt-4o",
-      "api_url": "https://openrouter.ai/api/v1/chat/completions",
-      "timeout_seconds": 60,
-      "priority": 2
     }
-  },
-  "below": {
-    "enabled": true,
-    "endpoint": "http://10.0.1.105:11434/api/generate",
-    "model": "deepseek-r1:70b",
-    "timeout_seconds": 120,
-    "priority": 3
   },
   "reviewers": {
     "claude_model": "claude-sonnet-4-6",
@@ -29,10 +15,6 @@
   "arbiter": {
     "model": "claude-opus-4-7",
     "effort": "xhigh"
-  },
-  "budget": {
-    "monthly_cap_usd": 50,
-    "spend_log": "~/.buildrunner/logs/cross-review-spend.json"
   },
   "cache_dir": "~/.buildrunner/cache/cross-reviews"
 }

@@ -1,313 +1,287 @@
-#!/usr/bin/env python3
-"""
-arbiter.py — Opus 4.7 arbiter for unresolved adversarial review disagreements.
+"""Opus arbiter for one-round cross-model review."""
 
-Invoked ONLY when Sonnet + Codex reviewers disagree after the mandatory rebuttal
-round. Reads all reviews, rebuttals, and the specific point of disagreement.
-Uses Claude Opus 4.7 with effort=xhigh (adaptive thinking) for the ruling.
+from __future__ import annotations
 
-IMPORTANT: Arbiter ruling is TERMINAL. No auto re-run path. Any contest
-escalates to the user.
-
-IMPORTANT: Reviewers MUST NOT see the arbiter ruling pre-finding. The arbiter
-only receives reviewer outputs — it does not feed back into the review loop.
-
-Usage:
-    python3 -m core.cluster.arbiter \
-        --claude-findings <json_file> \
-        --codex-findings <json_file> \
-        --rebuttal-findings <json_file> \
-        --disagreement <json_file> \
-        --artifact <path> \
-        --round <N> \
-        [--project-root <path>]
-
-Output (stdout): JSON arbiter ruling {verdict, findings, rationale, model, effort}
-Exit: 0 = ruling complete; 1 = arbiter invocation error
-"""
-
-import argparse
+import hashlib
 import json
 import os
-import subprocess
-import sys
-import tempfile
+import re
 import time
-from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
-HOME = Path.home()
-DECISIONS_LOG = HOME / "Projects" / "BuildRunner3" / ".buildrunner" / "decisions.log"
-CONFIG_PATH = Path(__file__).parent / "cross_model_review_config.json"
+from anthropic import Anthropic
 
-ARBITER_PROMPT_TEMPLATE = """You are an arbiter for a code review dispute. Two co-equal reviewers have examined the same artifact and disagree after a rebuttal round. Your ruling is TERMINAL — once you rule, the review loop stops. Do not defer; make a definitive determination.
+from core.cluster.review_verdict import Verdict, VerdictDict
 
-## Context
-
-Artifact under review: {artifact}
-Review round: {round}
-
-## Reviewer A findings (Claude Sonnet 4.6):
-{claude_findings}
-
-## Reviewer B findings (Codex GPT-5.4):
-{codex_findings}
-
-## Post-rebuttal surviving findings:
-{rebuttal_findings}
-
-## Specific disagreement requiring arbitration:
-{disagreement}
-
-## Your task
-
-1. Review each disputed finding independently.
-2. For each disputed finding, determine:
-   - Is this a real defect that would cause harm in production?
-   - Which reviewer's assessment is more accurate, and why?
-   - What is the correct severity: blocker / warning / note?
-   - What is the correct fix_type: fixable / structural?
-3. Issue a terminal ruling on whether the artifact is BLOCKED or APPROVED.
-
-Output ONLY the JSON ruling object. No prose outside the JSON.
-
-Schema:
-{{
-  "verdict": "BLOCKED" | "APPROVED",
-  "rationale": "<2-3 sentence summary of the key deciding factor>",
-  "findings": [
-    {{
-      "finding": "<exact finding text>",
-      "severity": "blocker" | "warning" | "note",
-      "fix_type": "fixable" | "structural",
-      "arbiter_ruling": "<ruling on this specific finding>",
-      "upheld": true | false
-    }}
-  ],
-  "reviewer_accuracy": {{
-    "claude": "<brief assessment of claude's review quality>",
-    "codex": "<brief assessment of codex's review quality>"
-  }}
-}}
-
-The verdict is BLOCKED if any upheld finding has severity=blocker. Otherwise APPROVED.
-"""
+_CIRCUIT_WINDOW_SECONDS = 60
+_CIRCUIT_THRESHOLD = 3
+_DEFAULT_ARBITER_MODEL = "claude-opus-4-7"
+_DEFAULT_ARBITER_MAX_TOKENS = 2048
+_ADAPTIVE_THINKING = {"type": "adaptive", "display": "summarized"}
+_BETA_HEADERS = {"anthropic-beta": "task-budgets-2026-03-13"}
 
 
-def load_config():
-    if CONFIG_PATH.exists():
-        with open(CONFIG_PATH) as f:
-            return json.load(f)
-    return {"arbiter": {"model": "claude-opus-4-7", "effort": "xhigh"}}
+def _user_home() -> Path:
+    return Path("~").expanduser()
 
 
-def utc_now_iso():
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+def _circuit_state_path() -> Path:
+    return _user_home() / ".buildrunner" / "state" / "arbiter-circuit.json"
 
 
-def load_json_file(path):
-    """Load JSON from a file path, returning empty list/dict on failure."""
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        return {"error": f"Failed to load {path}: {e}"}
+def _decision_log_path() -> Path:
+    repo_log = Path.cwd() / ".buildrunner" / "decisions.log"
+    if repo_log.parent.exists():
+        return repo_log
+    return _user_home() / "Projects" / "BuildRunner3" / ".buildrunner" / "decisions.log"
 
 
-def format_findings_for_prompt(findings):
-    """Format a findings list or dict for inclusion in the arbiter prompt."""
-    if isinstance(findings, list):
-        if not findings:
-            return "(no findings)"
-        lines = []
-        for item in findings:
-            sev = item.get("severity", "note")
-            fix = item.get("fix_type", "fixable")
-            finding = item.get("finding", "")
-            lines.append(f"- [{sev}/{fix}] {finding}")
-        return "\n".join(lines)
-    elif isinstance(findings, dict):
-        return json.dumps(findings, indent=2)
-    return str(findings)
-
-
-def invoke_arbiter_claude(prompt, config):
-    """
-    Invoke Claude Opus 4.7 with effort=xhigh for adaptive thinking (ultrathink).
-    Uses claude CLI with --model flag.
-
-    IMPORTANT: Do NOT use budget_tokens — deprecated on Opus 4.7, throws 400.
-    Use effort=xhigh which enables adaptive thinking automatically.
-    """
-    arbiter_cfg = config.get("arbiter", {})
-    model = arbiter_cfg.get("model", "claude-opus-4-7")
-    effort = arbiter_cfg.get("effort", "xhigh")
-
-    start = time.time()
-    try:
-        with tempfile.TemporaryDirectory(prefix="br3-arbiter-") as tmpdir:
-            prompt_file = os.path.join(tmpdir, "arbiter-prompt.txt")
-            with open(prompt_file, "w", encoding="utf-8") as f:
-                f.write(prompt)
-
-            result = subprocess.run(
-                [
-                    "claude",
-                    "--print",
-                    "--model", model,
-                    "--dangerously-skip-permissions",
-                ],
-                input=prompt,
-                capture_output=True,
-                text=True,
-                timeout=300,
-                cwd=tmpdir,
-            )
-
-            duration = time.time() - start
-            stdout = (result.stdout or "").strip()
-            stderr = (result.stderr or "").strip()
-
-            if result.returncode != 0:
-                raise RuntimeError(
-                    f"Arbiter claude invocation failed (exit {result.returncode}): {stderr}"
-                )
-
-            return stdout, model, effort, duration
-
-    except subprocess.TimeoutExpired:
-        raise RuntimeError("Arbiter invocation timed out after 300s")
-    except FileNotFoundError:
-        raise RuntimeError("claude CLI not found in PATH")
-
-
-def parse_arbiter_output(raw_text):
-    """Extract JSON ruling from arbiter raw output."""
-    import re
-    match = re.search(r"\{[\s\S]*\}", raw_text)
-    if match:
-        try:
-            return json.loads(match.group())
-        except json.JSONDecodeError:
-            pass
+def _default_circuit_state() -> dict[str, Any]:
     return {
-        "verdict": "BLOCKED",
-        "rationale": "Arbiter output was malformed — treating as BLOCKED for safety.",
-        "findings": [],
-        "reviewer_accuracy": {"claude": "unknown", "codex": "unknown"},
-        "parse_error": True,
-        "raw_output": raw_text[:2000],
+        "state": "closed",
+        "error_timestamps": [],
+        "opened_at": None,
+        "last_error": None,
+        "last_opus_payload": None,
     }
 
 
-def log_ruling(ruling, artifact, review_round, model, effort, duration):
-    """
-    Append arbiter ruling to decisions.log.
-
-    Every ruling MUST be logged. The log entry is the authoritative record.
-    """
-    DECISIONS_LOG.parent.mkdir(parents=True, exist_ok=True)
-    timestamp = utc_now_iso()
-    verdict = ruling.get("verdict", "UNKNOWN")
-    rationale = ruling.get("rationale", "")[:200].replace("\n", " ")
-    n_findings = len(ruling.get("findings", []))
-    n_upheld = sum(1 for f in ruling.get("findings", []) if f.get("upheld", False))
-
-    log_line = (
-        f"[{timestamp}] ARBITER_RULING artifact={artifact!r} "
-        f"round={review_round} verdict={verdict} "
-        f"findings={n_findings} upheld={n_upheld} "
-        f"model={model} effort={effort} "
-        f"duration_s={duration:.1f} "
-        f"rationale={rationale!r}"
-    )
-
-    with open(DECISIONS_LOG, "a", encoding="utf-8") as f:
-        f.write(log_line + "\n")
-
-    return log_line
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Opus 4.7 arbiter for review disputes")
-    parser.add_argument("--claude-findings", required=True, help="Path to Claude Sonnet findings JSON")
-    parser.add_argument("--codex-findings", required=True, help="Path to Codex findings JSON")
-    parser.add_argument("--rebuttal-findings", required=True, help="Path to post-rebuttal findings JSON")
-    parser.add_argument("--disagreement", required=True, help="Path to disagreement detail JSON")
-    parser.add_argument("--artifact", required=True, help="Artifact path under review")
-    parser.add_argument("--round", type=int, default=1, help="Review round number")
-    parser.add_argument("--project-root", help="Project root path")
-    args = parser.parse_args()
-
-    config = load_config()
-
-    # Load all findings
-    claude_findings = load_json_file(args.claude_findings)
-    codex_findings = load_json_file(args.codex_findings)
-    rebuttal_findings = load_json_file(args.rebuttal_findings)
-    disagreement = load_json_file(args.disagreement)
-
-    # Build prompt using summarized context (Phase 8 summarizer integration)
-    # Try to use the summarizer for large inputs; fall back to direct formatting
-    def maybe_summarize(data, label):
-        text = json.dumps(data, indent=2) if not isinstance(data, str) else data
-        if len(text.encode("utf-8")) > 8192:
-            try:
-                from core.cluster.summarizer import summarize_diff
-                result = summarize_diff(text)
-                return f"[summarized — {label}]\n{result['summary']}"
-            except Exception:
-                pass
-        return format_findings_for_prompt(data) if isinstance(data, list) else text
-
-    claude_text = maybe_summarize(claude_findings, "claude findings")
-    codex_text = maybe_summarize(codex_findings, "codex findings")
-    rebuttal_text = maybe_summarize(rebuttal_findings, "rebuttal findings")
-    disagreement_text = (
-        json.dumps(disagreement, indent=2)
-        if isinstance(disagreement, (dict, list))
-        else str(disagreement)
-    )
-
-    prompt = ARBITER_PROMPT_TEMPLATE.format(
-        artifact=args.artifact,
-        round=args.round,
-        claude_findings=claude_text,
-        codex_findings=codex_text,
-        rebuttal_findings=rebuttal_text,
-        disagreement=disagreement_text,
-    )
-
-    # Invoke arbiter — Opus 4.7 with effort=xhigh (adaptive thinking / ultrathink)
+def _load_circuit_state() -> dict[str, Any]:
+    path = _circuit_state_path()
+    if not path.exists():
+        return _default_circuit_state()
     try:
-        raw_output, model, effort, duration = invoke_arbiter_claude(prompt, config)
-    except Exception as exc:
-        error_result = {
-            "verdict": "ERROR",
-            "rationale": f"Arbiter invocation failed: {exc}",
-            "findings": [],
-            "reviewer_accuracy": {"claude": "unknown", "codex": "unknown"},
-            "error": str(exc),
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return _default_circuit_state()
+    merged = _default_circuit_state()
+    merged.update(state)
+    return merged
+
+
+def _save_circuit_state(state: dict[str, Any]) -> None:
+    path = _circuit_state_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+
+
+def _log_decision(event: str, details: str = "") -> None:
+    path = _decision_log_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    line = f"[{timestamp}] ARBITER {event}"
+    if details:
+        line += f" {details}"
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(line + "\n")
+
+
+def _extract_text(message: Any) -> str:
+    content = getattr(message, "content", None) or []
+    for block in content:
+        if getattr(block, "type", None) == "text" and getattr(block, "text", None):
+            return block.text
+        if isinstance(block, dict) and block.get("type") == "text" and block.get("text"):
+            return str(block["text"])
+    return getattr(message, "text", "") or ""
+
+
+def _parse_arbiter_response(raw_text: str) -> dict[str, str]:
+    match = re.search(r"\{[\s\S]*\}", raw_text or "")
+    if not match:
+        raise ValueError("arbiter response did not contain a JSON object")
+    payload = json.loads(match.group())
+    verdict = str(payload.get("verdict") or "").upper()
+    reasoning = str(payload.get("reasoning") or raw_text or "").strip()
+    if verdict not in {"PASS", "BLOCK"}:
+        raise ValueError("arbiter response verdict must be PASS or BLOCK")
+    if not reasoning:
+        raise ValueError("arbiter response reasoning missing")
+    return {"verdict": verdict, "reasoning": reasoning}
+
+
+def _plan_hash(plan: str, config: dict[str, Any]) -> str:
+    provided = str(config.get("plan_hash") or "").strip()
+    if provided:
+        return provided
+    return hashlib.sha256((plan or "").encode("utf-8")).hexdigest()[:16]
+
+
+def _collect_blockers(reviewer_findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    blockers: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for reviewer in reviewer_findings:
+        for finding in reviewer.get("findings", []):
+            if not isinstance(finding, dict) or finding.get("severity") != "blocker":
+                continue
+            key = str(finding.get("finding") or finding)
+            if key in seen:
+                continue
+            seen.add(key)
+            blockers.append(finding)
+    return blockers
+
+
+def _fallback_verdict(
+    *,
+    plan_hash: str,
+    reviewer_findings: list[dict[str, Any]],
+    circuit_state: str,
+    reason: str,
+    fallback_logic: str,
+    last_opus_payload: Any,
+    duration_ms: int,
+) -> VerdictDict:
+    if reason == "circuit_open":
+        status = "circuit_open"
+        reasoning = "Arbiter circuit is open; committed BLOCK until human reset."
+    else:
+        status = "error"
+        reasoning = "Arbiter failed after one retry; committed BLOCK per Rule #1."
+
+    verdict = Verdict(
+        pass_=False,
+        verdict="BLOCK",
+        reviewers=reviewer_findings,
+        arbiter={
+            "reasoning": reasoning,
+            "duration_ms": duration_ms,
+            "status": status,
+            "reason": reason,
+        },
+        circuit_state=circuit_state,
+        plan_hash=plan_hash,
+        review_round=1,
+        escalated=False,
+        reason=reason,
+        fallback_logic=fallback_logic,
+        last_opus_payload=last_opus_payload,
+        blockers=_collect_blockers(reviewer_findings),
+        arbiter_reasoning=reasoning,
+    )
+    return verdict.as_dict()
+
+
+def _record_error(state: dict[str, Any], payload: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+    now = time.time()
+    timestamps = [ts for ts in state.get("error_timestamps", []) if now - ts <= _CIRCUIT_WINDOW_SECONDS]
+    timestamps.append(now)
+    state["error_timestamps"] = timestamps
+    state["last_error"] = payload
+    state["last_opus_payload"] = payload
+    if len(timestamps) >= _CIRCUIT_THRESHOLD and now - timestamps[-_CIRCUIT_THRESHOLD] <= _CIRCUIT_WINDOW_SECONDS:
+        state["state"] = "open"
+        state["opened_at"] = now
+        _save_circuit_state(state)
+        _log_decision("circuit_tripped", f"reason=opus-error threshold={_CIRCUIT_THRESHOLD}")
+        return state, True
+    state["state"] = "closed"
+    _save_circuit_state(state)
+    return state, False
+
+
+def _reset_error_streak(state: dict[str, Any]) -> None:
+    state["state"] = "closed"
+    state["error_timestamps"] = []
+    state["opened_at"] = None
+    state["last_error"] = None
+    state["last_opus_payload"] = None
+    _save_circuit_state(state)
+
+
+def _arbiter_prompt(plan: str, reviewer_findings: list[dict[str, Any]]) -> str:
+    serialized = json.dumps(reviewer_findings, indent=2)
+    return (
+        "You are the final arbiter for a one-round cross-model review.\n"
+        "Commit the final verdict now. No follow-up round exists.\n\n"
+        "Return ONLY a JSON object with this shape:\n"
+        '{"verdict": "PASS"|"BLOCK", "reasoning": "<concise final reasoning>"}\n\n'
+        f"Plan:\n{plan}\n\n"
+        f"Reviewer findings:\n{serialized}\n"
+    )
+
+
+def arbitrate(plan: str, reviewer_findings: list[dict[str, Any]], config: dict[str, Any] | None = None) -> VerdictDict:
+    """Return a final verdict and always commit a result, even on arbiter failure."""
+    config = config or {}
+    plan_hash = _plan_hash(plan, config)
+    state = _load_circuit_state()
+
+    if state.get("state") == "open":
+        return _fallback_verdict(
+            plan_hash=plan_hash,
+            reviewer_findings=reviewer_findings,
+            circuit_state="open",
+            reason="circuit_open",
+            fallback_logic="arbiter circuit open; human reset required",
+            last_opus_payload=state.get("last_opus_payload"),
+            duration_ms=0,
+        )
+
+    arbiter_cfg = config.get("arbiter", {})
+    model = arbiter_cfg.get("model", _DEFAULT_ARBITER_MODEL)
+    max_tokens = int(arbiter_cfg.get("max_tokens", _DEFAULT_ARBITER_MAX_TOKENS))
+    prompt = _arbiter_prompt(plan, reviewer_findings)
+    start = time.perf_counter()
+    last_payload: dict[str, Any] | None = None
+
+    for attempt in (1, 2):
+        request_payload = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "messages": [{"role": "user", "content": prompt}],
+            "thinking": dict(_ADAPTIVE_THINKING),
         }
-        print(json.dumps(error_result, indent=2))
-        sys.exit(1)
+        try:
+            client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+            message = client.messages.create(**request_payload, extra_headers=_BETA_HEADERS)
+            raw_text = _extract_text(message)
+            parsed = _parse_arbiter_response(raw_text)
+            duration_ms = int((time.perf_counter() - start) * 1000)
+            _reset_error_streak(state)
+            verdict = Verdict(
+                pass_=parsed["verdict"] == "PASS",
+                verdict=parsed["verdict"],
+                reviewers=reviewer_findings,
+                arbiter={
+                    "reasoning": parsed["reasoning"],
+                    "duration_ms": duration_ms,
+                    "status": "ok",
+                },
+                circuit_state="closed",
+                plan_hash=plan_hash,
+                review_round=1,
+                escalated=False,
+                blockers=_collect_blockers(reviewer_findings) if parsed["verdict"] == "BLOCK" else [],
+                arbiter_reasoning=parsed["reasoning"],
+            )
+            return verdict.as_dict()
+        except Exception as exc:  # noqa: BLE001
+            last_payload = {
+                "attempt": attempt,
+                "request": request_payload,
+                "error": str(exc),
+            }
 
-    ruling = parse_arbiter_output(raw_output)
-    ruling["model"] = model
-    ruling["effort"] = effort
-    ruling["duration_s"] = round(duration, 1)
-    ruling["artifact"] = args.artifact
-    ruling["review_round"] = args.round
-    ruling["timestamp"] = utc_now_iso()
-
-    # Log ruling (MANDATORY — every ruling must be logged)
-    log_line = log_ruling(ruling, args.artifact, args.round, model, effort, duration)
-    print(f"[arbiter] Ruling logged: {log_line}", file=sys.stderr)
-
-    # Output ruling to stdout
-    print(json.dumps(ruling, indent=2))
-    sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()
+    duration_ms = int((time.perf_counter() - start) * 1000)
+    state, tripped = _record_error(state, last_payload or {"error": "unknown"})
+    if tripped:
+        return _fallback_verdict(
+            plan_hash=plan_hash,
+            reviewer_findings=reviewer_findings,
+            circuit_state="open",
+            reason="circuit_open",
+            fallback_logic="arbiter circuit tripped after three consecutive errors within 60s",
+            last_opus_payload=last_payload,
+            duration_ms=duration_ms,
+        )
+    return _fallback_verdict(
+        plan_hash=plan_hash,
+        reviewer_findings=reviewer_findings,
+        circuit_state="closed",
+        reason="arbiter-error",
+        fallback_logic="arbiter API failed after one retry; BLOCK committed mechanically",
+        last_opus_payload=last_payload,
+        duration_ms=duration_ms,
+    )

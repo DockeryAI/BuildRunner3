@@ -22,7 +22,7 @@ class TestCodeReviewer:
         """Test initialization with API key"""
         reviewer = CodeReviewer(api_key="test-key")
         assert reviewer.api_key == "test-key"
-        assert reviewer.model == "claude-sonnet-4-20250514"
+        assert reviewer.model == "claude-opus-4-7"
 
     def test_init_without_api_key_raises(self):
         """Test initialization without API key raises error"""
