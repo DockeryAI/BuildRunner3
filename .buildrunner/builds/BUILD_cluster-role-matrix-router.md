@@ -65,7 +65,7 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 ### Phase 2: Invert `node-matrix.mjs` priority + add load query
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/node-matrix.mjs` (MODIFY)
@@ -74,11 +74,11 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 **Deliverables:**
 
-- [ ] Replace the hardcoded `PRIORITY_ORDER` constant with dynamic tier-derived ordering: read `speed_tier` from `cluster.json`, sort ascending. Within a tier, preserve existing stable ordering. Remove the "last resort — dev workstation" comment on Muddy.
-- [ ] Add exported function `listCandidates(bucket)` — returns tier-sorted healthy nodes filtered by the bucket's `preferred_nodes` list from the resolved matrix cache.
-- [ ] Add exported function `nodeLoad(node)` — returns `{ cpu_pct, mem_avail_pct, active_builds, overloaded: bool, source: "prometheus" | "fail-open" }`. Pull CPU/mem from the existing Prometheus instant-query host; pull `active_builds` by scanning `.buildrunner/agents.json` for `status=running` entries matching this node. Respect `routing.load_query_timeout_ms`; return `fail-open` on timeout (overloaded=false, logged).
-- [ ] `--json` stdout retains backwards compatibility: existing fields unchanged; new fields `speed_tier` and `overloaded` added to each node object.
-- [ ] Smoke: `node ~/.buildrunner/scripts/node-matrix.mjs --json --dry-run | jq '.[0].key'` returns `muddy`.
+- [x] Replace the hardcoded `PRIORITY_ORDER` constant with dynamic tier-derived ordering: read `speed_tier` from `cluster.json`, sort ascending. Within a tier, preserve existing stable ordering. Remove the "last resort — dev workstation" comment on Muddy.
+- [x] Add exported function `listCandidates(bucket)` — returns tier-sorted healthy nodes filtered by the bucket's `preferred_nodes` list from the resolved matrix cache.
+- [x] Add exported function `nodeLoad(node)` — returns `{ cpu_pct, mem_avail_pct, active_builds, overloaded: bool, source: "prometheus" | "fail-open" }`. Pull CPU/mem from the existing Prometheus instant-query host; pull `active_builds` by scanning `.buildrunner/agents.json` for `status=running` entries matching this node. Respect `routing.load_query_timeout_ms`; return `fail-open` on timeout (overloaded=false, logged).
+- [x] `--json` stdout retains backwards compatibility: existing fields unchanged; new fields `speed_tier` and `overloaded` added to each node object.
+- [x] Smoke: `node ~/.buildrunner/scripts/node-matrix.mjs --json --dry-run | jq '.[0].key'` returns `muddy`.
 
 ### Phase 3: `resolve-dispatch-node.sh` — the router
 
