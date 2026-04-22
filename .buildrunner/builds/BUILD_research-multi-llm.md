@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-2 Complete — Phase 3 In Progress
+**Status:** Phases 1-3 Complete — Phase 4 In Progress
 **Deploy:** web — `npm run build` (no runtime deploy needed; skill + scripts ship via git push to operator's home)
 **Source Plan File:** .buildrunner/plans/spec-draft-plan.md
 **Source Plan SHA:** 66fdd7763ffba294e8825c82a0a162aad34d3a3873ca331a31cda2be37f7a8af
@@ -97,7 +97,7 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 ### Phase 3: Confidence tagging in Step 4 synthesis
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/research.md` (MODIFY — Step 4)
