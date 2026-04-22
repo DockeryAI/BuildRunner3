@@ -5,8 +5,18 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Literal, Self
+
+
+@dataclass(slots=True)
+class AdversarialReview:
+    reviewers: list[str]
+    critique_summary: str
+    revisions_applied: list[str]
+    notes_inserted: int
+    degraded: bool
+    degraded_reason: str | None
 
 
 @dataclass(slots=True)
@@ -17,14 +27,21 @@ class PendingRecord:
     intended_path: str
     sources: list[str]
     created_at: str
+    adversarial_review: AdversarialReview | None = field(default=None, kw_only=True)
 
     def to_jsonl(self) -> str:
-        return json.dumps(asdict(self), ensure_ascii=False, sort_keys=True)
+        payload = asdict(self)
+        if payload.get("adversarial_review") is None:
+            payload.pop("adversarial_review", None)
+        return json.dumps(payload, ensure_ascii=False, sort_keys=True)
 
     @classmethod
     def from_jsonl(cls, line: str) -> Self:
         payload = json.loads(line)
-        return cls(**payload)
+        review = payload.pop("adversarial_review", None)
+        if review is not None:
+            review = AdversarialReview(**review)
+        return cls(**payload, adversarial_review=review)
 
 
 @dataclass(slots=True)
@@ -67,8 +84,52 @@ def _run_self_test() -> int:
     if PendingRecord.from_jsonl(pending.to_jsonl()) != pending:
         sys.stdout.write("PendingRecord round-trip failed\n")
         return 1
+    if "adversarial_review" in pending.to_jsonl():
+        sys.stdout.write("PendingRecord serialized adversarial_review when None\n")
+        return 1
     if CompletedRecord.from_jsonl(completed.to_jsonl()) != completed:
         sys.stdout.write("CompletedRecord round-trip failed\n")
+        return 1
+
+    pending_reviewed = PendingRecord(
+        id=pending.id,
+        title=pending.title,
+        draft_markdown=pending.draft_markdown,
+        intended_path=pending.intended_path,
+        sources=pending.sources,
+        created_at=pending.created_at,
+        adversarial_review=AdversarialReview(
+            reviewers=["codex", "gemini"],
+            critique_summary="3 weakest claims, 1 hallucination risk",
+            revisions_applied=["downgraded 2 confidence tags"],
+            notes_inserted=1,
+            degraded=False,
+            degraded_reason=None,
+        ),
+    )
+    round_tripped = PendingRecord.from_jsonl(pending_reviewed.to_jsonl())
+    if round_tripped != pending_reviewed:
+        sys.stdout.write("PendingRecord with adversarial_review round-trip failed\n")
+        return 1
+
+    degraded = PendingRecord(
+        id=pending.id,
+        title=pending.title,
+        draft_markdown=pending.draft_markdown,
+        intended_path=pending.intended_path,
+        sources=pending.sources,
+        created_at=pending.created_at,
+        adversarial_review=AdversarialReview(
+            reviewers=[],
+            critique_summary="no critique — fallback exhausted",
+            revisions_applied=[],
+            notes_inserted=0,
+            degraded=True,
+            degraded_reason="all_reviewers_failed",
+        ),
+    )
+    if PendingRecord.from_jsonl(degraded.to_jsonl()) != degraded:
+        sys.stdout.write("PendingRecord degraded round-trip failed\n")
         return 1
 
     sys.stdout.write("OK\n")

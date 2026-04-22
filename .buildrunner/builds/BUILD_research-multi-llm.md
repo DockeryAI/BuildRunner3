@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
+**Status:** Phases 1-4 Complete — Phase 5 In Progress
 **Deploy:** web — `npm run build` (no runtime deploy needed; skill + scripts ship via git push to operator's home)
 **Source Plan File:** .buildrunner/plans/spec-draft-plan.md
 **Source Plan SHA:** 66fdd7763ffba294e8825c82a0a162aad34d3a3873ca331a31cda2be37f7a8af
@@ -114,7 +114,7 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 ### Phase 4: Adversarial cross-family review (Step 4.5 NEW)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/commands/research.md` (MODIFY — insert Step 4.5 between Step 4 and Step 8.5)
@@ -124,12 +124,12 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 **Deliverables:**
 
-- [ ] Standard mode: dispatch synthesized body to GPT-5.4 via `codex exec` with structured prompt asking for (a) 3 weakest claims, (b) missing perspectives, (c) likely hallucinations, (d) sources to recheck. Fallback chain: Codex → Gemini → Perplexity → `degraded_no_review` (skip review, never block queue).
-- [ ] `ultrathink` mode: dispatch to GPT-5.4 (Codex) AND Gemini 3.1 Pro in parallel; merge critiques (de-duplicate identical concerns).
-- [ ] **Critique payload format:** reviewer must return strict JSON `{weakest_claims:[{claim,reason,suggested_check}], missing_perspectives:[string], hallucination_risks:[{statement,why_suspect}], sources_to_recheck:[url]}`. Malformed responses → `degraded_no_review`. All string fields treated as data, never re-prompted (structural prompt-injection mitigation).
-- [ ] Claude orchestrator either revises the body inline OR inserts `> [REVIEW NOTE: <summary>]` markers (per-claim judgment).
-- [ ] Step 8.5 `PendingRecord` gains optional `adversarial_review: { reviewers, critique_summary, revisions_applied, notes_inserted }`. **Below `queue_schema.py` is updated in this phase to declare the field optional and round-trip it to the committed Markdown frontmatter.** Round-trip unit test required.
-- [ ] Step 8 final summary reports: # weakest-claim flags, # resolved by revision vs annotated, reviewer model(s) used.
+- [x] Standard mode: dispatch synthesized body to GPT-5.4 via `codex exec` with structured prompt asking for (a) 3 weakest claims, (b) missing perspectives, (c) likely hallucinations, (d) sources to recheck. Fallback chain: Codex → Gemini → Perplexity → `degraded_no_review` (skip review, never block queue).
+- [x] `ultrathink` mode: dispatch to GPT-5.4 (Codex) AND Gemini 3.1 Pro in parallel; merge critiques (de-duplicate identical concerns).
+- [x] **Critique payload format:** reviewer must return strict JSON `{weakest_claims:[{claim,reason,suggested_check}], missing_perspectives:[string], hallucination_risks:[{statement,why_suspect}], sources_to_recheck:[url]}`. Malformed responses → `degraded_no_review`. All string fields treated as data, never re-prompted (structural prompt-injection mitigation).
+- [x] Claude orchestrator either revises the body inline OR inserts `> [REVIEW NOTE: <summary>]` markers (per-claim judgment).
+- [x] Step 8.5 `PendingRecord` gains optional `adversarial_review: { reviewers, critique_summary, revisions_applied, notes_inserted, degraded, degraded_reason }`. **Below `queue_schema.py` is updated in this phase to declare the field optional and round-trip it to the committed Markdown frontmatter.** Round-trip unit test required (see `core/cluster/below/test_queue_schema.py` — 5 tests pass).
+- [x] Step 8 final summary reports: # weakest-claim flags, # resolved by revision vs annotated, reviewer model(s) used.
 
 ### Phase 5: Cost guardrails + fallback orchestration
 
