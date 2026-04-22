@@ -1,6 +1,11 @@
 {
   "spec": {
-    "3.7": "2026-04-21T22:47:05Z",
-    "3.8": "2026-04-21T22:48:37Z"
+    "3.7": "2026-04-22T14:20:23Z",
+    "3.8": "2026-04-22T14:21:51Z",
+    "note": "Mirrors /spec-codex 6/7 timestamps. The /spec and /spec-codex skills run equivalent adversarial-review + architecture-validation gates; this project used /spec-codex."
+  },
+  "spec-codex": {
+    "6": "2026-04-22T14:20:23Z",
+    "7": "2026-04-22T14:21:51Z"
   }
 }

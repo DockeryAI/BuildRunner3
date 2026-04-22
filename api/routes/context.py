@@ -26,9 +26,14 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import JSONResponse
+
+from core.cluster.base_service import create_app
+from core.cluster.context_router import ContextRouter
+from core.runtime.cache_policy import shape_bundle
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +46,64 @@ _SUPPORTED_MODELS = {"claude", "codex", "ollama", "below"}
 
 def _multi_model_context_enabled() -> bool:
     return os.environ.get(_MULTI_MODEL_CONTEXT_ENV, "").strip().lower() == "on"
+
+
+def _normalize_model(model: str) -> str:
+    model_key = model.lower().strip()
+
+    if model_key in _SUPPORTED_MODELS:
+        return model_key
+
+    if model_key.startswith("claude"):
+        return "claude"
+
+    if model_key.startswith(("codex", "gpt-5")):
+        return "codex"
+
+    if model_key.startswith(("ollama", "llama", "qwen")):
+        return "ollama"
+
+    if model_key.startswith("below"):
+        return "below"
+
+    return model_key
+
+
+def _build_dynamic_tail(query: str, phase: str, skill: str) -> str:
+    parts = []
+    if phase:
+        parts.append(f"phase={phase}")
+    if skill:
+        parts.append(f"skill={skill}")
+    if query:
+        parts.append(f"query={query}")
+    return "\n".join(parts)
+
+
+def _shape_context_bundle(
+    model_key: str,
+    bundle_dict: dict[str, Any],
+    query: str,
+    phase: str,
+    skill: str,
+) -> dict[str, Any]:
+    section_names = ", ".join(
+        str(section.get("source_type", "")).strip()
+        for section in bundle_dict.get("sections", [])
+        if isinstance(section, dict) and str(section.get("source_type", "")).strip()
+    )
+    sliding_window = "\n\n".join(
+        str(section.get("content", ""))
+        for section in bundle_dict.get("sections", [])
+        if isinstance(section, dict)
+    )
+    return shape_bundle(
+        model=model_key,
+        static_system=f"context-model={model_key}",
+        static_tools=section_names,
+        sliding_window=sliding_window,
+        dynamic_tail=_build_dynamic_tail(query=query, phase=phase, skill=skill),
+    )
 
 
 @router.get("/{model}")
@@ -60,7 +123,7 @@ async def get_context(
     Response includes a `budget` field with {limit, used, tokenizer} —
     the `tokenizer` value is the model-specific tokenizer name (NOT 'bytes').
     """
-    model_key = model.lower().strip()
+    model_key = _normalize_model(model)
 
     if model_key not in _SUPPORTED_MODELS:
         raise HTTPException(
@@ -78,7 +141,6 @@ async def get_context(
         )
 
     try:
-        from core.cluster.context_router import ContextRouter
         router_inst = ContextRouter()
 
         bundle = router_inst.route(
@@ -91,13 +153,13 @@ async def get_context(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:
         # tokenizer unavailable — fail-closed
-        logger.error("context endpoint: tokenizer unavailable: %s", exc)
+        logger.exception("context endpoint: tokenizer unavailable")
         raise HTTPException(
             status_code=503,
             detail=f"Tokenizer unavailable — bundle refused: {exc}",
         ) from exc
-    except Exception as exc:  # noqa: BLE001
-        logger.error("context endpoint: unexpected error: %s", exc)
+    except Exception as exc:
+        logger.exception("context endpoint: unexpected error")
         raise HTTPException(
             status_code=500,
             detail=f"Context assembly failed: {exc}",
@@ -105,16 +167,22 @@ async def get_context(
 
     bundle_dict = bundle.to_dict()
     bundle_dict["phase"] = phase
+    shaped_bundle = _shape_context_bundle(
+        model_key=model_key,
+        bundle_dict=bundle_dict,
+        query=query,
+        phase=phase,
+        skill=skill,
+    )
 
     return JSONResponse(
         content={
             "bundle": bundle_dict,
             "budget": bundle_dict.get("budget", {}),
+            "cache_breakpoints": shaped_bundle["cache_breakpoints"],
+            "segments": shaped_bundle["segments"],
         }
     )
-
-
-from core.cluster.base_service import create_app
 
 app = create_app(role="context-api")
 app.include_router(router)

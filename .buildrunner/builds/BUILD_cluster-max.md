@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-12
 **Last Revised:** 2026-04-20 (Phases 11+12 complete: dashboard @ :4400 + multi-model context parity)
-**Status:** Phases 1-12 Complete — Phase 2 In Progress
+**Status:** Phases 1-13 Complete — Phase 2 In Progress
 **Deploy:** infra — cluster scripts + node services + runtime extension (no web deploy)
 **Source Plan SHA:** 5aadadb2075eb38191a84f443bf6008fe924a4c4ed148bd897fce5dd15369f71
 **Source Plan File:** .buildrunner/plans/phase-16-plan.md
@@ -365,7 +365,7 @@ AGENTS.md is the steering wheel — Codex applies its rules every loop, automati
 | 8     | `core/runtime/AGENTS.md`                                                | Cache breakpoint contract + summarizer rule                           |
 | 9     | `core/cluster/AGENTS.md`                                                | 3-way + arbiter pattern; ultrathink budget                            |
 | 10    | `core/cluster/AGENTS.md`; `~/AGENTS.md` on Jimmy                        | Auto-context hook contract + budget                                   |
-| 11    | `ui/dashboard/AGENTS.md`                                                | New panel registry + WebSocket reconnect                              |
+| 11    | `archive/ui-dashboard-fastapi-experiment/AGENTS.md`                     | New panel registry + WebSocket reconnect                              |
 | 12    | `core/cluster/AGENTS.md`; `~/AGENTS.md` on Jimmy; `~/AGENTS.md` on Otis | `/context/{model}` endpoint + per-model budgets + read-mount contract |
 | 13    | Root `AGENTS.md`; `core/cluster/AGENTS.md`                              | Default-on flags + cutover state                                      |
 | 14    | `core/cluster/AGENTS.md`                                                | Self-health timers + rebalance contract                               |
@@ -384,7 +384,7 @@ Several files are touched by multiple phases inside a single wave (most notably 
 | ---------------------------------------------- | ---------------------------------------------------------------------------- |
 | `core/cluster/AGENTS.md`                       | `core/cluster/AGENTS.md.append-phase<N>.txt`                                 |
 | `core/runtime/AGENTS.md`                       | `core/runtime/AGENTS.md.append-phase<N>.txt`                                 |
-| `ui/dashboard/AGENTS.md`                       | `ui/dashboard/AGENTS.md.append-phase<N>.txt`                                 |
+| `archive/ui-dashboard-fastapi-experiment/AGENTS.md` | `archive/ui-dashboard-fastapi-experiment/AGENTS.md.append-phase<N>.txt` |
 | Root `AGENTS.md`                               | `AGENTS.md.append-phase<N>.txt`                                              |
 | `~/.buildrunner/scripts/adversarial-review.sh` | `~/.buildrunner/scripts/adversarial-review.sh.patch-phase<N>` (unified diff) |
 
@@ -490,7 +490,7 @@ Every review gate in this build — per-phase Claude Review, wave-merge review, 
 - **Wave 4 (parallel, 3 worktrees):** Phase 5 (Below skill integration) + Phase 9 (3-way adversarial) + Phase 10 (auto-context hook)
   - Shared-file conflicts: Phase 5, 9, 10 each stage `core/cluster/AGENTS.md.append-phase<N>.txt`. Phase 5 and Phase 9 each stage `~/.buildrunner/scripts/adversarial-review.sh.patch-phase<N>` (Phase 5 adds `--local`, Phase 9 adds `--three-way`; both apply at wave-merge in phase order).
 - **Wave 5 (parallel, 2 worktrees):** Phase 11 (dashboard @ 4400) + Phase 12 (multi-model context parity)
-  - Shared-file conflicts: Phase 11 edits `ui/dashboard/AGENTS.md` directly; Phase 12 stages `core/cluster/AGENTS.md.append-phase12.txt`. No overlap — wave-merge gate still runs the size verify and supersede-mechanism check.
+  - Shared-file conflicts: Phase 11 edits `archive/ui-dashboard-fastapi-experiment/AGENTS.md` directly; Phase 12 stages `core/cluster/AGENTS.md.append-phase12.txt`. No overlap — wave-merge gate still runs the size verify and supersede-mechanism check.
 - **Wave 6:** Phase 13 (cutover + validation) — direct edits allowed (single-phase wave); state-change supersede mechanism applies for the flag-default flip
 - **Wave 7:** Phase 14 (BR3 self-maintenance) — direct edits allowed (single-phase wave)
 
@@ -509,7 +509,7 @@ Every review gate in this build — per-phase Claude Review, wave-merge review, 
 
 #### Goal
 
-Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGENTS.md files (3 in-repo: `core/runtime`, `core/cluster`, `ui/dashboard`; 2 staged for remote nodes: `~/.buildrunner/agents-md/jimmy.md`, `~/.buildrunner/agents-md/otis.md`) for the directories and remote nodes Codex will modify or run on across this build. Total artifacts: SIX. Encode every non-inferable rule in this BUILD as an enforced AGENTS.md constraint so Codex applies them every loop without prompting.
+Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGENTS.md files (3 in-repo: `core/runtime`, `core/cluster`, `archive/ui-dashboard-fastapi-experiment`; 2 staged for remote nodes: `~/.buildrunner/agents-md/jimmy.md`, `~/.buildrunner/agents-md/otis.md`) for the directories and remote nodes Codex will modify or run on across this build. Total artifacts: SIX. Encode every non-inferable rule in this BUILD as an enforced AGENTS.md constraint so Codex applies them every loop without prompting.
 
 #### Context
 
@@ -518,7 +518,7 @@ Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGEN
 - `AGENTS.md` (NEW — repo root, router pattern)
 - `core/runtime/AGENTS.md` (NEW)
 - `core/cluster/AGENTS.md` (NEW)
-- `ui/dashboard/AGENTS.md` (NEW)
+- `archive/ui-dashboard-fastapi-experiment/AGENTS.md` (NEW)
 - `~/.buildrunner/agents-md/jimmy.md` (NEW — staged on Muddy; deployed to Jimmy home dir as `AGENTS.md` during Phase 3)
 - `~/.buildrunner/agents-md/otis.md` (NEW — staged on Muddy; deployed to Otis home dir as `AGENTS.md` during Phase 12 — Codex runs there)
 
@@ -544,7 +544,7 @@ Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGEN
 - [ ] **`core/cluster/AGENTS.md`** — encodes: quality firewall ("Below NEVER drafts final diagnoses, final code, frontend/UX, or architecture; pre-summary and first-pass only"), fallback contract ("on node-health failure, dispatcher reroutes silently — no user-visible error"), feature-flag discipline ("all 5 BR3\_\* flags default OFF until Phase 13"), summarize-before-escalate rule ("diff > 12KB → run summarizer first").
   - Verify: file mentions all 5 feature-flag names verbatim. `grep -c "BR3_" core/cluster/AGENTS.md` ≥5.
 
-- [ ] **`ui/dashboard/AGENTS.md`** — vanilla HTML + JS panels, no React/no framework, port 4400 only. Per-file validation (eslint single-file). WebSocket reconnect contract (exponential backoff, cap 30s).
+- [ ] **`archive/ui-dashboard-fastapi-experiment/AGENTS.md`** — vanilla HTML + JS panels, no React/no framework, port 4400 only. Per-file validation (eslint single-file). WebSocket reconnect contract (exponential backoff, cap 30s).
   - Verify: file mentions "vanilla HTML" and "no React".
 
 - [ ] **Jimmy AGENTS.md** at `~/.buildrunner/agents-md/jimmy.md` (deployed in Phase 3) — Linux conventions, systemd unit naming (`br3-*.service`), dispatcher rsync vs tar+scp rule, port allocation (8100 semantic, 4400 dashboard, 4500 gateway).
@@ -555,7 +555,7 @@ Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGEN
 
 - [ ] **Per-file validation commands embedded in each AGENTS.md** — Codex defaults to file-scoped runs, never full suite:
   - Python: `pytest tests/runtime/test_<file>.py -x`, `ruff check core/runtime/<file>.py`
-  - JS: `npx eslint --fix ui/dashboard/panels/<file>.js`
+  - JS: `npx eslint --fix archive/ui-dashboard-fastapi-experiment/panels/<file>.js`
   - Shell: `shellcheck ~/.buildrunner/scripts/<file>.sh`
 
 - [ ] **Non-inferability audit** — read each AGENTS.md and strike any line that says "use X" or "prefer Y" where the codebase already demonstrates that pattern.
@@ -571,7 +571,7 @@ Author one root `AGENTS.md` as a router (≤100 lines) plus FIVE scoped sub-AGEN
 
 - [ ] All 6 AGENTS.md files exist at declared paths (4 in-repo + 2 staged in `~/.buildrunner/agents-md/`).
 - [ ] Combined size verify (includes BOTH in-repo files AND staged remote files): `(find . -name AGENTS.md -not -path './node_modules/*'; ls ~/.buildrunner/agents-md/jimmy.md ~/.buildrunner/agents-md/otis.md) | xargs wc -c | tail -1` total ≤24576.
-- [ ] Per-file size cap: `for f in AGENTS.md core/runtime/AGENTS.md core/cluster/AGENTS.md ui/dashboard/AGENTS.md ~/.buildrunner/agents-md/jimmy.md ~/.buildrunner/agents-md/otis.md; do test "$(wc -c < "$f")" -le 8192 || echo "OVER: $f"; done` prints nothing.
+- [ ] Per-file size cap: `for f in AGENTS.md core/runtime/AGENTS.md core/cluster/AGENTS.md archive/ui-dashboard-fastapi-experiment/AGENTS.md ~/.buildrunner/agents-md/jimmy.md ~/.buildrunner/agents-md/otis.md; do test "$(wc -c < "$f")" -le 8192 || echo "OVER: $f"; done` prints nothing.
 - [ ] `wc -l AGENTS.md` ≤100 (root file).
 - [ ] Claude review passed with zero P0/P1 findings.
 - [ ] `decisions.log` entry: `Phase 0: AGENTS.md authored — router + 5 scopes (6 files total, in-repo + staged) — total Nbytes`.
@@ -1350,7 +1350,7 @@ One hook injects relevant context into every Claude prompt. Pulls from research 
 
 ### Phase 11: Cluster Max Dashboard @ Port 4400
 
-**Status:** ✅ COMPLETE (2026-04-20) — 4 vanilla-JS panels (node-health 7-tile grid INCL Jimmy, overflow-reserve, storage-health, consensus-viewer); app.js WebSocket client (500ms→30s exp backoff, 15s heartbeat, resync on reconnect); api/routes/dashboard_stream.py FastAPI WS @ ws://10.0.1.106:4400/ws with 4 collectors; ui/dashboard/AGENTS.md updated (registered panels table + endpoint contract); all panels + app.js pass `node --check`. **routing-ledger.js + cost-cache.js + cost/routing collectors deleted 2026-04-21 alongside cost ledger removal.**
+**Status:** ✅ COMPLETE (2026-04-20; paths corrected 2026-04-22) — 4 vanilla-JS panels now live via `~/.buildrunner/dashboard/public/js/ws-cluster-{node-health,overflow-reserve,storage-health,consensus}.js`; Node dashboard SSE backend in `~/.buildrunner/dashboard/events.mjs`; archived FastAPI experiment metadata retained in `archive/ui-dashboard-fastapi-experiment/AGENTS.md`. **routing-ledger.js + cost-cache.js + cost/routing collectors deleted 2026-04-21 alongside cost ledger removal.**
 **Codex model:** gpt-5.4
 **Codex effort:** medium
 **Worktree:** `worktrees/wave5-dashboard`
@@ -1365,42 +1365,42 @@ Upgrade the existing port-4400 dashboard with 4 panels — including a first-cla
 
 **Files (touch only these):**
 
-- `ui/dashboard/index.html` (MODIFY)
-- `ui/dashboard/panels/node-health.js` (NEW — 7-tile grid INCLUDING Jimmy tile: CPU, RAM, LanceDB query depth, reranker queue, context-API latency)
-- `ui/dashboard/panels/overflow-reserve.js` (NEW — Lockwood + Lomax reserve state `idle`/`warming`/`active`/`draining`, wake-trigger event log, historical overflow frequency)
-- `ui/dashboard/panels/storage-health.js` (NEW — Jimmy `/srv/jimmy/` directory usage, last-backup timestamps per source, off-site sync status, disk-free trend)
-- `ui/dashboard/panels/consensus-viewer.js` (NEW)
+- `~/.buildrunner/dashboard/public/index.html` (MODIFY)
+- `~/.buildrunner/dashboard/public/js/ws-cluster-node-health.js` (NEW — 7-tile grid INCLUDING Jimmy tile: CPU, RAM, LanceDB query depth, reranker queue, context-API latency)
+- `~/.buildrunner/dashboard/public/js/ws-cluster-overflow-reserve.js` (NEW — Lockwood + Lomax reserve state `idle`/`warming`/`active`/`draining`, wake-trigger event log, historical overflow frequency)
+- `~/.buildrunner/dashboard/public/js/ws-cluster-storage-health.js` (NEW — Jimmy `/srv/jimmy/` directory usage, last-backup timestamps per source, off-site sync status, disk-free trend)
+- `~/.buildrunner/dashboard/public/js/ws-cluster-consensus.js` (NEW)
 - `api/routes/dashboard_stream.py` on Jimmy (NEW — runs as part of the existing dashboard service on port **4400** under WS path `/ws`; emits `node-health`, `overflow-reserve`, `storage-health`, `consensus` events)
-- `ui/dashboard/AGENTS.md` (MODIFY — register new panels + WebSocket reconnect; Phase 11 is solo on this file in Wave 5 → direct edit OK)
+- `archive/ui-dashboard-fastapi-experiment/AGENTS.md` (MODIFY — historical panel registry + WebSocket reconnect notes preserved under archive path)
 
 #### Constraints
 
-- IMPORTANT: Read `ui/dashboard/AGENTS.md` first — vanilla HTML + JS, NO React, NO framework.
+- IMPORTANT: Read `archive/ui-dashboard-fastapi-experiment/AGENTS.md` first — vanilla HTML + JS, NO React, NO framework.
 - IMPORTANT: WebSocket reconnect uses exponential backoff capped at 30s.
 - IMPORTANT: Dashboard WebSocket endpoint is `ws://10.0.1.106:4400/ws` (same port as the dashboard HTTP serve). Port **4500 remains reserved** — do NOT bind any dashboard process there.
-- NEVER add a build step or bundler to `ui/dashboard/`.
+- NEVER add a build step or bundler to `archive/ui-dashboard-fastapi-experiment/`.
 
 #### Deliverables
 
-- [ ] `node-health.js` — 7-tile grid including **Jimmy tile**. Per tile: online, CPU, RAM, GPU (Below only), VRAM headroom (Below only), active tasks, last heartbeat. Jimmy tile additionally shows: LanceDB query depth, reranker queue depth, context-API p95 latency.
-  - Verify: `npx eslint ui/dashboard/panels/node-health.js`; manual visual = 7 tiles with Jimmy labelled distinctly; Below tile shows VRAM headroom gauge that turns red when <1GB for >30s.
-- [ ] `overflow-reserve.js` — Lockwood + Lomax reserve panel. Shows current state (`idle`/`warming`/`active`/`draining`), last 20 wake/drain events with trigger cause (`vram_low`, `test_queue_deep`, `parallel_dispatch`, `bulk_ingest`, `below_unreachable`), and historical overflow frequency per 24h.
-  - Verify: `npx eslint ui/dashboard/panels/overflow-reserve.js`; manual visual = 2 reserve tiles (Lockwood, Lomax) with live state + event log.
-- [ ] `storage-health.js` — Jimmy storage panel: per-directory usage bar for each `/srv/jimmy/` subtree, last-backup timestamps per source (nightly-projects, buildrunner-state, git-mirrors, supabase, brlogger), off-site sync status (last rclone run, success/fail), 30-day disk-free trend line, **disk-guard tier badge** reading `/srv/jimmy/status/disk-guard.json` (green `OK <80%` / amber `WARN 80-92%` / red `CRIT 92-96%` / magenta `PAGE ≥96%`), last `archive-prune` + `lancedb-compact` run timestamps, `backups-paused` flag indicator (visible red pill when set). Red banner if any nightly backup is >36h old or off-site sync >8 days old. Magenta banner if `backups-paused` is present.
-  - Verify: `npx eslint ui/dashboard/panels/storage-health.js`; manual visual shows all directory bars + timestamps + off-site status + disk-guard tier badge + archive/compact timestamps; force an old-backup condition and confirm red banner appears; write a fake `backups-paused` flag and confirm magenta banner appears.
-- [ ] `consensus-viewer.js` — live state of 3-way review.
-  - Verify: `npx eslint ui/dashboard/panels/consensus-viewer.js`.
+- [ ] `~/.buildrunner/dashboard/public/js/ws-cluster-node-health.js` — 7-tile grid including **Jimmy tile**. Per tile: online, CPU, RAM, GPU (Below only), VRAM headroom (Below only), active tasks, last heartbeat. Jimmy tile additionally shows: LanceDB query depth, reranker queue depth, context-API p95 latency.
+  - Verify: `node --check ~/.buildrunner/dashboard/public/js/ws-cluster-node-health.js`; manual visual = 7 tiles with Jimmy labelled distinctly; Below tile shows VRAM headroom gauge that turns red when <1GB for >30s.
+- [ ] `~/.buildrunner/dashboard/public/js/ws-cluster-overflow-reserve.js` — Lockwood + Lomax reserve panel. Shows current state (`idle`/`warming`/`active`/`draining`), last 20 wake/drain events with trigger cause (`vram_low`, `test_queue_deep`, `parallel_dispatch`, `bulk_ingest`, `below_unreachable`), and historical overflow frequency per 24h.
+  - Verify: `node --check ~/.buildrunner/dashboard/public/js/ws-cluster-overflow-reserve.js`; manual visual = 2 reserve tiles (Lockwood, Lomax) with live state + event log.
+- [ ] `~/.buildrunner/dashboard/public/js/ws-cluster-storage-health.js` — Jimmy storage panel: per-directory usage bar for each `/srv/jimmy/` subtree, last-backup timestamps per source (nightly-projects, buildrunner-state, git-mirrors, supabase, brlogger), off-site sync status (last rclone run, success/fail), 30-day disk-free trend line, **disk-guard tier badge** reading `/srv/jimmy/status/disk-guard.json` (green `OK <80%` / amber `WARN 80-92%` / red `CRIT 92-96%` / magenta `PAGE ≥96%`), last `archive-prune` + `lancedb-compact` run timestamps, `backups-paused` flag indicator (visible red pill when set). Red banner if any nightly backup is >36h old or off-site sync >8 days old. Magenta banner if `backups-paused` is present.
+  - Verify: `node --check ~/.buildrunner/dashboard/public/js/ws-cluster-storage-health.js`; manual visual shows all directory bars + timestamps + off-site status + disk-guard tier badge + archive/compact timestamps; force an old-backup condition and confirm red banner appears; write a fake `backups-paused` flag and confirm magenta banner appears.
+- [ ] `~/.buildrunner/dashboard/public/js/ws-cluster-consensus.js` — live state of 3-way review.
+  - Verify: `node --check ~/.buildrunner/dashboard/public/js/ws-cluster-consensus.js`.
 - [ ] WebSocket broadcaster on Jimmy at `ws://10.0.1.106:4400/ws` (sharing the dashboard service port). Dashboard subscribes via one socket.
   - Verify: `wscat -c ws://10.0.1.106:4400/ws` receives event within 5s.
 - [ ] Sanity check — all 4 panels render with live data during a test `/begin`. No console errors.
   - Verify: `playwright test tests/e2e/dashboard.spec.ts` passes.
-- [ ] **AGENTS.md update** — append to `ui/dashboard/AGENTS.md`: panel registry (4 files: node-health, overflow-reserve, storage-health, consensus-viewer); WebSocket reconnect contract (exp backoff cap 30s); refresh-proof rule. ≤300 added bytes.
-  - Verify: `grep -c "node-health\|overflow-reserve\|storage-health\|consensus-viewer\|reconnect" ui/dashboard/AGENTS.md` ≥5.
+- [ ] **AGENTS.md update** — append to `archive/ui-dashboard-fastapi-experiment/AGENTS.md`: panel registry (4 files: node-health, overflow-reserve, storage-health, consensus-viewer); WebSocket reconnect contract (exp backoff cap 30s); refresh-proof rule. ≤300 added bytes.
+  - Verify: `grep -c "node-health\|overflow-reserve\|storage-health\|consensus-viewer\|reconnect" archive/ui-dashboard-fastapi-experiment/AGENTS.md` ≥5.
 
 #### Claude Review (mandatory before Phase 11 marked complete)
 
 - Reviewer: `claude-opus-4-7` (Muddy)
-- Trigger: `/review --phase 11 --target "ui/dashboard/index.html,ui/dashboard/panels/*.js,api/routes/dashboard_stream.py,ui/dashboard/AGENTS.md"`
+- Trigger: `/review --phase 11 --target "~/.buildrunner/dashboard/public/index.html,~/.buildrunner/dashboard/public/js/ws-cluster-*.js,~/.buildrunner/dashboard/events.mjs,api/routes/dashboard_stream.py,archive/ui-dashboard-fastapi-experiment/AGENTS.md"`
 - Required findings: (1) zero React/framework deps; (2) reconnect backoff implemented; (3) all 7 nodes visible INCLUDING Jimmy tile with Jimmy-specific metrics (LanceDB, reranker queue, context-API latency); (4) overflow-reserve panel renders Lockwood + Lomax with live state + wake/drain event log; (5) storage-health panel renders all `/srv/jimmy/` directories + last-backup timestamps + off-site sync status; (6) Below VRAM headroom gauge turns red when <1GB; (7) red-banner conditions (old backup, stale off-site sync) visually trigger when simulated; (8) refresh-proof; (9) eslint clean; (10) AGENTS.md updated.
 - Block-on: framework introduced, missing reconnect, panel missing a node, Jimmy tile missing its specific metrics, overflow-reserve panel missing, storage-health panel missing, red-banner not triggering on stale backups, console errors, AGENTS.md stale.
 
@@ -1714,7 +1714,7 @@ See `.buildrunner/plans/phase-15-plan.md` for authoritative task bodies. Summary
 - **Task 15.3:** JSONL bridge + shell hook emits. All writers resolve path via `$BR3_REPO_ROOT` / `git rev-parse --show-toplevel` → `<repo_root>/.buildrunner/events-bridge.jsonl`. User-global `~/.buildrunner/events-bridge.jsonl` is NOT used.
 - **Task 15.4:** Invariant checker + 15 declarative rules in `invariants.yaml`. Each rule cites a BUILD spec line. Backup observability deferred (no backup system to emit from yet).
 - **Task 15.5:** Dashboard Feature Health panel — 15 tiles + live event stream + anomaly drill-down on :4400 via new `feature-health` WS topic.
-- **Task 15.6:** AGENTS.md updates (staged appends for `core/runtime/` + `core/cluster/`, direct edit for `ui/dashboard/`) + decisions.log + this spec block.
+- **Task 15.6:** AGENTS.md updates (staged appends for `core/runtime/` + `core/cluster/`, direct edit for `archive/ui-dashboard-fastapi-experiment/`) + decisions.log + this spec block.
 
 #### Files (whitelist)
 
@@ -1722,7 +1722,7 @@ Python: `core/telemetry/{event_collector,event_schemas,invariant_checker,invaria
 
 Shell: `~/.buildrunner/hooks/auto-context.sh`, `.buildrunner/hooks/pre-commit-cluster-guard`, `~/.buildrunner/scripts/sync-cluster-context.sh`.
 
-UI: `ui/dashboard/panels/feature-health.js` (NEW), `ui/dashboard/index.html` (mount), `ui/dashboard/AGENTS.md` (direct edit OK, solo).
+UI: `~/.buildrunner/dashboard/public/js/ws-cluster-feature-health.js` (NEW), `~/.buildrunner/dashboard/public/index.html` (mount), `archive/ui-dashboard-fastapi-experiment/AGENTS.md` (moved historical path).
 
 AGENTS.md: `core/runtime/AGENTS.md.append-phase15.txt` (NEW), `core/cluster/AGENTS.md.append-phase15.txt` (NEW).
 
@@ -1743,7 +1743,7 @@ Spec + decisions: this file (MODIFY), `.buildrunner/decisions.log` (APPEND).
 #### Claude Review (mandatory before Phase 15 marked complete)
 
 - Reviewer: `claude-opus-4-7` (Muddy)
-- Trigger: `/review --phase 15 --target "core/telemetry/*.py,core/telemetry/invariants.yaml,core/runtime/{runtime_registry,cache_policy,context_injector}.py,core/cluster/{cross_model_review,arbiter,summarizer,context_bundle,context_router}.py,api/routes/{context,retrieve,dashboard_stream}.py,ui/dashboard/panels/feature-health.js,~/.buildrunner/hooks/auto-context.sh,.buildrunner/hooks/pre-commit-cluster-guard,~/.buildrunner/scripts/sync-cluster-context.sh,core/runtime/AGENTS.md.append-phase15.txt,core/cluster/AGENTS.md.append-phase15.txt,ui/dashboard/AGENTS.md"`
+- Trigger: `/review --phase 15 --target "core/telemetry/*.py,core/telemetry/invariants.yaml,core/runtime/{runtime_registry,cache_policy,context_injector}.py,core/cluster/{cross_model_review,arbiter,summarizer,context_bundle,context_router}.py,api/routes/{context,retrieve,dashboard_stream}.py,~/.buildrunner/dashboard/public/js/ws-cluster-feature-health.js,~/.buildrunner/dashboard/public/index.html,~/.buildrunner/hooks/auto-context.sh,.buildrunner/hooks/pre-commit-cluster-guard,~/.buildrunner/scripts/sync-cluster-context.sh,core/runtime/AGENTS.md.append-phase15.txt,core/cluster/AGENTS.md.append-phase15.txt,archive/ui-dashboard-fastapi-experiment/AGENTS.md"`
 - Required findings: (1) emit wrappers never block host; (2) zero PII / full-text leakage; (3) all 15 invariant rules cite a BUILD line; (4) silent-fallback contract preserved; (5) alert files written only on P0/P1; (6) panel framework-free; (7) JSONL bridge at-least-once + rotation protocol + `event_id UNIQUE` dedup; (8) AGENTS.md snippets within 500-byte budget; (9) tokenizer-true fail-closed rule covered by an invariant; (10) two-layer `[private]` filter rule covered; (11) correlation model handles both Python-sourced and shell-sourced events and only asserts Python-side ordering on Python-side correlations; (12) single canonical bridge path resolved consistently from Python and shell.
 
 #### Done When
@@ -1760,7 +1760,7 @@ Spec + decisions: this file (MODIFY), `.buildrunner/decisions.log` (APPEND).
 
 ### Phase 16: Dashboard Unification — Backport Cluster Panels to :4400
 
-**Status:** pending
+**Status:** ✅ COMPLETE
 **Codex model:** gpt-5.4
 **Codex effort:** medium (no security/architecture deltas warrant xhigh)
 **Worktree:** main repo (touches `~/.buildrunner/dashboard/` + `api/routes/dashboard_stream.py` + two BUILD specs; disjoint from Phase 13/14 file sets)
@@ -1772,11 +1772,11 @@ Spec + decisions: this file (MODIFY), `.buildrunner/decisions.log` (APPEND).
 
 #### Goal
 
-Unify the cluster observability surface on the real Node dashboard at `http://localhost:4400`. Retire the FastAPI experiment at `ui/dashboard/` (whose standalone `app = create_app(role="dashboard")` export enables any uvicorn invocation to bind :4400 — a live collision risk) and the orphan uvicorn process on :4401. Backport the five cluster panels (feature-health, node-health detail, overflow-reserve, storage-health, consensus-viewer) onto the Node dashboard's existing SSE transport. Add Jimmy to the dashboard's node list. Execute the cluster-activation Phase 6 acceptance criterion that was never actually run against :4400.
+Unify the cluster observability surface on the real Node dashboard at `http://localhost:4400`. Retire the archived FastAPI experiment at `archive/ui-dashboard-fastapi-experiment/` (its standalone `app = create_app(role="dashboard")` export enabled uvicorn collisions on :4400) and the orphan uvicorn process on :4401. Backport the five cluster panels (feature-health, node-health detail, overflow-reserve, storage-health, consensus-viewer) onto the Node dashboard's existing SSE transport. Add Jimmy to the dashboard's node list. Execute the cluster-activation Phase 6 acceptance criterion that was never actually run against :4400.
 
 #### Context
 
-BUILD_cluster-activation.md Phase 6 shipped a feature-health panel into `ui/dashboard/` (FastAPI) assuming that was the dashboard. The real operator dashboard is `~/.buildrunner/dashboard/` (Node, :4400, sidebar with builds/intel/terminal/research/monitor). Phase 6 was marked COMPLETE without anyone verifying :4400 rendered the panel — it didn't. Separately, BUILD_cluster-max.md Phase 11 shipped four additional panels to the same `ui/dashboard/` directory, inheriting the same drift. The emit side (`core/runtime/runtime_registry.py`, `core/runtime/cache_policy.py`, `core/cluster/cross_model_review.py`, `scripts/codex-bridge.sh`) writes correctly to `.buildrunner/telemetry.db` — verified live, 16+ `runtime_dispatched`, 24+ `cache_hit`, 22+ `adversarial_review_ran` events within the last hour. Only the read-and-render path is on the wrong surface. `NODE_NAMES` in `~/.buildrunner/dashboard/events.mjs:226` hardcodes 6 nodes (no Jimmy), blocking every panel that needs a 7-node baseline. `VALID_TYPES` in the same file gates every SSE broadcast; the five new topic names must be added or cluster events will be silently dropped.
+BUILD_cluster-activation.md Phase 6 shipped a feature-health panel into the now-archived FastAPI experiment at `archive/ui-dashboard-fastapi-experiment/` assuming that was the dashboard. The real operator dashboard is `~/.buildrunner/dashboard/` (Node, :4400, sidebar with builds/intel/terminal/research/monitor). Phase 6 was marked COMPLETE without anyone verifying :4400 rendered the panel — it didn't. Separately, BUILD_cluster-max.md Phase 11 shipped four additional panels to the same archived experiment, inheriting the same drift. The emit side (`core/runtime/runtime_registry.py`, `core/runtime/cache_policy.py`, `core/cluster/cross_model_review.py`, `scripts/codex-bridge.sh`) writes correctly to `.buildrunner/telemetry.db` — verified live, 16+ `runtime_dispatched`, 24+ `cache_hit`, 22+ `adversarial_review_ran` events within the last hour. Only the read-and-render path is on the wrong surface. `NODE_NAMES` in `~/.buildrunner/dashboard/events.mjs:226` hardcodes 6 nodes (no Jimmy), blocking every panel that needs a 7-node baseline. `VALID_TYPES` in the same file gates every SSE broadcast; the five new topic names must be added or cluster events will be silently dropped.
 
 #### Tasks (Codex four-element format)
 
@@ -1785,8 +1785,8 @@ See `.buildrunner/plans/phase-16-plan.md` for authoritative task bodies. Summary
 - **Task 16.1:** Stop :4401 orphan. Remove module-level `app = create_app(role="dashboard")` export from `api/routes/dashboard_stream.py` and any uvicorn launch script targeting it. Keep `_collect_*` as importable library.
 - **Task 16.2:** Add `jimmy` to `NODE_NAMES` in `~/.buildrunner/dashboard/events.mjs`; verify the existing card renders 7 rows.
 - **Task 16.3:** Build three integration modules under `~/.buildrunner/dashboard/integrations/` — `telemetry-reader.mjs` (read-only SQLite on `.buildrunner/telemetry.db`), `jimmy-status.mjs` (reads `/srv/jimmy/status/*.json`), `cluster-health-local.mjs` (plist/script/mtime checks). On missing sources, return `status: "yellow"` with reason — never `unknown`.
-- **Task 16.4:** Add five periodic collectors to `events.mjs` broadcasting `feature-health`/`node-health`/`overflow-reserve`/`storage-health`/`consensus` SSE events at the FastAPI cadences (5s/10s/15s/20s/60s). Add all five names to `VALID_TYPES`. Port five panels from `ui/dashboard/panels/` to `~/.buildrunner/dashboard/public/js/ws-cluster-*.js` under a new Cluster sidebar entry. Tile rules ported verbatim from `_collect_feature_health` (`dashboard_stream.py:178–381`).
-- **Task 16.5:** Move `ui/dashboard/` to `archive/ui-dashboard-fastapi-experiment/` with README. Correct Phase 6 (cluster-activation), Phase 11, and Phase 15 path references.
+- **Task 16.4:** Add five periodic collectors to `events.mjs` broadcasting `feature-health`/`node-health`/`overflow-reserve`/`storage-health`/`consensus` SSE events at the FastAPI cadences (5s/10s/15s/20s/60s). Add all five names to `VALID_TYPES`. Port five panels from `archive/ui-dashboard-fastapi-experiment/panels/` to `~/.buildrunner/dashboard/public/js/ws-cluster-*.js` under a new Cluster sidebar entry. Tile rules ported verbatim from `_collect_feature_health` (`dashboard_stream.py:178–381`).
+- **Task 16.5:** Archive the FastAPI experiment at `archive/ui-dashboard-fastapi-experiment/` with README. Correct Phase 6 (cluster-activation), Phase 11, and Phase 15 path references.
 - **Task 16.6:** Walk cluster-activation Phase 6 acceptance against :4400. Ensure Jimmy publisher is running for tiles 6–10 to resolve green. Record verified 15-tile snapshot to `.buildrunner/adversarial-reviews/phase-16-acceptance.json`.
 
 #### Files (whitelist)
@@ -1794,7 +1794,7 @@ See `.buildrunner/plans/phase-16-plan.md` for authoritative task bodies. Summary
 - **Node dashboard (MODIFY):** `~/.buildrunner/dashboard/events.mjs`, `~/.buildrunner/dashboard/public/index.html`, `~/.buildrunner/dashboard/public/styles.css`
 - **Node dashboard (NEW):** `~/.buildrunner/dashboard/public/js/ws-cluster-feature-health.js`, `ws-cluster-node-health.js`, `ws-cluster-overflow-reserve.js`, `ws-cluster-storage-health.js`, `ws-cluster-consensus.js`; `~/.buildrunner/dashboard/integrations/telemetry-reader.mjs`, `jimmy-status.mjs`, `cluster-health-local.mjs`
 - **Python (MODIFY):** `api/routes/dashboard_stream.py` (remove dashboard-role `app` export; keep `_collect_*` as library)
-- **Archive (MOVE):** `ui/dashboard/` → `archive/ui-dashboard-fastapi-experiment/` (+ README.md)
+- **Archive (MOVE):** FastAPI dashboard experiment → `archive/ui-dashboard-fastapi-experiment/` (+ README.md)
 - **Spec (MODIFY):** `.buildrunner/builds/BUILD_cluster-activation.md` (Phase 6 panel paths), `.buildrunner/builds/BUILD_cluster-max.md` (Phase 11 + Phase 15 panel paths)
 - **Tests (NEW):** `~/.buildrunner/dashboard/tests/integrations-telemetry.spec.mjs`, `integrations-jimmy-status.spec.mjs`, `ws-cluster-feature-health.spec.mjs`
 - **Decisions (APPEND):** `.buildrunner/decisions.log`
@@ -1806,7 +1806,7 @@ See `.buildrunner/plans/phase-16-plan.md` for authoritative task bodies. Summary
 - Readers return `status: "yellow"` with a `reason` field on missing sources; dashboard renders even if `.buildrunner/telemetry.db` or `/srv/jimmy/status/` is absent.
 - `VALID_TYPES` in `events.mjs` must include the 5 new topic names or SSE broadcasts are silently dropped.
 - FastAPI `_collect_*` functions remain importable; only the dashboard-role `app` export and related uvicorn launch paths are removed.
-- Archive, do not delete. `ui/dashboard/` moves to `archive/ui-dashboard-fastapi-experiment/` with a README explaining the drift and retirement date.
+- Archive, do not delete. The FastAPI dashboard experiment moves to `archive/ui-dashboard-fastapi-experiment/` with a README explaining the drift and retirement date.
 - Spec edits touch only path references and Phase 15's Blocked-by. Phase structure, success criteria, and numbering remain intact.
 - Max 6 tasks per phase respected.
 
@@ -1814,7 +1814,7 @@ See `.buildrunner/plans/phase-16-plan.md` for authoritative task bodies. Summary
 
 - Reviewer: `claude-opus-4-7` (Muddy)
 - Trigger: `/review --phase 16 --target "~/.buildrunner/dashboard/events.mjs,~/.buildrunner/dashboard/public/index.html,~/.buildrunner/dashboard/public/js/ws-cluster-*.js,~/.buildrunner/dashboard/integrations/telemetry-reader.mjs,~/.buildrunner/dashboard/integrations/jimmy-status.mjs,~/.buildrunner/dashboard/integrations/cluster-health-local.mjs,api/routes/dashboard_stream.py,archive/ui-dashboard-fastapi-experiment/README.md,.buildrunner/builds/BUILD_cluster-activation.md,.buildrunner/builds/BUILD_cluster-max.md"`
-- Required findings: (1) feature-health tile rules match `_collect_feature_health` semantically; (2) all five SSE topics emit at the FastAPI cadences AND appear in `VALID_TYPES`; (3) telemetry reader opens DB read-only; (4) error-swallowing returns `yellow`+reason, never `unknown`; (5) no new npm dependencies without package.json update; (6) `ui/dashboard/` archived, not deleted; (7) Phase 15 `Blocked by` updated; (8) no new ports bound; (9) LaunchAgent for FastAPI experiment removed if present; (10) Jimmy added to `NODE_NAMES`; (11) dashboard-role `app` export removed from `dashboard_stream.py`.
+- Required findings: (1) feature-health tile rules match `_collect_feature_health` semantically; (2) all five SSE topics emit at the FastAPI cadences AND appear in `VALID_TYPES`; (3) telemetry reader opens DB read-only; (4) error-swallowing returns `yellow`+reason, never `unknown`; (5) no new npm dependencies without package.json update; (6) `archive/ui-dashboard-fastapi-experiment/` retained, not deleted; (7) Phase 15 `Blocked by` updated; (8) no new ports bound; (9) LaunchAgent for FastAPI experiment removed if present; (10) Jimmy added to `NODE_NAMES`; (11) dashboard-role `app` export removed from `dashboard_stream.py`.
 
 #### Done When
 
@@ -1823,8 +1823,8 @@ See `.buildrunner/plans/phase-16-plan.md` for authoritative task bodies. Summary
 - [ ] `curl -s http://localhost:4400/api/nodes | jq 'length'` returns 7 (Jimmy included).
 - [ ] All five cluster panels render on `http://localhost:4400` under a "Cluster" sidebar section.
 - [ ] Feature-health panel shows 15 tiles with zero `status` values outside `{green,yellow,red}`.
-- [ ] `ui/dashboard/` archived to `archive/ui-dashboard-fastapi-experiment/` with README.
-- [ ] BUILD_cluster-activation.md + BUILD_cluster-max.md spec path references corrected (no `ui/dashboard/` references remain in `.buildrunner/builds/`).
+- [ ] FastAPI dashboard experiment archived to `archive/ui-dashboard-fastapi-experiment/` with README.
+- [ ] BUILD_cluster-activation.md + BUILD_cluster-max.md spec path references corrected (no stale pre-archive dashboard paths remain in `.buildrunner/builds/`).
 - [ ] Phase 15 `Blocked by` updated to include Phase 16.
 - [ ] Claude review passed with zero P0/P1 findings.
 - [ ] `.buildrunner/decisions.log` entry: `Phase 16: dashboard unification live — 5 panels backported to :4400 Node dashboard, FastAPI experiment archived, Jimmy added to node list, cluster-activation Phase 6 acceptance walked with zero-unknown`.
@@ -1960,7 +1960,7 @@ role_matrix:
       reviewers: [sonnet-4-6, codex-gpt-5.4]
       arbiter: opus-4-7
       assigned_node: muddy
-      context: [core/cluster, ui/dashboard, api/routes]
+      context: [core/cluster, ~/.buildrunner/dashboard, api/routes]
     phase_12:
       builder: codex
       codex_model: gpt-5.4
@@ -1983,4 +1983,20 @@ role_matrix:
       arbiter: opus-4-7
       assigned_node: otis
       context: [core/cluster]
+    phase_15:
+      bucket: backend-build
+      builder: codex
+      codex_model: gpt-5.4
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: otis
+      context: [core/telemetry, core/cluster]
+    phase_16:
+      bucket: backend-build
+      builder: codex
+      codex_model: gpt-5.4
+      reviewers: [sonnet-4-6, codex-gpt-5.4]
+      arbiter: opus-4-7
+      assigned_node: muddy
+      context: [~/.buildrunner/dashboard, api/routes/dashboard_stream.py]
 ```

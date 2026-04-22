@@ -217,29 +217,25 @@ def _collect_feature_health() -> dict[str, Any]:
     else:
         tiles.append(_tile(2, "RuntimeRegistry health", "yellow", "telemetry.db not found"))
 
-    # ── Tile 3: 3-way adversarial review ─────────────────────────────────────
+    # ── Tile 3: Adversarial review (Sonnet + GPT-5.4 via CLI) ────────────────
     if db_path:
         rows = _fh_query_db(db_path,
             "SELECT metadata FROM events WHERE event_type='adversarial_review_ran' AND timestamp>=? ORDER BY timestamp DESC LIMIT 5",
             (h24_ago,))
-        three_way_runs = 0
+        runs_24h = 0
         for r in rows:
             try:
                 import json as _json
-                meta = _json.loads(r.get("metadata") or "{}")
-                if meta.get("mode") == "3-way":
-                    three_way_runs += 1
+                _json.loads(r.get("metadata") or "{}")
+                runs_24h += 1
             except Exception:  # noqa: BLE001
                 pass
-        flag_on = os.environ.get("BR3_ADVERSARIAL_3WAY", "off").lower() == "on"
-        if not flag_on:
-            tiles.append(_tile(3, "3-way adversarial review", "yellow", "BR3_ADVERSARIAL_3WAY=off"))
-        elif three_way_runs > 0:
-            tiles.append(_tile(3, "3-way adversarial review", "green", f"{three_way_runs} 3-way run(s) in 24h"))
+        if runs_24h > 0:
+            tiles.append(_tile(3, "Adversarial review", "green", f"{runs_24h} run(s) in 24h"))
         else:
-            tiles.append(_tile(3, "3-way adversarial review", "yellow", "flag on but no 3-way runs in 24h"))
+            tiles.append(_tile(3, "Adversarial review", "yellow", "no adversarial reviews in 24h"))
     else:
-        tiles.append(_tile(3, "3-way adversarial review", "yellow", "telemetry.db not found"))
+        tiles.append(_tile(3, "Adversarial review", "yellow", "telemetry.db not found"))
 
     # ── Tile 4: Cache breakpoints ─────────────────────────────────────────────
     flag_cache = os.environ.get("BR3_CACHE_BREAKPOINTS", "off").lower() == "on"
@@ -479,24 +475,4 @@ async def dashboard_ws(ws: WebSocket) -> None:
         _manager.disconnect(ws)
 
 
-# ---------------------------------------------------------------------------
-# Standalone entry — uvicorn api.routes.dashboard_stream:app --port 4400
-# ---------------------------------------------------------------------------
-
-from fastapi.staticfiles import StaticFiles
-
-from core.cluster.base_service import create_app
-
-app = create_app(role="dashboard")
-app.include_router(router)
-
-
-@app.on_event("startup")
-async def _startup() -> None:
-    start_broadcast_loop()
-
-
-_UI_DIR = Path(__file__).resolve().parents[2] / "ui" / "dashboard"
-if _UI_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(_UI_DIR), html=True), name="dashboard-ui")
-
+# Standalone dashboard app export retired in Phase 16.

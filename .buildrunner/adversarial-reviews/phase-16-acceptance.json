@@ -1,0 +1,115 @@
+{
+  "phase": "16",
+  "acceptance_walked_at": "2026-04-22T15:15:24Z",
+  "source": "http://localhost:4400/api/events/stream (SSE, live)",
+  "tile_count": 15,
+  "status_distribution": [
+    {
+      "status": "green",
+      "count": 7
+    },
+    {
+      "status": "red",
+      "count": 2
+    },
+    {
+      "status": "yellow",
+      "count": 6
+    }
+  ],
+  "zero_unknown": true,
+  "pass": true,
+  "tiles": [
+    {
+      "tile": 1,
+      "label": "Role Matrix dispatch",
+      "status": "yellow",
+      "detail": "no dispatches in last hour"
+    },
+    {
+      "tile": 2,
+      "label": "RuntimeRegistry health",
+      "status": "red",
+      "detail": "50% success (8/16) in 24h"
+    },
+    {
+      "tile": 3,
+      "label": "3-way adversarial review",
+      "status": "green",
+      "detail": "4 3-way run(s) in 24h"
+    },
+    {
+      "tile": 4,
+      "label": "Cache breakpoints",
+      "status": "green",
+      "detail": "28 hit(s) in 24h"
+    },
+    {
+      "tile": 5,
+      "label": "Codex bridge",
+      "status": "red",
+      "detail": "only 1 bundle(s) for 16 dispatch(es)"
+    },
+    {
+      "tile": 6,
+      "label": "Auto-context Jimmy /retrieve",
+      "status": "yellow",
+      "detail": "Jimmy status unknown — check /srv/jimmy/status/nodes/jimmy.json"
+    },
+    {
+      "tile": 7,
+      "label": "Local routing Below",
+      "status": "yellow",
+      "detail": "no Below dispatches in 24h — check node status"
+    },
+    {
+      "tile": 8,
+      "label": "Otis dispatch",
+      "status": "yellow",
+      "detail": "daemon active but Otis status unknown"
+    },
+    {
+      "tile": 9,
+      "label": "Walter gate",
+      "status": "yellow",
+      "detail": "no Walter heartbeat found"
+    },
+    {
+      "tile": 10,
+      "label": "Lomax shard",
+      "status": "yellow",
+      "detail": "Lomax idle — shards fire when Walter queue >2"
+    },
+    {
+      "tile": 11,
+      "label": "Cluster daemon",
+      "status": "green",
+      "detail": "LaunchAgent plist present"
+    },
+    {
+      "tile": 12,
+      "label": "Node matrix consulted",
+      "status": "green",
+      "detail": "node-matrix.mjs present"
+    },
+    {
+      "tile": 13,
+      "label": "Dispatch log writer",
+      "status": "green",
+      "detail": "decisions.log updated 0h ago"
+    },
+    {
+      "tile": 14,
+      "label": "Context bundle parity",
+      "status": "green",
+      "detail": "1 bundle(s) delivered in 24h"
+    },
+    {
+      "tile": 15,
+      "label": "Adversarial review cap",
+      "status": "green",
+      "detail": "all reviews within 1-round cap"
+    }
+  ],
+  "notes": "Jimmy publisher not running on this host; tiles 6-10 reflect honest yellow+reason state per plan. Zero unknown values confirmed. FastAPI :4401 orphan killed and experiment archived."
+}
