@@ -11,6 +11,7 @@ Exit codes:
 from __future__ import annotations
 
 import json
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -44,6 +45,30 @@ def _write_spec(content: str) -> Path:
     tmp.write(content)
     tmp.close()
     return Path(tmp.name)
+
+
+def _create_telemetry_db(project_root: Path) -> Path:
+    db_path = project_root / ".buildrunner" / "telemetry.db"
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
+    try:
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event_id TEXT UNIQUE NOT NULL,
+                event_type TEXT NOT NULL,
+                timestamp TEXT NOT NULL,
+                session_id TEXT,
+                metadata TEXT,
+                success BOOLEAN DEFAULT 1
+            );
+            """
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return db_path
 
 
 VALID_SPEC = """\
@@ -97,6 +122,36 @@ def test_missing_spec_file_exits_3() -> None:
         f"Expected exit 3 for missing spec, got {result.returncode}\n"
         f"stderr: {result.stderr}"
     )
+
+
+def test_missing_spec_file_emits_runtime_dispatched_failure(tmp_path: Path) -> None:
+    """Malformed spec path must record runtime_dispatched with success=0."""
+    project_root = tmp_path / "runtime-dispatch-failure"
+    telemetry_db = _create_telemetry_db(project_root)
+
+    result = _run_cli(
+        "execute",
+        "claude",
+        "/tmp/nonexistent-spec-99999.md",
+        env={"BR3_PROJECT_ROOT": str(project_root)},
+    )
+
+    assert result.returncode == 3
+
+    conn = sqlite3.connect(str(telemetry_db))
+    try:
+        row = conn.execute(
+            "SELECT success, metadata FROM events WHERE event_type='runtime_dispatched' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    finally:
+        conn.close()
+
+    assert row is not None, "expected runtime_dispatched row for malformed spec"
+    assert row[0] == 0, "runtime_dispatched.success must be 0 on CLI failure"
+
+    metadata = json.loads(row[1])
+    assert metadata["returncode"] == 3
+    assert metadata["runtime"] == "claude"
 
 
 def test_empty_spec_file_exits_3() -> None:

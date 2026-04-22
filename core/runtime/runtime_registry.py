@@ -33,15 +33,23 @@ from core.runtime.types import RuntimeResult, RuntimeTask
 # Telemetry helper — non-blocking emit for runtime_dispatched events
 # ---------------------------------------------------------------------------
 
-def _emit_runtime_dispatched(runtime_name: str, task: "RuntimeTask") -> None:
+def _emit_runtime_dispatched(runtime_name: str, task: "RuntimeTask", returncode: int = 0) -> None:
     """Emit a runtime_dispatched event to telemetry. Swallows all errors."""
     try:
-        from pathlib import Path as _Path
-        from core.telemetry.event_schemas import Event, EventType
-        from core.persistence.database import Database
+        from core.telemetry.event_schemas import EventType
 
-        db_path = _Path.cwd() / ".buildrunner" / "telemetry.db"
-        if not db_path.exists():
+        db_candidates: list[Path] = []
+        project_root = os.environ.get("BR3_PROJECT_ROOT", "").strip()
+        if project_root:
+            db_candidates.append(Path(project_root) / ".buildrunner" / "telemetry.db")
+        db_candidates.extend(
+            [
+                Path.cwd() / ".buildrunner" / "telemetry.db",
+                Path.home() / "Projects" / "BuildRunner3" / ".buildrunner" / "telemetry.db",
+            ]
+        )
+        db_path = next((path for path in db_candidates if path.exists()), None)
+        if db_path is None:
             return
 
         import sqlite3 as _sqlite3
@@ -54,6 +62,7 @@ def _emit_runtime_dispatched(runtime_name: str, task: "RuntimeTask") -> None:
             "task_type": (task.task_type or "")[:64],
             "task_id": (task.task_id or "")[:64],
             "project_root": (str(task.project_root) or "")[:128],
+            "returncode": returncode,
         }
         row = {
             "event_id": str(_uuid.uuid4()),
@@ -61,7 +70,7 @@ def _emit_runtime_dispatched(runtime_name: str, task: "RuntimeTask") -> None:
             "timestamp": _dt.now(__import__('datetime').timezone.utc).isoformat(),
             "session_id": None,
             "metadata": _json.dumps(metadata),
-            "success": 1,
+            "success": 1 if returncode == 0 else 0,
         }
         conn = _sqlite3.connect(str(db_path))
         try:
@@ -147,8 +156,13 @@ class RuntimeRegistry:
             runtime_name = "claude"
 
         registration = self._registrations[runtime_name]
-        _emit_runtime_dispatched(runtime_name, task)
-        return asyncio.run(self._dispatch_to_adapter(registration.adapter, task))
+        result = asyncio.run(self._dispatch_to_adapter(registration.adapter, task))
+        _emit_runtime_dispatched(
+            runtime_name,
+            task,
+            returncode=0 if result.status == "success" else 1,
+        )
+        return result
 
     async def execute_async(self, task: RuntimeTask) -> RuntimeResult:
         """Async variant of execute() for callers already in an event loop."""
@@ -161,8 +175,13 @@ class RuntimeRegistry:
             runtime_name = "claude"
 
         registration = self._registrations[runtime_name]
-        _emit_runtime_dispatched(runtime_name, task)
-        return await self._dispatch_to_adapter(registration.adapter, task)
+        result = await self._dispatch_to_adapter(registration.adapter, task)
+        _emit_runtime_dispatched(
+            runtime_name,
+            task,
+            returncode=0 if result.status == "success" else 1,
+        )
+        return result
 
     @staticmethod
     async def _dispatch_to_adapter(adapter: BaseRuntime, task: RuntimeTask) -> RuntimeResult:
@@ -237,9 +256,22 @@ def _cli_execute(builder: str, spec_path_str: str) -> None:
     """Core logic for the `execute` sub-command.  Exits directly."""
     import argparse  # noqa: F401 (stdlib — already imported at top of stdlib chain)
 
+    def _emit_cli_dispatch_failure(exit_code: int, spec_text: str = "") -> None:
+        task = RuntimeTask(
+            task_id=f"cli-{builder}-{Path(spec_path_str).stem or 'unknown'}",
+            task_type="execution",
+            diff_text="",
+            spec_text=spec_text,
+            project_root=os.environ.get("BR3_PROJECT_ROOT", str(Path.cwd())),
+            commit_sha="",
+            authoritative_runtime=builder,
+        )
+        _emit_runtime_dispatched(builder, task, returncode=exit_code)
+
     # ── Validate spec ─────────────────────────────────────────────────────
     spec_path = Path(spec_path_str)
     if not spec_path.exists():
+        _emit_cli_dispatch_failure(3)
         print(
             f"ERROR: spec file not found: {spec_path_str}",
             file=sys.stderr,
@@ -248,6 +280,7 @@ def _cli_execute(builder: str, spec_path_str: str) -> None:
 
     spec_text = spec_path.read_text(encoding="utf-8").strip()
     if not spec_text:
+        _emit_cli_dispatch_failure(3)
         print(
             f"ERROR: spec file is empty (malformed): {spec_path_str}",
             file=sys.stderr,
@@ -256,6 +289,7 @@ def _cli_execute(builder: str, spec_path_str: str) -> None:
 
     # ── Validate builder ──────────────────────────────────────────────────
     if builder not in SUPPORTED_RUNTIME_NAMES:
+        _emit_cli_dispatch_failure(2, spec_text=spec_text)
         print(
             f"ERROR: unknown builder {builder!r}. "
             f"Supported: {', '.join(SUPPORTED_RUNTIME_NAMES)}",
