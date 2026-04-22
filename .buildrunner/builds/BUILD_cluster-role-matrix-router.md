@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** pending
+**Status:** Phases 1-2 Complete — Phase 3 In Progress
 **Deploy:** web — no runtime deploy; scripts take effect on next skill invocation
 **Source Plan File:** .buildrunner/plans/spec-draft-plan.md
 **Source Plan SHA:** 77a3305d5b1ccccfc2ce4278cbe9d6a0c48ebe13cd7473470c8ddd5df9aba0c4
@@ -82,7 +82,7 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 ### Phase 3: `resolve-dispatch-node.sh` — the router
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/resolve-dispatch-node.sh` (NEW)
@@ -93,14 +93,14 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 **Deliverables:**
 
-- [ ] CLI: `resolve-dispatch-node.sh <build-spec> <phase-num> [--exclude-node <name>]...` prints JSON `{ node, bucket, reason, overrides_applied[], load_snapshot }` to stdout. `--exclude-node` is repeatable; excluded nodes are removed from every step of the precedence walk, including path-locality (path-locality-excluded → fall through to tier routing). Exit codes: 0 success, 1 unresolvable hard pin, 2 schema/parse error, 4 all candidates excluded.
-- [ ] Resolution walks precedence exactly: pin (hard) → path-locality → spec-preference healthy+not-overloaded → load-reroute same-tier alternate → tier-fallback-up (tier 1 if tier 2 saturated) → tier-fallback-down (tier 2 if tier 1 saturated AND `bucket.allow_tier_fallback`) → local Muddy.
-- [ ] Reads `.resolved-role-matrix.json` cache. Re-resolves via `load-role-matrix.sh` if cache is missing or older than existing TTL.
-- [ ] Parses phase `Files:` list: matches each file path against `routing.sync_on_dispatch` prefixes (marks phase for sync, does not pin) AND `nodes.*.local_paths` prefixes (pins to matching node). Multiple `local_paths` matches → pin to first in evaluation order, log conflict.
-- [ ] Every resolution writes one line to `.buildrunner/decisions.log` in the project root: ISO timestamp + `router: build=<id> phase=<N> node=<chosen> reason=<code> overrides=<comma-list>`. Reason codes: `pin`, `path-locality`, `path-locality-excluded`, `spec-preference`, `load-rerouted`, `tier-fallback-up`, `tier-fallback-down`, `saturation-fallback-local`, `load-unknown-fail-open`.
-- [ ] Hard pin on unhealthy node returns exit 1 and a structured error JSON — does NOT silently reroute. `reason: pin-failed`.
-- [ ] `resolve-dispatch-node.py` handles YAML/JSON parsing and prefix matching; the shell script handles CLI glue, stdout formatting, and decisions.log write.
-- [ ] `tests/resolve-dispatch-node-tests.sh` covers: spec-preference pass, load-reroute within tier, tier-fallback-up, path-locality pin, path-locality-excluded after `--exclude-node`, hard-pin-fails-loud, unknown-bucket schema error.
+- [x] CLI: `resolve-dispatch-node.sh <build-spec> <phase-num> [--exclude-node <name>]...` prints JSON `{ node, bucket, reason, overrides_applied[], load_snapshot }` to stdout. `--exclude-node` is repeatable; excluded nodes are removed from every step of the precedence walk, including path-locality (path-locality-excluded → fall through to tier routing). Exit codes: 0 success, 1 unresolvable hard pin, 2 schema/parse error, 4 all candidates excluded.
+- [x] Resolution walks precedence exactly: pin (hard) → path-locality → spec-preference healthy+not-overloaded → load-reroute same-tier alternate → tier-fallback-up (tier 1 if tier 2 saturated) → tier-fallback-down (tier 2 if tier 1 saturated AND `bucket.allow_tier_fallback`) → local Muddy.
+- [x] Reads `.resolved-role-matrix.json` cache. Re-resolves via `load-role-matrix.sh` if cache is missing or older than existing TTL.
+- [x] Parses phase `Files:` list: matches each file path against `routing.sync_on_dispatch` prefixes (marks phase for sync, does not pin) AND `nodes.*.local_paths` prefixes (pins to matching node). Multiple `local_paths` matches → pin to first in evaluation order, log conflict.
+- [x] Every resolution writes one line to `.buildrunner/decisions.log` in the project root: ISO timestamp + `router: build=<id> phase=<N> node=<chosen> reason=<code> overrides=<comma-list>`. Reason codes: `pin`, `path-locality`, `path-locality-excluded`, `spec-preference`, `load-rerouted`, `tier-fallback-up`, `tier-fallback-down`, `saturation-fallback-local`, `load-unknown-fail-open`.
+- [x] Hard pin on unhealthy node returns exit 1 and a structured error JSON — does NOT silently reroute. `reason: pin-failed`.
+- [x] `resolve-dispatch-node.py` handles YAML/JSON parsing and prefix matching; the shell script handles CLI glue, stdout formatting, and decisions.log write.
+- [x] `tests/resolve-dispatch-node-tests.sh` covers: spec-preference pass, load-reroute within tier, tier-fallback-up, path-locality pin, path-locality-excluded after `--exclude-node`, hard-pin-fails-loud, unknown-bucket schema error.
 
 ### Phase 4: Bridge into `/autopilot` and `/begin` (no-flag default)
 
