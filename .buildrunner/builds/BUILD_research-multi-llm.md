@@ -152,7 +152,7 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 ### Phase 6: Tests + verification
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `tests/research/test_llm_clients.py` (NEW — pytest, mocks HTTPS at httpx/urllib boundary)
