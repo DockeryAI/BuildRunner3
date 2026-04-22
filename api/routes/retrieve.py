@@ -40,6 +40,16 @@ LANCE_DIR = get_lancedb_uri()
 retrieve_router = APIRouter()
 
 
+def _result_rows(query_builder) -> list[dict]:
+    """Return LanceDB results without depending on pandas being installed."""
+    if hasattr(query_builder, "to_list"):
+        return query_builder.to_list()
+    if hasattr(query_builder, "to_pandas"):
+        df = query_builder.to_pandas()
+        return df.to_dict(orient="records")
+    return []
+
+
 # --- Request / Response models ---
 
 class RetrieveRequest(BaseModel):
@@ -87,9 +97,9 @@ def _search_research(query: str, limit: int = 20) -> list[dict]:
             pass
         model = SentenceTransformer(get_embedding_model())
         vec = model.encode([query]).tolist()[0]
-        results = table.search(vec).metric("cosine").limit(limit).to_pandas()
+        results = _result_rows(table.search(vec).metric("cosine").limit(limit))
         hits = []
-        for _, row in results.iterrows():
+        for row in results:
             dist = float(row.get("_distance", 1.0))
             start = int(row.get("start_line", 0) or 0)
             end = int(row.get("end_line", 0) or 0)
@@ -119,9 +129,9 @@ def _search_lockwood_code(query: str, limit: int = 20) -> list[dict]:
         table = db.open_table("codebase")
         model = SentenceTransformer(get_embedding_model(), trust_remote_code=True)
         vec = model.encode([query]).tolist()[0]
-        results = table.search(vec).metric("cosine").limit(limit).to_pandas()
+        results = _result_rows(table.search(vec).metric("cosine").limit(limit))
         hits = []
-        for _, row in results.iterrows():
+        for row in results:
             dist = float(row.get("_distance", 1.0))
             repo = row.get("repo", "")
             file_ = row.get("file", "")

@@ -6,25 +6,85 @@ preserves YAML frontmatter as metadata context for each chunk.
 Used by node_semantic.py to index ~/repos/research-library/docs/ into LanceDB.
 """
 
-import re
 import yaml
 from pathlib import Path
 from typing import Optional
 
 
-def parse_frontmatter(content: str) -> tuple[dict, str]:
-    """Extract YAML frontmatter and return (metadata, body)."""
+def parse_frontmatter(content: str) -> tuple[dict, str, int]:
+    """Extract YAML frontmatter and return (metadata, body, body_start_line)."""
     if not content.startswith("---"):
-        return {}, content
+        return {}, content, 1
     end = content.find("---", 3)
     if end == -1:
-        return {}, content
+        return {}, content, 1
     try:
         meta = yaml.safe_load(content[3:end]) or {}
     except yaml.YAMLError:
         meta = {}
-    body = content[end + 3:].lstrip("\n")
-    return meta, body
+    body_start = end + 3
+    while body_start < len(content) and content[body_start] == "\n":
+        body_start += 1
+    body = content[body_start:]
+    body_start_line = content[:body_start].count("\n") + 1
+    return meta, body, body_start_line
+
+
+def _count_nonempty_lines(text: str) -> int:
+    return sum(1 for line in text.splitlines() if line.strip())
+
+
+def _build_sections(body: str, body_start_line: int) -> list[dict]:
+    """Return H2-partitioned sections with source line numbers."""
+    lines = body.splitlines()
+    if not lines:
+        return []
+
+    sections: list[dict] = []
+    intro_start = 0
+    current_header: Optional[str] = None
+    current_start: Optional[int] = None
+
+    for idx, line in enumerate(lines):
+        if line.startswith("## "):
+            if current_header is None and idx > intro_start:
+                intro_lines = lines[intro_start:idx]
+                if any(part.strip() for part in intro_lines):
+                    sections.append({
+                        "header": "Introduction",
+                        "content": "\n".join(intro_lines).strip(),
+                        "start_line": body_start_line + intro_start,
+                        "end_line": body_start_line + idx - 1,
+                    })
+            elif current_header is not None and current_start is not None:
+                section_lines = lines[current_start:idx]
+                sections.append({
+                    "header": current_header,
+                    "content": "\n".join(section_lines[1:]).strip(),
+                    "start_line": body_start_line + current_start,
+                    "end_line": body_start_line + idx - 1,
+                })
+            current_header = line[3:].strip()
+            current_start = idx
+
+    if current_header is None:
+        if any(part.strip() for part in lines):
+            sections.append({
+                "header": "Introduction",
+                "content": "\n".join(lines).strip(),
+                "start_line": body_start_line,
+                "end_line": body_start_line + len(lines) - 1,
+            })
+    elif current_start is not None:
+        section_lines = lines[current_start:]
+        sections.append({
+            "header": current_header,
+            "content": "\n".join(section_lines[1:]).strip(),
+            "start_line": body_start_line + current_start,
+            "end_line": body_start_line + len(lines) - 1,
+        })
+
+    return sections
 
 
 def chunk_research_doc(path: Path, max_chunk_chars: int = 2000) -> list[dict]:
@@ -46,7 +106,7 @@ def chunk_research_doc(path: Path, max_chunk_chars: int = 2000) -> list[dict]:
     if not content.strip():
         return []
 
-    meta, body = parse_frontmatter(content)
+    meta, body, body_start_line = parse_frontmatter(content)
     title = meta.get("title", path.stem.replace("-", " ").title())
     domain = meta.get("domain", "")
     if isinstance(domain, list):
@@ -80,32 +140,21 @@ def chunk_research_doc(path: Path, max_chunk_chars: int = 2000) -> list[dict]:
     except (ValueError, IndexError):
         pass
 
-    # Split body into H2 sections
-    h2_pattern = re.compile(r'^## ', re.MULTILINE)
-    h2_splits = h2_pattern.split(body)
-    h2_headers = h2_pattern.findall(body)
-
-    sections = []
-    # First section (before any H2) - often TL;DR or intro
-    if h2_splits[0].strip():
-        sections.append(("Introduction", h2_splits[0].strip()))
-
-    # Remaining H2 sections
-    for i, section_body in enumerate(h2_splits[1:]):
-        lines = section_body.split("\n", 1)
-        header = lines[0].strip()
-        content_text = lines[1].strip() if len(lines) > 1 else ""
-        sections.append((header, content_text))
+    sections = _build_sections(body, body_start_line)
 
     chunks = []
     chunk_counter = 0
 
-    for section_header, section_content in sections:
+    for section in sections:
+        section_header = section["header"]
+        section_content = section["content"]
+        section_start_line = section["start_line"]
+        section_end_line = section["end_line"]
         full_section = f"## {section_header}\n\n{section_content}" if section_header != "Introduction" else section_content
 
         if len(full_section) <= max_chunk_chars:
             # Section fits in one chunk
-            if len(full_section.strip()) < 100:
+            if _count_nonempty_lines(full_section) < 2 or len(full_section.strip()) < 100:
                 continue  # too small, skip
             chunk_text = meta_prefix + f"Section: {section_header}\n\n" + section_content
             chunks.append(_make_chunk(
@@ -118,16 +167,20 @@ def chunk_research_doc(path: Path, max_chunk_chars: int = 2000) -> list[dict]:
                 priority=priority,
                 techniques=techniques,
                 source_file=rel_path,
+                start_line=section_start_line,
+                end_line=section_end_line,
             ))
             chunk_counter += 1
         else:
             # Section too large, split on H3
-            h3_pattern = re.compile(r'^### ', re.MULTILINE)
-            h3_splits = h3_pattern.split(section_content)
+            section_lines = section_content.splitlines()
+            h3_indices = [idx for idx, line in enumerate(section_lines) if line.startswith("### ")]
 
             # Content before first H3 in this section
-            if h3_splits[0].strip() and len(h3_splits[0].strip()) >= 100:
-                chunk_text = meta_prefix + f"Section: {section_header}\n\n" + h3_splits[0].strip()
+            pre_h3_end = h3_indices[0] - 1 if h3_indices else len(section_lines) - 1
+            pre_h3_text = "\n".join(section_lines[: pre_h3_end + 1]).strip()
+            if pre_h3_text and len(pre_h3_text) >= 100:
+                chunk_text = meta_prefix + f"Section: {section_header}\n\n" + pre_h3_text
                 chunks.append(_make_chunk(
                     chunk_id=f"{rel_path}:c{chunk_counter}",
                     text=chunk_text[:max_chunk_chars + len(meta_prefix)],
@@ -138,14 +191,17 @@ def chunk_research_doc(path: Path, max_chunk_chars: int = 2000) -> list[dict]:
                     priority=priority,
                     techniques=techniques,
                     source_file=rel_path,
+                    start_line=section_start_line,
+                    end_line=section_start_line + pre_h3_end,
                 ))
                 chunk_counter += 1
 
             # H3 sub-sections
-            for sub_body in h3_splits[1:]:
-                sub_lines = sub_body.split("\n", 1)
-                sub_header = sub_lines[0].strip()
-                sub_content = sub_lines[1].strip() if len(sub_lines) > 1 else ""
+            for idx, start_idx in enumerate(h3_indices):
+                next_idx = h3_indices[idx + 1] if idx + 1 < len(h3_indices) else len(section_lines)
+                sub_lines = section_lines[start_idx:next_idx]
+                sub_header = sub_lines[0][4:].strip() if sub_lines else ""
+                sub_content = "\n".join(sub_lines[1:]).strip()
 
                 if len(sub_content) < 100:
                     continue
@@ -162,6 +218,8 @@ def chunk_research_doc(path: Path, max_chunk_chars: int = 2000) -> list[dict]:
                     priority=priority,
                     techniques=techniques,
                     source_file=rel_path,
+                    start_line=section_start_line + start_idx,
+                    end_line=section_start_line + next_idx - 1,
                 ))
                 chunk_counter += 1
 
@@ -170,10 +228,13 @@ def chunk_research_doc(path: Path, max_chunk_chars: int = 2000) -> list[dict]:
 
 def _make_chunk(chunk_id: str, text: str, title: str, section: str,
                 domain: str, subjects: str, priority: str,
-                techniques: str, source_file: str) -> dict:
+                techniques: str, source_file: str,
+                start_line: int, end_line: int) -> dict:
     return {
         "id": chunk_id,
         "text": text,
+        "start_line": start_line,
+        "end_line": end_line,
         "metadata": {
             "title": title,
             "section": section,

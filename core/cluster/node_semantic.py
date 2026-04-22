@@ -168,12 +168,12 @@ def search_similar_plans(query: str, project: str = None, limit: int = 3) -> lis
         search_query = table.search(query_embedding).metric("cosine").limit(limit * 2)
         if project:
             search_query = search_query.where(f"project = '{project}'")
-        results = search_query.to_pandas()
+        results = _result_rows(search_query)
     except Exception:
         return []
 
     hits = []
-    for _, row in results.iterrows():
+    for row in results:
         distance = row.get("_distance", 1.0)
         hits.append({
             "plan_id": row.get("id", ""),
@@ -227,10 +227,22 @@ def _get_or_create_research_table(sample_dim: int):
         pa.field("priority", pa.string()),
         pa.field("techniques", pa.string()),
         pa.field("source_file", pa.string()),
+        pa.field("start_line", pa.int32()),
+        pa.field("end_line", pa.int32()),
         pa.field("vector", pa.list_(pa.float32(), sample_dim)),
     ])
     _research_table = db.create_table("research_library", schema=schema, mode="overwrite")
     return _research_table
+
+
+def _result_rows(query_builder) -> list[dict]:
+    """Return LanceDB rows without requiring pandas in the runtime."""
+    if hasattr(query_builder, "to_list"):
+        return query_builder.to_list()
+    if hasattr(query_builder, "to_pandas"):
+        df = query_builder.to_pandas()
+        return df.to_dict(orient="records")
+    return []
 
 
 def run_research_index():
@@ -310,6 +322,8 @@ def run_research_index():
                             "priority": meta.get("priority", ""),
                             "techniques": meta.get("techniques", ""),
                             "source_file": meta.get("source_file", ""),
+                            "start_line": int(c.get("start_line", 0) or 0),
+                            "end_line": int(c.get("end_line", 0) or 0),
                             "vector": embeddings[j],
                         })
                 except Exception as e:
@@ -372,13 +386,13 @@ def search_research(query: str, domain: str = None, limit: int = 5) -> list[dict
         search_query = table.search(query_embedding).metric("cosine").limit(limit * 2)
         if domain:
             search_query = search_query.where(f"domain LIKE '%{domain}%'")
-        results = search_query.to_pandas()
+        results = _result_rows(search_query)
     except Exception:
         return []
 
     hits = []
     seen_sections = set()
-    for _, row in results.iterrows():
+    for row in results:
         section_key = f"{row.get('source_file', '')}:{row.get('section', '')}"
         if section_key in seen_sections:
             continue
@@ -864,14 +878,14 @@ async def search(req: SearchRequest):
         search_query = table.search(query_embedding).metric("cosine").limit(req.n_results * 2)
         if req.repo:
             search_query = search_query.where(f"repo = '{req.repo}'")
-        results = search_query.to_pandas()
+        results = _result_rows(search_query)
     except Exception as e:
         print(f"Search error: {e}")
         return {"query": req.query, "results": [], "error": str(e)}
 
     hits = []
     seen_files = set()
-    for _, row in results.iterrows():
+    for row in results:
         file_key = f"{row.get('repo', '')}/{row.get('file', '')}"
         # Deduplicate by file — show best chunk per file
         if file_key in seen_files:
@@ -913,7 +927,7 @@ async def impact(req: ImpactRequest):
     query_embedding = embedder.encode([query]).tolist()[0]
 
     try:
-        results = table.search(query_embedding).metric("cosine").limit(50).to_pandas()
+        results = _result_rows(table.search(query_embedding).metric("cosine").limit(50))
     except Exception:
         results = None
 
@@ -921,7 +935,7 @@ async def impact(req: ImpactRequest):
     seen_files = set()
 
     if results is not None:
-        for _, row in results.iterrows():
+        for row in results:
             doc = str(row.get("text", ""))
             file_key = f"{row.get('repo', '')}/{row.get('file', '')}"
 
@@ -942,11 +956,11 @@ async def impact(req: ImpactRequest):
 
     # Also do a direct keyword search in LanceDB (hybrid)
     try:
-        keyword_results = table.search().where(
+        keyword_results = _result_rows(table.search().where(
             f"text LIKE '%{filename}%'"
-        ).limit(30).to_pandas()
+        ).limit(30))
 
-        for _, row in keyword_results.iterrows():
+        for row in keyword_results:
             file_key = f"{row.get('repo', '')}/{row.get('file', '')}"
             if file_key not in seen_files:
                 seen_files.add(file_key)
@@ -1223,13 +1237,13 @@ async def research_vsearch(req: Request):
         search_query = table.search(vector).metric("cosine").limit(limit * 2)
         if domain:
             search_query = search_query.where(f"domain LIKE '%{domain}%'")
-        results = search_query.to_pandas()
+        results = _result_rows(search_query)
     except Exception:
         return {"results": [], "count": 0}
 
     hits = []
     seen = set()
-    for _, row in results.iterrows():
+    for row in results:
         key = f"{row.get('source_file', '')}:{row.get('section', '')}"
         if key in seen:
             continue

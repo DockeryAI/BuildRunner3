@@ -33,6 +33,33 @@ EMBEDDING_MODEL = os.environ.get(
 EMBEDDING_DIM = int(os.environ.get("EMBEDDING_DIM", "384"))
 
 
+def _resolve_cached_sentence_transformer(model_name: str) -> str:
+    """Prefer a local HuggingFace snapshot path when it exists.
+
+    This keeps Jimmy offline: `SentenceTransformer(<snapshot-dir>)` loads from
+    disk directly instead of attempting network metadata calls for the model id.
+    Non-default model ids fall through untouched.
+    """
+    if Path(model_name).is_absolute():
+        return model_name
+    if model_name != "sentence-transformers/all-MiniLM-L6-v2":
+        return model_name
+
+    hub_root = Path.home() / ".cache" / "huggingface" / "hub"
+    model_root = hub_root / "models--sentence-transformers--all-MiniLM-L6-v2"
+    ref_path = model_root / "refs" / "main"
+    if ref_path.is_file():
+        snapshot = (model_root / "snapshots" / ref_path.read_text().strip())
+        if snapshot.is_dir():
+            return str(snapshot)
+    snapshots_dir = model_root / "snapshots"
+    if snapshots_dir.is_dir():
+        for candidate in sorted(snapshots_dir.iterdir()):
+            if candidate.is_dir():
+                return str(candidate)
+    return model_name
+
+
 def get_lancedb_uri() -> str:
     """Return the canonical LanceDB URI for this host.
 
@@ -50,7 +77,7 @@ def get_lancedb_uri() -> str:
 
 
 def get_embedding_model() -> str:
-    return EMBEDDING_MODEL
+    return _resolve_cached_sentence_transformer(EMBEDDING_MODEL)
 
 
 def get_embedding_dim() -> int:
