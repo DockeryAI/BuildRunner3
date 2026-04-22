@@ -79,7 +79,7 @@ Upgrade the `/research` skill from single-model (Claude Sonnet 4.6 only) to a tr
 
 ### Phase 2: Multi-model parallel sub-agent dispatch in `/research` Step 3.5
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.claude/commands/research.md` (MODIFY — Step 3.5 only)
