@@ -860,3 +860,102 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-22T00:13:45.280138Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new sliders persistence path can silently drop edits for projects that do not already have a `design_research` row.' round=1
 [2026-04-22T00:13:48.106080Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=2 upheld=2 model=claude-opus-4-7 effort=xhigh duration_s=39.8 rationale='The saveAakerSliders update-without-upsert defect is a confirmed silent data-loss path for any project lacking a pre-existing design_research row — both reviewers identified it and the rebuttal record'
 [2026-04-22T00:13:48.201103Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T00:14:13.510979Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=7 upheld=7 model=claude-opus-4-7 effort=xhigh duration_s=33.5 rationale='Multiple independently-identified blockers exist: missing SlidersScreen and aakerFontBridge files cause build/typecheck failures, the redesign intake route/stage desync bypasses the new review step, a'
+[2026-04-22T00:14:13.570472Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T00:14:33.779905Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T00:14:35.627395Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-22T00:14:46.612449Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-22T00:14:57.100521Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T00:14:58.882035Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=7 upheld=7 model=claude-opus-4-7 effort=xhigh duration_s=25.0 rationale="Codex's blocker finding is substantiated by the evidence: a plain `update` with `.eq('project_id', projectId)` is a silent no-op when no matching row exists, and the codebase's own `if (!profile.recor"
+[2026-04-22T00:14:58.894353Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T00:15:00.694916Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=2 upheld=2 model=claude-opus-4-7 effort=xhigh duration_s=24.4 rationale='The letterSpacing unit regression is a confirmed production defect: React serializes bare numeric `letterSpacing` values as pixels, so the slider-driven typography hints render as ~0px and the entire '
+[2026-04-22T00:15:00.810419Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T00:15:27.958020Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T00:15:30.247599Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=2 upheld=2 model=claude-opus-4-7 effort=xhigh duration_s=42.9 rationale='Finding #2 (missing !hydrated guard on Continue) is a genuine data-corruption blocker: clicking before useDesignProfile resolves writes DEFAULT_AAKER_SLIDERS over previously-persisted operator values.'
+[2026-04-22T00:15:30.387448Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T00:16:01.155980Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T00:16:11.666810Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=1 upheld=1 model=claude-opus-4-7 effort=xhigh duration_s=42.8 rationale="React's inline-style serializer appends `px` to numeric values for any property not on its unitless whitelist, and `letterSpacing` is not on that list. A numeric `-0.015` therefore renders as `-0.015p"
+[2026-04-22T00:16:11.795977Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T00:16:38.931672Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T00:16:51.272554Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T00:17:09.142874Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=APPROVED findings=1 upheld=0 model=claude-opus-4-7 effort=xhigh duration_s=131.3 rationale='The sole disputed finding claims `tokens.h1Size` may be missing from the DesignTokens interface, causing a TypeScript build break or NaN-valued CSS. Direct inspection of src/screens/wizard/axisToToken'
+[2026-04-22T00:17:09.317538Z] THREE_WAY_REVIEW arbiter_ruling verdict=APPROVED round=1
+[2026-04-22T00:17:54.794992Z] THREE_WAY_REVIEW consensus_pass round=1 findings=7 consensus_blockers=0
+[2026-04-22T00:18:03.029430Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T00:18:07.083773Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T00:18:18.865145Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T00:18:35.672695Z] THREE_WAY_REVIEW consensus_pass round=1 findings=6 consensus_blockers=0
+[2026-04-22T00:18:47.002658Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=8 upheld=8 model=claude-opus-4-7 effort=xhigh duration_s=28.1 rationale="Codex's evidence on the silent no-op save is concrete and code-level: an unconditional `update().eq(...)` against `design_research` will silently affect zero rows when no row exists, and the calling s"
+[2026-04-22T00:18:47.013549Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T00:19:41.178531Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='`useDesignProfile` now selects a `research_kinds` column that is not present in the current schema and is not the Phase ' round=1
+[2026-04-22T00:20:12.708350Z] THREE_WAY_REVIEW round_start round=1 artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' commit=f0f596f three_way=True
+[2026-04-22T00:20:54.771061Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=claude finding='research_kinds JSONB column queried in Phase 3 but no migration ever creates it. Migration 019 (Phase 4) adds row-per-ki' round=1
+[2026-04-22T00:21:30.742006Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='`useDesignProfile` now selects a `research_kinds` field that is not part of the shipped `design_research` schema for Pha' round=1
+[2026-04-22T00:22:18.333330Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='`useDesignProfile` now queries a `research_kinds` column that this patch never adds and that does not match the Phase 4 ' round=1
+[2026-04-22T00:23:33.764640Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=2
+[2026-04-22T00:24:12.610880Z] ARBITER_RULING artifact='diff --git a/.buildrunner/builds/BUILD_pipeline-ux-v2.md b/.buildrunner/builds/B' round=1 verdict=BLOCKED findings=2 upheld=2 model=claude-opus-4-7 effort=xhigh duration_s=38.4 rationale='Both disputed Codex findings are real, high-impact defects. Selecting a nonexistent `research_kinds` column will cause PostgREST to return a 42703 error (not null) on every read path through `useDesig'
+[2026-04-22T00:24:12.662378Z] THREE_WAY_REVIEW arbiter_ruling verdict=BLOCKED round=1
+[2026-04-22T01:15:00Z] [BUILD_CLUSTER_ACTIVATION_FIXES] Jimmy Context API (:4500) service start remains out of scope from this machine; requires SSH to Jimmy (10.0.1.106) and manual service start per user instruction.
+[2026-04-22T01:15:01Z] [BUILD_CLUSTER_ACTIVATION_FIXES] Walter node offline remains out of scope from this machine; requires Walter hardware availability per user instruction.
+[2026-04-22T01:15:02Z] [BUILD_CLUSTER_ACTIVATION_FIXES] Live home-directory deploy targets for Phase 5/6 (`~/Library/LaunchAgents`, `~/.buildrunner/dashboard`) are verified broken but not writable from the current workspace sandbox; repo-side fixes were completed and live remediation steps are captured in `./.buildrunner/cluster-activation-fixes-report.md`.
+[2026-04-22T00:25:35.151801Z] THREE_WAY_REVIEW structural_escalation structural_blocker reviewer=codex finding='The new research orchestration is built around a `research_kinds` JSON blob instead of the row-per-kind schema required ' round=1
+[2026-04-22T00:26:20.004409Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-22T00:26:20.004662Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:20.005711Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=x three_way=False
+[2026-04-22T00:26:20.005786Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-22T00:26:20.009799Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-22T00:26:20.009893Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:34.674385Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-22T00:26:34.674584Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:34.675520Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=x three_way=False
+[2026-04-22T00:26:34.675599Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-22T00:26:34.678715Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-22T00:26:34.678791Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:34.680234Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=True
+[2026-04-22T00:26:34.680300Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:34.684485Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=abc three_way=True
+[2026-04-22T00:26:34.684569Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T00:26:34.684610Z] THREE_WAY_REVIEW arbiter_ruling verdict=APPROVED round=1
+[2026-04-22T00:26:34.686241Z] THREE_WAY_REVIEW round_start round=2 artifact='d' commit=abc three_way=True
+[2026-04-22T00:26:34.686306Z] THREE_WAY_REVIEW round_cap_escalation round=2 max_rounds=1
+[2026-04-22T00:26:34.687933Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=deadbeef three_way=True
+[2026-04-22T00:26:34.687992Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:38.231387Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-22T00:26:38.231561Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:38.232362Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=x three_way=False
+[2026-04-22T00:26:38.232415Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-22T00:26:38.235343Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-22T00:26:38.235457Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:38.237238Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=True
+[2026-04-22T00:26:38.237428Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:26:38.242021Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=abc three_way=True
+[2026-04-22T00:26:38.242105Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T00:26:38.242144Z] THREE_WAY_REVIEW arbiter_ruling verdict=APPROVED round=1
+[2026-04-22T00:26:38.243473Z] THREE_WAY_REVIEW round_start round=2 artifact='d' commit=abc three_way=True
+[2026-04-22T00:26:38.243537Z] THREE_WAY_REVIEW round_cap_escalation round=2 max_rounds=1
+[2026-04-22T00:26:38.245078Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=deadbeef three_way=True
+[2026-04-22T00:26:38.245150Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:27:05.827658Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-22T00:27:05.827873Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:27:05.828846Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=x three_way=False
+[2026-04-22T00:27:05.828913Z] THREE_WAY_REVIEW consensus_pass round=1 findings=1 consensus_blockers=0
+[2026-04-22T00:27:05.832133Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=False
+[2026-04-22T00:27:05.832205Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:27:05.834345Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=abc123 three_way=True
+[2026-04-22T00:27:05.834423Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:27:05.837964Z] THREE_WAY_REVIEW round_start round=1 artifact='d' commit=abc three_way=True
+[2026-04-22T00:27:05.838039Z] THREE_WAY_REVIEW arbiter_invoked round=1 disagreements=1
+[2026-04-22T00:27:05.838079Z] THREE_WAY_REVIEW arbiter_ruling verdict=APPROVED round=1
+[2026-04-22T00:27:05.839781Z] THREE_WAY_REVIEW round_start round=2 artifact='d' commit=abc three_way=True
+[2026-04-22T00:27:05.839843Z] THREE_WAY_REVIEW round_cap_escalation round=2 max_rounds=1
+[2026-04-22T00:27:05.841415Z] THREE_WAY_REVIEW round_start round=1 artifact='diff text' commit=deadbeef three_way=True
+[2026-04-22T00:27:05.841492Z] THREE_WAY_REVIEW consensus_pass round=1 findings=2 consensus_blockers=0
+[2026-04-22T00:42:48Z] [FIX] Synced canonical Muddy→Jimmy research runtime files (node_semantic/context_bundle/retrieve/private_filter/lancedb_config/count-tokens + ops scripts) and replaced the stale Jimmy mirror that was missing lancedb_config/private_filter and still used mtime-only context selection.
+[2026-04-22T00:42:48Z] [FIX] Resolved offline embedder on Jimmy by copying the cached all-MiniLM-L6-v2 HuggingFace snapshot from Muddy, teaching lancedb_config.py to prefer the local snapshot path, and restarting br3-semantic with offline-safe env vars.
+[2026-04-22T00:42:48Z] [FIX] Rebuilt Jimmy research_library from /srv/jimmy/research-library after syncing the Muddy corpus; reindex now auto-detects Muddy/Jimmy paths, uses the canonical research chunker, stores start_line/end_line, and produced 6726 chunks from 231 docs.
+[2026-04-22T00:42:48Z] [FIX] Repointed research-search.sh to Jimmy POST /retrieve and extended jimmy-verify.sh with Check 6b so verification now proves real research retrieval instead of trusting /health alone.
+[2026-04-22T00:42:48Z] [FIX] Restored /context on Jimmy by syncing count-tokens.sh, installing offline tiktoken + cached cl100k_base data, and verifying the codex bundle path plus bge reranker health on the live service.
+[2026-04-22T00:42:48Z] [FIX] Repaired nightly-backup-health.sh to evaluate the latest backup run block, then ran a fresh successful backup (2026-04-22) so health now returns 0 against current reality instead of stale earlier rsync errors.
+[2026-04-22T00:42:48Z] [FIX] Removed the deprecated BR3_MULTI_MODEL_CONTEXT literal from active repo code so the active repo grep is now zero without touching the frozen build spec.
+2026-04-22T00:47:17Z cluster-activation-fix: phase-5 cluster-daemon plist fixed (/usr/local/bin/node → /opt/homebrew/bin/node); state=running, active count=1
+2026-04-22T00:47:17Z cluster-activation-fix: phase-6 feature-health dashboard deploy BLOCKED by architectural gap — ui/dashboard/ (FastAPI) vs ~/.buildrunner/dashboard/ (Node); needs cutover decision (A/B/C in fixes-report)
