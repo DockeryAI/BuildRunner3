@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-1 Complete — Phase 2 In Progress
+**Status:** Phases 1-2 Complete — Phase 3 In Progress
 **Deploy:** web — `npm run build` (framework-level skill; deploy target is N/A for the BR3 framework itself)
 **Source Plan File:** .buildrunner/plans/spec-ship-self-healing-prepush-plan.md
 **Source Plan SHA:** 9e725f1a38361e5dab7e42e1fab2fd40bbbb67ce3dd65277094e78e94c9cc118
@@ -69,7 +69,7 @@ role-matrix:
 
 ### Phase 2: Gate Orchestration (no healing yet)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/ship/gates/preflight.sh` (NEW)
@@ -87,12 +87,12 @@ role-matrix:
 
 **Deliverables:**
 
-- [ ] Each gate: exit 0=pass, 1=fail, 2=skip; single-line status output
-- [ ] Runner sequence: `[preflight, rebase, review, test, docs, log-scan, ship-commit, publish]`
-- [ ] Resume rule explicit: gate skipped only when `gates_passed[]` contains it AND `head_sha` unchanged AND `base_sha_at_review` still matches `origin/main`
-- [ ] Rollback runs on any non-zero exit: pops preflight stash if present; deletes orphan remote branch if publish partially completed
-- [ ] `--dry-run` prints gate sequence and planned actions without executing
-- [ ] Per-gate outcome logged to `.buildrunner/ship/run-log.jsonl`
+- [x] Each gate: exit 0=pass, 1=fail, 2=skip; single-line status output
+- [x] Runner sequence: `[preflight, rebase, review, test, docs, log-scan, ship-commit, publish]`
+- [x] Resume rule explicit: gate skipped only when `gates_passed[]` contains it AND `head_sha` unchanged AND `base_sha_at_review` still matches `origin/main`
+- [x] Rollback runs on any non-zero exit: pops preflight stash if present; deletes orphan remote branch if publish partially completed
+- [x] `--dry-run` prints gate sequence and planned actions without executing
+- [x] Per-gate outcome logged to `.buildrunner/ship/run-log.jsonl`
 
 **Success Criteria:** Happy path ships cleanly, PR opens, sentinel complete. Failure: rollback restores preflight stash, repo clean, no remote branch. Resume after local fix: head_sha advances → downstream gates re-run; preflight/rebase skipped only when base hasn't moved.
 
