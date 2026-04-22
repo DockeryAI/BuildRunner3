@@ -112,7 +112,7 @@ role_matrix:
 
 ### Phase 1: node_exporter Rollout (7 nodes)
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Bucket:** terminal-build
 **Codex model:** gpt-5.3-codex
 **Codex effort:** medium
@@ -147,7 +147,7 @@ role_matrix:
 
 ### Phase 2: Prometheus on Lockwood
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Bucket:** terminal-build
 **Codex model:** gpt-5.3-codex
 **Codex effort:** medium
