@@ -181,7 +181,7 @@ role_matrix:
 
 ### Phase 3: Dashboard Prometheus Client Module
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Bucket:** backend-build
 **Codex model:** gpt-5.4
 **Codex effort:** medium
@@ -220,7 +220,7 @@ role_matrix:
 
 ### Phase 4: Panel Data-Source Rewrites (Hybrid: Prometheus + Jimmy FastAPI)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Bucket:** backend-build
 **Codex model:** gpt-5.4
 **Codex effort:** high
