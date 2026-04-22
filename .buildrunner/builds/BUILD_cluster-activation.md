@@ -73,7 +73,7 @@ role_matrix:
       reviewers: [sonnet-4-6, codex-gpt-5.4]
       arbiter: opus-4-7
       assigned_node: muddy
-      context: [core/cluster, core/runtime, ui/dashboard]
+      context: [core/cluster, core/runtime, ~/.buildrunner/dashboard]
 ```
 
 ## Parallelization Matrix
@@ -333,9 +333,9 @@ role_matrix:
 - `scripts/br-emit-event.sh` (NEW)
 - `~/.buildrunner/scripts/codex-bridge.sh` (MODIFY — emit `context_bundle_served`)
 - `api/routes/dashboard_stream.py` (MODIFY — add `feature-health` WS topic)
-- `ui/dashboard/panels/feature-health.js` (NEW — 15 tiles)
-- `ui/dashboard/index.html` (MODIFY)
-- `ui/dashboard/app.js` (MODIFY)
+- `~/.buildrunner/dashboard/public/js/ws-cluster-feature-health.js` (NEW — 15 tiles)
+- `~/.buildrunner/dashboard/public/index.html` (MODIFY)
+- `~/.buildrunner/dashboard/events.mjs` (MODIFY)
 - `.buildrunner/runtime-shadow-metrics.md` (DELETE — orphaned)
 - `tests/telemetry/test_new_event_types.py` (NEW)
 - `tests/e2e/feature-health-panel.spec.ts` (NEW)
@@ -369,7 +369,7 @@ role_matrix:
 - [x] Emit `adversarial_review_ran` from `cross_model_review.py`
 - [x] Emit `cache_hit` from `cache_policy.py`
 - [x] Add `feature-health` WS topic to `dashboard_stream.py`
-- [x] Ship `ui/dashboard/panels/feature-health.js` with 15 tiles
+- [x] Ship `~/.buildrunner/dashboard/public/js/ws-cluster-feature-health.js` with 15 tiles
 - [x] Delete `.buildrunner/runtime-shadow-metrics.md`
 - [x] E2E: run phase, verify `runtime_dispatched` lands in panel within 5s
 
@@ -378,7 +378,7 @@ role_matrix:
 **Claude Review (mandatory before Phase 6 marked complete):**
 
 - Reviewer: `claude-opus-4-7` (Muddy) + `codex-gpt-5.4` (secondary)
-- Trigger: `/review --phase 6 --target "core/telemetry/event_schemas.py,core/runtime/runtime_registry.py,core/runtime/cache_policy.py,core/cluster/cross_model_review.py,scripts/br-emit-event.sh,~/.buildrunner/scripts/codex-bridge.sh,api/routes/dashboard_stream.py,ui/dashboard/panels/feature-health.js,ui/dashboard/index.html,ui/dashboard/app.js"`
+- Trigger: `/review --phase 6 --target "core/telemetry/event_schemas.py,core/runtime/runtime_registry.py,core/runtime/cache_policy.py,core/cluster/cross_model_review.py,scripts/br-emit-event.sh,~/.buildrunner/scripts/codex-bridge.sh,api/routes/dashboard_stream.py,~/.buildrunner/dashboard/public/js/ws-cluster-feature-health.js,~/.buildrunner/dashboard/public/index.html,~/.buildrunner/dashboard/events.mjs"`
 - Required findings: (1) emit wrappers never block host code path; (2) zero PII / full-prompt / full-diff leakage in metadata (string-literal scan <256 chars); (3) `telemetry.db` schema backward-compatible (no new columns, metadata JSON only); (4) all 15 tiles resolve to green/yellow/red — no "unknown" state; (5) WS topic respects existing `dashboard_stream.py` subscription contract; (6) `runtime-shadow-metrics.md` deletion does not break any documented workflow; (7) overlap with Phase 15 (cluster-max) observability is additive only — no duplicate emit sites.
 
 ---

@@ -16,6 +16,8 @@
 
 **Profile Management:** `br profile deactivate` | `br profile activate <name>` | `br profile list`
 
+**Research library: Jimmy only.** See global CLAUDE.md "Research Library — Jimmy Only".
+
 <!-- BUILDRUNNER_EXISTING_CODEBASE -->
 
 # Existing Codebase

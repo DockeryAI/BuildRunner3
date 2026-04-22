@@ -57,3 +57,18 @@ Thumbs.db
 
 # Local git backup directory — never commit
 .git.remote-backup/
+
+# BR3 runtime state dirs — session logs, dispatch artifacts, queues
+# These are generated per-session and must not pollute source history
+.buildrunner/codex-dispatch/
+.buildrunner/codex-sessions/
+.buildrunner/research-queue/
+.buildrunner/decisions.log.*
+.buildrunner/locks/
+.buildrunner/current-phase.json
+.buildrunner/orchestration.json
+.buildrunner/agents.json
+
+# Claude Code runtime lockfiles (not source)
+.claude/scheduled_tasks.lock
+

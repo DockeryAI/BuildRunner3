@@ -1,0 +1,259 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "review-20260422T140715Z",
+  "artifact_path": ".buildrunner/plans/spec-codex-draft-plan.md",
+  "plan_file": ".buildrunner/plans/spec-codex-draft-plan.md",
+  "plan_file_abs": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/spec-codex-draft-plan.md",
+  "plan_path_sha": "ed271176fecf9e66",
+  "mode": "plan",
+  "status": "blocked",
+  "pass": false,
+  "verdict": "ESCALATED",
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "arbiter_invoked": false,
+  "arbiter_ruling": null,
+  "merged_findings": [
+    {
+      "finding": "Phase 6 Task 6.5: 'Review is blocking on PASS; BLOCK \u2192 block proceeds' \u2014 BLOCK verdict causes the build to proceed, inverting the review gate's purpose",
+      "severity": "blocker",
+      "location": "Phase 6, Task 6.5",
+      "claim": "The phrase 'BLOCK \u2192 block proceeds' means a BLOCK verdict allows the build to continue, which negates the entire parallel-review system.",
+      "evidence": "Task 6.5 text verbatim: 'Review is blocking on PASS; BLOCK \u2192 block proceeds (per policy above, no user ask).'",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "core/cluster/metrics_schema.py listed as MODIFY in Phase 9 Task 9.1 but does not exist in the project file tree",
+      "severity": "blocker",
+      "location": "Phase 9, Task 9.1 / core/cluster/metrics_schema.py",
+      "claim": "The plan instructs modifying a file that has no entry in the project tree; Codex will either create it from scratch (wrong semantics) or fail.",
+      "evidence": "File tree scan shows no core/cluster/metrics_schema.py; plan states '- core/cluster/metrics_schema.py (MODIFY)'.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "api/routes/metrics.py listed as MODIFY in Phase 9 but does not exist in the project file tree",
+      "severity": "blocker",
+      "location": "Phase 9 / api/routes/metrics.py",
+      "claim": "The plan modifies a non-existent API route file; tree shows analytics.py, build.py, context.py etc. but no metrics.py.",
+      "evidence": "api/routes/ directory listing contains no metrics.py; plan states '- api/routes/metrics.py (MODIFY)'.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 8 Task 8.3 references core/cluster/cache_policy.py but the actual file is core/runtime/cache_policy.py",
+      "severity": "blocker",
+      "location": "Phase 8, Task 8.3 / core/cluster/cache_policy.py",
+      "claim": "Wrong module path means the cache-policy validator is written to the wrong location, leaving the real cache_policy.py unmodified.",
+      "evidence": "File tree shows core/runtime/cache_policy.py and core/runtime/__pycache__/cache_policy.cpython-314.pyc; no core/cluster/cache_policy.py exists.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 3 Task 3.3 targets Jimmy at 10.0.1.106:4500 but no node at that IP appears in the documented cluster topology",
+      "severity": "blocker",
+      "location": "Phase 3, Task 3.3",
+      "claim": "The context bundle fetch will fail at runtime because 10.0.1.106 is not a known cluster node; CLAUDE.md topology ends at 10.0.1.105 (Below).",
+      "evidence": "CLAUDE.md cluster table: Muddy=.100, Lockwood=.101, Walter=.102, Otis=.103, Lomax=.104, Below=.105. No .106 entry. Task 3.3: 'curl http://10.0.1.106:4500/context/codex'.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 6 Task 6.1 removes _run_rebuttal but run_three_way_review (line 1683) calls it internally; removing the callee without refactoring the caller will crash the three-way path",
+      "severity": "blocker",
+      "location": "core/cluster/cross_model_review.py, Phase 6 Task 6.1",
+      "claim": "Deleting _run_rebuttal while run_three_way_review still calls it produces a NameError at runtime on any three-way review invocation.",
+      "evidence": "Excerpt function list: '1276:def _run_rebuttal(merged_findings, artifact, config)' and '1683:def run_three_way_review(...)'. Task 6.1 says to remove 'rebuttal_round, retry, or escalate_to_user code paths' but does not explicitly refactor run_three_way_review.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 9 Task 9.5 creates ui/dashboard/routing_panel.tsx (React TSX) inside a vanilla JS dashboard that has no React build pipeline",
+      "severity": "blocker",
+      "location": "Phase 9, Task 9.5 / ui/dashboard/routing_panel.tsx",
+      "claim": "A TSX component cannot be loaded by a plain HTML/JS dashboard without a bundler; no build tooling is wired to ui/dashboard/.",
+      "evidence": "ui/dashboard/ contains app.js, panels/*.js, index.html \u2014 all vanilla JS. The React+Vite toolchain is in ui/ (ui/vite.config.ts, ui/src/). Phase 9 adds no bundler to ui/dashboard/.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 6 Task 6.2: arbiter Opus error defaults to BLOCK with no circuit breaker; an Anthropic API outage permanently halts all builds",
+      "severity": "warning",
+      "location": "Phase 6, Task 6.2 / core/cluster/arbiter_policy.py",
+      "claim": "No degradation path means a transient API error permanently blocks every diff review until the API recovers, with no operator override short of the escape hatch.",
+      "evidence": "Task 6.2 Constraints: 'No retries on arbiter \u2014 if Opus errors, default to BLOCK (fail-safe).' No time-boxed retry, no fallback pass-through, no alarm.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 2 Task 2.1 Done-When verification command uses Python open() with a literal '$HOME' string that is not shell-expanded",
+      "severity": "warning",
+      "location": "Phase 2, Task 2.1",
+      "claim": "The Done-When command passes the string '$HOME/...' directly to Python's open(), which does not expand environment variables, so the file open will raise FileNotFoundError and the test always fails.",
+      "evidence": "Done-When: `python -c \"import yaml; d=yaml.safe_load(open('~/.buildrunner/scripts/classify-prompt-heuristics.yaml'.replace('~', '$HOME')))\"` \u2014 Python str.replace produces the literal path '$HOME/...' not the expanded path.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 5 Task 5.1 fail-open on missing route file creates a race where hook errors in Phase 4 silently allow all writes, defeating enforcement",
+      "severity": "warning",
+      "location": "Phase 5, Task 5.1 / pre-tool-use-gate.sh",
+      "claim": "If Phase 4's hook fails to write the route file (crash, permission error, classifier exit non-zero), Phase 5 fails open on every subsequent Edit/Write call \u2014 the gate never fires.",
+      "evidence": "Task 5.1: 'If route file missing (first-prompt race) \u2192 fail-open with exit 0.' Phase 4 Task 4.5 writes to hook-errors.log but emits no alarm; no re-trigger mechanism exists.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 3 Tasks 3.5 and 3.6 specify contradictory behavior when Done-When cannot be inferred: Task 3.5 says ask the user; Task 3.6 says exit 10",
+      "severity": "warning",
+      "location": "Phase 3, Tasks 3.5 and 3.6",
+      "claim": "Two tasks specify different terminal behaviors for the same condition; the implementation will resolve one arbitrarily, leaving one spec requirement unmet.",
+      "evidence": "Task 3.5: 'If test file cannot be located, ask the user via the hook emitting a clarifying block.' Task 3.6: 'Exit 10 if Done-When cannot be inferred.'",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 1 Task 1.6 calls _dispatch-core.sh which is assumed to exist but is not in the project file tree and has no creation task",
+      "severity": "warning",
+      "location": "Phase 1, Task 1.6 / ~/.buildrunner/scripts/_dispatch-core.sh",
+      "claim": "The validator wiring target may not exist; if _dispatch-core.sh is absent, Task 1.6 has no file to modify and the preflight integration silently does nothing.",
+      "evidence": "File tree contains no _dispatch-core.sh entry. Task 1.6: 'goals: ~/.buildrunner/scripts/_dispatch-core.sh calls validate-role-matrix.sh before any dispatch.' No prior task creates it.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 4 Task 4.2 writes the route file to /tmp/br3-route-$SESSION_ID.json with a predictable name, exposing a symlink attack surface",
+      "severity": "warning",
+      "location": "Phase 4, Task 4.2",
+      "claim": "A predictable tmp path with a guessable SESSION_ID allows another local process to pre-create a symlink and redirect the route file write to an arbitrary path.",
+      "evidence": "Task 4.2: 'write result JSON to /tmp/br3-route-$SESSION_ID.json ... File mode 0600.' No mktemp or random suffix specified.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 3 Task 3.1 specifies classifier JSON arrives on fd 3 while the Done-When example passes it via --route CLI argument; the interface is ambiguous",
+      "severity": "warning",
+      "location": "Phase 3, Task 3.1",
+      "claim": "Builder will implement one interface; callers in Phase 4 will use the other, causing the injector invocation to silently receive no route data.",
+      "evidence": "Task 3.1 Goal: 'Script ingests classifier JSON on stdin fd 3.' Done-When: 'echo \"fix X\" | ~/.buildrunner/scripts/inject-four-element.sh --route '{'\"bucket\":\"backend-build\",...}''. Two different call conventions for the same input.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 7 Task 7.5 places the /spec-codex deprecation notice inside the skill body 'not in output the user sees', making it invisible to users who need to migrate",
+      "severity": "note",
+      "location": "Phase 7, Task 7.5",
+      "claim": "A deprecation notice that users cannot see provides no migration signal; the alias will remain in use indefinitely, complicating the eventual removal.",
+      "evidence": "Task 7.5 Constraints: 'Banner appears in skill body, not in output the user sees (keeps skill output clean).'",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 10 Task 10.3 flip-enforcement.sh checks miss rate and test pass but does not verify the 7-day watch period has elapsed",
+      "severity": "note",
+      "location": "Phase 10, Task 10.3",
+      "claim": "An operator can run flip-enforcement.sh on day 1, skipping the watch period the plan uses as a safety gate before enforcement.",
+      "evidence": "Task 10.3 checks: 'validates rollout state = watch-only AND miss rate \u226410% AND Phase 5 tests green.' No elapsed-time check against rollout-state.yaml started_at.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 2 Task 2.3 Haiku fallback caps response at max_tokens=50, which may be insufficient for structured JSON output with any model preamble",
+      "severity": "note",
+      "location": "Phase 2, Task 2.3",
+      "claim": "A JSON response like {\"bucket\": \"terminal-build\"} is ~10 tokens, but any model preamble or whitespace before the JSON will exhaust the budget and truncate the response.",
+      "evidence": "Task 2.3 Constraints: 'Haiku call capped at 200ms; timeout \u2192 fall back to heuristic default.' Context: 'max_tokens=50, structured output {bucket: enum}.' No instruction to suppress preamble.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Non-Negotiable Rule #1 says Opus 'arbitrates and commits' but Phase 6 Task 6.2 arbiter-error path BLOCKs without any commit, leaving the rule partially unimplementable",
+      "severity": "note",
+      "location": "Non-Negotiable Rules, Rule #1 / Phase 6 Task 6.2",
+      "claim": "The error branch produces a BLOCK verdict with no arbiter reasoning logged, contradicting the requirement that Opus always commits a final decision.",
+      "evidence": "Rule #1: 'Opus 4.7 arbitrates on disagreement and commits.' Task 6.2: 'if Opus errors, default to BLOCK (fail-safe)' \u2014 no Opus involvement, no commit.",
+      "confidence": "medium",
+      "fix_type": "fixable"
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Phase 6 Task 6.5: 'Review is blocking on PASS; BLOCK \u2192 block proceeds' \u2014 BLOCK verdict causes the build to proceed, inverting the review gate's purpose",
+      "severity": "blocker",
+      "location": "Phase 6, Task 6.5",
+      "claim": "The phrase 'BLOCK \u2192 block proceeds' means a BLOCK verdict allows the build to continue, which negates the entire parallel-review system.",
+      "evidence": "Task 6.5 text verbatim: 'Review is blocking on PASS; BLOCK \u2192 block proceeds (per policy above, no user ask).'",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "core/cluster/metrics_schema.py listed as MODIFY in Phase 9 Task 9.1 but does not exist in the project file tree",
+      "severity": "blocker",
+      "location": "Phase 9, Task 9.1 / core/cluster/metrics_schema.py",
+      "claim": "The plan instructs modifying a file that has no entry in the project tree; Codex will either create it from scratch (wrong semantics) or fail.",
+      "evidence": "File tree scan shows no core/cluster/metrics_schema.py; plan states '- core/cluster/metrics_schema.py (MODIFY)'.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "api/routes/metrics.py listed as MODIFY in Phase 9 but does not exist in the project file tree",
+      "severity": "blocker",
+      "location": "Phase 9 / api/routes/metrics.py",
+      "claim": "The plan modifies a non-existent API route file; tree shows analytics.py, build.py, context.py etc. but no metrics.py.",
+      "evidence": "api/routes/ directory listing contains no metrics.py; plan states '- api/routes/metrics.py (MODIFY)'.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 8 Task 8.3 references core/cluster/cache_policy.py but the actual file is core/runtime/cache_policy.py",
+      "severity": "blocker",
+      "location": "Phase 8, Task 8.3 / core/cluster/cache_policy.py",
+      "claim": "Wrong module path means the cache-policy validator is written to the wrong location, leaving the real cache_policy.py unmodified.",
+      "evidence": "File tree shows core/runtime/cache_policy.py and core/runtime/__pycache__/cache_policy.cpython-314.pyc; no core/cluster/cache_policy.py exists.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 3 Task 3.3 targets Jimmy at 10.0.1.106:4500 but no node at that IP appears in the documented cluster topology",
+      "severity": "blocker",
+      "location": "Phase 3, Task 3.3",
+      "claim": "The context bundle fetch will fail at runtime because 10.0.1.106 is not a known cluster node; CLAUDE.md topology ends at 10.0.1.105 (Below).",
+      "evidence": "CLAUDE.md cluster table: Muddy=.100, Lockwood=.101, Walter=.102, Otis=.103, Lomax=.104, Below=.105. No .106 entry. Task 3.3: 'curl http://10.0.1.106:4500/context/codex'.",
+      "confidence": "high",
+      "fix_type": "fixable"
+    },
+    {
+      "finding": "Phase 6 Task 6.1 removes _run_rebuttal but run_three_way_review (line 1683) calls it internally; removing the callee without refactoring the caller will crash the three-way path",
+      "severity": "blocker",
+      "location": "core/cluster/cross_model_review.py, Phase 6 Task 6.1",
+      "claim": "Deleting _run_rebuttal while run_three_way_review still calls it produces a NameError at runtime on any three-way review invocation.",
+      "evidence": "Excerpt function list: '1276:def _run_rebuttal(merged_findings, artifact, config)' and '1683:def run_three_way_review(...)'. Task 6.1 says to remove 'rebuttal_round, retry, or escalate_to_user code paths' but does not explicitly refactor run_three_way_review.",
+      "confidence": "high",
+      "fix_type": "structural"
+    },
+    {
+      "finding": "Phase 9 Task 9.5 creates ui/dashboard/routing_panel.tsx (React TSX) inside a vanilla JS dashboard that has no React build pipeline",
+      "severity": "blocker",
+      "location": "Phase 9, Task 9.5 / ui/dashboard/routing_panel.tsx",
+      "claim": "A TSX component cannot be loaded by a plain HTML/JS dashboard without a bundler; no build tooling is wired to ui/dashboard/.",
+      "evidence": "ui/dashboard/ contains app.js, panels/*.js, index.html \u2014 all vanilla JS. The React+Vite toolchain is in ui/ (ui/vite.config.ts, ui/src/). Phase 9 adds no bundler to ui/dashboard/.",
+      "confidence": "high",
+      "fix_type": "structural"
+    }
+  ],
+  "generated_at": "2026-04-22T14:07:15.863373Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 1,
+  "escalated": true,
+  "phase_number": 4
+}

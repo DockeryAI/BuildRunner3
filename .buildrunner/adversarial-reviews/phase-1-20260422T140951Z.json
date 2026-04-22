@@ -1,0 +1,652 @@
+{
+  "schema_version": "br3.adversarial_review.v1",
+  "task_id": "review-20260422T140951Z",
+  "artifact_path": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/phase-16-plan.md",
+  "plan_file": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/phase-16-plan.md",
+  "plan_file_abs": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/phase-16-plan.md",
+  "plan_path_sha": "08b5f152ea52656c",
+  "mode": "plan",
+  "status": "blocked",
+  "pass": false,
+  "verdict": "BLOCKED",
+  "reviewers": [
+    {
+      "runtime": "claude",
+      "role": "authoritative_reviewer"
+    },
+    {
+      "runtime": "codex",
+      "role": "secondary_reviewer"
+    }
+  ],
+  "arbiter_invoked": true,
+  "arbiter_ruling": {
+    "verdict": "BLOCKED",
+    "rationale": "Multiple independent blockers are verified against the actual codebase: the Task 16.6 jq pipeline cannot parse SSE-framed events whose inner tiles live in a stringified .data field; Task 16.3's mandated status:\"unknown\" fallback directly contradicts the feature-health panel invariant (green|yellow|red only) and Task 16.4's own zero-unknown Done-When; VALID_TYPES in events.mjs does not include the five new hyphen-notation cluster types; Task 16.1's grep-based cleanup does not eliminate the actual collision vector (app = create_app(role=\"dashboard\") remains); and tests/api/ does not exist in the tree so the Task 16.1 pytest gate cannot run. Codex's path-existence objections are false positives \u2014 ~/.buildrunner/dashboard/ resolves to a real directory (symlinked from the project tree) containing package.json, ws-builds.js/ws-intel.js/ws-tests.js, and lockwood.mjs/walter.mjs/lomax.mjs \u2014 but its defect findings on Task 16.1, tests/api/, jq pipeline, and the unknown contract are valid.",
+    "findings": [
+      {
+        "finding": "Task 16.6 Done-When jq pipeline is syntactically broken and will fail even when feature-health is working correctly",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "Verified against events.mjs:449 \u2014 SSE frame is literally `id: <n>\\ndata: <json>\\n\\n`, so grep'd lines begin with the `data: ` prefix that jq cannot parse; and the event envelope is `{id,type,source,data:<stringified JSON>,created_at}`, so `.tiles[]` has no matching path (tiles would live under `.data | fromjson | .tiles[]`). The Done-When will always fail.",
+        "upheld": true
+      },
+      {
+        "finding": "VALID_TYPES gate in events.mjs blocks all five new cluster event types; plan does not include adding them",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "Verified at events.mjs:352\u2013370 and :822. The plan says 'extend events.mjs with periodic collectors that broadcast' but does not specify whether emits go through the POST /api/events gate (which enforces VALID_TYPES and rejects the five new hyphen-notation types) or directly via broadcastEvent() (which expects a DB-persisted event.id). Either path requires plan-level work not listed as a deliverable. Additionally, `node-health` collides semantically with the existing dot-notation `node.health`.",
+        "upheld": true
+      },
+      {
+        "finding": "Task 16.3 mandates `status: 'unknown'` on missing sources, but the feature-health panel invariant explicitly forbids 'unknown' and Task 16.4 Done-When requires zero 'unknown' tiles",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "Verified: feature-health.js line 4 declares 'Tile status: green | yellow | red \u2014 never \"unknown\"'; _collect_feature_health in dashboard_stream.py emits yellow (not unknown) on missing sources (lines 270, 288); Task 16.4 Done-When requires `\"status\":\"unknown\"` count = 0. The three constraints cannot simultaneously hold if readers return 'unknown'. Must be reconciled \u2014 readers should default to yellow with an explanatory detail string to match the ported invariant.",
+        "upheld": true
+      },
+      {
+        "finding": "The plan targets `~/.buildrunner/dashboard/...` as the live code location, but the project tree only contains the dashboard under `.buildrunner/dashboard/...`.",
+        "severity": "note",
+        "fix_type": "fixable",
+        "arbiter_ruling": "NOT UPHELD as stated. `~/.buildrunner/dashboard` exists as a real directory at /Users/byronhudson/.buildrunner/dashboard/ and is symlinked into the project tree at .buildrunner/dashboard. All expected files are present (events.mjs, package.json, integrations/, public/js/). Codex was misled by the project-tree snapshot not recursing through the symlink. Downgraded to a cosmetic note: the plan could clarify that `~/.buildrunner/dashboard/` is the BR3 shared dashboard root, not a repo-internal path.",
+        "upheld": false
+      },
+      {
+        "finding": "The mandatory Claude review target uses `~/.buildrunner/dashboard/...` globs that do not resolve to files in the provided tree.",
+        "severity": "note",
+        "fix_type": "fixable",
+        "arbiter_ruling": "NOT UPHELD. Same resolution as the path finding \u2014 the globs resolve correctly through the symlink to a real, populated directory. The review trigger will work as written.",
+        "upheld": false
+      },
+      {
+        "finding": "Task 16.1 removes `uvicorn|if __name__` text, but the cited module has no `__main__` block and still exports `app = create_app(role=\"dashboard\")`.",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "Verified: dashboard_stream.py contains no `if __name__ == \"__main__\"` block; only a comment at line 483 mentions uvicorn, and lines 486\u2013496 construct `app = create_app(role=\"dashboard\")` with startup wiring. The Done-When grep check would pass after deleting only the comment, leaving the real collision vector (externally invocable `uvicorn api.routes.dashboard_stream:app`) intact. The plan's goal and check are misaligned; Task 16.1 must either remove the `app = create_app(...)` export or guard it behind an env flag and update the Done-When accordingly.",
+        "upheld": true
+      },
+      {
+        "finding": "Task 16.1's verification command references a nonexistent test directory.",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "Verified: tests/api/ does not exist. The tree has tests/test_api*.py, tests/unit/api/, and tests/test_dashboard.py. `pytest tests/api/ -k dashboard_stream` resolves to zero collected tests and will either fail or pass vacuously. Correct path is `pytest tests/ -k dashboard_stream` or `pytest tests/test_dashboard.py`.",
+        "upheld": true
+      },
+      {
+        "finding": "Tasks 16.2 and 16.3 assume a standalone dashboard npm package that is not present in the tree.",
+        "severity": "note",
+        "fix_type": "fixable",
+        "arbiter_ruling": "NOT UPHELD as a blocker. ~/.buildrunner/dashboard/package.json exists (393 bytes) and node_modules is populated. The `npm test --prefix` and better-sqlite3 references resolve against a real package. Codex missed the package via the same symlink blindspot. However, Claude's related observation that Task 16.2 adds no new tests yet gates on `npm test` passing (potentially vacuous) is a separate valid warning.",
+        "upheld": false
+      },
+      {
+        "finding": "The plan's `status: \"unknown\"` fallback conflicts with the feature-health contract that explicitly forbids `unknown` tile states.",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "UPHELD \u2014 duplicate of the Claude finding on the same issue, independently verified. The three-way contradiction between Task 16.3 constraints, feature-health.js invariant, and Task 16.4 Done-When must be resolved before implementation.",
+        "upheld": true
+      },
+      {
+        "finding": "Task 16.6's acceptance pipeline is malformed for typed SSE and the cited payload envelope.",
+        "severity": "blocker",
+        "fix_type": "fixable",
+        "arbiter_ruling": "UPHELD \u2014 same underlying defect as Claude's jq finding, independently surfaced. The pipeline must strip the SSE `data: ` prefix, parse the envelope, then `fromjson` the inner data field (or restructure the emitter so tiles are top-level). As written the Done-When cannot succeed.",
+        "upheld": true
+      }
+    ],
+    "reviewer_accuracy": {
+      "claude": "High accuracy. All three disputed blockers were verified against the actual source (events.mjs SSE framing, VALID_TYPES set, feature-health.js invariant, _collect_feature_health yellow-not-unknown behavior, _emit_adversarial_review_ran metadata shape). Findings are precise, cite real line numbers, and identify genuine contract and verification defects. No false positives observed in the disputed set.",
+      "codex": "Mixed. Codex caught real defects (tests/api/ missing, Task 16.1 edit strategy insufficient, jq pipeline malformed, unknown contract conflict) but also produced a cluster of false positives by treating the provided project-tree summary as exhaustive \u2014 ~/.buildrunner/dashboard/, its package.json, integrations/*.mjs, public/js/ws-*.js, ~/.buildrunner/cluster.json, and ~/.buildrunner/scripts/node-matrix.mjs all exist. The symlink between the repo and $HOME/.buildrunner/ was not detected. When rebutting, Codex should verify paths via shell rather than file-tree inference."
+    },
+    "model": "claude-opus-4-7",
+    "effort": "xhigh",
+    "duration_s": 227.5,
+    "artifact": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/phase-16-plan.md",
+    "review_round": 1,
+    "timestamp": "2026-04-22T14:09:51.502848Z"
+  },
+  "merged_findings": [
+    {
+      "finding": "Task 16.6 Done-When jq pipeline is syntactically broken and will fail even when feature-health is working correctly",
+      "severity": "blocker",
+      "location": "Phase 16, Task 16.6 Done-When",
+      "claim": "The pipeline `curl ... | grep -m1 '\"type\":\"feature-health\"' | jq '[.tiles[] | ...]'` fails at multiple levels: (1) SSE lines have a `data: ` prefix that jq cannot parse, (2) the existing event schema wraps payload as `{id, type, source, data: \"<JSON-string>\"}` so `.tiles[]` does not exist at the top level, (3) even if the format matched, tiles are inside `.data` as a JSON-encoded string requiring `fromjson`.",
+      "evidence": "events.mjs:449 `const payload = \\`id: ${event.id}\\ndata: ${JSON.stringify(event)}\\n\\n\\`;` and events.mjs:1081 `data: JSON.stringify(body.data || {})` \u2014 the SSE line is `data: {...}` and inner data is a stringified JSON string, not a plain object. The jq filter `.tiles[]` has no matching path.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "VALID_TYPES gate in events.mjs blocks all five new cluster event types; plan does not include adding them",
+      "severity": "blocker",
+      "location": "events.mjs:352\u2013366, Phase 16 Task 16.4",
+      "claim": "events.mjs enforces a VALID_TYPES allowlist and returns HTTP 400 for unrecognized types; `feature-health`, `overflow-reserve`, `storage-health`, `consensus`, and `node-health` are not in VALID_TYPES, and Task 16.4 does not list updating VALID_TYPES as a deliverable, so no emitter can broadcast these events through the normal API path.",
+      "evidence": "events.mjs:822 `if (!VALID_TYPES.has(type)) { return json(res, { error: \\`Invalid event type: ${type}\\` }, 400); }` \u2014 VALID_TYPES at line 352 contains only the existing dot-notation types (build.*, node.*, test.result, etc.). None of the five new hyphen-notation cluster types appear.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.3 mandates `status: 'unknown'` on missing sources, but the feature-health panel invariant explicitly forbids 'unknown' and Task 16.4 Done-When requires zero 'unknown' tiles",
+      "severity": "blocker",
+      "location": "Phase 16 Task 16.3 Constraints vs Task 16.4 Done-When vs feature-health.js header",
+      "claim": "Task 16.3 says readers must return `status: 'unknown'` when DB/Jimmy is absent; feature-health.js states `/* Tile status: green | yellow | red \u2014 never 'unknown' */`; Task 16.4 Done-When requires `'status':'unknown' count = 0`. These three constraints are mutually exclusive: if readers return 'unknown', the panel invariant and Done-When both fail.",
+      "evidence": "feature-health.js line 4: `/* Tile status: green | yellow | red \u2014 never \"unknown\". */`; Task 16.3: 'When DB or Jimmy filesystem is absent, return `status: \"unknown\"` \u2014 never throw'; Task 16.4 Done-When: 'feature-health panel shows 15 tiles with `\"status\":\"unknown\"` count = 0 when telemetry.db has recent data'.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.1 code deletion does not kill PID 25376; Done-When `lsof -nP -iTCP:4401` check will fail until process is manually terminated",
+      "severity": "warning",
+      "location": "Phase 16 Task 16.1",
+      "claim": "Removing the uvicorn block from dashboard_stream.py prevents future restarts but does nothing to the currently running process on :4401 (PID 25376); no `kill`/`pkill` step is specified, so the Done-When port-check will fail and the task will not be completable without a missing operational step.",
+      "evidence": "Task 16.1: 'Done-When: `lsof -nP -iTCP:4401 -sTCP:LISTEN` returns empty'; Context: 'PID 25376 is the current :4401 experiment'. No kill command is listed in the task steps.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "New SSE event types use hyphen notation (`feature-health`, `node-health`) while all existing VALID_TYPES use dot notation (`build.started`, `node.health`); `node-health` collides semantically with existing `node.health` type",
+      "severity": "warning",
+      "location": "Phase 16 Task 16.4, events.mjs:352",
+      "claim": "Introducing `node-health` as a new event type alongside the existing `node.health` creates two parallel node-health streams with different sources and different consumer paths; this naming inconsistency will confuse downstream filtering, FTS queries, and future panel authors.",
+      "evidence": "events.mjs VALID_TYPES: `'node.online', 'node.offline', 'node.health'` (dot notation). Task 16.4 collector names follow dashboard_stream.py naming: `node-health`, `overflow-reserve`, `storage-health`, `consensus`, `feature-health` (hyphen notation). No reconciliation step is planned.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Tile 15 adversarial review cap check is permanently broken: `review_round` is never emitted in adversarial_review_ran metadata, so the tile always shows green regardless of actual cap violations",
+      "severity": "warning",
+      "location": "core/cluster/cross_model_review.py:_emit_adversarial_review_ran, dashboard_stream.py _collect_feature_health Tile 15",
+      "claim": "The Tile 15 logic checks `int(meta.get('review_round', 1)) > 1` to detect exceeded round caps, but `_emit_adversarial_review_ran` only emits `mode`, `verdict`, `findings_count`, and `commit_sha` \u2014 `review_round` is never in metadata, so the default of 1 is always used and the condition is always False; Tile 15 will always be green and never detect real violations. Task 16.4 ports this bug verbatim.",
+      "evidence": "cross_model_review.py:_emit_adversarial_review_ran (line 106): `metadata = {'mode': ..., 'verdict': ..., 'findings_count': ..., 'commit_sha': ...}` \u2014 no `review_round` key. dashboard_stream.py Tile 15: `if int(meta.get('review_round', 1)) > 1: exceeded += 1`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.4 periodic collector integration architecture is underspecified: plan does not define whether cluster-health events are stored in the events DB or emitted as volatile SSE-only broadcasts",
+      "severity": "warning",
+      "location": "Phase 16 Task 16.4",
+      "claim": "The existing `broadcastEvent()` in events.mjs expects a DB-stored event row with an integer `id`; ephemeral cluster health data (refreshed every 5\u201360s) should not be stored in the events DB, yet the plan gives no guidance on whether to use raw `res.write()` to sseClients or a modified broadcastEvent; either choice has downstream implications for SSE replay and FTS search.",
+      "evidence": "events.mjs:448: `function broadcastEvent(event)` uses `event.id` from a DB row. events.mjs:680 replay path: `res.write(\\`id: ${evt.id}\\ndata: ...\\`)`. Task 16.4 says only 'extend events.mjs with periodic collectors that broadcast' with no specification of storage vs. volatile emit.",
+      "confidence": "high",
+      "fix_type": "structural",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Port collision description is internally contradictory: plan says PID 25376 is the ':4401 experiment' and simultaneously says the standalone entry 'is coded to :4400'",
+      "severity": "note",
+      "location": "Phase 16 Context paragraph, Task 16.1 Context",
+      "claim": "A single process cannot be bound to both :4400 and :4401; the description confusingly implies the FastAPI experiment occupies both ports simultaneously, which will cause ambiguity about which port to confirm empty in the Done-When check.",
+      "evidence": "Context: 'PID 25376 is the current :4401 experiment'; Task 16.1 Context: 'api/routes/dashboard_stream.py:490 contains a standalone uvicorn entry coded to :4400 that collides with the Node dashboard's LaunchAgent.'",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.3 Done-When node commands use relative import paths without specifying working directory, making verification non-portable",
+      "severity": "warning",
+      "location": "Phase 16 Task 16.3 Done-When",
+      "claim": "The verification command `node -e \"import('./integrations/telemetry-reader.mjs')...\"` requires CWD to be `~/.buildrunner/dashboard/`; run from any other directory it will throw ERR_MODULE_NOT_FOUND, making the Done-When fail for no functional reason.",
+      "evidence": "Task 16.3 Done-When: `node -e \"import('./integrations/telemetry-reader.mjs').then(m=>m.collectFeatureHealth())...\"` \u2014 relative path `./integrations/` resolves against CWD, which is unspecified.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.5 Done-When grep `grep -R 'ui/dashboard' .buildrunner/builds/` will false-fail if archive README or historical context prose in the BUILD specs mentions 'ui/dashboard' after the path corrections",
+      "severity": "warning",
+      "location": "Phase 16 Task 16.5 Done-When",
+      "claim": "The grep checks for zero matches of `ui/dashboard` in BUILD specs, but the retirement README and explanatory prose context in the spec files may legitimately reference `ui/dashboard` as historical context, causing the Done-When to report failure even when all deliverable path references are correctly updated.",
+      "evidence": "Task 16.5 Done-When: `grep -R 'ui/dashboard' .buildrunner/builds/` returns no matches. Task 16.5 Constraints: BUILD spec edits 'change panel paths... Do not rewrite phase structure or success criteria beyond path corrections' \u2014 but the archive README itself will contain `ui/dashboard` by design.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Codex effort set to `medium` for a phase involving cross-language porting (Python \u2192 Node.js), SSE transport translation (WS \u2192 SSE), 15 complex tile rules, live process management, and multi-file system integration",
+      "severity": "warning",
+      "location": "Phase 16 header \u2014 Codex effort: medium",
+      "claim": "Per project CLAUDE.md, `medium` effort is reserved for classification, lint-style checks, and one-shot filters; this phase requires multi-file agentic work (6 tasks, ~11 new files, cross-language porting, live acceptance testing) which should be `xhigh`; medium effort risks incomplete tile rule translation and missing edge case handling.",
+      "evidence": "CLAUDE.md global rules: 'medium: Classification, lint-style checks, simple summaries, one-shot filters'. Phase 16 tasks include 11 new files, live process kills, Python\u2192Node.js port of 15 tile rules, SQLite read-only reader implementation, SSE emitter integration, and acceptance testing.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.6 context says 'run /autopilot BUILD_cluster-max' as the Phase 6 acceptance criterion, which could be misread as an instruction to trigger a full multi-hour build run",
+      "severity": "note",
+      "location": "Phase 16 Task 16.6 Context",
+      "claim": "The phrasing 'Context: BUILD_cluster-activation.md Phase 6 acceptance: run `/autopilot BUILD_cluster-max`' is ambiguous about whether this is a reference to what the original criterion says or an active instruction; triggering `/autopilot` would dispatch a full orchestrated build, not just validate the feature-health panel.",
+      "evidence": "Task 16.6 Context: 'BUILD_cluster-activation.md Phase 6 acceptance: run `/autopilot BUILD_cluster-max`; tiles 1/3/5 turn green within seconds' \u2014 this appears to describe the old criterion's language, not a new instruction, but the imperative phrasing is easily misread.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "New ws-cluster-*.js file names imply WebSocket transport but the transport is SSE; this naming inherits and perpetuates the `ui/dashboard` confusion this phase is meant to retire",
+      "severity": "note",
+      "location": "Phase 16 Files whitelist \u2014 Node dashboard (NEW)",
+      "claim": "Naming SSE panel modules `ws-cluster-feature-health.js` creates the same WS/SSE naming confusion that contributed to the original drift; future contributors following the naming convention will assume these modules use WebSocket.",
+      "evidence": "Files whitelist: `~/.buildrunner/dashboard/public/js/ws-cluster-feature-health.js`, `ws-cluster-node-health.js` etc. Task 16.4 Context: 'Dashboard uses SSE on `/api/events/stream` \u2014 not WebSocket \u2014 for all panels except the terminal.'",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Tile 12 checks for `~/.buildrunner/scripts/node-matrix.mjs` which does not appear in the project file tree; the tile will remain permanently yellow with no task in Phase 16 to create this file",
+      "severity": "note",
+      "location": "dashboard_stream.py _collect_feature_health Tile 12, Phase 16 scope",
+      "claim": "The node-matrix.mjs check will always produce a yellow tile because the file at `~/.buildrunner/scripts/node-matrix.mjs` is not in the file tree and no Phase 16 task creates it; this is a pre-existing issue being ported verbatim.",
+      "evidence": "dashboard_stream.py Tile 12: `node_matrix = Path.home() / '.buildrunner' / 'scripts' / 'node-matrix.mjs'`. File tree lists `core/cluster/scripts/` with shell scripts but no `node-matrix.mjs` anywhere.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.2 Done-When test gate `npm test --prefix ~/.buildrunner/dashboard` may pass vacuously if no tests exist for the new Jimmy node-health card, as Task 16.2 adds no new tests (test scope is Task 16.3)",
+      "severity": "note",
+      "location": "Phase 16 Task 16.2 Done-When",
+      "claim": "The Done-When requires the test suite to pass, but Task 16.2 does not specify writing new tests for the Jimmy card; if the existing suite has no node-health card rendering tests, the gate passes without validating the deliverable.",
+      "evidence": "Task 16.2 Done-When: 'npm test --prefix ~/.buildrunner/dashboard passes'. Task 16.2 Tasks: 'Do not refactor the card layout in this task... just add the entry.' No test authoring step is listed. Tests scope is explicitly Task 16.3: 'new readers have matching tests under ~/.buildrunner/dashboard/tests/'.",
+      "confidence": "medium",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The plan targets `~/.buildrunner/dashboard/...` as the live code location, but the project tree only contains the dashboard under `.buildrunner/dashboard/...`.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "The amendment points implementation, test, and spec paths at a home-directory tree that is not present in the repository, so the work cannot be executed against the checked-in codebase as written.",
+      "evidence": "Project tree contains `.buildrunner/dashboard/events.mjs`, `.buildrunner/dashboard/public/index.html`, and `.buildrunner/dashboard/public/styles.css`, while the plan repeatedly references `~/.buildrunner/dashboard/...` in Tasks 16.2-16.5, the whitelist, and the review trigger.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The mandatory Claude review target uses `~/.buildrunner/dashboard/...` globs that do not resolve to files in the provided tree.",
+      "severity": "blocker",
+      "location": "Phase 16 / Claude Review",
+      "claim": "The required pre-completion review cannot reliably inspect the intended files because the target list points outside the tracked dashboard paths.",
+      "evidence": "Review trigger targets `~/.buildrunner/dashboard/events.mjs`, `~/.buildrunner/dashboard/public/js/ws-cluster-*.js`, and `~/.buildrunner/dashboard/integrations/*.mjs`, but the tree only shows `.buildrunner/dashboard/...` paths.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.1 removes `uvicorn|if __name__` text, but the cited module has no `__main__` block and still exports `app = create_app(role=\"dashboard\")`.",
+      "severity": "blocker",
+      "location": "api/routes/dashboard_stream.py",
+      "claim": "The task's stated edit does not achieve its goal of preventing the module from being served on `:4400` because `uvicorn api.routes.dashboard_stream:app` would still work after the planned grep-based cleanup.",
+      "evidence": "Cited excerpt shows `app = create_app(role=\"dashboard\")`, `app.include_router(router)`, and `_startup()` registration, but no `if __name__ == \"__main__\"` block; the plan's done-when is `grep -nE \"uvicorn|if __name__\" api/routes/dashboard_stream.py`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.1's verification command references a nonexistent test directory.",
+      "severity": "blocker",
+      "location": "Phase 16 / Task 16.1",
+      "claim": "The plan's acceptance step cannot run because `tests/api/` is not present in the provided tree.",
+      "evidence": "Done-When requires `pytest tests/api/ -k dashboard_stream` to pass, but the tree shows `tests/unit/api/` and top-level `tests/test_api*.py`, not `tests/api/`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Tasks 16.2 and 16.3 assume a standalone dashboard npm package that is not present in the tree.",
+      "severity": "blocker",
+      "location": "Phase 16 / Tasks 16.2-16.3",
+      "claim": "The dependency-selection logic and `npm test --prefix ~/.buildrunner/dashboard` verification are undefined because `.buildrunner/dashboard/package.json` is absent.",
+      "evidence": "The tree lists `.buildrunner/dashboard/events.mjs`, `public/`, `integrations/`, and `tests/`, but no `.buildrunner/dashboard/package.json`; the plan says `Use better-sqlite3 if present in the dashboard package.json` and `npm test --prefix ~/.buildrunner/dashboard`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.3 cites nonexistent integration reference modules.",
+      "severity": "note",
+      "location": "Phase 16 / Task 16.3",
+      "claim": "The plan sends implementers to `integrations/lockwood.mjs`, `walter.mjs`, and `lomax.mjs`, but those files are not in the provided tree.",
+      "evidence": "Task 16.3 context says `Existing integration style in integrations/lockwood.mjs / walter.mjs / lomax.mjs`, while `.buildrunner/dashboard/integrations/` appears in the tree with no such files listed.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.4 cites nonexistent `public/js` pattern files as the implementation model.",
+      "severity": "note",
+      "location": "Phase 16 / Task 16.4",
+      "claim": "The plan references `public/js/ws-builds.js`, `ws-intel.js`, and `ws-tests.js` as existing patterns, but none of those files appear in the provided tree.",
+      "evidence": "Task 16.4 context says `Existing pattern in public/js/ws-builds.js, ws-intel.js, ws-tests.js`, while `.buildrunner/dashboard/public/` only shows `index.html` and `styles.css` in the tree.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The plan's `status: \"unknown\"` fallback conflicts with the feature-health contract that explicitly forbids `unknown` tile states.",
+      "severity": "blocker",
+      "location": "Phase 16 / Tasks 16.3-16.4",
+      "claim": "Requiring readers to emit `unknown` on missing sources directly contradicts the cited feature-health implementation and the plan's own requirement to port the 15 tile rules verbatim.",
+      "evidence": "Task 16.3 says `When DB or Jimmy filesystem is absent, return status: \"unknown\" \u2014 never throw`; canonical constraints repeat that rule, but `ui/dashboard/panels/feature-health.js` says `Tile status: green | yellow | red \u2014 never \"unknown\"`, and `_collect_feature_health()` in `api/routes/dashboard_stream.py` emits yellow/red on missing data.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.3's done-when expects `collectFeatureHealth()` to return an array, which does not match the cited collector and panel payload shape.",
+      "severity": "warning",
+      "location": "Phase 16 / Task 16.3",
+      "claim": "The verification API shape is inconsistent with the source-of-truth collector, which risks producing reader output that cannot be reused by the ported panel without extra wrapping.",
+      "evidence": "Done-When uses `collectFeatureHealth()).then(t=>console.log(t.length))`, but `_collect_feature_health()` returns `{ \"tiles\": tiles, \"collected_at\": ... }`, and `FeatureHealthPanel.render(container, data)` consumes `data.tiles`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.3's `node -e` verification commands use relative import paths without specifying the working directory.",
+      "severity": "warning",
+      "location": "Phase 16 / Task 16.3",
+      "claim": "The acceptance commands are not reproducible as written because `import('./integrations/...')` only resolves if they are run from the dashboard directory, which the plan never states.",
+      "evidence": "Done-When commands are `node -e \"import('./integrations/telemetry-reader.mjs')...\"` and `node -e \"import('./integrations/jimmy-status.mjs')...\"` with no preceding `cd ~/.buildrunner/dashboard` or absolute path.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.4's SSE verification window is shorter than one of the required event cadences.",
+      "severity": "warning",
+      "location": "Phase 16 / Task 16.4",
+      "claim": "The done-when command cannot reliably prove that all required SSE topics are emitted because it times out after 20 seconds while `storage-health` is scheduled every 60 seconds.",
+      "evidence": "Task 16.4 cites intervals from `dashboard_stream.py`: `storage-health 60s`, but its Done-When command is `curl -sN --max-time 20 localhost:4400/api/events/stream` and requires observing `storage-health` within that run.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.6's acceptance pipeline is malformed for typed SSE and the cited payload envelope.",
+      "severity": "blocker",
+      "location": "Phase 16 / Task 16.6",
+      "claim": "The validation command will not parse the feature-health payload correctly because it treats the raw SSE stream as plain JSON and queries `.tiles` instead of the emitted nested payload.",
+      "evidence": "Task 16.4 requires `typed SSE events`; the cited broadcaster in `api/routes/dashboard_stream.py` sends `{\"type\": event_type, \"data\": data}`, but Task 16.6 uses `curl ... | grep -m1 '\"type\":\"feature-health\"' | jq '[.tiles[] | select(.status==\"unknown\")] | length'` with no handling for SSE framing or `.data.tiles`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The plan cites `scripts/codex-bridge.sh` as an existing telemetry emitter, but that file is not present in the tree or cited excerpts.",
+      "severity": "note",
+      "location": "Phase 16 / Context",
+      "claim": "The amendment relies on a verification reference that is not backed by any file in the provided project snapshot.",
+      "evidence": "Context says `scripts/codex-bridge.sh` writes correctly to `.buildrunner/telemetry.db`, but the tree contains no top-level `scripts/codex-bridge.sh` and the excerpts do not mention it.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The plan cites `~/.buildrunner/cluster.json` as an existing source of truth for Jimmy, but that file is not present in the tree or cited excerpts.",
+      "severity": "note",
+      "location": "Phase 16 / Task 16.2",
+      "claim": "The task's supporting context is grounded on a file that is not available in the provided codebase snapshot.",
+      "evidence": "Task 16.2 context says `~/.buildrunner/cluster.json already lists Jimmy`, but the project tree contains no `.buildrunner/cluster.json` entry and no excerpt references it.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.1 hardcodes a live PID for the orphan process.",
+      "severity": "note",
+      "location": "Phase 16 / Task 16.1",
+      "claim": "Using `PID 25376` in the plan makes the task context non-reproducible because PIDs are ephemeral and environment-specific.",
+      "evidence": "Task 16.1 goal says `Eliminate the orphan uvicorn process on :4401 (PID 25376)`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The phase introduces a second implementation of the feature-health rules in Node while retaining the Python collectors, creating two sources of truth for the same logic.",
+      "severity": "note",
+      "location": "global",
+      "claim": "The plan increases long-term drift risk by duplicating the 15-tile rule set across runtimes instead of designating a single authoritative implementation.",
+      "evidence": "Task 16.1 says keep every `_collect_*` function callable as a library import, while Tasks 16.3-16.4 add Node readers and require `Translate the 15 tile rules verbatim` from `_collect_feature_health`.",
+      "confidence": "medium",
+      "fix_type": "structural",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    }
+  ],
+  "consensus_blockers": [],
+  "unresolved_disagreements": [
+    {
+      "finding": "Task 16.6 Done-When jq pipeline is syntactically broken and will fail even when feature-health is working correctly",
+      "severity": "blocker",
+      "location": "Phase 16, Task 16.6 Done-When",
+      "claim": "The pipeline `curl ... | grep -m1 '\"type\":\"feature-health\"' | jq '[.tiles[] | ...]'` fails at multiple levels: (1) SSE lines have a `data: ` prefix that jq cannot parse, (2) the existing event schema wraps payload as `{id, type, source, data: \"<JSON-string>\"}` so `.tiles[]` does not exist at the top level, (3) even if the format matched, tiles are inside `.data` as a JSON-encoded string requiring `fromjson`.",
+      "evidence": "events.mjs:449 `const payload = \\`id: ${event.id}\\ndata: ${JSON.stringify(event)}\\n\\n\\`;` and events.mjs:1081 `data: JSON.stringify(body.data || {})` \u2014 the SSE line is `data: {...}` and inner data is a stringified JSON string, not a plain object. The jq filter `.tiles[]` has no matching path.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "VALID_TYPES gate in events.mjs blocks all five new cluster event types; plan does not include adding them",
+      "severity": "blocker",
+      "location": "events.mjs:352\u2013366, Phase 16 Task 16.4",
+      "claim": "events.mjs enforces a VALID_TYPES allowlist and returns HTTP 400 for unrecognized types; `feature-health`, `overflow-reserve`, `storage-health`, `consensus`, and `node-health` are not in VALID_TYPES, and Task 16.4 does not list updating VALID_TYPES as a deliverable, so no emitter can broadcast these events through the normal API path.",
+      "evidence": "events.mjs:822 `if (!VALID_TYPES.has(type)) { return json(res, { error: \\`Invalid event type: ${type}\\` }, 400); }` \u2014 VALID_TYPES at line 352 contains only the existing dot-notation types (build.*, node.*, test.result, etc.). None of the five new hyphen-notation cluster types appear.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.3 mandates `status: 'unknown'` on missing sources, but the feature-health panel invariant explicitly forbids 'unknown' and Task 16.4 Done-When requires zero 'unknown' tiles",
+      "severity": "blocker",
+      "location": "Phase 16 Task 16.3 Constraints vs Task 16.4 Done-When vs feature-health.js header",
+      "claim": "Task 16.3 says readers must return `status: 'unknown'` when DB/Jimmy is absent; feature-health.js states `/* Tile status: green | yellow | red \u2014 never 'unknown' */`; Task 16.4 Done-When requires `'status':'unknown' count = 0`. These three constraints are mutually exclusive: if readers return 'unknown', the panel invariant and Done-When both fail.",
+      "evidence": "feature-health.js line 4: `/* Tile status: green | yellow | red \u2014 never \"unknown\". */`; Task 16.3: 'When DB or Jimmy filesystem is absent, return `status: \"unknown\"` \u2014 never throw'; Task 16.4 Done-When: 'feature-health panel shows 15 tiles with `\"status\":\"unknown\"` count = 0 when telemetry.db has recent data'.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "claude"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The plan targets `~/.buildrunner/dashboard/...` as the live code location, but the project tree only contains the dashboard under `.buildrunner/dashboard/...`.",
+      "severity": "blocker",
+      "location": "global",
+      "claim": "The amendment points implementation, test, and spec paths at a home-directory tree that is not present in the repository, so the work cannot be executed against the checked-in codebase as written.",
+      "evidence": "Project tree contains `.buildrunner/dashboard/events.mjs`, `.buildrunner/dashboard/public/index.html`, and `.buildrunner/dashboard/public/styles.css`, while the plan repeatedly references `~/.buildrunner/dashboard/...` in Tasks 16.2-16.5, the whitelist, and the review trigger.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The mandatory Claude review target uses `~/.buildrunner/dashboard/...` globs that do not resolve to files in the provided tree.",
+      "severity": "blocker",
+      "location": "Phase 16 / Claude Review",
+      "claim": "The required pre-completion review cannot reliably inspect the intended files because the target list points outside the tracked dashboard paths.",
+      "evidence": "Review trigger targets `~/.buildrunner/dashboard/events.mjs`, `~/.buildrunner/dashboard/public/js/ws-cluster-*.js`, and `~/.buildrunner/dashboard/integrations/*.mjs`, but the tree only shows `.buildrunner/dashboard/...` paths.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.1 removes `uvicorn|if __name__` text, but the cited module has no `__main__` block and still exports `app = create_app(role=\"dashboard\")`.",
+      "severity": "blocker",
+      "location": "api/routes/dashboard_stream.py",
+      "claim": "The task's stated edit does not achieve its goal of preventing the module from being served on `:4400` because `uvicorn api.routes.dashboard_stream:app` would still work after the planned grep-based cleanup.",
+      "evidence": "Cited excerpt shows `app = create_app(role=\"dashboard\")`, `app.include_router(router)`, and `_startup()` registration, but no `if __name__ == \"__main__\"` block; the plan's done-when is `grep -nE \"uvicorn|if __name__\" api/routes/dashboard_stream.py`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.1's verification command references a nonexistent test directory.",
+      "severity": "blocker",
+      "location": "Phase 16 / Task 16.1",
+      "claim": "The plan's acceptance step cannot run because `tests/api/` is not present in the provided tree.",
+      "evidence": "Done-When requires `pytest tests/api/ -k dashboard_stream` to pass, but the tree shows `tests/unit/api/` and top-level `tests/test_api*.py`, not `tests/api/`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Tasks 16.2 and 16.3 assume a standalone dashboard npm package that is not present in the tree.",
+      "severity": "blocker",
+      "location": "Phase 16 / Tasks 16.2-16.3",
+      "claim": "The dependency-selection logic and `npm test --prefix ~/.buildrunner/dashboard` verification are undefined because `.buildrunner/dashboard/package.json` is absent.",
+      "evidence": "The tree lists `.buildrunner/dashboard/events.mjs`, `public/`, `integrations/`, and `tests/`, but no `.buildrunner/dashboard/package.json`; the plan says `Use better-sqlite3 if present in the dashboard package.json` and `npm test --prefix ~/.buildrunner/dashboard`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "The plan's `status: \"unknown\"` fallback conflicts with the feature-health contract that explicitly forbids `unknown` tile states.",
+      "severity": "blocker",
+      "location": "Phase 16 / Tasks 16.3-16.4",
+      "claim": "Requiring readers to emit `unknown` on missing sources directly contradicts the cited feature-health implementation and the plan's own requirement to port the 15 tile rules verbatim.",
+      "evidence": "Task 16.3 says `When DB or Jimmy filesystem is absent, return status: \"unknown\" \u2014 never throw`; canonical constraints repeat that rule, but `ui/dashboard/panels/feature-health.js` says `Tile status: green | yellow | red \u2014 never \"unknown\"`, and `_collect_feature_health()` in `api/routes/dashboard_stream.py` emits yellow/red on missing data.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    },
+    {
+      "finding": "Task 16.6's acceptance pipeline is malformed for typed SSE and the cited payload envelope.",
+      "severity": "blocker",
+      "location": "Phase 16 / Task 16.6",
+      "claim": "The validation command will not parse the feature-health payload correctly because it treats the raw SSE stream as plain JSON and queries `.tiles` instead of the emitted nested payload.",
+      "evidence": "Task 16.4 requires `typed SSE events`; the cited broadcaster in `api/routes/dashboard_stream.py` sends `{\"type\": event_type, \"data\": data}`, but Task 16.6 uses `curl ... | grep -m1 '\"type\":\"feature-health\"' | jq '[.tiles[] | select(.status==\"unknown\")] | length'` with no handling for SSE framing or `.data.tiles`.",
+      "confidence": "high",
+      "fix_type": "fixable",
+      "sources": [
+        "codex"
+      ],
+      "consensus": false
+    }
+  ],
+  "generated_at": "2026-04-22T14:09:51.563894Z",
+  "max_rebuttal_rounds": 1,
+  "review_round": 2,
+  "escalated": false,
+  "phase_number": 1
+}

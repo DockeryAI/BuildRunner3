@@ -10,7 +10,10 @@
       "Write(~/.buildrunner/*)",
       "Bash(rm -f .git/index.lock)",
       "Bash(git add:*)",
-      "Bash(git commit -m ':*)"
+      "Bash(git commit -m ':*)",
+      "Bash(mkdir -p .buildrunner/codex-sessions/universal-role-routing/backups)",
+      "Bash(cp ~/.claude/settings.json .buildrunner/codex-sessions/universal-role-routing/backups/settings.json.pre-phase4)",
+      "Read(//Users/byronhudson/.claude/**)"
     ]
   }
 }

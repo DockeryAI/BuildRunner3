@@ -1,0 +1,15 @@
+{
+  "jimmy_path": "/srv/jimmy/research-library",
+  "head_sha": "21fc0712efb3bd4848a7ac76bcbbfbf9e6cc826e",
+  "branch": "main",
+  "file_count": 235,
+  "byte_count": 10544906,
+  "backup_tar": "/tmp/jimmy-library-backup-20260422T150841Z.tar.gz (5153854 bytes)",
+  "source": "muddy:ssh://byronhudson@10.0.1.100/Users/byronhudson/Projects/research-library",
+  "remote_configured": "muddy -> ssh://byronhudson@10.0.1.100/Users/byronhudson/Projects/research-library",
+  "indexed_files": 231,
+  "indexed_chunks": 26904,
+  "reindex_duration_s": 110.2,
+  "timestamp": "2026-04-22T15:12:00Z",
+  "note": "Spec deviation: Phase 4 Task 4.1 specified 'clone from GitHub'. Jimmy has no internet egress (DNS_FAIL + HTTPS timeouts). Pivoted to LAN pull from Muddy over SSH. Pre-existing /srv/jimmy/research-library (rsync copy at a6dcbb6 with identical WIP to pre-commit Muddy) was tarred to /tmp first, then hard-reset to muddy/main. HEAD now matches Muddy and DockeryAI/research-library (GitHub)."
+}
