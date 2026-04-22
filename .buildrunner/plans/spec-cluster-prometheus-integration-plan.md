@@ -1,16 +1,6 @@
-# Build: Cluster Prometheus Integration
+# Plan: Cluster Prometheus Integration
 
-role-matrix:
-inherit: default-role-matrix
-overrides: {}
-
-**Created:** 2026-04-22
-**Status:** pending
-**Deploy:** web — per-node install scripts; Prometheus via launchd on Lockwood; dashboard auto-deploys via existing Node runtime on port 4400
-**Source Plan File:** .buildrunner/plans/spec-cluster-prometheus-integration-plan.md
-**Source Plan SHA:** c7041f015d8cd7f8e251c56b21d51208ae42ca6b4be2ebf9abf1df8952b0dc97
-**Adversarial Review Verdict:** BYPASSED:.buildrunner/bypass-justification-cluster-prometheus-integration.md
-**Adversarial Review Timestamp:** 2026-04-22T17:33:08Z
+Frozen snapshot of the BUILD spec's phase structure, emitted to satisfy the BUILD ↔ plan binding gate after parallel-session drift on the shared `spec-draft-plan.md` file. Source of truth remains the BUILD spec.
 
 ## Overview
 
@@ -109,6 +99,7 @@ role_matrix:
 | 6     | `~/.buildrunner/dashboard/tests/e2e-prometheus-panels.spec.mjs`, `alertmanager.yml.example`, `prometheus-operations.md`, `config/AGENTS.md`       | —                 | Phase 5                                           |
 
 ## Phases
+
 
 ### Phase 1: node_exporter Rollout (7 nodes)
 
