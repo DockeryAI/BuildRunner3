@@ -144,7 +144,7 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 ### Phase 6: Live verification + rollout
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/tests/router-resolution.sh` (NEW)
@@ -155,12 +155,12 @@ Every phase in this build edits files under `~/.buildrunner/` (scripts, config) 
 
 **Deliverables:**
 
-- [ ] `router-resolution.sh` calls `resolve-dispatch-node.sh` against `.buildrunner/builds/BUILD_cluster-dashboard-prometheus-surfacing.md` for every phase. Asserts Phase 1/2/3/5 → muddy (path-locality on `~/.buildrunner/dashboard/`), Phase 4 → muddy (path-locality overrides spec's otis assignment, `reason: path-locality`), Phase 6 → muddy (same).
-- [ ] `router-resolution.sh` synthetic scenario: constructs a throwaway BUILD spec with in-repo Files only (no path-locality triggers). Asserts Phase 4 resolves to otis per spec. Injects fake Prometheus load payload for otis at 90% CPU → asserts fallback to lomax (tier 2 alternate). Injects load on lomax too → asserts fallback up to muddy (tier 1).
-- [ ] `dispatch-sync.sh` end-to-end live run: sets `BR3_ROUTER_PREFIX_SYNC=on`, dispatches a no-op touch of `~/.buildrunner/dashboard/.router-sync-test` to otis, confirms file appears on otis, confirms return-sync produces identical SHA256 on muddy, cleans up the test file on both ends.
-- [ ] `docs/router.md` documents: precedence table, overload thresholds with defaults, `pin: true` semantics (hard fail on unhealthy), `sync_on_dispatch` behavior, `BR3_ROUTER_PREFIX_SYNC` rollout flag, `--exclude-node` re-entry contract, how to inspect `.buildrunner/decisions.log` for `router:` and `sync_result:` lines.
-- [ ] Live `/autopilot` invocation on `.buildrunner/builds/BUILD_cluster-dashboard-prometheus-surfacing.md` with NO flags runs through Phase 1 (smoke only — do not execute the build). Verifies `.buildrunner/agents.json.routing` is populated with one entry per phase, each carrying the correct `reason` code, with decisions logged.
-- [ ] Flip `BR3_ROUTER_PREFIX_SYNC` default from `off` to `on` in `_dispatch-core.sh` as the final deliverable, only after all previous assertions pass. Rollback is one env var or one-line revert.
+- [x] `router-resolution.sh` calls `resolve-dispatch-node.sh` against `.buildrunner/builds/BUILD_cluster-dashboard-prometheus-surfacing.md` for every phase. Asserts Phase 1/2/3/5 → muddy (path-locality on `~/.buildrunner/dashboard/`), Phase 4 → muddy (path-locality overrides spec's otis assignment, `reason: path-locality`), Phase 6 → muddy (same).
+- [x] `router-resolution.sh` synthetic scenario: constructs a throwaway BUILD spec with in-repo Files only (no path-locality triggers). Asserts Phase 4 resolves to otis per spec. Injects fake Prometheus load payload for otis at 90% CPU → asserts fallback to lomax (tier 2 alternate). Injects load on lomax too → asserts fallback up to muddy (tier 1).
+- [x] `dispatch-sync.sh` end-to-end live run: sets `BR3_ROUTER_PREFIX_SYNC=on`, dispatches a no-op touch of `~/.buildrunner/dashboard/.router-sync-test` to otis, confirms file appears on otis, confirms return-sync produces identical SHA256 on muddy, cleans up the test file on both ends.
+- [x] `docs/router.md` documents: precedence table, overload thresholds with defaults, `pin: true` semantics (hard fail on unhealthy), `sync_on_dispatch` behavior, `BR3_ROUTER_PREFIX_SYNC` rollout flag, `--exclude-node` re-entry contract, how to inspect `.buildrunner/decisions.log` for `router:` and `sync_result:` lines.
+- [x] Live `/autopilot` invocation on `.buildrunner/builds/BUILD_cluster-dashboard-prometheus-surfacing.md` with NO flags runs through Phase 1 (smoke only — do not execute the build). Verifies `.buildrunner/agents.json.routing` is populated with one entry per phase, each carrying the correct `reason` code, with decisions logged.
+- [x] Flip `BR3_ROUTER_PREFIX_SYNC` default from `off` to `on` in `_dispatch-core.sh` as the final deliverable, only after all previous assertions pass. Rollback is one env var or one-line revert.
 
 ## Session Log
 

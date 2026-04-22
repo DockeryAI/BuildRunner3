@@ -916,3 +916,40 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-22T21:44:11Z] [TRADE-OFF] Ralph sleep-guard uses re-exec instead of in-process shell-function injection
   WHY: Initial implementation used declare-f to carry loop body through bash -c — fragile across shells and prone to quoting bugs. Re-exec with BR3_RALPH_IN_SLEEP_GUARD sentinel is less clever but survives real use.
   CONTEXT: ~/.buildrunner/scripts/ralph-loop.sh sleep-guard wrapper
+[2026-04-22T21:59:24.228009Z] THREE_WAY_REVIEW review_start plan_hash=a0a0aec04be2945b artifact='.buildrunner/plans/spec-draft-plan.md' commit=plan-1776895164
+[2026-04-22T22:04:21.735842Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a0a0aec04be2945b reviewers=2
+[2026-04-22T17:07:37] [DECISION] Spec review blocked (arbiter circuit_open + 4 codex-only blockers fixed inline); bypass authorized by skill (1-review rule) for cluster-dashboard-prometheus-surfacing
+[2026-04-22T22:35:59.524132Z] THREE_WAY_REVIEW review_start plan_hash=de72b1e0851af29f artifact='.buildrunner/plans/spec-draft-plan.md' commit=plan-1776897359
+[2026-04-22T22:42:01.268566Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=de72b1e0851af29f reviewers=2
+[2026-04-22T17:43:39] [DECISION] Spec review blocked (arbiter circuit_open); 3 blockers fixed inline in plan (Phase 4 ordering, Phase 5 re-entry via --exclude-node, flock on agents.json); bypass authorized by skill (1-review rule)
+[2026-04-22T17:52:44] [DECISION] Created BUILD_cluster-role-matrix-router: 6 phases, all muddy-pinned (path-locality on ~/.buildrunner/)
+[2026-04-22T22:52:50.188565Z] THREE_WAY_REVIEW review_start plan_hash=d5c20c7bd3c1bc98 artifact='/Users/byronhudson/Projects/Website-Builder/.buildrunner/plans/amend-2026-04-22-rules-engine-followup.md' commit=plan-1776898370
+[2026-04-22T22:57:02.115666Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=d5c20c7bd3c1bc98 reviewers=2
+2026-04-22T23:03:32Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:03:32Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=below reason=load-rerouted overrides=path-locality-excluded
+2026-04-22T23:04:24Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:04:24Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=below reason=load-rerouted overrides=path-locality-excluded
+2026-04-22T23:05:39Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:05:39Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=below reason=load-rerouted overrides=path-locality-excluded
+2026-04-22T23:12:17Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:12:17Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=2 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:12:18Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=3 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:12:18Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=4 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:12:18Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=5 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:12:18Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=6 node=muddy reason=path-locality overrides=path-locality
+[2026-04-22T23:12:42.244851Z] THREE_WAY_REVIEW review_start plan_hash=f86001077d4e70d5 artifact='.buildrunner/plans/spec-draft-plan.md' commit=plan-1776899562
+2026-04-22T23:13:03Z sync_result: node=otis prefix=/Users/byronhudson/.buildrunner/dashboard pre_sha=0baa061c3066461f887798b045d731fda4974dfa0dd4799ead2e55b74ab2bf6a post_sha=a69c78ac463b7705885630d3dd0b7edffa348d4244b3e95c628e46ef73f5fb1f
+2026-04-22T23:13:56Z sync_result: node=otis prefix=/Users/byronhudson/.buildrunner/dashboard pre_sha=edb17c78e617089b6f4a32c9577d1f185f5021b3aace49bc9d3038ba2f5ee813 post_sha=01b2072bb19c4b4d48c3598803faad327912d7713ec97f58f4ce2ba3a1c9ca5e
+2026-04-22T23:14:05Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:40Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:40Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=2 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:40Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=3 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:41Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=4 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:41Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=5 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:41Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=6 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:58Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:59Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=2 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:59Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=3 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:59Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=4 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:59Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=5 node=muddy reason=path-locality overrides=path-locality
+2026-04-22T23:14:59Z router: build=BUILD_cluster-dashboard-prometheus-surfacing phase=6 node=muddy reason=path-locality overrides=path-locality
