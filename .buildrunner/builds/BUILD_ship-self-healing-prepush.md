@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
+**Status:** Phases 1-4 Complete — Phase 5 In Progress
 **Deploy:** web — `npm run build` (framework-level skill; deploy target is N/A for the BR3 framework itself)
 **Source Plan File:** .buildrunner/plans/spec-ship-self-healing-prepush-plan.md
 **Source Plan SHA:** 9e725f1a38361e5dab7e42e1fab2fd40bbbb67ce3dd65277094e78e94c9cc118
@@ -131,7 +131,7 @@ role-matrix:
 
 ### Phase 4: CI Babysit + PR Management
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/ship/ci/watch-ci.sh` (NEW) — nohup + PID file
@@ -146,13 +146,13 @@ role-matrix:
 
 **Deliverables:**
 
-- [ ] Background watcher launched via `nohup ./watch-ci.sh … &`, PID at `.buildrunner/ship/ci-watch.pid`, state at `.buildrunner/ship/ci-state.json`
-- [ ] Classifier: lint/format/prettier → fixable; known-flaky Playwright → fixable (1 retry); broken unit test → real; type error → real; migration failure → real
-- [ ] CI-heal sequence: acquire per-branch lock → pull failing log → orchestrator heal → commit → rewrite sentinel → push `--force-with-lease` → release lock
-- [ ] Global CI-heal budget: 3 attempts per PR; 4th failure disables auto-heal for that branch until next `/ship` run
-- [ ] Real failures: one-line notification with run URL + failing step name; no further action
-- [ ] PR body generated on first publish; regenerated via `gh pr edit --body` on subsequent pushes
-- [ ] Existing PR detection via `gh pr view --json number,state`
+- [x] Background watcher launched via `nohup ./watch-ci.sh … &`, PID at `.buildrunner/ship/ci-watch.pid`, state at `.buildrunner/ship/ci-state.json`
+- [x] Classifier: lint/format/prettier → fixable; known-flaky Playwright → fixable (1 retry); broken unit test → real; type error → real; migration failure → real
+- [x] CI-heal sequence: acquire per-branch lock → pull failing log → orchestrator heal → commit → rewrite sentinel → push `--force-with-lease` → release lock
+- [x] Global CI-heal budget: 3 attempts per PR; 4th failure disables auto-heal for that branch until next `/ship` run
+- [x] Real failures: one-line notification with run URL + failing step name; no further action
+- [x] PR body generated on first publish; regenerated via `gh pr edit --body` on subsequent pushes
+- [x] Existing PR detection via `gh pr view --json number,state`
 
 **Success Criteria:** Lint-fail on CI auto-heals end-to-end. Logic bug surfaces run URL, zero side effects. Concurrent `/ship` on same branch: lock prevents collision. 4 fixable failures in a row: auto-heal self-disables, user notified.
 
