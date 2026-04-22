@@ -73,3 +73,9 @@ Thumbs.db
 # Claude Code runtime lockfiles (not source)
 .claude/scheduled_tasks.lock
 
+# BR3 /ship runtime state — sentinel, run logs, metrics fallback
+# Written per-run; must not pollute source history
+.buildrunner/ship/*.json
+.buildrunner/ship/*.jsonl
+.buildrunner/ship/*.log
+

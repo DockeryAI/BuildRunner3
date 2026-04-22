@@ -92,6 +92,51 @@ cp "$BR3_HOOKS_DIR/pre-push" "$PROJECT_PATH/.git/hooks/pre-push"
 chmod +x "$PROJECT_PATH/.git/hooks/pre-push"
 echo -e "   ${GREEN}✅ pre-push installed${NC}"
 
+# Install pre-push.d fragments (ship gate + future fragments)
+PREPUSH_D_DIR="${BR3_HOOKS_DIR}/pre-push.d"
+if [ -d "$PREPUSH_D_DIR" ]; then
+    echo ""
+    echo "📦 Installing pre-push.d fragments..."
+    TARGET_PREPUSHD="${PROJECT_PATH}/.git/hooks/pre-push.d"
+    mkdir -p "$TARGET_PREPUSHD"
+    for fragment in "$PREPUSH_D_DIR"/*.sh; do
+        [ -f "$fragment" ] || continue
+        fname="$(basename "$fragment")"
+        # Idempotent: only copy if source differs from destination
+        if [ ! -f "${TARGET_PREPUSHD}/${fname}" ] || ! diff -q "$fragment" "${TARGET_PREPUSHD}/${fname}" > /dev/null 2>&1; then
+            cp "$fragment" "${TARGET_PREPUSHD}/${fname}"
+            chmod +x "${TARGET_PREPUSHD}/${fname}"
+            echo -e "   ${GREEN}✅ pre-push.d/${fname} installed${NC}"
+        else
+            echo -e "   ℹ️  pre-push.d/${fname} unchanged"
+        fi
+    done
+    # Ensure the composed pre-push hook sources pre-push.d fragments
+    # Check if the installed pre-push hook already runs pre-push.d
+    if ! grep -q "pre-push.d" "$PROJECT_PATH/.git/hooks/pre-push" 2>/dev/null; then
+        # Append fragment runner to pre-push hook
+        cat >> "$PROJECT_PATH/.git/hooks/pre-push" << 'FRAGMENT_RUNNER'
+
+# ============================================
+# BR3 pre-push.d FRAGMENT RUNNER
+# Runs all fragments in .git/hooks/pre-push.d/ in lexical order.
+# Non-zero exit from any fragment blocks the push.
+# ============================================
+PREPUSH_D="$(dirname "$0")/pre-push.d"
+if [ -d "$PREPUSH_D" ]; then
+    for frag in "$PREPUSH_D"/*.sh; do
+        [ -f "$frag" ] || continue
+        if ! bash "$frag"; then
+            echo "pre-push.d: fragment $(basename $frag) failed — push blocked"
+            exit 1
+        fi
+    done
+fi
+FRAGMENT_RUNNER
+        echo -e "   ${GREEN}✅ pre-push.d runner appended to pre-push hook${NC}"
+    fi
+fi
+
 echo ""
 echo "================================="
 echo -e "${GREEN}✅ Hooks successfully installed!${NC}"
