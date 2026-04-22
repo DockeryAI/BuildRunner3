@@ -240,6 +240,31 @@ class TestContextBundleServed:
                 if isinstance(v, str):
                     assert len(v) <= 256, f"metadata value not truncated: len={len(v)}"
 
+    def test_br_emit_unwraps_double_encoded_json(self, telemetry_db: Path) -> None:
+        """Double-encoded JSON metadata is unwrapped to the original object."""
+        import subprocess
+
+        script = Path(__file__).resolve().parents[2] / "scripts" / "br-emit-event.sh"
+        if not script.exists():
+            pytest.skip("br-emit-event.sh not found")
+
+        double_encoded = json.dumps(json.dumps({"phase": "2", "task": "dispatch"}))
+        env = os.environ.copy()
+        env["BR3_PROJECT_ROOT"] = str(telemetry_db.parent.parent)
+        result = subprocess.run(
+            [str(script), "context_bundle_served", double_encoded],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        assert result.returncode == 0, f"br-emit-event.sh failed: {result.stderr}"
+
+        rows = _read_events(telemetry_db, "context_bundle_served")
+        assert len(rows) >= 1, "expected at least 1 context_bundle_served row"
+        meta = json.loads(rows[0]["metadata"])
+        assert meta == {"phase": "2", "task": "dispatch"}
+
 
 # ---------------------------------------------------------------------------
 # 4. adversarial_review_ran — emitted by cross_model_review.run_three_way_review()

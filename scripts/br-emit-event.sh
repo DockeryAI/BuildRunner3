@@ -51,6 +51,16 @@ try:
 except Exception:
     meta = {"raw": str(raw_meta)[:256]}
 
+if isinstance(meta, str):
+    try:
+        reparsed = json.loads(meta)
+    except Exception:
+        meta = {"raw": meta[:256]}
+    else:
+        meta = reparsed if isinstance(reparsed, dict) else {"value": reparsed}
+elif not isinstance(meta, dict):
+    meta = {"value": meta}
+
 # Truncate all string values to 256 chars to prevent PII/prompt leakage
 sanitized = {}
 for k, v in meta.items():
