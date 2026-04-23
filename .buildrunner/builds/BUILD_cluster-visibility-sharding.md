@@ -5,7 +5,7 @@ role-matrix:
   inherit: default-role-matrix
   overrides:
     phases:
-      phase_1: { bucket: backend-build, assigned_node: muddy }
+      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
       phase_2: { bucket: ui-build, assigned_node: muddy }
       phase_3: { bucket: backend-build, assigned_node: muddy }
       phase_4: { bucket: terminal-build, assigned_node: muddy }
@@ -49,6 +49,8 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 - `core/cluster/node_tests.py` (MODIFY) — wire process detector into `/api/health`; superset of `/health` shape with legacy `running` / `queue_depth` retained.
 - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
 - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+
+**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
 
 **Blocked by:** None
 
