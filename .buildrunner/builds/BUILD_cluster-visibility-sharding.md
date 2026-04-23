@@ -66,7 +66,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 2: Dashboard renders ground truth
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.buildrunner/scripts/cluster-check.sh` (MODIFY) — `--health-json` currently hand-constructs JSON at lines 118 (HTTP branch) and 147 (SSH branch) and drops unknown fields. Rewrite to proxy the full `/health` payload.
@@ -134,7 +134,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 5: Per-project shard config + command wiring
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.buildrunner/templates/cluster-test-config.yaml.template` (NEW) — canonical template with commented fields.
