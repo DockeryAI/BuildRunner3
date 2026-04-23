@@ -105,6 +105,8 @@ class CodeReviewer:
         # Build prompt for Claude
         prompt = self._build_diff_review_prompt(diff, context)
 
+        # ai_code_review bypasses semantic cache unconditionally (Phase 10 exclusion list).
+        # Per-diff reviews are highly specific and caching them risks stale verdicts.
         try:
             message = await self.client.messages.create(
                 model=self.model,
@@ -145,6 +147,7 @@ class CodeReviewer:
         # Build prompt for architecture analysis
         prompt = self._build_architecture_prompt(code, file_path, spec_content)
 
+        # analyze_architecture bypasses semantic cache (Phase 10 exclusion list).
         try:
             message = await self.client.messages.create(
                 model=self.model,

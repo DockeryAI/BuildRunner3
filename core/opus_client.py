@@ -30,6 +30,12 @@ from anthropic.types import Message
 
 _METRICS_SCRIPT = Path.home() / ".buildrunner" / "scripts" / "lockwood-metrics.sh"
 
+# Semantic cache wrapper — lazy import to avoid load cost when cache is off.
+# Methods in _CACHE_BYPASS_METHODS always call the live API (skip_cache=True).
+_CACHE_BYPASS_METHODS: frozenset[str] = frozenset({
+    "ai_code_review", "adversarial_review", "arbiter", "reviewer",
+})
+
 
 def _emit_metric(model: str, effort: str, method: str, message: Optional[Message],
                  latency_ms: int, success: bool) -> None:
@@ -175,6 +181,47 @@ class OpusClient:
         raw_model = model or _DEFAULT_MODEL
         self.model = _OPUSPLAN_RESOLVED if raw_model == _OPUSPLAN_ALIAS else raw_model
 
+    async def _cached_call(
+        self, method_name: str, messages: List[Dict], *, skip_cache: bool = False
+    ) -> Message:
+        """
+        Route through semantic cache when enabled; fall back to live API.
+
+        The cache wrapper extracts text only — we need the full Message object
+        for _emit_metric() which reads usage tokens. So: if wrapper returns a
+        cached string, we wrap it in a lightweight mock. If live call, return
+        the real Message.
+        """
+        skip = skip_cache or method_name in _CACHE_BYPASS_METHODS
+        try:
+            from core.cluster.below.claude_cache_wrapper import get_wrapper
+            wrapper = get_wrapper()
+            create_kwargs = self._make_create_kwargs(method_name, messages)
+            # Strip keys that the wrapper passes directly to the API
+            api_extra = {k: v for k, v in create_kwargs.items()
+                         if k not in ("model", "messages")}
+            cached_text = await wrapper.call(
+                model=self.model,
+                method=method_name,
+                messages=messages,
+                skip_cache=skip,
+                **api_extra,
+            )
+            # wrapper.call() already called live API and returned text;
+            # return a thin mock so callers can use _extract_text()
+            class _CachedMsg:
+                content = [type("_T", (), {"type": "text", "text": cached_text})()]
+                usage = None
+            return _CachedMsg()
+        except Exception:
+            # Cache wrapper import failed or Below offline — use live API
+            pass
+
+        # Direct live API path (fallback)
+        return await self.async_client.messages.create(
+            **self._make_create_kwargs(method_name, messages)
+        )
+
     def _make_create_kwargs(self, method_name: str, messages: List[Dict]) -> Dict[str, Any]:
         """
         Build kwargs for messages.create, applying per-method effort tier,
@@ -216,11 +263,9 @@ class OpusClient:
 
         start = time.perf_counter()
         try:
-            message = await self.async_client.messages.create(
-                **self._make_create_kwargs(
-                    "pre_fill_spec",
-                    [{"role": "user", "content": prompt}],
-                )
+            message = await self._cached_call(
+                "pre_fill_spec",
+                [{"role": "user", "content": prompt}],
             )
             _emit_metric(self.model, _EFFORT_TIERS["pre_fill_spec"], "pre_fill_spec",
                          message, int((time.perf_counter() - start) * 1000), True)
@@ -270,11 +315,9 @@ Respond in JSON format with the following structure:
 
         start = time.perf_counter()
         try:
-            message = await self.async_client.messages.create(
-                **self._make_create_kwargs(
-                    "analyze_requirements",
-                    [{"role": "user", "content": prompt}],
-                )
+            message = await self._cached_call(
+                "analyze_requirements",
+                [{"role": "user", "content": prompt}],
             )
             response_text = _extract_text(message)
             result = json.loads(response_text)
@@ -343,11 +386,9 @@ Example structure:
 
         start = time.perf_counter()
         try:
-            message = await self.async_client.messages.create(
-                **self._make_create_kwargs(
-                    "generate_design_tokens",
-                    [{"role": "user", "content": prompt}],
-                )
+            message = await self._cached_call(
+                "generate_design_tokens",
+                [{"role": "user", "content": prompt}],
             )
             response_text = _extract_text(message)
             result = json.loads(response_text)
@@ -402,11 +443,9 @@ Respond in JSON format with:
 
         start = time.perf_counter()
         try:
-            message = await self.async_client.messages.create(
-                **self._make_create_kwargs(
-                    "validate_spec",
-                    [{"role": "user", "content": prompt}],
-                )
+            message = await self._cached_call(
+                "validate_spec",
+                [{"role": "user", "content": prompt}],
             )
             response_text = _extract_text(message)
             result = json.loads(response_text)

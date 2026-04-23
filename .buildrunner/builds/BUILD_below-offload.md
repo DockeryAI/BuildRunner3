@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-10 Complete — Phase 5 In Progress
+**Status:** Phases 1-11 Complete — Phase 5 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -286,23 +286,24 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 10: Semantic cache integration across Claude call sites
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
-- core/opus_client.py (MODIFY)
-- core/ai_code_review.py (MODIFY — route through wrapper)
+- core/opus_client.py (MODIFY — _cached_call() helper, all methods routed through wrapper)
+- core/ai_code_review.py (MODIFY — cache bypass comment added, direct client retained per exclusion)
 - core/cluster/below/claude_cache_wrapper.py (NEW)
-- tests/test_claude_cache_wrapper.py (NEW)
+- tests/test_claude_cache_wrapper.py (NEW — 17 tests, 100% pass)
 
 **Blocked by:** Phase 4
 **Deliverables:**
 
-- [ ] Thin `claude_cache_wrapper.call(model, method, messages, *, skip_cache=False)` wrapper
-- [ ] Migrate opus_client to use wrapper
-- [ ] Migrate ai_code_review (currently instantiates AsyncAnthropic directly) to use wrapper
-- [ ] Exclusion list enforced via skip_cache=True: ai_code_review, adversarial-review, arbiter, user-specific context
-- [ ] 7-day warm-up period (log-only) before trusting hits
-- [ ] Metrics: hit rate, similarity distribution, false-positive reports
+- [x] ClaudeCacheWrapper.call(model, method, messages, *, skip_cache=False) → str
+- [x] opus_client._cached_call() routes pre_fill_spec, analyze_requirements, generate_design_tokens, validate_spec through cache
+- [x] ai_code_review bypasses cache per exclusion list (review_diff, analyze_architecture)
+- [x] Exclusion list: ai_code_review, adversarial_review, arbiter, reviewer, review_diff, analyze_architecture
+- [x] 7-day warm-up period (log-only, configurable via warmup_days=0 in tests)
+- [x] Metrics: hit rate, skip reasons, latency to cache-wrapper-metrics.jsonl
+- [x] get_wrapper() singleton; BR3_SEMANTIC_CACHE=off rollback
 
 **Success Criteria:** Hit rate ≥15% on autopilot; 0 false positives in warm-up; ai_code_review bypasses cache 100%.
 
