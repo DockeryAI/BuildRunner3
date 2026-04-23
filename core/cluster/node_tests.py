@@ -24,6 +24,7 @@ from typing import Optional
 from datetime import datetime
 
 from core.cluster.base_service import create_app
+from core.cluster import process_detector
 
 # --- Config ---
 REPOS_DIR = os.environ.get("REPOS_DIR", os.path.expanduser("~/repos"))
@@ -1037,6 +1038,10 @@ async def startup():
     # Clean up any stale processes from previous runs holding our port
     _cleanup_stale_port(8100)
 
+    # Warm psutil counters so the first /api/health call returns real CPU%
+    # (psutil cpu_percent(interval=None) returns 0.0 on first invocation).
+    process_detector.warmup()
+
     # Start queue consumer (single thread — serializes all test runs)
     consumer = threading.Thread(target=_queue_consumer, daemon=True, name="test-consumer")
     consumer.start()
@@ -1051,7 +1056,13 @@ _service_start_time = time.time()
 
 @app.get("/api/health")
 async def walter_health():
-    """Extended health endpoint with Walter-specific operational data."""
+    """Extended health endpoint.
+
+    Superset of base_service /health — returns the canonical ground-truth
+    fields (cpu_pct, load_1m, mem_avail_pct, busy_state, workloads[]) plus
+    Walter-specific operational data (running, queue_depth, watched_repos…).
+    Phase 1 schema version tracked via `schema_version`.
+    """
     repos_path = Path(REPOS_DIR)
     repo_heads = {}
     for repo_dir in repos_path.iterdir():
@@ -1065,6 +1076,7 @@ async def walter_health():
         last_run = _last_run_time
 
     mem = psutil.virtual_memory()
+    snapshot = process_detector.sample_host()
 
     watched_repos = sorted(repo_heads.keys())
 
@@ -1072,7 +1084,17 @@ async def walter_health():
         "status": "healthy",
         "role": "test-runner",
         "version": SERVICE_VERSION,
+        "schema_version": 2,
         "uptime": round(time.time() - _service_start_time, 1),
+        # Phase 1 ground-truth superset
+        "cpu_pct": snapshot["cpu_pct"],
+        "load_1m": snapshot["load_1m"],
+        "mem_avail_pct": snapshot["mem_avail_pct"],
+        "cpu_count": snapshot["cpu_count"],
+        "busy_state": snapshot["busy_state"],
+        "workloads": snapshot["workloads"],
+        "platform": snapshot["platform"],
+        # Walter-specific fields (retained)
         "last_test_run": datetime.fromtimestamp(last_run).isoformat() if last_run > 0 else None,
         "running": running,
         "queue_depth": _test_queue.qsize(),

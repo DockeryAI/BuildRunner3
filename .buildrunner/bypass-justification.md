@@ -1,49 +1,35 @@
-# Adversarial Review Bypass — cluster-visibility-sharding
+# Bypass Justification — /spec adversarial review for BUILD_optimize-skill
 
 **Date:** 2026-04-23
-**Plan:** .buildrunner/plans/plan-cluster-visibility-sharding.md
-**Build:** BUILD_cluster-visibility-sharding.md
+**Plan:** .buildrunner/plans/plan-optimize-skill.md
+**Authorized by:** /spec skill 1-review rule
 
-## Why bypass
+## Why bypassed
 
-The consensus adversarial review tooling was unable to run end-to-end because the summarizer step hit an infrastructure error:
+Consensus adversarial review (codex + claude via ~/.buildrunner/scripts/adversarial-review.sh)
+returned BLOCKED with two codex-only findings (no consensus), with the arbiter circuit open.
 
-```
-summarizer: OllamaRuntime returned status=error error=Unsupported task_type: summarize; project_root is required; commit_sha is required
-```
+Per the /spec skill explicit instruction: "On BLOCKED → Fix the surfaced blockers inline in
+the draft plan, auto-bypass 3.7, proceed to 3.8. Do NOT re-run the review."
 
-This is tied to uncommitted edits in `core/runtime/ollama_runtime.py` (visible in git status at session start). The Otis fallback path was blocked by the one-review-per-plan mechanical guard (`cross_model_review.py --mode plan`) that forbids retries on the same plan in the same invocation — the guard was designed to prevent runaway review loops, not to handle summarizer infra failures.
+## Blockers surfaced and inline fixes applied
 
-## What substituted
+1. **"Cited research docs not in tree"** — FALSE POSITIVE. Research library lives on Jimmy
+   at `/srv/jimmy/research-library/` (per global CLAUDE.md "Research Library — Jimmy Only"),
+   accessed via `http://10.0.1.106:8100/retrieve`. Fix: added explicit Note on cited documents
+   section to plan clarifying Jimmy location + added Phase 1 deliverable for boot-time Jimmy
+   accessibility check.
 
-Per the /spec skill's third fallback path ("If both fail, fall back to a local Explore subagent using the adversarial prompt from the script output."), a local Explore subagent ran an adversarial read of the plan with an explicit blocker/warning/suggestion rubric. The review cited concrete file:line evidence from the codebase — not vibes — and surfaced four legitimate blockers plus six warnings.
+2. **"No tests added for orchestration logic"** — FAIR CATCH. Fix: added 4 test files to
+   phases 1/2/3/5:
+   - `tests/cluster/test_optimize_skill_schema.py` (Phase 1)
+   - `tests/cluster/test_optimize_skill_judge.py` (Phase 2 — swap-order, majority-vote, CoT)
+   - `tests/cluster/test_optimize_skill_diversity.py` (Phase 2 — metric stability)
+   - `tests/cluster/test_optimize_skill_gate.py` (Phase 3 — 16-case truth table)
+   - `tests/cluster/test_optimize_skill_runlog.py` (Phase 5 — log structure, resume)
 
-## Blockers raised by the Explore review (all fixed inline in the plan)
+## Arbiter circuit state
 
-1. **B1 — `BR3_ROUTER_LEGACY_SATURATION` env var did not exist.** Plan now codes it as an explicit Phase 3 deliverable, not assumed.
-2. **B2 — `cluster-check.sh --health-json` drops new fields** (`cluster-check.sh:118,147` hand-construct JSON). Plan now includes a Phase 2 deliverable to rewrite both branches to proxy the `/health` payload verbatim.
-3. **B3 — `server.mjs` does not exist; the real file is `events.mjs`** with a 30s (not ≤10s) poll. Plan corrected to reference `events.mjs` and added a `BR3_NODE_HEALTH_POLL_MS` knob with 10s default.
-4. **B4 — `jobs-aggregator.js` only listens to SSE events** (`jobs-aggregator.js:160-184`). Plan now adds a seventh SSE event type `node.workload` emitted from `events.mjs`, with dedupe semantics (SSE origin wins on shared `build_id`).
-
-## Warnings addressed inline
-
-- W1 — Dual endpoints `/health` + `/api/health` now explicitly synchronized as superset/subset in Phase 1 deliverables.
-- W2 — `cluster-builds.json` single-writer contract now enforced via `build-state-machine.mjs` in Phase 4.
-- W3 — Router latency guarded by new `BR3_NODE_HEALTH_TIMEOUT_MS` fail-open (default 500ms).
-- W4 — Shard strategy switched from file-count split to `vitest --shard=N/M` built-in.
-- W5 — `psutil` install + first-call warmup explicitly in Phase 1 deliverables.
-- W6 — Phase 6 pause/resume switched from SIGSTOP to kill-and-relaunch.
-
-## Suggestions adopted
-
-- Phase 4 SSH reachability (exit 255 requeue) now a deliverable.
-- Phase 4 SSH username map (byronhudson vs byron for Below) documented.
-- Phase 4 sharding strategy note explaining why built-in `--shard` beats custom splitter.
-
-## Decision
-
-The local Explore review produced higher-signal findings than an infra-broken consensus run would have. Every blocker has been addressed in the plan before writing the BUILD spec. Bypass authorized for this single spec; the underlying ollama summarizer bug should be fixed in a separate tracked task so the consensus path works for the next spec.
-
-## Override authority
-
-Roy-concise profile, auto-continue mode, one-review-per-spec rule. No product-decision blockers — all issues were technical fixes the model could make.
+Circuit open triggered a default BLOCK verdict despite only 2 low-risk findings from one
+reviewer. This is a known pattern documented in `.buildrunner/docs/cluster-orchestration.md`
+for the arbiter circuit breaker — not a substantive review failure.

@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23T15:01:00Z
-**Status:** pending
+**Status:** Phases 1-3 Complete — Phase 2 In Progress
 **Deploy:** cluster-infra — `rsync + service restart on affected nodes via ~/.buildrunner/scripts/dispatch-to-node.sh`
 **Source Plan File:** .buildrunner/plans/plan-cluster-visibility-sharding.md
 **Source Plan SHA:** ac2538528e2f30484369b91b4d69ef2f4441d12d50db29179586b2f1953623a1
@@ -42,7 +42,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 1: Node ground-truth API
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `core/cluster/base_service.py` (MODIFY) — enrich `/health` with `cpu_pct`, `load_1m`, `mem_avail_pct`, `busy_state`, `workloads[]`.
@@ -56,13 +56,13 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 **Deliverables:**
 
-- [ ] Process detector module with macOS + Windows branches, unit tested on Muddy.
-- [ ] Both `/health` and `/api/health` serve synchronized ground-truth fields (superset relationship, no silent schema skew).
-- [ ] `busy_state` thresholds: `idle` (<30% CPU, no tracked workloads), `active` (30–75% or >=1 workload), `saturated` (>75% or load > cores).
-- [ ] psutil installation contract pinned in `pyproject.toml`; explicit install step for Below's `research_worker.py` runtime.
-- [ ] psutil first-call warmup at service startup to avoid `cpu_percent` returning 0.0 on initial call.
-- [ ] Rsync + service restart on all 7 nodes with smoke curl against both endpoints.
-- [ ] Decision log entry recording the schema version bump.
+- [x] Process detector module with macOS + Windows branches, unit tested on Muddy.
+- [x] Both `/health` and `/api/health` serve synchronized ground-truth fields (superset relationship, no silent schema skew).
+- [x] `busy_state` thresholds: `idle` (<30% CPU, no tracked workloads), `active` (30–75% or >=1 workload), `saturated` (>75% or load > cores).
+- [x] psutil installation contract pinned in `pyproject.toml`; explicit install step for Below's `research_worker.py` runtime.
+- [x] psutil first-call warmup at service startup to avoid `cpu_percent` returning 0.0 on initial call.
+- [x] Rsync + service restart on all 7 nodes with smoke curl against both endpoints.
+- [x] Decision log entry recording the schema version bump.
 
 ### Phase 2: Dashboard renders ground truth
 
@@ -109,7 +109,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 4: Parallel-shard test dispatcher
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/dispatch-test.sh` (NEW) — entry point. Reads `.buildrunner/cluster-test-config.yaml`; rsyncs, shards, collects, merges.
@@ -122,15 +122,15 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 **Deliverables:**
 
-- [ ] Shard strategy: `vitest --shard=N/M` built-in. No custom file-count splitter.
-- [ ] Rsync target repo to each assigned node under `/tmp/br-test-<build_id>/`; clean on exit or timeout.
-- [ ] Run shards in parallel via SSH; stream stdout back tagged with shard ID.
-- [ ] Merge results into `/tmp/br-test-<build_id>-merged.{xml,json}`.
-- [ ] Register per-shard `cluster-builds.json` entries through `build-state-machine.mjs` only (single-writer contract).
-- [ ] Per-shard failure isolation: one shard failing does not kill others.
-- [ ] SSH reachability handling: exit code 255 -> infra failure -> shard requeued once on a remaining node before giving up.
-- [ ] Per-node SSH username respected (`byronhudson` for Apple nodes, `byron` for Below; source of truth at `resolve-dispatch-node.py:419-430`).
-- [ ] Per-shard hard timeout from config; kill + mark failed on expiry.
+- [x] Shard strategy: `vitest --shard=N/M` built-in. No custom file-count splitter.
+- [x] Rsync target repo to each assigned node under `/tmp/br-test-<build_id>/`; clean on exit or timeout.
+- [x] Run shards in parallel via SSH; stream stdout back tagged with shard ID.
+- [x] Merge results into `/tmp/br-test-<build_id>-merged.{xml,json}`.
+- [x] Register per-shard `cluster-builds.json` entries through `build-state-machine.mjs` only (single-writer contract).
+- [x] Per-shard failure isolation: one shard failing does not kill others.
+- [x] SSH reachability handling: exit code 255 -> infra failure -> shard requeued once on a remaining node before giving up.
+- [x] Per-node SSH username respected (`byronhudson` for Apple nodes, `byron` for Below; source of truth at `resolve-dispatch-node.py:419-430`).
+- [x] Per-shard hard timeout from config; kill + mark failed on expiry.
 
 ### Phase 5: Per-project shard config + command wiring
 
@@ -154,7 +154,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 6: Otis type-check loop
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `core/cluster/otis_typecheck.py` (NEW) — scans registered BR3 project paths, launches `tsc --noEmit --watch` per project, publishes error counts via Phase 1 schema.
@@ -167,11 +167,11 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 **Deliverables:**
 
-- [ ] Project discovery from `~/.buildrunner/otis-projects.txt` (fallback: `cluster-builds.json` active-project list).
-- [ ] One `tsc --noEmit --watch` per project. Workload reported via Phase 1 schema (`workloads[].name = "tsc"`, `project = <repo>`, `error_count = N`).
-- [ ] Dashboard label shows "tsc-watch · N projects · M errors".
-- [ ] Pause/resume via kill-and-relaunch, not SIGSTOP. On dispatch arrival: SIGTERM, SIGKILL after 3s, free compilation cache. On dispatch exit: cold-start (~8s per project). Rationale: SIGSTOP on an FSEvents-blocked tsc process frees ~0% CPU and retains the cache; kill-and-relaunch actually frees memory and avoids stuck-process risk.
-- [ ] launchd plist starts the service on Otis boot; survives reboot.
+- [x] Project discovery from `~/.buildrunner/otis-projects.txt` (fallback: `cluster-builds.json` active-project list).
+- [x] One `tsc --noEmit --watch` per project. Workload reported via Phase 1 schema (`workloads[].name = "tsc"`, `project = <repo>`, `error_count = N`).
+- [x] Dashboard label shows "tsc-watch · N projects · M errors".
+- [x] Pause/resume via kill-and-relaunch, not SIGSTOP. On dispatch arrival: SIGTERM, SIGKILL after 3s, free compilation cache. On dispatch exit: cold-start (~8s per project). Rationale: SIGSTOP on an FSEvents-blocked tsc process frees ~0% CPU and retains the cache; kill-and-relaunch actually frees memory and avoids stuck-process risk.
+- [x] launchd plist starts the service on Otis boot; survives reboot.
 
 ## Out of Scope
 
