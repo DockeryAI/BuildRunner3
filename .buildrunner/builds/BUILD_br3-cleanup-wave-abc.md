@@ -211,7 +211,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 7: Dependency Hygiene
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Bucket/Node:** terminal-build / muddy
 **Files:**
 
