@@ -155,7 +155,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 5: Dead Module & Import Removal
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Bucket/Node:** backend-build / muddy
 **Files:**
 
