@@ -1467,3 +1467,41 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:58:56Z] P3_COMPLETE constants-consolidation JIMMY_URL=4sites BELOW_HOST=8sites qwen3:8b=7sites decisions.log=4sites double-nested-get=eliminated
 [2026-04-23T21:01:49.743474Z] THREE_WAY_REVIEW review_start plan_hash=d64aeef62d6089bf artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
 [2026-04-23T21:02:42.595931Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=805ef89f2ccfd444 reviewers=2
+[2026-04-23T21:30:00Z] [P5-AUDIT] core/feature_discovery.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 production callers found → SAFE TO DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] core/migration_mapper.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 callers found → SAFE TO DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] core/rls_aware.py — grep for rls_aware, inject_rls_awareness, RLSDocumentationGuide, get_rls_context: 0 callers in cli/ api/ core/ plugins/ hooks/ tests/ → Codex/dead disagreement resolved: no live callers → SAFE TO DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] core/completeness_validator.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 callers found → SAFE TO DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] core/storybook_generator.py — callers found: tests/test_design_system_complete.py:15 (test-only, no prod caller) → SAFE TO DELETE (test will need update but module is orphan)
+[2026-04-23T21:30:00Z] [P5-AUDIT] core/visual_regression.py — callers found: tests/test_design_system_complete.py:16 (test-only, no prod caller) → SAFE TO DELETE (test will need update)
+[2026-04-23T21:30:00Z] [P5-AUDIT] core/opus_handoff.py — callers: tests/test_opus_client_4_7.py (4 sites), tests/test_integration_prd_system.py (1 site) — test-only, no production callers → SAFE TO DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui_terminal.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 callers found → SAFE TO DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] plugins/notion.py — no imports in cli/ api/ core/ scripts/; cli/main.py L957 mentions "notion" in a help string only → NOT wired → DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] plugins/slack.py — no imports in cli/ api/ core/ scripts/; cli/main.py L957 mentions "slack" in help string only → NOT wired → DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] plugins/github.py — no imports found (core/github/ is a separate package); plugins/github.py is NOT the core/github/ package → NOT wired → DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/TerminalDemo.tsx — exported in index.ts but no page/app imports it → DELETE; also remove index.ts export line
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/PRDEditorV2.tsx — no imports outside its own file → DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/PRDChatInterface.tsx — no importers → DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/PRDMarkdownPreview.tsx — no importers → DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/MonacoPRDEditor.tsx — only imported by PRDEditorV2.tsx (also being deleted) → DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/pages/BuildMonitor.tsx — no App.tsx route, no importers outside example file → DECISION: DELETE (not routing; orphan)
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/ProgressSidebar.example.tsx — example file, no production import → DELETE
+[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/examples/useBuildMonitor.example.ts — example file, no production import → DELETE
+[2026-04-23T21:31:00Z] [DELETE] core/feature_discovery.py — orphan module, 0 importers in production code (P5)
+[2026-04-23T21:31:00Z] [DELETE] core/migration_mapper.py — orphan module, 0 importers (P5)
+[2026-04-23T21:31:00Z] [DELETE] core/rls_aware.py — orphan module, 0 importers; Codex/dead disagreement resolved: confirmed no live callers (P5)
+[2026-04-23T21:31:00Z] [DELETE] core/completeness_validator.py — orphan module, 0 importers (P5)
+[2026-04-23T21:31:00Z] [DELETE] core/storybook_generator.py — orphan module, only test-file reference in test_design_system_complete.py (P5)
+[2026-04-23T21:31:00Z] [DELETE] core/visual_regression.py — orphan module, only test-file reference in test_design_system_complete.py (P5)
+[2026-04-23T21:31:00Z] [DELETE] core/opus_handoff.py — orphan module, only test-file references (tests only, no production callers) (P5)
+[2026-04-23T21:31:00Z] [DELETE] ui_terminal.py — orphan module at repo root, 0 importers (P5)
+[2026-04-23T21:31:30Z] [DELETE] plugins/notion.py — not wired into any dispatcher or router; cli/main.py only mentions "notion" in a help string (P5)
+[2026-04-23T21:31:30Z] [DELETE] plugins/slack.py — not wired into any dispatcher or router; cli/main.py only mentions "slack" in a help string (P5)
+[2026-04-23T21:31:30Z] [DELETE] plugins/github.py — not wired; plugins/github.py is distinct from core/github/ package which IS wired; plugins/ version is dead (P5)
+[2026-04-23T21:32:00Z] [DELETE] ui/src/components/TerminalDemo.tsx — orphan; exported in index.ts but no page/app imports it (P5)
+[2026-04-23T21:32:00Z] [DELETE] ui/src/components/PRDEditorV2.tsx + PRDEditorV2.css — orphan; no importers outside itself (P5)
+[2026-04-23T21:32:00Z] [DELETE] ui/src/components/PRDChatInterface.tsx + PRDChatInterface.css — orphan; no importers (P5)
+[2026-04-23T21:32:00Z] [DELETE] ui/src/components/PRDMarkdownPreview.tsx + PRDMarkdownPreview.css — orphan; no importers (P5)
+[2026-04-23T21:32:00Z] [DELETE] ui/src/components/MonacoPRDEditor.tsx — only imported by PRDEditorV2 (also deleted) (P5)
+[2026-04-23T21:32:00Z] [DELETE] ui/src/pages/BuildMonitor.tsx + BuildMonitor.css — DECISION: delete; no App.tsx route, no importers (P5)
+[2026-04-23T21:32:00Z] [DELETE] ui/src/components/ProgressSidebar.example.tsx — example file, no production import (P5)
+[2026-04-23T21:32:00Z] [DELETE] ui/src/examples/useBuildMonitor.example.ts — example file, no production import (P5)
