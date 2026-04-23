@@ -1453,3 +1453,9 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:58:05Z] [DECISION] deleted ui/api/routes/prd_builder.py; canonical is api/routes/prd_builder.py (registered in api/server.py); ui version already imported from api.* anyway (P6)
 [2026-04-23T20:58:06.515723Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=550dc75ed92e59ff reviewers=2
 [2026-04-23T20:58:08.893050Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ed702a56c5988eed reviewers=2
+[2026-04-23T20:59:06.701969Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=80f46e50e7464fb3 reviewers=2
+[2026-04-23T20:59:07.403628Z] THREE_WAY_REVIEW review_start plan_hash=805ef89f2ccfd444 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:59:28.471601Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ffad740542876a99 reviewers=2
+[2026-04-23T21:00:02.582271Z] THREE_WAY_REVIEW review_start plan_hash=db979527efa73656 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T21:00:05Z] [DECISION] added pin: true as native PHASE_OVERRIDE_FIELDS in ~/.buildrunner/scripts/load-role-matrix.sh; pin is now preserved in resolved cache output (P6)
+[2026-04-23T21:00:05Z] [DECISION] removed regex sanitizer from ~/.buildrunner/scripts/resolve-dispatch-node.py; pin: true is now native so no pre-sanitization needed; round-trip verified (P6)
