@@ -80,3 +80,7 @@ Thumbs.db
 .buildrunner/ship/*.log
 
 .playwright-mcp/
+
+# Semantic answer cache — runtime state, not source
+.buildrunner/state/
+# (answer_cache.db lives at $HOME/.buildrunner/state/answer_cache.db)

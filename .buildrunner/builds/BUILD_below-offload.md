@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-6 Complete — Phase 4 In Progress
+**Status:** Phases 1-7 Complete — Phase 5 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -158,7 +158,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 4: Semantic answer cache infrastructure
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - core/cluster/below/semantic_cache.py (NEW)
@@ -168,12 +168,12 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 **Blocked by:** Phase 0
 **Deliverables:**
 
-- [ ] sqlite-vec table keyed by `(model, method_name, prompt_embedding, normalized_prompt_hash)`
-- [ ] DB file at $HOME/.buildrunner/state/answer_cache.db (NOT in repo)
-- [ ] `lookup(model, method, prompt)` with configurable threshold (default 0.95)
-- [ ] `store(model, method, prompt, answer)` with TTL eviction
-- [ ] Admin CLI: `below-cache inspect | clear | stats`
-- [ ] Cache-warming mode (log-only for N runs before serving)
+- [x] sqlite-vec table keyed by `(model, method_name, prompt_embedding, normalized_prompt_hash)`
+- [x] DB file at $HOME/.buildrunner/state/answer_cache.db (NOT in repo)
+- [x] `lookup(model, method, prompt)` with configurable threshold (default 0.95)
+- [x] `store(model, method, prompt, answer)` with TTL eviction
+- [x] Admin CLI: `below-cache inspect | clear | stats`
+- [x] Cache-warming mode (log-only for N runs before serving)
 
 **Success Criteria:** 0 false-positive hits at 0.95 threshold; no cross-model bleed.
 
