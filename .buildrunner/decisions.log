@@ -1459,3 +1459,7 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T21:00:02.582271Z] THREE_WAY_REVIEW review_start plan_hash=db979527efa73656 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
 [2026-04-23T21:00:05Z] [DECISION] added pin: true as native PHASE_OVERRIDE_FIELDS in ~/.buildrunner/scripts/load-role-matrix.sh; pin is now preserved in resolved cache output (P6)
 [2026-04-23T21:00:05Z] [DECISION] removed regex sanitizer from ~/.buildrunner/scripts/resolve-dispatch-node.py; pin: true is now native so no pre-sanitization needed; round-trip verified (P6)
+[2026-04-23T21:00:51.700971Z] THREE_WAY_REVIEW review_start plan_hash=03ff860b65cf56ee artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T21:00:52Z] [DECISION] deleted build/ directory (untracked; already in .gitignore from P4; Python bdist artifacts not part of project source) (P6)
+[2026-04-23T21:00:52Z] [DECISION] archived scripts/post_cutover_smoke.py → scripts/archive/post_cutover_smoke.py; stale smoke test for a cutover that is now complete (P6)
+[2026-04-23T21:00:52Z] [DECISION] updated ~/.buildrunner/config/rollout-state.yaml: mode watch-only→enforced, flipped_at null→2026-04-21T00:00:00Z; reflects actual post-cutover state (P6)
