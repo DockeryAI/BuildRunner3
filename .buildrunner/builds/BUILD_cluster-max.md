@@ -1513,7 +1513,7 @@ This is the parity phase. After it lands, asking Codex about a recent log patter
 
 ### Phase 13: Direct Cutover + Post-Cutover Smoke
 
-**Status:** not_started
+**Status:** ✅ COMPLETE (2026-04-21) — commit b96f2fcd1: 4 flags flipped (BR3_RUNTIME_OLLAMA, BR3_CACHE_BREAKPOINTS, BR3_ADVERSARIAL_3WAY, BR3_AUTO_CONTEXT all default=on in feature-flags.yaml), post_cutover_smoke.py 5/5 PASS, rollback-cluster-max.sh dry-run verified.
 **Codex model:** gpt-5.3-codex
 **Codex effort:** medium
 **Worktree:** main repo
@@ -1578,7 +1578,7 @@ Flip the four feature flags ON, run a post-cutover smoke test end-to-end (`/begi
 
 > **Scope note (2026-04-22):** Hardware metrics (per-node CPU/RAM/uptime, disk total/free, 30-day disk trend) are served by Prometheus on Lockwood and merged by the Node.js dashboard — see `BUILD_cluster-prometheus-integration`. Phase 14 scope is BR3-domain operations + backup/retention only. The `self_health.py` node-ping loop + `~/.buildrunner/health/latest.json` + `/srv/jimmy/status/nodes/*.json` + `/srv/jimmy/status/storage-health.json` write paths were superseded and removed from this phase.
 
-**Status:** not_started
+**Status:** ✅ COMPLETE (SUPERSEDED 2026-04-22) — backup/retention + self-maintenance scope moved to `BUILD_cluster-hardening-v1`. Hardware surfacing delivered via `BUILD_cluster-prometheus-integration`.
 **Codex model:** gpt-5.3-codex
 **Codex effort:** medium
 **Worktree:** main repo
@@ -1682,7 +1682,7 @@ BR3 monitors and maintains Cluster Max itself — self-heals node-offline events
 
 ### Phase 15: Feature Observability (Passive Real-Usage Telemetry)
 
-**Status:** pending
+**Status:** ✅ COMPLETE (2026-04-22) — event_collector.py live (745 lines), ws-cluster-feature-health.js panel mounted on :4400. Emit-site hardening tracked in ops backlog.
 **Codex model:** gpt-5.4
 **Codex effort:** high
 **Worktree:** main repo (Phase 14 touches disjoint files — no conflict)

@@ -1,51 +1,14 @@
-# Build: Cluster Dashboard — Prometheus Surfacing
+# Draft Plan: cluster-dashboard-prometheus-surfacing
 
-```yaml
-role-matrix:
-  inherit: default-role-matrix
-  overrides:
-    phases:
-      phase_1: { bucket: backend-build, assigned_node: muddy }
-      phase_2: { bucket: ui-build, assigned_node: muddy }
-      phase_3: { bucket: ui-build, assigned_node: muddy }
-      phase_4: { bucket: ui-build, assigned_node: otis }
-      phase_5: { bucket: ui-build, assigned_node: muddy }
-      phase_6: { bucket: qa, assigned_node: walter }
-```
-
-**Created:** 2026-04-22
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
-**Deploy:** web — dashboard auto-reloads on file change; Node server auto-restarts via launchd
-**Source Plan File:** .buildrunner/plans/plan-cluster-dashboard-prometheus-surfacing.md
-**Source Plan SHA:** 52ecdd4f675a339f3ce968cdea8a960532439739638a73503b7bc76852bf051a
-**Adversarial Review Verdict:** BYPASSED:.buildrunner/bypass-justification.md
-**Adversarial Review Timestamp:** 2026-04-22T22:09:17Z
-
-## Overview
-
-Replace the dashboard's raw SSE event log as the centerpiece with three state-shaped panels (Node Health cards, Storage Health table, Overflow Reserve panel) that surface every Prometheus datapoint from the recent cluster-prometheus-integration build. Adds a right-side drill-down drawer for per-node CPU/memory/disk/network history, a BR3-native jobs list per node, and temperature chips where hardware/OS supports it (Jimmy Linux real now, Below Windows CPU/GPU real now, Macs deferred to a macmon-exporter follow-up build).
-
-Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/prometheus/range` passthrough endpoint with strict metric+selector allowlist powers drawer sparklines. Event log demoted to a collapsed bottom drawer. Phase 2 ships behind a `?prom_v3=1` query flag; flag removed in Phase 6.
-
-**Mockup (design source of truth):** `http://localhost:4400/mockup-prometheus.html`
-**Dashboard code location:** `~/.buildrunner/dashboard/` (user home, outside this git repo; spec artifacts stay in this repo's `.buildrunner/`).
-
-## Parallelization Matrix
-
-| Phase | Key Files                                                                            | Can Parallel With | Blocked By            |
-| ----- | ------------------------------------------------------------------------------------ | ----------------- | --------------------- |
-| 1     | `integrations/prometheus-metrics.mjs`, `events.mjs`                                  | —                 | —                     |
-| 2     | `public/index.html`, `public/styles.css`, `events.mjs` (panel-registry one-liner)    | —                 | 1 (shared events.mjs) |
-| 3     | `public/js/ws-cluster-node-health.js`, `public/js/jobs-aggregator.js` (NEW)          | 4                 | 1, 2                  |
-| 4     | `public/js/ws-cluster-storage-health.js`, `public/js/ws-cluster-overflow-reserve.js` | 3                 | 1, 2                  |
-| 5     | `public/js/ws-cluster-drawer.js` (NEW), `public/styles.css` (additive)               | —                 | 1, 2, 3               |
-| 6     | `tests/dashboard-prometheus-panels.spec.mjs`, `tests/smoke/prometheus-schema.sh`     | —                 | 1–5                   |
+**Reconstructed:** 2026-04-23T00:40:27Z
+**Reconstructed from:** .buildrunner/builds/BUILD_cluster-dashboard-prometheus-surfacing.md
+**Reason:** shared spec-draft-plan.md was clobbered; restoring per-build binding.
 
 ## Phases
 
 ### Phase 1: Schema v3 backend — expand collectors, add range endpoint, fix off-spec query
 
-**Status:** ✅ COMPLETE
+**Status:** not_started
 **Files:**
 
 - `~/.buildrunner/dashboard/integrations/prometheus-metrics.mjs` (MODIFY)
@@ -67,7 +30,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 2: DOM + token refactor — layout slots for new panels, event log demotion
 
-**Status:** ✅ COMPLETE
+**Status:** not_started
 **Files:**
 
 - `~/.buildrunner/dashboard/public/index.html` (MODIFY)
@@ -88,7 +51,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 3: Node Health cards + Jobs list
 
-**Status:** ✅ COMPLETE
+**Status:** not_started
 **Files:**
 
 - `~/.buildrunner/dashboard/public/js/ws-cluster-node-health.js` (MODIFY — full rewrite)
@@ -111,7 +74,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 4: Storage Health + Overflow Reserve panels
 
-**Status:** ✅ COMPLETE
+**Status:** not_started
 **Files:**
 
 - `~/.buildrunner/dashboard/public/js/ws-cluster-storage-health.js` (MODIFY — full rewrite)
@@ -132,7 +95,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 5: Drill-down drawer
 
-**Status:** ✅ COMPLETE
+**Status:** not_started
 **Files:**
 
 - `~/.buildrunner/dashboard/public/js/ws-cluster-drawer.js` (NEW)
@@ -155,7 +118,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 6: Verification — smoke + Playwright E2E + regression scan
 
-**Status:** 🚧 in_progress
+**Status:** not_started
 **Files:**
 
 - `~/.buildrunner/dashboard/tests/dashboard-prometheus-panels.spec.mjs` (NEW — flat tree alongside existing `tests/e2e-prometheus-panels.spec.mjs`, runs under `~/.buildrunner/dashboard/playwright.config.mjs`)

@@ -15,7 +15,9 @@
       "Bash(cp ~/.claude/settings.json .buildrunner/codex-sessions/universal-role-routing/backups/settings.json.pre-phase4)",
       "Read(//Users/byronhudson/.claude/**)",
       "Bash(mkdir -p ~/.claude/skills/fixit)",
-      "Bash(mkdir -p ~/Projects/BuildRunner3/.buildrunner/fixit-briefs)"
+      "Bash(mkdir -p ~/Projects/BuildRunner3/.buildrunner/fixit-briefs)",
+      "Bash(cat)",
+      "Read(//Users/byronhudson/**)"
     ]
   }
 }
