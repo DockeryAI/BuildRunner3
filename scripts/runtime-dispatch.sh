@@ -18,8 +18,8 @@
 #   2 — unknown builder
 #   3 — malformed spec (file not found or empty)
 #
-# Feature flag: BR3_LOCAL_ROUTING (canonical) — alias BR3_RUNTIME_OLLAMA (deprecated,
-# removed next release). When dispatching ollama builder, the flag must be "on".
+# Feature flag: BR3_LOCAL_ROUTING (canonical). When dispatching ollama builder, the flag must be "on".
+# BR3_RUNTIME_OLLAMA alias removed 2026-04-23 (Phase 1 cleanup). Use BR3_LOCAL_ROUTING.
 #
 # Phase 2 — cluster-activation build
 
@@ -51,14 +51,6 @@ if [ -z "$BUILDER" ] || [ -z "$SPEC_PATH" ]; then
   echo "  builder:   claude | codex | ollama" >&2
   echo "  spec_path: path to a non-empty Markdown spec file" >&2
   exit 2
-fi
-
-# ── Feature flag shim: BR3_RUNTIME_OLLAMA → BR3_LOCAL_ROUTING ───────────────
-# BR3_RUNTIME_OLLAMA is the deprecated alias. It is aliased here for one
-# release, then will be removed. BR3_LOCAL_ROUTING is canonical.
-# See AGENTS.md § Feature flags for removal timeline.
-if [ "${BR3_RUNTIME_OLLAMA:-}" = "on" ] && [ "${BR3_LOCAL_ROUTING:-}" != "on" ]; then
-  export BR3_LOCAL_ROUTING="on"
 fi
 
 # When dispatching ollama builder, BR3_LOCAL_ROUTING must be on.

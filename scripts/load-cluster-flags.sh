@@ -22,9 +22,7 @@
 #   0 — success (all flags exported)
 #   1 — feature-flags.yaml not found (BR3_FLAGS_LOADED remains unset)
 #
-# Legacy alias shim:
-#   BR3_RUNTIME_OLLAMA is aliased to BR3_LOCAL_ROUTING for one release.
-#   Load this script exports BOTH; the canonical name is BR3_LOCAL_ROUTING.
+# Canonical flag: BR3_LOCAL_ROUTING. BR3_RUNTIME_OLLAMA alias removed 2026-04-23.
 #
 # Phase 3 — cluster-activation build
 
@@ -114,13 +112,6 @@ _do_export() {
     export "$_flag_name" 2>/dev/null || true
   done <<< "$_FLAG_OUTPUT"
 
-  # Legacy alias: BR3_RUNTIME_OLLAMA → BR3_LOCAL_ROUTING (one-release shim)
-  # The canonical flag is BR3_LOCAL_ROUTING. BR3_RUNTIME_OLLAMA is deprecated.
-  if [[ -z "${BR3_LOCAL_ROUTING:-}" && -n "${BR3_RUNTIME_OLLAMA:-}" ]]; then
-    BR3_LOCAL_ROUTING="$BR3_RUNTIME_OLLAMA"
-    export BR3_LOCAL_ROUTING
-  fi
-
   BR3_FLAGS_LOADED=1
   BR3_FLAGS_FILE="$_FLAGS_PATH"
   export BR3_FLAGS_LOADED BR3_FLAGS_FILE
@@ -135,9 +126,6 @@ else
     [[ -z "$_line" ]] && continue
     echo "export $_line"
   done <<< "$_FLAG_OUTPUT"
-  # Alias shim
-  echo "# Legacy alias: BR3_RUNTIME_OLLAMA → BR3_LOCAL_ROUTING"
-  echo 'if [[ -z "${BR3_LOCAL_ROUTING:-}" && -n "${BR3_RUNTIME_OLLAMA:-}" ]]; then export BR3_LOCAL_ROUTING="$BR3_RUNTIME_OLLAMA"; fi'
   echo "export BR3_FLAGS_LOADED=1"
   echo "export BR3_FLAGS_FILE='$_FLAGS_PATH'"
 fi

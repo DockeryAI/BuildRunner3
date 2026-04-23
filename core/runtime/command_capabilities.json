@@ -19,7 +19,7 @@
       "members": ["business", "sales", "test"]
     },
     "local_ready": {
-      "description": "Ollama (Below or Jimmy) may execute when BR3_RUNTIME_OLLAMA=1.",
+      "description": "Ollama (Below or Jimmy) may execute when BR3_LOCAL_ROUTING=on.",
       "members": [
         "plan-draft",
         "structural-review",

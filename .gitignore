@@ -84,3 +84,8 @@ Thumbs.db
 # Semantic answer cache — runtime state, not source
 .buildrunner/state/
 # (answer_cache.db lives at $HOME/.buildrunner/state/answer_cache.db)
+
+# Phase 1 cleanup additions
+coverage.json
+# Root-level screenshots/graphics — moved to docs/screenshots/ in Phase 4
+/*.png

@@ -1,7 +1,8 @@
 ai_behavior:
   auto_suggest_tests: false
-  verbosity: invalid
-  max_retries: -1
+  verbosity: normal
+  max_retries: 3
 testing:
   auto_run: true
-  coverage_threshold: 150
+  # coverage_threshold: canonical value is 90 — see .buildrunner/governance/governance.yaml:validation.coverage_threshold
+  coverage_threshold: 90

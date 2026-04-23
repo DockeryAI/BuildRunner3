@@ -15,6 +15,18 @@
 #   BR3_SKIP_PREFILTER=1                            same as --skip-prefilter
 set -euo pipefail
 
+# ---- Preflight: fail loud if required binaries are missing ------------------
+# Non-interactive shells (cron, launchd, SSH one-shots) inherit a minimal PATH
+# that excludes ~/.local/bin on Muddy. A silent "claude: command not found"
+# previously produced 16 days of 175-byte no-op logs — never again.
+for bin in claude curl python3; do
+    if ! command -v "$bin" >/dev/null 2>&1; then
+        echo "preflight: $bin not on PATH ($(hostname))" >&2
+        echo "preflight: PATH=$PATH" >&2
+        exit 127
+    fi
+done
+
 # ---- Arg parsing ------------------------------------------------------------
 DRY_RUN=0
 SINGLE_PHASE=""

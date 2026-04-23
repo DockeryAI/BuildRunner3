@@ -6,7 +6,7 @@ from OFF → ON. Each check names the flag it validates end-to-end.
 
 Checks (all MUST pass for green cutover):
   1. auto_context_block         — BR3_AUTO_CONTEXT: auto-context.sh emits <auto-context> block.
-  2. ollama_execute             — BR3_RUNTIME_OLLAMA: RuntimeRegistry.execute() via ollama runtime returns 200.
+  2. ollama_execute             — BR3_LOCAL_ROUTING: RuntimeRegistry.execute() via ollama runtime returns 200.
   3. adversarial_3way_findings  — BR3_ADVERSARIAL_3WAY: /review runs claude + codex + arbiter.
   4. cache_breakpoints_3        — BR3_CACHE_BREAKPOINTS: dispatched payload has 3 ephemeral breakpoints.
   5. dashboard_ws_4_events      — Dashboard /ws emits 4 event types within 12s window.
@@ -51,7 +51,7 @@ CHECKS = (
 
 CHECK_DOCS = {
     "auto_context_block": "BR3_AUTO_CONTEXT — auto-context.sh emits <auto-context> block on non-trivial prompt",
-    "ollama_execute": "BR3_RUNTIME_OLLAMA — RuntimeRegistry dispatch to ollama runtime returns 200",
+    "ollama_execute": "BR3_LOCAL_ROUTING — RuntimeRegistry dispatch to ollama runtime returns 200",
     "adversarial_3way_findings": "BR3_ADVERSARIAL_3WAY — /review dispatches claude+codex+(arbiter) producing findings",
     "cache_breakpoints_3": "BR3_CACHE_BREAKPOINTS — cache_policy returns exactly 3 ephemeral breakpoints",
     "dashboard_ws_4_events": "Dashboard /ws emits node-health, overflow-reserve, storage-health, consensus within 12s",

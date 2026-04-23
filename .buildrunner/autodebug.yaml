@@ -3,7 +3,7 @@
 
 project:
   name: BuildRunner3
-  type: auto  # auto-detect or: fullstack, backend, frontend, library
+  type: auto # auto-detect or: fullstack, backend, frontend, library
 
 # Exclude directories from all checks
 exclude:
@@ -34,9 +34,10 @@ checks:
     - security_scan
 
 thresholds:
-  max_failures: 0  # Zero tolerance
+  max_failures: 0 # Zero tolerance
   max_warnings: 10
-  min_coverage: 80
+  # min_coverage: canonical value is 90 — see .buildrunner/governance/governance.yaml:validation.coverage_threshold
+  min_coverage: 90
 
 enforcement:
   block_on_failure: true
