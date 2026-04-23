@@ -402,7 +402,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 16: Spec-drift detection at /begin step 0
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - $HOME/.claude/commands/begin.md (MODIFY — project-scoping guard)
