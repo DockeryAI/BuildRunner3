@@ -383,7 +383,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 15: PR body generation → qwen2.5-coder
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - $HOME/.buildrunner/scripts/ship/ci/pr-body-gen.sh (CREATE or MODIFY — verify at phase start)
