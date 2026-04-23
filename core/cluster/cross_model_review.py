@@ -31,6 +31,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from core.cluster.arbiter import arbitrate
+from core.cluster.cluster_config import get_below_host, get_below_model, get_ollama_port
+from core.cluster.log_utils import _append_decision_log, get_decisions_log_path
 from core.cluster.review_verdict import Verdict
 
 HOME = Path.home()
@@ -764,7 +766,7 @@ def format_runtime_preflight(preflight):
 # to the Opus arbiter, which always commits a final verdict.
 # ---------------------------------------------------------------------------
 
-_THREE_WAY_DECISIONS_LOG = HOME / "Projects" / "BuildRunner3" / ".buildrunner" / "decisions.log"
+_THREE_WAY_DECISIONS_LOG = get_decisions_log_path()  # single source of truth — core/cluster/log_utils.py
 
 THREE_WAY_REVIEW_PROMPT = REVIEW_PROMPT + """
 
@@ -979,14 +981,8 @@ async def _run_parallel_reviewers_one_round(prompt, config, timeout_seconds=360)
 
 
 def _log_three_way_decision(event, details=""):
-    """Append a three-way review event to decisions.log."""
-    _THREE_WAY_DECISIONS_LOG.parent.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    line = f"[{timestamp}] THREE_WAY_REVIEW {event}"
-    if details:
-        line += f" {details}"
-    with open(_THREE_WAY_DECISIONS_LOG, "a", encoding="utf-8") as f:
-        f.write(line + "\n")
+    """Append a three-way review event to decisions.log via log_utils (flock-guarded)."""
+    _append_decision_log("THREE_WAY_REVIEW", event, details)
 
 
 # --- Plan-context builder (canonical replacement for adversarial-review.sh file-tree + excerpts) ---
@@ -1362,7 +1358,9 @@ def _below_prescreen_obvious_pass(diff_text: str, spec_text: str) -> bool:
     if len(diff_text.encode("utf-8")) > 8 * 1024 or SECURITY_RE.search(diff_text):
         return False
 
-    below_host = os.environ.get("BELOW_HOST", "10.0.1.105")
+    _below_host = get_below_host()    # single source of truth — core/cluster/cluster_config.py
+    _below_model = get_below_model()  # single source of truth — core/cluster/cluster_config.py
+    _ollama_port = get_ollama_port()  # single source of truth — core/cluster/cluster_config.py
     schema = {
         "type": "object",
         "properties": {
@@ -1382,7 +1380,7 @@ def _below_prescreen_obvious_pass(diff_text: str, spec_text: str) -> bool:
         "When in doubt, return UNCERTAIN."
     )
     body = _json.dumps({
-        "model": "qwen3:8b",
+        "model": _below_model,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
         "format": schema,
@@ -1392,7 +1390,7 @@ def _below_prescreen_obvious_pass(diff_text: str, spec_text: str) -> bool:
     t0 = time.time()
     try:
         req = _urlreq.Request(
-            f"http://{below_host}:11434/api/chat",
+            f"http://{_below_host}:{_ollama_port}/api/chat",
             data=body,
             headers={"Content-Type": "application/json"},
             method="POST",
@@ -1415,7 +1413,7 @@ def _below_prescreen_obvious_pass(diff_text: str, spec_text: str) -> bool:
             with open(_metrics_file, "a", encoding="utf-8") as _mf:
                 _mf.write(_json.dumps({
                     "ts": utc_now_iso(),
-                    "model": "qwen3:8b",
+                    "model": _below_model,
                     "site": "cross-model-review-prescreen",
                     "verdict": verdict,
                     "confidence": confidence,

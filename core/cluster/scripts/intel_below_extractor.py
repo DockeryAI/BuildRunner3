@@ -27,15 +27,20 @@ from __future__ import annotations
 import json
 import logging
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
 from typing import Any
 
+# Allow running as a module from the repo root
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+from core.cluster.cluster_config import get_below_host, get_below_model  # noqa: E402
+
 logger = logging.getLogger(__name__)
 
-BELOW_HOST = os.environ.get("BELOW_HOST", "10.0.1.105")
-BELOW_MODEL = os.environ.get("BELOW_INTEL_MODEL", "qwen3:8b")
+BELOW_HOST = os.environ.get("BELOW_INTEL_HOST") or get_below_host()   # single source of truth — core/cluster/cluster_config.py
+BELOW_MODEL = os.environ.get("BELOW_INTEL_MODEL") or get_below_model()  # single source of truth — core/cluster/cluster_config.py
 _BELOW_INTEL_ENABLED = os.environ.get("BR3_BELOW_INTEL", "on").lower() != "off"
 
 # ---- Lockwood intel item schema (matches /api/intel/items POST body) ----

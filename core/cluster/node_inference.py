@@ -22,10 +22,11 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from core.cluster.base_service import create_app
+from core.cluster.cluster_config import get_below_model
 
 # --- Config ---
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
-OLLAMA_MODEL_SMALL = os.environ.get("OLLAMA_MODEL_SMALL", "qwen3:8b")
+OLLAMA_MODEL_SMALL = os.environ.get("OLLAMA_MODEL_SMALL", get_below_model())  # single source of truth — core/cluster/cluster_config.py
 OLLAMA_MODEL_LARGE = os.environ.get("OLLAMA_MODEL_LARGE", "llama3.3:70b-instruct-q4_K_M")
 # Back-compat: OLLAMA_MODEL still honored; defaults to small model for classify/draft.
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", OLLAMA_MODEL_SMALL)

@@ -12,6 +12,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from core.cluster.cluster_config import get_below_host, get_ollama_port
 from core.cluster.cross_model_review import build_review_prompt, parse_findings
 from core.runtime.base import BaseRuntime
 from core.runtime.claude_runtime import ClaudeRuntime
@@ -19,8 +20,8 @@ from core.runtime.types import RuntimeFinding, RuntimeResult, RuntimeTask
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_OLLAMA_HOST = "http://10.0.1.105"
-_DEFAULT_OLLAMA_PORT = 11434
+_DEFAULT_OLLAMA_HOST = f"http://{get_below_host()}"  # single source of truth — core/cluster/cluster_config.py
+_DEFAULT_OLLAMA_PORT = get_ollama_port()              # single source of truth — core/cluster/cluster_config.py
 _DEFAULT_MODEL = "llama3.3:70b"
 _CLUSTER_CHECK_SCRIPT = Path.home() / ".buildrunner/scripts/cluster-check.sh"
 _CLUSTER_JSON = Path.home() / ".buildrunner/cluster.json"
@@ -34,7 +35,7 @@ def _resolve_ollama_base_url() -> str:
             for node in cluster.get("nodes", {}).values():
                 roles = node.get("roles", [node.get("role", "")])
                 if "inference" in roles:
-                    host = node.get("host", "10.0.1.105")
+                    host = node.get("host", get_below_host())
                     return f"http://{host}"
     except (OSError, ValueError, KeyError):
         pass

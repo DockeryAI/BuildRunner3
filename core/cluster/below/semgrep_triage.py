@@ -41,15 +41,17 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Optional
 
+from core.cluster.cluster_config import get_below_host, get_ollama_port
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 
-BELOW_HOST: str = os.environ.get("BELOW_HOST", "10.0.1.105")
-BELOW_PORT: int = 11434
-BELOW_MODEL: str = "qwen2.5-coder:7b"
+BELOW_HOST: str = get_below_host()   # single source of truth — core/cluster/cluster_config.py
+BELOW_PORT: int = get_ollama_port()  # single source of truth — core/cluster/cluster_config.py
+BELOW_MODEL: str = "qwen2.5-coder:7b"  # intentionally different from BELOW_MODEL in cluster_config (code-specific model)
 BELOW_TIMEOUT: float = 15.0
 
 # Semgrep rulesets to run

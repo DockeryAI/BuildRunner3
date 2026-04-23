@@ -7,6 +7,7 @@ import asyncio
 import os
 import logging
 
+from core.cluster.cluster_config import get_below_ollama_url, get_below_model
 from core.cluster.utils import filter_hallucinations
 
 try:
@@ -16,8 +17,8 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-BELOW_OLLAMA_URL = os.environ.get("BELOW_OLLAMA_URL", "http://10.0.1.105:11434")
-BELOW_MODEL = os.environ.get("BELOW_MODEL", "qwen3:8b")
+BELOW_OLLAMA_URL = get_below_ollama_url()  # single source of truth — core/cluster/cluster_config.py
+BELOW_MODEL = get_below_model()            # single source of truth — core/cluster/cluster_config.py
 NEWEGG_SEARCH_URL = "https://www.newegg.com/p/pl"
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
 RATE_LIMIT_DELAY = 2.0

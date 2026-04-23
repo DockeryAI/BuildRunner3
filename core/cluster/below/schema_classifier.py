@@ -41,14 +41,16 @@ from typing import Any, Callable, Optional, Type, TypeVar
 import httpx
 from pydantic import BaseModel, ValidationError
 
+from core.cluster.cluster_config import get_below_host, get_ollama_port
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 
-BELOW_HOST: str = "10.0.1.105"
-BELOW_OLLAMA_PORT: int = 11434
+BELOW_HOST: str = get_below_host()          # single source of truth — core/cluster/cluster_config.py
+BELOW_OLLAMA_PORT: int = get_ollama_port()  # single source of truth — core/cluster/cluster_config.py
 BELOW_CHAT_URL: str = f"http://{BELOW_HOST}:{BELOW_OLLAMA_PORT}/api/chat"
 
 DEFAULT_TIMEOUT: float = 12.0

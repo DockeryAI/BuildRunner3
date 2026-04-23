@@ -18,6 +18,7 @@ import time
 import threading
 from typing import Optional
 
+from core.cluster.cluster_config import get_below_ollama_url, get_below_model
 from core.cluster.utils import cosine_similarity
 
 try:
@@ -28,8 +29,8 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # --- Config ---
-BELOW_OLLAMA_URL = os.environ.get("BELOW_OLLAMA_URL", "http://below.local:11434")
-BELOW_MODEL = os.environ.get("BELOW_MODEL", "qwen3:8b")
+BELOW_OLLAMA_URL = get_below_ollama_url()  # single source of truth — core/cluster/cluster_config.py
+BELOW_MODEL = get_below_model()            # single source of truth — core/cluster/cluster_config.py
 BELOW_CONNECT_TIMEOUT = float(os.environ.get("BELOW_CONNECT_TIMEOUT", "3"))
 BELOW_REQUEST_TIMEOUT = float(os.environ.get("BELOW_REQUEST_TIMEOUT", "60"))
 DISCORD_DEAL_WEBHOOK_URL = os.environ.get("DISCORD_DEAL_WEBHOOK_URL", "")
