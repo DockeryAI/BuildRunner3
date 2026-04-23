@@ -138,7 +138,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 3: Embedding + DBSCAN clustering library on Below
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - core/cluster/below/log_cluster.py (NEW)
