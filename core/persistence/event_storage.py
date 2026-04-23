@@ -9,6 +9,7 @@ Provides persistent event storage with:
 
 import json
 import gzip
+import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import logging
@@ -45,6 +46,7 @@ class EventStorage:
             retention_days=retention_days,
             compress=compress,
         )
+        self._lock = threading.Lock()  # serializes should_rotate + _rotate + write
 
     def save(self, events: List[Dict[str, Any]]):
         """
@@ -54,18 +56,19 @@ class EventStorage:
             events: List of event dictionaries to save
         """
         try:
-            # Check if rotation is needed before saving
-            if self.rotator.should_rotate(self.storage_path):
-                self._rotate()
+            with self._lock:
+                # Check if rotation is needed before saving
+                if self.rotator.should_rotate(self.storage_path):
+                    self._rotate()
 
-            # Save events
-            data = {
-                "events": events,
-                "version": "1.0",
-            }
+                # Save events
+                data = {
+                    "events": events,
+                    "version": "1.0",
+                }
 
-            with open(self.storage_path, "w") as f:
-                json.dump(data, f, indent=2)
+                with open(self.storage_path, "w") as f:
+                    json.dump(data, f, indent=2)
 
             logger.debug(f"Saved {len(events)} events to {self.storage_path}")
 
