@@ -1539,3 +1539,27 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 
 **Files modified:** `~/.buildrunner/scripts/resolve-dispatch-node.py`
 **Tests added:** `tests/cluster/test_router_ground_truth.py` (13 tests, all passing)
+[2026-04-23T16:13:49.943562Z] THREE_WAY_REVIEW review_start plan_hash=2c692693527124b3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T11:25:00Z] [ARCHITECTURE] Root cause uncovered: /fixit skill's codex exec dispatches omit sandbox flags, causing read-only sandbox default to silently reject apply_patch
+  WHY: codex exec defaults are approval_policy=never + sandbox=read-only when invoked without flags; ~/.codex/config.toml sets no defaults; fixit SKILL.md dispatches all four codex exec invocations (lines 269, 295, 341, 398) without --full-auto or explicit --sandbox policy
+  CONTEXT: ~/.claude/skills/fixit/SKILL.md Step 4a/4b/4c/5d codex exec dispatch sites; codex exec behavior
+
+[2026-04-23T11:26:00Z] [DECISION] Implement skill-level sandbox flag enforcement: define CODEX_EXEC_FLAGS variable in Step 2, guard against missing flag, use in all 4 dispatch sites
+  WHY: Centralizes sandbox policy in one place, prevents future regressions via early abort guard, makes intent explicit in every dispatch call, avoids silent zero-diff runs
+  CONTEXT: ~/.claude/skills/fixit/SKILL.md Step 2 (new block added after worktree creation, lines ~109-116); all four codex exec invocations now reference $CODEX_EXEC_FLAGS="--full-auto"
+
+[2026-04-23T11:27:00Z] [PATTERN] Established invariant: every codex exec dispatch must route through $CODEX_EXEC_FLAGS or equivalent explicit sandbox flag
+  WHY: Prevents silent write rejections that produce zero-diff runs and mislead arbitration; unsafe defaults buried in Codex's exec subcommand warrant visible, guarded enforcement at call site
+  CONTEXT: ~/.claude/skills/fixit/SKILL.md Rule 2 expanded with sandbox requirement; Step 2 guard aborts if CODEX_EXEC_FLAGS drops the flag
+
+[2026-04-23T11:28:00Z] [TRADE-OFF] Declined to update ~/.codex/config.toml with global sandbox defaults (sandbox_mode="workspace-write", approval_policy="on-failure")
+  WHY: Global config affects interactive codex CLI sessions and all other skills; risk of unintended behavior changes to interactive workflows outweighs benefit of redundant belt-and-suspenders enforcement; skill-level guard is cryptographically sufficient
+  CONTEXT: ~/.codex/config.toml left unchanged; fix is localized to /fixit skill only
+
+[2026-04-23T11:29:00Z] [CONSTRAINT] Discovered: codex exec subcommand has unsafe defaults (approval_policy=never, sandbox=read-only) when no flags passed
+  WHY: Codex's exec mode is designed for non-interactive automation, so it defaults to never prompting + restrictive sandbox; users must explicitly escalate with --full-auto or --sandbox workspace-write to enable writes
+  CONTEXT: codex exec --help documentation, ~/.codex/config.toml absence of override, prior fixit run 1776958188 that used danger-full-access (different execution path)
+
+[2026-04-23T11:30:00Z] [WHY] Why root cause wasn't caught earlier: /fixit SKILL.md was written without awareness of Codex exec's unsafe defaults; dispatches assumed implicit sandbox inheritance that doesn't exist
+  WHY: Codex's behavior changed or was always restrictive but went untested in non-interactive mode; prior successful /fixit runs likely used different dispatch path or earlier Codex version with different defaults
+  CONTEXT: Historical /fixit runs, skill evolution, codex versioning
