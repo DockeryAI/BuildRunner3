@@ -13,7 +13,7 @@ Key Improvements:
 import ast
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Set, Tuple
 from dataclasses import dataclass, field
 from collections import defaultdict
 

@@ -9,7 +9,7 @@ Only flags REAL SQL injection risks, not:
 
 import re
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 from dataclasses import dataclass
 
 

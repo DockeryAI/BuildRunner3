@@ -4,9 +4,8 @@ Early detection of TypeScript errors using tsc
 """
 
 import subprocess
-import json
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Optional
 from dataclasses import dataclass
 from enum import Enum
 

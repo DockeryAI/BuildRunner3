@@ -5,7 +5,7 @@ Provides helper functions for integrating telemetry into the orchestrator.
 Handles event emission, context creation, and telemetry lifecycle.
 """
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional
 from datetime import datetime
 import time
 

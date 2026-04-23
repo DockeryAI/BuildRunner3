@@ -9,12 +9,12 @@ Provides endpoints for:
 """
 
 from fastapi import APIRouter, HTTPException, Query
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 
 # Import metrics modules
-from core.telemetry.metrics_analyzer import MetricsAnalyzer, MetricType
+from core.telemetry.metrics_analyzer import MetricsAnalyzer
 from core.persistence.metrics_db import MetricsDB
 from core.telemetry.event_collector import EventCollector
 

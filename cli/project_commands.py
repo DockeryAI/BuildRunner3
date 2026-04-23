@@ -14,13 +14,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.prompt import Prompt, Confirm
-from rich import print as rprint
 import logging
 
-from core.project_registry import get_project_registry, ProjectInfo
+from core.project_registry import get_project_registry
 from core.shell_integration import get_shell_integration
-from core.planning_mode import PlanningModeDetector
-from core.prd.prd_controller import get_prd_controller
 
 console = Console()
 logger = logging.getLogger(__name__)

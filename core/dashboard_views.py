@@ -16,7 +16,7 @@ import re
 import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 
 

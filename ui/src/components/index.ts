@@ -5,7 +5,6 @@
 
 // Terminal Components
 export { TerminalPanel } from './TerminalPanel';
-export { TerminalDemo } from './TerminalDemo';
 
 // Dashboard & Monitoring
 export { Dashboard } from './Dashboard';

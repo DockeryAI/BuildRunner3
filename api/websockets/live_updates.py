@@ -9,15 +9,13 @@ Provides real-time updates for:
 """
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from typing import Dict, Set, List
+from typing import Dict, Set
 import asyncio
 import json
 from datetime import datetime
 
 # Import core modules
-from core.telemetry import Event, EventCollector
-from core.task_queue import TaskQueue
-from core.parallel import SessionManager
+from core.telemetry import Event
 
 router = APIRouter()
 

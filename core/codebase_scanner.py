@@ -12,7 +12,7 @@ Scans codebase to identify:
 import ast
 import re
 from pathlib import Path
-from typing import Dict, List, Set, Optional, Any
+from typing import Dict, List
 from dataclasses import dataclass, field
 
 

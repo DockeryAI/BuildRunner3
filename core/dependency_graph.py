@@ -14,10 +14,9 @@ Features:
 - Critical path analysis
 """
 
-from typing import Dict, List, Set, Optional, Tuple
+from typing import Dict, List, Set, Tuple
 from dataclasses import dataclass, field
 from collections import defaultdict, deque
-from enum import Enum
 
 
 class GraphError(Exception):

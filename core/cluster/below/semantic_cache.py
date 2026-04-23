@@ -42,10 +42,7 @@ import argparse
 import hashlib
 import json
 import logging
-import os
-import sys
 import time
-from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -293,7 +290,6 @@ class SemanticCache:
         best_answer: Optional[str] = None
         best_stored_at: Optional[float] = None
 
-        import math
 
         for row in rows:
             stored_hash = row[0]

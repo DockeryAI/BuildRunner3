@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import shutil
 import socket
@@ -11,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from core.runtime.capability_gate import CapabilityGateResult, pending_build_phases, evaluate_phase_capabilities
+from core.runtime.capability_gate import pending_build_phases, evaluate_phase_capabilities
 from core.runtime.command_compiler import compile_command_bundle
 from core.runtime.context_compiler import compile_command_task
 from core.runtime.runtime_registry import RuntimeRegistry, create_runtime_registry

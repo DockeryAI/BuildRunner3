@@ -4,7 +4,6 @@ This module provides functionality to install and manage git hooks
 that enforce security best practices (Tier 1 checks).
 """
 
-import os
 import stat
 import subprocess
 from pathlib import Path

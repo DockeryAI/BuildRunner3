@@ -6,7 +6,6 @@ Validates that all BuildRunner 3.0 systems are properly configured and active
 import typer
 from pathlib import Path
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
 import os
 import subprocess

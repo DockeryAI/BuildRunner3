@@ -5,7 +5,6 @@ and version-based progress calculation.
 """
 
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any

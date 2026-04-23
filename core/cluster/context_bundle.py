@@ -16,17 +16,15 @@ IMPORTANT: Token budgets enforced via count-tokens.sh (tokenizer-true). No byte 
 
 from __future__ import annotations
 
-import json
 import logging
 import os
-import re
 import sqlite3
 import subprocess
 import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from core.cluster.log_utils import get_decisions_log_path
 

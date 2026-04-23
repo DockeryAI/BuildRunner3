@@ -19,8 +19,8 @@ from typing import Optional
 import asyncio
 
 from core.prd.prd_controller import PRDChangeEvent, get_prd_controller
-from core.adaptive_planner import AdaptivePlanner, get_adaptive_planner
-from core.prd_file_watcher import PRDFileWatcher, start_prd_watcher
+from core.adaptive_planner import get_adaptive_planner
+from core.prd_file_watcher import start_prd_watcher
 
 logger = logging.getLogger(__name__)
 

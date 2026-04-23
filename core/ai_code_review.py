@@ -12,7 +12,7 @@ Uses Claude Opus 4.7 with xhigh effort + adaptive thinking per BR3 standards.
 
 import os
 import asyncio
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 from pathlib import Path
 from anthropic import AsyncAnthropic
 import subprocess

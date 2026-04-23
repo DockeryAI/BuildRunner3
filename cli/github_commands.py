@@ -7,7 +7,6 @@ Complete GitHub workflow automation from branch creation to deployment.
 import typer
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
 from pathlib import Path
 import sys
 
@@ -17,17 +16,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.github.branch_manager import BranchManager
 from core.github.push_intelligence import PushIntelligence
 from core.github.conflict_detector import ConflictDetector
-from core.github.version_manager import VersionManager
 from core.github.release_manager import ReleaseManager
 from core.github.pr_manager import PRManager
 from core.github.commit_builder import CommitBuilder
 from core.github.protection_manager import ProtectionManager
 from core.github.snapshot_manager import SnapshotManager
-from core.github.metrics_tracker import MetricsTracker
-from core.github.health_checker import HealthChecker
-from core.github.issues_manager import IssuesManager
-from core.github.coauthor_manager import CoAuthorManager
-from core.github.deployment_manager import DeploymentManager
 
 console = Console()
 app = typer.Typer(help="GitHub workflow automation")

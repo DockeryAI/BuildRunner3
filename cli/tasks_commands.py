@@ -10,19 +10,16 @@ Commands:
 - br tasks retry - Retry a failed task
 """
 
-import json
 import typer
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from core.spec_parser import SpecParser
-from core.task_decomposer import TaskDecomposer, TaskComplexity
+from core.task_decomposer import TaskDecomposer
 from core.dependency_graph import DependencyGraph
 from core.task_queue import TaskQueue, TaskStatus, QueuedTask
-from core.priority_scheduler import PriorityScheduler, SchedulingStrategy
 from core.state_persistence import StatePersistence
 
 tasks_app = typer.Typer(help="Task generation and management commands")

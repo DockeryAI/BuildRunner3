@@ -14,7 +14,7 @@ Analyzes code for:
 
 import ast
 import re
-from typing import Dict, List, Optional, Set, Any
+from typing import Dict, List, Optional, Any
 from pathlib import Path
 from dataclasses import dataclass
 

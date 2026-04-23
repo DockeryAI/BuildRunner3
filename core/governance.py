@@ -6,7 +6,6 @@ Includes checksum verification to prevent unauthorized tampering.
 """
 
 import hashlib
-import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 import yaml

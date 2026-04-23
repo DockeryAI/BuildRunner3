@@ -5,8 +5,7 @@ Interactive PRD creation with AI assistance
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Dict, List, Optional
-import json
+from typing import Dict, Optional
 import subprocess
 from pathlib import Path
 

@@ -5,7 +5,7 @@ Analyzes changed files to determine tech stack and build type
 
 import subprocess
 from pathlib import Path
-from typing import List, Set, Dict, Optional
+from typing import List, Set
 from dataclasses import dataclass
 from enum import Enum
 import yaml

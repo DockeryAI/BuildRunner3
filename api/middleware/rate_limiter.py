@@ -25,13 +25,11 @@ Usage:
 import time
 import logging
 from typing import Dict, Optional, Tuple
-from collections import defaultdict
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from dataclasses import dataclass
 import asyncio
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse
+from starlette.responses import JSONResponse
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 
 logger = logging.getLogger(__name__)

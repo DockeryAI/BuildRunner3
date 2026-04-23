@@ -6,7 +6,6 @@ Provides safe, typed interface to GitHub operations.
 
 import os
 from typing import Optional, List, Dict, Any
-from pathlib import Path
 from dataclasses import dataclass
 
 

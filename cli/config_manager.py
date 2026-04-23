@@ -5,7 +5,6 @@ Manages hierarchical configuration: Project > Global > Defaults
 Loads from ~/.buildrunner/global-behavior.yaml and .buildrunner/behavior.yaml
 """
 
-import os
 import yaml
 from pathlib import Path
 from typing import Any, Dict, Optional

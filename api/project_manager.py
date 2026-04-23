@@ -3,7 +3,6 @@ Project Manager API
 Handles project creation, initialization, and BuildRunner setup
 """
 
-import os
 import subprocess
 from pathlib import Path
 from typing import Dict, Optional

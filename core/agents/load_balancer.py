@@ -5,13 +5,12 @@ Implements intelligent load balancing across multiple agents with fallback strat
 Distributes work based on health, availability, capacity, and performance metrics.
 """
 
-import asyncio
 import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Callable
+from typing import Dict, List, Optional, Tuple
 from abc import ABC, abstractmethod
 
 from .health import AgentHealthMonitor, HealthStatus

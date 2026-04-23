@@ -15,7 +15,7 @@ import os
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from core.runtime.types import RuntimeResult, RuntimeTask
+    from core.runtime.types import RuntimeTask
 
 logger = logging.getLogger(__name__)
 

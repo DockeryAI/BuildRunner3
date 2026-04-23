@@ -3,7 +3,6 @@ PROJECT_SPEC Generator - Creates PROJECT_SPEC.md from codebase analysis.
 """
 
 from pathlib import Path
-from typing import Dict, List, Any
 from datetime import datetime
 from .codebase_analyzer import AnalysisResult
 

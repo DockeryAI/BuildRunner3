@@ -12,9 +12,7 @@ from typing import Optional
 import click
 from rich.console import Console
 from rich.table import Table
-from rich.progress import Progress, BarColumn, TextColumn, TaskProgressColumn
 from rich.panel import Panel
-from rich.layout import Layout
 from rich.live import Live
 from rich.text import Text
 
@@ -23,7 +21,6 @@ from core.dashboard_views import (
     DashboardViews,
     ExecutionMonitorView,
     PlanReviewView,
-    ProjectStatus,
 )
 
 

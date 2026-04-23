@@ -4,7 +4,6 @@ Commands for managing personality profiles and user preferences
 """
 
 import typer
-from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel

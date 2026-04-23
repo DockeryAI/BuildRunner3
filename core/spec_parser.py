@@ -11,7 +11,7 @@ Returns structured dictionary for downstream processing.
 """
 
 import re
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from pathlib import Path
 from dataclasses import dataclass, field
 

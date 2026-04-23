@@ -7,9 +7,8 @@ dequeuing, status tracking, and completion management.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Dict, Optional, Set
+from typing import List, Dict, Optional
 from datetime import datetime
-from pathlib import Path
 
 
 class TaskStatus(Enum):

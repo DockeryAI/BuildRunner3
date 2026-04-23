@@ -6,7 +6,6 @@ Falls back to RSS if Playwright unavailable.
 
 import logging
 import re
-from typing import Optional
 
 from core.cluster.utils import url_hash
 

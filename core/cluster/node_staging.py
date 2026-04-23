@@ -14,10 +14,7 @@ import subprocess
 import threading
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
 
-from fastapi import FastAPI
-from pydantic import BaseModel
 
 from core.cluster.base_service import create_app
 from core.cluster.cluster_config import get_jimmy_semantic_url

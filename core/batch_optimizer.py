@@ -10,8 +10,7 @@ Groups tasks into optimal batches for Claude execution, ensuring:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Dict, Set, Optional
-from pathlib import Path
+from typing import List, Dict
 
 
 class TaskComplexity(Enum):

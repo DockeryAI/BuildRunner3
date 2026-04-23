@@ -12,7 +12,7 @@ Estimates task complexity based on:
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 import re
 
 

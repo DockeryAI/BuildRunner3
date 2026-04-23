@@ -2,13 +2,11 @@
 
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional, Set
-from pathlib import Path
-import asyncio
+from typing import Dict, Any, Set
 import logging
 
 from core.prd.prd_controller import get_prd_controller, PRDChangeEvent
-from core.prd_integration import get_prd_integration, start_prd_system
+from core.prd_integration import start_prd_system
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/prd", tags=["prd"])

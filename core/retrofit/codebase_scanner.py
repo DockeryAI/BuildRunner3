@@ -5,7 +5,6 @@ import time
 import logging
 from pathlib import Path
 from typing import List, Set, Optional
-from dataclasses import dataclass
 
 from .models import CodeArtifact, ArtifactType, ScanResult
 

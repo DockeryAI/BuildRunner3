@@ -26,7 +26,6 @@ Uses core.cluster.below.embed (no coupling to log_cluster internals).
 
 from __future__ import annotations
 
-import glob
 import logging
 import os
 import re

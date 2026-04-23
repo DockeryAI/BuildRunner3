@@ -15,7 +15,6 @@ from typing import Dict, Any, Optional, Callable
 from pathlib import Path
 from functools import wraps
 import traceback
-from datetime import datetime
 
 try:
     import sentry_sdk

@@ -3,10 +3,10 @@
 
 import logging
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import Dict, Optional
 from datetime import datetime
 
-from .models import ExtractedFeature, ScanResult
+from .models import ScanResult
 from core.prd.prd_controller import PRD, PRDFeature
 from .doc_scanner import DocumentationScanner
 from .doc_analyzer import DocumentationAnalyzer

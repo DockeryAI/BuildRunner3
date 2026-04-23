@@ -10,7 +10,7 @@ This is the enforcement layer that makes BR3 actually use BR3.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import List, Optional
 from dataclasses import dataclass, field
 import json
 import logging

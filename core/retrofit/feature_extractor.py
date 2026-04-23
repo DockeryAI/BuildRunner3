@@ -3,7 +3,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import List, Dict, Set
+from typing import List, Dict
 from collections import defaultdict
 
 from .models import CodeArtifact, ExtractedFeature, ArtifactType, ScanResult

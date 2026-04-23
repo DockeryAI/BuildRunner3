@@ -8,12 +8,11 @@ Run: uvicorn core.cluster.node_semantic:app --host 0.0.0.0 --port 8100
 import os
 import time
 import hashlib
-import json
 import threading
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Request
+from fastapi import Request
 from pydantic import BaseModel
 
 from core.cluster.base_service import create_app
