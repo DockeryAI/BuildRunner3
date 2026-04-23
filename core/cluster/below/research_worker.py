@@ -84,18 +84,45 @@ def ensure_queue_dir(queue_dir: Path) -> int:
     """Create the queue scaffold when it does not exist.
 
     Returns the number of newly created files.
+
+    Structure after this call:
+      <queue_dir>/
+        .gitkeep
+        pending/          ← per-file atomic queue (one .json per record)
+        pending.jsonl     ← legacy file kept for backward-compat reads during migration
+        completed.jsonl
     """
     queue_dir.mkdir(parents=True, exist_ok=True)
+    # Per-file pending directory — replaces line-indexed pending.jsonl
+    pending_dir = queue_dir / "pending"
+    pending_dir.mkdir(parents=True, exist_ok=True)
     created = 0
     for path in (
         queue_dir / ".gitkeep",
-        queue_dir / "pending.jsonl",
+        queue_dir / "pending.jsonl",  # kept so old queue items are not lost on upgrade
         queue_dir / "completed.jsonl",
     ):
         if not path.exists():
             path.touch()
             created += 1
     return created
+
+
+def enqueue_pending(queue_dir: Path, record: "PendingRecord") -> Path:
+    """Atomically enqueue a pending record as a per-file entry.
+
+    Each record gets its own UUID-named file inside <queue_dir>/pending/.
+    Writes are atomic on POSIX (rename from a tmp file in the same directory).
+    Returns the path of the newly created file.
+    """
+    pending_dir = queue_dir / "pending"
+    pending_dir.mkdir(parents=True, exist_ok=True)
+    file_id = str(uuid.uuid4())
+    target = pending_dir / f"{file_id}.json"
+    tmp = pending_dir / f".tmp-{file_id}.json"
+    tmp.write_text(record.to_jsonl(), encoding="utf-8")
+    tmp.rename(target)  # POSIX-atomic
+    return target
 
 
 def _read_prompt(path: Path) -> str:
@@ -822,42 +849,96 @@ class ResearchWorker:
             reindex_warning=reindex_warning,
         )
 
+    @property
+    def pending_dir(self) -> Path:
+        """Directory of per-file pending records (atomic queue)."""
+        return self.queue_dir / "pending"
+
     def _append_completed(self, completed: CompletedRecord) -> None:
         with self.completed_path.open("a", encoding="utf-8") as handle:
             handle.write(f"{completed.to_jsonl()}\n")
 
-    def _read_next_pending_line(self) -> tuple[int, str] | None:
-        lines = self.pending_path.read_text(encoding="utf-8").splitlines(keepends=True)
-        for index, line in enumerate(lines):
-            if line.strip():
-                return index, line
+    # ------------------------------------------------------------------
+    # Per-file atomic queue (replaces line-indexed pending.jsonl)
+    # ------------------------------------------------------------------
+
+    def _pick_next_pending_file(self) -> Path | None:
+        """Return the oldest .json file in pending/, or None if empty."""
+        try:
+            files = sorted(self.pending_dir.glob("*.json"))
+            for f in files:
+                if f.name.startswith(".tmp-"):
+                    continue  # skip in-flight writes
+                return f
+        except Exception:
+            pass
         return None
 
-    def _remove_pending_line(self, line_index: int) -> None:
-        lines = self.pending_path.read_text(encoding="utf-8").splitlines(keepends=True)
-        if line_index >= len(lines):
-            return
-        del lines[line_index]
-        self.pending_path.write_text("".join(lines), encoding="utf-8")
+    def _drain_legacy_pending_jsonl(self) -> int:
+        """Migrate any leftover lines from the old pending.jsonl into per-file entries.
+
+        Called once on startup to ensure no records are lost during the
+        pending.jsonl → per-file transition.  Returns number of lines migrated.
+        """
+        if not self.pending_path.exists():
+            return 0
+        migrated = 0
+        try:
+            lines = self.pending_path.read_text(encoding="utf-8").splitlines()
+            remaining = []
+            for line in lines:
+                if not line.strip():
+                    continue
+                try:
+                    record = PendingRecord.from_jsonl(line)
+                    enqueue_pending(self.queue_dir, record)
+                    migrated += 1
+                except Exception:
+                    remaining.append(line)
+            # Rewrite legacy file with only unparseable lines (edge case)
+            self.pending_path.write_text(
+                "\n".join(remaining) + ("\n" if remaining else ""), encoding="utf-8"
+            )
+        except Exception as exc:
+            logger.warning("Legacy pending.jsonl drain failed: %s", exc)
+        if migrated:
+            logger.info("Migrated %d record(s) from legacy pending.jsonl to per-file queue", migrated)
+        return migrated
 
     def process_next_record(self) -> bool:
-        next_line = self._read_next_pending_line()
-        if next_line is None:
+        """Pick the next pending file, process it, and atomically remove it.
+
+        The file is removed with os.remove() which is POSIX-atomic: no other
+        process can race to process the same record.
+        """
+        pending_file = self._pick_next_pending_file()
+        if pending_file is None:
             return False
 
-        line_index, raw_line = next_line
         try:
-            record = PendingRecord.from_jsonl(raw_line)
+            raw = pending_file.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            # Another worker grabbed it first — not an error
+            return True
+
+        try:
+            record = PendingRecord.from_jsonl(raw)
             completed = self.process_record(record)
         except Exception as exc:  # noqa: BLE001
-            completed = _completed_from_invalid_line(raw_line, str(exc))
+            completed = _completed_from_invalid_line(raw, str(exc))
 
         self._append_completed(completed)
-        self._remove_pending_line(line_index)
+        try:
+            os.remove(pending_file)
+        except FileNotFoundError:
+            pass  # already removed by a concurrent worker — safe to ignore
         return True
 
     def run(self) -> int:
         logger.info("Starting Below research worker at %s", self.queue_dir)
+        # Drain any records left in the old line-indexed pending.jsonl before entering
+        # the main loop — ensures zero-loss upgrade from the old format.
+        self._drain_legacy_pending_jsonl()
         while True:
             processed = self.process_next_record()
             if self.stop_requested:
