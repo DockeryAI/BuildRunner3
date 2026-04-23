@@ -20,7 +20,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-1 Complete — Phase 2 In Progress
+**Status:** Phases 1-2 Complete — Phase 3 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; harness writes to `~/.buildrunner/` and `~/.claude/skills/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness.md
 **Source Plan SHA:** ad48f9367987ac3403ab50af859a8add9cf772a3610bdf22629566bb5bf5b4e6
@@ -105,25 +105,26 @@ Stand up a plugin-per-case burn-in harness that validates every cluster feature 
 
 ### Phase 2: Runner core — `burnin.sh` with state machine + DB I/O
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/burnin.sh` (NEW) — top-level router
 - `~/.buildrunner/scripts/burnin/lib/state.sh` (NEW) — state transitions
 - `~/.buildrunner/scripts/burnin/lib/runner.sh` (NEW) — executes one case under one condition
 - `~/.buildrunner/scripts/burnin/lib/db.sh` (NEW) — SQLite helpers
+- `~/.buildrunner/scripts/burnin/lib/assert.py` (NEW) — assertion DSL evaluator
 
 **Blocked by:** Phase 1
 
 **Deliverables:**
 
-- [ ] Subcommands: `status`, `run [case|group|all]`, `list`, `show <case>`, `reset <case>`.
-- [ ] Valid state transitions enforced; invalid transitions logged + aborted.
-- [ ] `run` captures stdout/stderr/exit/latency/executed_on, evaluates assertions, writes `burnin_runs`, advances or resets `consecutive_greens`.
-- [ ] Promotion gate: 3 greens × 3 conditions → `promoted`.
-- [ ] Failure: write `fix_requests` row, flip to `fixing`.
-- [ ] All writes through `db.sh`.
-- [ ] `status` prints 5-line summary + 3 most recent reds.
+- [x] Subcommands: `status`, `run [case|group|all]`, `list`, `show <case>`, `reset <case>`, `register`.
+- [x] Valid state transitions enforced; invalid transitions logged + aborted.
+- [x] `run` captures stdout/stderr/exit/latency/executed_on, evaluates assertions, writes `burnin_runs`, advances or resets `consecutive_greens`.
+- [x] Promotion gate: 3 greens × 3 conditions → `promoted`.
+- [x] Failure: write `fix_requests` row, flip to `fixing`.
+- [x] All writes through `db.sh`.
+- [x] `status` prints 5-line summary + 3 most recent reds.
 
 **Success Criteria:** `burnin run all` with zero plugins is a clean no-op; with one reference plugin, runs end-to-end.
 
