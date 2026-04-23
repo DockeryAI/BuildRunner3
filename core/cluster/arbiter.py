@@ -13,6 +13,7 @@ from typing import Any
 
 from anthropic import Anthropic
 
+from core.cluster.log_utils import _append_decision_log
 from core.cluster.review_verdict import Verdict, VerdictDict
 
 _CIRCUIT_WINDOW_SECONDS = 60
@@ -30,12 +31,6 @@ def _user_home() -> Path:
 def _circuit_state_path() -> Path:
     return _user_home() / ".buildrunner" / "state" / "arbiter-circuit.json"
 
-
-def _decision_log_path() -> Path:
-    repo_log = Path.cwd() / ".buildrunner" / "decisions.log"
-    if repo_log.parent.exists():
-        return repo_log
-    return _user_home() / "Projects" / "BuildRunner3" / ".buildrunner" / "decisions.log"
 
 
 def _default_circuit_state() -> dict[str, Any]:
@@ -85,14 +80,8 @@ def _save_circuit_state(state: dict[str, Any]) -> None:
 
 
 def _log_decision(event: str, details: str = "") -> None:
-    path = _decision_log_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    line = f"[{timestamp}] ARBITER {event}"
-    if details:
-        line += f" {details}"
-    with path.open("a", encoding="utf-8") as handle:
-        handle.write(line + "\n")
+    """Append an arbiter event to decisions.log via log_utils (flock-guarded)."""
+    _append_decision_log("ARBITER", event, details)
 
 
 def _extract_text(message: Any) -> str:

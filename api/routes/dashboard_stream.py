@@ -316,9 +316,8 @@ def _collect_feature_health() -> dict[str, Any]:
         tiles.append(_tile(12, "Node matrix consulted", "yellow", "node-matrix.mjs not found — may use hardcoded path"))
 
     # ── Tile 13: Dispatch log writer ──────────────────────────────────────────
-    decisions_log = Path.cwd() / ".buildrunner" / "decisions.log"
-    if not decisions_log.exists():
-        decisions_log = Path.home() / "Projects" / "BuildRunner3" / ".buildrunner" / "decisions.log"
+    from core.cluster.log_utils import get_decisions_log_path  # deferred to avoid circular at module load
+    decisions_log = get_decisions_log_path()  # single source of truth — core/cluster/log_utils.py
     if decisions_log.exists():
         age_s = (now - datetime.fromtimestamp(decisions_log.stat().st_mtime, tz=timezone.utc)).total_seconds()
         if age_s <= 86400:
