@@ -96,7 +96,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 1: Enable bge-reranker (service env + metrics)
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - api/routes/retrieve.py (MODIFY if uses reranker)
