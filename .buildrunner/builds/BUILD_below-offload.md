@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-1 Complete — Phase 1 In Progress
+**Status:** Phases 1-2 Complete — Phase 2 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -96,7 +96,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 1: Enable bge-reranker (service env + metrics)
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - api/routes/retrieve.py (MODIFY if uses reranker)
@@ -108,12 +108,12 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] Set BR3_AUTO_CONTEXT=on in service launch env; NOT in .claude/settings.json
-- [ ] Verify reranker fires for /retrieve and context-bundle paths
-- [ ] Confirm context-bundle callers supply non-empty query
-- [ ] Add metrics: rerank invocations, top_k distribution, latency
-- [ ] Document top_k tuning (no similarity threshold exists)
-- [ ] Smoke test on recorded /retrieve fixtures
+- [x] Set BR3_AUTO_CONTEXT=on in service launch env; NOT in .claude/settings.json
+- [x] Verify reranker fires for /retrieve and context-bundle paths
+- [x] Confirm context-bundle callers supply non-empty query
+- [x] Add metrics: rerank invocations, top_k distribution, latency
+- [x] Document top_k tuning (no similarity threshold exists)
+- [x] Smoke test on recorded /retrieve fixtures
 
 **Success Criteria:** Reranker fires on every context bundle call with a query; metrics emit to lockwood-metrics.
 
