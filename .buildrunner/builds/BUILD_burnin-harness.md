@@ -20,7 +20,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-5 Complete — Phase 4 In Progress
+**Status:** Phases 1-3, 6-9 Complete — Phase 8 Complete 2026-04-23
 **Deploy:** operator-tooling — no user-facing deploy; harness writes to `~/.buildrunner/` and `~/.claude/skills/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness.md
 **Source Plan SHA:** ad48f9367987ac3403ab50af859a8add9cf772a3610bdf22629566bb5bf5b4e6
@@ -265,7 +265,7 @@ Real caller (no mocks), 3 conditions, `promote_after: 3`, realistic `timeout_s`.
 
 ### Phase 8: Plugin library — Cluster sharding + visibility (12 cases)
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/burnin/cases/sharding/` (12 YAML files)
@@ -274,18 +274,18 @@ Real caller (no mocks), 3 conditions, `promote_after: 3`, realistic `timeout_s`.
 
 **Deliverables:**
 
-- [ ] `sharding-process-detector-mac` — Muddy, assert workload entries.
-- [ ] `sharding-process-detector-win` — Below, assert Windows branch returns entries.
-- [ ] `sharding-health-busy-state` — `/health`, assert `busy_state` in {idle,active,saturated} + `cpu_pct` present.
-- [ ] `sharding-dashboard-chip` — saturate node, assert chip flips to `saturated` within 10s.
-- [ ] `sharding-router-overflow-walter` — saturate Walter, dispatch test, assert lands on Lockwood or Lomax.
-- [ ] `sharding-router-overflow-otis` — saturate Otis, dispatch phase, assert overflow picks it up.
-- [ ] `sharding-shard-collector-merge` — 3 shard XMLs → collect, assert merged count = sum.
-- [ ] `sharding-br-test-fanout` — 3-shard project, assert shards on 3 different nodes.
-- [ ] `sharding-otis-typecheck` — assert LaunchAgent `tsc --watch` running.
-- [ ] `sharding-sse-node-workload` — start workload, assert SSE event fires.
-- [ ] `sharding-poll-env-override` — set `BR3_NODE_HEALTH_POLL_MS=2000`, assert interval change.
-- [ ] `sharding-cluster-check-passthrough` — `cluster-check.sh --health-json`, assert no field dropping.
+- [x] `sharding-process-detector-mac` — Muddy, assert workload entries.
+- [x] `sharding-process-detector-win` — Below, assert Windows branch returns entries.
+- [x] `sharding-health-busy-state` — `/health`, assert `busy_state` in {idle,active,saturated} + `cpu_pct` present.
+- [x] `sharding-dashboard-chip` — saturate node, assert chip flips to `saturated` within 10s.
+- [x] `sharding-router-overflow-walter` — saturate Walter, dispatch test, assert lands on Lockwood or Lomax.
+- [x] `sharding-router-overflow-otis` — saturate Otis, dispatch phase, assert overflow picks it up.
+- [x] `sharding-shard-collector-merge` — 3 shard XMLs → collect, assert merged count = sum.
+- [x] `sharding-br-test-fanout` — 3-shard project, assert shards on 3 different nodes.
+- [x] `sharding-otis-typecheck` — assert LaunchAgent `tsc --watch` running.
+- [x] `sharding-sse-node-workload` — start workload, assert SSE event fires.
+- [x] `sharding-poll-env-override` — set `BR3_NODE_HEALTH_POLL_MS=2000`, assert interval change.
+- [x] `sharding-cluster-check-passthrough` — `cluster-check.sh --health-json`, assert no field dropping.
 
 **Success Criteria:** Router-overflow cases actually saturate under `loaded` and verify shard destination.
 
