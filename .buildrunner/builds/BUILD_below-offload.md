@@ -158,7 +158,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 4: Semantic answer cache infrastructure
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - core/cluster/below/semantic_cache.py (NEW)
