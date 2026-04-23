@@ -1466,3 +1466,9 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T15:09:11.868511Z] THREE_WAY_REVIEW review_start plan_hash=767985df8ef5131d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
 [2026-04-23T15:11:53.009327Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f14864050fef8554 reviewers=2
 [2026-04-23T15:13:08.923719Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=767985df8ef5131d reviewers=2
+2026-04-23T15:16:51Z router: build=BUILD_cluster-visibility-sharding phase=1 node=muddy reason=spec-preference overrides=none
+2026-04-23T15:16:52Z router: build=BUILD_cluster-visibility-sharding phase=2 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:16:52Z router: build=BUILD_cluster-visibility-sharding phase=3 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:16:52Z router: build=BUILD_cluster-visibility-sharding phase=4 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:16:52Z router: build=BUILD_cluster-visibility-sharding phase=5 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:16:52Z router: build=BUILD_cluster-visibility-sharding phase=6 node=muddy reason=path-locality overrides=path-locality

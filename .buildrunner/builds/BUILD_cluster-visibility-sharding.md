@@ -42,7 +42,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 1: Node ground-truth API
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `core/cluster/base_service.py` (MODIFY) — enrich `/health` with `cpu_pct`, `load_1m`, `mem_avail_pct`, `busy_state`, `workloads[]`.
@@ -107,7 +107,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 4: Parallel-shard test dispatcher
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.buildrunner/scripts/dispatch-test.sh` (NEW) — entry point. Reads `.buildrunner/cluster-test-config.yaml`; rsyncs, shards, collects, merges.
@@ -152,7 +152,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 6: Otis type-check loop
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `core/cluster/otis_typecheck.py` (NEW) — scans registered BR3 project paths, launches `tsc --noEmit --watch` per project, publishes error counts via Phase 1 schema.
