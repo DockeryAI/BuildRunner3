@@ -1563,3 +1563,38 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T11:30:00Z] [WHY] Why root cause wasn't caught earlier: /fixit SKILL.md was written without awareness of Codex exec's unsafe defaults; dispatches assumed implicit sandbox inheritance that doesn't exist
   WHY: Codex's behavior changed or was always restrictive but went untested in non-interactive mode; prior successful /fixit runs likely used different dispatch path or earlier Codex version with different defaults
   CONTEXT: Historical /fixit runs, skill evolution, codex versioning
+[2026-04-23T16:19:25.164474Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=2c692693527124b3 reviewers=2
+[2026-04-23T16:19:33.448681Z] THREE_WAY_REVIEW review_start plan_hash=83ab3541914481b1 artifact='.buildrunner/plans/plan-below-offload.md' commit=plan-1776961173
+[2026-04-23T16:19:36.822165Z] THREE_WAY_REVIEW review_start plan_hash=2c692693527124b3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:23:39.128199Z] THREE_WAY_REVIEW review_start plan_hash=4c349969ef171319 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:24:45.041487Z] THREE_WAY_REVIEW review_start plan_hash=4e917def4c9de41e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:25:17.207535Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=83ab3541914481b1 reviewers=2
+[2026-04-23T16:25:36.839747Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=2c692693527124b3 reviewers=2
+[2026-04-23T16:26:37.167259Z] THREE_WAY_REVIEW review_start plan_hash=586a23b95d631de7 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-enrichment-handoff-wiring.md b/.b' commit=85fec3f
+[2026-04-23T16:29:17.074032Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=586a23b95d631de7 reviewers=2
+[2026-04-23T16:29:39.146421Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4c349969ef171319 reviewers=2
+[2026-04-23T11:29:45] [DECISION] Spec review blocked on plan-below-offload; 36 findings (24 from Codex on repo file-tree assumptions, 12 from Claude on file-conflicts + structural); fixed inline (20 addressed, 2 moved to Out of Scope); bypass authorized by /spec 1-review rule
+[2026-04-23T16:30:47.707370Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4e917def4c9de41e reviewers=2
+[2026-04-23T16:30:49.068857Z] THREE_WAY_REVIEW review_start plan_hash=4e917def4c9de41e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:30:54.309646Z] THREE_WAY_REVIEW review_start plan_hash=586a23b95d631de7 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-enrichment-handoff-wiring.md b/.b' commit=85fec3f
+[2026-04-23T16:33:10.923771Z] THREE_WAY_REVIEW review_start plan_hash=1b0670608272de3d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:34:16.469290Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=586a23b95d631de7 reviewers=2
+[2026-04-23T16:36:50.929118Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4e917def4c9de41e reviewers=2
+[2026-04-23T16:38:45.597332Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1b0670608272de3d reviewers=2
+[2026-04-23T11:39:00] [DECISION] Created build spec: below-offload with 17 phases; registered to cluster, suggested node: otis
+[2026-04-23T16:39:35.527245Z] THREE_WAY_REVIEW review_start plan_hash=1b0670608272de3d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:40:25.699014Z] THREE_WAY_REVIEW review_start plan_hash=b42c4865e8ec5a68 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:41:47.696002Z] THREE_WAY_REVIEW review_start plan_hash=e7387f6daaef193d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:41:54.216149Z] THREE_WAY_REVIEW review_start plan_hash=fd97abe5a74e7b7b artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+2026-04-23T16:42:09Z router: build=BUILD_below-offload phase=0 node=muddy reason=spec-preference overrides=none
+2026-04-23T16:42:09Z router: build=BUILD_below-offload phase=1 node=muddy reason=spec-preference overrides=none
+2026-04-23T16:42:09Z router: build=BUILD_below-offload phase=2 node=below reason=spec-preference overrides=none
+[2026-04-23T16:42:49.201491Z] THREE_WAY_REVIEW review_start plan_hash=ecb53e2903987b07 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:43:29.110150Z] THREE_WAY_REVIEW review_start plan_hash=444f3a5fd6218bc4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+2026-04-23T16:44:04Z [autopilot] BUILD_below-offload: Below role-matrix overrides for phases 5,13 → muddy (reason: out-of-project-files writes to $HOME/.buildrunner/scripts which is Muddy home)
+2026-04-23T16:44:04Z [autopilot] BUILD_below-offload: dispatching single chained background agent on muddy for all 17 phases (waves A-D)
+[2026-04-23T16:44:28.453728Z] THREE_WAY_REVIEW review_start plan_hash=794bc860030a21e4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:45:38.885363Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1b0670608272de3d reviewers=2
+[2026-04-23T16:45:39.247175Z] THREE_WAY_REVIEW review_start plan_hash=0fcd51200de12ef3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T16:46:28.691854Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=b42c4865e8ec5a68 reviewers=2
+[2026-04-23T16:46:36.470623Z] THREE_WAY_REVIEW review_start plan_hash=df90bf88fd59c692 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
