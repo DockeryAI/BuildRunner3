@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-5 Complete — Phase 3 In Progress
+**Status:** Phases 1-6 Complete — Phase 4 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -138,7 +138,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 3: Embedding + DBSCAN clustering library on Below
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - core/cluster/below/log_cluster.py (NEW)
@@ -148,11 +148,11 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 **Blocked by:** Phase 0
 **Deliverables:**
 
-- [ ] Use core/cluster/below/embed.py for batch embeddings
-- [ ] DBSCAN with tuned eps and min_samples defaults
-- [ ] Return shape exposes `clusters` AND `outliers` (DBSCAN label -1)
-- [ ] Representative selection (longest shared prefix or most-central)
-- [ ] Build project-local benchmark fixture with labeled ground truth
+- [x] Use core/cluster/below/embed.py for batch embeddings
+- [x] DBSCAN with tuned eps and min_samples defaults
+- [x] Return shape exposes `clusters` AND `outliers` (DBSCAN label -1)
+- [x] Representative selection (longest shared prefix or most-central)
+- [x] Build project-local benchmark fixture with labeled ground truth
 
 **Success Criteria:** Precision ≥95% on project benchmark; outliers surfaced correctly for 100% of singletons.
 

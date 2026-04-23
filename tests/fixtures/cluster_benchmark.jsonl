@@ -1,0 +1,18 @@
+{"id": "conn-1", "text": "ERROR connection refused to db host 10.0.1.50:5432", "expected_cluster": "connection-refused"}
+{"id": "conn-2", "text": "ERROR connection refused to db host 10.0.1.50:5432 after 3 retries", "expected_cluster": "connection-refused"}
+{"id": "conn-3", "text": "ERROR connection refused to postgres 10.0.1.50:5432", "expected_cluster": "connection-refused"}
+{"id": "conn-4", "text": "ERROR connection refused to db host 10.0.1.50 port 5432", "expected_cluster": "connection-refused"}
+{"id": "conn-5", "text": "ERROR connection refused host=10.0.1.50 port=5432", "expected_cluster": "connection-refused"}
+{"id": "retry-1", "text": "WARNING retry attempt 1 of 3 for embed request", "expected_cluster": "retry-warning"}
+{"id": "retry-2", "text": "WARNING retry attempt 2 of 3 for embed request", "expected_cluster": "retry-warning"}
+{"id": "retry-3", "text": "WARNING retry attempt 3 of 3 for embed request", "expected_cluster": "retry-warning"}
+{"id": "retry-4", "text": "WARNING retry 1/3 embed request failed", "expected_cluster": "retry-warning"}
+{"id": "timeout-1", "text": "ERROR request timed out after 10.0s url=http://10.0.1.105:11434/api/embed", "expected_cluster": "timeout"}
+{"id": "timeout-2", "text": "ERROR request timed out after 10.0s url=http://10.0.1.105:11434/api/chat", "expected_cluster": "timeout"}
+{"id": "timeout-3", "text": "ERROR request timeout after 10s endpoint=http://10.0.1.105:11434/api/embed", "expected_cluster": "timeout"}
+{"id": "auth-1", "text": "ERROR authentication failed for user admin on db", "expected_cluster": "auth-error"}
+{"id": "auth-2", "text": "ERROR authentication failed user=admin database=br3", "expected_cluster": "auth-error"}
+{"id": "auth-3", "text": "ERROR auth failure user admin database br3_prod", "expected_cluster": "auth-error"}
+{"id": "singleton-1", "text": "CRITICAL disk full on /dev/sda1 inode exhaustion", "expected_cluster": "singleton"}
+{"id": "singleton-2", "text": "FATAL kernel OOM killer activated pid=12345", "expected_cluster": "singleton"}
+{"id": "singleton-3", "text": "ALERT certificate expiry in 3 days domain=api.example.com", "expected_cluster": "singleton"}
