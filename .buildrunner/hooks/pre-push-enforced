@@ -156,7 +156,6 @@ if [ "$ALL_CHECKS_PASSED" = true ]; then
     echo "   • Gap analysis (100% implementation)"
     echo ""
     echo "🚀 Proceeding with push..."
-    exit 0
 else
     echo "❌ PRE-PUSH CHECKS FAILED"
     echo ""
@@ -167,3 +166,22 @@ else
     echo ""
     exit 1
 fi
+
+# ============================================
+# BR3 pre-push.d FRAGMENT RUNNER
+# Runs all fragments in .git/hooks/pre-push.d/ in lexical order.
+# Non-zero exit from any fragment blocks the push.
+# Includes 50-ship-gate.sh (auto-appended by install-enforced-hooks.sh).
+# ============================================
+PREPUSH_D="$(dirname "$0")/pre-push.d"
+if [ -d "$PREPUSH_D" ]; then
+    for frag in "$PREPUSH_D"/*.sh; do
+        [ -f "$frag" ] || continue
+        if ! bash "$frag"; then
+            echo "pre-push.d: fragment $(basename $frag) failed — push blocked"
+            exit 1
+        fi
+    done
+fi
+
+exit 0

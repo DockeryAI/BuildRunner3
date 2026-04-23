@@ -1416,3 +1416,23 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:46:22.311182Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c73ab715c9c30f88 reviewers=2
 [2026-04-23T20:48:43.364123Z] THREE_WAY_REVIEW review_start plan_hash=4f120354c481c03e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
 [2026-04-23T20:48:59.368791Z] THREE_WAY_REVIEW review_start plan_hash=018555432c78c858 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:49:21.478079Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=12736f89a5d5425b reviewers=2
+[2026-04-23T20:49:41.471669Z] THREE_WAY_REVIEW review_start plan_hash=9a9bc19e88888cc4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:49:53.492717Z] THREE_WAY_REVIEW review_start plan_hash=edce68791106d011 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:50:44.556432Z] THREE_WAY_REVIEW review_start plan_hash=1a22f9825c7c4e9e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:50:53.700224Z] THREE_WAY_REVIEW review_start plan_hash=79f369ed902cdffc artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:51:22.595950Z] THREE_WAY_REVIEW review_start plan_hash=8eb4245f81bb7bee artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=79baf3f
+[2026-04-23T20:52:05.073087Z] THREE_WAY_REVIEW review_start plan_hash=550dc75ed92e59ff artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:52:49.729923Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4f120354c481c03e reviewers=2
+[2026-04-23T20:52:53.757742Z] THREE_WAY_REVIEW review_start plan_hash=502862d23f11d6f6 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:53:29.980106Z] THREE_WAY_REVIEW review_start plan_hash=a90fddefdda0289b artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=79baf3f
+[2026-04-23T20:53:45.739092Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=018555432c78c858 reviewers=2
+[2026-04-23T20:54:04.439391Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=edce68791106d011 reviewers=2
+[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/pre-commit because non-enforced duplicate; pre-commit-enforced is canonical (P6)
+[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/pre-commit-composed because non-enforced duplicate with --no-verify escape hatch; pre-commit-enforced is canonical (P6)
+[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/pre-push because non-enforced duplicate; pre-push-enforced is canonical (P6)
+[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/pre-push-composed because non-enforced duplicate; pre-push-enforced is canonical (P6)
+[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/install-hooks.sh because merged into .buildrunner/scripts/install-enforced-hooks.sh (enforced-only installer) (P6)
+[2026-04-23T20:54:17Z] [DECISION] updated .buildrunner/hooks/pre-commit-enforced to add cluster-guard integration (P6)
+[2026-04-23T20:54:17Z] [DECISION] updated .buildrunner/hooks/pre-push-enforced to add pre-push.d fragment runner for 50-ship-gate.sh (P6)
+[2026-04-23T20:54:19.185613Z] THREE_WAY_REVIEW review_start plan_hash=80f46e50e7464fb3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159

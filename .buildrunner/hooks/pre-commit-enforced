@@ -218,7 +218,6 @@ if [ "$ALL_CHECKS_PASSED" = true ]; then
     echo "   • Governance rules (policies, thresholds)"
     echo ""
     echo "✓ Proceeding with commit..."
-    exit 0
 else
     echo "❌ PRE-COMMIT CHECKS FAILED"
     echo ""
@@ -229,3 +228,13 @@ else
     echo ""
     exit 1
 fi
+
+# ---- BR3 Cluster Guard -------------------------------------------------------
+# Rejects direct ollama/requests/curl calls to cluster node IPs.
+# Use RuntimeRegistry.execute(task) — the ONLY authorised dispatch path.
+CLUSTER_GUARD="$(git rev-parse --show-toplevel)/.buildrunner/hooks/pre-commit-cluster-guard"
+if [ -x "$CLUSTER_GUARD" ]; then
+  bash "$CLUSTER_GUARD" || exit 1
+fi
+
+exit 0
