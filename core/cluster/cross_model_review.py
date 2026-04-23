@@ -1303,13 +1303,16 @@ def _enforce_one_review_per_plan(plan_hash):
         return
     lock_path = _review_lock_path(plan_hash)
     lock_path.parent.mkdir(parents=True, exist_ok=True)
-    if lock_path.exists():
+    # Atomic open-exclusive: O_CREAT|O_EXCL is a single syscall — no TOCTOU window.
+    # FileExistsError is raised atomically if another process/thread beat us here.
+    try:
+        with open(lock_path, "x", encoding="utf-8") as f:
+            f.write(
+                json.dumps({"pid": os.getpid(), "plan_hash": plan_hash, "created_at": utc_now_iso()}, indent=2) + "\n"
+            )
+    except FileExistsError:
         sys.stderr.write("ONE-REVIEW-PER-PLAN: rerun not permitted\n")
         raise SystemExit(3)
-    lock_path.write_text(
-        json.dumps({"pid": os.getpid(), "plan_hash": plan_hash, "created_at": utc_now_iso()}, indent=2) + "\n",
-        encoding="utf-8",
-    )
     _ACTIVE_REVIEW_LOCKS.add(str(lock_path))
     _register_review_lock_cleanup()
 
