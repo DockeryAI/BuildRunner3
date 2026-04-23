@@ -17,10 +17,10 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List
 from uuid import uuid4
 
-from core.task_queue import QueuedTask, TaskStatus
+from core.task_queue import QueuedTask
 from core.telemetry import EventCollector, EventType, TaskEvent
 
 

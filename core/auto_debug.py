@@ -13,12 +13,11 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from core.build_context_detector import BuildContextDetector, BuildContext, BuildType, TechStack
-from core.typescript_checker import TypeScriptChecker, TypeScriptCheckResult
+from core.typescript_checker import TypeScriptChecker
 from core.code_quality import QualityGate
 from core.gap_analyzer import GapAnalyzer
 import re
 from collections import defaultdict
-from typing import Tuple
 
 
 @dataclass
@@ -648,8 +647,6 @@ class AutoDebugPipeline:
                 result = self._run_jest()
             elif check_name == "quality_changed":
                 result = self._check_quality_changed()
-            elif check_name == "quality_full":
-                result = self._check_quality_full()
             elif check_name == "gap_analysis":
                 result = self._run_gap_analysis()
             elif check_name == "integration_tests":
@@ -941,22 +938,6 @@ class AutoDebugPipeline:
                 warnings=[],
                 info=[],
             )
-
-    def _check_quality_full(self) -> CheckResult:
-        """Run full quality checks"""
-        # Quality checks not implemented in autodebug yet
-        # Use 'br quality check' command instead
-        # TODO: Implement full quality checking using CodeQualityAnalyzer
-        return CheckResult(
-            name="quality_full",
-            passed=True,
-            duration_ms=0,
-            errors=[],
-            warnings=[],
-            info=["Full quality check skipped (not implemented)"],
-            skipped=True,
-            skip_reason="Full quality checking not implemented - use 'br quality check'",
-        )
 
     def _run_gap_analysis(self) -> CheckResult:
         """Run gap analysis vs PRD"""

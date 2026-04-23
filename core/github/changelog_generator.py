@@ -1,7 +1,7 @@
 """Changelog Generator - Auto-generate changelogs from commits"""
 
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 from .git_client import GitClient
 
 

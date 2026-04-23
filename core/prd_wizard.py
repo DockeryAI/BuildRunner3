@@ -6,7 +6,6 @@ with design intelligence, industry profiles, and use case patterns.
 """
 
 import os
-import sys
 import json
 import yaml
 import tempfile

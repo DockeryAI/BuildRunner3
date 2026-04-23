@@ -1,7 +1,7 @@
 """Version Manager - Semantic versioning automation"""
 
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 import re
 import tomllib  # Python 3.11+ built-in
 

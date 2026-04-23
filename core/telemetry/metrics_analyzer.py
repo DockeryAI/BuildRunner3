@@ -16,7 +16,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 
 from .event_collector import EventCollector, EventFilter
-from .event_schemas import EventType, TaskEvent, BuildEvent, ErrorEvent, PerformanceEvent
+from .event_schemas import EventType, TaskEvent, ErrorEvent
 
 
 class MetricType(str, Enum):

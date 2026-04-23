@@ -11,10 +11,8 @@ Run this alongside your web UI to enable desktop integration.
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-import asyncio
 import subprocess
 import os
-import json
 import platform
 from typing import Dict, Any
 from pathlib import Path

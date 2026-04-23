@@ -10,13 +10,12 @@ Features:
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.layout import Layout
 from rich.live import Live
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeRemainingColumn
 from rich.text import Text
 
 from .session_manager import SessionManager, SessionStatus

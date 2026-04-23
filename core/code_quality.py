@@ -12,10 +12,9 @@ import ast
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
-import re
+from typing import Dict, List, Optional, Tuple
 
-from core.security import SecretDetector, SQLInjectionDetector
+from core.security import SecretDetector
 from core.security.smart_sql_detector import SmartSQLDetector
 
 

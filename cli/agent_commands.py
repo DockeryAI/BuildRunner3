@@ -10,7 +10,6 @@ Commands:
 - br agent retry <assignment_id>
 """
 
-import json
 from pathlib import Path
 from typing import Optional
 
@@ -21,7 +20,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from core.agents import ClaudeAgentBridge, AgentType
-from core.task_queue import TaskQueue, TaskStatus
+from core.task_queue import TaskQueue
 from core.telemetry import EventCollector
 
 agent_app = typer.Typer(help="Claude Agent Bridge commands")

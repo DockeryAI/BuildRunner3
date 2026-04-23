@@ -14,11 +14,9 @@ Usage:
     python -m cli.review install-hook          # Install pre-commit hook
 """
 import sys
-import os
 import argparse
 import subprocess
 from pathlib import Path
-from typing import Optional
 import asyncio
 
 # Add parent directory to path

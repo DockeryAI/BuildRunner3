@@ -7,7 +7,6 @@ Because watching tests fail in real-time is somehow more satisfying.
 
 import asyncio
 import json
-import subprocess
 import time
 from datetime import datetime
 from pathlib import Path

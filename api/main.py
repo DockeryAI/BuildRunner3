@@ -5,7 +5,6 @@ Main API application with all endpoints.
 Because REST APIs are how we pretend distributed systems are simple.
 """
 
-import os
 import sys
 import time
 from contextlib import asynccontextmanager
@@ -15,7 +14,6 @@ from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 # Add parent directory to path so we can import core modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -296,7 +294,6 @@ async def get_metrics():
             total_errors=error_summary["total_errors"],
             critical=error_summary["by_severity"].get("critical", 0),
             resolved=len([e for e in error_watcher.errors if e["resolved"]]),
-            average_resolution_time=None,  # TODO: track resolution times
         )
 
         return MetricsModel(

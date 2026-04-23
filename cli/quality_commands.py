@@ -13,7 +13,6 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich import print as rprint
 from typing import Optional
 
 from core.code_quality import CodeQualityAnalyzer, QualityGate, QualityGateError

@@ -10,10 +10,7 @@ Run: uvicorn core.cluster.otis_service:app --host 0.0.0.0 --port 8103
 import os
 import time
 import logging
-from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 
 from core.cluster.base_service import create_app
 from core.cluster.otis_typecheck import get_manager

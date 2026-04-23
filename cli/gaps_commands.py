@@ -12,12 +12,9 @@ import typer
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
-from rich import print as rprint
 from typing import Optional
 
 from core.gap_analyzer import GapAnalyzer, GapAnalysis
-from core.codebase_scanner import CodebaseScanner
 
 gaps_app = typer.Typer(help="Gap analysis and spec validation commands")
 console = Console()

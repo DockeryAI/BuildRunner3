@@ -1343,9 +1343,7 @@ def _below_prescreen_obvious_pass(diff_text: str, spec_text: str) -> bool:
       - diff contains security-sensitive keywords (RLS, auth, migrate, GRANT, DROP)
     """
     import json as _json
-    import socket as _socket
     import urllib.request as _urlreq
-    import urllib.error as _urlerr
 
     if os.environ.get("BR3_BELOW_PRESCREEN", "on").lower() == "off":
         return False

@@ -9,7 +9,6 @@ Pulls data from Muddy (M5) until dedicated nodes (Walter, Crawford) exist.
 import os
 import sqlite3
 import json
-import time
 import subprocess
 from pathlib import Path
 from datetime import datetime

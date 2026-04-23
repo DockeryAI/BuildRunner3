@@ -8,7 +8,6 @@ import shutil
 import subprocess
 import tempfile
 import time
-from pathlib import Path
 from typing import Callable
 
 from core.runtime.policy_result import POLICY_ACTION_BLOCK

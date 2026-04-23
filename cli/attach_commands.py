@@ -6,7 +6,6 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
 from rich.table import Table
-from rich import print as rprint
 from rich.prompt import Confirm
 import logging
 import json
@@ -15,7 +14,6 @@ from core.retrofit import CodebaseScanner, FeatureExtractor, PRDSynthesizer
 from core.retrofit.version_detector import BRVersionDetector, BRVersion
 from core.migration.v2_parser import V2ProjectParser
 from core.migration.converter import MigrationConverter
-from core.prd.prd_controller import get_prd_controller
 from core.project_registry import get_project_registry
 from core.shell_integration import get_shell_integration
 from core.design_extractor import DesignExtractor
@@ -737,7 +735,6 @@ def _show_design_system(design_system):
 
 if __name__ == "__main__":
     # Run as standalone script
-    import sys
     from typer import run
 
     run(attach_command)

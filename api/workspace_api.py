@@ -6,12 +6,10 @@ Endpoints for managing workspace files and Claude integration
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from typing import List, Dict, Optional
-import json
-from datetime import datetime
 import logging
 
 # Import our modules
-from api.log_streamer import manager as log_manager, websocket_endpoint
+from api.log_streamer import websocket_endpoint
 from api.workspace_watcher import monitor, manager as workspace_manager
 
 logger = logging.getLogger(__name__)
@@ -183,7 +181,6 @@ class BuildRunnerBridge:
     async def init_project(project_name: str) -> dict:
         """Initialize BuildRunner project and create workspace"""
         import subprocess
-        import os
 
         try:
             # Run br init

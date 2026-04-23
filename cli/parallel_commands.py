@@ -4,20 +4,16 @@ Parallel Orchestration CLI Commands
 Commands for managing parallel build sessions and workers.
 """
 
-from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 import typer
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from core.parallel import (
     SessionManager,
-    Session,
     SessionStatus,
     WorkerCoordinator,
-    Worker,
     WorkerStatus,
     LiveDashboard,
     DashboardConfig,

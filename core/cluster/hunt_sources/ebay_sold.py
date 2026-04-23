@@ -5,7 +5,6 @@ Uses LH_Sold=1&LH_Complete=1 parameters.
 All entries are logged as market data with is_sold=1.
 """
 
-import os
 import logging
 import re
 

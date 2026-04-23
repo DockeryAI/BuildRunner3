@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Optional
 
 from core.cluster.cluster_config import get_jimmy_semantic_url, get_below_ollama_url, get_below_model
-from core.cluster.utils import url_hash, last_checked_lock, cosine_similarity
+from core.cluster.utils import last_checked_lock, cosine_similarity
 
 try:
     import httpx
@@ -504,7 +504,7 @@ BELOW_NEEDS_LLM = {"newegg", "bhphoto"}
 def _get_hunt_last_checked_db(hunt_id: int) -> float:
     """Read last_checked_at from the active_hunts SQLite column (multi-process safe)."""
     try:
-        from core.cluster.intel_collector import _get_intel_db, INTEL_DB_PATH
+        from core.cluster.intel_collector import _get_intel_db
         conn = _get_intel_db()
         row = conn.execute(
             "SELECT last_checked_at FROM active_hunts WHERE id = ?", (hunt_id,)

@@ -56,7 +56,6 @@ BELOW_CHAT_URL: str = f"http://{BELOW_HOST}:{BELOW_OLLAMA_PORT}/api/chat"
 DEFAULT_TIMEOUT: float = 12.0
 DEFAULT_RETRY_BUDGET: int = 2  # attempts before falling back to Claude
 
-import os
 from pathlib import Path
 
 METRICS_FILE: Path = Path.home() / ".buildrunner" / "schema-classifier-metrics.jsonl"

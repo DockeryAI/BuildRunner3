@@ -11,8 +11,7 @@ Analyzes code for common design patterns and architectural best practices:
 """
 
 import ast
-import re
-from typing import Dict, List, Optional, Set, Any
+from typing import Dict, List, Optional, Any
 from pathlib import Path
 from dataclasses import dataclass, field
 

@@ -11,13 +11,11 @@ Integrates with ClaudeAgentBridge for actual agent execution.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Callable, Any, Tuple, Set
+from typing import Dict, List, Optional, Callable, Any
 from datetime import datetime
 from pathlib import Path
 import json
-import time
 from uuid import uuid4
-import threading
 from concurrent.futures import ThreadPoolExecutor, Future, as_completed
 
 from core.agents.claude_agent_bridge import (
@@ -27,7 +25,7 @@ from core.agents.claude_agent_bridge import (
     AgentResponse,
     AgentAssignment,
 )
-from core.task_queue import QueuedTask, TaskStatus
+from core.task_queue import QueuedTask
 
 
 class WorkflowStatus(str, Enum):

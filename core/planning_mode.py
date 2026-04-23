@@ -5,7 +5,6 @@ Detects when user is in planning/strategy mode and suggests appropriate
 model switching (Opus for planning, Sonnet for execution).
 """
 
-import re
 import json
 from pathlib import Path
 from datetime import datetime

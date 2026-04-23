@@ -7,7 +7,7 @@ In production, this would integrate with web search APIs and use Opus for analys
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 

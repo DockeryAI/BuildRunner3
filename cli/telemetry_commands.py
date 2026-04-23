@@ -8,12 +8,10 @@ Commands:
 - br telemetry performance - Show performance metrics
 """
 
-import sys
 import typer
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
 from typing import Optional
 
 from core.telemetry import (

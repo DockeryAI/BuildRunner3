@@ -4,7 +4,6 @@ Streams BuildRunner logs and command outputs to UI in real-time
 """
 
 import asyncio
-import json
 import os
 from pathlib import Path
 from datetime import datetime

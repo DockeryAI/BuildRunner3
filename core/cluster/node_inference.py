@@ -14,11 +14,9 @@ Run: uvicorn core.cluster.node_inference:app --host 0.0.0.0 --port 8100
 
 import os
 import subprocess
-import time
 from typing import Optional
 
 import httpx
-from fastapi import FastAPI
 from pydantic import BaseModel
 
 from core.cluster.base_service import create_app

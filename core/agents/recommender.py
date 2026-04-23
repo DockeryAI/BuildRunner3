@@ -10,13 +10,13 @@ Features:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import logging
 import re
 
-from core.agents.metrics import AgentMetrics, AgentMetric, ModelType, MODEL_PRICING
+from core.agents.metrics import AgentMetrics, ModelType, MODEL_PRICING
 from core.agents.claude_agent_bridge import AgentType
 
 logger = logging.getLogger(__name__)

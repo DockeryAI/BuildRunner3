@@ -7,20 +7,17 @@ Commands:
 - br run status - Show orchestration status
 """
 
-import json
 import typer
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich import print as rprint
 
-from core.task_queue import TaskQueue, TaskStatus
+from core.task_queue import TaskStatus
 from core.batch_optimizer import BatchOptimizer, TaskComplexity, TaskDomain, Task as BatchTask
 from core.prompt_builder import PromptBuilder
-from core.context_manager import ContextManager, ContextEntry
-from core.orchestrator import TaskOrchestrator, OrchestrationStatus
+from core.context_manager import ContextManager
+from core.orchestrator import TaskOrchestrator
 from core.file_monitor import FileMonitor
 from core.verification_engine import VerificationEngine
 from cli.tasks_commands import get_task_queue, save_task_queue

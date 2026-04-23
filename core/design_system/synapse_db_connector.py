@@ -199,7 +199,6 @@ class SynapseDBConnector:
 
 def main():
     """Test Synapse DB connector"""
-    import sys
     import json
 
     print("=" * 70)

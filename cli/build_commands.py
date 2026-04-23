@@ -14,15 +14,12 @@ import typer
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
-from rich.panel import Panel
-from rich import print as rprint
 from typing import Optional
 from datetime import datetime
 from dataclasses import asdict
 
-from core.build_orchestrator import BuildOrchestrator, BuildPhase
+from core.build_orchestrator import BuildOrchestrator
 from core.checkpoint_manager import CheckpointManager
-from core.task_queue import TaskQueue
 from cli.tasks_commands import get_task_queue, save_task_queue
 
 build_app = typer.Typer(help="Build orchestration and checkpoint management")

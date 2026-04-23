@@ -10,12 +10,10 @@ Analyzes code for:
 """
 
 import ast
-import re
 from typing import Dict, List, Optional, Any
 from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from radon.complexity import cc_visit, cc_rank
-from radon.metrics import h_visit, mi_visit
 
 
 @dataclass

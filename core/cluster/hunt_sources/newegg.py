@@ -4,7 +4,6 @@ Fetches Newegg search results, sends product grid HTML to Below for structured e
 """
 
 import asyncio
-import os
 import logging
 
 from core.cluster.cluster_config import get_below_ollama_url, get_below_model

@@ -5,7 +5,7 @@ Pre-migration and post-migration validation to ensure data integrity
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 
 from .v2_parser import V2Project

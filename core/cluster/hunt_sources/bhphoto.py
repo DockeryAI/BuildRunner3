@@ -4,7 +4,6 @@ Fetches B&H search results, sends to Below for structured extraction.
 """
 
 import asyncio
-import os
 import logging
 
 from core.cluster.cluster_config import get_below_ollama_url, get_below_model

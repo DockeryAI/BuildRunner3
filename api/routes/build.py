@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from core.build_session import session_manager, Component, Feature, ComponentStatus
+from core.build_session import session_manager, Component, Feature
 from api.websocket_handler import broadcast_to_session
 
 router = APIRouter(prefix="/api/build", tags=["build"])

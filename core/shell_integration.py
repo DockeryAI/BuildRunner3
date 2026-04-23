@@ -12,7 +12,6 @@ Features:
 - Generate launch commands with editor preferences
 """
 
-import os
 import logging
 import shutil
 from pathlib import Path

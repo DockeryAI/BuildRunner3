@@ -1,9 +1,7 @@
 """Documentation Analyzer - uses AI to extract PRD information from docs"""
 
 import logging
-import os
-from typing import Dict, List, Optional
-from pathlib import Path
+from typing import Dict, List
 
 from .doc_scanner import DocumentationFile
 

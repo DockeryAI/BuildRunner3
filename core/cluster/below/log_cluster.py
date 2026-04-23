@@ -29,9 +29,8 @@ from __future__ import annotations
 import logging
 import os
 from dataclasses import dataclass, field
-from typing import Optional
 
-from core.cluster.below.embed import BelowOfflineError, embed_batch
+from core.cluster.below.embed import embed_batch
 
 logger = logging.getLogger(__name__)
 

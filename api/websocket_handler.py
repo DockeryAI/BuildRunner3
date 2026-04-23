@@ -3,7 +3,6 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import Dict, Set
 import json
-import asyncio
 
 router = APIRouter()
 

@@ -10,12 +10,10 @@ Merges and synthesizes results from multiple agents:
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Any, Tuple, Set
+from typing import Dict, List, Optional, Any
 from datetime import datetime
-from pathlib import Path
-import json
 
-from core.agents.claude_agent_bridge import AgentResponse, AgentType
+from core.agents.claude_agent_bridge import AgentResponse
 
 
 class ConflictStrategy(str, Enum):

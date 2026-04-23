@@ -3,7 +3,7 @@ Push Intelligence - Smart push timing and readiness checks
 """
 
 from pathlib import Path
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from dataclasses import dataclass
 
 from .git_client import GitClient

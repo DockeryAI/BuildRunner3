@@ -16,7 +16,6 @@ import logging
 import time
 
 from core.prd.prd_controller import PRDChangeEvent, ChangeType, get_prd_controller
-from core.spec_parser import SpecParser
 from core.task_decomposer import TaskDecomposer
 from core.dependency_graph import DependencyGraph
 from core.task_queue import TaskQueue, TaskStatus

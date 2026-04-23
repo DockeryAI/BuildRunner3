@@ -21,11 +21,9 @@ from cli.auto_pipe import CommandPiper, PipeError, auto_pipe_command
 from cli.error_watcher import ErrorWatcher, WatcherError, start_watcher
 from core.feature_registry import FeatureRegistry
 from core.status_generator import StatusGenerator
-from core.governance import get_governance_manager, GovernanceError
-from core.governance_enforcer import get_enforcer, EnforcementError
-from core.architecture_guard import ArchitectureGuard, ArchitectureViolation
-from core.self_service import SelfServiceManager, ServiceRequirement
-from core.prd_wizard import PRDWizard, SpecState
+from core.governance import get_governance_manager
+from core.architecture_guard import ArchitectureGuard
+from core.self_service import SelfServiceManager
 from core.claude_md_generator import ClaudeMdGenerator
 from core.runtime.config import RuntimeConfigError, apply_runtime_selection, resolve_runtime_selection
 
@@ -440,7 +438,6 @@ def status():
         # Show orchestration status if tasks exist
         try:
             from cli.tasks_commands import get_task_queue
-            from core.task_queue import TaskStatus
 
             queue = get_task_queue()
             if len(queue.tasks) > 0:
