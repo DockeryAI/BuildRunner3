@@ -72,11 +72,13 @@ def _load_circuit_state() -> dict[str, Any]:
 def _save_circuit_state(state: dict[str, Any]) -> None:
     path = _circuit_state_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    # Open for write with LOCK_EX to serialize concurrent circuit-breaker updates.
-    # 'w' truncates on open after the lock is held so partial reads are impossible.
-    with open(path, "w", encoding="utf-8") as fh:
+    # Open in 'a' mode so the file descriptor exists without premature truncation,
+    # acquire LOCK_EX, then truncate + write atomically inside the lock.
+    with open(path, "a", encoding="utf-8") as fh:
         fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
         try:
+            fh.seek(0)
+            fh.truncate(0)
             fh.write(json.dumps(state, indent=2) + "\n")
         finally:
             fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
