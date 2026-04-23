@@ -66,7 +66,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 2: Dashboard renders ground truth
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/cluster-check.sh` (MODIFY) — `--health-json` currently hand-constructs JSON at lines 118 (HTTP branch) and 147 (SSH branch) and drops unknown fields. Rewrite to proxy the full `/health` payload.
@@ -79,14 +79,14 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 **Deliverables:**
 
-- [ ] `cluster-check.sh --health-json` proxies full `/health` including `busy_state` and `workloads[]` on both HTTP and SSH branches; diff test against raw `curl /health` for all 7 nodes.
-- [ ] `BR3_NODE_HEALTH_POLL_MS` knob, 10s default; setting `30000` restores prior interval.
-- [ ] `node.workload` SSE event emitted from `events.mjs` with payload `{node, workloads, busy_state, ts}` on delta.
-- [ ] `jobs-aggregator.js` handles the new event with dedupe semantics (SSE wins on shared `build_id`); exposes via unchanged `window.getJobsForNode` accessor.
-- [ ] Chip logic uses `busy_state` primary, CPU% fallback (>30% -> active, >75% -> saturated), SSE as label source only.
-- [ ] Workload label row renders under CPU bar ("vitest · Synapse · 4 workers" / "idle · 3% CPU").
-- [ ] SSE-driven BR3 phase info preserved (autopilot/build labels still surface).
-- [ ] No regression on overflow panel, cluster-builds list, Prometheus CPU bars.
+- [x] `cluster-check.sh --health-json` proxies full `/health` including `busy_state` and `workloads[]` on both HTTP and SSH branches; diff test against raw `curl /health` for all 7 nodes.
+- [x] `BR3_NODE_HEALTH_POLL_MS` knob, 10s default; setting `30000` restores prior interval.
+- [x] `node.workload` SSE event emitted from `events.mjs` with payload `{node, workloads, busy_state, ts}` on delta.
+- [x] `jobs-aggregator.js` handles the new event with dedupe semantics (SSE wins on shared `build_id`); exposes via unchanged `window.getJobsForNode` accessor.
+- [x] Chip logic uses `busy_state` primary, CPU% fallback (>30% -> active, >75% -> saturated), SSE as label source only.
+- [x] Workload label row renders under CPU bar ("vitest · Synapse · 4 workers" / "idle · 3% CPU").
+- [x] SSE-driven BR3 phase info preserved (autopilot/build labels still surface).
+- [x] No regression on overflow panel, cluster-builds list, Prometheus CPU bars.
 
 ### Phase 3: Router sees ground truth
 
@@ -134,7 +134,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 5: Per-project shard config + command wiring
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/templates/cluster-test-config.yaml.template` (NEW) — canonical template with commented fields.
@@ -146,11 +146,11 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 **Deliverables:**
 
-- [ ] Template fields: `test_command`, `shard_count`, `assigned_nodes[]`, `timeout_sec`, `playwright: { enabled, assigned_node }`.
-- [ ] Config installed in BuildRunner3 and validated with `dispatch-test.sh --dry-run`.
-- [ ] `/test` command: when config exists -> dispatcher; else -> local behavior. No breakage in unconfigured projects.
-- [ ] `/e2e` command: same routing contract for Playwright, Lomax-targeted.
-- [ ] Docs in `~/.buildrunner/docs/sharded-testing.md` on installing config in other BR3 projects.
+- [x] Template fields: `test_command`, `shard_count`, `assigned_nodes[]`, `timeout_sec`, `playwright: { enabled, assigned_node }`.
+- [x] Config installed in BuildRunner3 and validated with `dispatch-test.sh --dry-run`.
+- [x] `/test` command: when config exists -> dispatcher; else -> local behavior. No breakage in unconfigured projects.
+- [x] `/e2e` command: same routing contract for Playwright, Lomax-targeted.
+- [x] Docs in `~/.buildrunner/docs/sharded-testing.md` on installing config in other BR3 projects.
 
 ### Phase 6: Otis type-check loop
 

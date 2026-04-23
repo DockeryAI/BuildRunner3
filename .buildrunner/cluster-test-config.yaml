@@ -1,0 +1,27 @@
+# cluster-test-config.yaml — BuildRunner3
+#
+# Parallel shard test config for dispatch-test.sh.
+# See ~/.buildrunner/docs/sharded-testing.md for full documentation.
+# Template: ~/.buildrunner/templates/cluster-test-config.yaml.template
+
+# Nodes to dispatch shards to (one shard per node)
+nodes:
+  - walter
+  - lockwood
+
+# vitest command (dispatch-test.sh appends --shard=N/M and reporters)
+test_command: 'npx vitest run'
+
+# Per-shard hard timeout in seconds (kill + mark failed on expiry)
+shard_timeout_seconds: 300
+
+# Rsync exclusions (appended to defaults: node_modules/, .git/, dist/, .buildrunner/locks/)
+rsync_exclude:
+  - '.env.local'
+  - '.env.*.local'
+  - 'coverage/'
+
+# Playwright E2E routing — dispatches /e2e to Lomax (staging server)
+playwright:
+  enabled: true
+  assigned_node: lomax
