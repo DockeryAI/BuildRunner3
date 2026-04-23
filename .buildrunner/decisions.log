@@ -1698,3 +1698,10 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
   WHY: Pre-fix state was "BR3 shards; everyone else runs local and nobody notices." New default flips it: if a project has vitest, shards automatically; deviate via YAML, opt out via marker file.
   CONTEXT: dispatch-test.sh, default-test-config.yaml, future /test + /e2e invocations across ~/Projects/*
 [2026-04-23T17:58:02.945450Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ee05be4a3daf737d reviewers=2
+
+## Wave D Complete: Phases 8, 12, 13, 14 (2026-04-23)
+- **Phase 8 (test failure clustering):** core/cluster/below/test_failure_cluster.py; 18 tests passing; cluster integration in ci-classifier.sh and root.md Step 1.25
+- **Phase 12 (dep triage → qwen2.5:14b):** below-dep-triage.sh; semver major-bump fast-path; auto-remediate.mjs dep_update routing; 38 tests passing
+- **Phase 13 (LLMLingua-2 compression):** llmlingua_compress.py; autopilot-dispatch-prefix.sh --compress-phase flag; collect-intel.sh _compress_prompt_if_enabled(); 26 tests passing
+- **Phase 14 (Semgrep prefilter):** semgrep_triage.py; ai_code_review.py quick-pass integration; OWASP Top 10 coverage validated; 29 tests passing
+- **BUILD_below-offload:** All 17 phases complete (0-16). Total tests: 18+38+26+29=111 new tests this wave.
