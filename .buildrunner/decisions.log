@@ -1791,3 +1791,67 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T19:17:09.911934Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0d572e04f45cba2e reviewers=2
 [2026-04-23T19:17:22.942372Z] THREE_WAY_REVIEW review_start plan_hash=8302d23f232d0b55 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=f811eba
 [2026-04-23T19:20:02.086320Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8302d23f232d0b55 reviewers=2
+[2026-04-23T19:23:25.324250Z] THREE_WAY_REVIEW review_start plan_hash=116f7be8e8c7943d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:23:32.837122Z] THREE_WAY_REVIEW review_start plan_hash=0b7ec3a8b303e770 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:24:34.423187Z] THREE_WAY_REVIEW review_start plan_hash=7018f4df4f8d0923 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:24:38.850279Z] THREE_WAY_REVIEW review_start plan_hash=673a2bba3d1b07ce artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T00:00:00Z] [GOAL] Incorporate plan-mode pattern into BR3 where it materially reduces edit risk; explicitly avoid adding unnecessary steps to routine work.
+  WHY: 4.7 already self-verifies; blanket plan-mode gating would double-cost routine phases for no gain. User directive: "only where it helps."
+  CONTEXT: /spec, /amend, autopilot dispatch
+
+[2026-04-23T00:00:01Z] [CONSTRAINT] EnterPlanMode tool clears context and is explicitly forbidden in BR3 skills (see begin.md inline note).
+  WHY: Plan-mode reasoning lost on clear means downstream adversarial review + executor dispatch cannot inherit findings. Direct tool use breaks the skill contract.
+  CONTEXT: ~/.claude/commands/begin.md, skill authoring policy
+
+[2026-04-23T00:00:02Z] [PATTERN] "Plan-mode survey" — inline read-only reasoning pass whose output is persisted to a plain-markdown sidecar before any mutation. Replaces direct EnterPlanMode usage in BR3 skills.
+  WHY: Persistence survives context clears; plain markdown is consumable by any executor LLM the role matrix routes to (Claude, gpt-5.4, gpt-5.3-codex).
+  CONTEXT: /spec Step 3.65, /amend Step 3.45, autopilot-dispatch-prefix.sh
+
+[2026-04-23T00:00:03Z] [DECISION] /spec gains conditional Step 3.65 Plan-Mode Survey — fires iff prior BUILDs exist OR draft Files lists touch shared surface (core/, shared/, supabase/functions/, .buildrunner/scripts/, governance.yaml, default-role-matrix, src/types/, src/lib/).
+  WHY: A new spec is generative within its own scope but mutative against the project's accumulated infrastructure when other specs already exist. Greenfield projects have nothing to survey — skip.
+  CONTEXT: /Users/byronhudson/.claude/commands/spec.md Step 3.65
+
+[2026-04-23T00:00:04Z] [DECISION] /amend gains conditional Step 3.45 Plan-Mode Survey — fires only for amendments that introduce new phases; task-only amendments skip it.
+  WHY: Adding a task to an existing open phase is low blast radius; inserting a new phase can re-touch completed-phase files, break phase ordering, or violate governance. Mutative case warrants survey.
+  CONTEXT: /Users/byronhudson/.claude/commands/amend.md Step 3.45
+
+[2026-04-23T00:00:05Z] [DECISION] autopilot-dispatch-prefix.sh gains --plan-mode flag (auto|on|off) and BR3_AUTOPILOT_PLAN_MODE env var. Default auto = on iff PHASE_WEIGHT=hardest, off otherwise.
+  WHY: Per-step escalation matches how 4.7 treats ultrathink. light/heavy phases don't benefit; hardest phases are where blind edit cost exceeds survey cost.
+  CONTEXT: ~/.buildrunner/scripts/autopilot-dispatch-prefix.sh
+
+[2026-04-23T00:00:06Z] [ARCHITECTURE] Plan-mode artifacts routed by persistence path: /spec → .buildrunner/plans/survey-<slug>.md; /amend → appended to $PLAN_FILE under "## Pre-Amendment Survey"; autopilot → .buildrunner/plans/phase-<N>-survey.md.
+  WHY: Each artifact binds to its own lifecycle — spec slug, amendment plan file, per-phase sidecar. No shared file collisions across builds or phases. /spec also adds a "Prior-State Survey" header field to BUILD specs for downstream discoverability.
+  CONTEXT: spec.md Step 3.65c/d, amend.md Step 3.45b, autopilot-dispatch-prefix.sh plan-mode block
+
+[2026-04-23T00:00:07Z] [WHY] All three plan-mode integrations run on the planning/architecture bucket (Opus 4.7 xhigh), which is already the default for /spec and /amend. For autopilot, the directive is embedded in the dispatched prompt regardless of the phase's executor bucket — the executor follows it. If the user wants dedicated Opus planning for a hardest non-Claude phase, they upgrade the bucket.
+  WHY: Keeps the surface minimal and respects the role matrix without architecting a multi-model hop for the autopilot case.
+  CONTEXT: ~/.buildrunner/config/default-role-matrix.yaml, autopilot dispatch
+
+[2026-04-23T00:00:08Z] [REJECTED] /spec plan-mode gate as always-on.
+  WHY: Redundant with Step 3.7 adversarial review on greenfield projects where there is no prior state to survey. Conditional detection (prior builds OR shared-surface touch) preserves the benefit without adding friction to first specs.
+  CONTEXT: /spec flow design
+
+[2026-04-23T00:00:09Z] [REJECTED] New /survey skill wrapping plan mode with preloaded context bundle.
+  WHY: Ad-hoc manual plan-mode use is already possible; a dedicated skill adds surface without unique value. Only integrated where it attaches to an existing gated flow.
+  CONTEXT: skill catalog
+
+[2026-04-23T00:00:10Z] [REJECTED] CLAUDE.md global rule formalizing when to enter plan mode.
+  WHY: Role matrix + the three skill-level integrations already encode the decision points; a global rule would duplicate policy that lives in the artifacts.
+  CONTEXT: ~/.claude/CLAUDE.md
+
+[2026-04-23T00:00:11Z] [TRADE-OFF] Plan-mode pre-pass adds one persistence write + one read-only reasoning pass to qualifying phases.
+  WHY: Accepted at hardest-weight phases and at mutative spec/amend branches where blind-edit cost dominates. Explicitly not accepted at light/heavy phases or greenfield specs.
+  CONTEXT: autopilot phase weight handling, /spec trigger detection
+
+[2026-04-23T00:00:12Z] [DECISION] Plan-mode survey output format is model-agnostic plain markdown with fixed section headings (Shared-Surface Touches, Completed-Phase Dependencies, Governance Constraints, Edit Plan for autopilot; Prior BUILDs / Shared-Surface Impact / Governance Drift / Completed-Phase Blast Radius for /spec).
+  WHY: gpt-5.4 (ui-build, backend-build, qa) and gpt-5.3-codex (terminal-build) must be able to consume the survey without Claude-specific formatting. Role-matrix aware by design.
+  CONTEXT: all three integrations
+[2026-04-23T19:25:20.507111Z] THREE_WAY_REVIEW review_start plan_hash=33c76e08f699ef77 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:25:59.325996Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=116f7be8e8c7943d reviewers=2
+[2026-04-23T19:26:06.855056Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0b7ec3a8b303e770 reviewers=2
+[2026-04-23T19:27:15.563729Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=673a2bba3d1b07ce reviewers=2
+[2026-04-23T19:27:21.672024Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7018f4df4f8d0923 reviewers=2
+[2026-04-23T19:27:59.912757Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=33c76e08f699ef77 reviewers=2
+[2026-04-23T19:28:44.564348Z] THREE_WAY_REVIEW review_start plan_hash=8451913a56c3c66a artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:29:09.280572Z] THREE_WAY_REVIEW review_start plan_hash=8cb64b26d443a435 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:30:01.265329Z] THREE_WAY_REVIEW review_start plan_hash=7308ce47072f4b63 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
