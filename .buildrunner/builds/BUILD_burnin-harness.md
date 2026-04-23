@@ -20,7 +20,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-2 Complete — Phase 3 In Progress
+**Status:** Phases 1-3 Complete — Phase 4 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; harness writes to `~/.buildrunner/` and `~/.claude/skills/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness.md
 **Source Plan SHA:** ad48f9367987ac3403ab50af859a8add9cf772a3610bdf22629566bb5bf5b4e6
@@ -132,25 +132,26 @@ Stand up a plugin-per-case burn-in harness that validates every cluster feature 
 
 ### Phase 3: Execution — 3-condition matrix + bounded fix loop
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/lib/conditions.sh` (NEW)
 - `~/.buildrunner/scripts/burnin/lib/fix-loop.sh` (NEW)
+- `~/.buildrunner/scripts/burnin/burnin.sh` (MODIFY — wire conditions + `fix` subcommand)
 
 **Blocked by:** Phase 2
 
 **Deliverables:**
 
-- [ ] Cold = real service restart via SSH (e.g., `ollama stop/start`), not a sleep.
-- [ ] Warm = one throwaway call first.
-- [ ] Loaded = 5 concurrent decoy calls during test.
-- [ ] Per-plugin condition opt-in; default all three.
-- [ ] Fix loop: failure artifact + 40-line diff cap + 3-attempt budget + 4th failure → `needs_human`.
-- [ ] Diff applied to worktree branch, operator approves unless `BR3_BURNIN_AUTOAPPLY=1`.
-- [ ] Every attempt logged to `fix_requests`.
+- [x] Cold = real service restart via SSH (e.g., `ollama stop/start`), not a sleep.
+- [x] Warm = one throwaway call first.
+- [x] Loaded = 5 concurrent decoy calls during test.
+- [x] Per-plugin condition opt-in; default all three.
+- [x] Fix loop: failure artifact + 40-line diff cap + 3-attempt budget + 4th failure → `needs_human`.
+- [x] Diff applied to worktree branch, operator approves unless `BR3_BURNIN_AUTOAPPLY=1`.
+- [x] Every attempt logged to `fix_requests`.
 
-**Success Criteria:** Deliberately-broken plugin fails → `fixing` → Claude called → diff approved → re-run green.
+**Success Criteria:** Deliberately-broken plugin fails → `fixing` → Claude called → diff approved → re-run green. ✅ Verified: rejected-diff path, NEEDS_HUMAN short-circuit, diff-cap reject → budget exhaustion → `needs_human`, condition opt-in (1/1 vs 3/3).
 
 ---
 
