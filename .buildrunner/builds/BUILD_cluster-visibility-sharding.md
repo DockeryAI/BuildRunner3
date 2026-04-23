@@ -90,7 +90,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 3: Router sees ground truth
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/resolve-dispatch-node.py` (MODIFY) — saturation check consumes `busy_state` + `cpu_pct` from node health, not only `cluster-builds.json:309-312` active_builds.
@@ -100,12 +100,12 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 **Deliverables:**
 
-- [ ] Saturation weights: `busy_state=saturated` -> force overflow; `busy_state=active` + CPU>75% -> force overflow; else retain active_builds threshold.
-- [ ] `cluster-builds.json` count is a secondary input, not primary.
-- [ ] Manual test: spike Walter with vitest out-of-band, dispatch a new build, confirm overflow to Lockwood or Lomax in router logs.
-- [ ] Decision log entry recording threshold change.
-- [ ] `BR3_ROUTER_LEGACY_SATURATION=1` coded as a Phase 3 deliverable — restores pre-Phase-3 Prometheus + `agents.json` behavior (`resolve-dispatch-node.py:330-376`). Smoke test toggles the env var and confirms baseline is restored.
-- [ ] `BR3_NODE_HEALTH_TIMEOUT_MS` fail-open (default 500ms). Slow node `/health` falls back to Prometheus check; logged as `"source": "fail-open-health-timeout"` in router decision record.
+- [x] Saturation weights: `busy_state=saturated` -> force overflow; `busy_state=active` + CPU>75% -> force overflow; else retain active_builds threshold.
+- [x] `cluster-builds.json` count is a secondary input, not primary.
+- [x] Manual test: spike Walter with vitest out-of-band, dispatch a new build, confirm overflow to Lockwood or Lomax in router logs.
+- [x] Decision log entry recording threshold change.
+- [x] `BR3_ROUTER_LEGACY_SATURATION=1` coded as a Phase 3 deliverable — restores pre-Phase-3 Prometheus + `agents.json` behavior (`resolve-dispatch-node.py:330-376`). Smoke test toggles the env var and confirms baseline is restored.
+- [x] `BR3_NODE_HEALTH_TIMEOUT_MS` fail-open (default 500ms). Slow node `/health` falls back to Prometheus check; logged as `"source": "fail-open-health-timeout"` in router decision record.
 
 ### Phase 4: Parallel-shard test dispatcher
 

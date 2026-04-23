@@ -1517,3 +1517,25 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 2026-04-23T15:56:29Z optimize-skill: phase=6 live_run_queued=true reason=requires_api_spend_and_human_spot_check
 2026-04-23T15:56:29Z routing: skill=optimize-skill phases=1-5 builder=claude node=muddy mode=inline reason=out-of-project-files
 2026-04-23T15:56:29Z test-results: skill=optimize-skill suite=tests/cluster/test_optimize_skill_*.py passed=92 failed=0
+2026-04-23T16:00:02Z push: build=optimize-skill remote=lockwood result=rejected reason=remote-working-dir-unstaged note=local-commit-in-place
+2026-04-23T16:03:24Z router: build=BUILD_cluster-visibility-sharding phase=3 node=muddy reason=path-locality overrides=path-locality
+
+## Phase 3: Router Ground Truth — Saturation Threshold Change (2026-04-23)
+
+**Previous behavior (pre-Phase-3):** Saturation decisions used Prometheus CPU/mem + agents.json active_builds count only. The active_builds count was the primary overflow trigger (threshold: 2 concurrent builds).
+
+**New behavior (Phase 3):** Primary input is ground-truth `/health` from each candidate node:
+- `busy_state=saturated` → FORCE OVERFLOW regardless of CPU%
+- `busy_state=active` + `cpu_pct > 75` → FORCE OVERFLOW
+- `busy_state=idle/active` (cpu<=75) → fall to active_builds secondary threshold (unchanged)
+
+**Secondary input:** `cluster-builds.json` active_builds count (now a tiebreaker, not primary).
+
+**Fail-open:** If `/health` times out (default 500ms via `BR3_NODE_HEALTH_TIMEOUT_MS`), falls back to Prometheus + agents.json. Decision record logs `"source": "fail-open-health-timeout"`.
+
+**Legacy escape hatch:** `BR3_ROUTER_LEGACY_SATURATION=1` restores pre-Phase-3 Prometheus-only behavior verbatim (lines 330-376 of original file). Smoke-tested: same load data with env=1 produces different overloaded result vs env=0 (13 unit tests, 13/13 passing).
+
+**Manual test result:** Nodes online but Phase 1 services not yet restarted → /health endpoints don't expose `busy_state`. Router correctly fell through to `fail-open-health-timeout` path and dispatched normally. Full manual test (spike + overflow confirmation) requires Phase 1 service restart on cluster nodes.
+
+**Files modified:** `~/.buildrunner/scripts/resolve-dispatch-node.py`
+**Tests added:** `tests/cluster/test_router_ground_truth.py` (13 tests, all passing)
