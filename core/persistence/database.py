@@ -37,6 +37,10 @@ class Database:
         """Initialize database connection with proper settings"""
         self.conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row  # Return rows as dictionaries
+        # WAL mode: allow concurrent readers + one writer without "database is locked"
+        self.conn.execute("PRAGMA journal_mode=WAL")
+        # 5 s busy-timeout: retry on writer contention before raising OperationalError
+        self.conn.execute("PRAGMA busy_timeout=5000")
         self.cursor = self.conn.cursor()
 
     @contextmanager
