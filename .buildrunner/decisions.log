@@ -1705,3 +1705,15 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 - **Phase 13 (LLMLingua-2 compression):** llmlingua_compress.py; autopilot-dispatch-prefix.sh --compress-phase flag; collect-intel.sh _compress_prompt_if_enabled(); 26 tests passing
 - **Phase 14 (Semgrep prefilter):** semgrep_triage.py; ai_code_review.py quick-pass integration; OWASP Top 10 coverage validated; 29 tests passing
 - **BUILD_below-offload:** All 17 phases complete (0-16). Total tests: 18+38+26+29=111 new tests this wave.
+[2026-04-23T20:45:28Z] Phase 2 decisions:
+[2026-04-23T20:45:28Z] [DECISION] database.py: added WAL+busy_timeout=5000 to _init_connection()
+[2026-04-23T20:45:28Z] [DECISION] semantic_cache.py: added WAL+busy_timeout=5000 to _ensure_init()
+[2026-04-23T20:45:28Z] [DECISION] cross_model_review.py: replaced exists()+write() with atomic open(x) to eliminate TOCTOU
+[2026-04-23T20:45:28Z] [DECISION] arbiter.py: fcntl.flock LOCK_EX around circuit-breaker load/save; truncate-after-lock pattern
+[2026-04-23T20:45:28Z] [DECISION] lockwood-sourcer.sh: added flock -n guard; _last_checked migrated to active_hunts.last_checked_at SQLite column
+[2026-04-23T20:45:28Z] [DECISION] research_worker.py: pending.jsonl replaced with per-file queue (pending/<uuid>.json); legacy drain on startup
+[2026-04-23T20:45:28Z] [DECISION] worker_coordinator.py: threading.Lock serializes all workers/task_queue/task_assignments mutations
+[2026-04-23T20:45:28Z] [DECISION] event_storage.py: threading.Lock wraps should_rotate+_rotate+write in save()
+[2026-04-23T20:45:28Z] [DECISION] metrics_db.py: single INSERT OR REPLACE replaces SELECT-then-INSERT race
+[2026-04-23T20:45:28Z] [DECISION] node_semantic.py: _indexing_lock + _research_indexing_lock (threading.Lock) guard run_index/run_research_index
+[2026-04-23T20:45:28Z] [DECISION] database.py: threading.Lock added to execute() to serialize shared connection across threads
