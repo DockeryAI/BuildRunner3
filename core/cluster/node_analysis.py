@@ -965,6 +965,58 @@ async def get_patterns(resolved: bool = False):
     return {"patterns": [dict(r) for r in rows]}
 
 
+@app.get("/api/logs/clusters")
+async def get_log_clusters(project: Optional[str] = None, log_name: str = "browser.log"):
+    """
+    Return a cluster summary for the specified project log using Below embeddings.
+
+    This endpoint powers the /brief and /dbg token-reduction pipeline (Phase 7).
+    Rollback: BR3_LOG_CLUSTER=off returns {"skipped": true}.
+    Fail-open: Below offline or too few lines returns {"skipped": true, "reason": "..."}.
+    """
+    import os as _os
+    if _os.environ.get("BR3_LOG_CLUSTER", "on").lower() == "off":
+        return {"skipped": True, "reason": "BR3_LOG_CLUSTER=off"}
+
+    # Resolve project log path
+    projects_dir = _os.environ.get("PROJECTS_DIR", _os.path.expanduser("~/Projects"))
+    if project:
+        log_path = Path(projects_dir) / project / ".buildrunner" / log_name
+    else:
+        # Find most recently modified project with that log
+        candidates = sorted(
+            Path(projects_dir).glob(f"*/.buildrunner/{log_name}"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        log_path = candidates[0] if candidates else None
+
+    if not log_path or not log_path.exists():
+        return {"skipped": True, "reason": f"{log_name} not found"}
+
+    lines = [ln.rstrip() for ln in log_path.read_text(errors="replace").splitlines() if ln.strip()]
+    if len(lines) < 30:
+        return {"skipped": True, "reason": "too few lines"}
+
+    lines = lines[-500:]  # tail
+    try:
+        from core.cluster.below.log_cluster import cluster_lines, format_cluster_summary
+        result = cluster_lines(lines, max_lines=500)
+        summary = format_cluster_summary(result)
+        return {
+            "skipped": False,
+            "log": str(log_path),
+            "lines_processed": len(lines),
+            "cluster_count": len(result.clusters),
+            "outlier_count": len(result.outliers),
+            "summary": summary,
+        }
+    except RuntimeError:
+        return {"skipped": True, "reason": "BR3_LOG_CLUSTER=off (library)"}
+    except Exception as exc:  # noqa: BLE001
+        return {"skipped": True, "reason": f"clustering failed: {exc}"}
+
+
 @app.get("/api/logs/correlations")
 async def get_correlations(limit: int = 20):
     """Get cross-file event correlations."""
