@@ -1472,3 +1472,38 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 2026-04-23T15:16:52Z router: build=BUILD_cluster-visibility-sharding phase=4 node=muddy reason=path-locality overrides=path-locality
 2026-04-23T15:16:52Z router: build=BUILD_cluster-visibility-sharding phase=5 node=muddy reason=path-locality overrides=path-locality
 2026-04-23T15:16:52Z router: build=BUILD_cluster-visibility-sharding phase=6 node=muddy reason=path-locality overrides=path-locality
+[2026-04-23T15:21:28.971831Z] THREE_WAY_REVIEW review_start plan_hash=5dc1d074b2eb8e6e artifact='.buildrunner/plans/plan-optimize-skill.md' commit=plan-1776957688
+[2026-04-23T15:25:51.887452Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=5dc1d074b2eb8e6e reviewers=2
+[2026-04-23T15:27:19.557843Z] THREE_WAY_REVIEW review_start plan_hash=767985df8ef5131d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T10:27:29] [DECISION] Spec review blocked; fixed inline; bypass authorized by skill (1-review rule)
+[2026-04-23T15:27:42.850027Z] THREE_WAY_REVIEW review_start plan_hash=21ebbb9709aadccf artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T15:28:40.349447Z] THREE_WAY_REVIEW review_start plan_hash=7da084272098b8d3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T10:31:31] [DECISION] Created BUILD_optimize-skill with 6 phases, bypassed 1-review adversarial (2 codex-only findings, fixed inline)
+[2026-04-23T15:32:01.446236Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=21ebbb9709aadccf reviewers=2
+[2026-04-23T15:33:01.243507Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=767985df8ef5131d reviewers=2
+[2026-04-23T15:34:42.262709Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7da084272098b8d3 reviewers=2
+[2026-04-23T15:35:48.821251Z] THREE_WAY_REVIEW review_start plan_hash=7da084272098b8d3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+{"ts":1776958188,"skill":"fixit","size":"M","verdict":"accept","brief":"/Users/byronhudson/Projects/BuildRunner3/.buildrunner/fixit-briefs/1776958188","branch":"fixit/1776958188","issues":["orphan-models","phase1-sync-path","json_invalid-developer-brief"]}
+[2026-04-23T15:39:40.459033Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7da084272098b8d3 reviewers=2
+[2026-04-23T15:40:34.169251Z] THREE_WAY_REVIEW review_start plan_hash=aada6ba679f6a3bb artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T15:41:01.703076Z] THREE_WAY_REVIEW review_start plan_hash=f3d242533ce40ba7 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T15:43:03.891508Z] THREE_WAY_REVIEW review_start plan_hash=27d57905039158d5 artifact='diff --git a/e2e/synapse-enrichment-handoff.spec.ts b/e2e/synapse-enrichment-han' commit=b9d724c
+[2026-04-23T15:43:59.728038Z] THREE_WAY_REVIEW review_start plan_hash=ead06636d2d1506c artifact='diff --git a/.buildrunner/builds/BUILD_synapse-enrichment-handoff-wiring.md b/.b' commit=b9d724c
+2026-04-23T15:45:56Z router: build=BUILD_optimize-skill phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:45:57Z router: build=BUILD_optimize-skill phase=2 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:45:57Z router: build=BUILD_optimize-skill phase=3 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:45:57Z router: build=BUILD_optimize-skill phase=4 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:45:57Z router: build=BUILD_optimize-skill phase=5 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:45:57Z router: build=BUILD_optimize-skill phase=6 node=walter reason=spec-preference overrides=none
+[2026-04-23T15:46:12.343764Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f3d242533ce40ba7 reviewers=2
+[2026-04-23T15:46:35.047839Z] THREE_WAY_REVIEW review_start plan_hash=e13cc141ffd57f12 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+2026-04-23T15:46:35Z router: build=BUILD_cluster-visibility-sharding phase=1 node=muddy reason=spec-preference overrides=none
+2026-04-23T15:46:35Z router: build=BUILD_cluster-visibility-sharding phase=2 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:46:35Z router: build=BUILD_cluster-visibility-sharding phase=3 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:46:35Z router: build=BUILD_cluster-visibility-sharding phase=4 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:46:36Z router: build=BUILD_cluster-visibility-sharding phase=5 node=muddy reason=path-locality overrides=path-locality
+2026-04-23T15:46:36Z router: build=BUILD_cluster-visibility-sharding phase=6 node=muddy reason=path-locality overrides=path-locality
+[2026-04-23T15:46:37.472526Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=aada6ba679f6a3bb reviewers=2
+[2026-04-23T15:46:45.128169Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=27d57905039158d5 reviewers=2
+2026-04-23T15:47:11Z routing: build=optimize-skill scope=build-locks reason=collision-with-cluster-visibility-sharding
+[2026-04-23T15:48:22.109028Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ead06636d2d1506c reviewers=2

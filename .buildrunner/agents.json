@@ -1,5 +1,23 @@
 {
   "agents": {
+    "a01c2f13cdea80075": {
+      "name": "Parallel-shard test dispatcher",
+      "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/b134662a-71b7-4f1c-8891-07467f8f25a8/tasks/a01c2f13cdea80075.output",
+      "phase": 4,
+      "sessionId": "b134662a-71b7-4f1c-8891-07467f8f25a8",
+      "startedAt": "2026-04-23T15:21:08Z",
+      "status": "running",
+      "worktreePath": null
+    },
+    "a1e050995a65fab8f": {
+      "name": "Otis type-check loop",
+      "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/b134662a-71b7-4f1c-8891-07467f8f25a8/tasks/a1e050995a65fab8f.output",
+      "phase": 6,
+      "sessionId": "b134662a-71b7-4f1c-8891-07467f8f25a8",
+      "startedAt": "2026-04-23T15:21:08Z",
+      "status": "running",
+      "worktreePath": null
+    },
     "a45c0809bea599983": {
       "name": "Routing Flag Durability + Haiku Swaps",
       "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/0799f71c-2c7c-4434-8376-d85a15e7ab81/tasks/a45c0809bea599983.output",
