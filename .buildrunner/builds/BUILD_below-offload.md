@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-9 Complete — Phase 5 In Progress
+**Status:** Phases 1-10 Complete — Phase 5 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -266,19 +266,21 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 9: CI classifier → qwen3:8b hybrid
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
-- $HOME/.buildrunner/scripts/ship/ci/ci-classifier.sh (MODIFY — regex fallback path)
+- $HOME/.buildrunner/scripts/ship/ci/ci-classifier.sh (MODIFY)
+- tests/fixtures/ci_failures.jsonl (NEW — 21 labeled CI failure records)
+- tests/test_ci_classifier.py (NEW — 12 tests, 100% pass)
 
 **Blocked by:** Phase 2
 **Deliverables:**
 
-- [ ] Regex path first (speed)
-- [ ] Below qwen3:8b via schema classifier on regex miss
-- [ ] Emit novel-pattern hits to decisions.log
-- [ ] Rollback flag BR3_CI_CLASSIFY=regex-only
-- [ ] Accuracy regression test vs recorded CI failures
+- [x] Regex path first (speed) — expanded patterns for ESLint, Prettier, ruff, black, isort, Playwright
+- [x] Below qwen3:8b via schema classifier on regex miss (BR3_CI_CLASSIFY=hybrid)
+- [x] Emit novel-pattern hits to decisions.log + schema-classifier-metrics.jsonl
+- [x] Rollback flag BR3_CI_CLASSIFY=regex-only
+- [x] Accuracy regression test: 21 labeled records, 100% accuracy on regex path
 
 **Success Criteria:** Novel-pattern detection ≥80%; accuracy ≥90% on labeled set.
 
