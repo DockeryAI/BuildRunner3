@@ -14,3 +14,15 @@ watchdog==4.0.0
 # Testing
 httpx==0.26.0  # For TestClient
 pytest-asyncio==0.23.3
+
+# Below offload infrastructure (Phase 0+)
+scikit-learn>=1.4         # DBSCAN clustering (Phase 3)
+sqlite-vec>=0.1           # Semantic cache vector store (Phase 4)
+llmlingua>=0.2.2          # LLMLingua-2 prompt compression (Phase 13)
+# httpx is already pinned above; used by embed.py for Below API calls
+
+# NOTE: semgrep is a system/dev dependency — install via package manager:
+#   macOS:  brew install semgrep
+#   Linux:  pip install semgrep  (or via apt/snap)
+# Do NOT add semgrep to this file; it has native extensions that conflict
+# with sandboxed pip installs in some CI environments.

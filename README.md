@@ -14,6 +14,7 @@ BuildRunner 3.0 is a next-generation project management CLI designed specificall
 ## The Problem
 
 AI-assisted development introduces unique challenges:
+
 - 🔴 **Incomplete Builds** - AI forgets tasks, skips steps, leaves TODOs
 - 🔴 **Quality Drift** - No consistency across sessions, varying code quality
 - 🔴 **Architecture Chaos** - Specs ignored, patterns violated, standards forgotten
@@ -25,7 +26,9 @@ AI-assisted development introduces unique challenges:
 BuildRunner 3.0 provides **8 intelligent systems** that transform AI development:
 
 ### 1. 🎯 Completion Assurance System
+
 **Never ship incomplete projects again**
+
 - Automated gap analysis detects missing features, incomplete implementations
 - Task dependency tracking ensures proper build order
 - Pre-push validation blocks incomplete code
@@ -34,7 +37,9 @@ BuildRunner 3.0 provides **8 intelligent systems** that transform AI development
 **→** [See Gap Analysis Docs](docs/GAP_ANALYSIS.md)
 
 ### 2. ⚡ Code Quality System
+
 **Maintain professional standards automatically**
+
 - Multi-dimensional quality scoring (structure, security, testing, docs)
 - Automated linting, formatting, and security scans
 - Quality gates in git hooks prevent bad code from landing
@@ -43,7 +48,9 @@ BuildRunner 3.0 provides **8 intelligent systems** that transform AI development
 **→** [See Code Quality Docs](docs/CODE_QUALITY.md) | [See Behavior Config](docs/BEHAVIOR_CONFIG.md)
 
 ### 3. 🏗️ Architecture Drift Prevention
+
 **Keep implementations aligned with specs**
+
 - Architecture guard validates code against PROJECT_SPEC.md
 - Automatic detection of spec violations
 - Git hooks enforce architectural rules
@@ -52,7 +59,9 @@ BuildRunner 3.0 provides **8 intelligent systems** that transform AI development
 **→** [See Architecture Guard Docs](docs/ARCHITECTURE_GUARD.md)
 
 ### 4. 🐛 Automated Debugging System
+
 **Capture and pipe errors automatically**
+
 - Auto-pipe command outputs to context
 - Error pattern detection and analysis
 - Failure analysis across sessions
@@ -61,7 +70,9 @@ BuildRunner 3.0 provides **8 intelligent systems** that transform AI development
 **→** [See Automated Debugging Docs](docs/AUTOMATED_DEBUGGING.md)
 
 ### 5. 🎨 Design System with Industry Intelligence
+
 **Generate pixel-perfect designs from industry patterns**
+
 - 148 industry profiles (Healthcare, Fintech, SaaS, E-commerce, Manufacturing, Education, Government, etc.)
 - 8 use case patterns (Dashboard, Marketplace, CRM, Analytics, etc.)
 - Auto-merge profiles with intelligent conflict resolution
@@ -71,7 +82,9 @@ BuildRunner 3.0 provides **8 intelligent systems** that transform AI development
 **→** [See PRD Wizard Docs](docs/PRD_WIZARD.md) | [See Design System Docs](docs/DESIGN_SYSTEM.md)
 
 ### 6. 📋 Planning Mode + PRD Integration
+
 **Strategic planning with Opus, tactical execution with Sonnet**
+
 - Interactive PROJECT_SPEC wizard
 - Auto-detection of industry and use case
 - Opus pre-fills specifications
@@ -81,7 +94,9 @@ BuildRunner 3.0 provides **8 intelligent systems** that transform AI development
 **→** [See PRD System Docs](docs/PRD_SYSTEM.md)
 
 ### 7. 🔧 Self-Service Execution System
+
 **Intelligent API key management and environment setup**
+
 - Auto-detect required services (Stripe, AWS, Supabase, etc.)
 - Smart prompts for credentials
 - `.env` generation with validation
@@ -90,7 +105,9 @@ BuildRunner 3.0 provides **8 intelligent systems** that transform AI development
 **→** [See Self-Service Docs](docs/SELF_SERVICE.md)
 
 ### 8. 🎮 Global/Local Behavior Configuration
+
 **Fine-grained control over BuildRunner behavior**
+
 - Global defaults in ~/.buildrunner/config.yaml
 - Project overrides in .buildrunner/config.yaml
 - Runtime flags for temporary changes
@@ -101,6 +118,21 @@ BuildRunner 3.0 provides **8 intelligent systems** that transform AI development
 ---
 
 ## Quick Start
+
+### System Dependencies
+
+**semgrep** is required for the static analysis prefilter (`ai_code_review` Phase 14). It is a system/dev dependency — do not install via `requirements-api.txt`:
+
+```bash
+# macOS
+brew install semgrep
+
+# Linux (Debian/Ubuntu)
+pip install semgrep   # or: sudo snap install semgrep
+
+# Verify
+semgrep --version
+```
 
 ### Installation
 
@@ -142,6 +174,7 @@ See [docs/QUICKSTART.md](docs/QUICKSTART.md) for a complete tutorial.
 BuildRunner v3.1 adds four major system enhancements:
 
 ### 🔒 Security Safeguards (Tier 1)
+
 - ✅ **Secret detection** (13 patterns: Anthropic, OpenAI, JWT, AWS, GitHub, etc.)
 - ✅ **SQL injection detection** (Python + JavaScript patterns)
 - ⚠️ **Pre-commit hooks** (code exists, production validation needed)
@@ -150,6 +183,7 @@ BuildRunner v3.1 adds four major system enhancements:
 **→** [See SECURITY.md](SECURITY.md) for details
 
 ### 🎯 Model Routing & Cost Optimization
+
 - ✅ **Heuristic-based complexity estimation** (simple/moderate/complex/critical)
 - ⚠️ **AI-powered estimation** (optional, requires API key, not yet integrated)
 - ✅ **Model selection logic** (Haiku/Sonnet/Opus)
@@ -158,6 +192,7 @@ BuildRunner v3.1 adds four major system enhancements:
 **→** [See ROUTING.md](ROUTING.md) for details
 
 ### 📊 Telemetry & Monitoring
+
 - ✅ **Event schemas defined** (16 event types across 5 categories)
 - ✅ **Metrics analysis logic** (success rate, latency, cost, errors)
 - ⚠️ **Event collection** (needs orchestrator integration)
@@ -166,6 +201,7 @@ BuildRunner v3.1 adds four major system enhancements:
 **→** [See TELEMETRY.md](TELEMETRY.md) for details
 
 ### ⚡ Parallel Orchestration
+
 - ✅ **Multi-session coordination** (unit tested, 28 tests passing)
 - ✅ **File locking with conflict detection** (unit tested)
 - ✅ **Worker health monitoring** (unit tested)
@@ -174,6 +210,7 @@ BuildRunner v3.1 adds four major system enhancements:
 **→** [See PARALLEL.md](PARALLEL.md) for details
 
 ### 📚 Documentation & Guides
+
 - ✅ **Quick start guide** ([docs/QUICKSTART.md](docs/QUICKSTART.md))
 - ✅ **Integration guide** ([docs/INTEGRATION_GUIDE.md](docs/INTEGRATION_GUIDE.md))
 - ✅ **API reference** ([docs/API_REFERENCE.md](docs/API_REFERENCE.md))
@@ -182,6 +219,7 @@ BuildRunner v3.1 adds four major system enhancements:
 ### ⚠️ Integration Status
 
 **What's Working:**
+
 - Secret detection patterns (13 types)
 - SQL injection detection (Python + JS)
 - Heuristic-based complexity estimation
@@ -189,6 +227,7 @@ BuildRunner v3.1 adds four major system enhancements:
 - Unit tests (101 tests passing)
 
 **What's In Progress:**
+
 - Security hooks: Production validation needed
 - AI-powered estimation: Optional, not yet integrated
 - Cost tracking: SQLite persistence in development
@@ -202,18 +241,21 @@ BuildRunner v3.1 adds four major system enhancements:
 ## Core Features
 
 ### Feature-Based Tracking
+
 ✅ Replace confusing phase/step models with clear feature tracking
 ✅ Auto-generate STATUS.md from features.json
 ✅ Track completion percentage, blockers, and dependencies
 ✅ Visual progress with rich terminal UI
 
 ### Git Hooks & Governance
+
 ✅ Pre-commit: Validate features.json, enforce governance rules
 ✅ Post-commit: Auto-generate STATUS.md, update metrics
 ✅ Pre-push: Block pushes with incomplete features or violations
 ✅ Governance as code with checksums
 
 ### MCP Integration (Claude Code)
+
 ✅ 9 BuildRunner tools exposed via Model Context Protocol
 ✅ Manage features directly from Claude Code
 ✅ Run governance checks, generate status reports
@@ -222,6 +264,7 @@ BuildRunner v3.1 adds four major system enhancements:
 **→** [See MCP Integration Docs](docs/MCP_INTEGRATION.md)
 
 ### Optional Integrations
+
 ✅ **GitHub**: Sync issues to features, create PRs from CLI
 ✅ **Notion**: Push STATUS.md and docs to Notion workspace
 ✅ **Slack**: Build notifications, daily standups, alerts
@@ -230,6 +273,7 @@ BuildRunner v3.1 adds four major system enhancements:
 **→** [See Plugins Docs](docs/PLUGINS.md)
 
 ### Migration from BuildRunner 2.0
+
 ✅ Automated migration from .runner/ to .buildrunner/
 ✅ Convert HRPO → features.json
 ✅ Convert governance.json → governance.yaml
@@ -239,6 +283,7 @@ BuildRunner v3.1 adds four major system enhancements:
 **→** [See Migration Guide](docs/MIGRATION.md)
 
 ### Multi-Repo Dashboard
+
 ✅ Discover all BuildRunner projects automatically
 ✅ Aggregate status across multiple repos
 ✅ Overview, detail, timeline, and alerts views
@@ -281,12 +326,14 @@ BuildRunner v3.1 adds four major system enhancements:
 ## Documentation
 
 ### Getting Started
+
 - [Quick Start Guide](docs/QUICKSTART.md) - 5-minute getting started guide (v3.1)
 - [Integration Guide](docs/INTEGRATION_GUIDE.md) - Integrate BuildRunner into your project (v3.1)
 - [Installation Guide](docs/INSTALLATION.md) - Detailed installation
 - [First Project Tutorial](docs/tutorials/FIRST_PROJECT.md) - Complete walkthrough
 
 ### v3.1 Systems (Build 4E)
+
 - [Security Guide](SECURITY.md) - Secret detection, SQL injection checks, pre-commit hooks
 - [Routing Guide](ROUTING.md) - Model selection and cost optimization
 - [Telemetry Guide](TELEMETRY.md) - Monitoring, metrics, and alerts
@@ -294,12 +341,14 @@ BuildRunner v3.1 adds four major system enhancements:
 - [API Reference](docs/API_REFERENCE.md) - Complete API reference (v3.1)
 
 ### Core Systems
+
 - [CLI Reference](docs/CLI.md) - All CLI commands
 - [API Reference](docs/API.md) - All API endpoints
 - [MCP Integration](docs/MCP_INTEGRATION.md) - Claude Code integration
 - [Plugins](docs/PLUGINS.md) - GitHub, Notion, Slack, Supabase
 
 ### Enhancement Systems
+
 - [Code Quality System](docs/CODE_QUALITY.md) - Quality gates and scoring
 - [Gap Analysis](docs/GAP_ANALYSIS.md) - Completion assurance
 - [Architecture Guard](docs/ARCHITECTURE_GUARD.md) - Drift prevention
@@ -310,17 +359,20 @@ BuildRunner v3.1 adds four major system enhancements:
 - [Behavior Configuration](docs/BEHAVIOR_CONFIG.md) - Global/local config
 
 ### Tutorials
+
 - [Design System Guide](docs/tutorials/DESIGN_SYSTEM_GUIDE.md) - Using industry profiles
 - [Quality Gates Setup](docs/tutorials/QUALITY_GATES.md) - Setting standards
 - [Parallel Builds](docs/tutorials/PARALLEL_BUILDS.md) - Orchestrating builds
 - [Completion Assurance](docs/tutorials/COMPLETION_ASSURANCE.md) - Using gap analyzer
 
 ### Migration & Tools
+
 - [Migration from BR 2.0](docs/MIGRATION.md) - Upgrade guide
 - [Dashboard](docs/DASHBOARD.md) - Multi-repo management
 - [Template Catalog](docs/TEMPLATE_CATALOG.md) - Industry + use case profiles
 
 ### Contributing
+
 - [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
 - [Code of Conduct](CODE_OF_CONDUCT.md) - Community guidelines
 
@@ -329,6 +381,7 @@ BuildRunner v3.1 adds four major system enhancements:
 ## Example Projects
 
 ### Healthcare Dashboard
+
 ```bash
 cd examples/healthcare-dashboard/
 br spec wizard
@@ -339,6 +392,7 @@ br status
 Complete example using healthcare industry profile with dashboard patterns, HIPAA compliance, and patient vitals widgets.
 
 ### Fintech API
+
 ```bash
 cd examples/fintech-api/
 br spec wizard
@@ -349,6 +403,7 @@ br status
 API service with security-first design, PCI compliance, and financial transaction handling.
 
 ### E-commerce Marketplace
+
 ```bash
 cd examples/ecommerce-marketplace/
 br spec wizard
@@ -359,6 +414,7 @@ br status
 Multi-service project with product catalog, payment processing, and order management.
 
 ### SaaS Onboarding Flow
+
 ```bash
 cd examples/saas-onboarding/
 br spec wizard
@@ -458,18 +514,21 @@ br config list              # List all config
 ## Roadmap
 
 ### v3.1 (Q1 2025)
+
 - [ ] Web UI for dashboard
 - [ ] Real-time collaboration (multiplayer editing)
 - [ ] Visual spec editor
 - [ ] AI-powered code reviews
 
 ### v3.2 (Q2 2025)
+
 - [ ] Template marketplace
 - [ ] Multi-project specs
 - [ ] Spec versioning with branches
 - [ ] Figma design import
 
 ### v3.3 (Q3 2025)
+
 - [ ] Jira/Linear sync
 - [ ] GitHub Issues integration
 - [ ] Slack bot
@@ -526,10 +585,11 @@ MIT License - see [LICENSE](LICENSE) for details.
 Built with ❤️ by the BuildRunner team and contributors.
 
 Special thanks to:
+
 - Anthropic for Claude Code and MCP protocol
 - The open-source community for amazing tools and libraries
 - Early adopters and beta testers for invaluable feedback
 
 ---
 
-**BuildRunner 3.0** - *Because AI shouldn't forget to finish what it started* 🚀
+**BuildRunner 3.0** - _Because AI shouldn't forget to finish what it started_ 🚀

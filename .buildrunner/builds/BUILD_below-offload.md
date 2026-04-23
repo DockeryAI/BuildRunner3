@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** pending
+**Status:** Phases 1-1 Complete — Phase 1 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -74,7 +74,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 0: Shared embedding client + dependency manifests
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - core/cluster/below/**init**.py (NEW)
@@ -86,11 +86,11 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] Reusable `embed_batch(texts: list[str]) -> list[list[float]]` wrapper on Below `/api/embed` with nomic-embed-text
-- [ ] Timeout, retry, and circuit breaker
-- [ ] Pin scikit-learn>=1.4, sqlite-vec>=0.1, llmlingua>=0.2.2 in requirements-api.txt
-- [ ] Document semgrep as a system/dev dep in README
-- [ ] Unit tests: happy path, Below-offline fallback, malformed response
+- [x] Reusable `embed_batch(texts: list[str]) -> list[list[float]]` wrapper on Below `/api/embed` with nomic-embed-text
+- [x] Timeout, retry, and circuit breaker
+- [x] Pin scikit-learn>=1.4, sqlite-vec>=0.1, llmlingua>=0.2.2 in requirements-api.txt
+- [x] Document semgrep as a system/dev dep in README
+- [x] Unit tests: happy path, Below-offline fallback, malformed response
 
 **Success Criteria:** `embed_batch` returns consistent 768-d vectors; dep install succeeds in a fresh venv.
 
