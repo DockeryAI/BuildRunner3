@@ -112,6 +112,8 @@ def _ensure_intel_tables(conn: sqlite3.Connection):
         ("deal_items", "delivery_updated_at", "TEXT"),
         ("active_hunts", "completed_at", "TEXT"),
         ("active_hunts", "completion_notes", "TEXT"),
+        # Phase 2: persistent last_checked_at for multi-process double-fire guard
+        ("active_hunts", "last_checked_at", "TEXT"),
     ]
     for table, col, col_def in _migrate_columns:
         try:

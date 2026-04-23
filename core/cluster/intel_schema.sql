@@ -132,7 +132,8 @@ CREATE TABLE IF NOT EXISTS active_hunts (
     active INTEGER NOT NULL DEFAULT 1,
     completed_at TEXT,
     completion_notes TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_checked_at TEXT  -- ISO-8601; persists across restarts, guards multi-process double-fire
 );
 
 CREATE INDEX IF NOT EXISTS idx_hunt_active ON active_hunts(active);
