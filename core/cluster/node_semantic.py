@@ -56,6 +56,9 @@ _file_hashes: dict[str, str] = {}
 _indexing = False
 _last_index_time = 0.0
 _index_stats = {"total_files": 0, "total_chunks": 0, "last_duration": 0.0}
+# Lock serializes concurrent entry into run_index() / run_research_index()
+_indexing_lock = threading.Lock()
+_research_indexing_lock = threading.Lock()
 
 from core.cluster.lancedb_config import get_lancedb_uri, get_embedding_model
 
@@ -250,7 +253,7 @@ def run_research_index():
     global _research_file_hashes, _research_indexing, _research_last_index_time
     global _research_dir_mtime, _research_stats, _research_table
 
-    if _research_indexing:
+    if not _research_indexing_lock.acquire(blocking=False):
         print("Research index: already running, skipping")
         return
     _research_indexing = True
@@ -355,6 +358,7 @@ def run_research_index():
         }
     finally:
         _research_indexing = False
+        _research_indexing_lock.release()
 
 
 def _get_dir_mtime(dir_path: Path) -> float:
@@ -654,8 +658,8 @@ def chunk_file(path: Path, chunk_size: int = 2000) -> list[dict]:
 def run_index():
     """Index all files, skip unchanged ones. Uses LanceDB for disk-based vector storage."""
     global _file_hashes, _indexing, _last_index_time, _index_stats, _table
-    if _indexing:
-        return
+    if not _indexing_lock.acquire(blocking=False):
+        return  # another thread already indexing
     _indexing = True
     start = time.time()
 
@@ -745,6 +749,7 @@ def run_index():
         }
     finally:
         _indexing = False
+        _indexing_lock.release()
 
 
 # --- Background indexer ---
