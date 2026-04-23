@@ -1511,3 +1511,4 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T21:34:00Z] [DELETE] _check_quality_full() stub in core/auto_debug.py — dead stub returning skipped=True; caller line in dispatch chain also removed (P5)
 [2026-04-23T21:34:00Z] [DELETE] average_resolution_time=None field in api/main.py:ErrorMetrics constructor — TODO stub with no implementation (P5)
 [2026-04-23T21:34:00Z] [FIX] .buildrunner/scripts/activate-all-systems.sh L705 — Phase 13 label changed to Phase 14 to match section header (P5)
+[2026-04-23T21:36:00Z] [P5-NOTE] npm run build in ui/ fails with pre-existing TS errors (Routes/Route JSX type, missing reactflow, unused vars in Analytics) — none caused by P5 deletions. App.tsx has zero imports of deleted components. python3 -c "import core; import cli; import api" passes clean. Build errors are Phase 7 (dep hygiene) scope.
