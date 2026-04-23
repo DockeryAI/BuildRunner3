@@ -181,7 +181,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 6: Competing Implementations Merge
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Bucket/Node:** terminal-build / muddy
 **Files:**
 
@@ -199,15 +199,15 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] Pre-commit → only `pre-commit-enforced` remains
-- [ ] Pre-push → only `pre-push-enforced` (+ auto-appended `pre-push.d/50-ship-gate.sh`) remains
-- [ ] Single installer script (enforced-only; no `--standard` mode)
-- [ ] `runtime-dispatch.sh` disambiguated via header comments
-- [ ] `load-role-matrix.sh` project version deleted; all callers migrated
-- [ ] `dispatch-to-otis` arg-order bug resolved
-- [ ] 3 pairs of api/ui-api modules consolidated
-- [ ] `pin: true` accepted natively by load-role-matrix; regex sanitizer removed; fixture round-trip verified
-- [ ] `build/` gitignored + deleted; `post_cutover_smoke.py` archived; `rollout-state.yaml` reflects post-cutover
+- [x] Pre-commit → only `pre-commit-enforced` remains (+ cluster-guard integrated)
+- [x] Pre-push → only `pre-push-enforced` (+ auto-appended `pre-push.d/50-ship-gate.sh`) remains
+- [x] Single installer script (enforced-only; no `--standard` mode)
+- [x] `runtime-dispatch.sh` disambiguated via header comments (project renamed to `runtime-dispatch-project.sh`)
+- [x] `load-role-matrix.sh` project version deleted; no callers found (already using global)
+- [x] `dispatch-to-otis` arg-order bug resolved (deleted; `dispatch-phase-to-otis.sh` canonical)
+- [x] 3 pairs of api/ui-api modules consolidated (ui/ versions deleted; api/ canonical)
+- [x] `pin: true` accepted natively by load-role-matrix; regex sanitizer removed; fixture round-trip verified
+- [x] `build/` gitignored + deleted; `post_cutover_smoke.py` archived; `rollout-state.yaml` reflects post-cutover
 
 ### Phase 7: Dependency Hygiene
 
