@@ -16,7 +16,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-3 Complete — Phase 3 In Progress
+**Status:** Phases 1-5 Complete — Phase 5 In Progress
 **Deploy:** web — `npm run build` (ui/) + `pip install -e .` (core/)
 **Source Plan File:** .buildrunner/plans/plan-br3-cleanup-wave-abc.md
 **Source Plan SHA:** 9ed95239e047b6dda4aee8d5eefd41c1c873cfb60ee96f1d15e00c447b785665
@@ -104,7 +104,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 3: Constants & Path Consolidation
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Bucket/Node:** backend-build / muddy
 **Files:**
 
@@ -116,12 +116,12 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 **Blocked by:** Phase 2 (same files in core/cluster/\*.py)
 **Deliverables:**
 
-- [ ] All JIMMY_URL, BELOW_HOST, Ollama port, qwen3:8b constants route through `cluster_config.py`
-- [ ] Copy-paste bug (`os.environ.get("JIMMY_URL", os.environ.get("JIMMY_URL", ...))`) eliminated
-- [ ] `get_decisions_log_path()` + `_append_decision_log()` helpers in `log_utils.py`; 4 sites migrated with flock
-- [ ] `developer-brief.sh` uses Python module CLI
-- [ ] `collect-intel.sh` stages 1-2 migrated to `intel_below_extractor.py`
-- [ ] `grep -r "10.0.1.106:8100" core/ cli/ api/` returns only `cluster_config.py`
+- [x] All JIMMY_URL, BELOW_HOST, Ollama port, qwen3:8b constants route through `cluster_config.py`
+- [x] Copy-paste bug (`os.environ.get("JIMMY_URL", os.environ.get("JIMMY_URL", ...))`) eliminated
+- [x] `get_decisions_log_path()` + `_append_decision_log()` helpers in `log_utils.py`; 4 sites migrated with flock
+- [x] `developer-brief.sh` uses Python module CLI
+- [x] `collect-intel.sh` stages 1-2 migrated to `intel_below_extractor.py`
+- [x] `grep -r "10.0.1.106:8100" core/ cli/ api/` returns only `cluster_config.py`
 
 ### Phase 4: File & Doc Cleanup
 
