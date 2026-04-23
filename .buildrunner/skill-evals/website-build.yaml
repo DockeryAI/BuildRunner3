@@ -1,0 +1,57 @@
+# Rubric for /website-build — first validation target for /optimize-skill.
+# Validated against _schema.yaml at /optimize-skill entry.
+
+skill: website-build
+description: Evaluates website-build outputs for adherence to BR3 design rules (banned libs, dark theme, Tailwind v4 layer, padding tokens, /audit-site pass).
+
+criteria:
+  - name: no_banned_libs
+    question: Does the output avoid every banned UI library (chakra-ui, mui, antd, nextui, mantine, headlessui, react-bootstrap, semantic-ui, primereact)?
+    weight: 1.0
+  - name: dark_theme_default
+    question: Is dark theme the default (root has dark class or data-theme=dark, light is opt-in)?
+    weight: 1.0
+  - name: tailwind_v4_layer
+    question: Are all custom CSS classes inside @layer components in globals.css (no unlayered classes)?
+    weight: 1.0
+  - name: section_padding_tokens
+    question: Do sections/cards/dialogs use spacing tokens (no content touching container borders)?
+    weight: 1.0
+  - name: audit_site_pass
+    question: Does the output pass /audit-site (cross-site audit) without ERROR-level findings?
+    weight: 1.0
+
+# 20 inputs, mix of inline briefs + repo-resident fixtures. Real production
+# usage will point at intake artifacts in target project repos.
+inputs:
+  - text: 'Build a landing page for a dental clinic in downtown Austin — emphasize same-day appointments and insurance acceptance.'
+  - text: 'Build a portfolio site for a freelance illustrator. Highlight 6 recent projects and a contact form.'
+  - text: 'Build a SaaS marketing site for a project management tool aimed at construction GCs. Pricing has 3 tiers.'
+  - text: 'Build a landing page for a B2B AI sales platform. CTA is book a demo. Above-the-fold is testimonials from named enterprise customers.'
+  - text: 'Build a docs-style site for an open-source library. Sidebar navigation, code samples, search.'
+  - text: 'Build a one-page site for a wedding photographer. Bold imagery, minimal copy, inquiry CTA.'
+  - text: 'Build a real-estate brokerage marketing site. Featured listings carousel, agent bios, neighborhood guides.'
+  - text: 'Build a campaign site for a city ballot measure. Single-page, bilingual EN/ES toggle, donate CTA.'
+  - text: 'Build a restaurant landing page. Menu, reservations, location, OpenGraph cards for delivery apps.'
+  - text: 'Build a corporate site for a 500-employee logistics firm. Investor relations, careers, news, leadership.'
+  - path: '.buildrunner/context/architecture.md'
+  - path: '.buildrunner/context/current-work.md'
+  - path: '.buildrunner/context/blockers.md'
+  - path: '.buildrunner/context/test-results.md'
+  - text: 'Build a launch page for a podcast about climate policy. Episode list, host bios, newsletter signup.'
+  - text: 'Build a marketing site for a Series A fintech. Compliance-heavy footer, customer logos, security disclosures.'
+  - text: 'Build a community site for a regional gardening club. Event calendar, member directory, photo gallery.'
+  - text: 'Build an e-commerce landing for a single-product DTC brand (premium ceramic cookware). Story-led, lifestyle photography.'
+  - text: "Build a campaign microsite for a nonprofit's year-end fundraising drive. Goal thermometer, donate button, recurring giving emphasis."
+  - text: 'Build a job-board landing for a vertical SaaS recruiting tool focused on healthcare staffing. Employer + candidate flows side-by-side.'
+
+train_split: 14
+holdout_split: 6
+pass_threshold: 0.80
+plateau_threshold: 0.05
+max_iterations: 3
+budget_usd: 2.00
+judges: [sonnet, codex, gemini]
+cost_axis: true
+diversity_axis: true
+length_axis: true

@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "mode": "dry-run-validation",
+  "rubric": ".buildrunner/skill-evals/website-build.yaml",
+  "rubric_validates": true,
+  "budget_estimate_usd": {
+    "baseline": 0.45,
+    "per_iter": 3.08,
+    "max_iter_total": 9.69,
+    "rubric_soft_cap": 2.00,
+    "phase_6_ceiling": 15.00,
+    "within_phase_6_ceiling": true
+  },
+  "judge_panel_render_check": "PASS — Claude/Codex/Gemini per-LLM templates documented in skill body",
+  "live_run_queued": true,
+  "live_run_blockers": [
+    "Real $ spend (~$2 if budget cap respected, ~$9.69 if user raises BR3_OPTIMIZE_SKILL_BUDGET)",
+    "Human spot-check (intentionally non-overridable in `go` mode)",
+    "Codex CLI + Gemini CLI must be installed and authenticated for cross-family judging"
+  ],
+  "next_step": "User runs '/optimize-skill website-build' interactively to perform the live N=10 evaluation"
+}

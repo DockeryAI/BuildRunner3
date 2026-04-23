@@ -1,0 +1,117 @@
+# Authoritative schema for skill-evaluation rubrics consumed by /optimize-skill.
+# Every rubric in .buildrunner/skill-evals/<skill>.yaml is validated against this
+# schema at /optimize-skill entry. Schema violations fail fast with a clear
+# error and do not dispatch any work.
+
+version: 1
+
+fields:
+  skill:
+    type: str
+    required: true
+    description: Target skill name (must match rubric filename without .yaml).
+
+  description:
+    type: str
+    required: true
+    description: One-sentence summary of what this rubric evaluates.
+
+  criteria:
+    type: list
+    required: true
+    min_len: 3
+    max_len: 5
+    item_keys:
+      name: { type: str, required: true }
+      question: { type: str, required: true }
+      weight: { type: float, required: false, min: 0.0, max: 5.0 }
+    description: 3-5 binary (yes/no) criteria. Non-binary phrasing is a rubric defect.
+
+  inputs:
+    type: list
+    required: true
+    min_len: 20
+    max_len: 50
+    item_keys:
+      path: { type: str, required: false }
+      text: { type: str, required: false }
+    description: 20-50 real input references. Synthetic inputs hide real distributions.
+
+  train_split:
+    type: int
+    required: true
+    min: 10
+    max: 40
+    default: 14
+    description: Number of inputs used for the train set. Must equal len(inputs) - holdout_split.
+
+  holdout_split:
+    type: int
+    required: true
+    min: 5
+    max: 15
+    default: 6
+    description: Number of inputs reserved for A/B holdout judging.
+
+  pass_threshold:
+    type: float
+    required: false
+    min: 0.5
+    max: 1.0
+    default: 0.80
+    description: Minimum fraction of criteria that must pass for a run to be considered passing.
+
+  plateau_threshold:
+    type: float
+    required: false
+    min: 0.01
+    max: 0.20
+    default: 0.05
+    description: Two consecutive iterations with score_gain below this triggers plateau stop.
+
+  max_iterations:
+    type: int
+    required: false
+    min: 1
+    max: 5
+    default: 3
+    description: Hard cap on iterations. CLI flag --max-iter overrides per-run.
+
+  budget_usd:
+    type: float
+    required: false
+    min: 0.10
+    max: 50.00
+    default: 2.00
+    description: Per-run hard cost cap. Env override BR3_OPTIMIZE_SKILL_BUDGET.
+
+  judges:
+    type: list
+    required: false
+    min_len: 1
+    max_len: 5
+    default: [sonnet, codex, gemini]
+    allowed_values: [sonnet, codex, gemini, opus, haiku]
+    description: Judge panel. Cross-family is the anti-bias hedge. Swap-order applies regardless.
+
+  cost_axis:
+    type: bool
+    required: false
+    default: true
+
+  diversity_axis:
+    type: bool
+    required: false
+    default: true
+
+  length_axis:
+    type: bool
+    required: false
+    default: true
+
+# Cross-field constraints (enforced by validator after per-field checks)
+cross_field:
+  - rule: train_plus_holdout_equals_inputs
+    description: train_split + holdout_split must equal len(inputs).
+  - rule: budget_geq_dry_run_estimate
+    description: budget_usd must be >= 0.10 (sanity floor; dry-run estimate is checked separately).
