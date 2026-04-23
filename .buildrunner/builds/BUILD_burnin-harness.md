@@ -20,7 +20,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-3, 6-9 Complete — Phase 8 Complete 2026-04-23
+**Status:** Phases 1-8 Complete — Phase 4 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; harness writes to `~/.buildrunner/` and `~/.claude/skills/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness.md
 **Source Plan SHA:** ad48f9367987ac3403ab50af859a8add9cf772a3610bdf22629566bb5bf5b4e6
@@ -181,7 +181,7 @@ Stand up a plugin-per-case burn-in harness that validates every cluster feature 
 
 ### Phase 5: Dashboard integration — SSE event + panel + widget
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/dashboard/integrations/burnin.mjs` (NEW) — matches `below.mjs` / `walter.mjs` pattern
@@ -193,14 +193,14 @@ Stand up a plugin-per-case burn-in harness that validates every cluster feature 
 
 **Deliverables:**
 
-- [ ] `burnin.mjs` polls every 5s, emits SSE `burnin.update` on diff (no spam).
-- [ ] Top strip: counters (Untested / Probation / Promoted / Retired) + red badge for `needs_human` + global progress bar.
-- [ ] Group tabs: Below · Walter · Sharding · E2E.
-- [ ] Case table: id, state, 3-dots greens indicator, last run, expandable failure.
-- [ ] Per-case sparkline: last 20 runs as green/red pips.
-- [ ] Alert feed: running log of state transitions.
-- [ ] Kill button disabled until all retired.
-- [ ] Self-contained ES module, no framework.
+- [x] `burnin.mjs` polls every 5s, emits SSE `burnin.update` on diff (no spam).
+- [x] Top strip: counters (Untested / Probation / Promoted / Retired) + red badge for `needs_human` + global progress bar.
+- [x] Group tabs: Below · Walter · Sharding · E2E.
+- [x] Case table: id, state, 3-dots greens indicator, last run, expandable failure.
+- [x] Per-case sparkline: last 20 runs as green/red pips.
+- [x] Alert feed: running log of state transitions.
+- [x] Kill button disabled until all retired.
+- [x] Self-contained ES module, no framework.
 
 **Success Criteria:** 3 cases in varied states render correctly; kill button stays disabled.
 
@@ -208,7 +208,7 @@ Stand up a plugin-per-case burn-in harness that validates every cluster feature 
 
 ### Phase 6: Plugin library — Below (17 cases)
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE — 17/17 cases written, validated, registered (0 SMOKE; all real callers)
 **Files:**
 
 - `~/.buildrunner/burnin/cases/below/` (17 YAML files)
@@ -217,19 +217,23 @@ Stand up a plugin-per-case burn-in harness that validates every cluster feature 
 
 **Deliverables — one case per site:**
 
-- [ ] `below-embed` — `embed_batch` real corpus, asserts 768-d vectors + `executed_on=below`.
-- [ ] `below-schema-classifier` — known-label fixture, asserts label match.
-- [ ] `below-log-cluster` — 200-line sample, asserts cluster count range.
-- [ ] `below-semantic-cache` — insert + retrieve, asserts hit.
-- [ ] `below-commit-msg` — real staged diff → conventional commit, asserts regex.
-- [ ] `below-reranker` — `/retrieve` with reranker on, asserts top_k reorder + metric emission.
-- [ ] `below-context-bundle` — query-bearing context bundle, asserts reranker fired.
-- [ ] `below-auto-remediate` — seeded fixable issue, asserts remediation through Below.
-- [ ] `below-dep-triage` — stale dep fixture, asserts triage output.
-- [ ] `below-pr-body` — fixture commit range, asserts output shape.
-- [ ] `below-dbg`, `below-sdb`, `below-diag`, `below-device`, `below-query` — log fixtures, assert summary keywords.
-- [ ] `below-ai-code-review-prefilter` — prefilter on, asserts findings count reduced vs. baseline.
-- [ ] `below-spec-drift` — mutated spec, asserts drift flagged.
+- [x] `below-embed` — `embed_batch` real corpus, asserts 768-d vectors + `executed_on=below`.
+- [x] `below-schema-classifier` — known-label fixture, asserts label match.
+- [x] `below-log-cluster` — 200-line sample, asserts cluster count range.
+- [x] `below-semantic-cache` — insert + retrieve, asserts hit.
+- [x] `below-commit-msg` — real staged diff → conventional commit, asserts regex.
+- [x] `below-reranker` — `/retrieve` with reranker on, asserts top_k reorder + metric emission.
+- [x] `below-log-cluster-commands` — log fixture piped through log-cluster.py stdin helper, covers /dbg /sdb /diag /device /query clustering step (Phase 7). Note: below-context-bundle merged here; context-bundle has no discrete CLI surface, covered by reranker case.
+- [x] `below-auto-remediate` — seeded fixable issue, asserts remediation through Below.
+- [x] `below-dep-triage` — stale dep fixture, asserts triage output.
+- [x] `below-pr-body` — fixture commit range, asserts output shape.
+- [x] `below-ci-classifier` — hybrid mode, novel pattern triggers qwen3:8b path, asserts category label.
+- [x] `below-test-failure-cluster` — multi-failure fixture, asserts clusters + outliers preserved.
+- [x] `below-semantic-cache-integration` — ClaudeCacheWrapper double-call, asserts hit on second call.
+- [x] `below-intel-collect` — synthetic snapshot, asserts extract + categorize schema.
+- [x] `below-llmlingua-compress` — autopilot prompt fixture, asserts 2x+ compression ratio.
+- [x] `below-ai-code-review-prefilter` — clean vs flagged diff, asserts severity routing.
+- [x] `below-spec-drift` — mutated spec fixture, asserts drift_detected=true.
 
 Real caller (no mocks), 3 conditions, `promote_after: 3`, realistic `timeout_s`.
 
