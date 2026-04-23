@@ -1039,3 +1039,361 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 2026-04-23T01:09:21Z autopilot-phase-3: scope expansion — added arg parser (--dry-run, --phase=N, --skip-prefilter) + per-phase should_run_phase gates in collect-intel.sh so intel-run.sh flags take effect end-to-end. Justified: Phase 2 added the flags to intel-run.sh without wiring collect-intel.sh to honor them.
 2026-04-23T01:09:21Z autopilot: BUILD below-offload-v1 all 3 phases complete — Below routing durable, cron off, pre-filter live fail-open.
 2026-04-23T01:10:59Z autopilot-phase-5: COMPLETE sha=7288e52
+[2026-04-23T12:16:46.128808Z] THREE_WAY_REVIEW review_start plan_hash=8978fbba7c1ef9e3 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=c77af89
+[2026-04-23T12:17:42.844320Z] THREE_WAY_REVIEW review_start plan_hash=0cab4e01e228b37f artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=c77af89
+[2026-04-23T12:18:17.592608Z] THREE_WAY_REVIEW review_start plan_hash=702df45de263f6c8 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:20:58.713471Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8978fbba7c1ef9e3 reviewers=2
+[2026-04-23T12:21:38.464601Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0cab4e01e228b37f reviewers=2
+[2026-04-23T12:22:00.327245Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=702df45de263f6c8 reviewers=2
+[2026-04-23T12:24:09.630133Z] THREE_WAY_REVIEW review_start plan_hash=993f0435965bf0bf artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:28:16.427324Z] THREE_WAY_REVIEW review_start plan_hash=4177fc236330827a artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:28:19.228620Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=993f0435965bf0bf reviewers=2
+[2026-04-23T12:32:34.171655Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4177fc236330827a reviewers=2
+[2026-04-23T12:33:25.644869Z] THREE_WAY_REVIEW review_start plan_hash=7be504bf0bf125cf artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:33:50.869887Z] THREE_WAY_REVIEW review_start plan_hash=87a5f887a85a2f47 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:38:35.895215Z] THREE_WAY_REVIEW review_start plan_hash=73a5b442ba47b440 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:39:28.423162Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7be504bf0bf125cf reviewers=2
+[2026-04-23T12:39:34.361125Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=87a5f887a85a2f47 reviewers=2
+[2026-04-23T12:43:29.349639Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=73a5b442ba47b440 reviewers=2
+[2026-04-23T12:43:33.958165Z] THREE_WAY_REVIEW review_start plan_hash=73a5b442ba47b440 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:43:59.705261Z] THREE_WAY_REVIEW review_start plan_hash=4af4fcf30ffa14c0 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:47:56.156849Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=73a5b442ba47b440 reviewers=2
+[2026-04-23T12:49:12.254634Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4af4fcf30ffa14c0 reviewers=2
+[2026-04-23T12:49:17.746737Z] THREE_WAY_REVIEW review_start plan_hash=d80d6d81695bc67e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T12:49:22.746278Z] THREE_WAY_REVIEW review_start plan_hash=4af4fcf30ffa14c0 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:49:56.454253Z] THREE_WAY_REVIEW review_start plan_hash=38969c04e51c470a artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T12:52:18.776885Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=38969c04e51c470a reviewers=2
+[2026-04-23T12:53:08.772262Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=d80d6d81695bc67e reviewers=2
+[2026-04-23T12:54:02.205372Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4af4fcf30ffa14c0 reviewers=2
+[2026-04-23T12:56:19.864235Z] THREE_WAY_REVIEW review_start plan_hash=4af4fcf30ffa14c0 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T12:59:10.913349Z] THREE_WAY_REVIEW review_start plan_hash=ac37274650295e9b artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:00:59.166954Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4af4fcf30ffa14c0 reviewers=2
+[2026-04-23T13:03:54.348468Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ac37274650295e9b reviewers=2
+[2026-04-23T13:04:03.126922Z] THREE_WAY_REVIEW review_start plan_hash=77d2bdb6314bb47f artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:04:38.773528Z] THREE_WAY_REVIEW review_start plan_hash=ac37274650295e9b artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:04:39.113808Z] THREE_WAY_REVIEW review_start plan_hash=80815e7ec809107a artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:04:58.486899Z] THREE_WAY_REVIEW review_start plan_hash=60356721fbd02ec0 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:05:04.365345Z] THREE_WAY_REVIEW review_start plan_hash=4634f03ef90138bd artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:05:24.367090Z] THREE_WAY_REVIEW review_start plan_hash=bcafe01e0acf6370 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:05:49.950007Z] THREE_WAY_REVIEW review_start plan_hash=8c03ee5c8f32cf24 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:05:50.149765Z] THREE_WAY_REVIEW review_start plan_hash=44f07994c62dbd5c artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:05:52.227246Z] THREE_WAY_REVIEW review_start plan_hash=ffe9286336abe79a artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:06:12.954656Z] THREE_WAY_REVIEW review_start plan_hash=26452ccd87d934f1 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:06:15.046494Z] THREE_WAY_REVIEW review_start plan_hash=433a96561430174d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:06:51.410846Z] THREE_WAY_REVIEW review_start plan_hash=be80c6c92144a5a5 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:06:53.320890Z] THREE_WAY_REVIEW review_start plan_hash=c41c90b42f3abd5a artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:07:36.465921Z] THREE_WAY_REVIEW review_start plan_hash=47a420a204c974ef artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:07:37.317107Z] THREE_WAY_REVIEW review_start plan_hash=0e3d3a3c369e95f6 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:08:09.656519Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=77d2bdb6314bb47f reviewers=2
+[2026-04-23T13:08:13.785077Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=80815e7ec809107a reviewers=2
+[2026-04-23T13:08:30.023789Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=bcafe01e0acf6370 reviewers=2
+[2026-04-23T13:08:43.676045Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4634f03ef90138bd reviewers=2
+[2026-04-23T13:09:03.875392Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=44f07994c62dbd5c reviewers=2
+[2026-04-23T13:09:23.793319Z] THREE_WAY_REVIEW review_start plan_hash=2323b5e9bb56f840 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:09:29.687613Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=26452ccd87d934f1 reviewers=2
+[2026-04-23T13:09:30.007654Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=433a96561430174d reviewers=2
+[2026-04-23T13:09:36.297149Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ffe9286336abe79a reviewers=2
+[2026-04-23T13:10:08.105643Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ac37274650295e9b reviewers=2
+[2026-04-23T13:10:20.972900Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=be80c6c92144a5a5 reviewers=2
+[2026-04-23T13:10:25.876450Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8c03ee5c8f32cf24 reviewers=2
+[2026-04-23T13:10:53.910505Z] THREE_WAY_REVIEW review_start plan_hash=a08bd178109ab689 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:11:02.315742Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=60356721fbd02ec0 reviewers=2
+[2026-04-23T13:11:12.869666Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=47a420a204c974ef reviewers=2
+[2026-04-23T13:11:27.756591Z] THREE_WAY_REVIEW review_start plan_hash=1204904eff96dfd4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:11:33.082897Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0e3d3a3c369e95f6 reviewers=2
+[2026-04-23T13:11:51.577843Z] THREE_WAY_REVIEW review_start plan_hash=f4a11fcd6eb2c5ba artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:11:51.580364Z] THREE_WAY_REVIEW review_start plan_hash=f4a11fcd6eb2c5ba artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:12:01.342533Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c41c90b42f3abd5a reviewers=2
+[2026-04-23T13:12:49.496676Z] THREE_WAY_REVIEW review_start plan_hash=814660c7a8df39d3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:13:01.102075Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=2323b5e9bb56f840 reviewers=2
+[2026-04-23T13:13:23.574540Z] THREE_WAY_REVIEW review_start plan_hash=c41c90b42f3abd5a artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:13:49.503995Z] THREE_WAY_REVIEW review_start plan_hash=ccef4d2f8a1368f6 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:14:37.968509Z] THREE_WAY_REVIEW review_start plan_hash=74b98d6bfa56c17a artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:15:14.907158Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f4a11fcd6eb2c5ba reviewers=2
+[2026-04-23T13:15:20.235708Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a08bd178109ab689 reviewers=2
+[2026-04-23T13:15:23.938247Z] THREE_WAY_REVIEW review_start plan_hash=c1cc68ada29e5397 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:15:29.677813Z] THREE_WAY_REVIEW review_start plan_hash=d9c256f3c10754f6 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:15:37.300936Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1204904eff96dfd4 reviewers=2
+[2026-04-23T13:16:03.165106Z] THREE_WAY_REVIEW review_start plan_hash=730aa46748e37c18 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:17:17.484627Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ccef4d2f8a1368f6 reviewers=2
+[2026-04-23T13:17:26.151652Z] THREE_WAY_REVIEW review_start plan_hash=c1a2f6859b713c4a artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:17:53.601827Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f4a11fcd6eb2c5ba reviewers=2
+[2026-04-23T13:18:06.280692Z] THREE_WAY_REVIEW review_start plan_hash=6c89cb86adc52483 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:18:22.586267Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c41c90b42f3abd5a reviewers=2
+[2026-04-23T13:18:54.469636Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=814660c7a8df39d3 reviewers=2
+[2026-04-23T13:18:55.748280Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=730aa46748e37c18 reviewers=2
+[2026-04-23T13:19:04.513094Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c1cc68ada29e5397 reviewers=2
+[2026-04-23T13:19:33.151891Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=d9c256f3c10754f6 reviewers=2
+[2026-04-23T13:20:04.191138Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=74b98d6bfa56c17a reviewers=2
+[2026-04-23T13:21:08.118064Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c1a2f6859b713c4a reviewers=2
+[2026-04-23T13:21:09.826932Z] THREE_WAY_REVIEW review_start plan_hash=74b98d6bfa56c17a artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:21:48.489493Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=6c89cb86adc52483 reviewers=2
+[2026-04-23T13:23:19.982136Z] THREE_WAY_REVIEW review_start plan_hash=1ec2927adfd88500 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:25:42.834982Z] THREE_WAY_REVIEW review_start plan_hash=e62f098ff0b0d6a1 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:25:52.356402Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=74b98d6bfa56c17a reviewers=2
+[2026-04-23T13:26:43.234303Z] THREE_WAY_REVIEW review_start plan_hash=faccb5b166c3590a artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:27:02.870117Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1ec2927adfd88500 reviewers=2
+[2026-04-23T13:27:58.118732Z] THREE_WAY_REVIEW review_start plan_hash=90d04ffc8a37cd9f artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:28:58.446855Z] THREE_WAY_REVIEW review_start plan_hash=10c028fe7fc89d3c artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:29:12.437520Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=e62f098ff0b0d6a1 reviewers=2
+[2026-04-23T13:29:50.340601Z] THREE_WAY_REVIEW review_start plan_hash=8747456e012ab8ba artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:30:16.620220Z] THREE_WAY_REVIEW review_start plan_hash=71c56a93cc7fa316 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:31:24.287915Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=faccb5b166c3590a reviewers=2
+[2026-04-23T13:31:39.390089Z] THREE_WAY_REVIEW review_start plan_hash=e9368096b2ec5f32 artifact='.buildrunner/plans/plan-admin-pipeline-parity.md' commit=plan-1776951099
+[2026-04-23T13:33:18.541624Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=90d04ffc8a37cd9f reviewers=2
+[2026-04-23T13:33:39.755084Z] THREE_WAY_REVIEW review_start plan_hash=8804212aea0405e0 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:34:01.564969Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=71c56a93cc7fa316 reviewers=2
+[2026-04-23T13:34:14.026263Z] THREE_WAY_REVIEW review_start plan_hash=a2f5709369f96656 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:34:20.449337Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=10c028fe7fc89d3c reviewers=2
+[2026-04-23T13:34:56.511537Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8747456e012ab8ba reviewers=2
+[2026-04-23T13:35:22.086104Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=e9368096b2ec5f32 reviewers=2
+[2026-04-23T13:35:50.173807Z] THREE_WAY_REVIEW review_start plan_hash=8a3126acb88cfb57 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:36:52.075211Z] THREE_WAY_REVIEW review_start plan_hash=818b8a4b83ae66fd artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:37:33.350813Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8804212aea0405e0 reviewers=2
+[2026-04-23T13:38:11.522643Z] THREE_WAY_REVIEW review_start plan_hash=20260fef9b87e5b3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:38:40.328863Z] THREE_WAY_REVIEW review_start plan_hash=c64e070423b833fa artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:38:44.887613Z] THREE_WAY_REVIEW review_start plan_hash=1ef3ed9dcb7e898d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:39:37.862486Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a2f5709369f96656 reviewers=2
+[2026-04-23T13:40:06.854480Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8a3126acb88cfb57 reviewers=2
+[2026-04-23T13:40:27.852627Z] THREE_WAY_REVIEW review_start plan_hash=d1249604eb276d19 artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:42:04.444047Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=818b8a4b83ae66fd reviewers=2
+[2026-04-23T13:42:16.966161Z] THREE_WAY_REVIEW review_start plan_hash=ea76425f83c83205 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:42:21.027087Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=20260fef9b87e5b3 reviewers=2
+[2026-04-23T13:43:36.136387Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c64e070423b833fa reviewers=2
+[2026-04-23T13:43:36.896030Z] THREE_WAY_REVIEW review_start plan_hash=e57c0925ccceb40b artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:43:44.661010Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1ef3ed9dcb7e898d reviewers=2
+[2026-04-23T13:44:09.112750Z] THREE_WAY_REVIEW review_start plan_hash=028fa06f027f55f7 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:44:56.281497Z] THREE_WAY_REVIEW review_start plan_hash=55f424afc4ef207d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex a9a16c52.' commit=05437cc7
+[2026-04-23T13:45:23.900793Z] THREE_WAY_REVIEW review_start plan_hash=be77aa37f67783fa artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T125218Z.j' commit=bf688072
+[2026-04-23T13:45:30.986480Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=d1249604eb276d19 reviewers=2
+[2026-04-23T13:45:55.145072Z] THREE_WAY_REVIEW review_start plan_hash=d8eb3039f741d6b0 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T125218Z.j' commit=bf688072
+[2026-04-23T13:45:56.252629Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=be77aa37f67783fa reviewers=2
+[2026-04-23T13:46:02.538246Z] THREE_WAY_REVIEW review_start plan_hash=68365c25f9c302f7 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T125218Z.j' commit=bf688072
+[2026-04-23T13:46:27.996756Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=d8eb3039f741d6b0 reviewers=2
+[2026-04-23T13:46:34.491217Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ea76425f83c83205 reviewers=2
+[2026-04-23T13:46:35.378317Z] THREE_WAY_REVIEW review_start plan_hash=7f3ebeede1cae828 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:46:40.699093Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=68365c25f9c302f7 reviewers=2
+[2026-04-23T13:47:05.801892Z] THREE_WAY_REVIEW review_start plan_hash=13635526e96dbf1d artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:09.839373Z] THREE_WAY_REVIEW review_start plan_hash=e578e7c13ef1c1d7 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:13.664151Z] THREE_WAY_REVIEW review_start plan_hash=ebc5d031401d1a00 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:18.280968Z] THREE_WAY_REVIEW review_start plan_hash=f02fcb41ef93dfd9 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:19.306100Z] THREE_WAY_REVIEW review_start plan_hash=4245caa5aae384ae artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:20.889518Z] THREE_WAY_REVIEW review_start plan_hash=576f494b061ce49e artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:23.049999Z] THREE_WAY_REVIEW review_start plan_hash=8581e9772246f593 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:26.744867Z] THREE_WAY_REVIEW review_start plan_hash=47a1da71d5610be3 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:30.569559Z] THREE_WAY_REVIEW review_start plan_hash=42827dde8353caf1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:32.727277Z] THREE_WAY_REVIEW review_start plan_hash=695e4380a42de149 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:38.278647Z] THREE_WAY_REVIEW review_start plan_hash=1ec5489e112d8b3c artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:43.466560Z] THREE_WAY_REVIEW review_start plan_hash=a8e3ea625164feea artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:44.614466Z] THREE_WAY_REVIEW review_start plan_hash=3a16906694b860a1 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:51.034460Z] THREE_WAY_REVIEW review_start plan_hash=ae4fb7a86b73f8a0 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:47:57.621463Z] THREE_WAY_REVIEW review_start plan_hash=0301b47860e1e29f artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:48:04.473941Z] THREE_WAY_REVIEW review_start plan_hash=b10a684839885adf artifact='diff --git a/.buildrunner/adversarial-reviews/commit-bf688072-20260423T134556Z.j' commit=308ab534
+[2026-04-23T13:48:28.006608Z] THREE_WAY_REVIEW review_start plan_hash=0b4dcab6ca320a5b artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=1dfebf56
+[2026-04-23T13:48:50.210588Z] THREE_WAY_REVIEW review_start plan_hash=1a6258027e1e6f8a artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=1dfebf56
+[2026-04-23T13:48:50.965236Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=028fa06f027f55f7 reviewers=2
+[2026-04-23T13:48:51.897126Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=55f424afc4ef207d reviewers=2
+[2026-04-23T13:49:26.618424Z] THREE_WAY_REVIEW review_start plan_hash=396a15e13075192e artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T13:49:42.178754Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=e57c0925ccceb40b reviewers=2
+[2026-04-23T13:50:11.140980Z] THREE_WAY_REVIEW review_start plan_hash=9c2ca60ec0789fd0 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T13:50:13.809617Z] THREE_WAY_REVIEW review_start plan_hash=ad58dde4f222307e artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T13:50:16.418788Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=e578e7c13ef1c1d7 reviewers=2
+[2026-04-23T13:50:35.629569Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=b10a684839885adf reviewers=2
+[2026-04-23T13:50:52.473636Z] THREE_WAY_REVIEW review_start plan_hash=1e98f7dc61f402f9 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T13:51:14.146302Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0b4dcab6ca320a5b reviewers=2
+[2026-04-23T13:51:29.819372Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8581e9772246f593 reviewers=2
+[2026-04-23T13:51:44.919618Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1a6258027e1e6f8a reviewers=2
+[2026-04-23T13:52:37.810211Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7f3ebeede1cae828 reviewers=2
+[2026-04-23T13:52:43.446513Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=396a15e13075192e reviewers=2
+[2026-04-23T13:52:48.065914Z] THREE_WAY_REVIEW review_start plan_hash=c30f68622050b60e artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:53:09.593114Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=13635526e96dbf1d reviewers=2
+[2026-04-23T13:53:16.722250Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ebc5d031401d1a00 reviewers=2
+[2026-04-23T13:53:20.584125Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f02fcb41ef93dfd9 reviewers=2
+[2026-04-23T13:53:22.689984Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=576f494b061ce49e reviewers=2
+[2026-04-23T13:53:22.737892Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4245caa5aae384ae reviewers=2
+[2026-04-23T13:53:28.698221Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=47a1da71d5610be3 reviewers=2
+[2026-04-23T13:53:32.330777Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=42827dde8353caf1 reviewers=2
+[2026-04-23T13:53:34.945889Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=695e4380a42de149 reviewers=2
+[2026-04-23T13:53:39.734502Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1ec5489e112d8b3c reviewers=2
+[2026-04-23T13:53:45.176831Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a8e3ea625164feea reviewers=2
+[2026-04-23T13:53:47.004581Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=3a16906694b860a1 reviewers=2
+[2026-04-23T13:53:52.830425Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ae4fb7a86b73f8a0 reviewers=2
+[2026-04-23T13:54:01.689013Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0301b47860e1e29f reviewers=2
+[2026-04-23T13:54:31.060060Z] THREE_WAY_REVIEW review_start plan_hash=7d24a5d60631a31b artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:54:38.744620Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1e98f7dc61f402f9 reviewers=2
+[2026-04-23T13:55:01.294400Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ad58dde4f222307e reviewers=2
+[2026-04-23T13:56:01.861410Z] THREE_WAY_REVIEW review_start plan_hash=098f2198fa3c37f9 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T13:56:15.960956Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=9c2ca60ec0789fd0 reviewers=2
+[2026-04-23T13:56:39.011135Z] THREE_WAY_REVIEW review_start plan_hash=3c35339ee5fe842f artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T13:57:23.831476Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c30f68622050b60e reviewers=2
+[2026-04-23T13:58:10.005873Z] THREE_WAY_REVIEW review_start plan_hash=41c5aa7ac19a9dc5 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T13:58:51.769093Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7d24a5d60631a31b reviewers=2
+[2026-04-23T14:00:17.200398Z] THREE_WAY_REVIEW review_start plan_hash=e85fa764cdf95357 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T14:00:45.955135Z] THREE_WAY_REVIEW review_start plan_hash=133e2eb48c978365 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T14:00:50.094340Z] THREE_WAY_REVIEW review_start plan_hash=f56ffc211ddf6744 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T14:01:16.106836Z] THREE_WAY_REVIEW review_start plan_hash=b0749151929ae384 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T14:01:19.650273Z] THREE_WAY_REVIEW review_start plan_hash=225f02fbc2013860 artifact='diff --git a/.buildrunner/agents.json b/.buildrunner/agents.json\nindex 61d8e88a.' commit=b082ee1a
+[2026-04-23T14:01:25.430881Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=3c35339ee5fe842f reviewers=2
+[2026-04-23T14:02:03.604084Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=098f2198fa3c37f9 reviewers=2
+[2026-04-23T14:02:08.872681Z] THREE_WAY_REVIEW review_start plan_hash=3c35339ee5fe842f artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T14:02:42.948439Z] THREE_WAY_REVIEW review_start plan_hash=74b8e500eb210d2b artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:02:54.499741Z] THREE_WAY_REVIEW review_start plan_hash=caadcd822b9c5467 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:03:06.752566Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=74b8e500eb210d2b reviewers=2
+[2026-04-23T14:03:21.548904Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=caadcd822b9c5467 reviewers=2
+[2026-04-23T14:04:06.641149Z] THREE_WAY_REVIEW review_start plan_hash=8c17141e4971d602 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:04:11.716512Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=41c5aa7ac19a9dc5 reviewers=2
+[2026-04-23T14:04:30.719686Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8c17141e4971d602 reviewers=2
+[2026-04-23T14:04:55.368509Z] THREE_WAY_REVIEW review_start plan_hash=ad68b6ebcf49ad5b artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:05:22.774228Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ad68b6ebcf49ad5b reviewers=2
+[2026-04-23T14:05:35.833894Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=e85fa764cdf95357 reviewers=2
+[2026-04-23T14:05:36.780690Z] THREE_WAY_REVIEW review_start plan_hash=9f699bf1ecad7f9d artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:05:50.923802Z] THREE_WAY_REVIEW review_start plan_hash=8f7517d7e9d44f92 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:05:52.532255Z] THREE_WAY_REVIEW review_start plan_hash=e46cd3158c4d06f3 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:06:00.962786Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=9f699bf1ecad7f9d reviewers=2
+[2026-04-23T14:06:08.106524Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f56ffc211ddf6744 reviewers=2
+[2026-04-23T14:06:17.676072Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8f7517d7e9d44f92 reviewers=2
+[2026-04-23T14:06:18.868716Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=e46cd3158c4d06f3 reviewers=2
+[2026-04-23T14:06:22.894401Z] THREE_WAY_REVIEW review_start plan_hash=9570fe6ea5e0658f artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:06:35.183091Z] THREE_WAY_REVIEW review_start plan_hash=3e7cdc90eb2ed2e7 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:06:48.359523Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=133e2eb48c978365 reviewers=2
+[2026-04-23T14:06:55.880832Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=9570fe6ea5e0658f reviewers=2
+[2026-04-23T14:06:59.155732Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=3e7cdc90eb2ed2e7 reviewers=2
+[2026-04-23T14:07:18.228023Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=3c35339ee5fe842f reviewers=2
+[2026-04-23T14:07:18.416863Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=b0749151929ae384 reviewers=2
+[2026-04-23T14:07:21.719241Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=225f02fbc2013860 reviewers=2
+[2026-04-23T14:07:29.360010Z] THREE_WAY_REVIEW review_start plan_hash=3c35339ee5fe842f artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T14:07:38.970563Z] THREE_WAY_REVIEW review_start plan_hash=6b4ccc2225b0a17f artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:08:07.755582Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=6b4ccc2225b0a17f reviewers=2
+2026-04-23T14:08:08Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:08:08Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=1
+2026-04-23T14:08:08Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+[2026-04-23T14:08:08.963226Z] THREE_WAY_REVIEW review_start plan_hash=6b16a831fb2b5a46 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+2026-04-23T14:08:09Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=1
+2026-04-23T14:08:09Z routing: skill=below-route model=llama3.3:70b node=below status=dispatched
+2026-04-23T14:08:09Z routing: skill=below-route model=llama3.3:70b node=below status=dispatch_failed_code=1
+2026-04-23T14:08:09Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:08:09Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=1
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=1
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=2
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=2
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=2
+2026-04-23T14:08:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=2
+2026-04-23T14:08:18Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=1
+[2026-04-23T14:08:18.427861Z] THREE_WAY_REVIEW review_start plan_hash=8264fc9ac82cfab4 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:08:31.722995Z] THREE_WAY_REVIEW review_start plan_hash=94476696c6746b9a artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:08:36.207850Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=6b16a831fb2b5a46 reviewers=2
+[2026-04-23T14:08:42.442929Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8264fc9ac82cfab4 reviewers=2
+[2026-04-23T14:08:44.593736Z] THREE_WAY_REVIEW review_start plan_hash=4978a20a1f872c09 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:08:50.893587Z] THREE_WAY_REVIEW review_start plan_hash=69871aad7b7e8d0b artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:08:54.765731Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=94476696c6746b9a reviewers=2
+[2026-04-23T14:08:54.906065Z] THREE_WAY_REVIEW review_start plan_hash=f9f09788b1a9e2eb artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:09:08.581322Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4978a20a1f872c09 reviewers=2
+[2026-04-23T14:09:09.481222Z] THREE_WAY_REVIEW review_start plan_hash=9288b6431d80710b artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:09:19.429215Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=69871aad7b7e8d0b reviewers=2
+[2026-04-23T14:09:28.132703Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f9f09788b1a9e2eb reviewers=2
+[2026-04-23T14:09:32.906812Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=9288b6431d80710b reviewers=2
+[2026-04-23T14:09:34.163849Z] THREE_WAY_REVIEW review_start plan_hash=f5af9a97db34cbbb artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:09:50.891077Z] THREE_WAY_REVIEW review_start plan_hash=a076242cebf1a578 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:09:55.407051Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f5af9a97db34cbbb reviewers=2
+[2026-04-23T14:10:08.004145Z] THREE_WAY_REVIEW review_start plan_hash=a2185ca79326ef48 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-05437cc7-20260423T134634Z.j' commit=3f585d9b
+[2026-04-23T14:10:14.721113Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a076242cebf1a578 reviewers=2
+[2026-04-23T14:10:27.572980Z] THREE_WAY_REVIEW review_start plan_hash=31d69fda602aedff artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:10:30.869137Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a2185ca79326ef48 reviewers=2
+[2026-04-23T14:10:33.006342Z] THREE_WAY_REVIEW review_start plan_hash=d0b18e0bf8e1fc28 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:10:38.529625Z] THREE_WAY_REVIEW review_start plan_hash=1438cd8f6fe4cfed artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:10:48.350581Z] THREE_WAY_REVIEW review_start plan_hash=8cc6533a8c211b8a artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:10:52.045908Z] THREE_WAY_REVIEW review_start plan_hash=1ce8332ff48697fb artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:10:52.491397Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=d0b18e0bf8e1fc28 reviewers=2
+[2026-04-23T14:10:57.229354Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=31d69fda602aedff reviewers=2
+[2026-04-23T14:11:00.769398Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1438cd8f6fe4cfed reviewers=2
+[2026-04-23T14:11:12.296899Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8cc6533a8c211b8a reviewers=2
+[2026-04-23T14:11:13.450019Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1ce8332ff48697fb reviewers=2
+[2026-04-23T14:11:54.974862Z] THREE_WAY_REVIEW review_start plan_hash=e12adae0aa0d31e7 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:12:01.651050Z] THREE_WAY_REVIEW review_start plan_hash=acae8e4d1691977b artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:12:06.313130Z] THREE_WAY_REVIEW review_start plan_hash=c32ac7e20467c7f6 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:12:16.317692Z] THREE_WAY_REVIEW review_start plan_hash=a459edf6b0b3bebd artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:12:17.020032Z] THREE_WAY_REVIEW review_start plan_hash=b0192ada9bfcb3df artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:12:17.429850Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=e12adae0aa0d31e7 reviewers=2
+[2026-04-23T14:12:24.816436Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=acae8e4d1691977b reviewers=2
+[2026-04-23T14:12:25.380570Z] THREE_WAY_REVIEW review_start plan_hash=0bb11aac83c3b105 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T140306Z.j' commit=bf7ff785
+[2026-04-23T14:12:30.547619Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c32ac7e20467c7f6 reviewers=2
+[2026-04-23T14:12:39.165585Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=b0192ada9bfcb3df reviewers=2
+[2026-04-23T14:12:39.996837Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=3c35339ee5fe842f reviewers=2
+[2026-04-23T14:12:41.232444Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a459edf6b0b3bebd reviewers=2
+[2026-04-23T14:12:48.351954Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0bb11aac83c3b105 reviewers=2
+[2026-04-23T14:12:50.757658Z] THREE_WAY_REVIEW review_start plan_hash=108c14b7cb57d500 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T141030Z.j' commit=b7ee2fa9
+[2026-04-23T14:13:06.005154Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=108c14b7cb57d500 reviewers=2
+[2026-04-23T14:13:12.519858Z] THREE_WAY_REVIEW review_start plan_hash=4ee5ab2b2f08d509 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T141030Z.j' commit=b7ee2fa9
+2026-04-23T14:13:16Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:13:16Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=1
+2026-04-23T14:13:33Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:13:33Z routing: skill=below-route model=qwen3:8b node=below status=dispatch_failed_code=1
+[2026-04-23T14:13:35.167478Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4ee5ab2b2f08d509 reviewers=2
+[2026-04-23T14:13:39.333670Z] THREE_WAY_REVIEW review_start plan_hash=4ee5ab2b2f08d509 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-3f585d9b-20260423T141030Z.j' commit=b7ee2fa9
+[2026-04-23T14:13:52.140665Z] THREE_WAY_REVIEW review_start plan_hash=0fccb00ca6f42473 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-b7ee2fa9-20260423T141306Z.j' commit=516e9928
+[2026-04-23T14:13:55.310609Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4ee5ab2b2f08d509 reviewers=2
+[2026-04-23T14:14:56.065288Z] THREE_WAY_REVIEW review_start plan_hash=8c5424ee5297ff4d artifact='diff --git a/.buildrunner/adversarial-reviews/commit-b7ee2fa9-20260423T141306Z.j' commit=516e9928
+[2026-04-23T14:15:26.192727Z] THREE_WAY_REVIEW review_start plan_hash=3c35339ee5fe842f artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+2026-04-23T14:15:34Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:15:38Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:15:38Z routing: skill=below-route model=llama3.3:70b node=below status=dispatched
+[2026-04-23T14:16:23.803978Z] THREE_WAY_REVIEW review_start plan_hash=b1b7c93b86246ae2 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-b7ee2fa9-20260423T141306Z.j' commit=516e9928
+2026-04-23T14:16:29Z routing: skill=below-route model=llama3.3:70b node=below status=success
+2026-04-23T14:16:41Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:16:45Z routing: skill=below-route model=qwen3:8b node=below status=success
+[2026-04-23T14:16:52.010723Z] THREE_WAY_REVIEW review_start plan_hash=8fca5c0f6f6439df artifact='diff --git a/.buildrunner/adversarial-reviews/commit-b7ee2fa9-20260423T141306Z.j' commit=516e9928
+[2026-04-23T14:18:07.700922Z] THREE_WAY_REVIEW review_start plan_hash=c099fb7c2e60d9d4 artifact='diff --git a/.buildrunner/adversarial-reviews/commit-b7ee2fa9-20260423T141306Z.j' commit=516e9928
+2026-04-23T14:18:48Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+[2026-04-23T14:18:54.114830Z] THREE_WAY_REVIEW review_start plan_hash=9c05a7d8cf0edf0d artifact='diff --git a/.buildrunner/adversarial-reviews/commit-b7ee2fa9-20260423T141306Z.j' commit=516e9928
+2026-04-23T14:18:59Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:18:59Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:18:59Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:18:59Z routing: skill=below-route model=llama3.3:70b node=below status=dispatched
+[2026-04-23T14:19:32.387767Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=3c35339ee5fe842f reviewers=2
+2026-04-23T14:19:52Z routing: skill=below-route model=llama3.3:70b node=below status=success
+2026-04-23T14:19:52Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+[2026-04-23T14:19:54.525565Z] THREE_WAY_REVIEW review_start plan_hash=45fd4bc5b5b50e7f artifact='diff --git a/.buildrunner/adversarial-reviews/commit-b7ee2fa9-20260423T141306Z.j' commit=516e9928
+[2026-04-23T14:19:56.400739Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=0fccb00ca6f42473 reviewers=2
+2026-04-23T14:20:03Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:20:13Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:20:13Z routing: skill=below-route model=qwen3:8b node=below status=below_offline_or_timeout
+2026-04-23T14:20:13Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:20:13Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:20:13Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:20:13Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:20:13Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:20:17Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:20:17Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:20:18Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:20:20Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:20:20Z routing: skill=below-route model=qwen3:8b node=below status=success
+[2026-04-23T14:20:46.879451Z] THREE_WAY_REVIEW review_start plan_hash=3c35339ee5fe842f artifact='diff --git a/.buildrunner/builds/BUILD_enrichment-rules-engine.md b/.buildrunner' commit=8f2af92
+[2026-04-23T14:21:03.391761Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8c5424ee5297ff4d reviewers=2
+2026-04-23T14:21:53Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:22:04Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:22:04Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:22:04Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:22:04Z routing: skill=below-route model=llama3.3:70b node=below status=dispatched
+[2026-04-23T14:22:29.242563Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=b1b7c93b86246ae2 reviewers=2
+[2026-04-23T14:22:56.744687Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8fca5c0f6f6439df reviewers=2
+2026-04-23T14:22:57Z routing: skill=below-route model=llama3.3:70b node=below status=success
+2026-04-23T14:22:57Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:23:08Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:23:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:23:17Z routing: skill=below-route model=qwen3:8b node=below status=below_offline_or_timeout
+2026-04-23T14:23:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:23:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:23:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:23:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:23:17Z routing: skill=below-route model=qwen3:8b node=below status=dispatched
+2026-04-23T14:23:21Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:23:21Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:23:21Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:23:21Z routing: skill=below-route model=qwen3:8b node=below status=success
+2026-04-23T14:23:21Z routing: skill=below-route model=qwen3:8b node=below status=success

@@ -79,3 +79,4 @@ Thumbs.db
 .buildrunner/ship/*.jsonl
 .buildrunner/ship/*.log
 
+.playwright-mcp/
