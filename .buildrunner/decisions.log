@@ -1705,3 +1705,24 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 - **Phase 13 (LLMLingua-2 compression):** llmlingua_compress.py; autopilot-dispatch-prefix.sh --compress-phase flag; collect-intel.sh _compress_prompt_if_enabled(); 26 tests passing
 - **Phase 14 (Semgrep prefilter):** semgrep_triage.py; ai_code_review.py quick-pass integration; OWASP Top 10 coverage validated; 29 tests passing
 - **BUILD_below-offload:** All 17 phases complete (0-16). Total tests: 18+38+26+29=111 new tests this wave.
+
+## Phase 4: File & Doc Cleanup (2026-04-23)
+- [DECISION] removed cli/main.py.bak because phase-4 dead backup file on 2026-04-23
+- [DECISION] removed CLAUDE.md.backup-20260320 because phase-4 dead backup file on 2026-04-23
+- [DECISION] moved CLAUDE_backup.md → .buildrunner/historical/BUILD_3.1_TASK_ORCHESTRATION_COMPLETE.md because phase-4 rename per spec on 2026-04-23
+- [DECISION] removed .buildrunner/scripts/adversarial-review.sh.patch-phase5 because patch-phase5 historical artifact: adds --local flag gated on BR3_RUNTIME_OLLAMA which Phase 1 removes; applying would add dead code on 2026-04-23
+- [DECISION] .dispatch-worktrees/ not present in worktree (already clean or gitignored); no SQLite dbs to purge on 2026-04-23
+- [DECISION] moved 53 root-level .md files → docs/archive/ because phase-4 root .md proliferation cleanup; canonical keep list preserved at root on 2026-04-23
+- [DECISION] moved 29 root-level .png files → docs/screenshots/ because phase-4 root PNG cleanup on 2026-04-23
+- [DECISION] removed FIX_RLS_POLICIES.sql because phase-4 RLS SQL dedup; keeping only PROPER_RLS_POLICIES_V2.sql on 2026-04-23
+- [DECISION] removed COMPLETE_RLS_FIX.sql because phase-4 RLS SQL dedup; keeping only PROPER_RLS_POLICIES_V2.sql on 2026-04-23
+- [DECISION] removed PROPER_RLS_POLICIES.sql because phase-4 RLS SQL dedup; keeping only PROPER_RLS_POLICIES_V2.sql on 2026-04-23
+- [DECISION] removed CHECK_RLS_STATUS.sql because phase-4 RLS SQL dedup; keeping only PROPER_RLS_POLICIES_V2.sql on 2026-04-23
+- [DECISION] removed "RLS Documentation/" directory (space-named duplicate of RLS_Documentation/) because phase-4 duplicate directory cleanup on 2026-04-23
+- [DECISION] moved .buildrunner/skills-staging/ → .buildrunner/historical/skills-staging/ because phase-4 archive historical artifacts on 2026-04-23
+- [DECISION] moved 3 bypass-justification-*.md → .buildrunner/historical/ because phase-4 archive old bypass justifications (current bypass-justification.md preserved) on 2026-04-23
+- [DECISION] moved .buildrunner/HANDOFF_2025_11_17.md → .buildrunner/historical/ because phase-4 archive HANDOFF artifacts on 2026-04-23
+- [DECISION] moved 8 BUILD_4E_*.md files → .buildrunner/historical/ because phase-4 archive BUILD_4E_DAY* historical docs on 2026-04-23
+- [DECISION] moved 8 WEEK1_*/WEEK2_*.md files → .buildrunner/historical/ because phase-4 archive WEEK prompt series on 2026-04-23
+- [DECISION] removed coverage.json because phase-4 generated artifact should not be in tree; added to .gitignore on 2026-04-23
+- [DECISION] updated .gitignore — added coverage.json and /*.png (root-only PNG guard); .env/build//.dispatch-worktrees already covered on 2026-04-23
