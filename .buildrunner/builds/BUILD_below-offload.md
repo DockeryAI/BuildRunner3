@@ -179,7 +179,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 5: Commit message generation → qwen2.5-coder
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - $HOME/.buildrunner/scripts/commit-br3-housekeeping.sh (MODIFY)
