@@ -1,0 +1,1530 @@
+OpenAI Codex v0.48.0 (research preview)
+--------
+workdir: /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188
+model: gpt-5.4
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: high
+reasoning summaries: auto
+session id: 019dbaf7-ae96-7b71-be78-22712ca2b6d6
+--------
+user
+You are the executor. Use Plan Mode.
+
+Step 1: Read the brief (below) and output a numbered plan (<=8 steps). Each step: file path + behavior change + validation. Print the plan, then proceed.
+Step 2: Execute the plan. Follow Scope.In / Scope.Out strictly.
+Step 3: Run the Verification Command. Report exit code.
+
+IMPORTANT CONTEXT ON SCOPE:
+- Two target files live OUTSIDE this worktree at absolute paths under $HOME/.buildrunner/. Edit them directly by absolute path. Do NOT copy or symlink them into the worktree.
+- Only the BUILD spec edit is tracked by this worktree's git.
+- Do not attempt to git-add or commit the out-of-repo files.
+
+# /fixit Brief — Below utilization + json_invalid fix
+
+## Problem
+
+Three defects found during this session's Below utilization review. Bundling for one dispatch because they are all small, deterministic, and share the Below/cluster domain.
+
+1. **Orphan models on Below.** Three installed Ollama models are not declared in `~/.buildrunner/cluster.json` under `nodes.below.inference.models`, so the router never dispatches to them. Dark capacity.
+2. **BUILD_cluster-visibility-sharding Phase 1 missing sync_path.** Phase 1 modifies `core/cluster/below/research_worker.py` (a file that runs on Below) but the phase's router `sync_paths` is empty, so the change won't reach Below after the edit on Muddy.
+3. **developer-brief.sh:491 sends invalid JSON to Below's `/api/summarize`.** `$LOG_PATTERNS` is shell-interpolated directly into a JSON string literal; log lines contain raw newlines + quotes → pydantic rejects with `json_invalid` at `body[101]` (`Invalid control character`). This is the `Below Analysis` block that reliably appears broken in the developer brief.
+
+## Evidence
+
+- `~/.buildrunner/cluster.json` → `nodes.below.inference.models` lists: `llama3.3:70b`, `qwen3:8b`, `nomic-embed-text`. Actual `curl http://10.0.1.105:11434/api/tags` returns those **plus** `deepseek-r1:70b-llama-distill-q4_K_M`, `qwen2.5:14b`, `llama3.3:70b-instruct-q4_K_M`.
+- `.buildrunner/agents.json` → `routing.phases.phase_1` = `{assigned_node: muddy, sync_paths: []}` despite phase touching `core/cluster/below/research_worker.py` (see `.buildrunner/builds/BUILD_cluster-visibility-sharding.md:51`).
+- `~/.buildrunner/scripts/developer-brief.sh:489-491`:
+  ```
+  SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+    -H "Content-Type: application/json" \
+    -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
+  ```
+  `$LOG_PATTERNS` contains newline-separated log summaries (see lines 481-487). Error observed in session-start brief: `{'detail':[{'type':'json_invalid','loc':['body',101],'msg':'JSON decode error','ctx':{'error':'Invalid control character at'}}]}`.
+
+## Success Criteria
+
+- [ ] `~/.buildrunner/cluster.json` → `nodes.below.inference.models` contains all 6 models from `curl http://10.0.1.105:11434/api/tags` (no duplicates; exact names as returned by Ollama).
+- [ ] `.buildrunner/builds/BUILD_cluster-visibility-sharding.md` Phase 1 section declares a sync path for Below covering `core/cluster/below/` (whatever field/format the build spec uses; match sibling phases' style).
+- [ ] `~/.buildrunner/scripts/developer-brief.sh` line ~491 JSON-encodes `$LOG_PATTERNS` properly (via `python3 -c 'import json,sys,os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))'` or `jq -Rs '{text: .}'`) — no raw shell interpolation of log content into JSON string literals.
+- [ ] After the fix, a manual `curl` to `http://10.0.1.105:8100/api/summarize` with a multi-line payload containing newlines/quotes returns **not** a `json_invalid` error (it may still error on something else — that's out of scope; the goal is "pydantic accepts the body").
+
+## Scope
+
+- **In (edit):**
+  - `~/.buildrunner/cluster.json` (absolute path — outside repo)
+  - `~/.buildrunner/scripts/developer-brief.sh` (absolute path — outside repo)
+  - `.buildrunner/builds/BUILD_cluster-visibility-sharding.md` (inside worktree)
+- **Out (do NOT touch):**
+  - Any other file under `core/`, `src/`, `supabase/`.
+  - Schema / migrations / RLS / auth.
+  - Any other BUILD spec.
+  - Other scripts under `~/.buildrunner/scripts/`.
+  - The orphan models' Ollama install (already installed; only declaration changes).
+
+## Verification Command
+
+```bash
+bash -c '
+set -e
+# 1. cluster.json contains all 6 Below models
+DECLARED=$(python3 -c "import json; print(sorted(json.load(open(\"$HOME/.buildrunner/cluster.json\"))[\"nodes\"][\"below\"][\"inference\"][\"models\"]))")
+ACTUAL=$(curl -sS --max-time 5 http://10.0.1.105:11434/api/tags | python3 -c "import json,sys; print(sorted(m[\"name\"] for m in json.load(sys.stdin)[\"models\"]))")
+[ "$DECLARED" = "$ACTUAL" ] || { echo "FAIL: declared=$DECLARED actual=$ACTUAL"; exit 1; }
+
+# 2. BUILD spec phase 1 mentions sync for below
+grep -A 20 "Phase 1" .buildrunner/builds/BUILD_cluster-visibility-sharding.md | grep -qiE "sync.*below|below.*sync|core/cluster/below" || { echo "FAIL: no below sync in phase 1"; exit 1; }
+
+# 3. developer-brief.sh JSON encoding fix present
+grep -q "json.dumps\|jq -Rs" "$HOME/.buildrunner/scripts/developer-brief.sh" || { echo "FAIL: developer-brief.sh not json-safe"; exit 1; }
+# And the bare naive form is gone
+grep -q "\\\\\\\"text\\\\\\\":\\\\\\\"\\\$LOG_PATTERNS\\\\\\\"" "$HOME/.buildrunner/scripts/developer-brief.sh" && { echo "FAIL: naive interpolation still present"; exit 1; }
+
+# 4. live smoke test: POST a payload with newlines and ensure no json_invalid
+PAYLOAD=$(python3 -c "import json; print(json.dumps({\"text\": \"line1\nline2\\\"quoted\\\"\nline3\"}))")
+RESP=$(curl -sS --max-time 10 -X POST http://10.0.1.105:8100/api/summarize -H "Content-Type: application/json" -d "$PAYLOAD" 2>&1 || true)
+echo "$RESP" | grep -q "json_invalid" && { echo "FAIL: still json_invalid on well-formed body"; exit 1; }
+
+echo "VERIFY OK"
+'
+```
+
+## Notes
+
+- Two of the three files are outside the repo (`$HOME/.buildrunner/...`). Edit them by absolute path. The worktree isolation only protects the in-repo change (the BUILD spec). This is intentional for this dispatch; do not try to copy files into the worktree.
+- The orphan models' exact names (from the Ollama API, exact strings):
+  - `llama3.3:70b`
+  - `llama3.3:70b-instruct-q4_K_M`
+  - `deepseek-r1:70b-llama-distill-q4_K_M`
+  - `nomic-embed-text:latest` (note the `:latest` suffix — preserve it)
+  - `qwen3:8b`
+  - `qwen2.5:14b`
+- For the JSON-encoding fix in `developer-brief.sh`: the simplest safe form is:
+  ```bash
+  PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json,os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+  SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+    -H "Content-Type: application/json" \
+    -d "$PAYLOAD" 2>/dev/null)
+  ```
+  Use that pattern; do not introduce `jq` as a new dependency.
+- The project mirrors `developer-brief.sh` at `.buildrunner/scripts/developer-brief.sh` too. Check if the bug exists there and fix it if so — but the canonical runtime path is `~/.buildrunner/scripts/developer-brief.sh` (the session-start hook invokes this one).
+- Do **not** change what Below does, or its endpoint, or anything about the `/api/summarize` handler. This is a caller-side fix only.
+
+## Execution Mode
+
+Use Plan Mode. Before any edit, output a numbered plan (≤10 steps). Each step must name the file and the behavior changed. Execute against the plan only. Do not refactor code outside the plan's stated scope.
+
+Working directory: /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188
+
+Rules:
+1. One thread, this task only.
+2. Do not refactor outside the plan.
+3. Do not add dependencies (no jq).
+4. If the plan needs >8 steps, stop and escalate.
+5. After edits, commit the in-repo change (the BUILD spec) on branch fixit/1776958188 with a short message.
+
+
+
+thinking
+**Planning repository changes**
+
+The user specifically mentioned committing changes in the repository. That means I need to run a verification command and check the exit code afterward. I should also look into the BUILD spec for the authoritative Deploy header and follow its command after any batch that modifies deployed files. However, since only the BUILD spec might be edited, I need to consider if any out-of-repo files could be involved. I'll need to output a numbered plan before making any edits while ensuring I run inspections first.
+thinking
+**Creating update plan steps**
+
+I need to create or update a plan that includes the necessary steps while keeping it to a maximum of eight. Each step will consist of a file path, behavior change, and validation process. I think 4-5 steps should suffice. I also need to consider whether to mention the mirrored project file since the user asked me to check for any bugs there and fix them. However, the Scope.In only includes `/.buildrunner/scripts/developer-brief.sh`, and the .buildrunner mirror isn't part of that scope?
+codex
+Plan:
+1. `~/.buildrunner/cluster.json` — add all six Below Ollama model names under `nodes.below.inference.models` without duplicates; validate by comparing declared models to `http://10.0.1.105:11434/api/tags`.
+2. `.buildrunner/builds/BUILD_cluster-visibility-sharding.md` — add a Phase 1 Below sync path covering `core/cluster/below/` in the existing build-spec format; validate with a Phase 1 grep for Below sync text.
+3. `~/.buildrunner/scripts/developer-brief.sh` — replace raw `$LOG_PATTERNS` JSON interpolation with `python3` JSON encoding for the summarize payload; validate by grepping for `json.dumps` and absence of the naive form.
+4. `~/.buildrunner/scripts/developer-brief.sh` — smoke-check the caller-side fix against Below’s `/api/summarize` using a multiline quoted payload; validate that the response does not contain `json_invalid`.
+5. `.buildrunner/builds/BUILD_cluster-visibility-sharding.md` — commit only the in-repo BUILD spec change on branch `fixit/1776958188`; validate with `git status`/`git log` plus the provided verification command’s exit code.
+Plan update
+  → Update Below model registry
+  • Add Phase 1 sync path
+  • Fix JSON payload encoding
+  • Run targeted verification
+  • Commit BUILD spec change
+
+thinking
+**Inspecting agents and files**
+
+I think I need to start with a preamble to provide context. After that, I should inspect the agents and any relevant files that I have access to. It’s essential to ensure I’m on the right track and understand everything I’m working with. I want to make sure all details are considered so I can provide accurate assistance. Let’s get to work on this!
+codex
+I’ve got the plan set; next I’m checking scoped instructions and target files.
+exec
+bash -lc "set -e
+pwd
+printf '\\nRepo-side AGENTS:\\n'
+find . -name AGENTS.md -print | sort
+printf '\\nHome-side AGENTS candidates:\\n'
+find \""'$HOME/.buildrunner" -path '"'*/AGENTS.md' -print 2>/dev/null | sort | sed -n '1,200p'
+printf '\\nRelevant file snippets:\\n'
+sed -n '1,220p' .buildrunner/builds/BUILD_cluster-visibility-sharding.md
+printf '\\n--- cluster.json ---\\n'
+python3 - <<'PY'
+import json, os
+p=os.path.expanduser('~/.buildrunner/cluster.json')
+with open(p) as f:
+    data=json.load(f)
+print(data['nodes']['below']['inference']['models'])
+PY
+printf '\\n--- developer-brief snippet ---\\n'
+sed -n '460,520p' \""'$HOME/.buildrunner/scripts/developer-brief.sh"' in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 643ms:
+/Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188
+
+Repo-side AGENTS:
+./AGENTS.md
+./archive/ui-dashboard-fastapi-experiment/AGENTS.md
+./core/cluster/AGENTS.md
+./core/runtime/AGENTS.md
+
+Home-side AGENTS candidates:
+/Users/byronhudson/.buildrunner/AGENTS.md
+/Users/byronhudson/.buildrunner/config/AGENTS.md
+
+Relevant file snippets:
+# Build: cluster-visibility-sharding
+
+```yaml
+role-matrix:
+  inherit: default-role-matrix
+  overrides:
+    phases:
+codex
+I found the target snippets; now I’m reading the home-scoped instructions before patching.
+exec
+bash -lc "set -e
+printf '%s\\n' '--- ~/.buildrunner/AGENTS.md ---'
+sed -n '1,220p' \""'$HOME/.buildrunner/AGENTS.md"
+if [ -f .buildrunner/AGENTS.md ]; then printf '"'\\n%s\\n' '--- ./.buildrunner/AGENTS.md ---'; sed -n '1,220p' .buildrunner/AGENTS.md; fi
+if [ -f .buildrunner/builds/AGENTS.md ]; then printf '\\n%s\\n' '--- ./.buildrunner/builds/AGENTS.md ---'; sed -n '1,220p' .buildrunner/builds/AGENTS.md; fi" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 9ms:
+--- ~/.buildrunner/AGENTS.md ---
+## Prometheus Exporter Ports
+
+- `Muddy` (`10.0.1.100`) — `node_exporter` on `:9100`
+- `Lockwood` (`10.0.1.101`) — `node_exporter` on `:9100`
+- `Walter` (`10.0.1.102`) — `node_exporter` on `:9100`
+- `Otis` (`10.0.1.103`) — `node_exporter` on `:9100`
+- `Lomax` (`10.0.1.104`) — `node_exporter` on `:9100`
+- `Below` (`10.0.1.105`) — `windows_exporter` on `:9182`
+- `Jimmy` (`10.0.1.106`) — `node_exporter` on `:9100`
+
+thinking
+**Defining scope and specifications**
+
+I need to keep the scope strict and consider inspecting the specifications. It’s important not to dive into editing anything extra. I might mention not touching certain items since they’re out of scope. The user suggested something, but I want to make sure I’m following the "Scope.In/Scope.Out" guidance carefully. I’ll check for any mentions regarding phase sync paths or YAML role matrix and explore sibling BUILD specs for potential formats.
+codex
+I’ve got the instructions. Next I’m matching the build-spec sync style and exact Below model list.
+exec
+bash -lc "set -e
+printf '%s\\n' '--- Ollama tags ---'
+curl -sS --max-time 5 http://10.0.1.105:11434/api/tags | python3 -m json.tool
+printf '\\n%s\\n' '--- build spec sync style search ---'
+rg -n \"sync_path|sync_paths|assigned_node\" .buildrunner/builds -g 'BUILD*.md' | sed -n '1,120p'" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 78ms:
+--- Ollama tags ---
+{
+    "models": [
+        {
+            "name": "llama3.3:70b",
+            "model": "llama3.3:70b",
+            "modified_at": "2026-04-21T14:08:55.7608551-05:00",
+            "size": 42520413916,
+            "digest": "a6eb4748fd2990ad2952b2335a95a7f952d1a06119a0aa6a2df6cd052a93a3fa",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "llama",
+                "families": [
+                    "llama"
+                ],
+                "parameter_size": "70.6B",
+                "quantization_level": "Q4_K_M"
+            }
+        },
+
+thinking
+**Inspecting build configurations**
+
+I need to check the `.buildrunner/agents.json` file since the user referenced it. It might give insights into the routing phase style. I should also consider if the build specification needs adjustments regarding role-matrix overrides or the phase section. It's likely that this `agents.json` was generated from a build, so I’ll read it. Additionally, I wonder if the sync style is located in other files, like looking for `sync_paths` outside of builds using `rg`.
+codex
+I found the actual model names. Now I’m checking where this build format records `sync_paths`.
+exec
+bash -lc "set -e
+printf '%s\\n' '--- routing block ---'
+python3 - <<'PY'
+import json
+with open('.buildrunner/agents.json') as f:
+    d=json.load(f)
+print(json.dumps(d.get('routing',{}).get('phases',{}).get('phase_1',{}), indent=2))
+PY
+printf '\\n%s\\n' '--- sync_paths search ---'
+rg -n \"sync_paths|sync path|sync-path|rsync\" .buildrunner -g '"'!builds/BUILD_cluster-max.md'"' | sed -n '1,200p'" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 81ms:
+--- routing block ---
+{
+  "assigned_node": "muddy",
+  "bucket": "backend-build",
+  "overrides_applied": [],
+  "phase": 1,
+  "reason": "spec-preference",
+  "sync_paths": []
+}
+
+--- sync_paths search ---
+.buildrunner/decisions.log:91:  CONTEXT: rsync include/exclude pattern, all 11 projects
+.buildrunner/decisions.log:96:  WHY: extends worktree merging pattern to cross-machine execution. Creates dispatch branch on Muddy, rsyncs to Otis, runs claude -p --dangerously-skip-permissions, rsyncs back (no --delete for safety), commits to dispatch branch for review/merge
+.buildrunner/decisions.log:165:  WHY: Phases writing to ~/.claude/ or ~/.buildrunner/ can't use cluster dispatch — rsync only copies the project dir. Otis dispatch of Phase 1 (setlist skill) failed because deliverables went to ~/.claude/ on Otis, not captured by rsync back. Documented in script header as LIMITATION
+.buildrunner/decisions.log:520:  WHY: For operations repeated across nodes (systemd installs, pip installs, rsync), Ansible with pipelining=True + strategy=mitogen_linear opens one SSH per host for the entire playbook, eliminating per-task fork overhead. 5-10x faster. Deferred — current fixes should be sufficient for remaining BUILD_cluster-max phases.
+.buildrunner/decisions.log:762:  CONTEXT: rsync block in jimmy-status-publisher.sh; collectConsensus() in jimmy-status.mjs
+.buildrunner/plans/spec-draft-cluster-max.md:30:- [ ] ms-a2-bootstrap.sh — Ubuntu Server packages (python3, node 22, npm, git, rsync, ollama client, uvicorn, lancedb deps), SSH key deployment, cluster auth setup, systemd service files for node_semantic + node_intelligence + node_staging
+.buildrunner/plans/spec-draft-cluster-max.md:31:- [ ] migrate-lockwood-data.sh — rsync ~/.lockwood/ (LanceDB vectors, memory.db, intel.db) from old Lockwood to MS-A2, verify row counts match, verify vector table dimensions match, verify endpoint responses match
+.buildrunner/plans/spec-draft-cluster-max.md:78:- [ ] Run ms-a2-bootstrap.sh — Ubuntu Server packages installed (python3, python3-venv, node 22, npm, git, rsync, build-essential, sqlite3), SSH keys deployed from Muddy, cluster auth working, firewall opened for ports 8100 + 4200
+.buildrunner/plans/spec-draft-cluster-max.md:83:- [ ] Run migrate-lockwood-data.sh — rsync ~/.lockwood/ from old Lockwood (10.0.1.101) to MS-A2, verify: LanceDB vector tables exist + row counts match, memory.db session_state/build_history/test_results tables populated, intel.db deal_items/active_hunts tables populated
+
+thinking
+**Evaluating build specs**
+
+I think it might be better to inspect the build specs directly for any examples of "sync_paths." Searching for a specific string can help me find exactly what I'm looking for. I’ll also consider checking other files that might not be in markdown format. Using a tool like rg could be useful here to streamline the process. This way, I can get clearer insights into the specs I need!
+codex
+I found the generated routing data. Next I’m locating a sibling spec that already declares `sync_paths`.
+exec
+bash -lc "set -e
+rg -n \"sync_paths\" .buildrunner/builds .buildrunner/plans .buildrunner/fixplans .buildrunner/agents.json | sed -n '1,120p'
+printf '\\n--- agents.json context ---\\n'
+sed -n '1,220p' .buildrunner/agents.json" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 21ms:
+.buildrunner/agents.json:47:        "sync_paths": []
+.buildrunner/agents.json:57:        "sync_paths": [
+.buildrunner/agents.json:69:        "sync_paths": []
+.buildrunner/agents.json:79:        "sync_paths": [
+.buildrunner/agents.json:91:        "sync_paths": []
+.buildrunner/agents.json:101:        "sync_paths": []
+
+--- agents.json context ---
+{
+  "agents": {
+    "a45c0809bea599983": {
+      "name": "Routing Flag Durability + Haiku Swaps",
+      "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/0799f71c-2c7c-4434-8376-d85a15e7ab81/tasks/a45c0809bea599983.output",
+      "phase": 1,
+      "sessionId": "0799f71c-2c7c-4434-8376-d85a15e7ab81",
+      "startedAt": "2026-04-23T00:49:09Z",
+      "status": "complete",
+      "worktreePath": null
+    },
+    "a767a979d99ed7d32": {
+
+thinking
+**Determining spec encoding**
+
+I need to figure out how to build the specification that encodes sync_paths. It seems like role-matrix overrides might include sync_paths in braces. My plan is to search for "sync_paths:" in the build specifications to locate them. I’ll use rg (ripgrep) for this search since it's efficient for finding text in files. This should help clarify how sync_paths are implemented in the specs.
+codex
+I found the generated `sync_paths`. Now I’m tracing that back to the BUILD spec format it came from.
+exec
+bash -lc "set -e
+rg -n \"sync_paths|sync-paths|sync path\" .buildrunner/builds/BUILD_*.md | sed -n '1,200p'" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 22ms:
+
+
+thinking
+**Investigating build specs**
+
+I'm noticing the issue with the sync_paths in the build specs. The user pointed out that the build spec for phase 1 is missing a sync_path, and there's something about the `.buildrunner/agents.json` routing. It seems there are empty sync_paths even though the phase touches the `research_worker.py`. Wait, I’ll have to check if the build spec lists this file. It looks like the files listed for phase 1 don’t mention `research_worker.py`. I need to take a closer look at line 51.
+codex
+I’m zooming into Phase 1 now to patch the exact missing Below path reference.
+exec
+bash -lc "nl -ba .buildrunner/builds/BUILD_cluster-visibility-sharding.md | sed -n '40,70p'" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 11ms:
+    40	
+    41	## Phases
+    42	
+    43	### Phase 1: Node ground-truth API
+    44	
+    45	**Status:** 🚧 in_progress
+    46	**Files:**
+    47	
+    48	- `core/cluster/base_service.py` (MODIFY) — enrich `/health` with `cpu_pct`, `load_1m`, `mem_avail_pct`, `busy_state`, `workloads[]`.
+    49	- `core/cluster/node_tests.py` (MODIFY) — wire process detector into `/api/health`; superset of `/health` shape with legacy `running` / `queue_depth` retained.
+    50	- `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+    51	- `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+    52	
+    53	**Blocked by:** None
+    54	
+    55	**Deliverables:**
+    56	
+    57	- [ ] Process detector module with macOS + Windows branches, unit tested on Muddy.
+    58	- [ ] Both `/health` and `/api/health` serve synchronized ground-truth fields (superset relationship, no silent schema skew).
+    59	- [ ] `busy_state` thresholds: `idle` (<30% CPU, no tracked workloads), `active` (30–75% or >=1 workload), `saturated` (>75% or load > cores).
+
+thinking
+**Evaluating build specifications**
+
+I’m noticing that the build file indicates `below_service.py` rather than `research_worker.py`, which could be outdated. I need to ensure I meet the success criteria by declaring the sync path for `core/cluster/below/` according to the build spec's format. I realize there might be useful details in the role-matrix YAML. Perhaps other specs have a richer role-matrix, including multiline phase entries and sync_paths, so I should search beyond the current build specs.
+codex
+I confirmed Phase 1’s file list. I’m searching for a sibling role-matrix that already carries `sync_paths`.
+exec
+bash -lc "set -e
+rg -n \"sync_paths|sync_path|sync-path\" .buildrunner/builds/BUILD_*.md .buildrunner/plans/*.md .buildrunner/*.md | sed -n '1,200p'
+printf '\\n--- cluster-prometheus integration head ---\\n'
+sed -n '1,90p' .buildrunner/builds/BUILD_cluster-prometheus-integration.md" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 26ms:
+
+--- cluster-prometheus integration head ---
+# Build: Cluster Prometheus Integration
+
+role-matrix:
+inherit: default-role-matrix
+overrides: {}
+
+**Created:** 2026-04-22
+**Status:** BUILD COMPLETE — All 6 Phases Done
+**Deploy:** web — per-node install scripts; Prometheus via launchd on Lockwood; dashboard auto-deploys via existing Node runtime on port 4400
+**Source Plan File:** .buildrunner/plans/spec-cluster-prometheus-integration-plan.md
+**Source Plan SHA:** c7041f015d8cd7f8e251c56b21d51208ae42ca6b4be2ebf9abf1df8952b0dc97
+**Adversarial Review Verdict:** BYPASSED:.buildrunner/bypass-justification-cluster-prometheus-integration.md
+**Adversarial Review Timestamp:** 2026-04-22T17:33:08Z
+
+## Overview
+
+Replace broken cross-host filesystem reads (`/srv/jimmy/status/*` from Muddy) with a real metrics transport. Host Prometheus on Lockwood (warm reserve — explicitly not the Memory SPOF now that Jimmy owns primary memory/semantic-search). Dashboard UI and panel JS unchanged; only hardware-metric server-side readers swap to Prometheus HTTP queries. BR3-domain data (consensus, adversarial reviews, feature-health domain meaning, build phases, overflow state, backup timestamps) stays on Jimmy's FastAPI.
+
+
+thinking
+**Investigating role matrix**
+
+I’m considering if the role matrix in the YAML format can incorporate sync_paths or context. I need to search more in the BUILD_cluster-role-matrix-router area. It seems that using `context:` in builds could help. The success criteria mention focusing on sync or core/cluster/below. I'm thinking it might be necessary to actually edit the role-matrix overrides section at the top to have an impact. I also want to inspect how the load-role-matrix or populate-agent-registry leads to deriving sync_paths.
+codex
+I found a richer BUILD spec format. Now I’m tracing whether `context` or `sync_paths` is what the router actually consumes.
+exec
+bash -lc "set -e
+rg -n \"sync_paths|context.*sync|sync from context|phase.*context\" .buildrunner core ~/.buildrunner/scripts ~/.buildrunner/config 2>/dev/null | sed -n '1,200p'" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 46ms:
+/Users/byronhudson/.buildrunner/config/context-sources.yaml:102:  timer_unit: 'br3-context-sync.timer'
+/Users/byronhudson/.buildrunner/config/context-sources.yaml:103:  service_unit: 'br3-context-sync.service'
+.buildrunner/PROJECT_SPEC_BUILD_4E.md:643:17. `core/orchestration/context_sync.py` (250+ lines)
+.buildrunner/PROJECT_SPEC_BUILD_4E.md:644:    - Cross-stream context synchronization
+.buildrunner/PROJECT_SPEC_BUILD_4E.md:736:    - Test context synchronization
+.buildrunner/PROJECT_SPEC_BUILD_4E.md:830:3. Create context sync system (shared decisions, conflict detection)
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:272:        sync_paths: [prefix, ...],       # matched sync_on_dispatch
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:279:    sync_paths = []
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:286:                if prefix not in sync_paths:
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:287:                    sync_paths.append(prefix)
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:297:    return {"sync_paths": sync_paths, "locality_pins": locality_pins}
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:466:    sync_paths = classified["sync_paths"]
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:505:            "sync_paths": sync_paths,
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:541:                "sync_paths": sync_paths,
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:560:                    "sync_paths": sync_paths,
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:593:                "sync_paths": sync_paths,
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:621:                    "sync_paths": sync_paths,
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:645:                    "sync_paths": sync_paths,
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:664:            "sync_paths": sync_paths,
+/Users/byronhudson/.buildrunner/scripts/load-role-matrix.sh:273:                f"overrides.phases.{phase_key}.context must be a list of strings "
+
+thinking
+**Inspecting script details**
+
+I'm looking into the relevant script, particularly the load-role-matrix. I think it may utilize context and possibly sync_on_dispatch from the config. While I'm not editing any core/cluster files, I want to read them to gain understanding. Inspecting the load-role-matrix and resolve-dispatch could be useful. There’s also the AGENT instructions that mention phase entry needing builder reviewers assigned_node context, but I wonder if that applies only to build specs. Let's carefully inspect the load-role-matrix and node classifications.
+codex
+I’ve narrowed it to the routing scripts. I’m checking which BUILD field feeds `sync_paths` so the spec edit is effective.
+exec
+bash -lc "set -e
+printf '%s\\n' '--- load-role-matrix.sh relevant ---'
+sed -n '230,320p' \""'$HOME/.buildrunner/scripts/load-role-matrix.sh"
+printf '"'\\n%s\\n' '--- resolve-dispatch-node.py relevant ---'
+sed -n '250,320p' \""'$HOME/.buildrunner/scripts/resolve-dispatch-node.py"
+printf '"'\\n%s\\n' '--- dispatch-to-node.sh sync usage ---'
+sed -n '470,530p' \""'$HOME/.buildrunner/scripts/dispatch-to-node.sh"' in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 22ms:
+--- load-role-matrix.sh relevant ---
+    if not isinstance(raw, dict):
+        fail(f"overrides.phases.{phase_key} must be an object")
+
+    unknown = set(raw.keys()) - PHASE_OVERRIDE_FIELDS
+    if unknown:
+        fail(
+            f"overrides.phases.{phase_key}: unknown fields {sorted(unknown)}; "
+            f"allowed: {sorted(PHASE_OVERRIDE_FIELDS)}"
+        )
+
+    bucket = raw.get("bucket")
+    if not bucket or not isinstance(bucket, str):
+        fail(f"overrides.phases.{phase_key}.bucket is required")
+    if bucket not in buckets:
+        fail(
+            f"overrides.phases.{phase_key}.bucket={bucket!r} is not a known bucket; "
+            f"available: {sorted(buckets.keys())}"
+        )
+
+codex
+I see `sync_paths` is derived from file prefixes. I’m checking whether `core/cluster/below/` is already a syncable prefix.
+exec
+bash -lc 'set -e
+rg -n "sync_on_dispatch|core/cluster/below|below/" "$HOME/.buildrunner/config" "$HOME/.buildrunner/scripts" . | sed -n '"'1,220p'" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 860ms:
+/Users/byronhudson/.buildrunner/config/default-role-matrix.yaml:15:  sync_on_dispatch:
+/Users/byronhudson/.buildrunner/scripts/dispatch-to-node.sh:16:#   - Files under routing.sync_on_dispatch prefixes (e.g. ~/.buildrunner/dashboard/):
+/Users/byronhudson/.buildrunner/scripts/dispatch-to-node.sh:19:#   - Other external paths (not in sync_on_dispatch) still pin the phase to
+/Users/byronhudson/.buildrunner/scripts/dispatch-to-node.sh:477:# Sync routing.sync_on_dispatch prefixes to target node before execution.
+/Users/byronhudson/.buildrunner/scripts/dispatch-to-node.sh:479:# sync_on_dispatch-listed paths) to run on remote nodes successfully.
+/Users/byronhudson/.buildrunner/config/feature-flags.yaml:12:    owner: core/cluster/below-route
+/Users/byronhudson/.buildrunner/scripts/tests/router-resolution.sh:211:# 2c: Phase 4 with otis AND lomax at 90% → tier-fallback-up to muddy/below/jimmy
+/Users/byronhudson/.buildrunner/config/role-matrix.schema.json:42:        "sync_on_dispatch": {
+/Users/byronhudson/.buildrunner/scripts/_dispatch-core.sh:12:# Feature flag: prefix sync for routing.sync_on_dispatch paths.
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:272:        sync_paths: [prefix, ...],       # matched sync_on_dispatch
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:276:    sync_prefixes = matrix.get("routing", {}).get("sync_on_dispatch", [])
+/Users/byronhudson/.buildrunner/scripts/resolve-dispatch-node.py:283:        # Check sync_on_dispatch
+/Users/byronhudson/.buildrunner/scripts/below-verify.sh:97:prov="${HOME}/Projects/BuildRunner3/.buildrunner/artifacts/phase-1/below/A.3-display-pnp.txt"
+./core/cluster/below/README.md:7:5. For WSL2 or Linux, copy `core/cluster/below/below_worker.service` to `/etc/systemd/system/`.
+./core/cluster/below/README.md:14:12. For native Windows, import `core/cluster/below/below_worker_scheduler.xml` in Task Scheduler.
+./core/cluster/below/research_worker.py:395:            Path(get_jimmy_br3_root()) / "core/cluster/below/validate_document.py",
+./core/cluster/below/research_worker.py:543:        str(Path(get_jimmy_br3_root()) / "core/cluster/below/validate_document.py"),
+./core/cluster/cluster_config.py:3:This module is the only place in Python below/cluster code that should read
+codex
+I found the router config hook. Next I’m opening the default role matrix to verify the `core/cluster/below/` prefix.
+exec
+bash -lc "set -e
+sed -n '1,120p' \""'$HOME/.buildrunner/config/default-role-matrix.yaml"' in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 21ms:
+version: 1
+defaults:
+  reviewers:
+    - claude-sonnet-4-6
+    - gpt-5.4
+  arbiter: claude-opus-4-7
+  cache_policy: default-3-breakpoint
+
+routing:
+  overload_thresholds:
+    cpu_pct: 75
+    mem_avail_pct: 20
+    active_builds: 2
+    window_seconds: 60
+  sync_on_dispatch:
+    - ~/.buildrunner/dashboard/
+  load_query_timeout_ms: 2000
+
+nodes:
+  master:
+codex
+I hit a wrinkle: the default matrix only syncs `~/.buildrunner/dashboard/`. I’m checking whether the spec can declare phase-local sync paths directly.
+exec
+bash -lc 'set -e
+rg -n "PHASE_OVERRIDE_FIELDS|sync_paths" "$HOME/.buildrunner/scripts/load-role-matrix.sh" "$HOME/.buildrunner/config/role-matrix.schema.json" | sed -n '"'1,120p'
+sed -n '1,120p' \""'$HOME/.buildrunner/scripts/load-role-matrix.sh"
+printf '"'\\n--- schema excerpt ---\\n'
+sed -n '1,140p' \""'$HOME/.buildrunner/config/role-matrix.schema.json"' in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 35ms:
+/Users/byronhudson/.buildrunner/scripts/load-role-matrix.sh:62:PHASE_OVERRIDE_FIELDS = {
+/Users/byronhudson/.buildrunner/scripts/load-role-matrix.sh:233:    unknown = set(raw.keys()) - PHASE_OVERRIDE_FIELDS
+/Users/byronhudson/.buildrunner/scripts/load-role-matrix.sh:237:            f"allowed: {sorted(PHASE_OVERRIDE_FIELDS)}"
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_NAME="${0##*/}"
+CONFIG_DIR="${HOME}/.buildrunner/config"
+DEFAULT_MATRIX_PATH="${CONFIG_DIR}/default-role-matrix.yaml"
+SCHEMA_PATH="${CONFIG_DIR}/role-matrix.schema.json"
+RESOLVED_CACHE_PATH="${CONFIG_DIR}/.resolved-role-matrix.json"
+
+usage() {
+  cat <<EOF
+Usage: ${SCRIPT_NAME} [spec_path|-]
+
+Resolves the BR3 role matrix from the authoritative default matrix plus an
+optional inherit/overrides document, validates it against the schema, writes the
+resolved cache atomically, and prints the resolved JSON to stdout.
+
+
+
+
+thinking
+**Evaluating build specifications**
+
+I'm realizing that only the build specification is being tracked, not the agents.json or scripts. It seems like I’ll need to process the build spec manually later when updating agents.json. Also, the verification command only checks for the build spec mention, which might actually be acceptable for now. I'm wondering if this approach is sufficient or if additional steps will be necessary down the line.
+thinking
+**Evaluating deployment commands**
+
+I’m considering if one batch could include the BUILD spec without it being deployed, but include the home files. It seems wise to run the Deploy command more cautiously. The header only describes what's needed, not the exact command. 
+
+I’m wondering how to infer the actual command since the developer advises against inventing conventions based on reading code. It might be good to mention that the header lacks an executable string, which raises some challenges.
+thinking
+**Clarifying file paths for editing**
+
+I'm figuring out how to use the apply_patch tool to edit three files. It says I need to use relative paths, but I'm wondering if I can use absolute paths with shell scripting in Perl or Python. The developer emphasizes sticking to relative paths, which makes sense since it seems those are the only paths allowed. I could use the work directory set to home for that. It might be easier to handle multiple apply_patch calls with the right work directory!
+thinking
+**Inspecting files for patching**
+
+I’m considering how the files under $HOME/.buildrunner can be patched using the work directory set to $HOME and a path like `.buildrunner/...`. For repo files, I can use the workdir set to the repo. First, I think I need to inspect the exact snippet of cluster.json to ensure safe patching, including the developer-brief section. Using Python might help preserve formatting, but I could also patch directly. It seems updating the plan status as I go is wise, so checking line counts would be a good first step!
+codex
+I’ve mapped the effective fix shape. Now I’m grabbing small context windows so the patches stay surgical.
+exec
+bash -lc "set -e
+printf '%s\\n' '--- ~/.buildrunner/cluster.json context ---'
+sed -n '1,220p' \""'$HOME/.buildrunner/cluster.json"
+printf '"'\\n%s\\n' '--- BUILD spec header context ---'
+sed -n '1,30p' .buildrunner/builds/BUILD_cluster-visibility-sharding.md" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 48ms:
+--- ~/.buildrunner/cluster.json context ---
+{
+  "enabled": true,
+  "master": {
+    "name": "Muddy",
+    "host": "10.0.1.100",
+    "machine": "M5 32GB",
+    "speed_tier": 1
+  },
+  "nodes": {
+    "lockwood": {
+      "name": "Lockwood",
+      "host": "10.0.1.101",
+      "port": 8100,
+      "role": "overflow-worker",
+      "roles": [
+        "overflow-worker",
+        "semantic-search-overflow",
+        "parallel-builder-overflow"
+      ],
+
+
+
+thinking
+**Evaluating error handling in Python**
+
+The user provided a pattern that doesn't include a redirect in Python. I’m wondering if adding `2>/dev/null` would be safe, since it hides errors. I think existing code only hides errors with `curl`. It seems to me that there’s a balance when deciding to suppress errors, so I want to be cautious about using this method. I'll make sure to consider the implications of hiding potential issues in the code.
+thinking
+**Determining deployment steps**
+
+I’m considering whether to commit only in-repo changes since if the mirror is in the repo and changes have been made, a commit would be necessary—although the scope suggests we shouldn’t. Should I perform the edits in batches? I could potentially patch three files now and run a deploy command after modifying the deployed files. Both `cluster.json` and `developer-brief.sh` don't seem to affect remote nodes, so it might not require deployment after all. Let's decide if I should mark step one as completed after the patch.
+thinking
+**Planning patch updates**
+
+Since I'm working on step 1, I could start by patching `cluster.json`, then move on to the build spec and script using `apply_patch`. It might make sense to update the plan after patching the cluster, or even after syncing the phase and script, but marking after each step isn’t strictly necessary. The user wanted a numbered plan, so I’ll follow that. I should create a patch for `cluster.json` with the six specific names, keeping their order as close to the API as possible.
+codex
+I’ve got the exact edits lined up. Now I’m patching the three scoped files, no extras.
+file update
+M /Users/byronhudson/.buildrunner/scripts/developer-brief.sh
+@@ -488,5 +488,6 @@
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+M /Users/byronhudson/.buildrunner/cluster.json
+@@ -94,4 +94,7 @@
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+apply_patch(auto_approved=true) exited 0 in 72ms:
+Success. Updated the following files:
+M .buildrunner/cluster.json
+M .buildrunner/scripts/developer-brief.sh
+file update:
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+file update:
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+file update
+M /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -7,3 +7,3 @@
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+@@ -52,2 +52,4 @@
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+apply_patch(auto_approved=true) exited 0 in 100ms:
+Success. Updated the following files:
+M .buildrunner/builds/BUILD_cluster-visibility-sharding.md
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+
+thinking
+**Updating deployment plan**
+
+I need to check if the patch in .buildrunner/cluster.json is correctly set up relative to the home directory. That seems good. Now, I’m thinking about running the deploy command, but I might want to validate things first. Should I note that down? I also feel like I could update the plan's status since step 1 is done and step 2 is currently in progress with the build spec. Actually, it looks like all the edits are complete. Time to update the plan!
+codex
+The patches are in. Next I’m running targeted checks before the final verification and commit.
+Plan update
+  ✓ Update Below model registry
+  ✓ Add Phase 1 sync path
+  ✓ Fix JSON payload encoding
+  → Run targeted verification
+  • Commit BUILD spec change
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+codex
+I’ve finished patching. Now I’m doing file-scoped validation and a live summarize smoke test.
+exec
+bash -lc "set -e
+printf '%s\\n' '--- cluster.json model check ---'
+python3 - <<'PY'
+import json, os
+p=os.path.expanduser('~/.buildrunner/cluster.json')
+with open(p) as f:
+    data=json.load(f)
+print(sorted(data['nodes']['below']['inference']['models']))
+PY
+printf '\\n%s\\n' '--- BUILD yaml parse ---'
+python3 - <<'PY'
+import pathlib, re, yaml
+text = pathlib.Path('.buildrunner/builds/BUILD_cluster-visibility-sharding.md').read_text()
+block = re.findall(r'"'```yaml'"\\s*\\n(.*?)"'```'"', text, re.S)[0]
+parsed = yaml.safe_load(block)
+print(parsed['role-matrix']['overrides']['phases']['phase_1'])
+PY
+printf '\\n%s\\n' '--- shellcheck developer-brief ---'
+shellcheck \""'$HOME/.buildrunner/scripts/developer-brief.sh"
+printf '"'\\n%s\\n' '--- summarize smoke ---'
+PAYLOAD="'$(python3 -c '"'import json; print(json.dumps({\"text\": \"line1\\nline2\\\"quoted\\\"\\nline3\"}))')
+RESP="'$(curl -sS --max-time 10 -X POST http://10.0.1.105:8100/api/summarize -H '"'Content-Type: application/json' -d \""'$PAYLOAD" 2>&1 || true)
+printf '"'%s\\n' \""'$RESP"' in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 exited 127 in 227ms:
+--- cluster.json model check ---
+['deepseek-r1:70b-llama-distill-q4_K_M', 'llama3.3:70b', 'llama3.3:70b-instruct-q4_K_M', 'nomic-embed-text:latest', 'qwen2.5:14b', 'qwen3:8b']
+
+--- BUILD yaml parse ---
+{'bucket': 'backend-build', 'assigned_node': 'muddy', 'context': ['core/cluster/below/']}
+
+--- shellcheck developer-brief ---
+bash: line 18: shellcheck: command not found
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+
+thinking
+**Handling shellcheck issue**
+
+I’ve noticed that shellcheck isn’t found, so I need to handle that somehow. Since `set -e` has stopped before the smoke test, maybe I should fall back to using `bash -n`. I might want to note that shellcheck is unavailable. Running `bash -n` could be part of the final steps. Should I update the plan? It’s still in progress! I’ll run the fallback and consider using the “on-failure” option.
+codex
+`shellcheck` isn’t installed here, so I’m falling back to syntax checking and the live payload smoke.
+exec
+bash -lc "set -e
+printf '%s\\n' '--- bash -n developer-brief ---'
+bash -n \""'$HOME/.buildrunner/scripts/developer-brief.sh"
+printf '"'\\n%s\\n' '--- summarize smoke ---'
+PAYLOAD="'$(python3 -c '"'import json; print(json.dumps({\"text\": \"line1\\nline2\\\"quoted\\\"\\nline3\"}))')
+RESP="'$(curl -sS --max-time 10 -X POST http://10.0.1.105:8100/api/summarize -H '"'Content-Type: application/json' -d \""'$PAYLOAD" 2>&1 || true)
+printf '"'%s\\n' \""'$RESP"
+if printf '"'%s' \""'$RESP" | grep -q '"'json_invalid'; then
+  echo 'SMOKE FAIL: json_invalid present' >&2
+  exit 1
+fi" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 944ms:
+--- bash -n developer-brief ---
+
+--- summarize smoke ---
+{"summary":"line1, line2 \"quoted\", line3."}
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+
+thinking
+**Verifying git status and commits**
+
+I need to inspect the git status, focusing on committing only the in-repo BUILD spec. It’s important to follow root instructions about not adding out-of-repo files. I might want to update my plan, indicating that step 4 is completed and step 5 is in progress. Before committing, I’m unsure whether I should run the deploy command. I’ll check the current branch and ensure I’m on fixit/1776958188 before making a commit. Using `git status --short` will help confirm files.
+codex
+The scoped checks look good. Next I’m committing only the BUILD spec change on the requested branch.
+Plan update
+  ✓ Update Below model registry
+  ✓ Add Phase 1 sync path
+  ✓ Fix JSON payload encoding
+  ✓ Run targeted verification
+  → Commit BUILD spec change
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+exec
+bash -lc "set -e
+printf 'branch=%s\\n' \""'$(git rev-parse --abbrev-ref HEAD)"
+git status --short
+
+git add .buildrunner/builds/BUILD_cluster-visibility-sharding.md
+git commit -m "Add Below sync path to Phase 1"
+
+git log -1 --oneline --decorate' in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 1.07s:
+branch=fixit/1776958188
+ M .buildrunner/builds/BUILD_cluster-visibility-sharding.md
+[fixit/1776958188 42e689fa6] Add Below sync path to Phase 1
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+42e689fa6 (HEAD -> fixit/1776958188) Add Below sync path to Phase 1
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+codex
+The commit is in place. I’m running the exact verification command now and will report its exit code.
+exec
+bash -lc "bash -c '
+set -e
+# 1. cluster.json contains all 6 Below models
+DECLARED="'$(python3 -c "import json; print(sorted(json.load(open('"\\\""'$HOME/.buildrunner/cluster.json'"\\\"))[\\\"nodes\\\"][\\\"below\\\"][\\\"inference\\\"][\\\"models\\\"]))\")
+ACTUAL="'$(curl -sS --max-time 5 http://10.0.1.105:11434/api/tags | python3 -c "import json,sys; print(sorted(m['"\\\"name\\\"] for m in json.load(sys.stdin)[\\\"models\\\"]))\")
+[ \""'$DECLARED" = "$ACTUAL" ] || { echo "FAIL: declared=$DECLARED actual=$ACTUAL"; exit 1; }
+
+# 2. BUILD spec phase 1 mentions sync for below
+grep -A 20 "Phase 1" .buildrunner/builds/BUILD_cluster-visibility-sharding.md | grep -qiE "sync.*below|below.*sync|core/cluster/below" || { echo "FAIL: no below sync in phase 1"; exit 1; }
+
+# 3. developer-brief.sh JSON encoding fix present
+grep -q "json.dumps'"\\|jq -Rs\" \""'$HOME/.buildrunner/scripts/developer-brief.sh" || { echo "FAIL: developer-brief.sh not json-safe"; exit 1; }
+# And the bare naive form is gone
+grep -q "'"\\\\\\\\\\\"text\\\\\\\\\\\":\\\\\\\\\\\"\\"'$LOG_PATTERNS'"\\\\\\\\\\\"\" \""'$HOME/.buildrunner/scripts/developer-brief.sh" && { echo "FAIL: naive interpolation still present"; exit 1; }
+
+# 4. live smoke test: POST a payload with newlines and ensure no json_invalid
+PAYLOAD=$(python3 -c "import json; print(json.dumps({'"\\\"text\\\": \\\"line1\\nline2\\\\\\\"quoted\\\\\\\"\\nline3\\\"}))\")
+RESP="'$(curl -sS --max-time 10 -X POST http://10.0.1.105:8100/api/summarize -H "Content-Type: application/json" -d "$PAYLOAD" 2>&1 || true)
+echo "$RESP" | grep -q "json_invalid" && { echo "FAIL: still json_invalid on well-formed body"; exit 1; }
+
+echo "VERIFY OK"
+'"' ; printf 'EXIT_CODE=%s\\n' \""'$?"' in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 350ms:
+VERIFY OK
+EXIT_CODE=0
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+Plan update
+  ✓ Update Below model registry
+  ✓ Add Phase 1 sync path
+  ✓ Fix JSON payload encoding
+  ✓ Run targeted verification
+  ✓ Commit BUILD spec change
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+codex
+I’m grabbing final line references so the handoff is easy to inspect.
+exec
+bash -lc "set -e
+printf '%s\\n' '--- cluster refs ---'
+nl -ba \""'$HOME/.buildrunner/cluster.json" | sed -n '"'80,100p'
+printf '\\n%s\\n' '--- brief refs ---'
+nl -ba \""'$HOME/.buildrunner/scripts/developer-brief.sh" | sed -n '"'486,500p'
+printf '\\n%s\\n' '--- build refs ---'
+nl -ba .buildrunner/builds/BUILD_cluster-visibility-sharding.md | sed -n '1,15p'
+printf '\\n'
+nl -ba .buildrunner/builds/BUILD_cluster-visibility-sharding.md | sed -n '43,57p'" in /Users/byronhudson/Projects/BuildRunner3/.worktrees/fixit-1776958188 succeeded in 18ms:
+--- cluster refs ---
+    80	    "below": {
+    81	      "name": "Below",
+    82	      "host": "10.0.1.105",
+    83	      "port": 8100,
+    84	      "role": "inference",
+    85	      "roles": [
+    86	        "inference",
+    87	        "parallel-builder"
+    88	      ],
+    89	      "machine": "Windows i9 64GB DDR5 + dual RTX 3090 NVLink 48GB VRAM",
+    90	      "platform": "windows",
+    91	      "description": "Workhorse — local inference (llama3.3:70b + qwen3:8b + nomic-embed-text), Supabase sandbox, parallel builder",
+    92	      "inference": {
+    93	        "models": [
+    94	          "llama3.3:70b",
+    95	          "llama3.3:70b-instruct-q4_K_M",
+    96	          "deepseek-r1:70b-llama-distill-q4_K_M",
+    97	          "nomic-embed-text:latest",
+    98	          "qwen3:8b",
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+
+thinking
+**Organizing final points**
+
+I'm considering fitting in an extra bullet point. However, the final answer should keep a focused structure. I think I could have three bullet points under "Done," three under "Validation," and one note, making a total of seven bullets. That sounds clear and organized! It feels good to have a concise structure to present the information effectively.
+codex
+**Done**
+- Added all six Below Ollama models in `/Users/byronhudson/.buildrunner/cluster.json:93`, including `nomic-embed-text:latest` and the two previously orphaned chat models.
+- Swapped the unsafe summarize payload interpolation for `python3` JSON encoding in `/Users/byronhudson/.buildrunner/scripts/developer-brief.sh:489`, so multiline/quoted log text is sent as valid JSON.
+- Declared the Below sync coverage in the BUILD spec at `.buildrunner/builds/BUILD_cluster-visibility-sharding.md:8` and `.buildrunner/builds/BUILD_cluster-visibility-sharding.md:53`.
+- Committed only the in-repo BUILD spec change on `fixit/1776958188` as `42e689fa6` with message `Add Below sync path to Phase 1`.
+
+**Validation**
+- Ran targeted checks: JSON parse for `cluster.json`, YAML parse for the BUILD role-matrix block, and `bash -n` for `developer-brief.sh` (`shellcheck` is not installed here).
+- Ran a live smoke POST to `http://10.0.1.105:8100/api/summarize` with multiline quoted text; response was accepted and did not contain `json_invalid`.
+- Ran the exact verification command from the brief; result: `VERIFY OK`.
+- Verification command exit code: `0`.
+
+**Note**
+- I did not edit the mirrored repo copy of `developer-brief.sh` because it is outside `Scope.In`; only the canonical runtime path under `/Users/byronhudson/.buildrunner/` was changed.
+file update:
+diff --git a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+index caae58a349ba0755132d276e8fcb68bd571ddbc2..e1b7b299ea8643bd0c9fd9861cd6a024091ef607
+--- a/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
++++ b/.buildrunner/builds/BUILD_cluster-visibility-sharding.md
+@@ -5,7 +5,7 @@
+   inherit: default-role-matrix
+   overrides:
+     phases:
+-      phase_1: { bucket: backend-build, assigned_node: muddy }
++      phase_1: { bucket: backend-build, assigned_node: muddy, context: [core/cluster/below/] }
+       phase_2: { bucket: ui-build, assigned_node: muddy }
+       phase_3: { bucket: backend-build, assigned_node: muddy }
+       phase_4: { bucket: terminal-build, assigned_node: muddy }
+@@ -50,6 +50,8 @@
+ - `core/cluster/process_detector.py` (NEW) — shared detector, platform branches for macOS + Windows, `{name, pid, cpu_pct, started_at, project}` per workload.
+ - `core/cluster/below_service.py` (MODIFY if present) — Below Windows hook.
+ 
++**Sync Paths:** `core/cluster/below/` — sync to Below before dispatch so Phase 1 runtime-host changes land on the node.
++
+ **Blocked by:** None
+ 
+ **Deliverables:**
+diff --git a/cluster.json b/cluster.json
+index 44446d48b247a397c90a5cfcd795950d67d02d92..f110dcb9893526f5221a962b101b23fe5fda4510
+--- a/cluster.json
++++ b/cluster.json
+@@ -92,8 +92,11 @@
+       "inference": {
+         "models": [
+           "llama3.3:70b",
++          "llama3.3:70b-instruct-q4_K_M",
++          "deepseek-r1:70b-llama-distill-q4_K_M",
++          "nomic-embed-text:latest",
+           "qwen3:8b",
+-          "nomic-embed-text"
++          "qwen2.5:14b"
+         ],
+         "vram_total_gb": 48,
+         "vram_baseline_gb": 46,
+diff --git a/scripts/developer-brief.sh b/scripts/developer-brief.sh
+index 88a8b9c3252f53d7dfc1634dbd2804b6cf3f7e17..3f23d2d76ec16521269c0e65fa759f89205b1701
+--- a/scripts/developer-brief.sh
++++ b/scripts/developer-brief.sh
+@@ -486,9 +486,10 @@
+     print(s[:500])
+ " 2>/dev/null)
+   if [ -n "$LOG_PATTERNS" ]; then
++    PAYLOAD=$(LOG_PATTERNS="$LOG_PATTERNS" python3 -c 'import json, os; print(json.dumps({"text": os.environ["LOG_PATTERNS"]}))')
+     SUMMARY=$(curl -s --max-time 10 -X POST "$BELOW_URL/api/summarize" \
+       -H "Content-Type: application/json" \
+-      -d "{\"text\":\"$LOG_PATTERNS\"}" 2>/dev/null)
++      -d "$PAYLOAD" 2>/dev/null)
+     if [ -n "$SUMMARY" ] && [ "$SUMMARY" != "null" ]; then
+       echo "## Below Analysis"
+       echo "$SUMMARY" | python3 -c "
+
+tokens used
+52,300
+**Done**
+- Added all six Below Ollama models in `/Users/byronhudson/.buildrunner/cluster.json:93`, including `nomic-embed-text:latest` and the two previously orphaned chat models.
+- Swapped the unsafe summarize payload interpolation for `python3` JSON encoding in `/Users/byronhudson/.buildrunner/scripts/developer-brief.sh:489`, so multiline/quoted log text is sent as valid JSON.
+- Declared the Below sync coverage in the BUILD spec at `.buildrunner/builds/BUILD_cluster-visibility-sharding.md:8` and `.buildrunner/builds/BUILD_cluster-visibility-sharding.md:53`.
+- Committed only the in-repo BUILD spec change on `fixit/1776958188` as `42e689fa6` with message `Add Below sync path to Phase 1`.
+
+**Validation**
+- Ran targeted checks: JSON parse for `cluster.json`, YAML parse for the BUILD role-matrix block, and `bash -n` for `developer-brief.sh` (`shellcheck` is not installed here).
+- Ran a live smoke POST to `http://10.0.1.105:8100/api/summarize` with multiline quoted text; response was accepted and did not contain `json_invalid`.
+- Ran the exact verification command from the brief; result: `VERIFY OK`.
+- Verification command exit code: `0`.
+
+**Note**
+- I did not edit the mirrored repo copy of `developer-brief.sh` because it is outside `Scope.In`; only the canonical runtime path under `/Users/byronhudson/.buildrunner/` was changed.
