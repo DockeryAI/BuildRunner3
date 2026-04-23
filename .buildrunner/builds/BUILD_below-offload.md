@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-2 Complete — Phase 2 In Progress
+**Status:** Phases 1-3 Complete — Phase 2 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -179,7 +179,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 5: Commit message generation → qwen2.5-coder
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - $HOME/.buildrunner/scripts/commit-br3-housekeeping.sh (MODIFY)
@@ -188,11 +188,11 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] Tier 1: Below qwen2.5-coder with conventional-commit prompt
-- [ ] Tier 2: Claude fallback on empty/malformed
-- [ ] Tier 3: Static template fallback when both unreachable
-- [ ] Output shape validation (`<type>(<scope>): <subject>` regex)
-- [ ] Fallback-tier metric; integration test on 10 BR3 diffs
+- [x] Tier 1: Below qwen2.5-coder with conventional-commit prompt
+- [x] Tier 2: Claude fallback on empty/malformed
+- [x] Tier 3: Static template fallback when both unreachable
+- [x] Output shape validation (`<type>(<scope>): <subject>` regex)
+- [x] Fallback-tier metric; integration test on 10 BR3 diffs
 
 **Success Criteria:** ≥85% commits accepted at tier 1; 0 commits hang when offline.
 
