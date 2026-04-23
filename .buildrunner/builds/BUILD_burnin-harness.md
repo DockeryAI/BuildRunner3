@@ -20,7 +20,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-11 Complete — Phase 12 In Progress
+**Status:** BUILD COMPLETE — All 12 Phases Done
 **Deploy:** operator-tooling — no user-facing deploy; harness writes to `~/.buildrunner/` and `~/.claude/skills/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness.md
 **Source Plan SHA:** ad48f9367987ac3403ab50af859a8add9cf772a3610bdf22629566bb5bf5b4e6
@@ -370,22 +370,24 @@ Long `timeout_s` (5–15 min); only `cold` + `warm` conditions.
 
 ### Phase 12: Documentation + operator runbook
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/docs/burnin.md` (NEW)
-- `~/.claude/skills/burnin/SKILL.md` (MODIFY — append runbook)
+- `~/.claude/skills/burnin/SKILL.md` (MODIFY — appended runbook)
+- `~/.buildrunner/README.md` (NEW — operator tooling entrypoint with burnin link)
+- `.buildrunner/decisions.log` (MODIFY — go-live stamp)
 
 **Blocked by:** Phase 10, Phase 11
 
 **Deliverables:**
 
-- [ ] `docs/burnin.md`: add flow, YAML schema reference, state diagram, troubleshooting, kill procedure.
-- [ ] SKILL.md runbook: common operator flows.
-- [ ] `~/.buildrunner/README.md` entry linking to docs.
-- [ ] Decision-log entry stamps go-live + initial case count.
+- [x] `docs/burnin.md`: add flow, YAML schema reference, state diagram, troubleshooting, kill procedure.
+- [x] SKILL.md runbook: common operator flows.
+- [x] `~/.buildrunner/README.md` entry linking to docs.
+- [x] Decision-log entry stamps go-live + initial case count (44 cases, 2026-04-23).
 
-**Success Criteria:** New operator can add a case + drive to promotion using only `docs/burnin.md`.
+**Success Criteria:** New operator can add a case + drive to promotion using only `docs/burnin.md`. ✅
 
 ---
 

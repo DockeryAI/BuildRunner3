@@ -1855,3 +1855,11 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T19:28:44.564348Z] THREE_WAY_REVIEW review_start plan_hash=8451913a56c3c66a artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
 [2026-04-23T19:29:09.280572Z] THREE_WAY_REVIEW review_start plan_hash=8cb64b26d443a435 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
 [2026-04-23T19:30:01.265329Z] THREE_WAY_REVIEW review_start plan_hash=7308ce47072f4b63 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:31:38.051558Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8451913a56c3c66a reviewers=2
+[2026-04-23T19:31:43.542266Z] THREE_WAY_REVIEW review_start plan_hash=03acd6c09cb1e28b artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:31:58.973796Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8cb64b26d443a435 reviewers=2
+[2026-04-23T19:32:22.497750Z] THREE_WAY_REVIEW review_start plan_hash=c9339b40c6235b91 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:32:52.185271Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=7308ce47072f4b63 reviewers=2
+[2026-04-23T19:33:58.000000Z] BUILD_burnin-harness complete — 12/12 phases; 44 initial cases (below:17, walter:10, sharding:12, e2e:5); canary plist written; cost/reconcile wired [autopilot]
+[2026-04-23T19:34:05.345856Z] THREE_WAY_REVIEW review_start plan_hash=b61600099e46556e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
+[2026-04-23T19:34:21.572649Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=03acd6c09cb1e28b reviewers=2
