@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** All 17 Phases Complete ✅
+**Status:** BUILD COMPLETE — All 17 Phases Done
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -244,7 +244,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 8: Test failure clustering before /root analysis
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - $HOME/.buildrunner/scripts/ship/ci/ci-classifier.sh (MODIFY — cluster integration only)
@@ -332,7 +332,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 12: Dependency update triage → qwen2.5:14b
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - $HOME/.buildrunner/scripts/auto-remediate.mjs (MODIFY — dep triage section only)
@@ -351,7 +351,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 13: LLMLingua-2 prompt compression on dispatch
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - core/cluster/below/llmlingua_compress.py (NEW)
@@ -371,7 +371,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 14: Static analysis prefilter for ai_code_review (downgrade, never skip)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - core/ai_code_review.py (MODIFY)
