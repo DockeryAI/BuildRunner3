@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-3 Complete — Phase 2 In Progress
+**Status:** Phases 1-4 Complete — Phase 2 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -383,7 +383,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 15: PR body generation → qwen2.5-coder
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - $HOME/.buildrunner/scripts/ship/ci/pr-body-gen.sh (CREATE or MODIFY — verify at phase start)
@@ -392,11 +392,11 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] Confirm pr-body-gen.sh exists; create + wire into /ship if absent
-- [ ] Replace static template with qwen2.5-coder diff-to-PR-body
-- [ ] Architectural-keyword router escalates to Claude
-- [ ] Fallback to static template on empty/malformed
-- [ ] 10-PR integration test
+- [x] Confirm pr-body-gen.sh exists; create + wire into /ship if absent
+- [x] Replace static template with qwen2.5-coder diff-to-PR-body
+- [x] Architectural-keyword router escalates to Claude
+- [x] Fallback to static template on empty/malformed
+- [x] 10-PR integration test
 
 **Success Criteria:** ≥70% of PRs handled by Below; human-acceptability ≥90%.
 
