@@ -50,7 +50,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 1: Secrets, Config Honesty & Critical Lies
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Bucket/Node:** terminal-build / muddy
 **Files:**
 
@@ -66,15 +66,15 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] `.env` removed from tree, added to `.gitignore`, secret-rotation audit logged
-- [ ] `cluster.json` Below entry loses 70B decls, gains `vram_required_gib` + `ollama_port: 11434`
-- [ ] Coverage threshold unified (90 canonical in governance.yaml; others reference)
-- [ ] `behavior.yaml` invalid values fixed
-- [ ] `claude_fix` strategy contradiction resolved (implement OR rename)
-- [ ] Adaptive-thinking contradiction resolved (document choice)
-- [ ] `BR3_RUNTIME_OLLAMA` fully removed (flag registry + 3 shim sites + smoke test)
-- [ ] 4 zero-byte artifacts triaged (per-file decision)
-- [ ] Intel cron preflight check added; `claude: command not found` resolved
+- [x] `.env` removed from tree, added to `.gitignore`, secret-rotation audit logged
+- [x] `cluster.json` Below entry loses 70B decls, gains `vram_required_gib` + `ollama_port: 11434`
+- [x] Coverage threshold unified (90 canonical in governance.yaml; others reference)
+- [x] `behavior.yaml` invalid values fixed
+- [x] `claude_fix` strategy contradiction resolved (implement OR rename)
+- [x] Adaptive-thinking contradiction resolved (document choice)
+- [x] `BR3_RUNTIME_OLLAMA` fully removed (flag registry + 3 shim sites + smoke test)
+- [x] 4 zero-byte artifacts triaged (per-file decision)
+- [x] Intel cron preflight check added; `claude: command not found` resolved
 
 ### Phase 2: Concurrency Hardening
 
