@@ -20,7 +20,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-8 Complete — Phase 4 In Progress
+**Status:** Phases 1-9 Complete — Phase 10 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; harness writes to `~/.buildrunner/` and `~/.claude/skills/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness.md
 **Source Plan SHA:** ad48f9367987ac3403ab50af859a8add9cf772a3610bdf22629566bb5bf5b4e6
@@ -157,23 +157,24 @@ Stand up a plugin-per-case burn-in harness that validates every cluster feature 
 
 ### Phase 4: `/burnin` Claude Code skill (default action = ADD)
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.claude/skills/burnin/SKILL.md` (NEW)
 - `~/.claude/skills/burnin/scripts/add.sh` (NEW)
+- `~/.buildrunner/scripts/burnin/burnin.sh` (MODIFY — retire/quarantine/unquarantine/remove/report/kill)
 
 **Blocked by:** Phase 2
 
 **Deliverables:**
 
-- [ ] `/burnin` (no arg) → ADD: 4 questions, scaffolded YAML, first-run validation, commit on green.
-- [ ] Subcommands: `status`, `run [target]`, `fix <id>`, `show <id>`, `remove <id>`, `quarantine <id>`, `unquarantine <id>`, `retire <id>`, `report`, `kill`.
-- [ ] Skill frontmatter: `model: claude-opus-4-7`, `effort: xhigh`, adaptive thinking summarized.
-- [ ] Validates YAML via `validate-plugin.sh` before first run.
-- [ ] `report` writes `.buildrunner/burnin-report-<YYYYMMDD>.md`.
-- [ ] `remove` archives DB rows as tombstones (never hard-deletes).
-- [ ] `kill` refuses unless all retired.
+- [x] `/burnin` (no arg) → ADD: 4 questions, scaffolded YAML, first-run validation, commit on green.
+- [x] Subcommands: `status`, `run [target]`, `fix <id>`, `show <id>`, `remove <id>`, `quarantine <id>`, `unquarantine <id>`, `retire <id>`, `report`, `kill`.
+- [x] Skill frontmatter: `model: claude-opus-4-7`, `effort: xhigh`, adaptive thinking summarized.
+- [x] Validates YAML via `validate-plugin.sh` before first run.
+- [x] `report` writes `.buildrunner/burnin-report-<YYYYMMDD>.md`.
+- [x] `remove` archives DB rows as tombstones (never hard-deletes).
+- [x] `kill` refuses unless all retired (verified).
 
 **Success Criteria:** `/burnin` (no arg) produces a working plugin end-to-end in under 2 minutes with no manual YAML editing.
 
