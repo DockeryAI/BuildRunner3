@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** pending
+**Status:** Phases 1-3 Complete — Phase 4 In Progress
 **Deploy:** web — dashboard auto-reloads on file change; Node server auto-restarts via launchd
 **Source Plan File:** .buildrunner/plans/plan-cluster-dashboard-prometheus-surfacing.md
 **Source Plan SHA:** 52ecdd4f675a339f3ce968cdea8a960532439739638a73503b7bc76852bf051a
@@ -45,7 +45,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 1: Schema v3 backend — expand collectors, add range endpoint, fix off-spec query
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/dashboard/integrations/prometheus-metrics.mjs` (MODIFY)
@@ -67,7 +67,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 2: DOM + token refactor — layout slots for new panels, event log demotion
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/dashboard/public/index.html` (MODIFY)
@@ -88,7 +88,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 3: Node Health cards + Jobs list
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/dashboard/public/js/ws-cluster-node-health.js` (MODIFY — full rewrite)
@@ -111,7 +111,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 4: Storage Health + Overflow Reserve panels
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.buildrunner/dashboard/public/js/ws-cluster-storage-health.js` (MODIFY — full rewrite)
@@ -132,7 +132,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 5: Drill-down drawer
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.buildrunner/dashboard/public/js/ws-cluster-drawer.js` (NEW)
