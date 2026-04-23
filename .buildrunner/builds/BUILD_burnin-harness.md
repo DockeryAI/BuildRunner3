@@ -20,7 +20,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-3, 6-9 Complete — Phase 4 In Progress
+**Status:** Phases 1-5 Complete — Phase 4 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; harness writes to `~/.buildrunner/` and `~/.claude/skills/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness.md
 **Source Plan SHA:** ad48f9367987ac3403ab50af859a8add9cf772a3610bdf22629566bb5bf5b4e6
@@ -239,7 +239,7 @@ Real caller (no mocks), 3 conditions, `promote_after: 3`, realistic `timeout_s`.
 
 ### Phase 7: Plugin library — Walter (10 cases)
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/burnin/cases/walter/` (10 YAML files)
@@ -248,16 +248,16 @@ Real caller (no mocks), 3 conditions, `promote_after: 3`, realistic `timeout_s`.
 
 **Deliverables:**
 
-- [ ] `walter-auto-restart` — kill Walter, assert respawn within 30s.
-- [ ] `walter-repo-freshness` — sentinel commit, assert hash-based detection.
-- [ ] `walter-trigger-logs` — fire auto-save-session.sh, assert persisted log.
-- [ ] `walter-blocking-gate` — inject test failure, assert gate blocks.
-- [ ] `walter-lockwood-reporting` — run test, assert Lockwood row written.
-- [ ] `walter-race-rc1` — two concurrent `/api/run`, assert serialization.
-- [ ] `walter-race-rc4` — `_test_loop` + manual `/api/run` overlap, assert single execution.
-- [ ] `walter-race-rc5` — concurrent SQLite writes, assert no corruption.
-- [ ] `walter-race-rc6` — concurrent runs, assert temp-file isolation.
-- [ ] `walter-sparklines-render` — dashboard pull, assert sparkline data.
+- [x] `walter-auto-restart` — kill Walter, assert respawn within 30s.
+- [x] `walter-repo-freshness` — sentinel commit, assert hash-based detection.
+- [x] `walter-trigger-logs` — fire auto-save-session.sh, assert persisted log.
+- [x] `walter-blocking-gate` — inject test failure, assert gate blocks.
+- [x] `walter-lockwood-reporting` — run test, assert Lockwood row written.
+- [x] `walter-race-rc1` — two concurrent `/api/run`, assert serialization.
+- [x] `walter-race-rc4` — `_test_loop` + manual `/api/run` overlap, assert single execution.
+- [x] `walter-race-rc5` — concurrent SQLite writes, assert no corruption.
+- [x] `walter-race-rc6` — concurrent runs, assert temp-file isolation.
+- [x] `walter-sparklines-render` — dashboard pull, assert sparkline data.
 
 **Success Criteria:** Every RC case actually fires the race window.
 
