@@ -104,7 +104,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 3: Constants & Path Consolidation
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Bucket/Node:** backend-build / muddy
 **Files:**
 
@@ -181,7 +181,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 6: Competing Implementations Merge
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Bucket/Node:** terminal-build / muddy
 **Files:**
 
