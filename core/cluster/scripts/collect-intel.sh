@@ -57,22 +57,15 @@ mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/intel-collect-$(date +%Y-%m-%d).log"
 
 # ---- Phase 1: Collect -------------------------------------------------------
+# Replaced claude -p with intel_below_extractor --collect phase1 (P3 constants cleanup).
+# Below fetches tech-news sources and extracts structured items via qwen3:8b.
+# Fallback: if Below is offline (exit 1), Phase 1.5 still runs on next cycle.
 if should_run_phase 1; then
-echo "[$(date)] Phase 1: Collecting intel..." >> "$LOG_FILE"
+echo "[$(date)] Phase 1: Collecting intel (Below extractor)..." >> "$LOG_FILE"
 
-claude -p 'You are the BR3 nightly intel collector. Search for REAL, current tech updates (last 7 days) and post each one to Lockwood.
-
-Categories to search: Claude/Anthropic (models, API, SDK, Claude Code), Supabase (edge functions, auth, realtime, CLI), Tailwind CSS (v4.x), Vite, Playwright, React, TypeScript, security advisories (npm/PyPI), hardware deals (NVIDIA 3090, Mac Mini M4, NVMe 4TB, PSUs 1000W+).
-
-For each verified finding, run:
-curl -s -X POST http://10.0.1.106:8101/api/intel/items -H "Content-Type: application/json" -d "{\"title\":\"...\",\"source\":\"...\",\"url\":\"REAL_URL\",\"summary\":\"1-2 sentences\",\"source_type\":\"official\",\"category\":\"ecosystem-news\",\"priority\":\"medium\"}"
-
-category values: model-release, api-change, community-tool, ecosystem-news, security, general-news
-priority values: critical (security/breaking), high (new releases), medium (updates), low (blog)
-source_type values: official, community, blog
-
-RULES: Every item MUST have a real URL. Do NOT fabricate versions, CVEs, or URLs. Only report verified findings. After posting, output a count summary.' \
-  --max-turns 30 >> "$LOG_FILE" 2>&1
+REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+(cd "$REPO_ROOT" && python3 -m core.cluster.scripts.intel_below_extractor --collect phase1) >> "$LOG_FILE" 2>&1 || \
+    echo "[$(date)] Phase 1: Below offline — items will be collected via Phase 1.5 log extraction" >> "$LOG_FILE"
 
 echo "[$(date)] Phase 1 complete." >> "$LOG_FILE"
 fi
@@ -109,23 +102,15 @@ for item in items:
 fi
 
 # ---- Phase 2: Discover — Innovation Search ----------------------------------
+# Replaced claude -p with intel_below_extractor --collect phase2 (P3 constants cleanup).
+# Below fetches MCP/GitHub trending sources and extracts structured items via qwen3:8b.
+# Fallback: if Below is offline (exit 1), Phase 2.25 categorization still runs on existing items.
 if should_run_phase 2; then
-echo "[$(date)] Phase 2: Innovation discovery..." >> "$LOG_FILE"
+echo "[$(date)] Phase 2: Innovation discovery (Below extractor)..." >> "$LOG_FILE"
 
-claude -p 'You are the BR3 innovation scout. Search for NEW capabilities, tools, and patterns BR3 does not use yet. Focus on discoveries, not version bumps.
-
-Search targets:
-- New MCP servers (Model Context Protocol) — check awesome-mcp-servers, GitHub trending
-- Claude Code patterns — new workflows, slash commands, hooks, agent patterns
-- SDK capabilities — new Anthropic SDK features, tool_use patterns, streaming improvements
-- AI dev patterns — cursor rules, copilot techniques, agentic workflows, code review automation
-- Infrastructure tools — new Supabase features, Vite plugins, Playwright capabilities, Tailwind v4 utilities
-
-For each verified finding, POST to Lockwood:
-curl -s -X POST http://10.0.1.106:8101/api/intel/items -H "Content-Type: application/json" -d "{\"title\":\"...\",\"source\":\"...\",\"url\":\"REAL_URL\",\"summary\":\"1-2 sentences\",\"source_type\":\"community\",\"category\":\"community-tool\",\"priority\":\"medium\"}"
-
-RULES: Every item MUST have a real, verifiable URL. Do NOT fabricate. Only report things BR3 could actually adopt. After posting, output a count summary.' \
-  --max-turns 30 >> "$LOG_FILE" 2>&1
+REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+(cd "$REPO_ROOT" && python3 -m core.cluster.scripts.intel_below_extractor --collect phase2) >> "$LOG_FILE" 2>&1 || \
+    echo "[$(date)] Phase 2: Below offline — Phase 2.25 will categorize existing items" >> "$LOG_FILE"
 
 echo "[$(date)] Phase 2 complete." >> "$LOG_FILE"
 fi

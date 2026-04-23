@@ -236,6 +236,86 @@ def categorize_intel_items(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 # ---------------------------------------------------------------------------
+# Collect helpers — replaces `claude -p` at collect-intel.sh Phase 1 and Phase 2
+# ---------------------------------------------------------------------------
+
+# Tech news URLs polled by Phase 1 (source collection)
+_TECH_NEWS_SOURCES = [
+    ("https://anthropic.com/news", "Claude/Anthropic news"),
+    ("https://supabase.com/blog", "Supabase updates"),
+    ("https://github.com/trending/python?since=weekly", "Python trending"),
+    ("https://github.com/trending/typescript?since=weekly", "TypeScript trending"),
+]
+
+# Innovation / MCP sources polled by Phase 2
+_INNOVATION_SOURCES = [
+    ("https://github.com/punkpeye/awesome-mcp-servers/raw/main/README.md", "MCP servers"),
+    ("https://github.com/trending?since=daily&spoken_language_code=en", "GitHub trending"),
+]
+
+_LOCKWOOD_INTEL_URL = os.environ.get(
+    "BR3_LOCKWOOD_INTEL_URL",
+    "http://10.0.1.106:8101/api/intel/items",
+)
+
+
+def _fetch_text(url: str, timeout: int = 10) -> str:
+    """Fetch URL content as plain text; return empty string on error."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "BR3-intel-collector/1.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            raw = resp.read()
+        # Decode + strip HTML tags simply (no dependency on bs4)
+        text = raw.decode("utf-8", errors="replace")
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = re.sub(r"[ \t]+", " ", text)
+        return text[:16000]
+    except Exception as exc:
+        logger.debug("fetch_text %s failed: %s", url, exc)
+        return ""
+
+
+try:
+    import re as re  # already imported above; alias for clarity
+except ImportError:
+    pass
+
+
+def _post_item(item: dict[str, Any], lockwood_url: str) -> bool:
+    """POST one intel item to Lockwood. Returns True on HTTP 2xx."""
+    try:
+        body = json.dumps(item).encode()
+        req = urllib.request.Request(
+            lockwood_url, data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            return 200 <= resp.status < 300
+    except Exception as exc:
+        logger.debug("post_item failed: %s", exc)
+        return False
+
+
+def collect_and_post(sources: list[tuple[str, str]], lockwood_url: str) -> int:
+    """Fetch each source URL, extract intel items via Below, POST to Lockwood.
+
+    Returns total items posted.
+    """
+    total = 0
+    for url, context in sources:
+        text = _fetch_text(url)
+        if not text:
+            continue
+        items = extract_intel_items(text, context=context)
+        for item in items:
+            if _post_item(item, lockwood_url):
+                total += 1
+                logger.info("posted: %s", item.get("title", "?"))
+    return total
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -245,23 +325,48 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    parser = argparse.ArgumentParser(description="Below intel extractor")
-    parser.add_argument("--stage", type=int, choices=[1, 2], required=True)
+    parser = argparse.ArgumentParser(description="Below intel extractor / collector")
+    subparsers = parser.add_subparsers(dest="command")
+
+    # Legacy --stage interface (preserved for Phase 1.5 / 2.25 shell callers)
+    parser.add_argument("--stage", type=int, choices=[1, 2], default=None)
     parser.add_argument("--text", default="", help="Raw text for stage 1")
     parser.add_argument("--items", default="[]", help="JSON array of items for stage 2")
     parser.add_argument("--context", default="tech news", help="Context hint for stage 1")
+
+    # New --collect interface (replaces claude -p in collect-intel.sh phases 1 and 2)
+    parser.add_argument(
+        "--collect",
+        choices=["phase1", "phase2"],
+        default=None,
+        help="Run collection pipeline: phase1=tech news, phase2=innovation/MCP discovery",
+    )
+    parser.add_argument(
+        "--lockwood-url",
+        default=_LOCKWOOD_INTEL_URL,
+        help="Lockwood intel POST endpoint",
+    )
+
     args = parser.parse_args()
 
     if not _BELOW_INTEL_ENABLED:
         print("[]")
         sys.exit(1)
 
-    if args.stage == 1:
+    if args.collect:
+        sources = _TECH_NEWS_SOURCES if args.collect == "phase1" else _INNOVATION_SOURCES
+        n = collect_and_post(sources, args.lockwood_url)
+        print(f"[intel_below_extractor] {args.collect}: posted {n} items to Lockwood")
+        sys.exit(0 if n >= 0 else 1)
+    elif args.stage == 1:
         result = extract_intel_items(args.text, context=args.context)
         print(json.dumps(result, indent=2))
         sys.exit(0 if result else 1)
-    else:
+    elif args.stage == 2:
         items = json.loads(args.items)
         result = categorize_intel_items(items)
         print(json.dumps(result, indent=2))
         sys.exit(0 if result else 1)
+    else:
+        parser.print_help()
+        sys.exit(1)
