@@ -1,14 +1,51 @@
 #!/bin/bash
-# BR3 Nightly Intel Collector + Opus Review
-# Two-phase: (1) collect real tech intel, (2) write BR3-specific analysis + improvements
-# Cron: 3 4 * * * ~/Projects/BuildRunner3/core/cluster/scripts/collect-intel.sh
+# BR3 Intel Collector + Opus Review
+# Four-phase pipeline: (1) collect tech intel, (2) innovation scout, (2.5) Below
+# pre-filter [below-offload-v1 Phase 3], (3) Opus BR3 analysis, (4) Tier 1 auto-act.
+#
+# Invocation moved from nightly cron to ad-hoc /intel-run (below-offload-v1 Phase 2).
+# Supported flags (forwarded from intel-run.sh):
+#   --dry-run           Phases 1, 2, 2.5 only (no Opus synthesis / auto-act)
+#   --phase=N           Run a single phase (1, 2, 2.5, 3, or 4)
+#   --skip-prefilter    Skip Phase 2.5 Below pre-filter (escape hatch)
+#
+# Tunables (env vars, read below):
+#   BR3_INTEL_MIN_SCORE=6                           composite score cut-off for Phase 3
+#   BR3_INTEL_PRIORITY_OVERRIDE=critical,high       always pass these priorities
+#   BR3_SKIP_PREFILTER=1                            same as --skip-prefilter
 set -euo pipefail
+
+# ---- Arg parsing ------------------------------------------------------------
+DRY_RUN=0
+SINGLE_PHASE=""
+for arg in "$@"; do
+    case "$arg" in
+        --dry-run)        DRY_RUN=1 ;;
+        --phase=*)        SINGLE_PHASE="${arg#--phase=}" ;;
+        --skip-prefilter) export BR3_SKIP_PREFILTER=1 ;;
+        *) echo "Unknown flag: $arg" >&2; exit 1 ;;
+    esac
+done
+
+should_run_phase() {
+    local p="$1"
+    # Single-phase mode: only the matching phase runs.
+    if [ -n "$SINGLE_PHASE" ]; then
+        [ "$SINGLE_PHASE" = "$p" ] && return 0 || return 1
+    fi
+    # Dry-run: Phases 1, 2, 2.5 only.
+    if [ "$DRY_RUN" -eq 1 ]; then
+        case "$p" in 1|2|2.5) return 0 ;; *) return 1 ;; esac
+    fi
+    return 0
+}
 
 LOG_DIR="$HOME/.buildrunner/logs"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/intel-collect-$(date +%Y-%m-%d).log"
 
-# ---- Phase 1: Collect ----
+# ---- Phase 1: Collect -------------------------------------------------------
+if should_run_phase 1; then
 echo "[$(date)] Phase 1: Collecting intel..." >> "$LOG_FILE"
 
 claude -p 'You are the BR3 nightly intel collector. Search for REAL, current tech updates (last 7 days) and post each one to Lockwood.
@@ -26,8 +63,10 @@ RULES: Every item MUST have a real URL. Do NOT fabricate versions, CVEs, or URLs
   --max-turns 30 >> "$LOG_FILE" 2>&1
 
 echo "[$(date)] Phase 1 complete." >> "$LOG_FILE"
+fi
 
-# ---- Phase 2: Discover — Innovation Search ----
+# ---- Phase 2: Discover — Innovation Search ----------------------------------
+if should_run_phase 2; then
 echo "[$(date)] Phase 2: Innovation discovery..." >> "$LOG_FILE"
 
 claude -p 'You are the BR3 innovation scout. Search for NEW capabilities, tools, and patterns BR3 does not use yet. Focus on discoveries, not version bumps.
@@ -46,18 +85,62 @@ RULES: Every item MUST have a real, verifiable URL. Do NOT fabricate. Only repor
   --max-turns 30 >> "$LOG_FILE" 2>&1
 
 echo "[$(date)] Phase 2 complete." >> "$LOG_FILE"
+fi
 
-# ---- Phase 3: Review — Opus Classification ----
+# ---- Phase 2.5: Below pre-filter --------------------------------------------
+# Scores unreviewed items via Below qwen3:8b, flagging any it can't score for
+# Opus review (fail-open — intel_scoring.py handles Below-offline gracefully).
+# Defaults:
+#   BR3_INTEL_MIN_SCORE=6                     composite score cut-off for Phase 3 filter
+#   BR3_INTEL_PRIORITY_OVERRIDE=critical,high  always pass these priorities regardless of score
+#   BR3_SKIP_PREFILTER=1                      escape hatch
+if should_run_phase 2.5; then
+    if [ "${BR3_SKIP_PREFILTER:-0}" = "1" ]; then
+        echo "[$(date)] Phase 2.5: skipped (BR3_SKIP_PREFILTER=1 / --skip-prefilter)" >> "$LOG_FILE"
+    else
+        echo "[$(date)] Phase 2.5: Below pre-filter (qwen3:8b scoring)..." >> "$LOG_FILE"
+        REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+        if (cd "$REPO_ROOT" && python3 -m core.cluster.scripts.intel_prefilter) >> "$LOG_FILE" 2>&1; then
+            echo "[$(date)] Phase 2.5 complete." >> "$LOG_FILE"
+        else
+            echo "[$(date)] Phase 2.5: prefilter exited non-zero — proceeding (fail-open)" >> "$LOG_FILE"
+        fi
+    fi
+fi
+
+# ---- Phase 3: Review — Opus Classification (score-filtered) -----------------
+# Uses BR3_INTEL_MIN_SCORE and BR3_INTEL_PRIORITY_OVERRIDE from env.
+if should_run_phase 3; then
 echo "[$(date)] Phase 3: BR3 analysis + type classification..." >> "$LOG_FILE"
 
-claude -p 'Review all unreviewed intel items on Lockwood. Write BR3-specific analysis and classify improvement types.
+MIN_SCORE="${BR3_INTEL_MIN_SCORE:-6}"
+OVERRIDE="${BR3_INTEL_PRIORITY_OVERRIDE:-critical,high}"
+export BR3_INTEL_MIN_SCORE="$MIN_SCORE"
+export BR3_INTEL_PRIORITY_OVERRIDE="$OVERRIDE"
+
+claude -p 'Review unreviewed intel items on Lockwood (pre-filtered by Below score / priority override / flags). Write BR3-specific analysis and classify improvement types.
 
 BR3 context: 6-node Mac Mini cluster (Muddy=dev, Lockwood=memory/vector, Walter=testing, Otis=parallel builder, Lomax=staging, Below=Windows inference planning dual 3090 NVLink). Stack: React + Vite + Tailwind v4 + Supabase + Playwright + Claude Code CLI. Deploys to Netlify. BRLogger for observability.
 
-Step 1: Get unreviewed items:
-curl -s "http://10.0.1.106:8101/api/intel/items" | python3 -c "import sys,json; items=json.load(sys.stdin)[\"items\"]; [print(f\"{i[\"id\"]}: {i[\"title\"]}\") for i in items if not i.get(\"opus_reviewed\")]"
+Step 1: Get unreviewed items AND apply the Below pre-filter (defaults: BR3_INTEL_MIN_SCORE=6, BR3_INTEL_PRIORITY_OVERRIDE=critical,high).
+curl -s "http://10.0.1.106:8101/api/intel/items" | python3 -c "
+import sys, json, os
+items = json.load(sys.stdin)[\"items\"]
+min_score = int(os.environ.get(\"BR3_INTEL_MIN_SCORE\", \"6\"))
+override = set(os.environ.get(\"BR3_INTEL_PRIORITY_OVERRIDE\", \"critical,high\").split(\",\"))
+def keep(i):
+    if i.get(\"opus_reviewed\"):
+        return False
+    return ((i.get(\"score\") or 0) >= min_score
+            or i.get(\"priority\") in override
+            or i.get(\"needs_opus_review\") == 1
+            or i.get(\"scored\") == 0)
+for i in items:
+    if keep(i):
+        print(str(i[\"id\"]) + \": \" + i[\"title\"])
+"
 
-Step 2: For EACH unreviewed item, write a 2-4 sentence plain-English explanation of what it means and how it specifically affects BR3 (name nodes, tools, workflows). Then POST:
+Step 2: For EACH filtered item, write a 2-4 sentence plain-English explanation of what it means and how it specifically affects BR3 (name nodes, tools, workflows). Then POST:
 curl -s -X POST http://10.0.1.106:8101/api/intel/items/{ID}/opus-review -H "Content-Type: application/json" -d "{\"opus_synthesis\": \"...\", \"br3_improvement\": true_or_false}"
 
 Step 3: For items where br3_improvement is true, classify the improvement type and create it:
@@ -71,8 +154,10 @@ Only create improvements for clearly actionable items. Write like explaining to 
   --max-turns 30 >> "$LOG_FILE" 2>&1
 
 echo "[$(date)] Phase 3 complete." >> "$LOG_FILE"
+fi
 
-# ---- Phase 4: Auto-Act — Tier 1 Fixes Only ----
+# ---- Phase 4: Auto-Act — Tier 1 Fixes Only ----------------------------------
+if should_run_phase 4; then
 echo "[$(date)] Phase 4: Auto-act on Tier 1 fixes..." >> "$LOG_FILE"
 
 claude -p 'You are the BR3 auto-act agent. Execute ONLY Tier 1 fixes — simple security patches and deadline-critical items.
@@ -108,3 +193,4 @@ If no Tier 1 items found, output "No Tier 1 auto-act candidates" and exit.' \
   --max-turns 15 >> "$LOG_FILE" 2>&1
 
 echo "[$(date)] Phase 4 complete. Nightly intel done." >> "$LOG_FILE"
+fi

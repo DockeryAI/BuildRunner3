@@ -392,10 +392,22 @@ async def score_intel_items() -> dict:
         response = await _call_below_chat(prompt)
 
         if response is None:
-            # Below offline — stop this cycle, items stay unscored
-            logger.warning("Below offline — stopping intel scoring cycle")
+            # Below offline — fail-open: flag for Opus review and continue.
+            # Prior behavior was `break`, which left items permanently unscored.
+            # See below-offload-v1 Phase 3.
+            _flag_needs_opus_review(item_id, "intel")
+            conn = _get_intel_db()
+            conn.execute(
+                "UPDATE intel_items SET scored = 1 WHERE id = ?", (item_id,)
+            )
+            conn.commit()
+            conn.close()
+            stats["flagged"] += 1
             stats["errors"] += 1
-            break
+            logger.warning(
+                f"Intel item {item_id} flagged for Opus review (Below offline)"
+            )
+            continue
 
         parsed = _parse_intel_score(response)
 

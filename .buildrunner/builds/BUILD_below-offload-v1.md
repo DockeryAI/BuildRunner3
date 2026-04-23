@@ -11,7 +11,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-2 Complete — Phase 3 In Progress
+**Status:** BUILD COMPLETE — All 3 Phases Done
 **Deploy:** web — `npm run build && netlify deploy --prod`
 **Source Plan File:** .buildrunner/plans/spec-draft-plan.md
 **Source Plan SHA:** ab42cfd26b6e84d08ac522e0ab85bb1a2ae7d4810a7109e436ff183f6fcb344a
@@ -102,27 +102,28 @@ Recommended execution: Phase 1 ∥ Phase 2, then Phase 3.
 
 ### Phase 3: Below Pre-Filter for Intel Synthesis (fail-open)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `core/cluster/intel_scoring.py` (MODIFY — minimal additive edit only)
 - `core/cluster/scripts/intel_prefilter.py` (NEW)
-- `core/cluster/scripts/collect-intel.sh` (MODIFY)
-- `~/.buildrunner/scripts/intel-run.sh` (MODIFY — add `--skip-prefilter` flag)
+- `core/cluster/scripts/__init__.py` (NEW — required for `python3 -m core.cluster.scripts.intel_prefilter`)
+- `core/cluster/scripts/collect-intel.sh` (MODIFY — includes Phase 2.5, Phase 3 filter, and arg parsing scaffold so `--dry-run` / `--phase=N` / `--skip-prefilter` from `intel-run.sh` take effect end-to-end)
+- `~/.buildrunner/scripts/intel-run.sh` (MODIFY — `--skip-prefilter` already scaffolded in Phase 2; confirmed)
 
 **Blocked by:** Phase 2 (operational: don't rewire collect-intel.sh while cron may still fire)
 **Goal:** Insert Below qwen3:8b scoring pass between collect-intel.sh's collection (Phases 1–2) and synthesis (Phase 3). Fail-open semantics: Below offline flags items as `needs_opus_review = 1` instead of breaking. Phase 3 prompt filters to items above threshold, or override priorities, or flagged, or unscored.
 
 **Deliverables:**
 
-- [ ] `intel_scoring.py` `score_intel_items()` no longer breaks on Below offline. Per-item `_flag_needs_opus_review(item_id, "intel")` is called when `_call_below_chat` returns None, then loop continues. Malformed-response branch unchanged.
-- [ ] Diff to `intel_scoring.py` is additive only (no signature changes, no removed functions). `git diff intel_scoring.py` shows changes only inside `score_intel_items()` body.
-- [ ] `core/cluster/scripts/intel_prefilter.py` exists. Importable. Runs `asyncio.run(score_intel_items())`. Logs result to `~/.buildrunner/logs/intel-prefilter-<timestamp>.log`. Exits 0 even if some items can't be scored (fail-open).
-- [ ] `collect-intel.sh` Phase 2.5 invokes `python3 -m core.cluster.scripts.intel_prefilter` between Phase 2 (line ~48) and Phase 3 (line ~51). Stdout appended to LOG_FILE.
-- [ ] `collect-intel.sh` Phase 3 prompt filters on `(item.score or 0) >= MIN_SCORE OR item.priority IN PRIORITY_OVERRIDE OR item.needs_opus_review == 1 OR item.scored == 0`.
-- [ ] Defaults documented inline: `BR3_INTEL_MIN_SCORE=6`, `BR3_INTEL_PRIORITY_OVERRIDE=critical,high`.
-- [ ] `intel-run.sh --skip-prefilter` bypasses Phase 2.5 (escape hatch).
-- [ ] Smoke test passes: synthetic items with scores [3, 8] and priorities [low, critical] and flags [0, 1] route correctly per filter rule.
+- [x] `intel_scoring.py` `score_intel_items()` no longer breaks on Below offline. Per-item `_flag_needs_opus_review(item_id, "intel")` is called when `_call_below_chat` returns None, then loop continues. Malformed-response branch unchanged.
+- [x] Diff to `intel_scoring.py` is additive only (no signature changes, no removed functions). `git diff intel_scoring.py` shows changes only inside `score_intel_items()` body.
+- [x] `core/cluster/scripts/intel_prefilter.py` exists. Importable. Runs `asyncio.run(score_intel_items())`. Logs result to `~/.buildrunner/logs/intel-prefilter-<timestamp>.log`. Exits 0 even if some items can't be scored (fail-open).
+- [x] `collect-intel.sh` Phase 2.5 invokes `python3 -m core.cluster.scripts.intel_prefilter` between Phase 2 (line ~48) and Phase 3 (line ~51). Stdout appended to LOG_FILE.
+- [x] `collect-intel.sh` Phase 3 prompt filters on `(item.score or 0) >= MIN_SCORE OR item.priority IN PRIORITY_OVERRIDE OR item.needs_opus_review == 1 OR item.scored == 0`.
+- [x] Defaults documented inline: `BR3_INTEL_MIN_SCORE=6`, `BR3_INTEL_PRIORITY_OVERRIDE=critical,high`.
+- [x] `intel-run.sh --skip-prefilter` bypasses Phase 2.5 (escape hatch; honored via `BR3_SKIP_PREFILTER=1` export or the `--skip-prefilter` arg parsed in `collect-intel.sh`).
+- [x] Smoke test passes: synthetic items with scores [3, 8] and priorities [low, critical] and flags [0, 1] route correctly per filter rule.
 
 **Success Criteria:**
 
