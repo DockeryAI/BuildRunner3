@@ -20,12 +20,13 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from core.cluster.base_service import create_app
+from core.cluster.cluster_config import get_jimmy_semantic_url
 
 # --- Config ---
 PROJECTS_DIR = os.environ.get("PROJECTS_DIR", os.path.expanduser("~/repos"))
 DB_PATH = os.environ.get("STAGING_DB", os.path.expanduser("~/.lomax/builds.db"))
 BUILD_INTERVAL = int(os.environ.get("BUILD_INTERVAL", "120"))  # seconds between build checks
-JIMMY_URL = os.environ.get("JIMMY_URL", os.environ.get("LOCKWOOD_URL", "http://10.0.1.106:8100"))  # Phase 4: Jimmy is primary semantic-search/memory node
+JIMMY_URL = get_jimmy_semantic_url()  # single source of truth — core/cluster/cluster_config.py
 
 # --- App ---
 app = create_app(role="staging-server", version="0.1.0")

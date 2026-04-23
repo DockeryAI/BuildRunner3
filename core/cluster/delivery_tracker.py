@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from core.cluster.cluster_config import get_jimmy_semantic_url
 from core.cluster.utils import rate_limit_lock
 
 try:
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 # --- Config ---
 CONFIG_PATH = Path(__file__).parent / "hunt_sourcer_config.json"
-JIMMY_URL = os.environ.get("JIMMY_URL", os.environ.get("JIMMY_URL", "http://10.0.1.106:8100"))  # Phase 4: Jimmy is primary semantic-search/memory node
+JIMMY_URL = get_jimmy_semantic_url()  # single source of truth — core/cluster/cluster_config.py
 TRACK17_API_KEY = os.environ.get("TRACK17_API_KEY", "")
 TRACK17_BASE_URL = "https://api.17track.net/track/v2.2"
 MAX_BATCH_SIZE = 40  # 17track limit per request

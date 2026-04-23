@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Optional
 
+from core.cluster.cluster_config import get_jimmy_semantic_url, get_below_ollama_url, get_below_model
 from core.cluster.utils import url_hash, last_checked_lock, cosine_similarity
 
 try:
@@ -26,9 +27,9 @@ logger = logging.getLogger(__name__)
 
 # --- Config ---
 CONFIG_PATH = Path(__file__).parent / "hunt_sourcer_config.json"
-JIMMY_URL = os.environ.get("JIMMY_URL", os.environ.get("JIMMY_URL", "http://10.0.1.106:8100"))  # Phase 4: Jimmy is primary semantic-search/memory node
-BELOW_OLLAMA_URL = os.environ.get("BELOW_OLLAMA_URL", "http://10.0.1.105:11434")
-BELOW_MODEL = os.environ.get("BELOW_MODEL", "qwen3:8b")
+JIMMY_URL = get_jimmy_semantic_url()        # single source of truth — core/cluster/cluster_config.py
+BELOW_OLLAMA_URL = get_below_ollama_url()   # single source of truth — core/cluster/cluster_config.py
+BELOW_MODEL = get_below_model()             # single source of truth — core/cluster/cluster_config.py
 BELOW_EMBED_MODEL = os.environ.get("BELOW_EMBED_MODEL", "nomic-embed-text")
 CHECK_HUNTS_INTERVAL = int(os.environ.get("CHECK_HUNTS_INTERVAL", "300"))  # 5min
 

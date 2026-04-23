@@ -1366,7 +1366,6 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:41:14.045038Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ed5c42b2212eca83 reviewers=2
 [2026-04-23T20:41:21.394604Z] THREE_WAY_REVIEW review_start plan_hash=3b5764f99100e6e4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
 [2026-04-23T20:41:24.231188Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f15e4ecc21868a0a reviewers=2
-<<<<<<< Updated upstream
 [2026-04-23T20:41:50.886670Z] THREE_WAY_REVIEW review_start plan_hash=c73ab715c9c30f88 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=33cee9e[2026-04-23T20:45:28Z] Phase 2 decisions:
 [2026-04-23T20:45:28Z] [DECISION] database.py: added WAL+busy_timeout=5000 to _init_connection()
 [2026-04-23T20:45:28Z] [DECISION] semantic_cache.py: added WAL+busy_timeout=5000 to _ensure_init()
@@ -1416,6 +1415,7 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:46:22.311182Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c73ab715c9c30f88 reviewers=2
 [2026-04-23T20:48:43.364123Z] THREE_WAY_REVIEW review_start plan_hash=4f120354c481c03e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
 [2026-04-23T20:48:59.368791Z] THREE_WAY_REVIEW review_start plan_hash=018555432c78c858 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+<<<<<<< HEAD
 [2026-04-23T20:49:21.478079Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=12736f89a5d5425b reviewers=2
 [2026-04-23T20:49:41.471669Z] THREE_WAY_REVIEW review_start plan_hash=9a9bc19e88888cc4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
 [2026-04-23T20:49:53.492717Z] THREE_WAY_REVIEW review_start plan_hash=edce68791106d011 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
@@ -1463,3 +1463,5 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T21:00:52Z] [DECISION] deleted build/ directory (untracked; already in .gitignore from P4; Python bdist artifacts not part of project source) (P6)
 [2026-04-23T21:00:52Z] [DECISION] archived scripts/post_cutover_smoke.py → scripts/archive/post_cutover_smoke.py; stale smoke test for a cutover that is now complete (P6)
 [2026-04-23T21:00:52Z] [DECISION] updated ~/.buildrunner/config/rollout-state.yaml: mode watch-only→enforced, flipped_at null→2026-04-21T00:00:00Z; reflects actual post-cutover state (P6)
+[2026-04-23T20:58:38Z] P3_TEST verify flock write works phase=3
+[2026-04-23T20:58:56Z] P3_COMPLETE constants-consolidation JIMMY_URL=4sites BELOW_HOST=8sites qwen3:8b=7sites decisions.log=4sites double-nested-get=eliminated

@@ -31,9 +31,16 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Summarization model — qwen3:8b for classification/extraction tasks per spec.
+# Summarization model — single source of truth in cluster_config.py
 # ---------------------------------------------------------------------------
-_SUMMARIZER_MODEL = "qwen3:8b"
+# Import is deferred into a lambda to avoid contributing to the circular-import
+# chain (summarizer → runtime_registry → ollama_runtime → cross_model_review → summarizer).
+# The value is resolved once at first call.
+def _get_summarizer_model() -> str:  # noqa: E302
+    from core.cluster.cluster_config import get_below_model  # noqa: PLC0415
+    return get_below_model()
+
+_SUMMARIZER_MODEL = _get_summarizer_model()
 _MAX_OUTPUT_BYTES = 5 * 1024  # 5 KB target ceiling on summarizer output
 
 _DIFF_PROMPT_TEMPLATE = """\

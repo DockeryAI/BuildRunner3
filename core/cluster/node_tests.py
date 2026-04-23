@@ -25,13 +25,14 @@ from datetime import datetime
 
 from core.cluster.base_service import create_app
 from core.cluster import process_detector
+from core.cluster.cluster_config import get_jimmy_semantic_url
 
 # --- Config ---
 REPOS_DIR = os.environ.get("REPOS_DIR", os.path.expanduser("~/repos"))
 DB_PATH = os.environ.get("TEST_DB", os.path.expanduser("~/.walter/test_results.db"))
 POLL_INTERVAL = int(os.environ.get("POLL_INTERVAL", "60"))
 PROJECT_COOLDOWN = int(os.environ.get("PROJECT_COOLDOWN", "600"))  # min seconds between runs per project
-JIMMY_URL = os.environ.get("JIMMY_URL", os.environ.get("LOCKWOOD_URL", "http://10.0.1.106:8100"))  # Phase 4: Jimmy is primary semantic-search/memory node
+JIMMY_URL = get_jimmy_semantic_url()  # single source of truth — core/cluster/cluster_config.py
 SERVICE_VERSION = "0.2.0"
 
 # --- App ---

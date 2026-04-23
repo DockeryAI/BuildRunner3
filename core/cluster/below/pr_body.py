@@ -37,16 +37,18 @@ from typing import Optional
 
 import httpx
 
+from core.cluster.cluster_config import get_below_host, get_ollama_port
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 
-BELOW_HOST: str = "10.0.1.105"
-BELOW_OLLAMA_PORT: int = 11434
+BELOW_HOST: str = get_below_host()           # single source of truth — core/cluster/cluster_config.py
+BELOW_OLLAMA_PORT: int = get_ollama_port()   # single source of truth — core/cluster/cluster_config.py
 BELOW_GENERATE_URL: str = f"http://{BELOW_HOST}:{BELOW_OLLAMA_PORT}/api/generate"
-BELOW_MODEL: str = "qwen2.5-coder:7b"
+BELOW_MODEL: str = "qwen2.5-coder:7b"        # intentionally different from BELOW_MODEL in cluster_config (code-specific model)
 TIMEOUT_SECONDS: float = 15.0
 METRICS_FILE: Path = Path.home() / ".buildrunner" / "pr-body-metrics.jsonl"
 

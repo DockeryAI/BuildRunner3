@@ -20,14 +20,16 @@ from typing import Optional
 
 import httpx
 
+from core.cluster.cluster_config import get_below_host, get_ollama_port
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-BELOW_HOST: str = "10.0.1.105"
-BELOW_EMBED_PORT: int = 11434
+BELOW_HOST: str = get_below_host()          # single source of truth — core/cluster/cluster_config.py
+BELOW_EMBED_PORT: int = get_ollama_port()   # single source of truth — core/cluster/cluster_config.py
 BELOW_EMBED_URL: str = f"http://{BELOW_HOST}:{BELOW_EMBED_PORT}/api/embed"
 EMBED_MODEL: str = "nomic-embed-text"
 

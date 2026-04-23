@@ -28,6 +28,8 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any, Optional
 
+from core.cluster.log_utils import get_decisions_log_path
+
 logger = logging.getLogger(__name__)
 
 HOME = Path.home()
@@ -42,7 +44,7 @@ def _multi_model_context_enabled() -> bool:
 
 
 # Paths resolved relative to home
-_DECISIONS_LOG = HOME / ".buildrunner" / "decisions.log"
+_DECISIONS_LOG = get_decisions_log_path()  # single source of truth — core/cluster/log_utils.py
 _DECISIONS_PUBLIC_LOG = HOME / ".buildrunner" / "decisions.public.log"
 _BROWSER_LOG = HOME / ".buildrunner" / "browser.log"
 _SUPABASE_LOG = HOME / ".buildrunner" / "supabase.log"

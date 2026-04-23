@@ -240,7 +240,7 @@ if [ -x "$CLUSTER_CHECK" ]; then
   # This keeps startup fast (1 ping instead of 5).
   SEMANTIC_URL=$("$CLUSTER_CHECK" semantic-search 2>/dev/null)
 
-  TOTAL=$(python3 -c "import json; print(len(json.load(open('$HOME/.buildrunner/cluster.json')).get('nodes', {})))" 2>/dev/null || echo "0")
+  TOTAL=$(cd "$PROJECT_PATH" && python3 -m core.cluster.cluster_config get-node-count 2>/dev/null || python3 -c "import json; print(len(json.load(open('$HOME/.buildrunner/cluster.json')).get('nodes', {})))" 2>/dev/null || echo "0")
   ONLINE=0
   ONLINE_LIST=""
   for ROLE in semantic-search test-runner parallel-builder staging-server inference; do
