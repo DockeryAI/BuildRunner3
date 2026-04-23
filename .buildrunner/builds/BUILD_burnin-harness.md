@@ -20,7 +20,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
+**Status:** Phases 1-3, 6-9 Complete — Phase 4 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; harness writes to `~/.buildrunner/` and `~/.claude/skills/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness.md
 **Source Plan SHA:** ad48f9367987ac3403ab50af859a8add9cf772a3610bdf22629566bb5bf5b4e6
@@ -293,7 +293,7 @@ Real caller (no mocks), 3 conditions, `promote_after: 3`, realistic `timeout_s`.
 
 ### Phase 9: Plugin library — Cross-node E2E (5 cases)
 
-**Status:** PLANNED
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/burnin/cases/e2e/` (5 YAML files)
@@ -302,11 +302,11 @@ Real caller (no mocks), 3 conditions, `promote_after: 3`, realistic `timeout_s`.
 
 **Deliverables:**
 
-- [ ] `e2e-autopilot-otis-dispatch` — no-op phase, assert executes on Otis.
-- [ ] `e2e-research-jimmy-roundtrip` — `/research` query, assert Jimmy `/retrieve` hit.
-- [ ] `e2e-ship-full-gate` — `/ship --full` clean branch, assert all 8 gates pass.
-- [ ] `e2e-begin-spec-drift` — mutate spec mid-build, assert drift flagged.
-- [ ] `e2e-offline-fallback` — Below offline, assert fallback + fallback log.
+- [x] `e2e-autopilot-otis-dispatch` — no-op phase, assert executes on Otis.
+- [x] `e2e-research-jimmy-roundtrip` — `/research` query, assert Jimmy `/retrieve` hit.
+- [x] `e2e-ship-full-gate` — `/ship --full` clean branch, assert all 8 gates pass.
+- [x] `e2e-begin-spec-drift` — mutate spec mid-build, assert drift flagged.
+- [x] `e2e-offline-fallback` — Below offline, assert fallback + fallback log.
 
 Long `timeout_s` (5–15 min); only `cold` + `warm` conditions.
 
