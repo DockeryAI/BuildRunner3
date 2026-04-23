@@ -65,6 +65,37 @@ RULES: Every item MUST have a real URL. Do NOT fabricate versions, CVEs, or URLs
 echo "[$(date)] Phase 1 complete." >> "$LOG_FILE"
 fi
 
+# ---- Phase 1.5: Below structured extraction from Phase 1 log ---------------
+# Sends the Phase 1 log tail to Below qwen3:8b for structured re-extraction.
+# Supplements (does not replace) Claude's Phase 1 postings.
+# Rollback: BR3_BELOW_INTEL=off skips this block.
+if should_run_phase 1 && [ "${BR3_BELOW_INTEL:-on}" != "off" ]; then
+    echo "[$(date)] Phase 1.5: Below structured extraction from Phase 1 log..." >> "$LOG_FILE"
+    REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+    PHASE1_LOG_TAIL=$(tail -c 12000 "$LOG_FILE" 2>/dev/null || true)
+    if [ -n "$PHASE1_LOG_TAIL" ]; then
+        EXTRACTED=$(python3 -c "
+import sys, json
+sys.path.insert(0, '$REPO_ROOT')
+from core.cluster.scripts.intel_below_extractor import extract_intel_items
+items = extract_intel_items('''$PHASE1_LOG_TAIL''', context='tech news ecosystem')
+for item in items:
+    print(json.dumps(item))
+" 2>>"$LOG_FILE" || true)
+        if [ -n "$EXTRACTED" ]; then
+            echo "$EXTRACTED" | while IFS= read -r line; do
+                [ -z "$line" ] && continue
+                TITLE=$(echo "$line" | python3 -c "import sys,json; d=json.loads(sys.stdin.read()); print(d.get('title',''))" 2>/dev/null)
+                echo "[$(date)] Below extracted item: $TITLE" >> "$LOG_FILE"
+                curl -s -X POST http://10.0.1.106:8101/api/intel/items \
+                    -H "Content-Type: application/json" \
+                    -d "$line" >> "$LOG_FILE" 2>&1 || true
+            done
+        fi
+    fi
+    echo "[$(date)] Phase 1.5 complete." >> "$LOG_FILE"
+fi
+
 # ---- Phase 2: Discover — Innovation Search ----------------------------------
 if should_run_phase 2; then
 echo "[$(date)] Phase 2: Innovation discovery..." >> "$LOG_FILE"
@@ -85,6 +116,61 @@ RULES: Every item MUST have a real, verifiable URL. Do NOT fabricate. Only repor
   --max-turns 30 >> "$LOG_FILE" 2>&1
 
 echo "[$(date)] Phase 2 complete." >> "$LOG_FILE"
+fi
+
+# ---- Phase 2.25: Below categorization of unclassified items ----------------
+# Runs After Phase 2; sends uncategorized items to Below qwen3:8b for
+# category/priority/source_type classification before Opus Phase 3 review.
+# Rollback: BR3_BELOW_INTEL=off skips this block.
+if should_run_phase 2 && [ "${BR3_BELOW_INTEL:-on}" != "off" ]; then
+    echo "[$(date)] Phase 2.25: Below categorization of unreviewed items..." >> "$LOG_FILE"
+    REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+    UNCATEGORIZED=$(curl -s "http://10.0.1.106:8101/api/intel/items" 2>/dev/null \
+        | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    items = data.get('items', [])
+    # Items without opus_reviewed and without a source_type are candidates
+    candidates = [{'id': i['id'], 'title': i.get('title',''), 'summary': i.get('summary','')}
+                  for i in items if not i.get('opus_reviewed') and not i.get('source_type')]
+    print(json.dumps(candidates))
+except Exception:
+    print('[]')
+" 2>/dev/null || echo "[]")
+    if [ "$UNCATEGORIZED" != "[]" ] && [ -n "$UNCATEGORIZED" ]; then
+        CLASSIFIED=$(python3 -c "
+import sys, json
+sys.path.insert(0, '$REPO_ROOT')
+from core.cluster.scripts.intel_below_extractor import categorize_intel_items
+items = json.loads('''$UNCATEGORIZED''')
+result = categorize_intel_items(items)
+print(json.dumps(result))
+" 2>>"$LOG_FILE" || echo "[]")
+        if [ "$CLASSIFIED" != "[]" ] && [ -n "$CLASSIFIED" ]; then
+            echo "$CLASSIFIED" | python3 -c "
+import sys, json, urllib.request
+classified = json.loads(sys.stdin.read())
+for c in classified:
+    item_id = c.get('id')
+    if not item_id:
+        continue
+    patch = {k: v for k, v in c.items() if k != 'id'}
+    try:
+        req = urllib.request.Request(
+            f'http://10.0.1.106:8101/api/intel/items/{item_id}',
+            data=json.dumps(patch).encode(),
+            headers={'Content-Type': 'application/json'},
+            method='PATCH',
+        )
+        urllib.request.urlopen(req, timeout=5)
+        print(f'classified item {item_id}')
+    except Exception as e:
+        print(f'failed to patch item {item_id}: {e}', file=sys.stderr)
+" >> "$LOG_FILE" 2>&1 || true
+        fi
+    fi
+    echo "[$(date)] Phase 2.25 complete." >> "$LOG_FILE"
 fi
 
 # ---- Phase 2.5: Below pre-filter --------------------------------------------

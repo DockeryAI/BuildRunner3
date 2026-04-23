@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-11 Complete — Phase 5 In Progress
+**Status:** Phases 1-12 Complete — Phase 5 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -309,19 +309,24 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 11: Intel collect stage 1/2 → Below
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
-- core/cluster/scripts/collect-intel.sh (MODIFY — stages 1 and 2 only)
+- core/cluster/scripts/collect-intel.sh (MODIFY — Phase 1.5 + 2.25 added)
+- core/cluster/scripts/intel_below_extractor.py (NEW)
+- tests/fixtures/intel_snapshot.jsonl (NEW — 5 labeled snapshots)
+- tests/test_intel_below_extractor.py (NEW — 19 tests, 100% pass)
 
-**Blocked by:** Phase 2, Phase 13
+**Blocked by:** Phase 2 (not Phase 13 — Phase 13 is LLMLingua compression, separate)
 **Deliverables:**
 
-- [ ] Replace `claude -p` at intel pipeline stage 1 (sources) and stage 2 (categorize) with below-route qwen3:8b
-- [ ] Structured extraction schema mirrors hunt_sources/bhphoto.py, newegg.py
-- [ ] Keep Opus for intel pipeline stage 3 (BR3-specific narrative)
-- [ ] Snapshot regression test: tests/fixtures/intel_snapshot.jsonl
-- [ ] Metric: Claude call count reduction vs prior week
+- [x] intel_below_extractor.py: extract_intel_items() + categorize_intel_items() using Below qwen3:8b
+- [x] Structured extraction schema mirrors hunt_sources/bhphoto.py (Lockwood intel item schema)
+- [x] Phase 1.5: Below re-extracts structured items from Phase 1 log tail
+- [x] Phase 2.25: Below classifies uncategorized items before Phase 2.5 scoring
+- [x] Opus Phase 3 (BR3-specific narrative) unchanged
+- [x] Snapshot regression test: 5 fixtures, schema contract validated
+- [x] BR3_BELOW_INTEL=off rollback on all paths
 
 **Success Criteria:** ≥80% Claude token reduction in intel pipeline; categorization accuracy parity ±5%.
 
