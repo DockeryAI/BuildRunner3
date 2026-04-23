@@ -30,6 +30,7 @@ from core.cluster import process_detector
 REPOS_DIR = os.environ.get("REPOS_DIR", os.path.expanduser("~/repos"))
 DB_PATH = os.environ.get("TEST_DB", os.path.expanduser("~/.walter/test_results.db"))
 POLL_INTERVAL = int(os.environ.get("POLL_INTERVAL", "60"))
+PROJECT_COOLDOWN = int(os.environ.get("PROJECT_COOLDOWN", "600"))  # min seconds between runs per project
 JIMMY_URL = os.environ.get("JIMMY_URL", os.environ.get("LOCKWOOD_URL", "http://10.0.1.106:8100"))  # Phase 4: Jimmy is primary semantic-search/memory node
 SERVICE_VERSION = "0.2.0"
 
@@ -53,6 +54,7 @@ _inflight_projects: set[str] = set()  # Projects with queued/running tests (for 
 
 # Track last tested SHA per project for git-based change detection
 _last_tested_sha: dict[str, str] = {}
+_last_run_at: dict[str, float] = {}  # project -> monotonic timestamp of last enqueue (cooldown gate)
 
 
 # --- SQLite Setup ---
@@ -535,17 +537,94 @@ def _find_vitest_dir(repo_path: str) -> Optional[str]:
     return None
 
 
+DISPATCH_SCRIPT = os.path.expanduser("~/.buildrunner/scripts/dispatch-test.sh")
+
+
 def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> dict:
-    """Run vitest for affected tests. Returns parsed results."""
+    """Dispatch vitest across cluster shards (walter+lockwood) via dispatch-test.sh.
+
+    Walter no longer runs vitest locally with 8 workers — the dispatcher fans
+    shards out to all configured nodes in parallel, so load is split and the
+    sentinel loop doesn't pin this host.
+
+    Falls back to local single-host run only if the dispatcher is missing
+    (degraded install) — keeps the sentinel working on stripped-down hosts.
+    """
     vitest_dir = _find_vitest_dir(repo_path)
     if not vitest_dir:
         return None
 
-    # Check if there are test files
     has_tests = any(Path(vitest_dir).rglob("*.test.*")) or any(Path(vitest_dir).rglob("*.spec.*"))
     if not has_tests:
         return None
 
+    if not Path(DISPATCH_SCRIPT).exists():
+        return _run_vitest_local(vitest_dir, project_name, changed_files)
+
+    start = time.time()
+    build_id = f"walter-{project_name}-{uuid.uuid4().hex[:8]}"
+    merged_json = f"/tmp/br-test-{build_id}-merged.json"
+
+    cmd = [DISPATCH_SCRIPT, vitest_dir, "--build-id", build_id]
+    env = {**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
+
+    try:
+        proc = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=600)
+    except subprocess.TimeoutExpired:
+        return {"runner": "vitest", "project": project_name, "error": "dispatch-timeout",
+                "failed": 1, "total": 1, "passed": 0, "skipped": 0, "tests": [], "duration_ms": 600000,
+                "dispatched": True}
+
+    duration = int((time.time() - start) * 1000)
+
+    if Path(merged_json).exists():
+        try:
+            data = json.loads(Path(merged_json).read_text())
+            return {
+                "runner": "vitest",
+                "project": project_name,
+                "duration_ms": duration,
+                "dispatched": True,
+                "total": data.get("numTotalTests", 0),
+                "passed": data.get("numPassedTests", 0),
+                "failed": data.get("numFailedTests", 0),
+                "skipped": data.get("numPendingTests", 0),
+                "tests": [
+                    {
+                        "suite": tr.get("name", ""),
+                        "name": ar.get("title", ""),
+                        "full_name": ar.get("fullName", ""),
+                        "status": ar.get("status", "unknown"),
+                        "duration_ms": ar.get("duration", 0),
+                        "failure": "\n".join(ar.get("failureMessages", [])),
+                    }
+                    for tr in data.get("testResults", [])
+                    for ar in tr.get("assertionResults", [])
+                ],
+            }
+        except (json.JSONDecodeError, KeyError):
+            pass
+        finally:
+            try:
+                os.unlink(merged_json)
+            except OSError:
+                pass
+
+    return {
+        "runner": "vitest",
+        "project": project_name,
+        "duration_ms": duration,
+        "dispatched": True,
+        "total": 0, "passed": 0,
+        "failed": 1 if proc.returncode != 0 else 0,
+        "skipped": 0,
+        "tests": [],
+        "error": proc.stderr[-500:] if proc.returncode != 0 else None,
+    }
+
+
+def _run_vitest_local(vitest_dir: str, project_name: str, changed_files: list[str]) -> dict:
+    """Fallback: single-host vitest run. Used only when the dispatcher is unavailable."""
     start = time.time()
     result_file = f"/tmp/walter-vitest-{project_name}-{uuid.uuid4().hex[:8]}.json"
 
@@ -555,11 +634,11 @@ def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> 
         f"--outputFile={result_file}",
         "--passWithNoTests",
     ]
-    # If we know which files changed, use --changed
     if changed_files:
         cmd.append("--changed")
 
-    env = {**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}"}
+    env = {**os.environ, "PATH": f"/opt/homebrew/bin:{os.environ.get('PATH', '')}",
+           "VITEST_MAX_THREADS": "2"}
     stdout, stderr, returncode, timed_out = _run_with_process_group(cmd, vitest_dir, timeout=120, env=env)
 
     duration = int((time.time() - start) * 1000)
@@ -567,7 +646,6 @@ def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> 
     if timed_out:
         return {"runner": "vitest", "project": project_name, "error": "timeout", "failed": 1, "total": 1, "passed": 0, "skipped": 0, "tests": [], "duration_ms": 120000}
 
-    # Parse JSON results
     if Path(result_file).exists():
         try:
             data = json.loads(Path(result_file).read_text())
@@ -575,6 +653,7 @@ def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> 
                 "runner": "vitest",
                 "project": project_name,
                 "duration_ms": duration,
+                "dispatched": False,
                 "total": data.get("numTotalTests", 0),
                 "passed": data.get("numPassedTests", 0),
                 "failed": data.get("numFailedTests", 0),
@@ -600,11 +679,11 @@ def _run_vitest(repo_path: str, project_name: str, changed_files: list[str]) -> 
             except OSError:
                 pass
 
-    # Fallback: parse exit code
     return {
         "runner": "vitest",
         "project": project_name,
         "duration_ms": duration,
+        "dispatched": False,
         "total": 0, "passed": 0,
         "failed": 1 if returncode != 0 else 0,
         "skipped": 0,
@@ -985,6 +1064,18 @@ def _watch_loop():
                 changed = _detect_changes(repo_path, project_name)
                 if not changed:
                     continue
+
+                # Per-project cooldown — prevents hammering a single project
+                # when multiple commits land in quick succession. The dispatcher
+                # itself takes 30–120s per run, so retesting every 60s produces
+                # overlapping load on this host.
+                now_mono = time.monotonic()
+                last = _last_run_at.get(project_name, 0.0)
+                if now_mono - last < PROJECT_COOLDOWN:
+                    wait = int(PROJECT_COOLDOWN - (now_mono - last))
+                    print(f"Cooldown: {project_name} retested {int(now_mono - last)}s ago, waiting {wait}s more")
+                    continue
+                _last_run_at[project_name] = now_mono
 
                 print(f"Changes in {project_name}: {len(changed)} files")
 
