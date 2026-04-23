@@ -119,7 +119,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 2: Schema-constrained classifier library on Below
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - core/cluster/below/schema_classifier.py (NEW)
