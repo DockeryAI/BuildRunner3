@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-7 Complete — Phase 5 In Progress
+**Status:** Wave A Complete (0,1,5,15), Wave B Complete (2,3,4,16) — Wave C next (6,7,9,10,11)
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -402,7 +402,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 16: Spec-drift detection at /begin step 0
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - $HOME/.claude/commands/begin.md (MODIFY — project-scoping guard)
@@ -413,12 +413,12 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 **Blocked by:** Phase 0
 **Deliverables:**
 
-- [ ] spec_drift.py uses core/cluster/below/embed.py (no coupling to log_cluster internals)
-- [ ] Embedding comparison between BUILD spec and current codebase
-- [ ] Integrate into begin_workflow.py step 0 (not governance_enforcer)
-- [ ] Project-scoping guard in begin.md: skip when no BUILD spec exists
-- [ ] Surface drift candidates; advisory only, no auto-fix
-- [ ] Integration test on BUILD with injected drift
+- [x] spec_drift.py uses core/cluster/below/embed.py (no coupling to log_cluster internals)
+- [x] Embedding comparison between BUILD spec and current codebase
+- [x] Integrate into begin_workflow.py step 0 (not governance_enforcer)
+- [x] Project-scoping guard in begin.md: skip when no BUILD spec exists
+- [x] Surface drift candidates; advisory only, no auto-fix
+- [x] Integration test on BUILD with injected drift
 
 **Success Criteria:** Detects injected drift; zero false positives on clean baseline; silent skip in non-BR3 projects.
 

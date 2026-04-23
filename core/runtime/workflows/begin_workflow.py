@@ -123,6 +123,29 @@ class BeginWorkflowResult:
         return payload
 
 
+def _run_spec_drift_check(project_root: Path) -> list[str]:
+    """
+    Step 0 spec-drift check: compare BUILD spec deliverables against codebase.
+
+    Returns a list of advisory note strings (empty if skipped or clean).
+    Never raises — all errors are captured as a note.
+
+    Project-scoping guard: silently returns [] when no BUILD_*.md exists.
+    Rollback: BR3_SPEC_DRIFT=off → returns [] immediately.
+    """
+    try:
+        from core.cluster.below.spec_drift import detect_spec_drift, format_drift_report
+        report = detect_spec_drift(project_root)
+        if report.skipped:
+            return []
+        summary = format_drift_report(report)
+        if report.has_drift or report.error:
+            return [f"[spec-drift advisory] {summary}"]
+        return []
+    except Exception as exc:  # noqa: BLE001
+        return [f"[spec-drift] check failed silently: {exc}"]
+
+
 async def run_begin_workflow(
     request: BeginWorkflowRequest,
     *,
@@ -131,6 +154,9 @@ async def run_begin_workflow(
     """Execute bounded, sequential Codex `/begin` phases under BR3 lock/approval control."""
     project_root = Path(request.project_root)
     build_path = Path(request.build_path) if request.build_path else _default_build_path(project_root)
+
+    # Step 0: Spec-drift detection (advisory, non-blocking, fail-open)
+    drift_notes = _run_spec_drift_check(project_root)
 
     bundle = compile_command_bundle(
         command_name="begin",
@@ -154,6 +180,7 @@ async def run_begin_workflow(
         build_path=str(build_path),
         fallback_runtime=bundle.fallback_runtime,
     )
+    result.notes.extend(drift_notes)
 
     if bundle.support_level != "codex_workflow_only":
         result.status = "fallback_required"
