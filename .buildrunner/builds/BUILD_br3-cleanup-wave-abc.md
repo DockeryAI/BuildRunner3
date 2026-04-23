@@ -16,7 +16,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-5 Complete — Phase 5 In Progress
+**Status:** Phases 1-6 Complete — Phase 7 In Progress
 **Deploy:** web — `npm run build` (ui/) + `pip install -e .` (core/)
 **Source Plan File:** .buildrunner/plans/plan-br3-cleanup-wave-abc.md
 **Source Plan SHA:** 9ed95239e047b6dda4aee8d5eefd41c1c873cfb60ee96f1d15e00c447b785665
@@ -155,7 +155,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 5: Dead Module & Import Removal
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Bucket/Node:** backend-build / muddy
 **Files:**
 
@@ -170,14 +170,14 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 **Blocked by:** Phase 3
 **Deliverables:**
 
-- [ ] Pre-delete caller audit clears for each orphan module (resolves Codex/dead disagreement on `rls_aware.py`)
-- [ ] 8 orphan core Python modules deleted
-- [ ] Plugin decision executed (wire or delete)
-- [ ] 5+ orphan UI components deleted; BuildMonitor decision executed
-- [ ] ~40 F401 imports removed (`ruff check --select F401` clean on cli/, api/, core/)
-- [ ] Dead stubs removed or implemented
-- [ ] Phase 13→14 label fixed
-- [ ] `python -c "import core, cli, api"` succeeds; `npm run build` passes
+- [x] Pre-delete caller audit clears for each orphan module (resolves Codex/dead disagreement on `rls_aware.py`)
+- [x] 8 orphan core Python modules deleted
+- [x] Plugin decision executed (wire or delete)
+- [x] 5+ orphan UI components deleted; BuildMonitor decision executed
+- [x] ~40 F401 imports removed (`ruff check --select F401` clean on cli/, api/, core/)
+- [x] Dead stubs removed or implemented
+- [x] Phase 13→14 label fixed
+- [x] `python -c "import core, cli, api"` succeeds; `npm run build` passes
 
 ### Phase 6: Competing Implementations Merge
 

@@ -1462,11 +1462,11 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T21:00:52Z] [DECISION] deleted build/ directory (untracked; already in .gitignore from P4; Python bdist artifacts not part of project source) (P6)
 [2026-04-23T21:00:52Z] [DECISION] archived scripts/post_cutover_smoke.py → scripts/archive/post_cutover_smoke.py; stale smoke test for a cutover that is now complete (P6)
 [2026-04-23T21:00:52Z] [DECISION] updated ~/.buildrunner/config/rollout-state.yaml: mode watch-only→enforced, flipped_at null→2026-04-21T00:00:00Z; reflects actual post-cutover state (P6)
-<<<<<<< Updated upstream
 [2026-04-23T20:58:38Z] P3_TEST verify flock write works phase=3
 [2026-04-23T20:58:56Z] P3_COMPLETE constants-consolidation JIMMY_URL=4sites BELOW_HOST=8sites qwen3:8b=7sites decisions.log=4sites double-nested-get=eliminated
 [2026-04-23T21:01:49.743474Z] THREE_WAY_REVIEW review_start plan_hash=d64aeef62d6089bf artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
 [2026-04-23T21:02:42.595931Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=805ef89f2ccfd444 reviewers=2
+<<<<<<< Updated upstream
 [2026-04-23T21:30:00Z] [P5-AUDIT] core/feature_discovery.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 production callers found → SAFE TO DELETE
 [2026-04-23T21:30:00Z] [P5-AUDIT] core/migration_mapper.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 callers found → SAFE TO DELETE
 [2026-04-23T21:30:00Z] [P5-AUDIT] core/rls_aware.py — grep for rls_aware, inject_rls_awareness, RLSDocumentationGuide, get_rls_context: 0 callers in cli/ api/ core/ plugins/ hooks/ tests/ → Codex/dead disagreement resolved: no live callers → SAFE TO DELETE
@@ -1512,3 +1512,58 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T21:34:00Z] [DELETE] average_resolution_time=None field in api/main.py:ErrorMetrics constructor — TODO stub with no implementation (P5)
 [2026-04-23T21:34:00Z] [FIX] .buildrunner/scripts/activate-all-systems.sh L705 — Phase 13 label changed to Phase 14 to match section header (P5)
 [2026-04-23T21:36:00Z] [P5-NOTE] npm run build in ui/ fails with pre-existing TS errors (Routes/Route JSX type, missing reactflow, unused vars in Analytics) — none caused by P5 deletions. App.tsx has zero imports of deleted components. python3 -c "import core; import cli; import api" passes clean. Build errors are Phase 7 (dep hygiene) scope.
+[2026-04-23T21:05:07.233848Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=03ff860b65cf56ee reviewers=2
+[2026-04-23T21:05:15.739025Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=db979527efa73656 reviewers=2
+
+[2026-04-23T20:55:00Z] [DECISION] Close Wave A4 (cluster.json honesty) as already complete — no edit required
+  WHY: /root verified current ~/.buildrunner/cluster.json has zero 70B strings (grep exit 1 across 166 lines), vram_required_gib populated for all 4 Below models (nomic-embed, qwen3:8b, qwen2.5:14b, qwen2.5-coder:7b), ollama_port:11434 present. A4 targets from the plan do not exist in the current file — a prior cleanup pass stripped them.
+  CONTEXT: ~/.buildrunner/cluster.json Below entry; plan-br3-cleanup-wave-abc.md Phase 1 task 2
+
+[2026-04-23T20:55:01Z] [REJECTED] Rejected premise "Below can't run 70B" — falsified by documented contract and benchmark targets
+  WHY: Below is dual RTX 3090 NVLink 48GB VRAM + 64GB DDR5. scripts/test_residency.py:4 documents llama3.3:70b Q4_K_M weights consume ~42GB (fits in 48GB). core/cluster/AGENTS.md:28 documents working config (num_ctx=2048, num_gpu=99). below-benchmark.sh:4 has active target dual_gpu_70b_toks≥18. 42 code references route 70B to Below (node_inference.py:29 OLLAMA_MODEL_LARGE default llama3.3:70b-instruct-q4_K_M, ollama_runtime.py:24, _dispatch-core.sh:519). Claim "can't run" contradicts measured benchmarks.
+  CONTEXT: core/cluster/node_inference.py:29,285; core/runtime/ollama_runtime.py:24; core/cluster/AGENTS.md:27-28,86-88; scripts/test_residency.py:4,13; ~/.buildrunner/scripts/below-benchmark.sh:4,31,56-57; ~/.buildrunner/scripts/_dispatch-core.sh:519
+
+[2026-04-23T20:55:02Z] [CONSTRAINT] Below 70B operating contract: num_ctx=2048, num_gpu=99, OLLAMA_KEEP_ALIVE=24h
+  WHY: Default num_ctx=4096 OOMs KV cache across 48GB total VRAM; 2048 fits cleanly per below-benchmark.sh:31. All layers must offload (num_gpu=99). Keep-alive 24h required because co-residency with 8B not feasible on 2×24GB — qwen3:8b is fast-cold-load (~8s) by design.
+  CONTEXT: core/cluster/AGENTS.md:27-28; below-benchmark.sh:31
+
+[2026-04-23T20:55:03Z] [GOAL] Follow-up flagged: Below Ollama daemon on port 11434 not responding
+  WHY: During A4 verification, curl http://10.0.1.105:11434/api/tags returned http=000 size=0 while Below BR3 service on port 8100 returned {"error":"Ollama error: All connection attempts failed"}. Operational issue separate from A4 — Ollama Windows service needs restart/investigation. Not capability regression.
+  CONTEXT: Below node; 10.0.1.105:11434 Ollama daemon; 10.0.1.105:8100 BR3 service up
+
+[2026-04-23T20:55:04Z] [PATTERN] Verify plan premises against current state before executing cleanup
+  WHY: A4 plan text asserted "70B declarations in cluster.json should be stripped." Current file has zero 70B declarations — a prior pass completed the strip. Executing A4 as written would be no-op or worse (could remove legitimate small-model entries). Always grep the target file before editing; plan text can drift from reality.
+  CONTEXT: ~/.buildrunner/cluster.json; plan-br3-cleanup-wave-abc.md; applies to all Wave A/B/C execution
+[2026-04-23T21:05:58.986488Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=d64aeef62d6089bf reviewers=2
+
+[2026-04-23T21:07:12Z] [DECISION] Synced Walter's ~/.buildrunner/config/default-test-config.yaml to match Muddy's
+  WHY: Walter was running vitest shards locally for every Synapse session-save, contradicting the "Walter = watcher" design. Walter's local config still listed nodes: [walter, lockwood] (legacy 2-shard era) while Muddy's authoritative config lists [lockwood, otis, lomax]. dispatch-test.sh executes on Walter (invoked by Walter's FastAPI POST /api/run handler) so it reads Walter's local config, not Muddy's — config drift silently re-introduced Walter as a shard worker.
+  CONTEXT: byronhudson@10.0.1.102:~/.buildrunner/config/default-test-config.yaml; scp from Muddy on 2026-04-23
+
+[2026-04-23T21:07:12Z] [ARCHITECTURE] Confirmed canonical sharded-testing flow (push-triggered, Walter-coordinated)
+  WHY: Documenting the actual end-to-end path because the docs and code comments disagreed with the configs. Flow: auto-save-session.sh on Muddy → git push walter HEAD:refs/heads/current → POST http://walter:8100/api/run?project=X → core/cluster/node_tests.py builds build_id "walter-<proj>-<hash>" → spawns dispatch-test.sh which reads default-test-config.yaml on Walter → SSH to each worker for vitest --shard=N/M in parallel → SCP results back → collect-test-shards.sh merges → results pushed to Lockwood for storage. Walter is the coordinator, never a shard worker (Jenkins controller-isolation pattern).
+  CONTEXT: ~/.buildrunner/scripts/auto-save-session.sh:217-263, core/cluster/node_tests.py:540-623, ~/.buildrunner/scripts/dispatch-test.sh, ~/.buildrunner/config/default-test-config.yaml
+
+[2026-04-23T21:07:12Z] [CONSTRAINT] dispatch-test.sh reads the LOCAL config of whichever node it runs on
+  WHY: There is no central config service. Each node has its own ~/.buildrunner/config/default-test-config.yaml. Whoever invokes dispatch-test.sh determines which config wins. Updating Muddy's config does not propagate to other nodes — config sync is a manual step. This bit us today: Muddy was updated to exclude Walter, but Walter's copy was untouched, and since Walter invokes dispatch-test.sh, Walter's stale config kept routing shard 1/2 to itself.
+  CONTEXT: ~/.buildrunner/scripts/dispatch-test.sh:113-129 (config resolution order: --config flag > project YAML > global default)
+
+[2026-04-23T21:07:12Z] [REJECTED] Considered keeping Walter as a shard worker (matching Walter's local config + the node_tests.py:544 code comment)
+  WHY: The user's design intent is "Walter = sentinel/coordinator", which matches Muddy's authoritative config and the BR3 project config. Reverting Muddy/BR3 configs to match Walter's stale view would have re-introduced controller-isolation violations and pinned Walter under load.
+  CONTEXT: docs/sharded-testing.md (stale), node_tests.py:544 comment (stale)
+
+[2026-04-23T21:07:12Z] [WHY] Otis and Lomax were idle for Synapse runs despite being workers
+  WHY: They were not in Walter's local config (which listed only [walter, lockwood]). Synapse has no project-level cluster-test-config.yaml override, so the Walter-local default won. Synapse shards never reached Otis/Lomax until the config sync.
+  CONTEXT: ~/repos/Synapse/.buildrunner/ on Walter (no project config); Walter's previous default-test-config.yaml
+
+[2026-04-23T21:07:12Z] [PATTERN] Push-triggered test pipeline — Muddy push + POST /api/run = test dispatch
+  WHY: Documenting the auto-trigger so future sessions know that ANY session save (which runs auto-save-session.sh) triggers a test dispatch on Walter. This explains the high-frequency entries in ~/.buildrunner/logs/walter-dispatch.log (multiple per minute during active work). Dedupe lives at node_tests.py:_inflight_projects but the build_id is generated server-side per request, so concurrent client triggers can stack up.
+  CONTEXT: ~/.buildrunner/scripts/auto-save-session.sh:222-258, core/cluster/node_tests.py:53,1325-1393
+
+[2026-04-23T21:07:12Z] [CONSTRAINT] BR3 git push to Walter chronically fails with lease_conflict
+  WHY: Surfaced while investigating the dispatch loop. Muddy's auto-save-session.sh does `git push walter HEAD:refs/heads/current --force-with-lease`. Walter's ~/repos/BuildRunner3 has a 'current' branch that is ahead of (or diverged from) what Muddy is pushing, so force-with-lease rejects. Every session save adds another lease_conflict line. Test dispatch for BR3 is currently broken end-to-end as a result. Not fixed in this session — flagged for follow-up.
+  CONTEXT: ~/.buildrunner/logs/walter-dispatch.log (recurring "project=buildrunner3 ... reason=lease_conflict"), Walter ~/repos/BuildRunner3 branch state
+
+[2026-04-23T21:07:12Z] [GOAL] Follow-up cleanup needed: stale docs and stale code comments still describe Walter as a shard worker
+  WHY: Even with configs synced, the next person to read the docs will be misled. Files to update: ~/.buildrunner/docs/sharded-testing.md (lines 84, 167, 227 describe Walter as "fast unit tests" worker), core/cluster/node_tests.py:544 docstring ("walter+lockwood"). Defer to dedicated cleanup session — out of scope today.
+  CONTEXT: ~/.buildrunner/docs/sharded-testing.md, core/cluster/node_tests.py:544
