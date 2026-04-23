@@ -1623,3 +1623,26 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T16:55:01.488040Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=cb9e6c51f9f9d842 reviewers=2
 [2026-04-23T16:56:24.325616Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ced9cada651089ec reviewers=2
 [2026-04-23T16:56:48.686862Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=35f7367c73114e94 reviewers=2
+[2026-04-23T16:58:16.627250Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=2e05f75c7ed5dce9 reviewers=2
+[2026-04-23T16:59:06.182372Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=74a845e394b10a91 reviewers=2
+[2026-04-23T17:00:22.741113Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=9055aeb1c3887d45 reviewers=2
+[2026-04-23T17:00:40.155854Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=83f682c3403ea250 reviewers=2
+[2026-04-23T17:07:20.229258Z] THREE_WAY_REVIEW review_start plan_hash=dfa3eb1409e72163 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+2026-04-23T16:55:00Z [autopilot] BUILD_below-offload cluster wiring audit:
+  - 6 models declared on Below; 4 runnable (nomic-embed-text, qwen3:8b, qwen2.5:14b, +qwen2.5-coder:7b pulling), 3 blocked (70Bs need 159GiB sysmem, Below has ~110GiB)
+  - cluster.json updated: added models_runnable, models_blocked, model_notes, model_routing, endpoints sections under below.inference
+  - dashboard/integrations/below.mjs: added pollModels() + startModelsPolling() + 'models' CLI subcommand; emits node.models event hourly
+  - BR3_LOCAL_ROUTING=on default-on via feature-flags.yaml (with BR3_RUNTIME_OLLAMA legacy alias)
+  - GUIDANCE FOR PHASE 2 chained agent: qwen3:8b has thinking mode ON by default. schema_classifier.py MUST EITHER (a) set num_predict>=512 in options OR (b) prepend `/no_think ` to user content OR (c) pass `think:false` in chat call. Without this the classifier returns empty content and falls back 100%.
+  - GUIDANCE FOR PHASES 5, 14, 15: target model qwen2.5-coder:7b (now in cluster.json model_routing). Pull in progress on Below at audit time.
+[2026-04-23T17:08:08.937299Z] THREE_WAY_REVIEW review_start plan_hash=9f9a83ce638fcc36 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T17:08:15.007536Z] THREE_WAY_REVIEW review_start plan_hash=f487194f8a98f7f2 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=05fd124d
+[2026-04-23T17:08:38.117886Z] THREE_WAY_REVIEW review_start plan_hash=c255c9777903f455 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=f8c021d1
+[2026-04-23T17:13:20.261002Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=dfa3eb1409e72163 reviewers=2
+[2026-04-23T17:13:35.830441Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=9f9a83ce638fcc36 reviewers=2
+[2026-04-23T17:13:46.754901Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f487194f8a98f7f2 reviewers=2
+[2026-04-23T17:14:39.473447Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c255c9777903f455 reviewers=2
+[2026-04-23T17:34:59.937430Z] THREE_WAY_REVIEW review_start plan_hash=4fe63b0154bfdc4e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=f8c021d1
+[2026-04-23T17:40:31.367006Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4fe63b0154bfdc4e reviewers=2
+[2026-04-23T17:41:03.153814Z] THREE_WAY_REVIEW review_start plan_hash=4fe63b0154bfdc4e artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=f8c021d1
+[2026-04-23T17:47:04.683791Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4fe63b0154bfdc4e reviewers=2

@@ -18,6 +18,35 @@
       "status": "running",
       "worktreePath": null
     },
+    "a394e71293d67d37a": {
+      "build": "BUILD_below-offload",
+      "chained_phases": [
+        0,
+        1,
+        5,
+        15,
+        2,
+        3,
+        4,
+        16,
+        6,
+        7,
+        9,
+        10,
+        11,
+        8,
+        12,
+        13,
+        14
+      ],
+      "name": "Below-Offload \u2014 all 17 phases chained",
+      "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/81f861d7-a577-4c79-992b-447579316b28/tasks/a394e71293d67d37a.output",
+      "phase": 0,
+      "sessionId": "81f861d7-a577-4c79-992b-447579316b28",
+      "startedAt": "2026-04-23T16:44:30Z",
+      "status": "running",
+      "worktreePath": null
+    },
     "a45c0809bea599983": {
       "name": "Routing Flag Durability + Haiku Swaps",
       "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/0799f71c-2c7c-4434-8376-d85a15e7ab81/tasks/a45c0809bea599983.output",
@@ -56,66 +85,28 @@
   },
   "routing": {
     "phases": {
-      "phase_1": {
+      "phase_0": {
         "assigned_node": "muddy",
         "bucket": "backend-build",
+        "overrides_applied": [],
+        "phase": 0,
+        "reason": "spec-preference",
+        "sync_paths": []
+      },
+      "phase_1": {
+        "assigned_node": "muddy",
+        "bucket": "terminal-build",
         "overrides_applied": [],
         "phase": 1,
         "reason": "spec-preference",
         "sync_paths": []
       },
       "phase_2": {
-        "assigned_node": "muddy",
-        "bucket": "ui-build",
-        "overrides_applied": [
-          "path-locality"
-        ],
+        "assigned_node": "below",
+        "bucket": "backend-build",
+        "overrides_applied": [],
         "phase": 2,
-        "reason": "path-locality",
-        "sync_paths": [
-          "~/.buildrunner/dashboard/"
-        ]
-      },
-      "phase_3": {
-        "assigned_node": "muddy",
-        "bucket": "backend-build",
-        "overrides_applied": [
-          "path-locality"
-        ],
-        "phase": 3,
-        "reason": "path-locality",
-        "sync_paths": []
-      },
-      "phase_4": {
-        "assigned_node": "muddy",
-        "bucket": "terminal-build",
-        "overrides_applied": [
-          "path-locality"
-        ],
-        "phase": 4,
-        "reason": "path-locality",
-        "sync_paths": [
-          "~/.buildrunner/dashboard/"
-        ]
-      },
-      "phase_5": {
-        "assigned_node": "muddy",
-        "bucket": "terminal-build",
-        "overrides_applied": [
-          "path-locality"
-        ],
-        "phase": 5,
-        "reason": "path-locality",
-        "sync_paths": []
-      },
-      "phase_6": {
-        "assigned_node": "muddy",
-        "bucket": "backend-build",
-        "overrides_applied": [
-          "path-locality"
-        ],
-        "phase": 6,
-        "reason": "path-locality",
+        "reason": "spec-preference",
         "sync_paths": []
       }
     }
