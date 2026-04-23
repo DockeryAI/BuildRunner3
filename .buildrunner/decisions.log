@@ -1447,3 +1447,4 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:56:38.886383Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a90fddefdda0289b reviewers=2
 [2026-04-23T20:56:40.058779Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=502862d23f11d6f6 reviewers=2
 [2026-04-23T20:56:49Z] [DECISION] deleted scripts/load-role-matrix.sh (project version); no callers found; global ~/.buildrunner/scripts/load-role-matrix.sh is canonical (P6)
+[2026-04-23T20:57:12Z] [DECISION] deleted ~/.buildrunner/scripts/dispatch-to-otis.sh; kept dispatch-phase-to-otis.sh which has correct arg order matching dispatch-to-node.sh (<project_path> <prompt> [branch]); dispatch-to-otis.sh had args swapped (=prompt, =path) (P6)
