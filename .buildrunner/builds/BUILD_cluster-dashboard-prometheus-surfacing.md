@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
+**Status:** BUILD COMPLETE — All 6 Phases Done
 **Deploy:** web — dashboard auto-reloads on file change; Node server auto-restarts via launchd
 **Source Plan File:** .buildrunner/plans/plan-cluster-dashboard-prometheus-surfacing.md
 **Source Plan SHA:** 52ecdd4f675a339f3ce968cdea8a960532439739638a73503b7bc76852bf051a
@@ -155,7 +155,7 @@ Schema bumps to v3 (additive only — all v2 fields preserved). New `/api/promet
 
 ### Phase 6: Verification — smoke + Playwright E2E + regression scan
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/dashboard/tests/dashboard-prometheus-panels.spec.mjs` (NEW — flat tree alongside existing `tests/e2e-prometheus-panels.spec.mjs`, runs under `~/.buildrunner/dashboard/playwright.config.mjs`)
