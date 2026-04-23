@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Phases 1-4 Complete — Phase 2 In Progress
+**Status:** Phases 1-5 Complete — Phase 3 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -119,7 +119,7 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 2: Schema-constrained classifier library on Below
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - core/cluster/below/schema_classifier.py (NEW)
@@ -128,11 +128,11 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 **Blocked by:** Phase 0
 **Deliverables:**
 
-- [ ] Ollama `/api/chat` wrapper with `format: <json_schema>`
-- [ ] Pydantic schema validation on output
-- [ ] Fallback-to-Claude harness (caller injects Claude fn)
-- [ ] Configurable retry budget (default 2) before fallback
-- [ ] Success metrics measured separately at qwen2.5:14b AND qwen3:8b
+- [x] Ollama `/api/chat` wrapper with `format: <json_schema>`
+- [x] Pydantic schema validation on output
+- [x] Fallback-to-Claude harness (caller injects Claude fn)
+- [x] Configurable retry budget (default 2) before fallback
+- [x] Success metrics measured separately at qwen2.5:14b AND qwen3:8b
 
 **Success Criteria:** `<2%` fallback rate at qwen2.5:14b; `<5%` at qwen3:8b on synthetic load.
 
