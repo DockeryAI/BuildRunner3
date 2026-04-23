@@ -11,7 +11,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-22
-**Status:** pending
+**Status:** Phases 1-2 Complete — Phase 3 In Progress
 **Deploy:** web — `npm run build && netlify deploy --prod`
 **Source Plan File:** .buildrunner/plans/spec-draft-plan.md
 **Source Plan SHA:** ab42cfd26b6e84d08ac522e0ab85bb1a2ae7d4810a7109e436ff183f6fcb344a
@@ -38,7 +38,7 @@ Recommended execution: Phase 1 ∥ Phase 2, then Phase 3.
 
 ### Phase 1: Routing Flag Durability + Haiku Swaps
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/runtime-env.sh` (NEW)
@@ -46,19 +46,20 @@ Recommended execution: Phase 1 ∥ Phase 2, then Phase 3.
 - `~/.buildrunner/scripts/below-route.sh` (MODIFY)
 - `~/.buildrunner/scripts/lib/classifier-haiku.py` (MODIFY)
 - `~/.buildrunner/scripts/stop-when.sh` (MODIFY)
+- `~/.bash_profile` (NEW — scope expansion to satisfy DELIV 6 bash-lc durability)
 
 **Blocked by:** None
 **Goal:** `BR3_LOCAL_ROUTING=on` durable across interactive AND noninteractive shells. classifier-haiku.py and stop-when.sh both call qwen3:8b on Below via `/api/chat` instead of Anthropic Haiku. Bounded timeouts on every Below call.
 
 **Deliverables:**
 
-- [ ] `~/.buildrunner/runtime-env.sh` exists. Exports `BR3_LOCAL_ROUTING=on`, `BELOW_OLLAMA_URL=http://10.0.1.105:11434`, `BELOW_MODEL_FAST=qwen3:8b`, `BELOW_MODEL_HEAVY=llama3.3:70b`. Sets `BR3_RUNTIME_ENV_LOADED=1` sentinel.
-- [ ] `~/.zshrc` sources runtime-env.sh idempotently (sentinel-guarded).
-- [ ] `~/.buildrunner/scripts/below-route.sh` sources runtime-env.sh at top, BEFORE the existing flag check at line 41.
-- [ ] `classifier-haiku.py` no longer references `anthropic.com`, `claude-haiku`, or `ANTHROPIC_API_KEY`. Calls `${BELOW_OLLAMA_URL}/api/chat` with `qwen3:8b`, `format=json`, `options={num_predict:50, temperature:0}`. Reuses existing `BR3_CLASSIFIER_HAIKU_TIMEOUT_MS` (default 3000ms). safe_default behavior unchanged.
-- [ ] `stop-when.sh` no longer references `claude-haiku` or invokes `claude` CLI for Haiku call. Calls Below via curl with `BR3_STOPWHEN_BELOW_TIMEOUT_S` (default 30s) + connect timeout `BR3_STOPWHEN_BELOW_CONNECT_TIMEOUT_S` (default 5s). INCONCLUSIVE fallback path intact.
-- [ ] `bash -lc 'env | grep BR3_LOCAL_ROUTING'` shows `=on`.
-- [ ] `env -i HOME=$HOME PATH=/usr/bin:/bin ~/.buildrunner/scripts/below-route.sh --help` exits 0 (proves below-route.sh self-sources runtime-env even with stripped env).
+- [x] `~/.buildrunner/runtime-env.sh` exists. Exports `BR3_LOCAL_ROUTING=on`, `BELOW_OLLAMA_URL=http://10.0.1.105:11434`, `BELOW_MODEL_FAST=qwen3:8b`, `BELOW_MODEL_HEAVY=llama3.3:70b`. Sets `BR3_RUNTIME_ENV_LOADED=1` sentinel.
+- [x] `~/.zshrc` sources runtime-env.sh idempotently (sentinel-guarded).
+- [x] `~/.buildrunner/scripts/below-route.sh` sources runtime-env.sh at top, BEFORE the existing flag check at line 41.
+- [x] `classifier-haiku.py` no longer references `anthropic.com`, `claude-haiku`, or `ANTHROPIC_API_KEY`. Calls `${BELOW_OLLAMA_URL}/api/chat` with `qwen3:8b`, `format=json`, `options={num_predict:50, temperature:0}`. Reuses existing `BR3_CLASSIFIER_HAIKU_TIMEOUT_MS` (default 3000ms). safe_default behavior unchanged.
+- [x] `stop-when.sh` no longer references `claude-haiku` or invokes `claude` CLI for Haiku call. Calls Below via curl with `BR3_STOPWHEN_BELOW_TIMEOUT_S` (default 30s) + connect timeout `BR3_STOPWHEN_BELOW_CONNECT_TIMEOUT_S` (default 5s). INCONCLUSIVE fallback path intact.
+- [x] `bash -lc 'env | grep BR3_LOCAL_ROUTING'` shows `=on`.
+- [x] `env -i HOME=$HOME PATH=/usr/bin:/bin ~/.buildrunner/scripts/below-route.sh --help` exits 0 (proves below-route.sh self-sources runtime-env even with stripped env).
 
 **Success Criteria:**
 
@@ -69,7 +70,7 @@ Recommended execution: Phase 1 ∥ Phase 2, then Phase 3.
 
 ### Phase 2: Intel Cron OFF + Ad-Hoc Trigger
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/backups/crontab-<timestamp>.txt` (NEW — pre-edit backup)
@@ -84,14 +85,14 @@ Recommended execution: Phase 1 ∥ Phase 2, then Phase 3.
 
 **Deliverables:**
 
-- [ ] Pre-edit backup at `~/.buildrunner/backups/crontab-<timestamp>.txt` (non-empty).
-- [ ] `crontab -l 2>/dev/null | grep -c collect-intel` returns 0.
-- [ ] All other pre-existing crontab entries preserved (verify via diff against backup).
-- [ ] `~/.buildrunner/scripts/intel-run.sh` exists, executable. Sources runtime-env.sh. Supports `--dry-run`, `--smoke`, `--phase=N` flags.
-- [ ] Script preamble prints concrete estimate: "Intel run starting (phases: 1-4). Estimated duration: 8–15 minutes. Estimated Claude API cost: ~120 turns across 4 agentic sessions."
-- [ ] `intel-run.sh --smoke` pings `http://10.0.1.106:8101/api/intel/items` (Lockwood) and `http://10.0.1.105:11434/api/tags` (Below). Prints PASS/FAIL per check. Exits 0 only if both pass.
-- [ ] `~/.claude/commands/intel-run.md` exists. `/intel-run` invokes the script.
-- [ ] `.buildrunner/decisions.log` contains entry: `[2026-04-22] Intel collection moved from nightly cron (3 4 * * *) to ad-hoc /intel-run per user request — scope/cost control. Backup: <path>.`
+- [x] Pre-edit backup at `~/.buildrunner/backups/crontab-<timestamp>.txt` (non-empty).
+- [x] `crontab -l 2>/dev/null | grep -c collect-intel` returns 0.
+- [x] All other pre-existing crontab entries preserved (verify via diff against backup).
+- [x] `~/.buildrunner/scripts/intel-run.sh` exists, executable. Sources runtime-env.sh. Supports `--dry-run`, `--smoke`, `--phase=N` flags.
+- [x] Script preamble prints concrete estimate: "Intel run starting (phases: 1-4). Estimated duration: 8–15 minutes. Estimated Claude API cost: ~120 turns across 4 agentic sessions."
+- [x] `intel-run.sh --smoke` pings `http://10.0.1.106:8101/api/intel/items` (Lockwood) and `http://10.0.1.105:11434/api/tags` (Below). Prints PASS/FAIL per check. Exits 0 only if both pass.
+- [x] `~/.claude/commands/intel-run.md` exists. `/intel-run` invokes the script.
+- [x] `.buildrunner/decisions.log` contains entry: `[2026-04-22] Intel collection moved from nightly cron (3 4 * * *) to ad-hoc /intel-run per user request — scope/cost control. Backup: <path>.`
 
 **Success Criteria:**
 

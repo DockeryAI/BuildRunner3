@@ -6,7 +6,7 @@
       "phase": 1,
       "sessionId": "0799f71c-2c7c-4434-8376-d85a15e7ab81",
       "startedAt": "2026-04-23T00:49:09Z",
-      "status": "running",
+      "status": "complete",
       "worktreePath": null
     },
     "ad869b66d45465777": {
@@ -15,8 +15,25 @@
       "phase": 2,
       "sessionId": "0799f71c-2c7c-4434-8376-d85a15e7ab81",
       "startedAt": "2026-04-23T00:49:09Z",
-      "status": "running",
+      "status": "complete",
       "worktreePath": null
+    },
+    "a767a979d99ed7d32": {
+      "name": "Prometheus Surfacing \u2014 Phases 1-5 chained",
+      "outputFile": "/private/tmp/claude-501/-Users-byronhudson-Projects-BuildRunner3/9ffeb72a-2d24-411b-8692-66d9866b5178/tasks/a767a979d99ed7d32.output",
+      "phase": 1,
+      "sessionId": "9ffeb72a-2d24-411b-8692-66d9866b5178",
+      "startedAt": "2026-04-23T00:55:00Z",
+      "status": "complete",
+      "worktreePath": null,
+      "build": "BUILD_cluster-dashboard-prometheus-surfacing",
+      "chained_phases": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
     }
   },
   "routing": {
