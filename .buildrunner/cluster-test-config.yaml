@@ -4,10 +4,14 @@
 # See ~/.buildrunner/docs/sharded-testing.md for full documentation.
 # Template: ~/.buildrunner/templates/cluster-test-config.yaml.template
 
-# Nodes to dispatch shards to (one shard per node)
+# Nodes to dispatch shards to (one shard per node).
+# Walter is excluded — it's the sentinel/coordinator and must not host shards
+# (classic Jenkins controller-isolation pattern; same rule in k8s, Nomad,
+# LUCI Swarming). Walter dispatches; workers run.
 nodes:
-  - walter
   - lockwood
+  - otis
+  - lomax
 
 # vitest command (dispatch-test.sh appends --shard=N/M and reporters)
 test_command: 'npx vitest run'
