@@ -186,7 +186,10 @@ def _load_frontmatter_from_markdown(markdown: str) -> dict[str, Any]:
     if end_index == -1:
         raise OllamaError("Ollama output missing closing frontmatter fence")
 
-    frontmatter = yaml.safe_load(markdown[4:end_index]) or {}
+    try:
+        frontmatter = yaml.safe_load(markdown[4:end_index]) or {}
+    except yaml.YAMLError as exc:
+        raise OllamaError(f"Ollama output YAML parse failed: {exc}") from exc
     if not isinstance(frontmatter, dict):
         raise OllamaError("Ollama output frontmatter is not a mapping")
     return frontmatter
@@ -264,6 +267,9 @@ def _ollama_generate(
         payload["options"]["num_ctx"] = int(os.environ.get("BR3_BELOW_LLAMA_NUM_CTX", "4096"))
         payload["options"]["num_gpu"] = 99
         payload["options"]["temperature"] = 0.0
+    elif model.startswith("qwen2.5"):
+        payload["options"]["num_ctx"] = int(os.environ.get("BR3_BELOW_QWEN25_NUM_CTX", "16384"))
+        payload["options"]["temperature"] = 0.0
     elif model.startswith("qwen3"):
         payload["options"]["num_ctx"] = int(os.environ.get("BR3_BELOW_QWEN_NUM_CTX", "4096"))
         payload["options"]["temperature"] = 0.2
@@ -280,9 +286,16 @@ def _ollama_generate(
 
 
 def generate_reformatted_markdown(record: PendingRecord) -> str:
-    """Call Below-local Ollama to generate a schema-conformant document."""
+    """Call Below-local Ollama to generate a schema-conformant document.
+
+    Uses qwen2.5:14b by default — llama3.3:70b consistently failed to emit
+    the required 9-key YAML frontmatter across 4 consecutive runs (2026-04-23).
+    qwen2.5:14b follows strict output contracts reliably. Override via
+    BR3_BELOW_REFORMAT_MODEL env var.
+    """
     prompt = _build_prompt(REFORMAT_PROMPT_PATH, record)
-    raw = _ollama_generate(model="llama3.3:70b", prompt=prompt, num_predict=8192)
+    model = os.environ.get("BR3_BELOW_REFORMAT_MODEL", "qwen2.5:14b")
+    raw = _ollama_generate(model=model, prompt=prompt, num_predict=8192)
     cleaned = _trim_preamble_to_frontmatter(_strip_wrapping_code_fence(raw))
     markdown = _normalize_frontmatter(cleaned)
     missing = _missing_frontmatter_keys(markdown)
@@ -326,10 +339,18 @@ def _synthesize_frontmatter_fallback(record: PendingRecord) -> str:
 
 
 def generate_metadata(record: PendingRecord) -> dict[str, Any]:
-    """Call Below-local Ollama to extract strict JSON metadata."""
+    """Call Below-local Ollama to extract strict JSON metadata.
+
+    Uses qwen2.5:14b by default — qwen3:8b intermittently emitted
+    non-parseable JSON under ``format=json`` on 2026-04-23, forcing the
+    empty-metadata fallback. qwen2.5:14b follows strict output contracts
+    reliably (same rationale as the reformat step). Override via
+    BR3_BELOW_METADATA_MODEL env var.
+    """
     prompt = _build_prompt(METADATA_PROMPT_PATH, record)
+    model = os.environ.get("BR3_BELOW_METADATA_MODEL", "qwen2.5:14b")
     metadata_text = _ollama_generate(
-        model="qwen3:8b",
+        model=model,
         prompt=prompt,
         format_json=True,
         num_predict=512,
