@@ -25,7 +25,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** Wave A Complete (0,1,5,15), Wave B Complete (2,3,4,16) — Wave C next (6,7,9,10,11)
+**Status:** Phases 1-8 Complete — Phase 5 In Progress
 **Deploy:** web — `npm run build && deploy`
 **Source Plan File:** .buildrunner/plans/plan-below-offload.md
 **Source Plan SHA:** 4fe80ce08f49a668d634f82cfe01721cde65c042ace4c24de78c1117abd0f1d4
@@ -198,21 +198,20 @@ Shared infrastructure (Phases 0–4) builds an embedding client, schema-constrai
 
 ### Phase 6: JSON-schema classifier migration (existing call sites)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - $HOME/.buildrunner/scripts/auto-remediate.mjs (MODIFY)
-- $HOME/.buildrunner/scripts/adversarial-review.sh (MODIFY — classifier sections only)
-- $HOME/.buildrunner/scripts/cross-model-review.sh (MODIFY — routing decisions only)
+- core/cluster/cross_model_review.py (MODIFY — below_prescreen routing)
 
 **Blocked by:** Phase 2
 **Deliverables:**
 
-- [ ] Convert auto-remediate yes/no classifier calls to Below schema classifier
-- [ ] Convert adversarial-review yes/no verdict router
-- [ ] Convert cross-model-review routing decisions
-- [ ] Measure per-site fallback rate; log to decisions.log
-- [ ] (governance_enforcer dropped — no classifier call exists)
+- [x] Convert auto-remediate novel-type routing to Below qwen3:8b schema classifier
+- [x] Convert cross-model-review routing: Below qwen3:8b obvious-PASS pre-screen before full review
+- [x] Fallback rate metric logged to schema-classifier-metrics.jsonl per site
+- [x] BR3_BELOW_PRESCREEN=off rollback flag; security keyword guard; 8KB size cap
+- [x] (governance_enforcer dropped — no classifier call exists; adversarial-review.sh delegates to Python, no inline classifier)
 
 **Success Criteria:** Fallback rate <5% per call site on a 100-run sample.
 

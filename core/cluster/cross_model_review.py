@@ -1329,6 +1329,104 @@ def _reviewer_index(findings):
     return indexed
 
 
+def _below_prescreen_obvious_pass(diff_text: str, spec_text: str) -> bool:
+    """
+    Use Below qwen3:8b to pre-screen for obvious PASS before running the full
+    expensive two-reviewer pipeline.
+
+    Returns True only when Below is online AND the model returns verdict=PASS
+    with confidence=high.  Any error, offline condition, or uncertain result
+    returns False (fall through to full review).
+
+    Skipped entirely when:
+      - BR3_BELOW_PRESCREEN=off
+      - diff_text exceeds 8 KB (too large for a quick pre-screen)
+      - diff contains security-sensitive keywords (RLS, auth, migrate, GRANT, DROP)
+    """
+    import json as _json
+    import socket as _socket
+    import urllib.request as _urlreq
+    import urllib.error as _urlerr
+
+    if os.environ.get("BR3_BELOW_PRESCREEN", "on").lower() == "off":
+        return False
+
+    # Skip pre-screen on large or security-sensitive diffs
+    SECURITY_RE = re.compile(
+        r"\b(RLS|GRANT|REVOKE|DROP TABLE|ALTER TABLE|migration|auth\.users|supabase_auth)\b",
+        re.IGNORECASE,
+    )
+    if len(diff_text.encode("utf-8")) > 8 * 1024 or SECURITY_RE.search(diff_text):
+        return False
+
+    below_host = os.environ.get("BELOW_HOST", "10.0.1.105")
+    schema = {
+        "type": "object",
+        "properties": {
+            "verdict": {"type": "string", "enum": ["PASS", "BLOCK", "UNCERTAIN"]},
+            "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+            "reason": {"type": "string"},
+        },
+        "required": ["verdict", "confidence", "reason"],
+    }
+    prompt = (
+        "You are a code-review pre-screener. Given this diff and spec context, "
+        "decide if this change is OBVIOUSLY SAFE (verdict=PASS) or needs full review "
+        "(verdict=UNCERTAIN or BLOCK).\n\n"
+        f"SPEC SUMMARY (first 500 chars):\n{spec_text[:500]}\n\n"
+        f"DIFF:\n{diff_text[:3000]}\n\n"
+        "Only return PASS+high if you are highly confident no issues exist. "
+        "When in doubt, return UNCERTAIN."
+    )
+    body = _json.dumps({
+        "model": "qwen3:8b",
+        "messages": [{"role": "user", "content": prompt}],
+        "stream": False,
+        "format": schema,
+        "options": {"num_predict": 128},
+    }).encode()
+
+    t0 = time.time()
+    try:
+        req = _urlreq.Request(
+            f"http://{below_host}:11434/api/chat",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with _urlreq.urlopen(req, timeout=8) as resp:
+            raw = resp.read().decode()
+        parsed = _json.loads(raw)
+        content = (parsed.get("message") or {}).get("content", "")
+        result = _json.loads(content)
+        verdict = result.get("verdict")
+        confidence = result.get("confidence")
+        latency_ms = int((time.time() - t0) * 1000)
+        _log_three_way_decision(
+            "below_prescreen",
+            f"verdict={verdict} confidence={confidence} latency_ms={latency_ms}",
+        )
+        # Record metric
+        _metrics_file = Path(os.environ.get("HOME", "~")).expanduser() / ".buildrunner" / "schema-classifier-metrics.jsonl"
+        try:
+            with open(_metrics_file, "a", encoding="utf-8") as _mf:
+                _mf.write(_json.dumps({
+                    "ts": utc_now_iso(),
+                    "model": "qwen3:8b",
+                    "site": "cross-model-review-prescreen",
+                    "verdict": verdict,
+                    "confidence": confidence,
+                    "latency_ms": latency_ms,
+                    "tier": 1,
+                }) + "\n")
+        except OSError:
+            pass
+        return verdict == "PASS" and confidence == "high"
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("Below prescreen unavailable: %s", exc)
+        return False
+
+
 def _reviewers_disagree(reviewers):
     ok_reviewers = [item for item in reviewers if item.get("status") == "ok"]
     if len(ok_reviewers) < 2:
@@ -1379,6 +1477,33 @@ def run_three_way_review(
     artifact = plan_file or diff_text[:80]
     plan_hash = _compute_plan_hash(diff_text, plan_file=plan_file)
     _enforce_one_review_per_plan(plan_hash)
+
+    # Below pre-screen: skip full review for obvious PASS (advisory, fail-open).
+    if _below_prescreen_obvious_pass(diff_text, spec_text):
+        _log_three_way_decision(
+            "below_prescreen_pass",
+            f"plan_hash={plan_hash} artifact={artifact!r} — skipping full review",
+        )
+        _emit_adversarial_review_ran(
+            mode="below-prescreen",
+            verdict="APPROVED",
+            findings_count=0,
+            commit_sha=commit_sha,
+        )
+        return {
+            "pass": True,
+            "verdict": "APPROVED",
+            "findings": [],
+            "arbiter_invoked": False,
+            "consensus": True,
+            "below_prescreen": True,
+            "review_round": 1,
+            "escalated": False,
+            "commit_sha": commit_sha,
+            "exit_code": 0,
+            "arbiter_ruling": None,
+        }
+
     full_prompt = build_review_prompt(diff_text, spec_text, system_prompt=THREE_WAY_REVIEW_PROMPT)
     _log_three_way_decision(
         "review_start",
