@@ -237,6 +237,9 @@ class SemanticCache:
         import sqlite3
         self._conn = sqlite3.connect(str(self.db_path))
         self._conn.row_factory = sqlite3.Row
+        # WAL + busy_timeout to handle concurrent cache writers without locking errors
+        self._conn.execute("PRAGMA journal_mode=WAL")
+        self._conn.execute("PRAGMA busy_timeout=5000")
         self._create_table()
         self._initialized = True
 

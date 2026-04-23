@@ -106,33 +106,20 @@ class MetricsDB:
         """
         Save aggregated metric to database.
 
+        Uses a single INSERT OR REPLACE to eliminate the SELECT-then-INSERT
+        race that previously allowed duplicate rows for the same (timestamp,
+        period_type) under concurrent writers.
+
         Args:
             metric: MetricEntry to save
         """
         try:
-            # Use INSERT OR REPLACE to handle duplicates
             data = metric.to_dict()
-
-            # Check if metric already exists
-            existing = self.db.query_one(
-                "SELECT * FROM metrics_hourly WHERE timestamp = ? AND period_type = ?",
-                (metric.timestamp, metric.period_type),
-            )
-
-            if existing:
-                # Update existing
-                self.db.update(
-                    "metrics_hourly",
-                    data,
-                    "timestamp = ? AND period_type = ?",
-                    (metric.timestamp, metric.period_type),
-                )
-                logger.debug(f"Updated metric for {metric.timestamp}")
-            else:
-                # Insert new
-                self.db.insert("metrics_hourly", data)
-                logger.debug(f"Inserted metric for {metric.timestamp}")
-
+            columns = ", ".join(data.keys())
+            placeholders = ", ".join("?" * len(data))
+            sql = f"INSERT OR REPLACE INTO metrics_hourly ({columns}) VALUES ({placeholders})"
+            self.db.execute(sql, tuple(data.values()))
+            logger.debug(f"Saved metric for {metric.timestamp} ({metric.period_type})")
         except Exception as e:
             logger.error(f"Failed to save metric: {e}")
             raise

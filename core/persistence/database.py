@@ -5,6 +5,7 @@ Provides simple interface for database operations.
 """
 
 import sqlite3
+import threading
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from contextlib import contextmanager
@@ -29,6 +30,9 @@ class Database:
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # Serialize all operations on the shared connection across threads
+        self._lock = threading.Lock()
+
         # Initialize connection
         self._init_connection()
         logger.info(f"Database initialized at {self.db_path}")
@@ -37,6 +41,10 @@ class Database:
         """Initialize database connection with proper settings"""
         self.conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row  # Return rows as dictionaries
+        # WAL mode: allow concurrent readers + one writer without "database is locked"
+        self.conn.execute("PRAGMA journal_mode=WAL")
+        # 5 s busy-timeout: retry on writer contention before raising OperationalError
+        self.conn.execute("PRAGMA busy_timeout=5000")
         self.cursor = self.conn.cursor()
 
     @contextmanager
@@ -62,9 +70,11 @@ class Database:
             Cursor with results
         """
         try:
-            cursor = self.conn.execute(sql, params)
-            self.conn.commit()
-            return cursor
+            with self._lock:
+                cursor = self.conn.execute(sql, params)
+                if self.conn.in_transaction:
+                    self.conn.commit()
+                return cursor
         except sqlite3.Error as e:
             logger.error(f"SQL error: {e}")
             logger.error(f"Query: {sql}")

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
 import os
@@ -52,8 +53,16 @@ def _load_circuit_state() -> dict[str, Any]:
     if not path.exists():
         return _default_circuit_state()
     try:
-        state = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "r", encoding="utf-8") as fh:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_SH)
+            try:
+                state = json.loads(fh.read())
+            except (OSError, json.JSONDecodeError):
+                return _default_circuit_state()
+            finally:
+                fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+    except OSError:
         return _default_circuit_state()
     merged = _default_circuit_state()
     merged.update(state)
@@ -63,7 +72,16 @@ def _load_circuit_state() -> dict[str, Any]:
 def _save_circuit_state(state: dict[str, Any]) -> None:
     path = _circuit_state_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
+    # Open in 'a' mode so the file descriptor exists without premature truncation,
+    # acquire LOCK_EX, then truncate + write atomically inside the lock.
+    with open(path, "a", encoding="utf-8") as fh:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        try:
+            fh.seek(0)
+            fh.truncate(0)
+            fh.write(json.dumps(state, indent=2) + "\n")
+        finally:
+            fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
 
 
 def _log_decision(event: str, details: str = "") -> None:

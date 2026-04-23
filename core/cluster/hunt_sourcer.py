@@ -493,11 +493,45 @@ async def _run_source(source_name: str, hunt: dict, source_config: dict) -> list
 
 # --- Main Loop ---
 
-# Track last check time per hunt
+# In-process cache of last-checked timestamps (fast path; backed by SQLite column)
 _last_checked: dict[int, float] = {}
 
 
 BELOW_NEEDS_LLM = {"newegg", "bhphoto"}
+
+
+def _get_hunt_last_checked_db(hunt_id: int) -> float:
+    """Read last_checked_at from the active_hunts SQLite column (multi-process safe)."""
+    try:
+        from core.cluster.intel_collector import _get_intel_db, INTEL_DB_PATH
+        conn = _get_intel_db()
+        row = conn.execute(
+            "SELECT last_checked_at FROM active_hunts WHERE id = ?", (hunt_id,)
+        ).fetchone()
+        conn.close()
+        if row and row[0]:
+            import datetime
+            dt = datetime.datetime.fromisoformat(row[0].replace("Z", "+00:00"))
+            return dt.timestamp()
+    except Exception as exc:
+        logger.debug("last_checked_at read failed for hunt %d: %s", hunt_id, exc)
+    return 0.0
+
+
+def _set_hunt_last_checked_db(hunt_id: int, ts: float) -> None:
+    """Write last_checked_at to the active_hunts SQLite column (multi-process safe)."""
+    try:
+        import datetime
+        from core.cluster.intel_collector import _get_intel_db
+        iso = datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%dT%H:%M:%SZ")
+        conn = _get_intel_db()
+        conn.execute(
+            "UPDATE active_hunts SET last_checked_at = ? WHERE id = ?", (iso, hunt_id)
+        )
+        conn.commit()
+        conn.close()
+    except Exception as exc:
+        logger.debug("last_checked_at write failed for hunt %d: %s", hunt_id, exc)
 
 
 async def _check_below_online() -> bool:
@@ -528,10 +562,16 @@ async def check_hunts_once():
         interval = hunt.get("check_interval_minutes", 60) * 60
 
         with last_checked_lock:
-            last = _last_checked.get(hunt_id, 0)
+            # Fast path: in-process cache.  Seed from DB on first encounter so
+            # a fresh process respects the persisted check time across restarts.
+            if hunt_id not in _last_checked:
+                _last_checked[hunt_id] = _get_hunt_last_checked_db(hunt_id)
+            last = _last_checked[hunt_id]
             if now - last < interval:
                 continue
             _last_checked[hunt_id] = now
+        # Persist to DB outside the in-process lock (non-blocking; best-effort)
+        _set_hunt_last_checked_db(hunt_id, now)
 
         logger.info(f"Checking hunt [{hunt_id}] '{hunt['name']}'")  # noqa: Q000
 

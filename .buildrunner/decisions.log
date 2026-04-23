@@ -13,7 +13,6 @@
 - **Mockup output moved to ~/Projects/Websites/Mockups/ for ALL modes:** Centralizes all design mockups in one browseable location, not buried in .buildrunner/.
 - **Logo on all mockups:** Extracted from crawl (external) or project files (local). Favicon as fallback. Makes mockups feel real and branded.
 - **Auto-open in browser:** Mockups auto-open after build so user can immediately browse and compare.
-<<<<<<< HEAD
   - Three-mode detection: redesign-external, redesign-local, first-design
   - Wizard bifurcated: redesign path (5 screens: audit + 3 pain + constraints/submit), first-design path (8 screens: 4 foundation + gut test + density + not-like/constraints + submit)
   - DiscoveryOutput union type unifies both paths for Steps 2+
@@ -1155,6 +1154,7 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 - **Phase 13 (LLMLingua-2 compression):** llmlingua_compress.py; autopilot-dispatch-prefix.sh --compress-phase flag; collect-intel.sh _compress_prompt_if_enabled(); 26 tests passing
 - **Phase 14 (Semgrep prefilter):** semgrep_triage.py; ai_code_review.py quick-pass integration; OWASP Top 10 coverage validated; 29 tests passing
 - **BUILD_below-offload:** All 17 phases complete (0-16). Total tests: 18+38+26+29=111 new tests this wave.
+<<<<<<< HEAD
 [2026-04-23T18:04:55.432220Z] THREE_WAY_REVIEW review_start plan_hash=750727fde6edd814 artifact='.buildrunner/plans/plan-synapse-bundle-disk-bridge.md' commit=plan-1776967495
 [2026-04-23T18:09:50.337793Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=750727fde6edd814 reviewers=2
 [2026-04-23T18:13:47.829092Z] THREE_WAY_REVIEW review_start plan_hash=ee05be4a3daf737d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=f8c021d1
@@ -1367,4 +1367,15 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:41:14.045038Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ed5c42b2212eca83 reviewers=2
 [2026-04-23T20:41:21.394604Z] THREE_WAY_REVIEW review_start plan_hash=3b5764f99100e6e4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
 [2026-04-23T20:41:24.231188Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f15e4ecc21868a0a reviewers=2
-[2026-04-23T20:41:50.886670Z] THREE_WAY_REVIEW review_start plan_hash=c73ab715c9c30f88 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=33cee9e
+[2026-04-23T20:41:50.886670Z] THREE_WAY_REVIEW review_start plan_hash=c73ab715c9c30f88 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=33cee9e[2026-04-23T20:45:28Z] Phase 2 decisions:
+[2026-04-23T20:45:28Z] [DECISION] database.py: added WAL+busy_timeout=5000 to _init_connection()
+[2026-04-23T20:45:28Z] [DECISION] semantic_cache.py: added WAL+busy_timeout=5000 to _ensure_init()
+[2026-04-23T20:45:28Z] [DECISION] cross_model_review.py: replaced exists()+write() with atomic open(x) to eliminate TOCTOU
+[2026-04-23T20:45:28Z] [DECISION] arbiter.py: fcntl.flock LOCK_EX around circuit-breaker load/save; truncate-after-lock pattern
+[2026-04-23T20:45:28Z] [DECISION] lockwood-sourcer.sh: added flock -n guard; _last_checked migrated to active_hunts.last_checked_at SQLite column
+[2026-04-23T20:45:28Z] [DECISION] research_worker.py: pending.jsonl replaced with per-file queue (pending/<uuid>.json); legacy drain on startup
+[2026-04-23T20:45:28Z] [DECISION] worker_coordinator.py: threading.Lock serializes all workers/task_queue/task_assignments mutations
+[2026-04-23T20:45:28Z] [DECISION] event_storage.py: threading.Lock wraps should_rotate+_rotate+write in save()
+[2026-04-23T20:45:28Z] [DECISION] metrics_db.py: single INSERT OR REPLACE replaces SELECT-then-INSERT race
+[2026-04-23T20:45:28Z] [DECISION] node_semantic.py: _indexing_lock + _research_indexing_lock (threading.Lock) guard run_index/run_research_index
+[2026-04-23T20:45:28Z] [DECISION] database.py: threading.Lock added to execute() to serialize shared connection across threads

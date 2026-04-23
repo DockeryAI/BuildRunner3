@@ -67,6 +67,7 @@ def _get_intel_db() -> sqlite3.Connection:
     conn = sqlite3.connect(INTEL_DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=5000")
     _ensure_intel_tables(conn)
     return conn
 
@@ -111,6 +112,8 @@ def _ensure_intel_tables(conn: sqlite3.Connection):
         ("deal_items", "delivery_updated_at", "TEXT"),
         ("active_hunts", "completed_at", "TEXT"),
         ("active_hunts", "completion_notes", "TEXT"),
+        # Phase 2: persistent last_checked_at for multi-process double-fire guard
+        ("active_hunts", "last_checked_at", "TEXT"),
     ]
     for table, col, col_def in _migrate_columns:
         try:
