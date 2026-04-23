@@ -102,15 +102,28 @@ class CodeReviewer:
                 "score": 100,
             }
 
-        # Build prompt for Claude
-        prompt = self._build_diff_review_prompt(diff, context)
+        # Phase 14: Semgrep prefilter — classify diff before Opus call.
+        # clean → downgrade to quick-pass prompt (still covers bugs, performance, coverage).
+        # minor | flagged | error → full Opus review unchanged.
+        # Fail-open: any triage error → full Opus review.
+        review_prompt_type = "full"
+        try:
+            from core.cluster.below.semgrep_triage import triage_diff
+            triage = triage_diff(diff)
+            if triage.is_clean:
+                review_prompt_type = "quick"
+        except Exception:
+            pass  # fail-open
+
+        # Build prompt for Claude (downgraded if prefilter says clean)
+        prompt = self._build_diff_review_prompt(diff, context, quick_pass=(review_prompt_type == "quick"))
 
         # ai_code_review bypasses semantic cache unconditionally (Phase 10 exclusion list).
         # Per-diff reviews are highly specific and caching them risks stale verdicts.
         try:
             message = await self.client.messages.create(
                 model=self.model,
-                max_tokens=self.max_tokens,
+                max_tokens=self.max_tokens if review_prompt_type == "full" else 1024,
                 messages=[{"role": "user", "content": prompt}],
                 thinking=_ADAPTIVE_THINKING,
                 extra_headers=_BETA_HEADERS,
@@ -206,14 +219,52 @@ class CodeReviewer:
             "architecture": architecture_result,
         }
 
-    def _build_diff_review_prompt(self, diff: str, context: Optional[Dict] = None) -> str:
-        """Build prompt for diff review"""
+    def _build_diff_review_prompt(
+        self, diff: str, context: Optional[Dict] = None, *, quick_pass: bool = False
+    ) -> str:
+        """
+        Build prompt for diff review.
+
+        Args:
+            quick_pass: If True, emit a shorter prompt for Semgrep-clean diffs.
+                        Still covers bugs, performance, test coverage, and best practices
+                        — it is a downgrade only, never a skip.
+        """
         context_str = ""
         if context:
             if "file_path" in context:
                 context_str += f"\nFile: {context['file_path']}"
             if "commit_msg" in context:
                 context_str += f"\nCommit Message: {context['commit_msg']}"
+
+        if quick_pass:
+            # Phase 14: downgraded prompt for Semgrep-clean diffs.
+            # Semgrep found no static issues; still check non-static concerns.
+            return f"""Review the following git diff. Semgrep static analysis found no security or lint issues.
+{context_str}
+
+Git Diff:
+```
+{diff}
+```
+
+Focus ONLY on issues Semgrep does not catch:
+- Logic errors or off-by-one bugs
+- Performance regressions
+- Missing or insufficient test coverage
+- API misuse or incorrect assumptions
+- Best practices not enforced by static analysis
+
+SUMMARY: [Overall assessment]
+
+ISSUES:
+- [Non-static issue 1 if any]
+
+SUGGESTIONS:
+- [Suggestion 1]
+
+SCORE: [0-100]
+"""
 
         return f"""Review the following git diff and provide a comprehensive code review.
 {context_str}
