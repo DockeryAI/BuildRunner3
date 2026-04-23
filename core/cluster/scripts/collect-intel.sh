@@ -194,6 +194,36 @@ if should_run_phase 2.5; then
     fi
 fi
 
+# ---- Phase 2.5: LLMLingua-2 dispatch prefix compression (Phase 13) -----------
+# Compress the Phase 3 Opus dispatch prompt before sending to Claude.
+# Reduces token spend on the intel-collect → Opus path.
+# Rollback: BR3_LLMLINGUA=off → skip, use raw prompt.
+# Exclusions: adversarial-review, arbiter, ai_code_review, cross-model-review.
+# (intel-collect dispatch is NOT excluded — compression is safe here.)
+_compress_prompt_if_enabled() {
+  local prompt_file="$1"
+  local method="${2:-intel-collect}"
+  if [ "${BR3_LLMLINGUA:-on}" = "off" ]; then
+    cat "$prompt_file"
+    return
+  fi
+  python3 - "$prompt_file" "$method" <<'PY' 2>/dev/null || cat "$prompt_file"
+import sys, os
+prompt_file, method = sys.argv[1], sys.argv[2]
+sys.path.insert(0, os.path.expanduser("~/Projects/BuildRunner3"))
+try:
+    from core.cluster.below.llmlingua_compress import compress_prompt, EXCLUDED_METHODS
+    prompt = open(prompt_file).read()
+    if method not in EXCLUDED_METHODS and len(prompt) > 500:
+        sys.stdout.write(compress_prompt(prompt, ratio=0.6, method=method))
+    else:
+        sys.stdout.write(prompt)
+except Exception as e:
+    sys.stderr.write(f"llmlingua_compress: {e}\n")
+    sys.stdout.write(open(prompt_file).read())
+PY
+}
+
 # ---- Phase 3: Review — Opus Classification (score-filtered) -----------------
 # Uses BR3_INTEL_MIN_SCORE and BR3_INTEL_PRIORITY_OVERRIDE from env.
 if should_run_phase 3; then

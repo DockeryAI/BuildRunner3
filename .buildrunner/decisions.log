@@ -1664,3 +1664,37 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 2026-04-23T17:53:50Z dep-triage: package=eslint from=7.32.0 to=8.0.0 verdict=escalate tier=0 reason=major-bump
 2026-04-23T17:53:50Z dep-triage: package=vite from=3.2.7 to=4.0.0 verdict=escalate tier=0 reason=major-bump
 2026-04-23T17:53:51Z dep-triage: package=prisma from=4.16.2 to=5.0.0 verdict=escalate tier=0 reason=major-bump
+[2026-04-23T17:55:56.799218Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4fe63b0154bfdc4e reviewers=2
+
+[2026-04-23T17:56:29Z] [DECISION] Adopt global-default + auto-detect as the long-term cluster-test distribution model
+  WHY: Per-project cluster-test-config.yaml templates create silent drift — only BR3 had one; every other project fell through to local testing without sharding. Global default means new projects get distributed testing for free.
+  CONTEXT: ~/.buildrunner/config/default-test-config.yaml, ~/.buildrunner/scripts/dispatch-test.sh
+
+[2026-04-23T17:56:29Z] [ARCHITECTURE] Test config resolution chain in dispatch-test.sh: --config flag → $PROJECT/.buildrunner/cluster-test-config.yaml → ~/.buildrunner/config/default-test-config.yaml
+  WHY: Explicit overrides win, project opt-ins next, cluster baseline last. Each layer fully replaces the previous (no merge) to keep behavior predictable.
+  CONTEXT: dispatch-test.sh lines ~90–155 (config resolution block)
+
+[2026-04-23T17:56:29Z] [ARCHITECTURE] Auto-detect gate: if resolution lands on the global default, confirm the project has vitest in package.json OR pytest in pyproject.toml before sharding
+  WHY: Prevents sharding projects that have no tests (would produce spurious "no tests found" failures across the cluster). Detection is grep-based, no dependency resolution needed.
+  CONTEXT: dispatch-test.sh — has_vitest/has_pytest detection block
+
+[2026-04-23T17:56:29Z] [CONSTRAINT] pytest detection warns and exits 0 rather than dispatching
+  WHY: dispatch-test.sh's shard semantics (--shard=N/M + vitest reporters) are vitest-specific. Pytest sharding needs pytest-xdist + different flags. Recording pytest as a future extension, not silently breaking it today.
+  CONTEXT: dispatch-test.sh pytest branch
+
+[2026-04-23T17:56:29Z] [PATTERN] Opt-out via marker file $PROJECT/.buildrunner/.no-cluster-tests
+  WHY: Simpler than editing YAML to disable. Touch a file = skip dispatch. Works for projects that want local-only testing without authoring a config.
+  CONTEXT: dispatch-test.sh opt-out check (early exit before config resolution)
+
+[2026-04-23T17:56:29Z] [TRADE-OFF] Project YAML fully replaces global default instead of deep-merging
+  WHY: Merge semantics on YAML lists (nodes, rsync_exclude) are ambiguous — does project-level rsync_exclude append or replace? Full replacement is explicit; if a project writes a YAML it owns the whole surface. Inheritance can be added later behind an 'extends:' key if needed.
+  CONTEXT: dispatch-test.sh config loader, default-test-config.yaml comment
+
+[2026-04-23T17:56:29Z] [REJECTED] Per-project cluster-test-config.yaml templates copied into every project
+  WHY: Every template copy rots. Cluster changes (add Otis as shard 3, change timeout, add exclude) would require touching N projects. The global default makes every project inherit the change on next run.
+  CONTEXT: distributed testing architecture
+
+[2026-04-23T17:56:29Z] [GOAL] Cluster-wide sharded testing is the default, not an opt-in
+  WHY: Pre-fix state was "BR3 shards; everyone else runs local and nobody notices." New default flips it: if a project has vitest, shards automatically; deviate via YAML, opt out via marker file.
+  CONTEXT: dispatch-test.sh, default-test-config.yaml, future /test + /e2e invocations across ~/Projects/*
+[2026-04-23T17:58:02.945450Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ee05be4a3daf737d reviewers=2
