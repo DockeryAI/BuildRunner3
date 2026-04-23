@@ -1,7 +1,8 @@
-"""Integration tests: bash runtime-dispatch.sh → Python runtime_registry CLI.
+"""Integration tests: bash runtime-dispatch-project.sh → Python runtime_registry CLI.
 
 Verifies:
-- scripts/runtime-dispatch.sh shells into python -m core.runtime.runtime_registry
+- scripts/runtime-dispatch-project.sh shells into python -m core.runtime.runtime_registry
+  (renamed from scripts/runtime-dispatch.sh on 2026-04-23 Phase 6 cleanup)
 - Both paths produce structurally equivalent output for the same spec
 - below-route.sh no longer contains direct Ollama curl calls
 - BR3_LOCAL_ROUTING flag alias for BR3_RUNTIME_OLLAMA documented
@@ -19,7 +20,7 @@ from pathlib import Path
 import pytest
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-RUNTIME_DISPATCH_SH = PROJECT_ROOT / "scripts" / "runtime-dispatch.sh"
+RUNTIME_DISPATCH_SH = PROJECT_ROOT / "scripts" / "runtime-dispatch-project.sh"
 BELOW_ROUTE_SH = Path.home() / ".buildrunner" / "scripts" / "below-route.sh"
 
 
@@ -69,24 +70,24 @@ task: verify bash-to-python dispatch bridge
 
 
 def test_runtime_dispatch_sh_exists() -> None:
-    """scripts/runtime-dispatch.sh must exist in the project."""
+    """scripts/runtime-dispatch-project.sh must exist in the project."""
     assert RUNTIME_DISPATCH_SH.exists(), (
-        f"scripts/runtime-dispatch.sh not found at {RUNTIME_DISPATCH_SH}"
+        f"scripts/runtime-dispatch-project.sh not found at {RUNTIME_DISPATCH_SH}"
     )
 
 
 def test_runtime_dispatch_sh_is_executable() -> None:
-    """scripts/runtime-dispatch.sh must be executable."""
+    """scripts/runtime-dispatch-project.sh must be executable."""
     assert os.access(RUNTIME_DISPATCH_SH, os.X_OK), (
-        f"scripts/runtime-dispatch.sh is not executable"
+        f"scripts/runtime-dispatch-project.sh is not executable"
     )
 
 
 def test_runtime_dispatch_sh_shells_into_python() -> None:
-    """runtime-dispatch.sh must contain python -m core.runtime.runtime_registry."""
+    """runtime-dispatch-project.sh must contain python -m core.runtime.runtime_registry."""
     content = RUNTIME_DISPATCH_SH.read_text()
     assert "core.runtime.runtime_registry" in content, (
-        "runtime-dispatch.sh does not shell into python -m core.runtime.runtime_registry"
+        "runtime-dispatch-project.sh does not shell into python -m core.runtime.runtime_registry"
     )
 
 
@@ -184,14 +185,14 @@ def test_below_route_sh_no_direct_ollama_curl() -> None:
 
 
 def test_below_route_sh_calls_runtime_dispatch() -> None:
-    """below-route.sh must delegate to scripts/runtime-dispatch.sh."""
+    """below-route.sh must reference scripts/runtime-dispatch-project.sh (renamed 2026-04-23)."""
     if not BELOW_ROUTE_SH.exists():
         pytest.skip("below-route.sh not found (cluster node not present)")
 
     content = BELOW_ROUTE_SH.read_text()
-    assert "runtime-dispatch.sh" in content, (
-        "below-route.sh does not call runtime-dispatch.sh. "
-        "Expected thin wrapper delegation."
+    assert "runtime-dispatch" in content, (
+        "below-route.sh does not reference runtime-dispatch scripts. "
+        "Expected thin wrapper delegation to runtime-dispatch-project.sh."
     )
 
 
@@ -201,12 +202,12 @@ def test_below_route_sh_calls_runtime_dispatch() -> None:
 
 
 def test_runtime_dispatch_supports_br3_local_routing() -> None:
-    """runtime-dispatch.sh must gate on BR3_LOCAL_ROUTING (canonical flag)."""
+    """runtime-dispatch-project.sh must gate on BR3_LOCAL_ROUTING (canonical flag)."""
     if not RUNTIME_DISPATCH_SH.exists():
-        pytest.skip("runtime-dispatch.sh not yet created")
+        pytest.skip("runtime-dispatch-project.sh not yet created")
     content = RUNTIME_DISPATCH_SH.read_text()
     assert "BR3_LOCAL_ROUTING" in content, (
-        "runtime-dispatch.sh must reference BR3_LOCAL_ROUTING (canonical flag name)"
+        "runtime-dispatch-project.sh must reference BR3_LOCAL_ROUTING (canonical flag name)"
     )
 
 

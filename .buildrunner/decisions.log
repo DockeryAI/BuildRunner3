@@ -1436,3 +1436,11 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:54:17Z] [DECISION] updated .buildrunner/hooks/pre-commit-enforced to add cluster-guard integration (P6)
 [2026-04-23T20:54:17Z] [DECISION] updated .buildrunner/hooks/pre-push-enforced to add pre-push.d fragment runner for 50-ship-gate.sh (P6)
 [2026-04-23T20:54:19.185613Z] THREE_WAY_REVIEW review_start plan_hash=80f46e50e7464fb3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:54:24.172727Z] THREE_WAY_REVIEW review_start plan_hash=ffad740542876a99 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=822d36e
+[2026-04-23T20:54:38.622742Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=79f369ed902cdffc reviewers=2
+[2026-04-23T20:54:48.400765Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1a22f9825c7c4e9e reviewers=2
+[2026-04-23T20:55:30.439466Z] THREE_WAY_REVIEW review_start plan_hash=ed702a56c5988eed artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=822d36e
+[2026-04-23T20:55:43.654521Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=9a9bc19e88888cc4 reviewers=2
+[2026-04-23T20:55:50.534105Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8eb4245f81bb7bee reviewers=2
+[2026-04-23T20:56:23Z] [DECISION] renamed scripts/runtime-dispatch.sh → scripts/runtime-dispatch-project.sh to disambiguate from ~/.buildrunner/scripts/runtime-dispatch.sh (infra-level dispatcher) (P6)
+[2026-04-23T20:56:23Z] [DECISION] added disambiguating header to ~/.buildrunner/scripts/runtime-dispatch.sh clarifying infra-level role (P6)

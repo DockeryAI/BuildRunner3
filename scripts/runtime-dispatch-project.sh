@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
-# scripts/runtime-dispatch.sh — Project-local bash wrapper around the Python
-# runtime_registry CLI.
+# scripts/runtime-dispatch-project.sh — PROJECT-LOCAL dispatch wrapper.
+# Renamed from scripts/runtime-dispatch.sh on 2026-04-23 (Phase 6 cleanup).
+#
+# ROLE: Project-local bash wrapper around the Python runtime_registry CLI.
+# DISTINCT FROM: ~/.buildrunner/scripts/runtime-dispatch.sh (infra-level dispatcher
+#   that routes across cluster nodes; takes <runtime> <project_path> <prompt_file>).
 #
 # Usage:
-#   runtime-dispatch.sh <builder> <spec_path>
+#   runtime-dispatch-project.sh <builder> <spec_path>
 #
 #   builder:   claude | codex | ollama
 #   spec_path: path to a non-empty Markdown spec file
 #
-# This is DISTINCT from ~/.buildrunner/scripts/runtime-dispatch.sh (infra-level).
 # This file shells into `python -m core.runtime.runtime_registry execute` and is
 # the canonical in-repo dispatch entrypoint used by scripts/below-route.sh and
-# any phase executor.
+# any phase executor. It does NOT route across cluster nodes — for that, use
+# ~/.buildrunner/scripts/dispatch-to-node.sh which calls the infra runtime-dispatch.
 #
 # Exit codes mirror the Python CLI:
 #   0 — success
