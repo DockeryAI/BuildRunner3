@@ -189,10 +189,13 @@ def _iter_process_entries() -> list[dict[str, Any]]:
 
             cpu_pct = 0.0
             try:
-                # cpu_percent(None) on first call returns 0.0 — that's fine;
-                # subsequent /health calls will get the real delta. For a
-                # one-shot reading we use a tiny interval to force a sample.
-                cpu_pct = float(proc.cpu_percent(interval=0.05))
+                # Non-blocking read: interval=None returns the delta since the
+                # previous call without sleeping. warmup() primes the counter
+                # at startup, and subsequent /health polls get a real reading.
+                # The previous interval=0.05 added N*50ms of synchronous sleep
+                # to every /health response and tripped the monitor's timeout
+                # when a worker was CPU-saturated.
+                cpu_pct = float(proc.cpu_percent(interval=None))
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
 

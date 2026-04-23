@@ -16,7 +16,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-23
-**Status:** pending
+**Status:** Phases 1-3 Complete — Phase 3 In Progress
 **Deploy:** web — `npm run build` (ui/) + `pip install -e .` (core/)
 **Source Plan File:** .buildrunner/plans/plan-br3-cleanup-wave-abc.md
 **Source Plan SHA:** 9ed95239e047b6dda4aee8d5eefd41c1c873cfb60ee96f1d15e00c447b785665
@@ -78,7 +78,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 2: Concurrency Hardening
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Bucket/Node:** backend-build / muddy
 **Files:**
 
@@ -93,14 +93,14 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] SQLite WAL + busy_timeout=5000 in database.py + semantic_cache.py; busy_timeout added to intel_collector + memory_store
-- [ ] Review lockfile → atomic `open(path, 'x')` in cross_model_review.py:1301
-- [ ] Arbiter circuit-breaker wrapped in `fcntl.flock` LOCK_EX
-- [ ] lockwood-sourcer adds `flock`; `_last_checked` migrated to SQLite column
-- [ ] research_worker pending.jsonl → atomic per-file queue
-- [ ] WorkerCoordinator + EventStorage + node_semantic indexing protected with threading.Lock
-- [ ] metrics_db → single INSERT OR REPLACE
-- [ ] Concurrency test suite repros the old races and demonstrates the fix
+- [x] SQLite WAL + busy_timeout=5000 in database.py + semantic_cache.py; busy_timeout added to intel_collector + memory_store
+- [x] Review lockfile → atomic `open(path, 'x')` in cross_model_review.py:1301
+- [x] Arbiter circuit-breaker wrapped in `fcntl.flock` LOCK_EX
+- [x] lockwood-sourcer adds `flock`; `_last_checked` migrated to SQLite column
+- [x] research_worker pending.jsonl → atomic per-file queue
+- [x] WorkerCoordinator + EventStorage + node_semantic indexing protected with threading.Lock
+- [x] metrics_db → single INSERT OR REPLACE
+- [x] Concurrency test suite repros the old races and demonstrates the fix
 
 ### Phase 3: Constants & Path Consolidation
 
@@ -125,7 +125,7 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 
 ### Phase 4: File & Doc Cleanup
 
-**Status:** 🚧 in_progress
+**Status:** ✅ COMPLETE
 **Bucket/Node:** architecture / muddy
 **Files:**
 
@@ -143,15 +143,15 @@ Apply the 170-finding dead-code / race / duplicate cleanup derived from today's 
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] 10+ `.legacy`/`.bak`/`.backup` files deleted
-- [ ] `CLAUDE_backup.md` renamed and relocated
-- [ ] `patch-phase5` resolved; `BUILD_cluster-max.md` status reconciled
-- [ ] `.dispatch-worktrees/` purged (22 stale DBs gone)
-- [ ] Root `.md` proliferation archived (~40 files)
-- [ ] Root PNGs moved to `docs/screenshots/`
-- [ ] Only `PROPER_RLS_POLICIES_V2.sql` remains at root; duplicate RLS Documentation dir deleted
-- [ ] `.gitignore` covers: `.env`, `build/`, `coverage.json`, `/*.png`, `.dispatch-worktrees/`
-- [ ] Every deletion logged to `decisions.log`
+- [x] 10+ `.legacy`/`.bak`/`.backup` files deleted
+- [x] `CLAUDE_backup.md` renamed and relocated
+- [x] `patch-phase5` resolved; `BUILD_cluster-max.md` status reconciled
+- [x] `.dispatch-worktrees/` purged (22 stale DBs gone)
+- [x] Root `.md` proliferation archived (~40 files)
+- [x] Root PNGs moved to `docs/screenshots/`
+- [x] Only `PROPER_RLS_POLICIES_V2.sql` remains at root; duplicate RLS Documentation dir deleted
+- [x] `.gitignore` covers: `.env`, `build/`, `coverage.json`, `/*.png`, `.dispatch-worktrees/`
+- [x] Every deletion logged to `decisions.log`
 
 ### Phase 5: Dead Module & Import Removal
 

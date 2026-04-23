@@ -1154,7 +1154,6 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 - **Phase 13 (LLMLingua-2 compression):** llmlingua_compress.py; autopilot-dispatch-prefix.sh --compress-phase flag; collect-intel.sh _compress_prompt_if_enabled(); 26 tests passing
 - **Phase 14 (Semgrep prefilter):** semgrep_triage.py; ai_code_review.py quick-pass integration; OWASP Top 10 coverage validated; 29 tests passing
 - **BUILD_below-offload:** All 17 phases complete (0-16). Total tests: 18+38+26+29=111 new tests this wave.
-<<<<<<< HEAD
 [2026-04-23T18:04:55.432220Z] THREE_WAY_REVIEW review_start plan_hash=750727fde6edd814 artifact='.buildrunner/plans/plan-synapse-bundle-disk-bridge.md' commit=plan-1776967495
 [2026-04-23T18:09:50.337793Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=750727fde6edd814 reviewers=2
 [2026-04-23T18:13:47.829092Z] THREE_WAY_REVIEW review_start plan_hash=ee05be4a3daf737d artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 581d3aa1.' commit=f8c021d1
@@ -1367,6 +1366,7 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:41:14.045038Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ed5c42b2212eca83 reviewers=2
 [2026-04-23T20:41:21.394604Z] THREE_WAY_REVIEW review_start plan_hash=3b5764f99100e6e4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
 [2026-04-23T20:41:24.231188Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f15e4ecc21868a0a reviewers=2
+<<<<<<< Updated upstream
 [2026-04-23T20:41:50.886670Z] THREE_WAY_REVIEW review_start plan_hash=c73ab715c9c30f88 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=33cee9e[2026-04-23T20:45:28Z] Phase 2 decisions:
 [2026-04-23T20:45:28Z] [DECISION] database.py: added WAL+busy_timeout=5000 to _init_connection()
 [2026-04-23T20:45:28Z] [DECISION] semantic_cache.py: added WAL+busy_timeout=5000 to _ensure_init()
@@ -1399,3 +1399,18 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 - [DECISION] moved 8 WEEK1_*/WEEK2_*.md files → .buildrunner/historical/ because phase-4 archive WEEK prompt series on 2026-04-23
 - [DECISION] removed coverage.json because phase-4 generated artifact should not be in tree; added to .gitignore on 2026-04-23
 - [DECISION] updated .gitignore — added coverage.json and /*.png (root-only PNG guard); .env/build//.dispatch-worktrees already covered on 2026-04-23
+[2026-04-23T20:41:50.886670Z] THREE_WAY_REVIEW review_start plan_hash=c73ab715c9c30f88 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=33cee9e
+[2026-04-23T20:42:12.467738Z] THREE_WAY_REVIEW review_start plan_hash=ea547195e720ea5c artifact='diff --git a/package-lock.json b/package-lock.json\nindex db6166b..bc14d4d 100644' commit=859dbfd
+[2026-04-23T20:42:13.099981Z] THREE_WAY_REVIEW review_start plan_hash=165a5f093a612cda artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:42:18.196305Z] THREE_WAY_REVIEW review_start plan_hash=635263751d0a0508 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:43:53.838633Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=4030413188b68bcb reviewers=2
+[2026-04-23T20:44:25.194884Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=072666b923bce083 reviewers=2
+[2026-04-23T20:44:55.006823Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=69071bdd2db40f0a reviewers=2
+[2026-04-23T20:44:59.499536Z] THREE_WAY_REVIEW review_start plan_hash=12736f89a5d5425b artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
+[2026-04-23T20:45:43.875367Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=3b5764f99100e6e4 reviewers=2
+[2026-04-23T20:45:51.023716Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ea547195e720ea5c reviewers=2
+[2026-04-23T20:45:54.276234Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=165a5f093a612cda reviewers=2
+2026-04-23T20:46:00Z routing: skill=below-route model=llama3.3:70b node=below status=dispatched
+[2026-04-23T20:46:02.098270Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=635263751d0a0508 reviewers=2
+2026-04-23T20:46:05Z routing: skill=below-route model=llama3.3:70b node=below status=below_offline_or_timeout
+[2026-04-23T20:46:22.311182Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c73ab715c9c30f88 reviewers=2
