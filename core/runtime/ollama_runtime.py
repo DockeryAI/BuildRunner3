@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import subprocess
 import time
 import urllib.request
@@ -116,6 +117,10 @@ class OllamaRuntime(BaseRuntime):
                 "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],
                 "stream": False,
+                "think": False,
+                "options": {
+                    "num_ctx": int(os.environ.get("BR3_OLLAMA_NUM_CTX", "4096")),
+                },
             }
         ).encode("utf-8")
 
