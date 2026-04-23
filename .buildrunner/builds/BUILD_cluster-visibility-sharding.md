@@ -90,7 +90,7 @@ Restore ground-truth visibility to the BR3 cluster dashboard and distribute test
 
 ### Phase 3: Router sees ground truth
 
-**Status:** not_started
+**Status:** 🚧 in_progress
 **Files:**
 
 - `~/.buildrunner/scripts/resolve-dispatch-node.py` (MODIFY) — saturation check consumes `busy_state` + `cpu_pct` from node health, not only `cluster-builds.json:309-312` active_builds.
