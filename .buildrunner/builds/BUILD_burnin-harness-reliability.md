@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-24
-**Status:** Phases 1-1 Complete — Phase 2 In Progress
+**Status:** Phases 1-2 Complete — Phase 3 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness-reliability.md
 **Source Plan SHA:** 8a21d0305b34701f0657e578e3b64405ede6ab9026e84b03ceb5d76ef6df1d50
@@ -65,7 +65,7 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 
 ### Phase 2: `cluster-check.sh --health-json muddy` honors the passthrough contract
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/cluster-check.sh` (MODIFY)
@@ -73,11 +73,11 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 **Blocked by:** None
 **Deliverables:**
 
-- [ ] Replace `ipconfig getifaddr en0` LOCAL_IP detection with an authoritative cluster-identity check: lowercased `$NODE_NAME` compared to lowercased `cluster.json master.name`. IP equality is a secondary fallback, not the primary signal.
-- [ ] Local-muddy path: first attempt `curl --max-time 3 http://127.0.0.1:8100/health`. If it returns `"status":"healthy"`, proxy the payload verbatim with `node`, `ip`, `online: true`, `via: "local+http"` added.
-- [ ] Synthesis fallback when local `/health` is unavailable: construct a schema-compatible JSON locally from `uptime` (load_1m), `sysctl -n hw.ncpu` + `top -l 1 -n 0` (cpu_pct), `vm_stat` (mem), plus `busy_state` derived from load thresholds and an empty `workloads: []` array. Output MUST include the keys `busy_state`, `workloads`, `cpu_pct`, `load_1m`, `mem`.
-- [ ] Keep the existing `online:false` fallthrough path as the last resort for truly offline nodes.
-- [ ] Inline smoke in the final change: `~/.buildrunner/scripts/cluster-check.sh --health-json muddy | jq -e '.busy_state and (.workloads|type=="array") and .cpu_pct'` must exit 0.
+- [x] Replace `ipconfig getifaddr en0` LOCAL_IP detection with an authoritative cluster-identity check: lowercased `$NODE_NAME` compared to lowercased `cluster.json master.name`. IP equality is a secondary fallback, not the primary signal.
+- [x] Local-muddy path: first attempt `curl --max-time 3 http://127.0.0.1:8100/health`. If it returns `"status":"healthy"`, proxy the payload verbatim with `node`, `ip`, `online: true`, `via: "local+http"` added.
+- [x] Synthesis fallback when local `/health` is unavailable: construct a schema-compatible JSON locally from `uptime` (load_1m), `sysctl -n hw.ncpu` + `top -l 1 -n 0` (cpu_pct), `vm_stat` (mem), plus `busy_state` derived from load thresholds and an empty `workloads: []` array. Output MUST include the keys `busy_state`, `workloads`, `cpu_pct`, `load_1m`, `mem`.
+- [x] Keep the existing `online:false` fallthrough path as the last resort for truly offline nodes.
+- [x] Inline smoke in the final change: `~/.buildrunner/scripts/cluster-check.sh --health-json muddy | jq -e '.busy_state and (.workloads|type=="array") and .cpu_pct'` must exit 0.
 
 **Success Criteria:**
 
