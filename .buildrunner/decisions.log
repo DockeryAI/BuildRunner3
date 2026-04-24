@@ -1291,19 +1291,7 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 ## 2026-04-22 to 2026-04-23 (archived 2026-04-23)
 - Types: CONSTRAINT(10), REJECTED(11), DECISION(20), GOAL(4), ARCHITECTURE(8), PATTERN(7), TRADE-OFF(4), WHY(3) | Key: fixed section headings (Shared-Surface Touches, Completed-Ph
 - 67 entries → decisions.log.20260423_151817
-
 # Current Decisions
-[2026-04-23T19:46:02Z] [DIAGNOSIS] Jimmy service_crashed alerts are false positives from cluster-health-monitor.mjs, not actual semantic-service crashes.
-[2026-04-23T19:46:02Z] [DECISION] Raised health-probe timeout from 5000ms to 15000ms in cluster-health-monitor.mjs checkHealth().
-[2026-04-23T19:46:02Z] [DECISION] Added 2-consecutive-poll debounce (HEALTH_FAIL_THRESHOLD) before emitting service_crashed alert.
-[2026-04-23T19:46:02Z] [ARCHITECTURE] /health hot path no longer blocks on psutil sampling — changed proc.cpu_percent(interval=0.05) to interval=None in process_detector._iter_process_entries.
-[2026-04-23T19:46:02Z] [REJECTED] Did not run br3-semantic under uvicorn --workers 2.
-[2026-04-23T19:46:02Z] [REJECTED] User's premise that node_semantic.py and embed-server.py keep dying.
-[2026-04-23T19:46:02Z] [CONSTRAINT] Historical Apr 22 00:00-00:04 restart-loop (counter 149→186, each exit status=1/FAILURE) is a separate unresolved event, not current behavior.
-[2026-04-23T19:46:02Z] [PATTERN] Verify premise before acting: read alert payload, ps state, and health log before touching services.
-[2026-04-23T19:46:02Z] [DEPLOYED] scp core/cluster/process_detector.py to jimmy:/home/byronhudson/repos/BuildRunner3/core/cluster/, restarted br3-semantic.service, reloaded launchctl com.br3.cluster-monitor.
-[2026-04-23T15:18:17] [DECISION] Spec adversarial review BLOCKED: arbiter circuit_open, Codex flagged stale-tree paths as missing (cli/, plugins/, etc — verified present). Legitimate fixable findings (pin:true success criterion, npm overrides vs Yarn resolutions, test_imports.py path, rls_aware.py caller audit, Phase 1 zero-byte count typo) applied inline. Bypass authorized by skill 1-review rule.
-[2026-04-23T15:23:25] [DECISION] Created BUILD_br3-cleanup-wave-abc: 8 phases, None, bypassed review (arbiter circuit_open — see bypass-justification.md)
 2026-04-23T20:28:53Z router: build=BUILD_br3-cleanup-wave-abc phase=1 node=muddy reason=path-locality overrides=path-locality
 2026-04-23T20:28:53Z router: build=BUILD_br3-cleanup-wave-abc phase=2 node=muddy reason=spec-preference overrides=none
 2026-04-23T20:28:53Z router: build=BUILD_br3-cleanup-wave-abc phase=3 node=muddy reason=spec-preference overrides=none
@@ -1312,72 +1300,28 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 2026-04-23T20:28:53Z router: build=BUILD_br3-cleanup-wave-abc phase=6 node=muddy reason=spec-preference overrides=none
 2026-04-23T20:28:53Z router: build=BUILD_br3-cleanup-wave-abc phase=7 node=muddy reason=spec-preference overrides=none
 2026-04-23T20:28:54Z router: build=BUILD_br3-cleanup-wave-abc phase=8 node=walter reason=spec-preference overrides=none
-
-[2026-04-23T20:37:15Z] [DECISION] Delete two 0-byte orphan DBs instead of wiring them up
   WHY: Root cause analysis confirmed ~/.buildrunner/intel.db and ~/.buildrunner/telemetry.db are path-drift orphans with zero writers/readers; canonical paths already live and populated
   CONTEXT: A3 cleanup; intel_collector.py:31 (INTEL_DB_PATH default ~/.lockwood/intel.db); event_collector.py:65, metrics.py:168, telemetry.py:39, dashboard_stream.py:173-175 (all use Path.cwd()/.buildrunner/telemetry.db or BR3_PROJECT_ROOT variant)
-
-[2026-04-23T20:37:16Z] [WHY] Path-drift orphan intel.db — old bootstrap created ~/.buildrunner/intel.db, code never updated
   WHY: intel_collector.py hardcodes INTEL_DB_PATH default to ~/.lockwood/intel.db via `os.environ.get("INTEL_DB", os.path.expanduser("~/.lockwood/intel.db"))`; systemd br3-intel.service sets BR3_INTEL_DB but code reads INTEL_DB only (dead env var); 30+ callers all go through _get_intel_db() which connects to ~/.lockwood/intel.db
   CONTEXT: core/cluster/intel_collector.py:31,64-67; /etc/systemd/system/br3-intel.service:12; /home/byronhudson/repos/BuildRunner3/.lockwood/intel.db 356KB live on Jimmy (mtime Apr 23 16:52); ~/.lockwood/intel.db 212KB live on Muddy
-
-[2026-04-23T20:37:17Z] [WHY] Path-drift orphan telemetry.db — old path scheme (home-level singleton) refactored to per-project
   WHY: Code resolves telemetry.db via Path.cwd()/.buildrunner/telemetry.db or BR3_PROJECT_ROOT variant; no code references ~/.buildrunner/telemetry.db (home-relative); git history shows "untrack .buildrunner/telemetry.db" as runtime state; real data at ~/Projects/BuildRunner3/.buildrunner/telemetry.db (4.6MB, 9338 events, last updated 2026-04-23T20:09:56)
   CONTEXT: core/telemetry/event_collector.py:65; core/agents/metrics.py:168; api/routes/telemetry.py:39; api/routes/dashboard_stream.py:173-175 (candidate search with Path.home()/Projects/BuildRunner3/.buildrunner/telemetry.db); runtime_registry.py:44-48; br-emit-event.sh:41-43
-
-[2026-04-23T20:37:18Z] [PATTERN] Preflight PATH check in cron-triggered scripts
   WHY: Non-interactive shells inherit minimal PATH; command -v catches missing binaries early and exits 127 with PATH dump for diagnostics
   CONTEXT: core/cluster/scripts/collect-intel.sh added guard after `set -euo pipefail`: for bin in claude curl python3; do if ! command -v "$bin" >/dev/null 2>&1; then echo "preflight: $bin not on PATH"; exit 127; fi; done
-
-[2026-04-23T20:37:19Z] [CONSTRAINT] macOS cron inherited PATH limitation
   WHY: crontab environment inherits /usr/bin:/bin:/usr/sbin:/sbin only; ~/.local/bin not included; user binaries must be symlinked to /usr/local/bin or PATH must be explicit in cron
   CONTEXT: A2 root cause; Muddy intel cron "claude: command not found"; user removed job ("should only run on demand now"); preflight check protects /intel-run manual on-demand path
-
-[2026-04-23T20:37:20Z] [DECISION] Left two follow-up items unresolved — dead BR3_INTEL_DB env, stale /srv/jimmy/memory/intel.db
   WHY: Out of A3 scope; BR3_INTEL_DB set in systemd + phase3-finish.sh but code reads INTEL_DB; /srv/jimmy/memory/intel.db 356KB divergent from ~/.lockwood/intel.db (different md5); both require operator intent on Jimmy migration
   CONTEXT: /etc/systemd/system/br3-intel.service:12; ~/.buildrunner/scripts/phase3-finish.sh:143; /srv/jimmy/memory/intel.db stale (mtime Apr 20 16:45); no current writer/reader
-
-[2026-04-23T20:50:00Z] [DECISION] Phase 1 — .env removed from working tree (was never committed); secret-rotation audit clean
   WHY: git log --all -S <key_patterns> returned 0 hits — no credentials in git history; .env was only an untracked local file; .gitignore already had .env entry; .env.example with placeholders created by prior agent
   CONTEXT: Phase 1 deliverable 1; secrets: NOTION_SECRET, SUPABASE_SERVICE_ROLE_KEY, DD_API_KEY, OPENROUTER_API_KEY, ANTHROPIC_API_KEY (8 keys); no rotation required
-
-[2026-04-23T20:50:01Z] [DECISION] Phase 1 — claude_fix renamed to linter_fix in ~/.buildrunner/scripts/ship/ship-config.yaml
   WHY: fix-orchestrator.sh implements linter+formatter+test-runner healing for review/test/docs/log-scan gates; never dispatches claude -p; config name was a lie that would mislead anyone extending the pipeline
   CONTEXT: ship-config.yaml gates review/test/docs/log-scan; fix-orchestrator.sh _fix_for_gate() uses parallel-fix.sh (linter+formatter) not claude
-
-[2026-04-23T20:50:02Z] [DECISION] Phase 1 — adaptive-thinking contradiction resolved: removed CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1 from ~/.claude/settings.json
   WHY: Global CLAUDE.md mandates adaptive thinking with display:summarized for 4.7; env var was silently overriding the autopilot-dispatch-prefix.sh instruction; trusting the prefix (which is model-version aware) is correct
   CONTEXT: ~/.claude/settings.json env block; ~/.buildrunner/scripts/autopilot-dispatch-prefix.sh line 86
-
-[2026-04-23T20:50:03Z] [DECISION] Phase 1 — BR3_RUNTIME_OLLAMA fully removed from all 3 shim sites + feature-flags.yaml
   WHY: Flag was deprecated after cluster-activation Phase 13 cutover (2026-04-21); one-release shim period expired; canonical flag is BR3_LOCAL_ROUTING; OllamaRuntime is wired directly without flag gating
   CONTEXT: ~/.buildrunner/config/feature-flags.yaml (entry deleted); scripts/runtime-dispatch.sh:56-62 (shim block deleted); scripts/load-cluster-flags.sh:117-122,139-140 (alias shim deleted); scripts/post_cutover_smoke.py:9,54 (BR3_RUNTIME_OLLAMA→BR3_LOCAL_ROUTING in docs)
-
-[2026-04-23T20:50:04Z] [DECISION] Phase 1 — 4 zero-byte artifacts triaged
   WHY: .buildrunner/data.db (57KB, 37 research_llm_calls + 4 cb_state rows) = KEEP, live; .buildrunner/telemetry.db (4.6MB, 9338 events) = KEEP, live; .buildrunner/review-findings.jsonl (0 bytes, no readers/writers in codebase) = DELETED; .worktrees/ (empty dir, no references in codebase) = DELETED
   CONTEXT: grep -rn "review.findings" returned 0 hits; data.db schema confirmed via sqlite3 introspection; telemetry.db writer confirmed in event_collector.py
-[2026-04-23T20:33:56.419567Z] THREE_WAY_REVIEW review_start plan_hash=2d78211f340b8b19 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
-[2026-04-23T20:36:58.959365Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=2d78211f340b8b19 reviewers=2
-[2026-04-23T20:38:02.865604Z] THREE_WAY_REVIEW review_start plan_hash=ed5c42b2212eca83 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=33cee9e
-[2026-04-23T20:38:11.415809Z] THREE_WAY_REVIEW review_start plan_hash=f15e4ecc21868a0a artifact='diff --git a/README.md b/README.md\nnew file mode 100644\nindex 0000000..71ef695\n-' commit=760b4b7
-[2026-04-23T20:39:52.555764Z] THREE_WAY_REVIEW review_start plan_hash=4030413188b68bcb artifact='diff --git a/README.md b/README.md\nnew file mode 100644\nindex 0000000..71ef695\n-' commit=760b4b7
-[2026-04-23T20:40:34.178891Z] THREE_WAY_REVIEW review_start plan_hash=69071bdd2db40f0a artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
-[2026-04-23T20:41:07.620997Z] THREE_WAY_REVIEW review_start plan_hash=072666b923bce083 artifact='diff --git a/README.md b/README.md\nnew file mode 100644\nindex 0000000..71ef695\n-' commit=760b4b7
-[2026-04-23T20:41:14.045038Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ed5c42b2212eca83 reviewers=2
-[2026-04-23T20:41:21.394604Z] THREE_WAY_REVIEW review_start plan_hash=3b5764f99100e6e4 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=84716ae6
-[2026-04-23T20:41:24.231188Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=f15e4ecc21868a0a reviewers=2
-[2026-04-23T20:41:50.886670Z] THREE_WAY_REVIEW review_start plan_hash=c73ab715c9c30f88 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=33cee9e[2026-04-23T20:45:28Z] Phase 2 decisions:
-[2026-04-23T20:45:28Z] [DECISION] database.py: added WAL+busy_timeout=5000 to _init_connection()
-[2026-04-23T20:45:28Z] [DECISION] semantic_cache.py: added WAL+busy_timeout=5000 to _ensure_init()
-[2026-04-23T20:45:28Z] [DECISION] cross_model_review.py: replaced exists()+write() with atomic open(x) to eliminate TOCTOU
-[2026-04-23T20:45:28Z] [DECISION] arbiter.py: fcntl.flock LOCK_EX around circuit-breaker load/save; truncate-after-lock pattern
-[2026-04-23T20:45:28Z] [DECISION] lockwood-sourcer.sh: added flock -n guard; _last_checked migrated to active_hunts.last_checked_at SQLite column
-[2026-04-23T20:45:28Z] [DECISION] research_worker.py: pending.jsonl replaced with per-file queue (pending/<uuid>.json); legacy drain on startup
-[2026-04-23T20:45:28Z] [DECISION] worker_coordinator.py: threading.Lock serializes all workers/task_queue/task_assignments mutations
-[2026-04-23T20:45:28Z] [DECISION] event_storage.py: threading.Lock wraps should_rotate+_rotate+write in save()
-[2026-04-23T20:45:28Z] [DECISION] metrics_db.py: single INSERT OR REPLACE replaces SELECT-then-INSERT race
-[2026-04-23T20:45:28Z] [DECISION] node_semantic.py: _indexing_lock + _research_indexing_lock (threading.Lock) guard run_index/run_research_index
-[2026-04-23T20:45:28Z] [DECISION] database.py: threading.Lock added to execute() to serialize shared connection across threads
 ## Phase 4: File & Doc Cleanup (2026-04-23)
 - [DECISION] removed cli/main.py.bak because phase-4 dead backup file on 2026-04-23
 - [DECISION] removed CLAUDE.md.backup-20260320 because phase-4 dead backup file on 2026-04-23
@@ -1427,150 +1371,33 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T20:53:29.980106Z] THREE_WAY_REVIEW review_start plan_hash=a90fddefdda0289b artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=79baf3f
 [2026-04-23T20:53:45.739092Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=018555432c78c858 reviewers=2
 [2026-04-23T20:54:04.439391Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=edce68791106d011 reviewers=2
-[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/pre-commit because non-enforced duplicate; pre-commit-enforced is canonical (P6)
-[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/pre-commit-composed because non-enforced duplicate with --no-verify escape hatch; pre-commit-enforced is canonical (P6)
-[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/pre-push because non-enforced duplicate; pre-push-enforced is canonical (P6)
-[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/pre-push-composed because non-enforced duplicate; pre-push-enforced is canonical (P6)
-[2026-04-23T20:54:17Z] [DECISION] removed .buildrunner/hooks/install-hooks.sh because merged into .buildrunner/scripts/install-enforced-hooks.sh (enforced-only installer) (P6)
-[2026-04-23T20:54:17Z] [DECISION] updated .buildrunner/hooks/pre-commit-enforced to add cluster-guard integration (P6)
-[2026-04-23T20:54:17Z] [DECISION] updated .buildrunner/hooks/pre-push-enforced to add pre-push.d fragment runner for 50-ship-gate.sh (P6)
-[2026-04-23T20:54:19.185613Z] THREE_WAY_REVIEW review_start plan_hash=80f46e50e7464fb3 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
-[2026-04-23T20:54:24.172727Z] THREE_WAY_REVIEW review_start plan_hash=ffad740542876a99 artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=822d36e
-[2026-04-23T20:54:38.622742Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=79f369ed902cdffc reviewers=2
-[2026-04-23T20:54:48.400765Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1a22f9825c7c4e9e reviewers=2
-[2026-04-23T20:55:30.439466Z] THREE_WAY_REVIEW review_start plan_hash=ed702a56c5988eed artifact='diff --git a/.buildrunner/builds/BUILD_synapse-bundle-disk-bridge.md b/.buildrun' commit=822d36e
-[2026-04-23T20:55:43.654521Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=9a9bc19e88888cc4 reviewers=2
-[2026-04-23T20:55:50.534105Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=8eb4245f81bb7bee reviewers=2
-[2026-04-23T20:56:23Z] [DECISION] renamed scripts/runtime-dispatch.sh → scripts/runtime-dispatch-project.sh to disambiguate from ~/.buildrunner/scripts/runtime-dispatch.sh (infra-level dispatcher) (P6)
-[2026-04-23T20:56:23Z] [DECISION] added disambiguating header to ~/.buildrunner/scripts/runtime-dispatch.sh clarifying infra-level role (P6)
-[2026-04-23T20:56:38.886383Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=a90fddefdda0289b reviewers=2
-[2026-04-23T20:56:40.058779Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=502862d23f11d6f6 reviewers=2
-[2026-04-23T20:56:49Z] [DECISION] deleted scripts/load-role-matrix.sh (project version); no callers found; global ~/.buildrunner/scripts/load-role-matrix.sh is canonical (P6)
-[2026-04-23T20:57:12Z] [DECISION] deleted ~/.buildrunner/scripts/dispatch-to-otis.sh; kept dispatch-phase-to-otis.sh which has correct arg order matching dispatch-to-node.sh (<project_path> <prompt> [branch]); dispatch-to-otis.sh had args swapped (=prompt, =path) (P6)
-[2026-04-23T20:58:05Z] [DECISION] deleted ui/api/openrouter_client.py; canonical is api/openrouter_client.py; no callers of ui version found (P6)
-[2026-04-23T20:58:05Z] [DECISION] deleted ui/api/project_manager.py; canonical is api/project_manager.py; no callers of ui version found (P6)
-[2026-04-23T20:58:05Z] [DECISION] deleted ui/api/routes/prd_builder.py; canonical is api/routes/prd_builder.py (registered in api/server.py); ui version already imported from api.* anyway (P6)
-[2026-04-23T20:58:06.515723Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=550dc75ed92e59ff reviewers=2
-[2026-04-23T20:58:08.893050Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ed702a56c5988eed reviewers=2
-[2026-04-23T20:59:06.701969Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=80f46e50e7464fb3 reviewers=2
-[2026-04-23T20:59:07.403628Z] THREE_WAY_REVIEW review_start plan_hash=805ef89f2ccfd444 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
-[2026-04-23T20:59:28.471601Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=ffad740542876a99 reviewers=2
-[2026-04-23T21:00:02.582271Z] THREE_WAY_REVIEW review_start plan_hash=db979527efa73656 artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
-[2026-04-23T21:00:05Z] [DECISION] added pin: true as native PHASE_OVERRIDE_FIELDS in ~/.buildrunner/scripts/load-role-matrix.sh; pin is now preserved in resolved cache output (P6)
-[2026-04-23T21:00:05Z] [DECISION] removed regex sanitizer from ~/.buildrunner/scripts/resolve-dispatch-node.py; pin: true is now native so no pre-sanitization needed; round-trip verified (P6)
-[2026-04-23T21:00:51.700971Z] THREE_WAY_REVIEW review_start plan_hash=03ff860b65cf56ee artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
-[2026-04-23T21:00:52Z] [DECISION] deleted build/ directory (untracked; already in .gitignore from P4; Python bdist artifacts not part of project source) (P6)
-[2026-04-23T21:00:52Z] [DECISION] archived scripts/post_cutover_smoke.py → scripts/archive/post_cutover_smoke.py; stale smoke test for a cutover that is now complete (P6)
-[2026-04-23T21:00:52Z] [DECISION] updated ~/.buildrunner/config/rollout-state.yaml: mode watch-only→enforced, flipped_at null→2026-04-21T00:00:00Z; reflects actual post-cutover state (P6)
-[2026-04-23T20:58:38Z] P3_TEST verify flock write works phase=3
-[2026-04-23T20:58:56Z] P3_COMPLETE constants-consolidation JIMMY_URL=4sites BELOW_HOST=8sites qwen3:8b=7sites decisions.log=4sites double-nested-get=eliminated
-[2026-04-23T21:01:49.743474Z] THREE_WAY_REVIEW review_start plan_hash=d64aeef62d6089bf artifact='diff --git a/.buildrunner/browser.log b/.buildrunner/browser.log\nindex 62ddb487.' commit=b548f159
-[2026-04-23T21:02:42.595931Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=805ef89f2ccfd444 reviewers=2
 <<<<<<< Updated upstream
-[2026-04-23T21:30:00Z] [P5-AUDIT] core/feature_discovery.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 production callers found → SAFE TO DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] core/migration_mapper.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 callers found → SAFE TO DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] core/rls_aware.py — grep for rls_aware, inject_rls_awareness, RLSDocumentationGuide, get_rls_context: 0 callers in cli/ api/ core/ plugins/ hooks/ tests/ → Codex/dead disagreement resolved: no live callers → SAFE TO DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] core/completeness_validator.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 callers found → SAFE TO DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] core/storybook_generator.py — callers found: tests/test_design_system_complete.py:15 (test-only, no prod caller) → SAFE TO DELETE (test will need update but module is orphan)
-[2026-04-23T21:30:00Z] [P5-AUDIT] core/visual_regression.py — callers found: tests/test_design_system_complete.py:16 (test-only, no prod caller) → SAFE TO DELETE (test will need update)
-[2026-04-23T21:30:00Z] [P5-AUDIT] core/opus_handoff.py — callers: tests/test_opus_client_4_7.py (4 sites), tests/test_integration_prd_system.py (1 site) — test-only, no production callers → SAFE TO DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui_terminal.py — grep cli/ api/ core/ plugins/ hooks/ tests/ for imports: 0 callers found → SAFE TO DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] plugins/notion.py — no imports in cli/ api/ core/ scripts/; cli/main.py L957 mentions "notion" in a help string only → NOT wired → DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] plugins/slack.py — no imports in cli/ api/ core/ scripts/; cli/main.py L957 mentions "slack" in help string only → NOT wired → DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] plugins/github.py — no imports found (core/github/ is a separate package); plugins/github.py is NOT the core/github/ package → NOT wired → DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/TerminalDemo.tsx — exported in index.ts but no page/app imports it → DELETE; also remove index.ts export line
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/PRDEditorV2.tsx — no imports outside its own file → DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/PRDChatInterface.tsx — no importers → DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/PRDMarkdownPreview.tsx — no importers → DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/MonacoPRDEditor.tsx — only imported by PRDEditorV2.tsx (also being deleted) → DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/pages/BuildMonitor.tsx — no App.tsx route, no importers outside example file → DECISION: DELETE (not routing; orphan)
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/components/ProgressSidebar.example.tsx — example file, no production import → DELETE
-[2026-04-23T21:30:00Z] [P5-AUDIT] ui/src/examples/useBuildMonitor.example.ts — example file, no production import → DELETE
-[2026-04-23T21:31:00Z] [DELETE] core/feature_discovery.py — orphan module, 0 importers in production code (P5)
-[2026-04-23T21:31:00Z] [DELETE] core/migration_mapper.py — orphan module, 0 importers (P5)
-[2026-04-23T21:31:00Z] [DELETE] core/rls_aware.py — orphan module, 0 importers; Codex/dead disagreement resolved: confirmed no live callers (P5)
-[2026-04-23T21:31:00Z] [DELETE] core/completeness_validator.py — orphan module, 0 importers (P5)
-[2026-04-23T21:31:00Z] [DELETE] core/storybook_generator.py — orphan module, only test-file reference in test_design_system_complete.py (P5)
-[2026-04-23T21:31:00Z] [DELETE] core/visual_regression.py — orphan module, only test-file reference in test_design_system_complete.py (P5)
-[2026-04-23T21:31:00Z] [DELETE] core/opus_handoff.py — orphan module, only test-file references (tests only, no production callers) (P5)
-[2026-04-23T21:31:00Z] [DELETE] ui_terminal.py — orphan module at repo root, 0 importers (P5)
-[2026-04-23T21:31:30Z] [DELETE] plugins/notion.py — not wired into any dispatcher or router; cli/main.py only mentions "notion" in a help string (P5)
-[2026-04-23T21:31:30Z] [DELETE] plugins/slack.py — not wired into any dispatcher or router; cli/main.py only mentions "slack" in a help string (P5)
-[2026-04-23T21:31:30Z] [DELETE] plugins/github.py — not wired; plugins/github.py is distinct from core/github/ package which IS wired; plugins/ version is dead (P5)
-[2026-04-23T21:32:00Z] [DELETE] ui/src/components/TerminalDemo.tsx — orphan; exported in index.ts but no page/app imports it (P5)
-[2026-04-23T21:32:00Z] [DELETE] ui/src/components/PRDEditorV2.tsx + PRDEditorV2.css — orphan; no importers outside itself (P5)
-[2026-04-23T21:32:00Z] [DELETE] ui/src/components/PRDChatInterface.tsx + PRDChatInterface.css — orphan; no importers (P5)
-[2026-04-23T21:32:00Z] [DELETE] ui/src/components/PRDMarkdownPreview.tsx + PRDMarkdownPreview.css — orphan; no importers (P5)
-[2026-04-23T21:32:00Z] [DELETE] ui/src/components/MonacoPRDEditor.tsx — only imported by PRDEditorV2 (also deleted) (P5)
-[2026-04-23T21:32:00Z] [DELETE] ui/src/pages/BuildMonitor.tsx + BuildMonitor.css — DECISION: delete; no App.tsx route, no importers (P5)
-[2026-04-23T21:32:00Z] [DELETE] ui/src/components/ProgressSidebar.example.tsx — example file, no production import (P5)
-[2026-04-23T21:32:00Z] [DELETE] ui/src/examples/useBuildMonitor.example.ts — example file, no production import (P5)
-[2026-04-23T21:34:00Z] [DELETE] hooks/__init__.py — zero-byte, no package purpose, hooks/ is shell scripts not a Python package (P5)
-[2026-04-23T21:34:00Z] [DELETE] api/services/__init__.py — zero-byte, no package purpose (P5)
-[2026-04-23T21:34:00Z] [DELETE] core/cluster/scripts/__init__.py — zero-byte, no package purpose (P5)
-[2026-04-23T21:34:00Z] [DELETE] _check_quality_full() stub in core/auto_debug.py — dead stub returning skipped=True; caller line in dispatch chain also removed (P5)
-[2026-04-23T21:34:00Z] [DELETE] average_resolution_time=None field in api/main.py:ErrorMetrics constructor — TODO stub with no implementation (P5)
-[2026-04-23T21:34:00Z] [FIX] .buildrunner/scripts/activate-all-systems.sh L705 — Phase 13 label changed to Phase 14 to match section header (P5)
-[2026-04-23T21:36:00Z] [P5-NOTE] npm run build in ui/ fails with pre-existing TS errors (Routes/Route JSX type, missing reactflow, unused vars in Analytics) — none caused by P5 deletions. App.tsx has zero imports of deleted components. python3 -c "import core; import cli; import api" passes clean. Build errors are Phase 7 (dep hygiene) scope.
-[2026-04-23T21:05:07.233848Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=03ff860b65cf56ee reviewers=2
-[2026-04-23T21:05:15.739025Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=db979527efa73656 reviewers=2
-
-[2026-04-23T20:55:00Z] [DECISION] Close Wave A4 (cluster.json honesty) as already complete — no edit required
   WHY: /root verified current ~/.buildrunner/cluster.json has zero 70B strings (grep exit 1 across 166 lines), vram_required_gib populated for all 4 Below models (nomic-embed, qwen3:8b, qwen2.5:14b, qwen2.5-coder:7b), ollama_port:11434 present. A4 targets from the plan do not exist in the current file — a prior cleanup pass stripped them.
   CONTEXT: ~/.buildrunner/cluster.json Below entry; plan-br3-cleanup-wave-abc.md Phase 1 task 2
-
-[2026-04-23T20:55:01Z] [REJECTED] Rejected premise "Below can't run 70B" — falsified by documented contract and benchmark targets
   WHY: Below is dual RTX 3090 NVLink 48GB VRAM + 64GB DDR5. scripts/test_residency.py:4 documents llama3.3:70b Q4_K_M weights consume ~42GB (fits in 48GB). core/cluster/AGENTS.md:28 documents working config (num_ctx=2048, num_gpu=99). below-benchmark.sh:4 has active target dual_gpu_70b_toks≥18. 42 code references route 70B to Below (node_inference.py:29 OLLAMA_MODEL_LARGE default llama3.3:70b-instruct-q4_K_M, ollama_runtime.py:24, _dispatch-core.sh:519). Claim "can't run" contradicts measured benchmarks.
   CONTEXT: core/cluster/node_inference.py:29,285; core/runtime/ollama_runtime.py:24; core/cluster/AGENTS.md:27-28,86-88; scripts/test_residency.py:4,13; ~/.buildrunner/scripts/below-benchmark.sh:4,31,56-57; ~/.buildrunner/scripts/_dispatch-core.sh:519
-
-[2026-04-23T20:55:02Z] [CONSTRAINT] Below 70B operating contract: num_ctx=2048, num_gpu=99, OLLAMA_KEEP_ALIVE=24h
   WHY: Default num_ctx=4096 OOMs KV cache across 48GB total VRAM; 2048 fits cleanly per below-benchmark.sh:31. All layers must offload (num_gpu=99). Keep-alive 24h required because co-residency with 8B not feasible on 2×24GB — qwen3:8b is fast-cold-load (~8s) by design.
   CONTEXT: core/cluster/AGENTS.md:27-28; below-benchmark.sh:31
-
-[2026-04-23T20:55:03Z] [GOAL] Follow-up flagged: Below Ollama daemon on port 11434 not responding
   WHY: During A4 verification, curl http://10.0.1.105:11434/api/tags returned http=000 size=0 while Below BR3 service on port 8100 returned {"error":"Ollama error: All connection attempts failed"}. Operational issue separate from A4 — Ollama Windows service needs restart/investigation. Not capability regression.
   CONTEXT: Below node; 10.0.1.105:11434 Ollama daemon; 10.0.1.105:8100 BR3 service up
-
-[2026-04-23T20:55:04Z] [PATTERN] Verify plan premises against current state before executing cleanup
   WHY: A4 plan text asserted "70B declarations in cluster.json should be stripped." Current file has zero 70B declarations — a prior pass completed the strip. Executing A4 as written would be no-op or worse (could remove legitimate small-model entries). Always grep the target file before editing; plan text can drift from reality.
   CONTEXT: ~/.buildrunner/cluster.json; plan-br3-cleanup-wave-abc.md; applies to all Wave A/B/C execution
-[2026-04-23T21:05:58.986488Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=d64aeef62d6089bf reviewers=2
-
-[2026-04-23T21:07:12Z] [DECISION] Synced Walter's ~/.buildrunner/config/default-test-config.yaml to match Muddy's
   WHY: Walter was running vitest shards locally for every Synapse session-save, contradicting the "Walter = watcher" design. Walter's local config still listed nodes: [walter, lockwood] (legacy 2-shard era) while Muddy's authoritative config lists [lockwood, otis, lomax]. dispatch-test.sh executes on Walter (invoked by Walter's FastAPI POST /api/run handler) so it reads Walter's local config, not Muddy's — config drift silently re-introduced Walter as a shard worker.
   CONTEXT: byronhudson@10.0.1.102:~/.buildrunner/config/default-test-config.yaml; scp from Muddy on 2026-04-23
-
-[2026-04-23T21:07:12Z] [ARCHITECTURE] Confirmed canonical sharded-testing flow (push-triggered, Walter-coordinated)
   WHY: Documenting the actual end-to-end path because the docs and code comments disagreed with the configs. Flow: auto-save-session.sh on Muddy → git push walter HEAD:refs/heads/current → POST http://walter:8100/api/run?project=X → core/cluster/node_tests.py builds build_id "walter-<proj>-<hash>" → spawns dispatch-test.sh which reads default-test-config.yaml on Walter → SSH to each worker for vitest --shard=N/M in parallel → SCP results back → collect-test-shards.sh merges → results pushed to Lockwood for storage. Walter is the coordinator, never a shard worker (Jenkins controller-isolation pattern).
   CONTEXT: ~/.buildrunner/scripts/auto-save-session.sh:217-263, core/cluster/node_tests.py:540-623, ~/.buildrunner/scripts/dispatch-test.sh, ~/.buildrunner/config/default-test-config.yaml
-
-[2026-04-23T21:07:12Z] [CONSTRAINT] dispatch-test.sh reads the LOCAL config of whichever node it runs on
   WHY: There is no central config service. Each node has its own ~/.buildrunner/config/default-test-config.yaml. Whoever invokes dispatch-test.sh determines which config wins. Updating Muddy's config does not propagate to other nodes — config sync is a manual step. This bit us today: Muddy was updated to exclude Walter, but Walter's copy was untouched, and since Walter invokes dispatch-test.sh, Walter's stale config kept routing shard 1/2 to itself.
   CONTEXT: ~/.buildrunner/scripts/dispatch-test.sh:113-129 (config resolution order: --config flag > project YAML > global default)
-
-[2026-04-23T21:07:12Z] [REJECTED] Considered keeping Walter as a shard worker (matching Walter's local config + the node_tests.py:544 code comment)
   WHY: The user's design intent is "Walter = sentinel/coordinator", which matches Muddy's authoritative config and the BR3 project config. Reverting Muddy/BR3 configs to match Walter's stale view would have re-introduced controller-isolation violations and pinned Walter under load.
   CONTEXT: docs/sharded-testing.md (stale), node_tests.py:544 comment (stale)
-
-[2026-04-23T21:07:12Z] [WHY] Otis and Lomax were idle for Synapse runs despite being workers
   WHY: They were not in Walter's local config (which listed only [walter, lockwood]). Synapse has no project-level cluster-test-config.yaml override, so the Walter-local default won. Synapse shards never reached Otis/Lomax until the config sync.
   CONTEXT: ~/repos/Synapse/.buildrunner/ on Walter (no project config); Walter's previous default-test-config.yaml
-
-[2026-04-23T21:07:12Z] [PATTERN] Push-triggered test pipeline — Muddy push + POST /api/run = test dispatch
   WHY: Documenting the auto-trigger so future sessions know that ANY session save (which runs auto-save-session.sh) triggers a test dispatch on Walter. This explains the high-frequency entries in ~/.buildrunner/logs/walter-dispatch.log (multiple per minute during active work). Dedupe lives at node_tests.py:_inflight_projects but the build_id is generated server-side per request, so concurrent client triggers can stack up.
   CONTEXT: ~/.buildrunner/scripts/auto-save-session.sh:222-258, core/cluster/node_tests.py:53,1325-1393
-
-[2026-04-23T21:07:12Z] [CONSTRAINT] BR3 git push to Walter chronically fails with lease_conflict
   WHY: Surfaced while investigating the dispatch loop. Muddy's auto-save-session.sh does `git push walter HEAD:refs/heads/current --force-with-lease`. Walter's ~/repos/BuildRunner3 has a 'current' branch that is ahead of (or diverged from) what Muddy is pushing, so force-with-lease rejects. Every session save adds another lease_conflict line. Test dispatch for BR3 is currently broken end-to-end as a result. Not fixed in this session — flagged for follow-up.
   CONTEXT: ~/.buildrunner/logs/walter-dispatch.log (recurring "project=buildrunner3 ... reason=lease_conflict"), Walter ~/repos/BuildRunner3 branch state
-
-[2026-04-23T21:07:12Z] [GOAL] Follow-up cleanup needed: stale docs and stale code comments still describe Walter as a shard worker
   WHY: Even with configs synced, the next person to read the docs will be misled. Files to update: ~/.buildrunner/docs/sharded-testing.md (lines 84, 167, 227 describe Walter as "fast unit tests" worker), core/cluster/node_tests.py:544 docstring ("walter+lockwood"). Defer to dedicated cleanup session — out of scope today.
   CONTEXT: ~/.buildrunner/docs/sharded-testing.md, core/cluster/node_tests.py:544
-[2026-04-24T12:43:15Z] THREE_WAY_REVIEW review_start plan_hash=940abf08b0c83ee2 artifact='same plan body' commit=sha-1
-[2026-04-24T12:43:16Z] THREE_WAY_REVIEW review_start plan_hash=1717d37284e4de57 artifact='new plan body' commit=sha-timeout
-[2026-04-24T12:43:16Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1717d37284e4de57 reviewers=2
-[2026-04-24T12:43:18Z] THREE_WAY_REVIEW review_start plan_hash=ecf2d24b82d00ad4 artifact='### Phase 6: sample\n\nImplement one-round review.\n' commit=fixture-sha
 2026-04-24T13:29:27Z phase-7: START (reclaim stale lock 2026-04-23T21:11:19Z)
 2026-04-24T13:29:27Z phase-7: ui/package.json — removed 18 @radix-ui packages (zero usage in ui/src), socket.io-client (doc-only reference)
 2026-04-24T13:29:27Z phase-7: ui/package.json — added overrides { react-is: ^18.3.1, commander: ^8.3.0, brace-expansion: ^2.0.2 }
@@ -1581,9 +1408,6 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 2026-04-24T13:29:27Z phase-7: smoke — python3 -c 'import core, cli, api' → OK
 2026-04-24T13:29:27Z phase-7: smoke — npm run build → PRE-EXISTING FAIL (TS errors in ProjectInitModal.tsx aria-invalid, TaskList.test.tsx Task.status enum, WorkspaceUI.tsx unused vars, prdStore.ts unused vars). None reference removed packages. Present at HEAD commit 1aa3a3b82 before P7 edits. Deferred to P8 triage.
 2026-04-24T13:29:27Z phase-7: COMPLETE
-[2026-04-24T13:29:55Z] THREE_WAY_REVIEW review_start plan_hash=46efc4f9eda2ff0c artifact='.buildrunner/plans/plan-br3-memory-repomix-wave.md' commit=plan-1777037395
-[2026-04-24T13:33:22Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=46efc4f9eda2ff0c reviewers=2
-[2026-04-24T13:33:38Z] THREE_WAY_REVIEW review_start plan_hash=46efc4f9eda2ff0c artifact='.buildrunner/plans/plan-br3-memory-repomix-wave.md' commit=plan-1777037617
 2026-04-24T13:33:56Z phase-8: START
 2026-04-24T13:33:56Z phase-8: walter — /health=200; /api/coverage?project=BuildRunner3 → {pass_rate:0.0, passed:0, total:1} (no regressions flagged)
 2026-04-24T13:33:56Z phase-8: jimmy — offline (timeout on 10.0.1.106:8100); rollup-note write deferred
@@ -1595,3 +1419,43 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 2026-04-24T13:33:56Z phase-8: dashboard — localhost:3000 → 200
 2026-04-24T13:33:56Z phase-8: decisions.log audit — 27+ P5 DELETE entries + P4 archive/delete entries present; trail is auditable
 2026-04-24T13:33:56Z phase-8: COMPLETE
+  1. Arbiter circuit reset (~/.buildrunner/state/arbiter-circuit.json removed)
+  2. Node >=20 verified on 7/7 cluster nodes: Muddy 24.10, Lockwood 25.9, Walter 22.22, Otis 22.22, Lomax 25.9, Jimmy 22.22, Below 22.11 (Below was missing Node; installed Node 22.11.0 via nodejs.org MSI)
+  3. Below Windows compat validated: PowerShell ExecutionPolicy=RemoteSigned (user scope); Machine+User PATH updated to include Program Files/nodejs and APPDATA/npm; Repomix 1.13.1 installed + smoke-tested (--version + --compress both work via PowerShell PATH-refresh wrapper)
+  Known constraint: SSH env cache on Below requires PowerShell wrapper pattern documented in BUILD_br3-memory-repomix-wave.md Phase 1 until machine reboot.
+  WHY: Muddy is the dashboard host; nothing listens on 10.0.1.100:8100 by design. IS_LOCAL=true branch skipped SSH fallback and fell through to online:false, causing false 'Muddy unreachable' alerts on every build. The script running is proof the host is up.
+  CONTEXT: ~/.buildrunner/scripts/cluster-check.sh (added else branch after line 91)
+  WHY: Dashboard runs on Muddy (macOS), /srv/jimmy only exists on Jimmy (Linux). Returning online:false for every node when the filesystem is unreachable conflated 'cannot check' with 'confirmed down' and polluted the prom-v3 node grid with false offline flags.
+  CONTEXT: ~/.buildrunner/dashboard/integrations/jimmy-status.mjs collectNodeHealth(); existing test (integrations-jimmy-status.spec.mjs:47) still passes since it exercises the statusDir-exists branch
+  WHY: Phase 6 made prom-v3 always-on (body class added unconditionally at index.html:12), and the only nodeLastSeen write site (line 1449) was in the legacy else branch — never executed. Every alert chip therefore rendered 'last seen never' regardless of actual node state. Write is gated on nodeStatus==='online' to stamp only when we have evidence.
+  CONTEXT: ~/.buildrunner/dashboard/public/index.html renderNodes() prom-v3 guard
+  WHY: The BR3 dashboard was written as if every node is a symmetric worker with an HTTP :8100 agent and a /srv/jimmy mount. Muddy (dashboard host) has neither, and off-Jimmy installs have no /srv/jimmy. Each probe path that ignored this asymmetry produced false-offline signals.
+  CONTEXT: cluster-check.sh, jimmy-status.mjs, index.html
+  WHY: node.offline events are not currently emitted by any dashboard code (only referenced in VALID_TYPES filter). Suppressing a dead code path would hide the real sources (nodeHealthCache seeded online:false, filesystem-missing returning online:false). Fixed the sources instead.
+  CONTEXT: events.mjs:447 VALID_TYPES, index.html:2369 SSE handler
+  WHY: When a monitoring script runs on the host it's probing, network probes are redundant and failure-prone. Returning online:true based on 'this script executed' is both more accurate and faster. Pattern now encoded in cluster-check.sh IS_LOCAL branch.
+  CONTEXT: ~/.buildrunner/scripts/cluster-check.sh --health-json mode
+  WHY: events.mjs:246 seeds nodeHealthCache with online:false until refreshNodeHealthWithWorkload() completes. Any /api/nodes request during the startup race window shows every node offline. Partially mitigated by my fixes (cluster-check.sh now reports muddy online reliably) but the seed value remains a latent issue for post-restart windows.
+  CONTEXT: ~/.buildrunner/dashboard/events.mjs:246, 441-442
+## 2026-04-23 to 2026-04-24 (archived 2026-04-24)
+- Types: DIAGNOSIS(1), DECISION(45), ARCHITECTURE(2), REJECTED(4), CONSTRAINT(5), PATTERN(4), DEPLOYED(1), WHY(3), P5-AUDIT(19), DELETE(24), FIX(1), P5-NOTE(1), GOAL(2) | Key: Created build spec: br3-memory-repomix-wave with 7 phases (2
+- 112 entries → decisions.log.20260424_093223
+
+# Current Decisions
+[2026-04-24T13:42:25Z] [DECISION] Reset arbiter-circuit.json — restores adversarial review to clean state
+[2026-04-24T13:50:52Z] [DECISION] Fixed 3 spec warnings permanently:
+[2026-04-24T13:53:32Z] [ARCHITECTURE] cluster-check.sh --health-json now reports local host (Muddy) as online via local self-identity
+[2026-04-24T13:53:32Z] [ARCHITECTURE] jimmy-status.mjs collectNodeHealth emits online:null (unknown) when /srv/jimmy/status/nodes is missing
+[2026-04-24T13:53:32Z] [DECISION] Moved nodeLastSeen[name] write into the prom-v3 renderNodes branch
+[2026-04-24T13:53:32Z] [WHY] Three root causes share one dashboard-vs-node-agent asymmetry
+[2026-04-24T13:53:32Z] [REJECTED] Disabling SSE node.offline handler to suppress flapping
+[2026-04-24T13:53:32Z] [PATTERN] Self-identity probe for local host in health checks
+[2026-04-24T13:53:32Z] [CONSTRAINT] Dashboard /api/nodes nodeHealthCache initializes to online:false for all nodes
+[2026-04-24T09:32:23] [DECISION] Created build spec: burnin-harness-reliability with 6 phases
+2026-04-24T14:35:29Z router: build=BUILD_burnin-harness-reliability phase=1 node=muddy reason=path-locality overrides=path-locality
+2026-04-24T14:35:29Z router: build=BUILD_burnin-harness-reliability phase=2 node=muddy reason=path-locality overrides=path-locality
+2026-04-24T14:35:29Z router: build=BUILD_burnin-harness-reliability phase=3 node=muddy reason=path-locality overrides=path-locality
+2026-04-24T14:35:29Z router: build=BUILD_burnin-harness-reliability phase=4 node=muddy reason=path-locality overrides=path-locality
+2026-04-24T14:35:30Z router: build=BUILD_burnin-harness-reliability phase=5 node=muddy reason=spec-preference overrides=none
+2026-04-24T14:35:30Z router: build=BUILD_burnin-harness-reliability phase=6 node=muddy reason=path-locality overrides=path-locality
+2026-04-24T14:36:36Z [autopilot] build=BUILD_burnin-harness-reliability override=out-of-project-files reason="codex workspace-write sandbox scoped to PROJECT_PATH cannot write to ~/.buildrunner/; Rule 22 forward path" builder=claude
