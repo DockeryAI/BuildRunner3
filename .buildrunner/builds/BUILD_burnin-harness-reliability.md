@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-24
-**Status:** Phases 1-2 Complete — Phase 3 In Progress
+**Status:** Phases 1-3 Complete — Phase 4 Next
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness-reliability.md
 **Source Plan SHA:** 8a21d0305b34701f0657e578e3b64405ede6ab9026e84b03ceb5d76ef6df1d50
@@ -86,7 +86,7 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 
 ### Phase 3: State-machine escape + fix-loop timeout
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/lib/runner.sh` (MODIFY)
@@ -98,11 +98,11 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 **After:** 1 (so the smoke tests in this phase don't trip over the stuck case)
 **Deliverables:**
 
-- [ ] `db.sh`: new `db_record_fix_request_stub <case_id> <artifact>` that INSERTs a `status='requested'` row without bumping `fix_attempts`. `runner.sh` switches from `db_record_fix_request "…" "requested"` to the stub. Existing `db_record_fix_request` retains the attempt-counter bump for real attempts.
-- [ ] `fix-loop.sh`: wrap `$CLAUDE_CMD < "$prompt_file"` in `timeout "${BR3_BURNIN_FIX_TIMEOUT_S:-300}"`. On timeout exit status, record `status='failed'`, `resolver='timeout'`, continue to the next attempt.
-- [ ] `state.sh`: new `state_reap_stale_fixing [max_age_minutes]` (default 30). Flips `fixing` → `needs_human` for cases whose `updated_at` is older than threshold AND have no active `fix_requests` row (`status IN ('requested','proposed')` with `created_at` newer than threshold). Stamps those pending rows `status='aborted', resolver='timeout', resolved_at=now`.
-- [ ] `fix-loop.sh`: on budget exhaustion, also `UPDATE burnin_cases SET last_failure='fix budget exhausted after N attempts' WHERE id=…` so `/burnin status` shows the reason.
-- [ ] `db.sh`: wrap `db_advance_case` + `state_advance_after_run` in a single `BEGIN IMMEDIATE; … COMMIT;`. Introduce `db_advance_and_transition <case_id> <passed> <summary>`; `runner.sh` switches to the new helper.
+- [x] `db.sh`: new `db_record_fix_request_stub <case_id> <artifact>` that INSERTs a `status='requested'` row without bumping `fix_attempts`. `runner.sh` switches from `db_record_fix_request "…" "requested"` to the stub. Existing `db_record_fix_request` retains the attempt-counter bump for real attempts.
+- [x] `fix-loop.sh`: wrap `$CLAUDE_CMD < "$prompt_file"` in `timeout "${BR3_BURNIN_FIX_TIMEOUT_S:-300}"`. On timeout exit status, record `status='failed'`, `resolver='timeout'`, continue to the next attempt. (Implemented via `_fix_loop_timed_exec` helper that prefers `gtimeout`/`timeout` when present and falls back to a pure-bash watcher — stock macOS ships neither binary.)
+- [x] `state.sh`: new `state_reap_stale_fixing [max_age_minutes]` (default 30). Flips `fixing` → `needs_human` for cases whose `updated_at` is older than threshold AND have no active `fix_requests` row (`status IN ('requested','proposed')` with `created_at` newer than threshold). Stamps those pending rows `status='aborted', resolver='timeout', resolved_at=now`.
+- [x] `fix-loop.sh`: on budget exhaustion, also `UPDATE burnin_cases SET last_failure='fix budget exhausted after N attempts' WHERE id=…` so `/burnin status` shows the reason.
+- [x] `db.sh`: wrap `db_advance_case` + `state_advance_after_run` in a single `BEGIN IMMEDIATE; … COMMIT;`. Introduce `db_advance_and_transition <case_id> <passed> <summary>`; `runner.sh` switches to the new helper.
 
 **Success Criteria:**
 
