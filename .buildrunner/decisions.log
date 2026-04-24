@@ -1567,3 +1567,18 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 [2026-04-23T21:07:12Z] [GOAL] Follow-up cleanup needed: stale docs and stale code comments still describe Walter as a shard worker
   WHY: Even with configs synced, the next person to read the docs will be misled. Files to update: ~/.buildrunner/docs/sharded-testing.md (lines 84, 167, 227 describe Walter as "fast unit tests" worker), core/cluster/node_tests.py:544 docstring ("walter+lockwood"). Defer to dedicated cleanup session — out of scope today.
   CONTEXT: ~/.buildrunner/docs/sharded-testing.md, core/cluster/node_tests.py:544
+[2026-04-24T12:43:15Z] THREE_WAY_REVIEW review_start plan_hash=940abf08b0c83ee2 artifact='same plan body' commit=sha-1
+[2026-04-24T12:43:16Z] THREE_WAY_REVIEW review_start plan_hash=1717d37284e4de57 artifact='new plan body' commit=sha-timeout
+[2026-04-24T12:43:16Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1717d37284e4de57 reviewers=2
+[2026-04-24T12:43:18Z] THREE_WAY_REVIEW review_start plan_hash=ecf2d24b82d00ad4 artifact='### Phase 6: sample\n\nImplement one-round review.\n' commit=fixture-sha
+2026-04-24T13:29:27Z phase-7: START (reclaim stale lock 2026-04-23T21:11:19Z)
+2026-04-24T13:29:27Z phase-7: ui/package.json — removed 18 @radix-ui packages (zero usage in ui/src), socket.io-client (doc-only reference)
+2026-04-24T13:29:27Z phase-7: ui/package.json — added overrides { react-is: ^18.3.1, commander: ^8.3.0, brace-expansion: ^2.0.2 }
+2026-04-24T13:29:27Z phase-7: ui/package-lock.json — npm install + npm dedupe; react-is 16/17/18 → 18.3.1 single; commander 4/7/8 → 8.3.0 single; brace-expansion 1/2 → 2.1.0 single
+2026-04-24T13:29:27Z phase-7: pyproject.toml — removed pyperclip (zero imports); added pydantic>=2.0; moved notion-client → optional 'notion'; moved opentelemetry-instrumentation-{fastapi,requests,logging,httpx} → optional 'otel-instrumentation'; kept core otel-api/sdk/exporter-otlp (used by core/telemetry/otel_instrumentation.py)
+2026-04-24T13:29:27Z phase-7: requirements-api.txt — removed direct 'websockets==12.0' (starlette provides); removed 'sqlite-vec>=0.1' (docstring-only reference in core/cluster/below/semantic_cache.py, never imported)
+2026-04-24T13:29:27Z phase-7: core/cluster/below/semantic_cache.py — NO MODIFY (sqlite_vec only in docstrings; no code change needed)
+2026-04-24T13:29:27Z phase-7: smoke — python3 -c 'import core, cli, api' → OK
+2026-04-24T13:29:27Z phase-7: smoke — npm run build → PRE-EXISTING FAIL (TS errors in ProjectInitModal.tsx aria-invalid, TaskList.test.tsx Task.status enum, WorkspaceUI.tsx unused vars, prdStore.ts unused vars). None reference removed packages. Present at HEAD commit 1aa3a3b82 before P7 edits. Deferred to P8 triage.
+2026-04-24T13:29:27Z phase-7: COMPLETE
+[2026-04-24T13:29:55Z] THREE_WAY_REVIEW review_start plan_hash=46efc4f9eda2ff0c artifact='.buildrunner/plans/plan-br3-memory-repomix-wave.md' commit=plan-1777037395

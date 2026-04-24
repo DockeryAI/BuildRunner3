@@ -5,8 +5,7 @@ fastapi==0.109.0
 uvicorn[standard]==0.27.0
 python-multipart==0.0.6
 
-# WebSocket support
-websockets==12.0
+# WebSocket support provided by starlette/FastAPI — no direct `websockets` dep needed
 
 # File watching
 watchdog==4.0.0
@@ -17,8 +16,8 @@ pytest-asyncio==0.23.3
 
 # Below offload infrastructure (Phase 0+)
 scikit-learn>=1.4         # DBSCAN clustering (Phase 3)
-sqlite-vec>=0.1           # Semantic cache vector store (Phase 4)
 llmlingua>=0.2.2          # LLMLingua-2 prompt compression (Phase 13)
+# sqlite-vec removed: referenced only in semantic_cache.py docstrings, never imported
 # httpx is already pinned above; used by embed.py for Below API calls
 
 # NOTE: semgrep is a system/dev dependency — install via package manager:
