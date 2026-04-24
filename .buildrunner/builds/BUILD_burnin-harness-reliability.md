@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-24
-**Status:** Phases 1-4 Complete — Phase 5 Next
+**Status:** Phases 1-4 Complete — Phase 5 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness-reliability.md
 **Source Plan SHA:** 8a21d0305b34701f0657e578e3b64405ede6ab9026e84b03ceb5d76ef6df1d50
@@ -138,7 +138,7 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 
 ### Phase 5: Claude review + final arbitration (ONE round)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `.buildrunner/adversarial-reviews/burnin-harness-fix-review.md` (NEW)
@@ -146,10 +146,10 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 **Blocked by:** 1, 2, 3, 4
 **Deliverables:**
 
-- [ ] Collect the union diff of Phases 1–4 vs the pre-change SHA. `~/.buildrunner` lives outside the git repo — snapshot the touched files before Phase 1 and diff against the post-Phase-4 state.
-- [ ] Claude issues a single verdict — **PASS** or **BLOCK** — with file:line findings and one-line rationale each. No second review round under any circumstance.
-- [ ] On BLOCK: Codex applies exactly one targeted revision pass scoped strictly to Claude's findings (no new scope). Claude then arbitrates once: **APPROVE** or **ESCALATE** to human. No further rounds.
-- [ ] Write the artifact at `.buildrunner/adversarial-reviews/burnin-harness-fix-review.md` with sections: `## Verdict`, `## Findings`, `## Revision Pass (if any)`, `## Arbitration`, `## Final State`.
+- [x] Collect the union diff of Phases 1–4 vs the pre-change SHA. `~/.buildrunner` lives outside the git repo — snapshot the touched files before Phase 1 and diff against the post-Phase-4 state.
+- [x] Claude issues a single verdict — **PASS** or **BLOCK** — with file:line findings and one-line rationale each. No second review round under any circumstance.
+- [x] On BLOCK: Codex applies exactly one targeted revision pass scoped strictly to Claude's findings (no new scope). Claude then arbitrates once: **APPROVE** or **ESCALATE** to human. No further rounds.
+- [x] Write the artifact at `.buildrunner/adversarial-reviews/burnin-harness-fix-review.md` with sections: `## Verdict`, `## Findings`, `## Revision Pass (if any)`, `## Arbitration`, `## Final State`.
 
 **Success Criteria:**
 
