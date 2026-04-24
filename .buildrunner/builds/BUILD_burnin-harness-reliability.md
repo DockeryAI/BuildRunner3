@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-24
-**Status:** Phases 1-3 Complete — Phase 4 Next
+**Status:** Phases 1-4 Complete — Phase 5 Next
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness-reliability.md
 **Source Plan SHA:** 8a21d0305b34701f0657e578e3b64405ede6ab9026e84b03ceb5d76ef6df1d50
@@ -112,22 +112,23 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 
 ### Phase 4: Dispatcher hygiene, watchd install, untested sweep
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/burnin.sh` (MODIFY)
 - `~/.buildrunner/scripts/burnin/lib/watchd.sh` (MODIFY)
+- `~/.buildrunner/scripts/burnin/lib/db.sh` (MODIFY — new `db_record_fix_skip` helper)
 - `~/Library/LaunchAgents/com.buildrunner.burnin-watchd.plist` (NEW — installed via `watchd-install`)
 
 **Blocked by:** 3 (consumes `state_reap_stale_fixing`)
 **After:** 1, 2
 **Deliverables:**
 
-- [ ] `burnin.sh`: new `burnin run --untested` handler — iterates every `burnin_cases WHERE state='untested' AND tombstoned_at IS NULL` row and runs it once in warm condition. Honors existing autoheal settings.
-- [ ] `burnin.sh`: when the autoheal branch in `_run_one` decides not to dispatch (daily cost cap / `BR3_BURNIN_AUTOHEAL=off` / operator interrupt), write a `fix_requests` row with `status='aborted', resolver='skipped'` and a one-line reason in `failure_artifact` so the decision is visible in the DB.
-- [ ] `burnin.sh`: top of `cmd_status` and `cmd_run` calls `state_reap_stale_fixing 30` (wrapped `2>/dev/null || true` so a sqlite blip never blocks status output).
-- [ ] `watchd.sh`: add a 5-minute reaper tick in `watchd_start` that calls `state_reap_stale_fixing 30` alongside the fswatch loop (background sidecar subshell; fswatch stays primary).
-- [ ] Run `~/.buildrunner/scripts/burnin/burnin.sh watchd-install`. Verify `launchctl list com.buildrunner.burnin-watchd` prints the label.
+- [x] `burnin.sh`: new `burnin run --untested` handler — iterates every `burnin_cases WHERE state='untested' AND tombstoned_at IS NULL` row and runs it once in warm condition. Honors existing autoheal settings. Iteration uses an array loaded up-front (not a herestring while-read) to survive stdin consumption by `fswatch`/`yq`/`runner.sh` children that previously truncated sweeps mid-run.
+- [x] `burnin.sh`: when the autoheal branch in `_run_one` decides not to dispatch (daily cost cap / `BR3_BURNIN_AUTOHEAL=off` / operator interrupt), write a `fix_requests` row with `status='aborted', resolver='skipped'` and a one-line reason in `failure_artifact` so the decision is visible in the DB. (Implemented via new `db_record_fix_skip` helper. Operator-interrupt path installs a transient `SIGINT` trap so Ctrl-C during a fix-loop dispatch also records a skip row.)
+- [x] `burnin.sh`: top of `cmd_status` and `cmd_run` calls `state_reap_stale_fixing 30` (wrapped `2>/dev/null || true` so a sqlite blip never blocks status output).
+- [x] `watchd.sh`: add a 5-minute reaper tick in `watchd_start` that calls `state_reap_stale_fixing 30` alongside the fswatch loop (background sidecar subshell; fswatch stays primary). Tick interval is `BR3_BURNIN_REAPER_TICK_S` (default 300); threshold is `BR3_BURNIN_REAPER_THRESHOLD_MIN` (default 30).
+- [x] Run `~/.buildrunner/scripts/burnin/burnin.sh watchd-install`. Verify `launchctl list com.buildrunner.burnin-watchd` prints the label.
 
 **Success Criteria:**
 
