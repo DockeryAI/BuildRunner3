@@ -14,7 +14,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-24
-**Status:** Phases 1-4 Complete — Phase 5 In Progress
+**Status:** Phases 1-5 Complete — Phase 6 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-harness-reliability.md
 **Source Plan SHA:** 8a21d0305b34701f0657e578e3b64405ede6ab9026e84b03ceb5d76ef6df1d50
@@ -158,7 +158,7 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 
 ### Phase 6: End-to-end verification
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/burnin/logs/` (writes only)
@@ -167,11 +167,11 @@ Fix the burn-in harness so it is actually autonomous. The `sharding-cluster-chec
 **Blocked by:** 5
 **Deliverables:**
 
-- [ ] `~/.buildrunner/scripts/burnin/burnin.sh run sharding-cluster-check-passthrough` → PASS on all assertions.
-- [ ] `~/.buildrunner/scripts/burnin/burnin.sh run sharding-dashboard-chip` → PASS.
-- [ ] `~/.buildrunner/scripts/burnin/burnin.sh run --untested` → all 11 untested sharding cases get a first run. Record pass/fail counts in the verify report.
-- [ ] Hang-simulation smoke: seed a failing case and run `BR3_BURNIN_FIX_CLAUDE_CMD='sleep 600' BR3_BURNIN_FIX_TIMEOUT_S=10 ~/.buildrunner/scripts/burnin/burnin.sh fix <case>` → exits within ~15s with the case in `needs_human` and three `fix_requests` rows whose `resolver='timeout'`.
-- [ ] `~/.buildrunner/scripts/burnin/burnin.sh status` shows zero cases in `fixing` older than 30 minutes.
+- [x] `~/.buildrunner/scripts/burnin/burnin.sh run sharding-cluster-check-passthrough` → PASS on all assertions.
+- [x] `~/.buildrunner/scripts/burnin/burnin.sh run sharding-dashboard-chip` → PASS.
+- [x] `~/.buildrunner/scripts/burnin/burnin.sh run --untested` → all 11 untested sharding cases get a first run. Record pass/fail counts in the verify report.
+- [x] Hang-simulation smoke: seed a failing case and run `BR3_BURNIN_FIX_CLAUDE_CMD='sleep 600' BR3_BURNIN_FIX_TIMEOUT_S=10 ~/.buildrunner/scripts/burnin/burnin.sh fix <case>` → exits within ~15s with the case in `needs_human` and three `fix_requests` rows whose `resolver='timeout'`.
+- [x] `~/.buildrunner/scripts/burnin/burnin.sh status` shows zero cases in `fixing` older than 30 minutes.
 
 **Success Criteria:**
 
