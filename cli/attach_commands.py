@@ -10,6 +10,7 @@ from rich.prompt import Confirm
 import logging
 import json
 
+from cli.upgrade_commands import apply_attach_upgrade, run_upgrade
 from core.retrofit import CodebaseScanner, FeatureExtractor, PRDSynthesizer
 from core.retrofit.version_detector import BRVersionDetector, BRVersion
 from core.migration.v2_parser import V2ProjectParser
@@ -22,6 +23,9 @@ from core.enforcement_engine import ConfigGenerator
 from core.asset_resolver import AssetNotFoundError, resolve_asset_path
 from core.installer import CoreBaselineInstaller
 
+console = Console()
+logger = logging.getLogger(__name__)
+
 # Optional import - ClaudeMdGenerator may not exist yet
 try:
     from core.claude_md_generator import ClaudeMdGenerator
@@ -30,9 +34,6 @@ try:
 except ImportError:
     HAS_CLAUDE_MD = False
     logger.warning("ClaudeMdGenerator not available - CLAUDE.md generation will be skipped")
-
-console = Console()
-logger = logging.getLogger(__name__)
 
 
 def attach_command(
@@ -53,6 +54,11 @@ def attach_command(
         False,
         "--scan",
         help="Detect and print project facets without installing; also forces directory interpretation",
+    ),
+    upgrade: bool = typer.Option(
+        False,
+        "--upgrade",
+        help="Refresh packaged templates and repair BR3 attach drift for the target repo",
     ),
 ):
     """
@@ -240,6 +246,17 @@ TODO: Document features
     if scan:
         facets, detection_report = CodebaseScanner(directory).detect_facets()
         _show_detected_facets(directory, facets, detection_report.composition_conflicts, detection_report.ambiguities)
+        return
+
+    if upgrade:
+        console.print("[bold]Refreshing packaged BR3 templates...[/bold]")
+        run_upgrade()
+        console.print()
+        console.print(f"[bold]Repairing attach drift in[/bold] [cyan]{directory}[/cyan]")
+        upgrade_report = apply_attach_upgrade(directory, interactive=False)
+        console.print(f"[dim]Attach upgrade: {upgrade_report.summary()}[/dim]")
+        for error in upgrade_report.errors:
+            console.print(f"[red]Error:[/red] {error}")
         return
 
     # Default output path

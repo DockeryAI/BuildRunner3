@@ -7,6 +7,14 @@ from pathlib import Path
 from core.installer.adapters import AdapterResult, write_template_if_missing
 from core.installer.codemod import add_vite_plugin, mount_br_logger_in_main_tsx
 
+REACT_VITE_EXPECTED_FILES = (
+    Path("src/components/BRLogger.tsx"),
+    Path("src/components/supabaseLogger.ts"),
+    Path("src/components/brLoggerTransport.ts"),
+    Path("src/plugins/vite-br-unified-plugin.ts"),
+    Path("br-listen.mjs"),
+)
+
 
 class ReactViteAdapter:
     """Install the React/Vite logger scaffold and entry-point wiring."""

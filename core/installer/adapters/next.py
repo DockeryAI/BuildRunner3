@@ -7,6 +7,11 @@ from pathlib import Path
 from core.installer.adapters import AdapterResult, relative_import_path, write_template_if_missing
 from core.installer.codemod import mount_br_logger_in_main_tsx
 
+NEXT_EXPECTED_FILES = (
+    Path("app/components/BRLoggerNext.tsx"),
+    Path("app/api/br-log/route.ts"),
+)
+
 
 class NextAdapter:
     """Install the Next.js logger scaffold and root wiring."""

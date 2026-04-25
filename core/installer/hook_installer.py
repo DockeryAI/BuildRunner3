@@ -12,6 +12,11 @@ from core.asset_resolver import resolve_asset_path
 _BR2_MARKER_PATH = Path(".buildrunner/hooks/brandock-spec.marker")
 _PRE_PUSH_FRAGMENT_ASSETS = (".buildrunner/hooks/pre-push.d/50-ship-gate.sh",)
 _UTC = getattr(datetime, "UTC", timezone.utc)  # noqa: UP017
+HOOK_EXPECTED_FILES = (
+    Path(".buildrunner/hooks/pre-commit-enforced"),
+    Path(".buildrunner/hooks/pre-push-enforced"),
+    Path(".buildrunner/hooks/pre-push.d/50-ship-gate.sh"),
+)
 
 
 @dataclass(frozen=True)
@@ -39,6 +44,9 @@ def install_hooks(target_repo: Path) -> HookInstallResult:
     decisions_log = buildrunner_dir / "decisions.log"
     pre_push_d = git_hooks_dir / "pre-push.d"
     pre_push_d.mkdir(parents=True, exist_ok=True)
+    repo_hooks_dir = buildrunner_dir / "hooks"
+    repo_hooks_dir.mkdir(parents=True, exist_ok=True)
+    (repo_hooks_dir / "pre-push.d").mkdir(parents=True, exist_ok=True)
 
     pre_commit_source = resolve_asset_path(".buildrunner/hooks/pre-commit-enforced")
     pre_push_source = resolve_asset_path(".buildrunner/hooks/pre-push-enforced")
@@ -56,6 +64,7 @@ def install_hooks(target_repo: Path) -> HookInstallResult:
 
     for hook_name, source_path in source_specs.items():
         target_path = git_hooks_dir / hook_name
+        repo_asset_path = repo_hooks_dir / source_path.name
         if _is_legacy_br2_hook(
             hook_path=target_path,
             expected_br3_bytes=source_bytes[hook_name],
@@ -73,12 +82,17 @@ def install_hooks(target_repo: Path) -> HookInstallResult:
 
         _install_file(source_path, target_path)
         installed.append(target_path)
+        _install_file(source_path, repo_asset_path)
+        installed.append(repo_asset_path)
 
     for relative_path in _PRE_PUSH_FRAGMENT_ASSETS:
         source_path = resolve_asset_path(relative_path)
         target_path = pre_push_d / source_path.name
+        repo_asset_path = repo_hooks_dir / "pre-push.d" / source_path.name
         _install_file(source_path, target_path)
         installed.append(target_path)
+        _install_file(source_path, repo_asset_path)
+        installed.append(repo_asset_path)
 
     return HookInstallResult(
         replaced=replaced,

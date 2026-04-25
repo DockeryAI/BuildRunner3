@@ -7,6 +7,8 @@ from pathlib import Path
 from core.installer.adapters import AdapterResult, write_template_if_missing
 from core.installer.codemod import mount_br_logger_in_main_tsx
 
+EXPO_EXPECTED_FILES = (Path("components/BRLoggerNative.tsx"),)
+
 
 class ExpoAdapter:
     """Install the Expo logger scaffold and app-root wiring."""

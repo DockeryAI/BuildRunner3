@@ -35,6 +35,15 @@ _WORKFLOW_DIRECTORIES = (
 )
 _BYPASS_JUSTIFICATION_CONTENT = "# Bypass Justification\n"
 _LOG_ROTATION_STUB = "#!/bin/sh\nexit 0\n"
+BASELINE_EXPECTED_FILES = (
+    Path(".buildrunner/agents.json"),
+    Path(".buildrunner/skill-state.json"),
+    Path(".buildrunner/behavior.yaml"),
+    Path(".buildrunner/orchestration_state.json"),
+    Path(".buildrunner/bypass-justification.md"),
+    Path(".buildrunner/scripts/log-rotation.sh"),
+    Path("CLAUDE.md"),
+)
 
 
 @dataclass(frozen=True)
@@ -55,6 +64,11 @@ class CoreBaselineResult:
 
 class CoreBaselineInstaller:
     """Install the universal BuildRunner baseline into a repository."""
+
+    @classmethod
+    def expected_files(cls) -> tuple[Path, ...]:
+        """Return the relative file paths this installer is responsible for."""
+        return BASELINE_EXPECTED_FILES
 
     def install(
         self,

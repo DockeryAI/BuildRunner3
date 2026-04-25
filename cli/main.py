@@ -48,6 +48,7 @@ from cli.autodebug_commands import app as autodebug_app
 from cli.profile_commands import app as profile_app
 from cli.project_commands import project_app
 from cli.attach_commands import attach_command
+from cli.audit_commands import audit_command
 from cli.doctor_commands import doctor_app
 from cli.github_commands import app as github_app
 from cli.upgrade_commands import upgrade_command
@@ -112,6 +113,7 @@ app.add_typer(github_app, name="github")
 
 # Register attach as direct command (not a group)
 app.command(name="attach")(attach_command)
+app.command(name="audit")(audit_command)
 app.command(name="upgrade")(upgrade_command)
 
 # Create guard and service command groups

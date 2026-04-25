@@ -80,6 +80,18 @@ def _build_registry() -> dict[Capability, type]:
 
 
 CAPABILITY_REGISTRY: dict[Capability, type] = _build_registry()
+CAPABILITY_EXPECTED_FILES: dict[Capability, tuple[Path, ...]] = {
+    Capability.pwa: (Path("src/sw.ts"),),
+    Capability.capacitor: (
+        Path("capacitor.config.ts"),
+        Path("src/captures/capacitor/BRLoggerCapacitor.tsx"),
+        Path("src/captures/capacitor/capacitorCapture.ts"),
+    ),
+    Capability.supabase_edge: (Path("supabase/functions/_shared/devLog.ts"),),
+    Capability.dexie_offline: (Path("src/db.ts"),),
+    Capability.web_push_vapid: (Path("src/components/PushDebug.tsx"),),
+    Capability.netlify_deploy: (Path("netlify.toml"),),
+}
 PwaCapability = CAPABILITY_REGISTRY[Capability.pwa]
 CapacitorCapability = CAPABILITY_REGISTRY[Capability.capacitor]
 SupabaseEdgeCapability = CAPABILITY_REGISTRY[Capability.supabase_edge]
@@ -111,6 +123,7 @@ def apply_capabilities(
 
 
 __all__ = [
+    "CAPABILITY_EXPECTED_FILES",
     "CAPABILITY_REGISTRY",
     "CapabilityConflictError",
     "CapabilityResult",

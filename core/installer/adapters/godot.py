@@ -15,6 +15,17 @@ _AUTLOAD_SCRIPTS = (
     ("EventBus", "EventBus.gd"),
     ("SaveManager", "SaveManager.gd"),
 )
+GODOT_EXPECTED_FILES = (
+    Path("scripts/autoloads/BRLogger.gd"),
+    Path("scripts/autoloads/GameState.gd"),
+    Path("scripts/autoloads/EventBus.gd"),
+    Path("scripts/autoloads/SaveManager.gd"),
+    Path("scripts/godot-run.sh"),
+    Path("scripts/godot-test.sh"),
+    Path("CLAUDE.md.godot-addendum"),
+    Path("Makefile"),
+)
+GODOT_AUTOLOAD_NAMES = tuple(name for name, _filename in _AUTLOAD_SCRIPTS)
 _MAKEFILE_MARKER_START = "# >>> br3-godot-targets >>>"
 _MAKEFILE_MARKER_END = "# <<< br3-godot-targets <<<"
 _BR_PROJECT_PATTERN = re.compile(
@@ -156,4 +167,10 @@ def install(target_repo: Path) -> AdapterResult:
     return GodotAdapter().install(target_repo)
 
 
-__all__ = ["GodotAdapter", "install", "verify_zshrc_br_project_helper"]
+__all__ = [
+    "GODOT_AUTOLOAD_NAMES",
+    "GODOT_EXPECTED_FILES",
+    "GodotAdapter",
+    "install",
+    "verify_zshrc_br_project_helper",
+]
