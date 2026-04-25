@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-25
-**Status:** Phases 1-1 Complete — Phase 2 In Progress
+**Status:** Phases 1-2 Complete — Phase 3 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/burnin/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-queue-v2.md
 **Source Plan SHA:** 830e493397dc97f8e71253c2f34f6344a4917274e03a18d5f1e1bf1fbed5d2af
@@ -69,7 +69,7 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 
 ### Phase 2: Atomic failure-transition + enqueue; canonicalize state machine
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/lib/db.sh` (MODIFY)
@@ -79,12 +79,12 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 **Blocked by:** Phase 1
 **Deliverables:**
 
-- [ ] Replace the two-call sequence in `runner.sh:185-204` with a new `db_failure_transition_and_enqueue` (distinct from the worker-side `db_advance_and_transition`, which becomes worker-only in Phase 5) that does state transition + queue insert in one `BEGIN IMMEDIATE … COMMIT` block.
-- [ ] On failure with autoheal ON: case stays `untested`/`probation` (no `fixing` flip), queue gets a `requested` row.
-- [ ] On failure with autoheal OFF: case stays `untested`/`probation`, queue gets a `deferred` row with `enqueue_reason='autoheal_off'`, case's `deferred_reason` populated.
-- [ ] Delete `state_advance_after_run` and the dead `state.sh:64-127` body. Update the one snapshot import path. State machine has exactly one implementation.
-- [ ] Delete the `db_record_fix_skip` function from `db.sh` entirely; remove all non-SIGINT call sites. (The SIGINT trap caller in `_run_one` is removed in Phase 4 — sequencing is intentional.)
-- [ ] Smoke: forced failure with autoheal=on writes one `requested` row; with autoheal=off writes one `deferred` row; both leave case in pre-failure state (not `fixing`).
+- [x] Replace the two-call sequence in `runner.sh:185-204` with a new `db_failure_transition_and_enqueue` (distinct from the worker-side `db_advance_and_transition`, which becomes worker-only in Phase 5) that does state transition + queue insert in one `BEGIN IMMEDIATE … COMMIT` block.
+- [x] On failure with autoheal ON: case stays `untested`/`probation` (no `fixing` flip), queue gets a `requested` row.
+- [x] On failure with autoheal OFF: case stays `untested`/`probation`, queue gets a `deferred` row with `enqueue_reason='autoheal_off'`, case's `deferred_reason` populated.
+- [x] Delete `state_advance_after_run` and the dead `state.sh:64-127` body. Update the one snapshot import path. State machine has exactly one implementation.
+- [x] Delete the `db_record_fix_skip` function from `db.sh` entirely; remove all non-SIGINT call sites. (The SIGINT trap caller in `_run_one` is removed in Phase 4 — sequencing is intentional.)
+- [x] Smoke: forced failure with autoheal=on writes one `requested` row; with autoheal=off writes one `deferred` row; both leave case in pre-failure state (not `fixing`).
 
 **Success Criteria:**
 
