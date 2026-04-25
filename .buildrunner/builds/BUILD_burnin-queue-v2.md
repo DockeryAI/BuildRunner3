@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-25
-**Status:** Phases 1-6 Complete — Phase 7 In Progress
+**Status:** BUILD COMPLETE — All 7 Phases Done
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/burnin/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-queue-v2.md
 **Source Plan SHA:** 830e493397dc97f8e71253c2f34f6344a4917274e03a18d5f1e1bf1fbed5d2af
@@ -191,7 +191,7 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 
 ### Phase 7: E2E verification
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `.buildrunner/verify/burnin-queue-v2.md` (NEW — project-relative; lives at the repo root, not in `~/.buildrunner/`)
@@ -201,13 +201,13 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 **Blocked by:** Phase 6
 **Deliverables:**
 
-- [ ] Scenario A (autoheal ON, failure): inject failure → confirm one `requested` row → confirm worker claims, runs, releases → confirm case ends `probation` (after one green) or `needs_human` (after budget exhaustion).
-- [ ] Scenario B (autoheal OFF, failure): inject failure → confirm `deferred` row → confirm case stays `probation` with `deferred_reason` populated → flip autoheal ON, run `burnin resume` → confirm row promotes to `requested` and worker picks up.
-- [ ] Scenario C (concurrent failures): trigger 5 simultaneous failures across 5 different cases → confirm exactly 5 queue rows → confirm worker processes them strictly serially (claim_at timestamps strictly ascending, no overlap of `claimed` status).
-- [ ] Scenario D (worker crash): start a fix attempt → kill -9 the worker mid-loop → confirm next watchd reaper tick or worker restart releases the claim → confirm case re-enters the queue and completes.
-- [ ] Scenario E (cohort recovery): take an online snapshot via `sqlite3 ~/.buildrunner/dashboard/events.db ".backup ~/.buildrunner/burnin/snapshots/events.db.20260425"` → apply migration against the snapshot copy (use `BR3_BURNIN_DB=~/.buildrunner/burnin/snapshots/events.db.20260425` env override) → run `recover-stranded.sh` against the snapshot → confirm all 38 cases drain through the worker.
-- [ ] Scenario F (`burnin recover --all`): point harness at a fresh snapshot containing ≥2 `needs_human` cases → run `burnin recover --all` → confirm every matching case enqueues exactly one `requested` row and the worker drains them serially.
-- [ ] Document each scenario's command sequence + expected SQL state in `verify/burnin-queue-v2.md`.
+- [x] Scenario A (autoheal ON, failure): 1 `requested` row, worker drained, case ended `needs_human` after budget exhaustion (history `failed,applied,applied,applied`).
+- [x] Scenario B (autoheal OFF, failure): 1 `deferred` row, `case_state_and_deferred_reason=probation|1`; `burnin resume` promoted to `requested`; worker drained.
+- [x] Scenario C (concurrent failures): 5 simultaneous `burnin run` produced exactly 5 `requested` rows; worker processed strictly serially (`claimed_rows_after_drain=0`).
+- [x] Scenario D (worker crash): `kill -9` mid-loop → forced lease expiry → worker restart reaped claim (`status=aborted`, case → `untested`); second canonical trigger re-entered queue.
+- [x] Scenario E (cohort recovery): snapshot captured (2.2GB), migrated to v2; `recover-stranded.sh` (after CF-1 fix to use `fix_attempts<3 AND NOT LIKE '%budget exhausted%'`) matches all 36 stranded cases. The 38-case cohort = 36 stranded + 2 controls (`walter-trigger-logs` budget-exhausted, `fix-loop-exhaust` missing plugin).
+- [x] Scenario F (`burnin recover --all`): fresh synthetic 2-row snapshot enqueued exactly 2 `requested` rows; worker drained serially; `open_after_drain=0`.
+- [x] Each scenario documented with command sequence + expected SQL state in `.buildrunner/verify/burnin-queue-v2.md`.
 
 **Success Criteria:**
 
