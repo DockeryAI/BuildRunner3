@@ -20,6 +20,7 @@ from core.shell_integration import get_shell_integration
 from core.design_extractor import DesignExtractor
 from core.enforcement_engine import ConfigGenerator
 from core.asset_resolver import AssetNotFoundError, resolve_asset_path
+from core.installer import CoreBaselineInstaller
 
 # Optional import - ClaudeMdGenerator may not exist yet
 try:
@@ -119,6 +120,9 @@ def attach_command(
             buildrunner_dir.mkdir(exist_ok=True)
 
         # Check for PROJECT_SPEC.md
+        baseline_result = CoreBaselineInstaller().install(directory)
+        console.print(f"[dim]Core baseline: {baseline_result.summary()}[/dim]")
+
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"
         if not spec_path.exists():
             console.print("[yellow]No PROJECT_SPEC.md found[/yellow]")
@@ -302,6 +306,10 @@ TODO: Document features
     elif version_result.version == BRVersion.BR3:
         console.print("[green]✅ BuildRunner 3 already attached - updating PRD...[/green]")
         console.print()
+
+    baseline_result = CoreBaselineInstaller().install(directory)
+    console.print(f"[dim]Core baseline: {baseline_result.summary()}[/dim]")
+    console.print()
 
     # Phase 1: Scan Codebase
     with Progress(

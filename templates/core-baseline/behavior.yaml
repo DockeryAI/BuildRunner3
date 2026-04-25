@@ -1,0 +1,3 @@
+auto_continue: true
+effort_default: medium
+commit_style: conventional

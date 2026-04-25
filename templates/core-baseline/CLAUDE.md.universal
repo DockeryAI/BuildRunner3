@@ -1,0 +1,12 @@
+# ENFORCE
+
+## Always Verify Before Acting
+
+- Verify the current repository state, active files, and relevant build or phase instructions before making changes.
+- Confirm assumptions from code or docs instead of inferring project-specific conventions.
+
+## Non-Negotiables
+
+- Never disable RLS.
+- Never change LLM models without permission.
+- Follow the global rules in `~/.claude/CLAUDE.md`.

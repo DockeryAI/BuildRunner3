@@ -27,6 +27,7 @@ from core.self_service import SelfServiceManager
 from core.claude_md_generator import ClaudeMdGenerator
 from core.runtime.config import RuntimeConfigError, apply_runtime_selection, resolve_runtime_selection
 from core.asset_resolver import resolve_install_path
+from core.installer import CoreBaselineInstaller
 from core.project_type import Bundler, Capability, Framework, ProjectFacets, apply_composition_rules
 
 # Import new command groups
@@ -348,11 +349,17 @@ def init(
             config_manager = ConfigManager(project_root)
             config_manager.init_project_config()
 
+            baseline_result = CoreBaselineInstaller().install(
+                project_root,
+                declared_facets=declared_facets,
+            )
+
             progress.update(task, completed=True)
 
         console.print()
         console.print("[bold]Detected/declared facets[/bold]")
         console.print(f"  {declared_facets}")
+        console.print(f"[dim]Core baseline: {baseline_result.summary()}[/dim]")
         for warning in type_warnings:
             console.print(f"  [yellow]Warning:[/yellow] {warning}")
         for conflict_note in type_conflicts:
