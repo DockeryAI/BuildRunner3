@@ -1,0 +1,47 @@
+import { useState } from "react";
+
+export function PushDebug() {
+  const [permission, setPermission] = useState(
+    typeof Notification === "undefined" ? "unsupported" : Notification.permission,
+  );
+  const [status, setStatus] = useState("idle");
+
+  async function requestPermission() {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      setStatus("notifications unsupported");
+      return;
+    }
+
+    setStatus("requesting");
+    const nextPermission = await Notification.requestPermission();
+    setPermission(nextPermission);
+    setStatus(`permission: ${nextPermission}`);
+  }
+
+  async function inspectServiceWorker() {
+    if (!("serviceWorker" in navigator)) {
+      setStatus("service worker unavailable");
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    setStatus(subscription ? "existing push subscription found" : "no push subscription yet");
+  }
+
+  return (
+    <section>
+      <h2>Push Debug</h2>
+      <p>Permission: {permission}</p>
+      <p>Status: {status}</p>
+      <button type="button" onClick={requestPermission}>
+        Request notification permission
+      </button>
+      <button type="button" onClick={inspectServiceWorker}>
+        Inspect service worker
+      </button>
+    </section>
+  );
+}
+
+export default PushDebug;

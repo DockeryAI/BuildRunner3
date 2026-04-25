@@ -1,0 +1,53 @@
+/*
+Register this worker through vite.config with vite-plugin-pwa using:
+
+VitePWA({
+  strategies: 'injectManifest',
+  srcDir: 'src',
+  filename: 'sw.ts',
+  injectManifest: {
+    globPatterns: ['**/*', '!**/*.html'],
+  },
+})
+*/
+
+/// <reference lib="webworker" />
+
+import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
+
+type PrecacheEntry = {
+  revision?: string | null;
+  url: string;
+};
+
+declare let self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: Array<PrecacheEntry | string>;
+};
+
+cleanupOutdatedCaches();
+precacheAndRoute(self.__WB_MANIFEST);
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    void self.skipWaiting();
+  }
+});
+
+// Multi-tab SKIP_WAITING pattern:
+// 1. A client notices an update and posts { type: "SKIP_WAITING" } to the waiting worker.
+// 2. After activation, the worker notifies every open tab.
+// 3. Each tab decides whether to reload immediately or wait for user confirmation.
+// Uncomment this stub once the app is ready to coordinate that flow.
+// self.addEventListener("activate", (event) => {
+//   event.waitUntil(
+//     self.clients.matchAll({ type: "window" }).then((clients) => {
+//       clients.forEach((client) => {
+//         client.postMessage({ type: "BR3_SW_ACTIVATED" });
+//       });
+//     }),
+//   );
+// });
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});

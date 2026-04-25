@@ -1,0 +1,32 @@
+import Dexie, { type EntityTable } from "dexie";
+
+export interface LogRecord {
+  id?: number;
+  createdAt: string;
+  level: string;
+  message: string;
+  payload?: unknown;
+}
+
+export interface SyncJob {
+  id: string;
+  kind: string;
+  payload: unknown;
+  createdAt: string;
+}
+
+export class BRLoggerDexie extends Dexie {
+  logs!: EntityTable<LogRecord, "id">;
+  syncJobs!: EntityTable<SyncJob, "id">;
+
+  constructor() {
+    super("br3-offline");
+
+    this.version(1).stores({
+      logs: "++id, createdAt, level",
+      syncJobs: "id, kind, createdAt",
+    });
+  }
+}
+
+export const db = new BRLoggerDexie();
