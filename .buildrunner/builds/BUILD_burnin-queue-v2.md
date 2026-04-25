@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-25
-**Status:** Phases 1-2 Complete — Phase 3 In Progress
+**Status:** Phases 1-3 Complete — Phase 4 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/burnin/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-queue-v2.md
 **Source Plan SHA:** 830e493397dc97f8e71253c2f34f6344a4917274e03a18d5f1e1bf1fbed5d2af
@@ -93,7 +93,7 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 
 ### Phase 3: Worker daemon (separate LaunchAgent, lease-based, single-flight)
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/lib/worker.sh` (NEW)
@@ -103,13 +103,13 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 **Blocked by:** Phase 1, Phase 2
 **Deliverables:**
 
-- [ ] `db_claim_next_request`: `BEGIN IMMEDIATE; SELECT fix_id FROM fix_requests WHERE status='requested' ORDER BY created_at LIMIT 1; UPDATE fix_requests SET status='claimed', worker_id=:wid, claim_at=:now, heartbeat_at=:now, lease_expires_at=datetime(:now,'+15 minutes') WHERE fix_id=:fix_id AND status='requested'; COMMIT;` — explicit check-and-set guard; returns row only if the UPDATE affected one row.
-- [ ] `db_heartbeat_request`: bump `heartbeat_at` and extend `lease_expires_at` while attempt is running.
-- [ ] `db_release_request`: terminal status set on completion (applied/rejected/failed/aborted) + `resolved_at`.
-- [ ] `worker.sh` main loop: poll for claim every 5s; on claim → flip case to `fixing` → run `fix_loop_run` → on success flip `fixing → probation` → on exhaustion flip `fixing → needs_human` → release request.
-- [ ] Single-flight enforced by the partial unique index from Phase 1, NOT by an OS file lock. One worker process per host enforced by LaunchAgent KeepAlive=true + `worker_id=$(hostname)-fix-$$`.
-- [ ] Plist: `KeepAlive=true`, `RunAtLoad=true`, env `BR3_BURNIN_WORKER_ID=$(hostname)-fix`, stdout/stderr to `~/.buildrunner/burnin/fix-worker.log`.
-- [ ] Smoke: enqueue 3 cases simultaneously; verify worker processes them strictly serially; killed worker mid-attempt has its claim reaped (Phase 5).
+- [x] `db_claim_next_request`: `BEGIN IMMEDIATE; SELECT fix_id FROM fix_requests WHERE status='requested' ORDER BY created_at LIMIT 1; UPDATE fix_requests SET status='claimed', worker_id=:wid, claim_at=:now, heartbeat_at=:now, lease_expires_at=datetime(:now,'+15 minutes') WHERE fix_id=:fix_id AND status='requested'; COMMIT;` — explicit check-and-set guard; returns row only if the UPDATE affected one row.
+- [x] `db_heartbeat_request`: bump `heartbeat_at` and extend `lease_expires_at` while attempt is running.
+- [x] `db_release_request`: terminal status set on completion (applied/rejected/failed/aborted) + `resolved_at`.
+- [x] `worker.sh` main loop: poll for claim every 5s; on claim → flip case to `fixing` → run `fix_loop_run` → on success flip `fixing → probation` → on exhaustion flip `fixing → needs_human` → release request. Lease-loss SIGTERM aborts the running fix and re-polls.
+- [x] Single-flight enforced by the partial unique index from Phase 1, NOT by an OS file lock. One worker process per host enforced by LaunchAgent KeepAlive=true + `worker_id=$(hostname)-fix-$$`.
+- [x] Plist: `KeepAlive=true`, `RunAtLoad=true`, env `BR3_BURNIN_WORKER_ID=$(hostname)-fix`, stdout/stderr to `~/.buildrunner/burnin/fix-worker.log`.
+- [x] Smoke: enqueue 3 cases simultaneously; verify worker processes them strictly serially; lease-lost smoke confirms running fix is terminated and worker re-polls.
 
 **Success Criteria:**
 
