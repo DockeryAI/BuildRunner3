@@ -26,6 +26,7 @@ from core.architecture_guard import ArchitectureGuard
 from core.self_service import SelfServiceManager
 from core.claude_md_generator import ClaudeMdGenerator
 from core.runtime.config import RuntimeConfigError, apply_runtime_selection, resolve_runtime_selection
+from core.asset_resolver import resolve_install_path
 
 # Import new command groups
 from cli.spec_commands import spec_app, design_app
@@ -47,6 +48,7 @@ from cli.project_commands import project_app
 from cli.attach_commands import attach_command
 from cli.doctor_commands import doctor_app
 from cli.github_commands import app as github_app
+from cli.upgrade_commands import upgrade_command
 
 
 app = typer.Typer(
@@ -108,6 +110,7 @@ app.add_typer(github_app, name="github")
 
 # Register attach as direct command (not a group)
 app.command(name="attach")(attach_command)
+app.command(name="upgrade")(upgrade_command)
 
 # Create guard and service command groups
 guard_app = typer.Typer(help="Architecture guard commands")
@@ -290,16 +293,15 @@ def init(
 
             if not is_port_open(ui_port):
                 console.print(f"[yellow]⚠️  UI server not running on port {ui_port}[/yellow]")
-                console.print(
-                    f"[dim]Start it manually: cd ~/Projects/BuildRunner3/ui && npm run dev[/dim]"
-                )
+                ui_dir = resolve_install_path("ui")
+                console.print(f"[dim]Start it manually: cd {ui_dir} && npm run dev[/dim]")
                 console.print(
                     f"[dim]Or it will start automatically in background (experimental)[/dim]\n"
                 )
 
                 # Try to start UI server in background
                 try:
-                    ui_dir = Path.home() / "Projects" / "BuildRunner3" / "ui"
+                    ui_dir = resolve_install_path("ui")
                     if ui_dir.exists():
                         # Start UI server detached (doesn't block)
                         subprocess.Popen(
@@ -326,7 +328,7 @@ def init(
 
             # Launch Electron app with project URL
             try:
-                electron_dir = Path.home() / "Projects" / "BuildRunner3" / "electron"
+                electron_dir = resolve_install_path("electron")
                 if electron_dir.exists():
                     # Launch Electron with --url argument
                     subprocess.Popen(

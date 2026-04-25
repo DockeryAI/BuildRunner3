@@ -18,6 +18,7 @@ from core.project_registry import get_project_registry
 from core.shell_integration import get_shell_integration
 from core.design_extractor import DesignExtractor
 from core.enforcement_engine import ConfigGenerator
+from core.asset_resolver import AssetNotFoundError, resolve_asset_path
 
 # Optional import - ClaudeMdGenerator may not exist yet
 try:
@@ -159,13 +160,10 @@ TODO: Document features
 
         # Find and run activation script
         activation_script = None
-        for loc in [
-            Path(__file__).parent.parent / ".buildrunner" / "scripts" / "activate-all-systems.sh",
-            Path.home() / ".buildrunner" / "scripts" / "activate-all-systems.sh",
-        ]:
-            if loc.exists():
-                activation_script = loc
-                break
+        try:
+            activation_script = resolve_asset_path(".buildrunner/scripts/activate-all-systems.sh")
+        except AssetNotFoundError:
+            activation_script = None
 
         if activation_script:
             import subprocess

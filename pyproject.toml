@@ -77,6 +77,9 @@ br = "cli.main:cli"
 [tool.setuptools.packages.find]
 include = ["cli*", "core*", "api*", "hooks*", "plugins*", "templates*"]
 
+[tool.setuptools.package-data]
+"*" = [".buildrunner/templates/**", ".buildrunner/scripts/**", "templates/**"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
