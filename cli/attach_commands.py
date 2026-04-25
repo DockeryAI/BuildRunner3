@@ -21,7 +21,7 @@ from core.shell_integration import get_shell_integration
 from core.design_extractor import DesignExtractor
 from core.enforcement_engine import ConfigGenerator
 from core.asset_resolver import AssetNotFoundError, resolve_asset_path
-from core.installer import CoreBaselineInstaller
+from core.installer import CoreBaselineInstaller, install_full_stack
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -324,8 +324,26 @@ TODO: Document features
         console.print("[green]✅ BuildRunner 3 already attached - updating PRD...[/green]")
         console.print()
 
-    baseline_result = CoreBaselineInstaller().install(directory)
-    console.print(f"[dim]Core baseline: {baseline_result.summary()}[/dim]")
+    stack_result = install_full_stack(directory, dry_run=dry_run)
+    if stack_result.baseline is not None:
+        console.print(f"[dim]Core baseline: {stack_result.baseline.summary()}[/dim]")
+    if stack_result.facets is not None:
+        console.print(f"[dim]Detected facets: {stack_result.facets}[/dim]")
+    if stack_result.hooks is not None:
+        console.print(
+            f"[dim]Hooks: replaced={len(stack_result.hooks.replaced)} "
+            f"installed={len(stack_result.hooks.installed)}[/dim]"
+        )
+    if stack_result.adapter is not None:
+        console.print(f"[dim]Adapter: {stack_result.adapter.summary()}[/dim]")
+    if stack_result.capabilities:
+        cap_summary = ", ".join(
+            f"{cap.value}({len(res.written)})"
+            for cap, res in stack_result.capabilities.items()
+        )
+        console.print(f"[dim]Capabilities: {cap_summary}[/dim]")
+    for note in stack_result.notes:
+        console.print(f"[dim]  • {note}[/dim]")
     console.print()
 
     # Phase 1: Scan Codebase

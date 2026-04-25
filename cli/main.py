@@ -27,7 +27,7 @@ from core.self_service import SelfServiceManager
 from core.claude_md_generator import ClaudeMdGenerator
 from core.runtime.config import RuntimeConfigError, apply_runtime_selection, resolve_runtime_selection
 from core.asset_resolver import resolve_install_path
-from core.installer import CoreBaselineInstaller
+from core.installer import CoreBaselineInstaller, install_full_stack
 from core.project_type import Bundler, Capability, Framework, ProjectFacets, apply_composition_rules
 
 # Import new command groups
@@ -47,6 +47,7 @@ from cli.alias_commands import alias_app
 from cli.autodebug_commands import app as autodebug_app
 from cli.profile_commands import app as profile_app
 from cli.project_commands import project_app
+from cli.runtime_commands import runtime_app
 from cli.attach_commands import attach_command
 from cli.audit_commands import audit_command
 from cli.doctor_commands import doctor_app
@@ -108,6 +109,7 @@ app.add_typer(alias_app, name="alias")
 app.add_typer(autodebug_app, name="autodebug")
 app.add_typer(profile_app, name="profile")
 app.add_typer(project_app, name="project")
+app.add_typer(runtime_app, name="runtime")
 app.add_typer(doctor_app, name="doctor")
 app.add_typer(github_app, name="github")
 
@@ -351,17 +353,34 @@ def init(
             config_manager = ConfigManager(project_root)
             config_manager.init_project_config()
 
-            baseline_result = CoreBaselineInstaller().install(
+            stack_result = install_full_stack(
                 project_root,
                 declared_facets=declared_facets,
             )
+            baseline_result = stack_result.baseline
 
             progress.update(task, completed=True)
 
         console.print()
         console.print("[bold]Detected/declared facets[/bold]")
         console.print(f"  {declared_facets}")
-        console.print(f"[dim]Core baseline: {baseline_result.summary()}[/dim]")
+        if baseline_result is not None:
+            console.print(f"[dim]Core baseline: {baseline_result.summary()}[/dim]")
+        if stack_result.hooks is not None:
+            console.print(
+                f"[dim]Hooks: replaced={len(stack_result.hooks.replaced)} "
+                f"installed={len(stack_result.hooks.installed)}[/dim]"
+            )
+        if stack_result.adapter is not None:
+            console.print(f"[dim]Adapter: {stack_result.adapter.summary()}[/dim]")
+        if stack_result.capabilities:
+            cap_summary = ", ".join(
+                f"{cap.value}({len(res.written)})"
+                for cap, res in stack_result.capabilities.items()
+            )
+            console.print(f"[dim]Capabilities: {cap_summary}[/dim]")
+        for note in stack_result.notes:
+            console.print(f"[dim]  • {note}[/dim]")
         for warning in type_warnings:
             console.print(f"  [yellow]Warning:[/yellow] {warning}")
         for conflict_note in type_conflicts:
