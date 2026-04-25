@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-25
-**Status:** Phases 1-3 Complete — Phase 4 In Progress
+**Status:** Phases 1-4 Complete — Phase 5 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/burnin/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-queue-v2.md
 **Source Plan SHA:** 830e493397dc97f8e71253c2f34f6344a4917274e03a18d5f1e1bf1fbed5d2af
@@ -119,7 +119,7 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 
 ### Phase 4: Route every trigger through the queue
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/burnin.sh` (MODIFY)
@@ -129,12 +129,12 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 **Blocked by:** Phase 3
 **Deliverables:**
 
-- [ ] Remove the in-process `fix_loop_run` call from `_run_one` (burnin.sh:271-288). Failure path simply enqueues via Phase 2's atomic helper.
-- [ ] `cmd_fix <id>` enqueues a `requested` row with `enqueue_reason='operator'` and exits. Add `cmd_fix --wait <id>` that polls the request to terminal status (default async; `--wait` explicit).
-- [ ] `watchd.sh` fswatch-driven retry: on case file change, enqueue if no open request exists; never call `fix_loop_run` directly.
-- [ ] `canary.sh` failure: enqueue with `enqueue_reason='canary'`.
-- [ ] Remove the SIGINT trap in `_run_one` that wrote `db_record_fix_skip` — last remaining caller of the function deleted in Phase 2.
-- [ ] Smoke: trigger a failure via each path (manual run, watchd file event, canary); verify exactly one row appears per case in `fix_requests` and the worker picks them up serially.
+- [x] Remove the in-process `fix_loop_run` call from `_run_one` (burnin.sh:271-288). Failure path simply enqueues via Phase 2's atomic helper.
+- [x] `cmd_fix <id>` enqueues a `requested` row with `enqueue_reason='operator'` and exits. `cmd_fix --wait <id>` polls to terminal status with a `BR3_BURNIN_FIX_WAIT_TIMEOUT`-bounded deadline (default 300s).
+- [x] `watchd.sh` fswatch-driven retry: on case file change, `watchd_enqueue_case` does INSERT OR IGNORE on red cases only; never calls `fix_loop_run` directly.
+- [x] `canary.sh` failure: enqueue with `enqueue_reason='canary'`. Promotion is `deferred → requested` only — claimed and requested rows are left untouched to preserve audit trail.
+- [x] Remove the SIGINT trap in `_run_one` that wrote `db_record_fix_skip` — last remaining caller of the function deleted in Phase 2.
+- [x] Smoke: trigger a failure via each path (manual run, watchd file event, canary); verify exactly one row appears per case in `fix_requests` and the worker picks them up serially.
 
 **Success Criteria:**
 
