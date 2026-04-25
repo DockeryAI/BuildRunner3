@@ -6,7 +6,7 @@
   "plan_file_abs": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/plans/plan-role-matrix-codex-arbiter.md",
   "plan_path_sha": "76466ebbcbdcd95b",
   "mode": "plan",
-  "status": "blocked",
+  "status": "adjudicated",
   "pass": false,
   "verdict": "BLOCK",
   "reviewers": [
@@ -444,5 +444,12 @@
   "generated_at": "2026-04-25T15:05:32.121244Z",
   "review_round": 1,
   "escalated": false,
-  "phase_number": 6
+  "phase_number": 6,
+  "adjudication": {
+    "verdict": "ACCEPTED-STALE",
+    "adjudicator": "next-session-claude",
+    "adjudicated_at": "20260425T174230Z",
+    "rationale": "All 14 plan-mode findings adjudicated in handoff doc role-matrix-codex-arbiter-prod-ready.md \u00a74. Arbiter circuit was open (default-deny), not a true judgment. Implementation addresses or intentionally diverges from each finding.",
+    "handoff_doc": ".buildrunner/handoff/role-matrix-codex-arbiter-prod-ready.md"
+  }
 }

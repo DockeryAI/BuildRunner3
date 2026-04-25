@@ -1634,3 +1634,51 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
   WHY: Infeasible; macOS kernel has no /proc/meminfo. Instead, use existing macmon byte data to derive percentage client-side.
   CONTEXT: Avoided complexity of shim/emulation; re-used already-available byte fields
 
+[2026-04-25T17:19:40Z] [ARCHITECTURE] Patched ~/.br/bin/br-claude to detect modern BR3 layout
+  WHY: Legacy detection only checked .buildrunner/features.json; modern BR3 projects (HengeWars) ship runtime.json/agents.json/orchestration_state.json instead, so br-claude rejected them as "not BR3" even though .buildrunner/ existed
+  CONTEXT: ~/.br/bin/br-claude:31-43 (detection block now ORs four files)
+[2026-04-25T17:19:40Z] [DECISION] Fixed br-claude detection rather than generating legacy features.json in HengeWars
+  WHY: Generating features.json would paper over the bug for one project; patching detection fixes every modern BR3 project at once. User confirmed "fix" over the compat-shim option
+  CONTEXT: HengeWars and any other br-init'd project that lacks features.json
+[2026-04-25T17:19:40Z] [WHY] henge is not an alias — it's command_not_found_handler in shell snapshot
+  WHY: Diagnosis required tracing: command_not_found_handler -> ~/.buildrunner/projects.json lookup -> cd $path -> br-claude. The "Jumping to project" line came from the handler; the "No Build Runner 3.0 found" came from br-claude. Future debug of "why doesn't $projectalias work" should start at br-claude, not the shell rc
+  CONTEXT: ~/.claude/shell-snapshots/snapshot-zsh-*.sh (command_not_found_handler), ~/.br/bin/br-claude
+[2026-04-25T17:19:40Z] [DECISION] Replaced dead BR2.0 migration message with br-init pointer
+  WHY: Old message pointed at /Users/byronhudson/Projects/build-runner-2.0/.buildrunner/scripts/migrate-to-feature-registry.sh — that path is from the BR2.0 era and likely stale/missing. br-init is the live entry point per ~/.buildrunner-cli.zsh:74-84
+  CONTEXT: ~/.br/bin/br-claude:34-42 (was 9 lines of stale migration text, now 4 lines pointing at br-init)
+[2026-04-25T17:19:53Z] [DECISION] /root analysis: "Jimmy unreachable" report is a false negative — Jimmy is fully reachable
+  WHY: ping + direct curl to 10.0.1.106:8100/retrieve both succeed; HTTP 200 with valid 9670-byte JSON
+  CONTEXT: prior session 06951909-edf4-47b7-a029-6a413572c61a, /research Step 0B
+
+[2026-04-25T17:19:53Z] [REJECTED] Initial root cause: "Jimmy /retrieve emits non-RFC JSON with raw 0x0A"
+  WHY: My first reproduction inspected via 'python3 -c "s = '''$VAR'''"' — bash expansion plus Python triple-quote escape interpretation made me misread the wire bytes; raw curl-to-file shows ZERO control bytes and valid JSON
+  CONTEXT: api/routes/retrieve.py:273 RetrieveResponse Pydantic model — FastAPI default JSONResponse correctly escapes all 0x00–0x1F
+
+[2026-04-25T17:19:53Z] [WHY] Real root cause: zsh built-in 'echo' interprets backslash escapes by default
+  WHY: 'echo "$RETRIEVE_RESPONSE"' converted every \n inside JSON string values into literal 0x0A bytes (107 of them in a 9670-byte response, dropping size to 9565), which violates RFC 8259 §7; Python strict json.load raised JSONDecodeError at column 364
+  CONTEXT: zsh 5.9 default behavior, ~/.claude/projects/-Users-byronhudson-Projects-BuildRunner3/06951909-edf4-47b7-a029-6a413572c61a.jsonl line 26
+
+[2026-04-25T17:19:53Z] [WHY] The mislabel: bash A=$(curl) && (echo|python3) || echo JIMMY_UNREACHABLE binds left-associative
+  WHY: '||' fires when EITHER curl OR python3 exits non-zero — a parse failure becomes indistinguishable from a network failure under one label; '2>/dev/null' on the parse step suppressed the real JSONDecodeError so Claude saw only the misleading label
+  CONTEXT: ad-hoc diagnostic command, not the /research skill itself
+
+[2026-04-25T17:19:53Z] [PATTERN] When piping a shell variable containing JSON into a parser, use printf '%s' "$VAR" — never echo
+  WHY: zsh echo (and bash with xpg_echo) interprets backslash escapes; printf '%s' is byte-faithful; or pipe curl directly into the parser to skip the variable round-trip
+  CONTEXT: applies to all Jimmy /retrieve, /api/memory/* responses processed in shell
+
+[2026-04-25T17:19:53Z] [PATTERN] Split network reachability checks from payload-validity checks — never a single || fallback
+  WHY: collapsing 'curl && parse || echo SOMETHING' under one label hides which step actually failed; Claude reported 'Jimmy unreachable' for what was actually a JSON-spec mismatch caused by zsh echo
+  CONTEXT: any future Jimmy diagnostic command
+
+[2026-04-25T17:19:53Z] [ARCHITECTURE] Added trap-note line to global ~/.claude/CLAUDE.md "Research Library — Jimmy only" section
+  WHY: prevents future Claude sessions from repeating the echo→json.load→mislabel chain; durable guidance lives in always-loaded global rules, not per-skill notes
+  CONTEXT: ~/.claude/CLAUDE.md, immediately after the existing Jimmy section paragraph
+
+[2026-04-25T17:19:53Z] [DECISION] Overwrote prior Jimmy memory note that blamed the serializer
+  WHY: first /api/memory/note save during /root carried the wrong root cause (Jimmy serializer); a corrected note was POSTed so future /retrieve searches surface the accurate analysis instead of the misdiagnosis
+  CONTEXT: http://10.0.1.106:8100/api/memory/note, source=root, project=BuildRunner3
+
+[2026-04-25T17:19:53Z] [CONSTRAINT] zsh 'echo' is unsafe for round-tripping arbitrary text — affects any shell pipeline that re-emits captured strings
+  WHY: discovered while reproducing the JIMMY_UNREACHABLE bug; same risk applies to any Claude diagnostic that does VAR=$(cmd); echo "$VAR" | downstream-tool
+  CONTEXT: shell defaults on macOS where /bin/zsh is the user shell
+2026-04-25T18:02:54Z phase-review build=role-matrix-codex-arbiter phase=8 revision=1 verdict=arbiter-approve arbiter=opus-4-7-handoff-execution reason=empirical-e2e-completed-decisions.log-captured-assert-script-exit-0 supersedes=2026-04-25T17:05:00Z-partial-approve
