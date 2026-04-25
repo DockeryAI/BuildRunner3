@@ -1,0 +1,23 @@
+extends Node
+
+var current_state := "boot"
+
+
+func _ready() -> void:
+	BRLogger.info("game_state", "GameState ready", {"state": current_state})
+
+
+func set_state(next_state: String, metadata: Variant = null) -> void:
+	var previous_state := current_state
+	current_state = next_state
+	BRLogger.info(
+		"game_state",
+		"state transition",
+		{"from": previous_state, "to": next_state, "meta": metadata},
+	)
+	BRLogger.event("game_state.transition", {"from": previous_state, "to": next_state})
+
+
+func reset() -> void:
+	# Replace this with your game's default bootstrap state.
+	set_state("boot")

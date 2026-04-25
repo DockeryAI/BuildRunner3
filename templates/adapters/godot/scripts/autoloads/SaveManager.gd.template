@@ -1,0 +1,32 @@
+extends Node
+
+const SAVE_PATH := "user://savegame.json"
+
+
+func save_game(payload: Dictionary) -> bool:
+	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file == null:
+		BRLogger.error("save_manager", "save failed", {"path": SAVE_PATH})
+		return false
+	file.store_string(JSON.stringify(payload))
+	file.close()
+	BRLogger.info("save_manager", "save complete", {"path": SAVE_PATH})
+	return true
+
+
+func load_game() -> Dictionary:
+	if not FileAccess.file_exists(SAVE_PATH):
+		BRLogger.warn("save_manager", "no save present", {"path": SAVE_PATH})
+		return {}
+
+	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if file == null:
+		BRLogger.error("save_manager", "load failed", {"path": SAVE_PATH})
+		return {}
+
+	var parsed = JSON.parse_string(file.get_as_text())
+	file.close()
+	BRLogger.info("save_manager", "load complete", {"path": SAVE_PATH})
+	if typeof(parsed) == TYPE_DICTIONARY:
+		return parsed
+	return {}

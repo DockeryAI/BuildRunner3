@@ -1,0 +1,14 @@
+extends Node
+
+signal event_emitted(name, payload)
+
+
+func emit_game_event(name: String, payload: Variant = null) -> void:
+	BRLogger.event(name, payload)
+	emit_signal("event_emitted", name, payload)
+
+
+func connect_event(callable_target: Callable) -> void:
+	# Project authors can replace this with domain-specific routing helpers.
+	event_emitted.connect(callable_target)
+	BRLogger.info("event_bus", "listener connected")

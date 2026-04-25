@@ -1,0 +1,12 @@
+# >>> br3-godot-targets >>>
+.PHONY: run-logged test-logged logs-clean
+
+run-logged:
+	./scripts/godot-run.sh
+
+test-logged:
+	./scripts/godot-test.sh
+
+logs-clean:
+	rm -rf .buildrunner/godot.log .buildrunner/gut.log .buildrunner/godot-user-logs
+# <<< br3-godot-targets <<<

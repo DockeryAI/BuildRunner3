@@ -1,0 +1,8 @@
+# Godot Logging Addendum
+
+`godot-run.sh` captures the broadest runtime surface because it tees Godot stdout even when the in-game sinks do not flush cleanly.
+
+Partial coverage limits:
+- Editor-launched play sessions do not flow through `scripts/godot-run.sh`, so only the in-process `user://logs/*.log` sinks are available there.
+- Hard crashes before `NOTIFICATION_WM_CLOSE_REQUEST` can prevent the `user://` sinks from flushing.
+- When that happens, `.buildrunner/godot.log` from `scripts/godot-run.sh` is the primary crash artifact.

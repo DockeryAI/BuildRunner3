@@ -21,6 +21,7 @@ class AdapterResult:
     skipped: list[Path] = field(default_factory=list)
     codemods: dict[str, CodemodResult] = field(default_factory=dict)
     script_suggestions: dict[str, str] = field(default_factory=dict)
+    notes: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
         return (
