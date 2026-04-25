@@ -9,10 +9,11 @@ import os
 import time
 import hashlib
 import threading
+import uuid
 from pathlib import Path
 from typing import Optional
 
-from fastapi import Request
+from fastapi import HTTPException, Request
 from pydantic import BaseModel
 
 from core.cluster.base_service import create_app
@@ -111,6 +112,63 @@ _research_indexing = False
 _research_last_index_time = 0.0
 _research_dir_mtime = 0.0
 _research_stats = {"total_files": 0, "total_chunks": 0, "last_duration": 0.0}
+_research_jobs: dict[str, dict[str, object]] = {}
+_research_jobs_lock = threading.Lock()
+_research_active_job_id: str | None = None
+
+
+def _active_research_job_id() -> str | None:
+    with _research_jobs_lock:
+        if _research_active_job_id is None:
+            return None
+        job = _research_jobs.get(_research_active_job_id)
+        if not job or job.get("state") != "running":
+            return None
+        return _research_active_job_id
+
+
+def _start_research_job(job_id: str | None = None) -> str:
+    global _research_active_job_id
+    resolved_job_id = job_id or uuid.uuid4().hex
+    with _research_jobs_lock:
+        existing = _research_jobs.get(resolved_job_id, {})
+        _research_jobs[resolved_job_id] = {
+            "state": "running",
+            "rows_added": 0,
+            "started_at": float(existing.get("started_at") or time.time()),
+            "completed_at": None,
+            "error": None,
+        }
+        _research_active_job_id = resolved_job_id
+    return resolved_job_id
+
+
+def _finish_research_job(job_id: str, *, state: str, rows_added: int, error: str | None) -> None:
+    global _research_active_job_id
+    completed_at = time.time()
+    with _research_jobs_lock:
+        job = _research_jobs.get(job_id)
+        if job is None:
+            job = {
+                "started_at": completed_at,
+            }
+            _research_jobs[job_id] = job
+        job.update({
+            "state": state,
+            "rows_added": int(rows_added),
+            "completed_at": completed_at,
+            "error": error,
+        })
+        if _research_active_job_id == job_id:
+            _research_active_job_id = None
+
+
+def _get_research_job(job_id: str) -> dict[str, object] | None:
+    with _research_jobs_lock:
+        job = _research_jobs.get(job_id)
+        if job is None:
+            return None
+        return dict(job)
 
 
 def _get_or_create_plan_table(sample_dim: int):
@@ -247,16 +305,14 @@ def _result_rows(query_builder) -> list[dict]:
     return []
 
 
-def run_research_index():
-    """Index research library docs into LanceDB. Uses directory mtime to skip when unchanged."""
+def _run_research_index_locked(job_id: str) -> None:
+    """Index research library docs into LanceDB. Caller must hold _research_indexing_lock."""
     global _research_file_hashes, _research_indexing, _research_last_index_time
     global _research_dir_mtime, _research_stats, _research_table
 
-    if not _research_indexing_lock.acquire(blocking=False):
-        print("Research index: already running, skipping")
-        return
     _research_indexing = True
     start = time.time()
+    rows_added = 0
     print("Research index: starting...")
 
     try:
@@ -264,8 +320,7 @@ def run_research_index():
 
         research_path = Path(RESEARCH_DIR)
         if not research_path.exists():
-            print(f"Research dir not found: {RESEARCH_DIR}")
-            return
+            raise FileNotFoundError(f"Research dir not found: {RESEARCH_DIR}")
 
         # Directory mtime check — skip entirely if unchanged
         docs_path = research_path / "docs"
@@ -339,9 +394,10 @@ def run_research_index():
                         table = _get_or_create_research_table(embed_dim)
                     table.add(rows)
                     _research_table = table
+                    rows_added = len(rows)
                     print(f"  Added {len(rows)} research chunks to LanceDB")
                 except Exception as e:
-                    print(f"  Research LanceDB insert error: {e}")
+                    raise RuntimeError(f"Research LanceDB insert error: {e}") from e
 
         _research_file_hashes = new_hashes
         _research_last_index_time = time.time()
@@ -355,9 +411,33 @@ def run_research_index():
             "last_duration": round(time.time() - start, 1),
             "changed_files": len(chunks_to_add),
         }
+    except Exception as exc:
+        _finish_research_job(
+            job_id,
+            state="failed",
+            rows_added=rows_added,
+            error=str(exc),
+        )
+        raise
+    else:
+        _finish_research_job(
+            job_id,
+            state="done",
+            rows_added=rows_added,
+            error=None,
+        )
     finally:
         _research_indexing = False
         _research_indexing_lock.release()
+
+
+def run_research_index(job_id: str | None = None):
+    """Index research library docs into LanceDB. Uses directory mtime to skip when unchanged."""
+    if not _research_indexing_lock.acquire(blocking=False):
+        print("Research index: already running, skipping")
+        return
+    resolved_job_id = _start_research_job(job_id)
+    _run_research_index_locked(resolved_job_id)
 
 
 def _get_dir_mtime(dir_path: Path) -> float:
@@ -1273,13 +1353,36 @@ async def research_vsearch(req: Request):
 async def research_reindex():
     """Trigger immediate research library re-index. Clears mtime cache so new files are detected."""
     global _research_dir_mtime
-    if _research_indexing:
-        return {"status": "already_indexing"}
+    active_job_id = _active_research_job_id()
+    if active_job_id is not None:
+        return {"status": "already_indexing", "job_id": active_job_id}
+    if not _research_indexing_lock.acquire(blocking=False):
+        active_job_id = _active_research_job_id()
+        if active_job_id is not None:
+            return {"status": "already_indexing", "job_id": active_job_id}
+        raise HTTPException(status_code=503, detail="research reindex lock busy without active job")
+    job_id = uuid.uuid4().hex
+    _start_research_job(job_id)
     # Clear mtime cache so the indexer doesn't skip based on stale directory mtime
     _research_dir_mtime = 0.0
-    t = threading.Thread(target=run_research_index, daemon=True)
+    t = threading.Thread(target=_run_research_index_locked, args=(job_id,), daemon=True)
     t.start()
-    return {"status": "started"}
+    return {"status": "started", "job_id": job_id}
+
+
+@app.get("/api/research/reindex/{job_id}")
+async def research_reindex_status(job_id: str):
+    """Return the state of a specific research reindex job."""
+    job = _get_research_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail=f"unknown research reindex job: {job_id}")
+    payload = {
+        "state": job["state"],
+        "rows_added": int(job.get("rows_added", 0) or 0),
+    }
+    if job.get("error"):
+        payload["error"] = str(job["error"])
+    return payload
 
 
 @app.get("/api/research/stats")

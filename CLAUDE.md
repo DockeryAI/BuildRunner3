@@ -53,19 +53,8 @@ Choose an approach and commit to it. Do not over-explore or research extensively
 
 ---
 
-## Claude Code Native Levers (operator reference)
+## Operator overrides (reference)
 
-BR3 autopilot dispatches Claude Code with explicit posture on every phase. Operators can override per-session:
+Per-session knobs: `/effort xhigh|medium`, `/model opusplan|claude-opus-4-7`, `ultrathink —` prefix on a single hardest step.
 
-| Lever                      | Where                                          | Effect                                                                                                        |
-| -------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `/effort xhigh`            | type in-session                                | Set reasoning effort. Default for BR3 phases. Use `/effort medium` for classification/filter passes only.     |
-| `/model opusplan`          | type in-session                                | Opus plans, Sonnet executes. Use for planning-heavy phases (spec design, batch planning).                     |
-| `/model claude-opus-4-7`   | type in-session                                | Force 4.7 (autopilot default).                                                                                |
-| `ultrathink — <step>`      | prefix the hardest single step                 | Max-effort trigger for one step. Do not scatter across a phase — per-step escalation, not session mode.       |
-| `BR3_CLAUDE_MODEL`         | env var read by `runtime-dispatch.sh`          | Overrides `--model` flag on dispatched `claude -p`. Set before `dispatch-to-node.sh` or autopilot invocation. |
-| `BR3_CLAUDE_EFFORT`        | env var read by `autopilot-dispatch-prefix.sh` | Overrides the `/effort` directive baked into the dispatched prompt prefix.                                    |
-| `BR3_CLAUDE_PHASE_WEIGHT`  | env var; values: `light`, `heavy`, `hardest`   | Controls whether the `ultrathink` trigger is documented in the dispatched prompt. `hardest` writes it in.     |
-| `BR3_AUTOPILOT_PREFIX=off` | env var                                        | Skip the 4.7 posture prefix entirely (legacy behavior).                                                       |
-
-The posture prefix is emitted by `~/.buildrunner/scripts/autopilot-dispatch-prefix.sh`. Every autopilot dispatch prepends it to the phase prompt — change defaults there, not in individual phase prompts.
+Env vars (autopilot dispatch): `BR3_CLAUDE_MODEL`, `BR3_CLAUDE_EFFORT`, `BR3_CLAUDE_PHASE_WEIGHT` (`light|heavy|hardest`), `BR3_AUTOPILOT_PREFIX=off`. Posture prefix lives in `~/.buildrunner/scripts/autopilot-dispatch-prefix.sh` — edit there, not in phase prompts.

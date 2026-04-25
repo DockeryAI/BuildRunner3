@@ -382,9 +382,13 @@ def _detect_patterns(entries: list[dict]) -> list[dict]:
     def _is_edge_fn_call(e):
         blob = (e.get("url") or "") + " " + (e.get("message") or "")
         return "/functions/v1/" in blob or "[EDGE_FN" in blob or (e.get("event_type") or "").startswith("edge_fn")
+    # Cap at 5 minutes — any duration above that is a supabaseLogger sleep artifact
+    # (performance.now() advances while the OS is asleep) and corrupts averages.
+    SLEEP_ARTIFACT_CEILING_MS = 300_000
     timed_entries = [
         e for e in supabase_entries
-        if e.get("duration_ms") and e.get("duration_ms") > 0 and not _is_edge_fn_call(e)
+        if e.get("duration_ms") and 0 < e.get("duration_ms") <= SLEEP_ARTIFACT_CEILING_MS
+        and not _is_edge_fn_call(e)
     ]
     if len(timed_entries) >= 10:
         avg_duration = sum(e["duration_ms"] for e in timed_entries) / len(timed_entries)

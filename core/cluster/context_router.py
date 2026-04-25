@@ -85,7 +85,7 @@ ROUTING_TABLE: dict[str, ModelRoutingConfig] = {
         tokenizer_name="codex",
         tokenizer_display="cl100k_base",
         sources=_ALL_SOURCES,
-        description="Codex gpt-5.4 — 48K bundle within 1.05M context window",
+        description="Codex gpt-5.5 — 48K bundle within 400K Codex CLI / 1M API context window",
     ),
     "ollama": ModelRoutingConfig(
         model="ollama",

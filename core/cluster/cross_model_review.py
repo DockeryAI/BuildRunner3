@@ -2,7 +2,7 @@
 """
 cross_model_review.py — Cross-model code review engine
 
-Accepts diff text + spec context, runs Sonnet (via `claude` CLI) and GPT-5.4
+Accepts diff text + spec context, runs Sonnet (via `claude` CLI) and GPT-5.5
 (via `codex` CLI) in parallel, and returns a JSON array of
 {finding, severity} matching the adversarial-review.sh format. No paid APIs
 are called — both reviewers run through their authenticated CLI plans.
@@ -10,6 +10,14 @@ are called — both reviewers run through their authenticated CLI plans.
 Usage:
     python3 cross_model_review.py \
         --mode plan --plan <plan_file> --project-root <root>
+    python3 cross_model_review.py \
+        --mode phase --build-id <id> --phase <n> --revision <count> \
+        --diff <diff_file> --criteria <criteria_file> --project-root <root>
+    python3 cross_model_review.py \
+        --mode phase-arbiter --build-id <id> --phase <n> \
+        --initial-diff <diff_file> --revised-diff <diff_file> \
+        --initial-review <review_json> --revised-review <review_json> \
+        --criteria <criteria_file> --project-root <root>
 
 Output (stdout): JSON array of findings [{finding, severity}]
 """
@@ -19,6 +27,7 @@ import asyncio
 import atexit
 import hashlib
 import json
+import logging
 import os
 import re
 import shutil
@@ -29,6 +38,8 @@ import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from core.cluster.arbiter import arbitrate
 from core.cluster.cluster_config import get_below_host, get_below_model, get_ollama_port
@@ -41,9 +52,10 @@ CACHE_DIR = HOME / ".buildrunner" / "cache" / "cross-reviews"
 RUNTIME_CAPABILITY_LOG = HOME / ".buildrunner" / "logs" / "runtime-capability.log"
 
 SUPPORTED_CODEX_VERSION_MIN = (0, 48, 0)
-SUPPORTED_CODEX_VERSION_MAX = (0, 49, 0)
+SUPPORTED_CODEX_KNOWN_MAJOR = 0
 DEFAULT_CODEX_PROBE_TIMEOUT_SECONDS = 15
 DEFAULT_CLAUDE_PROBE_TIMEOUT_SECONDS = 20
+DEFAULT_PHASE_ARBITER_MODEL = "claude-opus-4-7"
 
 REVIEW_PROMPT = """You are a cross-model code reviewer. Your job is to find defects in code changes BEFORE they ship.
 
@@ -84,7 +96,10 @@ def load_config():
     if CONFIG_PATH.exists():
         with open(CONFIG_PATH) as f:
             return json.load(f)
-    return {"backends": {"codex": {"enabled": True, "timeout_seconds": 360}}}
+    return {
+        "backends": {"codex": {"enabled": True, "timeout_seconds": 360}},
+        "phase_arbiter_model": DEFAULT_PHASE_ARBITER_MODEL,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -153,14 +168,14 @@ def detect_node_name():
 
 
 def is_supported_codex_version(parsed_version):
-    """Return True when the parsed Codex version is inside the validated Phase 0 range."""
+    """Return True when the parsed Codex version meets the validated minimum."""
     if parsed_version is None:
         return False
-    return SUPPORTED_CODEX_VERSION_MIN <= parsed_version < SUPPORTED_CODEX_VERSION_MAX
+    return parsed_version >= SUPPORTED_CODEX_VERSION_MIN
 
 
 def ensure_codex_compatible(command="codex"):
-    """Check Codex CLI version against the Phase 0 validated compatibility window."""
+    """Check Codex CLI version against the validated minimum compatibility floor."""
     result = subprocess.run(
         [command, "--version"],
         capture_output=True,
@@ -174,8 +189,13 @@ def ensure_codex_compatible(command="codex"):
     if not is_supported_codex_version(parsed):
         raise RuntimeError(
             f"Unsupported Codex version {raw}. Supported range: "
-            f">= {'.'.join(map(str, SUPPORTED_CODEX_VERSION_MIN))}, "
-            f"< {'.'.join(map(str, SUPPORTED_CODEX_VERSION_MAX))}"
+            f">= {'.'.join(map(str, SUPPORTED_CODEX_VERSION_MIN))}"
+        )
+    if parsed[0] != SUPPORTED_CODEX_KNOWN_MAJOR:
+        logger.warning(
+            "Codex major version %s is newer than the validated major %s; proceeding because the minimum version check passed.",
+            parsed[0],
+            SUPPORTED_CODEX_KNOWN_MAJOR,
         )
     return {"raw": raw, "parsed": parsed}
 
@@ -973,10 +993,10 @@ async def _run_reviewer(name, reviewer_coro, prompt, config, timeout_seconds):
 
 
 async def _run_parallel_reviewers_one_round(prompt, config, timeout_seconds=360):
-    """Run Sonnet 4.6 (claude CLI) and GPT-5.4 (codex CLI) in parallel."""
+    """Run Sonnet 4.6 (claude CLI) and GPT-5.5 (codex CLI) in parallel."""
     return await asyncio.gather(
         _run_reviewer("sonnet-4-6", _review_with_sonnet, prompt, config, timeout_seconds),
-        _run_reviewer("gpt-5.4", _review_with_gpt, prompt, config, timeout_seconds),
+        _run_reviewer("gpt-5.5", _review_with_gpt, prompt, config, timeout_seconds),
     )
 
 
@@ -1258,6 +1278,68 @@ def write_tracking_artifact(project_root, plan_file, task_id, result, mode="plan
         written.append(str(out_path))
 
     return written
+
+
+def _phase_reviews_dir(project_root):
+    return Path(project_root) / ".buildrunner" / "cluster-reviews" / "phase"
+
+
+def _sanitize_phase_build_id(build_id):
+    sanitized = re.sub(r"[^A-Za-z0-9._-]+", "-", str(build_id or "").strip()).strip("-")
+    return sanitized or "unknown-build"
+
+
+def _phase_review_key(build_id, phase_n, revision_count):
+    return {
+        "build_id": str(build_id),
+        "phase_n": int(phase_n),
+        "revision_count": int(revision_count),
+    }
+
+
+def _phase_review_key_string(build_id, phase_n, revision_count):
+    key = _phase_review_key(build_id, phase_n, revision_count)
+    return f"{key['build_id']}::phase{key['phase_n']}::rev{key['revision_count']}"
+
+
+def _phase_review_glob(build_id, phase_n, revision_count):
+    safe_build_id = _sanitize_phase_build_id(build_id)
+    return f"{safe_build_id}-phase{int(phase_n)}-rev{int(revision_count)}-*.json"
+
+
+def _find_phase_tracking_artifact(project_root, build_id, phase_n, revision_count):
+    reviews_dir = _phase_reviews_dir(project_root)
+    matches = sorted(reviews_dir.glob(_phase_review_glob(build_id, phase_n, revision_count)))
+    return matches[0] if matches else None
+
+
+def _build_phase_tracking_path(project_root, build_id, phase_n, revision_count, diff_text):
+    reviews_dir = _phase_reviews_dir(project_root)
+    reviews_dir.mkdir(parents=True, exist_ok=True)
+    diff_sha = hashlib.sha256((diff_text or "").encode("utf-8")).hexdigest()
+    safe_build_id = _sanitize_phase_build_id(build_id)
+    filename = f"{safe_build_id}-phase{int(phase_n)}-rev{int(revision_count)}-{diff_sha[:12]}.json"
+    return reviews_dir / filename, diff_sha
+
+
+def _write_phase_tracking_artifact(project_root, build_id, phase_n, revision_count, diff_text, result):
+    out_path, diff_sha = _build_phase_tracking_path(project_root, build_id, phase_n, revision_count, diff_text)
+    payload = dict(result)
+    payload["tracking_artifact"] = str(out_path)
+    payload["cached"] = False
+    payload["phase_review_key"] = _phase_review_key(build_id, phase_n, revision_count)
+    payload["phase_review_key_string"] = _phase_review_key_string(build_id, phase_n, revision_count)
+    payload["diff_sha256"] = diff_sha
+    payload["generated_at"] = utc_now_iso()
+    out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    return payload
+
+
+def _read_phase_tracking_artifact(path):
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    payload["tracking_artifact"] = str(path)
+    payload["cached"] = True
+    return payload
 
 
 _ACTIVE_REVIEW_LOCKS = set()
@@ -1544,6 +1626,181 @@ def run_three_way_review(
     return result
 
 
+def _build_phase_disagreement_verdict(reviewers, merged_findings, phase_key_string):
+    blockers = [item for item in merged_findings if item.get("severity") == "blocker"]
+    reasoning = "Reviewers disagreed; phase requires one revision before arbiter escalation."
+    result = Verdict(
+        pass_=False,
+        verdict="BLOCK",
+        reviewers=reviewers,
+        arbiter={"reasoning": reasoning, "duration_ms": 0, "status": "not-needed"},
+        circuit_state="closed",
+        plan_hash=phase_key_string,
+        review_round=1,
+        escalated=False,
+        blockers=blockers,
+        arbiter_reasoning=reasoning,
+        reason="phase-review-disagreement",
+    ).as_dict()
+    result["arbiter_invoked"] = False
+    result["consensus"] = False
+    return result
+
+
+def _phase_auto_arbiter_enabled():
+    raw = str(os.environ.get("BR3_PHASE_DISABLE_AUTO_ARBITER", "")).strip().lower()
+    return raw not in {"1", "true", "yes", "on"}
+
+
+def _run_phase_review(build_id, phase_n, revision_count, diff_text, criteria_text, project_root, config=None):
+    """Run revision-scoped phase review with triple-based idempotency."""
+    config = config or load_config()
+    cached_artifact = _find_phase_tracking_artifact(project_root, build_id, phase_n, revision_count)
+    if cached_artifact is not None:
+        return _read_phase_tracking_artifact(cached_artifact)
+
+    phase_key_string = _phase_review_key_string(build_id, phase_n, revision_count)
+    full_prompt = build_review_prompt(diff_text, criteria_text, system_prompt=THREE_WAY_REVIEW_PROMPT)
+    reviewer_timeout = int(os.environ.get("BR3_REVIEWER_TIMEOUT", "360"))
+    reviewers = asyncio.run(
+        _run_parallel_reviewers_one_round(full_prompt, config, timeout_seconds=reviewer_timeout)
+    )
+    merged = _merge_two_way_findings(
+        reviewers[0].get("findings", []),
+        reviewers[1].get("findings", []),
+    )
+
+    if _reviewers_disagree(reviewers):
+        if int(revision_count) == 1 and _phase_auto_arbiter_enabled():
+            arbiter_cfg = {**config.get("arbiter", {})}
+            arbiter_cfg["model"] = config.get("phase_arbiter_model", DEFAULT_PHASE_ARBITER_MODEL)
+            result = arbitrate(
+                plan=diff_text,
+                reviewer_findings=reviewers,
+                config={**config, "plan_hash": phase_key_string, "arbiter": arbiter_cfg},
+            )
+            result["arbiter_invoked"] = True
+            result["consensus"] = False
+        else:
+            result = _build_phase_disagreement_verdict(reviewers, merged, phase_key_string)
+    else:
+        result = _build_consensus_verdict(reviewers, merged, phase_key_string)
+
+    result["findings"] = merged
+    result["arbiter_ruling"] = result.get("arbiter")
+    result["review_round"] = 1
+    result["escalated"] = False
+    result["build_id"] = str(build_id)
+    result["phase_number"] = int(phase_n)
+    result["revision_count"] = int(revision_count)
+    result["phase_review_key"] = _phase_review_key(build_id, phase_n, revision_count)
+    result["phase_review_key_string"] = phase_key_string
+    result["exit_code"] = 0 if result.get("pass") else 1
+    return _write_phase_tracking_artifact(
+        project_root=project_root,
+        build_id=build_id,
+        phase_n=phase_n,
+        revision_count=revision_count,
+        diff_text=diff_text,
+        result=result,
+    )
+
+
+def _read_json_file(path):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def _normalize_phase_review_payload(payload, name):
+    findings = payload.get("findings", [])
+    if not isinstance(findings, list):
+        findings = []
+    duration_ms = payload.get("arbiter", {}).get("duration_ms") or 0
+    try:
+        duration_ms = int(duration_ms)
+    except (TypeError, ValueError):
+        duration_ms = 0
+    return {
+        "name": name,
+        "findings": findings,
+        "duration_ms": duration_ms,
+        "status": "ok",
+    }
+
+
+def _build_phase_arbiter_plan(
+    *,
+    build_id,
+    phase_n,
+    criteria_text,
+    initial_diff_text,
+    revised_diff_text,
+    initial_review,
+    revised_review,
+):
+    return (
+        f"Build: {build_id}\n"
+        f"Phase: {phase_n}\n\n"
+        "Success Criteria:\n"
+        f"{criteria_text}\n\n"
+        "Initial Diff:\n"
+        f"{initial_diff_text}\n\n"
+        "Initial Review:\n"
+        f"{json.dumps(initial_review, indent=2)}\n\n"
+        "Revised Diff:\n"
+        f"{revised_diff_text}\n\n"
+        "Revised Review:\n"
+        f"{json.dumps(revised_review, indent=2)}\n"
+    )
+
+
+def _run_phase_arbiter(
+    *,
+    build_id,
+    phase_n,
+    criteria_text,
+    initial_diff_text,
+    revised_diff_text,
+    initial_review,
+    revised_review,
+    config=None,
+):
+    config = config or load_config()
+    arbiter_cfg = {**config.get("arbiter", {})}
+    arbiter_cfg["model"] = config.get("phase_arbiter_model", DEFAULT_PHASE_ARBITER_MODEL)
+    phase_key_string = f"{build_id}::phase{int(phase_n)}::arbiter"
+    reviewer_findings = [
+        _normalize_phase_review_payload(initial_review, "phase-review-rev0"),
+        _normalize_phase_review_payload(revised_review, "phase-review-rev1"),
+    ]
+    result = arbitrate(
+        plan=_build_phase_arbiter_plan(
+            build_id=build_id,
+            phase_n=phase_n,
+            criteria_text=criteria_text,
+            initial_diff_text=initial_diff_text,
+            revised_diff_text=revised_diff_text,
+            initial_review=initial_review,
+            revised_review=revised_review,
+        ),
+        reviewer_findings=reviewer_findings,
+        config={**config, "plan_hash": phase_key_string, "arbiter": arbiter_cfg},
+    )
+    merged = _merge_two_way_findings(
+        reviewer_findings[0].get("findings", []),
+        reviewer_findings[1].get("findings", []),
+    )
+    result["findings"] = merged
+    result["arbiter_invoked"] = True
+    result["consensus"] = False
+    result["review_round"] = 1
+    result["escalated"] = False
+    result["build_id"] = str(build_id)
+    result["phase_number"] = int(phase_n)
+    result["phase_review_key_string"] = phase_key_string
+    result["exit_code"] = 0 if result.get("pass") else 1
+    return result
+
+
 def _resolve_default_spec_file(project_root):
     """Find the authoritative BUILD spec under <project_root>/.buildrunner/builds/."""
     builds_dir = Path(project_root) / ".buildrunner" / "builds"
@@ -1584,6 +1841,73 @@ def _mode_plan(args, parser):
         mode="plan",
     )
     result["tracking_artifacts"] = written
+
+    print(json.dumps(result, indent=2))
+    sys.exit(result.get("exit_code", 0))
+
+
+def _mode_phase(args, parser):
+    """Run revision-scoped phase review with triple-based idempotency."""
+    if not args.build_id or args.phase is None or args.revision is None:
+        parser.error("--mode phase requires --build-id, --phase, and --revision")
+    if not args.phase_diff_file or not args.criteria_file or not args.project_root:
+        parser.error("--mode phase requires --diff, --criteria, and --project-root")
+    if not Path(args.phase_diff_file).is_file():
+        parser.error(f"diff file not found: {args.phase_diff_file}")
+    if not Path(args.criteria_file).is_file():
+        parser.error(f"criteria file not found: {args.criteria_file}")
+    if not Path(args.project_root).is_dir():
+        parser.error(f"project root not found: {args.project_root}")
+
+    diff_text = Path(args.phase_diff_file).read_text(encoding="utf-8", errors="replace")
+    criteria_text = Path(args.criteria_file).read_text(encoding="utf-8", errors="replace")
+    config = load_config()
+    result = _run_phase_review(
+        build_id=args.build_id,
+        phase_n=args.phase,
+        revision_count=args.revision,
+        diff_text=diff_text,
+        criteria_text=criteria_text,
+        project_root=args.project_root,
+        config=config,
+    )
+
+    print(json.dumps(result, indent=2))
+    sys.exit(result.get("exit_code", 0))
+
+
+def _mode_phase_arbiter(args, parser):
+    """Run the final phase arbiter with both review artifacts and both diffs."""
+    required_paths = {
+        "--initial-diff": args.initial_diff_file,
+        "--revised-diff": args.revised_diff_file,
+        "--initial-review": args.initial_review_file,
+        "--revised-review": args.revised_review_file,
+        "--criteria": args.criteria_file,
+    }
+    if not args.build_id or args.phase is None:
+        parser.error("--mode phase-arbiter requires --build-id and --phase")
+    if not args.project_root:
+        parser.error("--mode phase-arbiter requires --project-root")
+    for label, path in required_paths.items():
+        if not path:
+            parser.error(f"--mode phase-arbiter requires {label}")
+        if not Path(path).is_file():
+            parser.error(f"{label} file not found: {path}")
+    if not Path(args.project_root).is_dir():
+        parser.error(f"project root not found: {args.project_root}")
+
+    config = load_config()
+    result = _run_phase_arbiter(
+        build_id=args.build_id,
+        phase_n=args.phase,
+        criteria_text=Path(args.criteria_file).read_text(encoding="utf-8", errors="replace"),
+        initial_diff_text=Path(args.initial_diff_file).read_text(encoding="utf-8", errors="replace"),
+        revised_diff_text=Path(args.revised_diff_file).read_text(encoding="utf-8", errors="replace"),
+        initial_review=_read_json_file(args.initial_review_file),
+        revised_review=_read_json_file(args.revised_review_file),
+        config=config,
+    )
 
     print(json.dumps(result, indent=2))
     sys.exit(result.get("exit_code", 0))
@@ -1677,10 +2001,10 @@ def main():
     parser.add_argument("--runtime-preflight", choices=["claude", "codex"], help="Run runtime preflight and exit")
     parser.add_argument(
         "--mode",
-        choices=["plan", "diff", "commit", "direct", "shadow"],
+        choices=["plan", "phase", "phase-arbiter", "diff", "commit", "direct", "shadow"],
         default=None,
         help=(
-            "Review mode: plan | diff | commit. "
+            "Review mode: plan | phase | phase-arbiter | diff | commit. "
             "Legacy values 'direct'/'shadow' are only valid with --runtime-preflight."
         ),
     )
@@ -1690,11 +2014,20 @@ def main():
     parser.add_argument("--node-name", help="Override node name in runtime preflight output")
     parser.add_argument("--auth-file", help="Override Codex auth file path for runtime preflight")
     parser.add_argument("--diff-file", help="Path to diff text file")
+    parser.add_argument("--diff", dest="phase_diff_file", help="Path to phase diff text file")
     parser.add_argument("--spec-file", help="Path to build spec file (auto-detected from .buildrunner/builds/ if omitted)")
+    parser.add_argument("--criteria", dest="criteria_file", help="Path to phase review criteria/spec file")
+    parser.add_argument("--initial-diff", dest="initial_diff_file", help="Path to the initial phase diff file")
+    parser.add_argument("--revised-diff", dest="revised_diff_file", help="Path to the revised phase diff file")
+    parser.add_argument("--initial-review", dest="initial_review_file", help="Path to the initial phase review JSON")
+    parser.add_argument("--revised-review", dest="revised_review_file", help="Path to the revised phase review JSON")
     parser.add_argument("--commit-sha", help="Commit SHA for caching and artifacts")
     parser.add_argument("--project-root", help="Project root path")
     parser.add_argument("--three-way", action="store_true", help="[legacy] Alias for --mode plan when --plan is set, else --mode diff")
     parser.add_argument("--plan", help="Path to plan file (plan mode input)")
+    parser.add_argument("--build-id", help="Build identifier for phase mode")
+    parser.add_argument("--phase", type=int, help="Phase number for phase mode")
+    parser.add_argument("--revision", type=int, help="Revision count for phase mode")
     parser.add_argument("--task-id", help="Task identifier recorded in tracking artifact")
     args = parser.parse_args()
 
@@ -1726,18 +2059,22 @@ def main():
         sys.exit(0 if preflight["dispatch_ok"] else 1)
 
     # Resolve effective mode: explicit --mode wins; else --three-way + --plan → plan; --three-way → diff
-    effective_mode = args.mode if args.mode in ("plan", "diff", "commit") else None
+    effective_mode = args.mode if args.mode in ("plan", "phase", "phase-arbiter", "diff", "commit") else None
     if effective_mode is None and args.three_way:
         effective_mode = "plan" if args.plan else "diff"
 
     if effective_mode == "plan":
         _mode_plan(args, parser)
+    if effective_mode == "phase":
+        _mode_phase(args, parser)
+    if effective_mode == "phase-arbiter":
+        _mode_phase_arbiter(args, parser)
     if effective_mode == "diff":
         _mode_diff(args, parser)
     if effective_mode == "commit":
         _mode_commit(args, parser)
 
-    parser.error("one of --mode {plan,diff,commit} or --three-way is required")
+    parser.error("one of --mode {plan,phase,phase-arbiter,diff,commit} or --three-way is required")
 
 
 if __name__ == "__main__":

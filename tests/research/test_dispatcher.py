@@ -301,9 +301,9 @@ class TestDispatcherPythonUnit:
         import codex_research
 
         assert perplexity.MODEL == "sonar-pro"
-        assert gemini.MODEL == "gemini-3.1-pro"
+        assert gemini.MODEL == "gemini-2.5-pro"
         assert grok.MODEL == "grok-4"
-        assert codex_research.DEFAULT_MODEL == "gpt-5.4"
+        assert codex_research.DEFAULT_MODEL == "gpt-5.5"
 
     def test_client_files_exist(self) -> None:
         clients_dir = Path.home() / ".buildrunner" / "scripts" / "llm-clients"

@@ -1,0 +1,15 @@
+# BR3 codex sandbox writable-roots config.
+# Read by ~/.buildrunner/scripts/lib/codex-sandbox-config.sh and translated
+# into `--add-dir <root>` flags on the `codex exec` command line.
+#
+# Why this exists: BR3's cluster infrastructure scripts live under ~/.buildrunner/
+# and ~/Library/LaunchAgents/, outside the project root. Without these flags
+# codex's `--sandbox workspace-write` cannot write them, and Rule 22 demotes
+# every cluster-touching phase from codex to claude.
+#
+# Add a path here only if codex needs write access to it during a build.
+
+additional_writable_roots = [
+  "~/.buildrunner/",
+  "~/Library/LaunchAgents/",
+]

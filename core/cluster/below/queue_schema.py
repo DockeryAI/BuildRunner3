@@ -48,7 +48,7 @@ class PendingRecord:
 class CompletedRecord(PendingRecord):
     committed_sha: str
     chunk_count: int
-    status: Literal["ok", "error"]
+    status: Literal["ok", "error", "indexing_pending"]
     error: str | None
     completed_at: str
     reindex_warning: str | None

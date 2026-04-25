@@ -16,13 +16,16 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
+from contextlib import suppress
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import requests
 import yaml
 
 from core.cluster.below.queue_schema import CompletedRecord, PendingRecord
@@ -48,10 +51,12 @@ REQUIRED_FRONTMATTER_KEYS = [
     "last_updated",
 ]
 RETRY_DELAYS_SECONDS = (1, 2, 4)
-REINDEX_TIMEOUT_SECONDS = 60
-REINDEX_POLL_SECONDS = 5
+REINDEX_TIMEOUT_SECONDS = 120
+REINDEX_POLL_SECONDS = 1
+RETRIEVAL_VERIFY_THRESHOLD = 0.5  # Fixed Phase 4 gate: above the prior 0.4 floor and below the live 0.87 verified hit.
 RESEARCH_QUEUE_DIR = Path(".buildrunner") / "research-queue"
 REPO_ROOT = Path(__file__).resolve().parents[3]
+OLLAMA_ATTEMPTS_LOG_PATH = REPO_ROOT / RESEARCH_QUEUE_DIR / "ollama-attempts.jsonl"
 REFORMAT_PROMPT_PATH = Path(__file__).with_name("reformat_prompt.md")
 METADATA_PROMPT_PATH = Path(__file__).with_name("metadata_prompt.md")
 _SSH_CONNECT_TIMEOUT_SECONDS = 10
@@ -78,6 +83,40 @@ SchemaViolation = SchemaViolationError
 
 def _utc_now_iso() -> str:
     return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _ollama_attempt_host() -> str:
+    parsed = urllib.parse.urlparse(get_below_ollama_url())
+    return parsed.netloc or parsed.path or get_below_ollama_url()
+
+
+def _append_ollama_attempt(
+    *,
+    operation: str,
+    elapsed_ms: int,
+    error_class: str | None,
+    retry_index: int,
+    outcome: str,
+) -> None:
+    OLLAMA_ATTEMPTS_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "ts": _utc_now_iso(),
+        "operation": operation,
+        "elapsed_ms": elapsed_ms,
+        "error_class": error_class,
+        "retry_index": retry_index,
+        "host": _ollama_attempt_host(),
+        "outcome": outcome,
+    }
+    with OLLAMA_ATTEMPTS_LOG_PATH.open("a", encoding="utf-8") as handle:
+        handle.write(f"{json.dumps(payload, ensure_ascii=False)}\n")
+
+
+def _normalize_ollama_retry_error(exc: Exception) -> OllamaError:
+    if isinstance(exc, OllamaError):
+        return exc
+    detail = str(exc).strip() or exc.__class__.__name__
+    return OllamaError(f"ollama_socket_timeout: {exc.__class__.__name__}: {detail}")
 
 
 def ensure_queue_dir(queue_dir: Path) -> int:
@@ -108,7 +147,7 @@ def ensure_queue_dir(queue_dir: Path) -> int:
     return created
 
 
-def enqueue_pending(queue_dir: Path, record: "PendingRecord") -> Path:
+def enqueue_pending(queue_dir: Path, record: PendingRecord) -> Path:
     """Atomically enqueue a pending record as a per-file entry.
 
     Each record gets its own UUID-named file inside <queue_dir>/pending/.
@@ -190,7 +229,7 @@ def _strip_wrapping_code_fence(markdown: str) -> str:
 
 def _trim_preamble_to_frontmatter(markdown: str) -> str:
     markdown = markdown.lstrip("﻿").lstrip()
-    if markdown.startswith("---\n") or markdown.startswith("---\r\n"):
+    if markdown.startswith(("---\n", "---\r\n")):
         return markdown
     marker = "\n---\n"
     index = markdown.find(marker)
@@ -203,10 +242,11 @@ def _trim_preamble_to_frontmatter(markdown: str) -> str:
 
 
 def _load_frontmatter_from_markdown(markdown: str) -> dict[str, Any]:
+    markdown = markdown.replace("\r\n", "\n")
     markdown = _strip_wrapping_code_fence(markdown)
     markdown = _trim_preamble_to_frontmatter(markdown)
     markdown = _normalize_frontmatter(markdown)
-    if not markdown.startswith("---\n") and not markdown.startswith("---\r\n"):
+    if not markdown.startswith("---\n"):
         raise OllamaError("Ollama output missing YAML frontmatter")
 
     end_index = markdown.find("\n---", 4)
@@ -220,6 +260,28 @@ def _load_frontmatter_from_markdown(markdown: str) -> dict[str, Any]:
     if not isinstance(frontmatter, dict):
         raise OllamaError("Ollama output frontmatter is not a mapping")
     return frontmatter
+
+
+def _split_markdown_frontmatter(markdown: str) -> tuple[dict[str, Any], str]:
+    markdown = markdown.replace("\r\n", "\n")
+    markdown = _strip_wrapping_code_fence(markdown)
+    markdown = _trim_preamble_to_frontmatter(markdown)
+    markdown = _normalize_frontmatter(markdown)
+    if not markdown.startswith("---\n"):
+        return {}, markdown
+
+    end_index = markdown.find("\n---", 4)
+    if end_index == -1:
+        return {}, markdown
+
+    try:
+        frontmatter = yaml.safe_load(markdown[4:end_index]) or {}
+    except yaml.YAMLError:
+        return {}, markdown
+    if not isinstance(frontmatter, dict):
+        return {}, markdown
+    body = markdown[end_index + 4 :].lstrip("\n")
+    return frontmatter, body
 
 
 def _normalize_frontmatter(markdown: str) -> str:
@@ -273,6 +335,68 @@ def _parse_metadata_json(text: str) -> dict[str, Any]:
         raise OllamaError("Ollama metadata response field 'difficulty' is invalid")
 
     return payload
+
+
+def build_retrieval_verify_query(markdown: str) -> tuple[str, str]:
+    frontmatter, body = _split_markdown_frontmatter(markdown)
+    title = frontmatter.get("title")
+    if isinstance(title, str) and title.strip():
+        return title.strip(), "title"
+
+    for line in body.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("# "):
+            return stripped[2:].strip(), "h1"
+
+    paragraph_lines: list[str] = []
+    for line in body.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            if paragraph_lines:
+                break
+            continue
+        if stripped.startswith("#"):
+            if paragraph_lines:
+                break
+            continue
+        paragraph_lines.append(stripped)
+
+    paragraph = " ".join(paragraph_lines).strip()
+    if paragraph:
+        return paragraph[:200], "paragraph"
+    return "", "paragraph"
+
+
+def _normalize_retrieval_path(path: str) -> str:
+    normalized = str(path or "").replace("\\", "/").strip()
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    normalized = normalized.lstrip("/")
+    if "research-library/" in normalized:
+        normalized = normalized.split("research-library/", 1)[1]
+    return normalized
+
+
+def _matching_retrieval_hit(results: list[dict[str, Any]], intended_path: str) -> dict[str, Any] | None:
+    normalized_target = _normalize_retrieval_path(intended_path)
+    best_match: dict[str, Any] | None = None
+    best_score = float("-inf")
+
+    for result in results:
+        source_url = _normalize_retrieval_path(str(result.get("source_url") or ""))
+        if not source_url:
+            continue
+        if source_url != normalized_target and not source_url.endswith(f"/{normalized_target}"):
+            continue
+        try:
+            score = float(result.get("score", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            score = 0.0
+        if score > best_score:
+            best_match = result
+            best_score = score
+
+    return best_match
 
 
 def _ollama_generate(
@@ -659,8 +783,59 @@ def _get_research_stats() -> dict[str, Any]:
     return _http_json("GET", f"{get_jimmy_semantic_url()}/api/research/stats", timeout=15)
 
 
+def _request_research_json(
+    method: str,
+    url: str,
+    *,
+    payload: dict[str, Any] | None = None,
+    timeout: int = 15,
+) -> dict[str, Any]:
+    try:
+        if method == "GET":
+            response = requests.get(url, timeout=timeout)
+        elif method == "POST":
+            response = requests.post(url, json=payload if payload is not None else {}, timeout=timeout)
+        else:
+            raise ValueError(f"unsupported method: {method}")
+    except requests.RequestException as exc:
+        raise WorkerError(f"research API request failed: {exc}") from exc
+
+    status_code = int(getattr(response, "status_code", 200))
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise WorkerError("research API returned invalid JSON") from exc
+
+    if status_code >= 400:
+        if isinstance(payload, dict):
+            detail = payload.get("detail") or payload.get("error") or payload
+        else:
+            detail = payload
+        raise WorkerError(f"research API error: {detail}")
+    if not isinstance(payload, dict):
+        raise WorkerError("research API returned non-object payload")
+    return payload
+
+
 def _post_reindex() -> dict[str, Any]:
-    return _http_json("POST", f"{get_jimmy_semantic_url()}/api/research/reindex", payload={}, timeout=15)
+    return _request_research_json("POST", f"{get_jimmy_semantic_url()}/api/research/reindex")
+
+
+def _get_reindex_job(job_id: str) -> dict[str, Any]:
+    return _request_research_json("GET", f"{get_jimmy_semantic_url()}/api/research/reindex/{job_id}")
+
+
+def _post_retrieve(query: str, *, top_k: int = 10, sources: list[str] | None = None) -> dict[str, Any]:
+    return _request_research_json(
+        "POST",
+        f"{get_jimmy_semantic_url()}/retrieve",
+        payload={
+            "query": query,
+            "top_k": top_k,
+            "sources": sources if sources is not None else ["research"],
+        },
+        timeout=30,
+    )
 
 
 def _wait_for_reindex(
@@ -671,26 +846,27 @@ def _wait_for_reindex(
     timeout_seconds: int = REINDEX_TIMEOUT_SECONDS,
     poll_seconds: int = REINDEX_POLL_SECONDS,
 ) -> tuple[int, str | None]:
-    _post_reindex()
+    del commit_time_epoch
+    reindex = _post_reindex()
     initial_chunk_count = _extract_chunk_count(pre_stats)
+    job_id = reindex.get("job_id")
+    if not isinstance(job_id, str) or not job_id:
+        return initial_chunk_count, "reindex endpoint did not return a job_id"
     deadline = time.monotonic() + timeout_seconds
-    previous_indexing = bool(pre_stats.get("indexing", False))
     latest_chunk_count = initial_chunk_count
 
     while time.monotonic() < deadline:
+        job = _get_reindex_job(job_id)
+        state = str(job.get("state") or "")
+        rows_added = _extract_chunk_count({"chunk_count": job.get("rows_added", 0)})
+        if state == "done":
+            return initial_chunk_count + rows_added, None
+        if state == "failed":
+            detail = str(job.get("error") or "unknown reindex failure")
+            return latest_chunk_count, f"reindex job {job_id} failed: {detail}"
         sleep_func(poll_seconds)
-        stats = _get_research_stats()
-        latest_chunk_count = _extract_chunk_count(stats)
-        if latest_chunk_count != initial_chunk_count:
-            return latest_chunk_count, None
 
-        current_indexing = bool(stats.get("indexing", False))
-        last_index = float(stats.get("last_index", 0) or 0)
-        if previous_indexing and not current_indexing and last_index > commit_time_epoch:
-            return latest_chunk_count, None
-        previous_indexing = current_indexing
-
-    return latest_chunk_count, "timeout waiting for chunk_count delta after 60s"
+    return latest_chunk_count, f"timeout waiting for reindex job {job_id} after {timeout_seconds}s"
 
 
 def _completed_from_invalid_line(raw_line: str, error: str) -> CompletedRecord:
@@ -768,18 +944,117 @@ class ResearchWorker:
             sleep_func=self.sleep,
         )
 
+    def retrieve_research(
+        self,
+        query: str,
+        *,
+        top_k: int = 10,
+        sources: list[str] | None = None,
+    ) -> dict[str, Any]:
+        return _post_retrieve(query, top_k=top_k, sources=sources)
+
+    def _verify_retrieval_result(
+        self,
+        record: PendingRecord,
+        reformatted_md: str,
+    ) -> tuple[bool, str | None]:
+        query, query_source = build_retrieval_verify_query(reformatted_md)
+        if not query:
+            logger.warning(
+                "retrieval verification failed for %s: verify_query_source=%s reason=no_query",
+                record.id,
+                query_source,
+            )
+            return False, "retrieval verification failed: unable to build verification query"
+
+        response = self.retrieve_research(query, top_k=10, sources=["research"])
+        results = response.get("results")
+        if not isinstance(results, list):
+            logger.warning(
+                "retrieval verification failed for %s: verify_query_source=%s reason=bad_results",
+                record.id,
+                query_source,
+            )
+            return False, "retrieval verification failed: retrieve returned invalid results"
+
+        match = _matching_retrieval_hit(results, record.intended_path)
+        if match is None:
+            logger.warning(
+                "retrieval verification failed for %s: verify_query_source=%s intended_path=%s reason=doc_not_found",
+                record.id,
+                query_source,
+                record.intended_path,
+            )
+            return (
+                False,
+                f"retrieval verification failed: {record.intended_path} not found "
+                f"(verify_query_source={query_source})",
+            )
+
+        try:
+            score = float(match.get("score", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            score = 0.0
+        if score < RETRIEVAL_VERIFY_THRESHOLD:
+            logger.warning(
+                "retrieval verification failed for %s: verify_query_source=%s intended_path=%s score=%.3f threshold=%.3f reason=low_score",
+                record.id,
+                query_source,
+                record.intended_path,
+                score,
+                RETRIEVAL_VERIFY_THRESHOLD,
+            )
+            return (
+                False,
+                f"retrieval verification failed: {record.intended_path} score {score:.3f} "
+                f"below {RETRIEVAL_VERIFY_THRESHOLD:.1f} (verify_query_source={query_source})",
+            )
+
+        logger.info(
+            "retrieval verification passed for %s: verify_query_source=%s intended_path=%s score=%.3f threshold=%.3f",
+            record.id,
+            query_source,
+            record.intended_path,
+            score,
+            RETRIEVAL_VERIFY_THRESHOLD,
+        )
+        return True, None
+
+    def verify_retrieval(self, record: PendingRecord, reformatted_md: str) -> bool:
+        verified, _reason = self._verify_retrieval_result(record, reformatted_md)
+        return verified
+
     def _retry_ollama(self, operation: str, func: Any) -> Any:
         last_error: Exception | None = None
         for attempt in range(len(RETRY_DELAYS_SECONDS) + 1):
+            started_at = time.monotonic()
             try:
-                return func()
-            except OllamaError as exc:
-                last_error = exc
+                result = func()
+            except (OllamaError, TimeoutError, ConnectionError, requests.exceptions.RequestException) as exc:
+                elapsed_ms = max(0, int((time.monotonic() - started_at) * 1000))
+                _append_ollama_attempt(
+                    operation=operation,
+                    elapsed_ms=elapsed_ms,
+                    error_class=exc.__class__.__name__,
+                    retry_index=attempt,
+                    outcome="error",
+                )
+                last_error = _normalize_ollama_retry_error(exc)
                 if attempt >= len(RETRY_DELAYS_SECONDS):
                     break
                 delay = RETRY_DELAYS_SECONDS[attempt]
-                logger.warning("%s failed (attempt %s): %s", operation, attempt + 1, exc)
+                logger.warning("%s failed (attempt %s): %s", operation, attempt + 1, last_error)
                 self.sleep(delay)
+                continue
+            elapsed_ms = max(0, int((time.monotonic() - started_at) * 1000))
+            _append_ollama_attempt(
+                operation=operation,
+                elapsed_ms=elapsed_ms,
+                error_class=None,
+                retry_index=attempt,
+                outcome="ok",
+            )
+            return result
         if last_error is None:
             raise OllamaError(f"{operation} failed")
         raise last_error
@@ -791,6 +1066,7 @@ class ResearchWorker:
         reindex_warning = None
         status = "ok"
         error = None
+        indexing_pending_reasons: list[str] = []
 
         try:
             try:
@@ -810,6 +1086,7 @@ class ResearchWorker:
                     f"{reformat_exc}. Document committed with deterministic frontmatter; "
                     "consider manual enrichment."
                 )
+                indexing_pending_reasons.append(f"reformat fallback used: {reformat_exc}")
             try:
                 metadata = self._retry_ollama(
                     "metadata",
@@ -826,18 +1103,29 @@ class ResearchWorker:
                 reindex_warning = (existing + " " if existing else "") + (
                     f"metadata fallback: {metadata_exc}"
                 )
+                indexing_pending_reasons.append(f"metadata fallback: {metadata_exc}")
             committed_sha = self.commit_to_jimmy(record, reformatted_md, metadata)
             chunk_count, reindex_followup = self.wait_for_reindex(
                 pre_stats,
                 commit_time_epoch=time.time(),
             )
             if reindex_followup:
-                reindex_warning = (
-                    f"{reindex_warning}; {reindex_followup}" if reindex_warning else reindex_followup
-                )
+                if reindex_followup.startswith("timeout waiting for reindex job "):
+                    indexing_pending_reasons.append(reindex_followup)
+                else:
+                    status = "error"
+                    error = reindex_followup
+            else:
+                verified, verification_reason = self._verify_retrieval_result(record, reformatted_md)
+                if not verified and verification_reason:
+                    indexing_pending_reasons.append(verification_reason)
         except Exception as exc:  # noqa: BLE001
             status = "error"
             error = str(exc)
+        else:
+            if indexing_pending_reasons:
+                status = "indexing_pending"
+                error = "; ".join(indexing_pending_reasons)
 
         return CompletedRecord(
             **asdict(record),
@@ -858,6 +1146,23 @@ class ResearchWorker:
         with self.completed_path.open("a", encoding="utf-8") as handle:
             handle.write(f"{completed.to_jsonl()}\n")
 
+    def _indexing_pending_attempts(self, record_id: str) -> int:
+        if not self.completed_path.exists():
+            return 0
+        attempts = 0
+        for line in reversed(self.completed_path.read_text(encoding="utf-8").splitlines()):
+            if not line.strip():
+                continue
+            try:
+                completed = CompletedRecord.from_jsonl(line)
+            except (json.JSONDecodeError, TypeError):
+                continue
+            if completed.id == record_id and completed.status == "indexing_pending":
+                attempts += 1
+                if attempts >= 1:
+                    return attempts
+        return attempts
+
     # ------------------------------------------------------------------
     # Per-file atomic queue (replaces line-indexed pending.jsonl)
     # ------------------------------------------------------------------
@@ -870,8 +1175,8 @@ class ResearchWorker:
                 if f.name.startswith(".tmp-"):
                     continue  # skip in-flight writes
                 return f
-        except Exception:
-            pass
+        except OSError as exc:
+            logger.warning("Pending queue scan failed: %s", exc)
         return None
 
     def _drain_legacy_pending_jsonl(self) -> int:
@@ -893,13 +1198,13 @@ class ResearchWorker:
                     record = PendingRecord.from_jsonl(line)
                     enqueue_pending(self.queue_dir, record)
                     migrated += 1
-                except Exception:
+                except (json.JSONDecodeError, TypeError):
                     remaining.append(line)
             # Rewrite legacy file with only unparseable lines (edge case)
             self.pending_path.write_text(
                 "\n".join(remaining) + ("\n" if remaining else ""), encoding="utf-8"
             )
-        except Exception as exc:
+        except OSError as exc:
             logger.warning("Legacy pending.jsonl drain failed: %s", exc)
         if migrated:
             logger.info("Migrated %d record(s) from legacy pending.jsonl to per-file queue", migrated)
@@ -927,11 +1232,24 @@ class ResearchWorker:
         except Exception as exc:  # noqa: BLE001
             completed = _completed_from_invalid_line(raw, str(exc))
 
+        if completed.status == "indexing_pending":
+            attempts = self._indexing_pending_attempts(completed.id)
+            if attempts >= 1:
+                completed = CompletedRecord(
+                    **asdict(record),
+                    committed_sha=completed.committed_sha,
+                    chunk_count=completed.chunk_count,
+                    status="error",
+                    error=completed.error or completed.reindex_warning or "indexing still pending",
+                    completed_at=completed.completed_at,
+                    reindex_warning=completed.reindex_warning,
+                )
         self._append_completed(completed)
-        try:
-            os.remove(pending_file)
-        except FileNotFoundError:
-            pass  # already removed by a concurrent worker — safe to ignore
+        if completed.status == "indexing_pending":
+            logger.info("Re-enqueueing indexing_pending record %s for one retry", completed.id)
+            enqueue_pending(self.queue_dir, record)
+        with suppress(FileNotFoundError):
+            pending_file.unlink()
         return True
 
     def run(self) -> int:

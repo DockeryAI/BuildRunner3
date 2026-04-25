@@ -1,0 +1,56 @@
+{
+  "pass": true,
+  "verdict": "PASS",
+  "reviewers": [
+    {
+      "name": "sonnet-4-6",
+      "findings": [],
+      "duration_ms": 227,
+      "status": "ok"
+    },
+    {
+      "name": "gpt-5.5",
+      "findings": [],
+      "duration_ms": 140,
+      "status": "ok"
+    }
+  ],
+  "arbiter": {
+    "reasoning": "Reviewers agreed the plan passes one-round review.",
+    "duration_ms": 0,
+    "status": "not-needed",
+    "reason": null
+  },
+  "circuit_state": "closed",
+  "plan_hash": "test::phase1::rev0",
+  "review_round": 1,
+  "escalated": false,
+  "reason": "consensus-pass",
+  "fallback_logic": null,
+  "last_opus_payload": null,
+  "blockers": [],
+  "arbiter_reasoning": "Reviewers agreed the plan passes one-round review.",
+  "arbiter_invoked": false,
+  "consensus": true,
+  "findings": [],
+  "arbiter_ruling": {
+    "reasoning": "Reviewers agreed the plan passes one-round review.",
+    "duration_ms": 0,
+    "status": "not-needed",
+    "reason": null
+  },
+  "build_id": "test",
+  "phase_number": 1,
+  "revision_count": 0,
+  "phase_review_key": {
+    "build_id": "test",
+    "phase_n": 1,
+    "revision_count": 0
+  },
+  "phase_review_key_string": "test::phase1::rev0",
+  "exit_code": 0,
+  "tracking_artifact": "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/cluster-reviews/phase/test-phase1-rev0-a15ab6494695.json",
+  "cached": false,
+  "diff_sha256": "a15ab649469564ae6773e1188aaaa7cf06748be94fe98a5b3fd0badedb1de043",
+  "generated_at": "2026-04-25T16:11:26.799652Z"
+}

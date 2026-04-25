@@ -1,0 +1,53 @@
+{
+  "created_at": "2026-04-25T13:59:43Z",
+  "final_pending_id": "06fa3336-b849-4289-aa0a-1d439cba5336",
+  "invocation_id": "research-20260425T135943Z-30164",
+  "pending_record_path": "pending-record.json",
+  "reviews": [
+    {
+      "path": "review-codex.json",
+      "provider": "codex",
+      "ts": "2026-04-25T14:22:21Z"
+    }
+  ],
+  "step": "queued",
+  "sub_agents": [
+    {
+      "bytes": 92,
+      "family": "claude",
+      "path": "sub-agents/claude-foundations-economic-theory.md",
+      "slug": "foundations-economic-theory",
+      "ts": "2026-04-25T14:11:12Z"
+    },
+    {
+      "bytes": 85,
+      "family": "claude",
+      "path": "sub-agents/claude-regional-powerhouses.md",
+      "slug": "regional-powerhouses",
+      "ts": "2026-04-25T14:11:12Z"
+    },
+    {
+      "bytes": 84,
+      "family": "claude",
+      "path": "sub-agents/claude-social-organization.md",
+      "slug": "social-organization",
+      "ts": "2026-04-25T14:11:12Z"
+    },
+    {
+      "bytes": 80,
+      "family": "claude",
+      "path": "sub-agents/claude-modern-evidence.md",
+      "slug": "modern-evidence",
+      "ts": "2026-04-25T14:11:12Z"
+    },
+    {
+      "bytes": 13225,
+      "family": "gemini",
+      "path": "sub-agents/gemini-trade-routes.md",
+      "slug": "trade-routes",
+      "ts": "2026-04-25T14:15:43Z"
+    }
+  ],
+  "synthesis_path": "synthesis.md",
+  "updated_at": "2026-04-25T14:23:14Z"
+}

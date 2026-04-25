@@ -1,0 +1,33 @@
+{
+  "created_at": "2026-04-25T13:10:52Z",
+  "final_pending_id": "65e59b1d-555c-4ec2-a9b8-035ccbeddc31",
+  "invocation_id": "research-20260425T131052Z-37998",
+  "pending_record_path": "pending-record.json",
+  "reviews": [],
+  "step": "queued",
+  "sub_agents": [
+    {
+      "bytes": 70,
+      "family": "claude",
+      "path": "sub-agents/claude-foundations.md",
+      "slug": "foundations",
+      "ts": "2026-04-25T13:31:28Z"
+    },
+    {
+      "bytes": 114,
+      "family": "perplexity",
+      "path": "sub-agents/perplexity-who-built-how-built.md",
+      "slug": "who-built-how-built",
+      "ts": "2026-04-25T13:31:28Z"
+    },
+    {
+      "bytes": 72,
+      "family": "claude",
+      "path": "sub-agents/claude-why-built-cutting-edge.md",
+      "slug": "why-built-cutting-edge",
+      "ts": "2026-04-25T13:31:28Z"
+    }
+  ],
+  "synthesis_path": "synthesis.md",
+  "updated_at": "2026-04-25T13:46:41Z"
+}

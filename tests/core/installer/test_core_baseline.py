@@ -18,6 +18,7 @@ def test_install_core_baseline_on_empty_project(tmp_path) -> None:
         buildrunner_dir / "skill-state.json",
         buildrunner_dir / "behavior.yaml",
         buildrunner_dir / "orchestration_state.json",
+        buildrunner_dir / "runtime.json",
         buildrunner_dir / "bypass-justification.md",
         buildrunner_dir / "scripts" / "log-rotation.sh",
         project / "CLAUDE.md",
@@ -74,6 +75,31 @@ def test_install_core_baseline_preserves_custom_structured_keys(tmp_path) -> Non
     assert agents_data["agents"] == []
     assert agents_data["version"] == 1
     assert agents_path not in result.merged
+
+
+def test_install_core_baseline_does_not_override_existing_runtime_default(tmp_path) -> None:
+    project = tmp_path / "project"
+    buildrunner_dir = project / ".buildrunner"
+    buildrunner_dir.mkdir(parents=True)
+    runtime_path = buildrunner_dir / "runtime.json"
+    runtime_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "br3.runtime.config.v1",
+                "default_runtime": "claude",
+                "custom_key": "preserved",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    CoreBaselineInstaller().install(project)
+    runtime_data = json.loads(runtime_path.read_text(encoding="utf-8"))
+
+    assert runtime_data["default_runtime"] == "claude"
+    assert runtime_data["custom_key"] == "preserved"
 
 
 def test_install_core_baseline_writes_suggested_claude_when_project_claude_exists(tmp_path) -> None:

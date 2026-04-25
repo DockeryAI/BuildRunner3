@@ -8,14 +8,16 @@ Commands:
 - br project remove <alias> - Unregister project
 """
 
-import typer
+import logging
 from pathlib import Path
+
+import typer
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 from rich.prompt import Prompt, Confirm
-import logging
+from rich.table import Table
 
+from core.installer import CoreBaselineInstaller
 from core.project_registry import get_project_registry
 from core.shell_integration import get_shell_integration
 
@@ -106,12 +108,12 @@ def init_project(
     # Step 1: Create .buildrunner structure
     console.print("[bold]Step 1:[/bold] Creating project structure...")
     buildrunner_dir = directory / ".buildrunner"
-    buildrunner_dir.mkdir(exist_ok=True)
+    CoreBaselineInstaller().install(directory)
 
     spec_path = buildrunner_dir / "PROJECT_SPEC.md"
     features_path = buildrunner_dir / "features.json"
 
-    console.print(f"  ✓ Created {buildrunner_dir}")
+    console.print(f"  ✓ Initialized baseline in {buildrunner_dir}")
 
     # Step 2: Planning mode (unless skipped)
     if not skip_planning:

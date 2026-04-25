@@ -1,0 +1,17 @@
+{
+  "created_at": "2026-04-24T11:48:38Z",
+  "final_pending_id": null,
+  "invocation_id": "research-20260424T114838Z-97027",
+  "pending_record_path": null,
+  "reviews": [
+    {
+      "path": "review-perplexity.json",
+      "provider": "perplexity",
+      "ts": "2026-04-24T12:03:47Z"
+    }
+  ],
+  "step": "reviewed",
+  "sub_agents": [],
+  "synthesis_path": "synthesis.md",
+  "updated_at": "2026-04-24T12:03:47Z"
+}

@@ -1,0 +1,11 @@
+{
+  "created_at": "2026-04-24T13:04:24Z",
+  "final_pending_id": null,
+  "invocation_id": "research-20260424T130424Z-1216",
+  "pending_record_path": null,
+  "reviews": [],
+  "step": "queued",
+  "sub_agents": [],
+  "synthesis_path": null,
+  "updated_at": "2026-04-24T13:15:08Z"
+}

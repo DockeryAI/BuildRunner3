@@ -10,11 +10,12 @@
   },
   "reviewers": {
     "claude_model": "claude-sonnet-4-6",
-    "codex_model": "gpt-5.4"
+    "codex_model": "gpt-5.5"
   },
   "arbiter": {
     "model": "claude-opus-4-7",
     "effort": "xhigh"
   },
+  "phase_arbiter_model": "claude-opus-4-7",
   "cache_dir": "~/.buildrunner/cache/cross-reviews"
 }

@@ -1459,3 +1459,178 @@ PHASE-7 COMPLETE 2026-04-21T00:14:14Z claude-sonnet-4-6 RuntimeRegistry.execute(
 2026-04-24T14:35:30Z router: build=BUILD_burnin-harness-reliability phase=5 node=muddy reason=spec-preference overrides=none
 2026-04-24T14:35:30Z router: build=BUILD_burnin-harness-reliability phase=6 node=muddy reason=path-locality overrides=path-locality
 2026-04-24T14:36:36Z [autopilot] build=BUILD_burnin-harness-reliability override=out-of-project-files reason="codex workspace-write sandbox scoped to PROJECT_PATH cannot write to ~/.buildrunner/; Rule 22 forward path" builder=claude
+2026-04-24T14:55:45Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+[2026-04-25T13:30:16Z] THREE_WAY_REVIEW review_start plan_hash=c0240b225c1ecd02 artifact='.buildrunner/plans/plan-burnin-queue-v2.md' commit=plan-1777123816
+[2026-04-25T13:33:24Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=c0240b225c1ecd02 reviewers=2
+[2026-04-25T08:36:05] [DECISION] Spec burnin-queue-v2: review returned 0 blockers / 1 warning / 6 notes; fixed inline; bypass authorized by skill (1-review rule)
+[2026-04-25T08:44:04] [DECISION] Created build spec: burnin-queue-v2 with 7 phases (queue + state-machine repair after 3-round adversarial review)
+[2026-04-25T14:13:12Z] THREE_WAY_REVIEW review_start plan_hash=632c4fca55bfc05a artifact='.buildrunner/plans/plan-init-attach-overhaul.md' commit=plan-1777126392
+[2026-04-25T14:16:52Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=632c4fca55bfc05a reviewers=2
+[2026-04-25T09:39:03] [DECISION] Created build spec: init-attach-overhaul with 9 phases (asset packaging, hook policy, facet model, detector, core baseline, web adapters, capabilities, Godot adapter, drift audit/migration). Adversarial review BYPASSED (arbiter circuit_open only; warnings fixed inline). Plan SHA 2428d2b2.
+[2026-04-25T14:54:26Z] THREE_WAY_REVIEW review_start plan_hash=e8ab217b6595edf9 artifact='.buildrunner/plans/plan-research-pipeline-triple-failure-fix.md' commit=plan-1777128866
+[2026-04-25T14:58:05Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=e8ab217b6595edf9 reviewers=2
+2026-04-25T15:01:24Z | spec | research-pipeline-triple-failure-fix | bypass-3.7 | 5 note-severity findings fixed inline; arbiter circuit_open; 1-review rule
+[2026-04-25T15:01:40Z] THREE_WAY_REVIEW review_start plan_hash=49969c981ed9f1d6 artifact='.buildrunner/plans/plan-role-matrix-codex-arbiter.md' commit=plan-1777129299
+2026-04-25T15:04:13Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T15:04:49Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T15:05:24Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+[2026-04-25T15:05:32Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=49969c981ed9f1d6 reviewers=2
+2026-04-25T15:06:35Z | spec | research-pipeline-triple-failure-fix | created | 5 phases; plan SHA 0ece7c77; bypass justified (5 note findings, 0 blockers); registered
+[2026-04-25T10:11:38] [DECISION] Spec review blocked; fixed inline; bypass authorized by skill (1-review rule) for role-matrix-codex-arbiter
+2026-04-25T15:55:15Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T15:56:31Z # RESEARCH_DIR pinned via symlink on Jimmy — followup: pin in launchd service config to make permanent.
+2026-04-25T15:56:40Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T15:57:23Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T15:58:05Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:01:27Z [phase-review] build=role-matrix-codex-arbiter phase=1 revision=0 verdict=arbiter-approve reviewer=opus-4-7 notes="argv smoke + live ~/.buildrunner write + regression test all pass; codex banner shows expanded sandbox roots"
+2026-04-25T16:07:41Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:08:18Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:08:56Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:09:31Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:09:59Z [phase-review] build=role-matrix-codex-arbiter phase=3 revision=0 verdict=arbiter-approve reviewer=opus-4-7 notes="prefix script + runtime-dispatch wiring + smoke tests + env override all pass; codex-vs-claude effort split documented in script header"
+2026-04-25T16:09:59Z [phase-review] build=role-matrix-codex-arbiter phase=7 revision=0 verdict=arbiter-approve reviewer=opus-4-7 notes="emit site=developer-brief.sh:155 (NOT postflight.py:303 — refuted); BR3_CODEX_ALERT_TTL_SECONDS gate added; 4 simulation cases pass including regression check on fresh codex error"
+2026-04-25T16:10:07Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:10:44Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+[2026-04-25T16:10:57Z] THREE_WAY_REVIEW review_start plan_hash=940abf08b0c83ee2 artifact='same plan body' commit=sha-1
+[2026-04-25T16:10:57Z] THREE_WAY_REVIEW review_start plan_hash=1717d37284e4de57 artifact='new plan body' commit=sha-timeout
+[2026-04-25T16:10:57Z] THREE_WAY_REVIEW arbiter_invoked plan_hash=1717d37284e4de57 reviewers=2
+2026-04-25T16:11:23Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:11:58Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:12:33Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:12:55Z [phase-review] build=role-matrix-codex-arbiter phase=5 revision=0 verdict=arbiter-approve reviewer=opus-4-7 notes="5 phase-scope tests + 11 plan-mode tests + 3 one-round tests pass; manual --mode phase wrote tracking file to expected path; SUPPORTED_CODEX_VERSION_MAX replaced with min-only+warn-on-unknown-major; 83 ruff findings on cross_model_review.py are pre-existing, not introduced"
+2026-04-25T16:13:08Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:13:43Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:14:20Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:15:09Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:15:46Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:16:27Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:17:00Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:20:08Z phase-5: ollama_retry root_cause="socket.timeout/TimeoutError escaped process_record reformat retry because only OllamaError reached the fallback handler" fix="wrap socket/connection-level retry failures as OllamaError(ollama_socket_timeout: ... ) inside _retry_ollama and append per-attempt JSONL instrumentation" deferred="no /api/tags health-check; no fcntl flock"
+2026-04-25T16:17:35Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:18:11Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:18:50Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:19:25Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:19:59Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:20:44Z [phase-review] build=role-matrix-codex-arbiter phase=2 revision=0 verdict=arbiter-approve reviewer=opus-4-7 notes="emit site=load-role-matrix-phase.sh (live BR3_PHASE_BUILDER export path); 3 routing scenarios PASS (allowlist on/off/no-toml); fallback whole-build demotion preserved; python3 3.11+ requirement noted as deviation"
+2026-04-25T16:20:52Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:21:31Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:22:05Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:22:39Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:23:17Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:23:55Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:24:29Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:25:04Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:34:21Z phase-review build=role-matrix-codex-arbiter phase=4 revision=0 verdict=arbiter-approve arbiter=opus-4-7 reason=hook-signature+steps-A-B-C+hard-cap+decisions-log+driver-invocation-all-verified deviations-justified
+2026-04-25T16:38:26Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:39:01Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:39:03Z phase-followup: research.md contains 'Step 0.5: Resume In-Flight Invocation' and '<checkpoint_persistence>' blocks added in a prior session (not in any committed ~/.claude tag). Tests across BUILD_research-pipeline-triple-failure-fix all green; blocks are functionally non-conflicting with Phases 1–5 but never had their own BUILD phase + adversarial review. Deferred for a dedicated review pass.
+2026-04-25T16:39:35Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:40:09Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:40:43Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:41:17Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:41:54Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:42:29Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:43:02Z dep-triage: package=--package from=lodash to=--from verdict=escalate tier=0 reason=major-bump
+2026-04-25T16:51:48Z phase-review build=role-matrix-codex-arbiter phase=6 revision=0 verdict=arbiter-approve arbiter=opus-4-7 reason=br-runtime.sh-roundtrip-passes+atomic-mv+invalid-exits-1+schema-preserved+bootstrap-3-sites+codex-do-skill-reminder-applied-by-arbiter deviations=spec-skill-edit-completed-by-arbiter-due-to-sandbox-boundary
+
+[2026-04-25T16:57:35Z] [GOAL] Orchestrate init-attach-overhaul build: 9 phases via codex with Opus 4.7 arbitration per phase
+  WHY: User directive — delegate implementation to codex with workspace-write sandbox, single Opus review per phase
+  CONTEXT: .buildrunner/builds/BUILD_init-attach-overhaul.md, commits 34febb7a3 → ec6e6fb7d
+
+[2026-04-25T16:57:35Z] [DECISION] Sequential per-phase dispatch instead of parallelizing 6‖7‖8 from spec matrix
+  WHY: User said "do one review per phase" — sequential keeps the codex-implement → Opus-arbitrate → commit loop cleanest
+  CONTEXT: 9 commits, one per phase, scoped file lists per commit
+
+[2026-04-25T16:57:35Z] [DECISION] Direct codex exec --full-auto invocation rather than /autopilot or /codex-do skill
+  WHY: /codex-do is too narrow (DevOps shell only); /autopilot adds orchestration overhead I was already providing
+  CONTEXT: 9 background bash dispatches with /tmp/codex-runs/phase-N.log capture
+
+[2026-04-25T16:57:35Z] [ARCHITECTURE] Phase 8: custom INI parser for project.godot (NOT stdlib configparser)
+  WHY: configparser lowercases keys and rewrites style — would corrupt Godot autoload entries; needed byte-stable section round-trip for unchanged sections
+  CONTEXT: core/installer/godot_project_patcher.py; preserves [application]/[display]/[rendering] verbatim
+
+[2026-04-25T16:57:35Z] [ARCHITECTURE] Phase 8: extended AdapterResult dataclass with notes: list[str] field
+  WHY: No-godot guard needed to return a structured note ("no project.godot found; skipping") instead of hiding it in another field
+  CONTEXT: core/installer/adapters/__init__.py — codex deviation from brief, accepted in arbitration
+
+[2026-04-25T16:57:35Z] [ARCHITECTURE] Phase 9: hook_installer mirrors hooks into <repo>/.buildrunner/hooks/ in addition to .git/hooks/
+  WHY: Drift detector checks for canonical hook files at the repo path; without mirror, audit would always report missing-hook drift
+  CONTEXT: core/installer/hook_installer.py — additive (still writes to .git/hooks/ as before)
+
+[2026-04-25T16:57:35Z] [ARCHITECTURE] Phase 9: exposed *_EXPECTED_FILES / GODOT_AUTOLOAD_NAMES / BASELINE_EXPECTED_FILES / HOOK_EXPECTED_FILES helper constants across all installer modules
+  WHY: Drift detector needs a single source-of-truth for what each installer is responsible for, without re-implementing the file list
+  CONTEXT: core/installer/{core_baseline,hook_installer,capabilities/__init__,adapters/{react_vite,next,expo,godot}}.py
+
+[2026-04-25T16:57:35Z] [CONSTRAINT] Phase 9 brief explicitly forbade modifying live ~/.zshrc and external project paths from the build run
+  WHY: Per-project migrations (Synapse/trailsync/phatti/BR3 self/HengeWars) and live alias install are operational follow-ups, not code-build deliverables
+  CONTEXT: tests use injectable zshrc_path fixture; install_henge_alias defaults to Path.home()/.zshrc only when called without override
+
+[2026-04-25T16:57:35Z] [REJECTED] Using stdlib configparser for project.godot patching
+  WHY: Lowercases section/key names and rewrites style — would corrupt Godot autoload entries (e.g. config/name → config/name lowercased) and break byte-stable round-trip
+  CONTEXT: Phase 8 brief explicitly called this out; rolled minimal section-aware parser instead
+
+[2026-04-25T16:57:35Z] [REJECTED] Running pipx install -e . from within codex sandbox
+  WHY: Workspace-write sandbox cannot write to ~/.local/pipx/logs or ~/Library/Logs/pipx — every codex phase reported the same permission error
+  CONTEXT: Documented as known-environmental limitation in every phase's final report; resolved at end by running from interactive shell
+
+[2026-04-25T16:57:35Z] [PATTERN] Per-phase commit message footer: "Codex implemented; Opus 4.7 arbitrated PASS." + Co-Authored-By Claude Opus 4.7
+  WHY: Audit trail for the orchestration model — makes it explicit which commits went through codex vs were authored directly
+  CONTEXT: 9 commits 34febb7a3 → ec6e6fb7d; replicated for follow-up wiring commit 7ba9249ff
+
+[2026-04-25T16:57:35Z] [GOAL] User identified two gaps post-build: stale pipx install + default br attach only runs baseline
+  WHY: Build delivered installer modules + --upgrade pathway, but didn't wire the modules into default br init / br attach <dir>; nor reinstall pipx
+  CONTEXT: cli/attach_commands.py call-site audit showed 2 baseline calls but 0 hooks/adapter/capability calls in default mode
+
+[2026-04-25T16:57:35Z] [ARCHITECTURE] Created install_full_stack helper in core/installer/__init__.py
+  WHY: Single entrypoint for br init and br attach <dir> to install baseline + hooks + framework adapter + capabilities; all underlying installers already idempotent
+  CONTEXT: core/installer/__init__.py adds FullStackResult dataclass + install_full_stack(target, declared_facets=None, dry_run=False)
+
+[2026-04-25T16:57:35Z] [DECISION] Wired install_full_stack into br init (cli/main.py) and br attach <dir> (cli/attach_commands.py) — kept Quick-register alias mode lightweight
+  WHY: Alias mode is intentionally minimal ("Quick register creates shell alias and registers project"); only the full-scan/directory mode gets the full stack
+  CONTEXT: cli/main.py:356 init, cli/attach_commands.py:327 default attach; alias mode at attach_commands.py:106-229 unchanged
+
+[2026-04-25T16:57:35Z] [CONSTRAINT] install_full_stack gates hook installation on (repo_root/.git).is_dir()
+  WHY: Synthetic test fixtures and non-git directories shouldn't false-positive on missing hooks
+  CONTEXT: Mirrors the existing gate in drift_detector.py:detect_drift
+
+[2026-04-25T16:57:35Z] [PATTERN] dry_run=True on install_full_stack performs zero writes but still resolves facets
+  WHY: Lets br attach --dry-run preview what would happen without touching disk; consistent with existing dry_run flag in attach_commands
+  CONTEXT: core/installer/__init__.py:install_full_stack early-return branch; tests/core/installer/test_full_stack.py validates no .buildrunner/ created
+
+[2026-04-25T16:57:35Z] [DECISION] Ran pipx install -e . --force from interactive shell at end of session — succeeded
+  WHY: Codex sandbox blocked pipx writes; interactive shell has full filesystem access; needed to make new code (br audit, br attach --upgrade, install_full_stack) live
+  CONTEXT: br now resolves to ~/.local/bin/br with new code; br audit /Users/byronhudson/Projects/HengeWars exits 0
+
+[2026-04-25T16:57:35Z] [ARCHITECTURE] HengeWars onboarded via apply_attach_upgrade — 20 drift items fixed, 0 deletions
+  WHY: User asked to confirm + run attach without deleting anything; chose apply_attach_upgrade since HengeWars was a new attach (all installers skip-if-exists, no clobbering possible)
+  CONTEXT: /Users/byronhudson/Projects/HengeWars now has full BR3 baseline + hooks + Godot adapter; pre-existing CLAUDE.md preserved (CLAUDE.md.br3-suggested written alongside); Makefile appended (existing docs targets preserved); BR2-style pre-commit moved to .buildrunner/hooks/legacy/pre-commit.<UTC>
+
+[2026-04-25T16:57:35Z] [PATTERN] Phase 5 baseline CLAUDE.md guard: never overwrite existing CLAUDE.md, write CLAUDE.md.br3-suggested alongside
+  WHY: Project's own CLAUDE.md is more important than universal template; user can manually merge
+  CONTEXT: Confirmed working on HengeWars — original 2964-byte CLAUDE.md untouched, 391-byte .br3-suggested written
+
+[2026-04-25T16:57:35Z] [PATTERN] Marker-bracketed Makefile injection (# >>> br3-godot-targets >>> ... # <<< br3-godot-targets <<<)
+  WHY: Idempotent detection on re-attach; preserves all existing Makefile targets above; user can hand-edit between markers and the installer respects it
+  CONTEXT: templates/adapters/godot/Makefile.snippet; same pattern in install_henge_alias for ~/.zshrc
+
+[2026-04-25T16:57:35Z] [CONSTRAINT] Out-of-scope from spec: do NOT create cli/doctor_commands.py at repo level
+  WHY: pipx-installed buildrunner already ships cli/doctor_commands.py at ~/.local/pipx/venvs/buildrunner/.../cli/doctor_commands.py; a repo-level file would clobber it on pip install -e .
+  CONTEXT: Phase 9 brief explicitly enforced this; codex respected it
+2026-04-25T17:05:00Z phase-review build=role-matrix-codex-arbiter phase=8 revision=0 verdict=arbiter-partial-approve arbiter=opus-4-7 reason=plumbing-verified-routing-resolved-to-codex+no-rule22-demotion+assert-script-correct+verification-report-honest empirical-e2e-blocked=nested-codex-network-sandbox followup=operator-runs-fresh-non-nested-e2e-to-capture-missing-decisions-log-entries
+
+[2026-04-25T17:08:01Z] [DECISION] Fixed RAM% display for all macOS cluster nodes by deriving ram_pct from macmon's ram_used/ram_total
+  WHY: Prometheus queries Linux memory metrics (node_memory_MemAvailable_bytes) unsupported by macOS node_exporter; Mac fallback path (getMacMemory) gathered byte data but never computed the percentage
+  CONTEXT: .buildrunner/dashboard/integrations/prometheus-metrics.mjs:319–338 (Mac memory branch)
+
+[2026-04-25T17:08:01Z] [ARCHITECTURE] Three-branch metric aggregator for distributed memory collection
+  WHY: Cluster nodes run different exporters (Linux Prometheus, Windows windows_exporter, macOS macmon) with incompatible metric schemas; branch per OS handles dialect differences
+  CONTEXT: prometheus-metrics.mjs lines 303–338; three codepaths (Linux memUsed/memCached/etc., Windows winMemTotal/winMemFree, Mac macMem.ram_used/ram_total)
+
+[2026-04-25T17:08:01Z] [CONSTRAINT] macOS node_exporter does not export /proc/meminfo-based metrics
+  WHY: /proc/meminfo is Linux-specific; macOS uses different kernel APIs (sysctl vm.stats, memory_pressure)
+  CONTEXT: macOS metrics collected via macmon script; Prometheus PromQL queries fall back to getMacMemory() when node_exporter gap detected
+
+[2026-04-25T17:08:01Z] [REJECTED] Install/simulate Linux memory metrics on macOS
+  WHY: Infeasible; macOS kernel has no /proc/meminfo. Instead, use existing macmon byte data to derive percentage client-side.
+  CONTEXT: Avoided complexity of shim/emulation; re-used already-available byte fields
+

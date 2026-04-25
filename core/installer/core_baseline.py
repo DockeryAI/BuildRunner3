@@ -17,6 +17,7 @@ _STRUCTURED_FILES = (
     "agents.json",
     "skill-state.json",
     "orchestration_state.json",
+    "runtime.json",
 )
 _SKIP_IF_EXISTS_FILES = ("behavior.yaml",)
 _WORKFLOW_DIRECTORIES = (
@@ -40,6 +41,7 @@ BASELINE_EXPECTED_FILES = (
     Path(".buildrunner/skill-state.json"),
     Path(".buildrunner/behavior.yaml"),
     Path(".buildrunner/orchestration_state.json"),
+    Path(".buildrunner/runtime.json"),
     Path(".buildrunner/bypass-justification.md"),
     Path(".buildrunner/scripts/log-rotation.sh"),
     Path("CLAUDE.md"),

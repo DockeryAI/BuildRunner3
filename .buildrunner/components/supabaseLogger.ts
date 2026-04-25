@@ -104,6 +104,11 @@ export function createInstrumentedFetch(
 
     const response = await originalFetch(input, init);
     const durationMs = Math.round(performance.now() - start);
+    // performance.now() keeps advancing while the OS is asleep on desktop Chrome,
+    // so fetches that were in flight at sleep time resolve with multi-hour durations
+    // on wake. Anything over 5 minutes is an artifact — dropping its BR3 log entry
+    // prevents the cluster analyzer from flagging false latency_degradation.
+    const SLEEP_ARTIFACT_CEILING_MS = 300_000;
 
     let responseSize = 0;
     let debugLogs: string[] | undefined;
@@ -127,7 +132,9 @@ export function createInstrumentedFetch(
       // If clone/read fails, log 0
     }
 
-    logOperation({ method, url, status: response.status, durationMs, responseSize });
+    if (durationMs <= SLEEP_ARTIFACT_CEILING_MS) {
+      logOperation({ method, url, status: response.status, durationMs, responseSize });
+    }
 
     // Flush edge function internal logs
     if (debugLogs && debugLogs.length > 0) {
