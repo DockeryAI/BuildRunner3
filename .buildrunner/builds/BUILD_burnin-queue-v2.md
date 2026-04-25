@@ -15,7 +15,7 @@ role-matrix:
 ```
 
 **Created:** 2026-04-25
-**Status:** Phases 1-4 Complete — Phase 5 In Progress
+**Status:** Phases 1-6 Complete — Phase 7 In Progress
 **Deploy:** operator-tooling — no user-facing deploy; changes live under `~/.buildrunner/scripts/burnin/` and `~/Library/LaunchAgents/`.
 **Source Plan File:** .buildrunner/plans/plan-burnin-queue-v2.md
 **Source Plan SHA:** 830e493397dc97f8e71253c2f34f6344a4917274e03a18d5f1e1bf1fbed5d2af
@@ -143,7 +143,7 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 
 ### Phase 5: State-machine fix + lease-expiry reaper + read-only status
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/lib/db.sh` (MODIFY — `db_advance_and_transition` final form)
@@ -153,11 +153,11 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 **Blocked by:** Phase 4
 **Deliverables:**
 
-- [ ] In `db_advance_and_transition` (now only ever called by `worker.sh`): when src=`fixing` and passed=1 → target=`probation`. When src=`probation` and passed=1 and `consecutive_greens+1 >= promote_after` → target=`promoted`. Add explicit case for src=`needs_human` (worker should never see this; assert and abort).
-- [ ] Add `db_reap_expired_claims`: `UPDATE fix_requests SET status='aborted', resolver='timeout' WHERE status='claimed' AND datetime(lease_expires_at) < datetime('now')`. Cases linked to those expired claims flip back to `claim_origin_state` (column added in Phase 1).
-- [ ] Wire `db_reap_expired_claims` into the worker's main loop (every claim attempt also reaps first) and into watchd's reaper sidecar (fallback if worker is dead).
-- [ ] Remove `state_reap_stale_fixing` call from `cmd_status` (burnin.sh:81-119). `cmd_status` becomes pure read.
-- [ ] Smoke: kill worker mid-attempt; confirm next worker startup or watchd reaper tick releases the claim and case is re-queueable.
+- [x] In `db_advance_and_transition` (now only ever called by `worker.sh`): when src=`fixing` and passed=1 → target=`probation`. When src=`probation` and passed=1 and `consecutive_greens+1 >= promote_after` → target=`promoted`. Add explicit case for src=`needs_human` (worker should never see this; assert and abort).
+- [x] Add `db_reap_expired_claims`: `UPDATE fix_requests SET status='aborted', resolver='timeout' WHERE status='claimed' AND datetime(lease_expires_at) < datetime('now')`. Cases linked to those expired claims flip back to `COALESCE(claim_origin_state, 'probation')` (column added in Phase 1; NULL safely defaults to probation).
+- [x] Wire `db_reap_expired_claims` into the worker's main loop (every claim attempt also reaps first) and into watchd's reaper sidecar (fallback if worker is dead).
+- [x] Remove `state_reap_stale_fixing` call from `cmd_status` (burnin.sh:81-119). `cmd_status` becomes pure read.
+- [x] Smoke: kill worker mid-attempt; confirm next worker startup or watchd reaper tick releases the claim and case is re-queueable.
 
 **Success Criteria:**
 
@@ -167,7 +167,7 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 
 ### Phase 6: Operator flows + cost-cap accounting + emergency cohort recovery
 
-**Status:** not_started
+**Status:** ✅ COMPLETE
 **Files:**
 
 - `~/.buildrunner/scripts/burnin/burnin.sh` (MODIFY — add `recover` and `resume` subcommands)
@@ -177,11 +177,11 @@ Repair the burn-in harness so fix dispatch is genuinely serialized through a rea
 **Blocked by:** Phase 5
 **Deliverables:**
 
-- [ ] `burnin recover [--all | <id>...]`: explicitly transitions selected `needs_human` cases → `untested` (transition allowed by table) and enqueues a `requested` row with `enqueue_reason='recovery'`.
-- [ ] `burnin resume`: scans for `deferred` rows with `enqueue_reason='autoheal_off'` and flips them to `requested` if autoheal is currently ON. No-op if autoheal still off.
-- [ ] `cost_check_daily_cap`: change query from `COUNT(*) FROM fix_requests WHERE DATE(created_at)=DATE('now')` to `COUNT(*) FROM fix_requests WHERE DATE(claim_at)=DATE('now') AND status IN ('claimed','applied','rejected','failed')` — counts real Claude invocations, not enqueue volume. Use `DATE('now')`, not the literal string `'today'`.
-- [ ] `recover-stranded.sh`: one-shot script `SELECT id FROM burnin_cases WHERE state='needs_human' AND last_failure LIKE '%reaped from stale fixing%'` (the `last_failure` column is pre-existing on `burnin_cases`) and runs `burnin recover` on them. Operator runs once after Phase 6 lands.
-- [ ] Smoke: run `recover-stranded.sh` against a snapshot DB; confirm cases enter the queue and the worker drains them one by one.
+- [x] `burnin recover [--all | <id>...]`: explicitly transitions selected `needs_human` cases → `untested` (transition allowed by table) and enqueues a `requested` row with `enqueue_reason='recovery'`. Atomic CTE gates on no existing open request, preserving I-1.
+- [x] `burnin resume`: scans for `deferred` rows with `enqueue_reason='autoheal_off'` and flips them to `requested` if autoheal is currently ON. No-op if autoheal still off. Canary-deferred rows untouched.
+- [x] `cost_check_daily_cap`: query is `COUNT(*) FROM fix_requests WHERE DATE(claim_at)=DATE('now') AND status IN ('claimed','applied','rejected','failed')` — counts real Claude invocations, not enqueue volume. Uses `DATE('now')`, not literal `'today'`.
+- [x] `recover-stranded.sh`: one-shot script `SELECT id FROM burnin_cases WHERE state='needs_human' AND last_failure LIKE '%reaped from stale fixing%'` and `exec`s `burnin recover` on them (propagates exit code).
+- [x] Smoke: snapshot cohort of 36 stranded cases drained — `recover_stranded_count=36`, worker processed them with `claims:36|releases:36|max_inflight:1`.
 
 **Success Criteria:**
 
