@@ -70,7 +70,7 @@ for loc in \
     "/Users/byronhudson/Projects/BuildRunner3/.buildrunner/hooks" \
     "$PROJECT_PATH/../BuildRunner3/.buildrunner/hooks" \
     "$HOME/.buildrunner/hooks"; do
-    if [ -f "$loc/pre-commit" ]; then
+    if [ -f "$loc/pre-commit-enforced" ]; then
         BR3_HOOKS_DIR="$loc"
         break
     fi
@@ -109,32 +109,25 @@ if [ -n "$BR3_HOOKS_DIR" ]; then
         fi
     fi
 
-    # Install appropriate hooks
+    cp "$BR3_HOOKS_DIR/pre-commit-enforced" .git/hooks/pre-commit
     if [ "$CUSTOM_PRECOMMIT" = true ]; then
-        # Use composed hook that runs custom + BR3
-        if [ -f "$BR3_HOOKS_DIR/pre-commit-composed" ]; then
-            cp "$BR3_HOOKS_DIR/pre-commit-composed" .git/hooks/pre-commit
-            echo -e "  ${GREEN}✓${NC} Installed composed pre-commit hook (custom + BR3 checks)"
-        else
-            cp "$BR3_HOOKS_DIR/pre-commit" .git/hooks/pre-commit
-            echo -e "  ${YELLOW}⚠${NC} Composed hook not found - installed BR3 only (custom hook saved to .custom)"
-        fi
+        echo -e "  ${YELLOW}⚠${NC} Installed BR3 enforced pre-commit hook (.custom backup preserved for manual migration)"
     else
-        cp "$BR3_HOOKS_DIR/pre-commit" .git/hooks/pre-commit
-        echo -e "  ${GREEN}✓${NC} Installed BR3 pre-commit hook"
+        echo -e "  ${GREEN}✓${NC} Installed BR3 enforced pre-commit hook"
     fi
 
+    cp "$BR3_HOOKS_DIR/pre-push-enforced" .git/hooks/pre-push
     if [ "$CUSTOM_PREPUSH" = true ]; then
-        if [ -f "$BR3_HOOKS_DIR/pre-push-composed" ]; then
-            cp "$BR3_HOOKS_DIR/pre-push-composed" .git/hooks/pre-push
-            echo -e "  ${GREEN}✓${NC} Installed composed pre-push hook (custom + BR3 checks)"
-        else
-            cp "$BR3_HOOKS_DIR/pre-push" .git/hooks/pre-push
-            echo -e "  ${YELLOW}⚠${NC} Composed hook not found - installed BR3 only (custom hook saved to .custom)"
-        fi
+        echo -e "  ${YELLOW}⚠${NC} Installed BR3 enforced pre-push hook (.custom backup preserved for manual migration)"
     else
-        cp "$BR3_HOOKS_DIR/pre-push" .git/hooks/pre-push
-        echo -e "  ${GREEN}✓${NC} Installed BR3 pre-push hook"
+        echo -e "  ${GREEN}✓${NC} Installed BR3 enforced pre-push hook"
+    fi
+
+    mkdir -p .git/hooks/pre-push.d
+    if [ -d "$BR3_HOOKS_DIR/pre-push.d" ]; then
+        cp "$BR3_HOOKS_DIR"/pre-push.d/*.sh .git/hooks/pre-push.d/ 2>/dev/null || true
+        chmod +x .git/hooks/pre-push.d/*.sh 2>/dev/null || true
+        echo -e "  ${GREEN}✓${NC} Installed BR3 pre-push.d fragments in .git/hooks/pre-push.d/"
     fi
 
     chmod +x .git/hooks/pre-commit .git/hooks/pre-push
