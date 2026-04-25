@@ -27,6 +27,7 @@ from core.self_service import SelfServiceManager
 from core.claude_md_generator import ClaudeMdGenerator
 from core.runtime.config import RuntimeConfigError, apply_runtime_selection, resolve_runtime_selection
 from core.asset_resolver import resolve_install_path
+from core.project_type import Bundler, Capability, Framework, ProjectFacets, apply_composition_rules
 
 # Import new command groups
 from cli.spec_commands import spec_app, design_app
@@ -122,6 +123,121 @@ app.add_typer(service_app, name="service")
 console = Console()
 
 
+def _normalize_type_key(value: str) -> str:
+    return value.replace("_", "-").lower()
+
+
+_FRAMEWORK_TOKEN_MAP = {value.value: value for value in Framework}
+_BUNDLER_TOKEN_MAP = {_normalize_type_key(value.value): value for value in Bundler}
+_CAPABILITY_TOKEN_MAP = {_normalize_type_key(value.value): value for value in Capability}
+
+
+def _apply_declared_type_token(
+    token: str,
+    framework: Framework,
+    bundler: Bundler,
+    capabilities: set[Capability],
+    warnings: list[str],
+) -> tuple[Framework, Bundler, bool]:
+    if token == "next":
+        framework = _set_declared_framework(framework, Framework.react, token, warnings)
+        bundler = _set_declared_bundler(bundler, Bundler.next, token, warnings)
+        return framework, bundler, True
+
+    if token == "expo":
+        framework = _set_declared_framework(framework, Framework.expo, token, warnings)
+        bundler = _set_declared_bundler(bundler, Bundler.metro, token, warnings)
+        return framework, bundler, True
+
+    if token == "godot":
+        framework = _set_declared_framework(framework, Framework.godot, token, warnings)
+        bundler = _set_declared_bundler(bundler, Bundler.godot_editor, token, warnings)
+        return framework, bundler, True
+
+    if token == "supabase":
+        capabilities.add(Capability.supabase_edge)
+        return framework, bundler, True
+
+    if token in _FRAMEWORK_TOKEN_MAP:
+        framework = _set_declared_framework(framework, _FRAMEWORK_TOKEN_MAP[token], token, warnings)
+        return framework, bundler, True
+
+    if token in _BUNDLER_TOKEN_MAP:
+        bundler = _set_declared_bundler(bundler, _BUNDLER_TOKEN_MAP[token], token, warnings)
+        return framework, bundler, True
+
+    if token in _CAPABILITY_TOKEN_MAP:
+        capabilities.add(_CAPABILITY_TOKEN_MAP[token])
+        return framework, bundler, True
+
+    return framework, bundler, False
+
+
+def _set_declared_framework(
+    current: Framework, new_value: Framework, token: str, warnings: list[str]
+) -> Framework:
+    if current is not Framework.unknown and current is not new_value:
+        warnings.append(
+            f"Framework token '{token}' overrides previously declared framework '{current.value}'"
+        )
+    return new_value
+
+
+def _set_declared_bundler(
+    current: Bundler, new_value: Bundler, token: str, warnings: list[str]
+) -> Bundler:
+    if current is not Bundler.none and current is not new_value:
+        warnings.append(
+            f"Bundler token '{token}' overrides previously declared bundler '{current.value}'"
+        )
+    return new_value
+
+
+def _parse_declared_facets(type_spec: str | None) -> tuple[ProjectFacets, list[str], list[str]]:
+    framework = Framework.unknown
+    bundler = Bundler.none
+    backend = None
+    capabilities: set[Capability] = set()
+    warnings: list[str] = []
+
+    if type_spec:
+        raw_tokens = [token for token in type_spec.lower().split("-") if token]
+        index = 0
+        max_parts = 3
+        while index < len(raw_tokens):
+            matched = False
+            remaining = len(raw_tokens) - index
+            for span in range(min(max_parts, remaining), 0, -1):
+                token = "-".join(raw_tokens[index : index + span])
+                framework, bundler, matched_token = _apply_declared_type_token(
+                    token, framework, bundler, capabilities, warnings
+                )
+                if matched_token:
+                    index += span
+                    matched = True
+                    break
+
+            if not matched:
+                warnings.append(f"Unknown type token '{raw_tokens[index]}' ignored")
+                index += 1
+
+    if Capability.supabase_edge in capabilities:
+        backend = "supabase"
+
+    declared_facets = ProjectFacets(
+        framework=framework,
+        bundler=bundler,
+        backend=backend,
+        capabilities=capabilities,
+    )
+    normalized_facets, conflicts = apply_composition_rules(declared_facets)
+    conflict_notes = [
+        f"{conflict.name}: kept={conflict.kept.value} removed={conflict.removed.value}"
+        for conflict in conflicts
+    ]
+    return normalized_facets, warnings, conflict_notes
+
+
 # ===== Helper Functions =====
 
 
@@ -176,9 +292,16 @@ def init(
     project_name: str = typer.Argument(..., help="Project name"),
     force: bool = typer.Option(False, "--force", "-f", help="Force initialization"),
     no_profile: bool = typer.Option(False, "--no-profile", help="Skip global profile activation"),
+    type_spec: Optional[str] = typer.Option(
+        None,
+        "--type",
+        help="Declared project facets shorthand, e.g. react-vite-pwa-supabase",
+    ),
 ):
     """Initialize a new BuildRunner project in ~/Projects with automatic alias creation."""
     try:
+        declared_facets, type_warnings, type_conflicts = _parse_declared_facets(type_spec)
+
         # Create project directory in ~/Projects
         projects_dir = Path.home() / "Projects"
         projects_dir.mkdir(exist_ok=True)
@@ -226,6 +349,15 @@ def init(
             config_manager.init_project_config()
 
             progress.update(task, completed=True)
+
+        console.print()
+        console.print("[bold]Detected/declared facets[/bold]")
+        console.print(f"  {declared_facets}")
+        for warning in type_warnings:
+            console.print(f"  [yellow]Warning:[/yellow] {warning}")
+        for conflict_note in type_conflicts:
+            console.print(f"  [yellow]Composition:[/yellow] {conflict_note}")
+        console.print()
 
         # Auto-launch Claude Code planning mode for new projects only
         spec_path = buildrunner_dir / "PROJECT_SPEC.md"

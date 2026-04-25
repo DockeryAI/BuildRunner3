@@ -1,10 +1,12 @@
 """Codebase scanner - analyzes project structure and extracts code artifacts"""
 
 import ast
-import time
 import logging
+import time
 from pathlib import Path
 from typing import List, Set, Optional
+
+from core.project_type.detector import detect_facets as detect_project_facets
 
 from .models import CodeArtifact, ArtifactType, ScanResult
 
@@ -203,11 +205,16 @@ class CodebaseScanner:
 
     def __init__(self, project_root: Path):
         self.project_root = Path(project_root)
+        self.project_path = self.project_root
         self.artifacts: List[CodeArtifact] = []
         self.total_files = 0
         self.total_lines = 0
         self.languages: Set[str] = set()
         self.frameworks: Set[str] = set()
+
+    def detect_facets(self):
+        """Detect installer facets without changing the legacy scan result shape."""
+        return detect_project_facets(self.project_path)
 
     def scan(self) -> ScanResult:
         """

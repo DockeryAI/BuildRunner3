@@ -15,6 +15,7 @@ from core.retrofit.version_detector import BRVersionDetector, BRVersion
 from core.migration.v2_parser import V2ProjectParser
 from core.migration.converter import MigrationConverter
 from core.project_registry import get_project_registry
+from core.project_type.composition import CompositionConflict
 from core.shell_integration import get_shell_integration
 from core.design_extractor import DesignExtractor
 from core.enforcement_engine import ConfigGenerator
@@ -47,7 +48,11 @@ def attach_command(
     editor: str = typer.Option(
         "claude", "--editor", "-e", help="Editor preference: claude, cursor, windsurf"
     ),
-    scan: bool = typer.Option(False, "--scan", help="Force codebase scan even if looks like alias"),
+    scan: bool = typer.Option(
+        False,
+        "--scan",
+        help="Detect and print project facets without installing; also forces directory interpretation",
+    ),
 ):
     """
     Attach BuildRunner 3 to an existing project.
@@ -227,6 +232,11 @@ TODO: Document features
     if not directory.is_dir():
         console.print(f"[red]Error: Not a directory: {directory}[/red]")
         raise typer.Exit(1)
+
+    if scan:
+        facets, detection_report = CodebaseScanner(directory).detect_facets()
+        _show_detected_facets(directory, facets, detection_report.composition_conflicts, detection_report.ambiguities)
+        return
 
     # Default output path
     if output is None:
@@ -427,6 +437,41 @@ TODO: Document features
                 border_style="green",
             )
         )
+
+    console.print()
+
+
+def _show_detected_facets(
+    directory: Path,
+    facets,
+    conflicts: list[CompositionConflict],
+    ambiguities: list[str],
+):
+    console.print()
+    console.print(
+        Panel.fit(
+            "[bold cyan]BuildRunner 3 - Project Facet Scan[/bold cyan]\n\n"
+            f"[white]Target:[/white] [yellow]{directory}[/yellow]",
+            border_style="cyan",
+        )
+    )
+    console.print()
+    console.print("[bold]Detected facets[/bold]")
+    console.print(f"  {facets}")
+
+    if ambiguities:
+        console.print()
+        console.print("[yellow]Ambiguities[/yellow]")
+        for note in ambiguities:
+            console.print(f"  • {note}")
+
+    if conflicts:
+        console.print()
+        console.print("[yellow]Composition conflicts[/yellow]")
+        for conflict in conflicts:
+            console.print(
+                f"  • {conflict.name}: kept={conflict.kept.value} removed={conflict.removed.value}"
+            )
 
     console.print()
 
